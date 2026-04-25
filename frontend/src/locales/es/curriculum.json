@@ -1,0 +1,71 @@
+{
+  "curriculum": {
+    "subjects": {
+      "biology": "Biología",
+      "chemistry": "Química",
+      "physics": "Física",
+      "mathematics": "Matemáticas",
+      "literature": "Literatura",
+      "history": "Historia",
+      "geography": "Geografía",
+      "ecology": "Ecología"
+    },
+    "gradeLevels": {
+      "9": "Grado 9",
+      "10": "Grado 10",
+      "11": "Grado 11",
+      "12": "Grado 12"
+    },
+    "bloomLevels": {
+      "1": "Recordar",
+      "2": "Comprender",
+      "3": "Aplicar",
+      "4": "Analizar",
+      "5": "Evaluar",
+      "6": "Crear"
+    },
+    "marzanoLevels": {
+      "1": "Recuperación",
+      "2": "Comprensión",
+      "3": "Análisis",
+      "4": "Utilización del Conocimiento"
+    },
+    "sampleUnits": {
+      "photosynthesis": {
+        "title": "Fotosíntesis",
+        "description": "Entender cómo las plantas convierten la energía luminosa en energía química",
+        "objectives": [
+          "Comprender las reacciones dependientes de la luz",
+          "Explicar las reacciones independientes de la luz (Ciclo de Calvin)",
+          "Identificar el papel de la clorofila y otros pigmentos",
+          "Comparar la fotosíntesis en diferentes tipos de plantas"
+        ]
+      },
+      "cellularRespiration": {
+        "title": "Respiración Celular",
+        "description": "Explorar cómo las células extraen energía de la glucosa a través de la respiración aeróbica y anaeróbica",
+        "objectives": [
+          "Explicar la glucólisis y sus productos",
+          "Describir el Ciclo de Krebs",
+          "Entender la cadena de transporte de electrones",
+          "Calcular el rendimiento de ATP de la oxidación completa de glucosa"
+        ]
+      },
+      "ecosystems": {
+        "title": "Ecosistemas y Flujo de Energía",
+        "description": "Aprender sobre las relaciones entre los organismos y su entorno físico",
+        "objectives": [
+          "Definir componentes del ecosistema",
+          "Entender cadenas tróficas y redes tróficas",
+          "Explicar la transferencia de energía entre niveles tróficos",
+          "Analizar interacciones de poblaciones y comunidades"
+        ]
+      }
+    },
+    "difficulties": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
+    }
+  }
+}

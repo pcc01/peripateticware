@@ -1,0 +1,76 @@
+{
+  "dashboard": {
+    "title": "لوحة التحكم - الطالب",
+    "welcome": "أهلاً بك {{name}}",
+    "totalMinutes": "إجمالي الدقائق",
+    "activitiesCompleted": "الأنشطة المكتملة",
+    "inProgressSessions": "الجلسات الجارية",
+    "startNewSession": "ابدأ جلسة جديدة",
+    "recentSessions": "الجلسات الأخيرة",
+    "yourProgress": "تقدمك"
+  },
+  "session": {
+    "createSession": "إنشاء جلسة تعلم",
+    "sessionTitle": "عنوان الجلسة",
+    "sessionTitle_placeholder": "مثال: رحلة المتنزه",
+    "selectCurriculum": "اختر الوحدة الدراسية",
+    "startLocation": "موقع البدء",
+    "confirmStart": "ابدأ الجلسة",
+    "confirmEndSession": "هل تريد إنهاء الجلسة؟",
+    "endSession": "إنهاء الجلسة",
+    "pauseSession": "إيقاف الجلسة",
+    "resumeSession": "متابعة الجلسة",
+    "sessionStatus": "حالة الجلسة",
+    "sessionDuration": "مدة الجلسة"
+  },
+  "inquiry": {
+    "title": "اسأل سؤالاً",
+    "typeYourQuestion": "اكتب سؤالك هنا",
+    "askQuestion": "اسأل السؤال",
+    "takePhoto": "التقط صورة",
+    "recordAudio": "تسجيل صوتي",
+    "noInputError": "يرجى إدخال سؤال",
+    "submitPhoto": "إرسال الصورة",
+    "submitAudio": "إرسال التسجيل",
+    "prompt": "إرشادك التعليمي",
+    "promptHint": "سؤالك التالي هو: {{prompt}}",
+    "resources": "الموارد ذات الصلة",
+    "moreQuestions": "أسئلة أخرى"
+  },
+  "evidence": {
+    "title": "أدلة التعلم",
+    "sessionSummary": "ملخص الجلسة",
+    "bloomLevel": "مستوى بلوم المحقق",
+    "engagementScore": "درجة الانخراط",
+    "completionTime": "وقت الانتهاء",
+    "keyConcepts": "المفاهيم الرئيسية",
+    "misconceptionsAddressed": "الأخطاء المفاهيمية المعالجة",
+    "growth": "النمو",
+    "yourAchievements": "إنجازاتك"
+  },
+  "history": {
+    "title": "السجل",
+    "allSessions": "جميع الجلسات",
+    "noSessions": "لم تكمل أي جلسات بعد",
+    "sessionDetails": "تفاصيل الجلسة",
+    "questionsAsked": "الأسئلة المطروحة",
+    "conceptsCovered": "المفاهيم المغطاة",
+    "timeSpent": "الوقت المستغرق"
+  },
+  "help": {
+    "title": "المساعدة",
+    "faq": "الأسئلة الشائعة",
+    "contactSupport": "تواصل مع الدعم",
+    "gettingStarted": "البدء",
+    "howToAsk": "كيفية طرح أسئلة فعالة",
+    "tips": "نصائح للنجاح"
+  },
+  "progress": {
+    "title": "التقدم",
+    "overall": "التقدم العام",
+    "bySubject": "حسب المادة",
+    "byLevel": "حسب المستوى",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر"
+  }
+}

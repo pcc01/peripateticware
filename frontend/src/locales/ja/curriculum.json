@@ -1,0 +1,97 @@
+{
+  "subjects": {
+    "mathematics": "数学",
+    "science": "科学",
+    "english": "英語",
+    "socialStudies": "社会科",
+    "biology": "生物学",
+    "chemistry": "化学",
+    "physics": "物理学",
+    "history": "歴史",
+    "geography": "地理",
+    "artsAndCrafts": "芸術と工芸",
+    "physicalEducation": "体育"
+  },
+  "gradeLevels": {
+    "k": "幼稚園",
+    "1": "1年生",
+    "2": "2年生",
+    "3": "3年生",
+    "4": "4年生",
+    "5": "5年生",
+    "6": "6年生",
+    "7": "7年生",
+    "8": "8年生",
+    "9": "9年生",
+    "10": "10年生",
+    "11": "11年生",
+    "12": "12年生"
+  },
+  "bloomLevels": {
+    "1": {
+      "name": "記憶",
+      "description": "基本的な事実と概念を思い出す"
+    },
+    "2": {
+      "name": "理解",
+      "description": "アイデアや概念を説明する"
+    },
+    "3": {
+      "name": "応用",
+      "description": "情報を新しい状況で使用する"
+    },
+    "4": {
+      "name": "分析",
+      "description": "アイデア間の関係を描く"
+    },
+    "5": {
+      "name": "評価",
+      "description": "決定や選択を正当化する"
+    },
+    "6": {
+      "name": "創造",
+      "description": "新しいアイデアや製品を作成する"
+    }
+  },
+  "marzanoLevels": {
+    "1": {
+      "name": "想起",
+      "description": "特定の情報を想起する"
+    },
+    "2": {
+      "name": "理解",
+      "description": "基本的な意味を理解する"
+    },
+    "3": {
+      "name": "応用",
+      "description": "異なる文脈で知識を使用する"
+    },
+    "4": {
+      "name": "分析",
+      "description": "情報を詳細に検証する"
+    }
+  },
+  "difficulties": {
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "sampleUnits": {
+    "photosynthesis": {
+      "title": "光合成",
+      "description": "植物が光をエネルギーに変える方法を探求する"
+    },
+    "waterCycle": {
+      "title": "水循環",
+      "description": "地球の大気を通じた水の動きを理解する"
+    },
+    "evolution": {
+      "title": "進化",
+      "description": "時間経過による生物学的変化を研究する"
+    },
+    "ecosystems": {
+      "title": "生態系",
+      "description": "生物とその環境との関係を探求する"
+    }
+  }
+}

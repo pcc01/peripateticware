@@ -1,0 +1,76 @@
+{
+  "dashboard": {
+    "title": "生徒ダッシュボード",
+    "welcome": "ようこそ {{name}}さん",
+    "totalMinutes": "総分数",
+    "activitiesCompleted": "完了したアクティビティ",
+    "inProgressSessions": "進行中のセッション",
+    "startNewSession": "新しいセッションを開始",
+    "recentSessions": "最近のセッション",
+    "yourProgress": "あなたの進捗"
+  },
+  "session": {
+    "createSession": "学習セッションを作成",
+    "sessionTitle": "セッションのタイトル",
+    "sessionTitle_placeholder": "例：公園での散歩",
+    "selectCurriculum": "カリキュラムユニットを選択",
+    "startLocation": "開始位置",
+    "confirmStart": "セッションを開始",
+    "confirmEndSession": "セッションを終了しますか？",
+    "endSession": "セッション終了",
+    "pauseSession": "セッション一時停止",
+    "resumeSession": "セッション再開",
+    "sessionStatus": "セッションステータス",
+    "sessionDuration": "セッション期間"
+  },
+  "inquiry": {
+    "title": "質問する",
+    "typeYourQuestion": "ここに質問を入力してください",
+    "askQuestion": "質問を送信",
+    "takePhoto": "写真を撮る",
+    "recordAudio": "音声を録音",
+    "noInputError": "質問を入力してください",
+    "submitPhoto": "写真を送信",
+    "submitAudio": "録音を送信",
+    "prompt": "あなたの学習ガイド",
+    "promptHint": "次の質問は：{{prompt}}",
+    "resources": "関連リソース",
+    "moreQuestions": "他の質問"
+  },
+  "evidence": {
+    "title": "学習の証拠",
+    "sessionSummary": "セッションサマリー",
+    "bloomLevel": "達成したブルームレベル",
+    "engagementScore": "参加スコア",
+    "completionTime": "完了時間",
+    "keyConcepts": "主要な概念",
+    "misconceptionsAddressed": "対処された誤解",
+    "growth": "成長",
+    "yourAchievements": "あなたの成績"
+  },
+  "history": {
+    "title": "履歴",
+    "allSessions": "すべてのセッション",
+    "noSessions": "まだセッションを完了していません",
+    "sessionDetails": "セッションの詳細",
+    "questionsAsked": "質問した内容",
+    "conceptsCovered": "カバーされた概念",
+    "timeSpent": "費やした時間"
+  },
+  "help": {
+    "title": "ヘルプ",
+    "faq": "よくある質問",
+    "contactSupport": "サポートに連絡",
+    "gettingStarted": "はじめに",
+    "howToAsk": "効果的な質問方法",
+    "tips": "成功のコツ"
+  },
+  "progress": {
+    "title": "進捗",
+    "overall": "全体的な進捗",
+    "bySubject": "教科別",
+    "byLevel": "レベル別",
+    "thisWeek": "今週",
+    "thisMonth": "今月"
+  }
+}

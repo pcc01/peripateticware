@@ -1,0 +1,68 @@
+"""Configuration management for Peripateticware"""
+
+from pydantic_settings import BaseSettings
+from typing import Optional
+import os
+
+
+class Settings(BaseSettings):
+    """Application settings"""
+    
+    # App configuration
+    APP_NAME: str = "Peripateticware"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    
+    # Database
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://peripateticware_user:peripateticware_secure_password_dev@postgres:5432/peripateticware"
+    )
+    
+    # Redis
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    
+    # LLM Provider Selection
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")  # "ollama" or "claude"
+    
+    # Ollama inference (for backwards compatibility)
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL_TEXT: str = "llama2"
+    OLLAMA_MODEL_VISION: str = "llava"
+    OLLAMA_MODEL_AUDIO: str = "whisper"
+    
+    # Claude inference
+    CLAUDE_API_KEY: str = os.getenv("CLAUDE_API_KEY", "")
+    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
+    CLAUDE_MAX_TOKENS: int = int(os.getenv("CLAUDE_MAX_TOKENS", "2048"))
+    
+    # API Configuration
+    API_PORT: int = 8010
+    API_HOST: str = "0.0.0.0"
+    
+    # Security
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    
+    # CORS
+    CORS_ORIGINS: list = ["*"]
+    
+    # Vector DB
+    VECTOR_DIMENSION: int = 384  # For sentence-transformers/all-MiniLM-L6-v2
+    
+    # RAG Configuration
+    CHUNK_SIZE: int = 512
+    CHUNK_OVERLAP: int = 128
+    TOP_K_RETRIEVAL: int = 5
+    
+    # Observability
+    ENABLE_METRICS: bool = True
+    PROMETHEUS_PORT: int = 8001
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+
+settings = Settings()

@@ -1,0 +1,71 @@
+{
+  "curriculum": {
+    "subjects": {
+      "biology": "Biology",
+      "chemistry": "Chemistry",
+      "physics": "Physics",
+      "mathematics": "Mathematics",
+      "literature": "Literature",
+      "history": "History",
+      "geography": "Geography",
+      "ecology": "Ecology"
+    },
+    "gradeLevels": {
+      "9": "Grade 9",
+      "10": "Grade 10",
+      "11": "Grade 11",
+      "12": "Grade 12"
+    },
+    "bloomLevels": {
+      "1": "Remember",
+      "2": "Understand",
+      "3": "Apply",
+      "4": "Analyze",
+      "5": "Evaluate",
+      "6": "Create"
+    },
+    "marzanoLevels": {
+      "1": "Retrieval",
+      "2": "Comprehension",
+      "3": "Analysis",
+      "4": "Knowledge Utilization"
+    },
+    "sampleUnits": {
+      "photosynthesis": {
+        "title": "Photosynthesis",
+        "description": "Understanding how plants convert light energy into chemical energy",
+        "objectives": [
+          "Understand the light-dependent reactions",
+          "Explain the light-independent reactions (Calvin Cycle)",
+          "Identify the role of chlorophyll and other pigments",
+          "Compare photosynthesis in different plant types"
+        ]
+      },
+      "cellularRespiration": {
+        "title": "Cellular Respiration",
+        "description": "Exploring how cells extract energy from glucose through aerobic and anaerobic respiration",
+        "objectives": [
+          "Explain glycolysis and its products",
+          "Describe the Krebs Cycle",
+          "Understand the electron transport chain",
+          "Calculate ATP yield from complete glucose oxidation"
+        ]
+      },
+      "ecosystems": {
+        "title": "Ecosystems and Energy Flow",
+        "description": "Learning about relationships between organisms and their physical environment",
+        "objectives": [
+          "Define ecosystem components",
+          "Understand food chains and food webs",
+          "Explain energy transfer between trophic levels",
+          "Analyze population and community interactions"
+        ]
+      }
+    },
+    "difficulties": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  }
+}
