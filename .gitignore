@@ -102,3 +102,15 @@ mobile/*~
 
 # Dependencies
 mobile/package-lock.json
+
+# Backend
+backend/.env
+backend/.env.local
+
+# Frontend
+frontend/.env.local
+frontend/.env.*.local
+
+# Mobile
+mobile/.env.local
+mobile/.env.*.local
