@@ -125,9 +125,16 @@ Peripateticware is an AI-powered platform that delivers personalized learning ac
 - **Testing**: pytest, Jest
 - **Code Quality**: ESLint, Black
 
----
+- **[USER_GUIDE.md](USER_GUIDE.md)** - How to use the platform
+  - For teachers: Creating activities, monitoring students, assessing competencies
+  - For parents: Viewing child progress, using mobile app
+  - For administrators: Setting up school, managing users
 
-## 🚀 Quick Start
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete production setup
+  - Database configuration
+  - SSL/TLS setup
+  - Monitoring and maintenance
+  - Security hardening
 
 ### Prerequisites
 - Python 3.14+ ([Download](https://www.python.org/downloads/))
@@ -135,7 +142,8 @@ Peripateticware is an AI-powered platform that delivers personalized learning ac
 - PostgreSQL 12+ ([Download](https://www.postgresql.org/download/))
 - Git ([Download](https://git-scm.com/))
 
-### Installation
+### Adding Mobile App to GitHub
+See: **[guides/GITHUB_INTEGRATION_GUIDE.md](guides/GITHUB_INTEGRATION_GUIDE.md)**
 
 #### 1. Clone Repository
 ```bash

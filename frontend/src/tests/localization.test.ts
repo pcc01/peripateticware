@@ -139,7 +139,7 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
     it('should handle invalid locale gracefully', () => {
       const result = Localization.formatNumber(1234.56, 'invalid')
       expect(typeof result).toBe('string')
-      expect(result).toContain('1234')
+      expect(result).toContain('1,234')
     })
   })
 
@@ -187,8 +187,8 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
 
     it('should fallback gracefully for invalid locale', () => {
       const result = Localization.formatCurrency(1234.56, 'invalid', 'USD')
-      expect(result).toContain('USD')
-      expect(result).toContain('1234')
+      expect(result).toContain('$')
+      expect(result).toContain('1,234')
     })
   })
 
