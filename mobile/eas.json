@@ -1,0 +1,51 @@
+{
+  "build": {
+    "preview": {
+      "ios": {
+        "buildType": "simulator"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "web": {
+        "buildType": "web"
+      }
+    },
+    "preview2": {
+      "ios": {
+        "buildType": "ad-hoc"
+      }
+    },
+    "production": {
+      "ios": {
+        "buildType": "archive",
+        "scheme": "Peripateticware",
+        "schemeBuildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:bundleRelease"
+      }
+    },
+    "internal": {
+      "ios": {
+        "buildType": "simulator"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "serviceType": "app-store",
+        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceType": "google-play",
+        "track": "internal"
+      }
+    }
+  }
+}

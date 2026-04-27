@@ -1,0 +1,132 @@
+name: Build and Test Mobile App
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-*.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'mobile/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: mobile
+        run: npm run lint --if-present
+      
+      - name: Run tests
+        working-directory: mobile
+        run: npm test -- --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./mobile/coverage/lcov.info
+          flags: mobile
+          fail_ci_if_error: false
+
+  type-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Type check
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+  eas-build-preview:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs: [test, type-check]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Build with EAS (Preview)
+        working-directory: mobile
+        run: eas build --platform all --build-type preview --non-interactive
+      
+      - name: Comment PR with build links
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ EAS Preview builds completed! Check the build details at https://expo.dev/'
+            })
+
+  eas-build-production:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, type-check]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+      
+      - name: Build with EAS (Production)
+        working-directory: mobile
+        run: eas build --platform all --build-type production --non-interactive
