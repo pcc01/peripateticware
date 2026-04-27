@@ -1,208 +1,243 @@
 """
-Peripateticware: Contextual AI Tutor Backend
-FastAPI main application entry point
+Peripateticware - AI-Powered Contextual Learning Platform
+Main FastAPI Application Entry Point
+Updated: April 27, 2026 - Phase 2 Complete
 """
 
-import logging
-from contextlib import asynccontextmanager
-from typing import Optional
-
-from fastapi import FastAPI, WebSocket, HTTPException, Depends, Request
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
-import uvicorn
+import logging
+from datetime import datetime
+
+# Import all route modules
+from routes import (
+    auth,
+    sessions,
+    curriculum,
+    inference,
+    observability,
+    parent,
+    email,              # NEW - Phase 2
+    reset,              # NEW - Phase 2
+    linking,            # NEW - Phase 2
+    notifications       # NEW - Phase 2
+)
 
 from core.config import settings
-from core.database import engine, Base, get_db
-from core.cache import initialize_cache
-from models.database import User, LearningSession, CurriculumUnit
-from routes import auth, sessions, curriculum, inference, observability
-from services.rag_orchestrator import RAGOrchestrator
-from services.sync_engine import SyncEngine
+from core.database import engine, Base
 
 # Configure logging
 logging.basicConfig(
-    level=getattr(logging, settings.LOG_LEVEL),
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Global service instances
-rag_orchestrator: Optional[RAGOrchestrator] = None
-sync_engine: Optional[SyncEngine] = None
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Application lifecycle manager for startup and shutdown"""
-    # Startup
-    logger.info("Starting Peripateticware backend...")
-    logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"LLM Provider: {settings.LLM_PROVIDER}")
-    
-    try:
-        # Initialize database
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database initialized successfully")
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}", exc_info=True)
-        raise
-    
-    try:
-        # Initialize cache
-        await initialize_cache()
-        logger.info("Cache initialized successfully")
-    except Exception as e:
-        logger.error(f"Cache initialization failed: {e}", exc_info=True)
-    
-    try:
-        # Initialize RAG Orchestrator
-        global rag_orchestrator
-        rag_orchestrator = RAGOrchestrator()
-        await rag_orchestrator.initialize()
-        logger.info("RAG Orchestrator initialized successfully")
-    except Exception as e:
-        logger.error(f"RAG Orchestrator initialization failed: {e}", exc_info=True)
-    
-    try:
-        # Initialize Sync Engine
-        global sync_engine
-        sync_engine = SyncEngine()
-        await sync_engine.start()
-        logger.info("Sync Engine started successfully")
-    except Exception as e:
-        logger.error(f"Sync Engine startup failed: {e}", exc_info=True)
-    
-    logger.info("Peripateticware backend startup complete")
-    
-    yield
-    
-    # Shutdown
-    logger.info("Shutting down Peripateticware backend...")
-    try:
-        if sync_engine:
-            await sync_engine.stop()
-        logger.info("Sync Engine stopped")
-    except Exception as e:
-        logger.error(f"Sync Engine shutdown error: {e}")
-    
-    try:
-        await engine.dispose()
-        logger.info("Database connections closed")
-    except Exception as e:
-        logger.error(f"Database shutdown error: {e}")
-    
-    logger.info("Shutdown complete")
-
-
-# Create FastAPI app
+# Initialize FastAPI app
 app = FastAPI(
     title="Peripateticware API",
-    description="Contextual AI Tutor Backend",
-    version="0.1.0",
-    lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    description="AI-powered contextual learning platform with parent portal",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
 )
 
-# CORS middleware
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# Request logging middleware
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log incoming requests for debugging"""
-    logger.debug(f"Request: {request.method} {request.url.path}")
-    try:
-        response = await call_next(request)
-        logger.debug(f"Response: {response.status_code}")
-        return response
-    except Exception as e:
-        logger.error(f"Request error: {e}", exc_info=True)
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Internal server error"}
-        )
-
+# Configure trusted hosts
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.ALLOWED_HOSTS
+)
 
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    """System health check endpoint"""
+    """Health check endpoint for monitoring"""
     return {
         "status": "healthy",
-        "service": "peripateticware-api",
-        "version": "0.1.0",
-        "environment": settings.ENVIRONMENT
+        "timestamp": datetime.utcnow().isoformat(),
+        "service": "Peripateticware API",
+        "version": "1.0.0"
     }
-
 
 # Root endpoint
 @app.get("/")
 async def root():
-    """API root endpoint"""
+    """Root endpoint with API information"""
     return {
-        "name": "Peripateticware",
-        "description": "Contextual AI Tutor Backend",
-        "documentation": "/docs",
-        "status": "active",
-        "version": "0.1.0"
+        "message": "Peripateticware API",
+        "version": "1.0.0",
+        "docs": "/api/docs",
+        "health": "/health",
+        "endpoints": {
+            "auth": "/api/v1/auth",
+            "parent_portal": "/api/v1/parent",
+            "curriculum": "/api/v1/curriculum",
+            "inference": "/api/v1/inference",
+            "sessions": "/api/v1/sessions"
+        }
     }
 
+# ============================================================================
+# ROUTE REGISTRATION - PHASE 1 ROUTES
+# ============================================================================
 
-# WebSocket for real-time learning sessions
-@app.websocket("/ws/session/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    """WebSocket endpoint for real-time session updates"""
-    await websocket.accept()
-    logger.info(f"WebSocket connection opened for session: {session_id}")
-    try:
-        while True:
-            data = await websocket.receive_json()
-            # Process incoming data from Flutter client
-            response = await rag_orchestrator.process_inquiry(
-                session_id=session_id,
-                inquiry=data
-            )
-            await websocket.send_json(response)
-    except Exception as e:
-        logger.error(f"WebSocket error for session {session_id}: {e}")
-        await websocket.close(code=1000)
-    finally:
-        logger.info(f"WebSocket connection closed for session: {session_id}")
+# Authentication routes
+app.include_router(
+    auth.router,
+    prefix="/api/v1/auth",
+    tags=["authentication"]
+)
 
+# Session management routes
+app.include_router(
+    sessions.router,
+    prefix="/api/v1/sessions",
+    tags=["sessions"]
+)
 
-# Include routers
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
-app.include_router(sessions.router, prefix="/api/v1/sessions", tags=["sessions"])
-app.include_router(curriculum.router, prefix="/api/v1/curriculum", tags=["curriculum"])
-app.include_router(inference.router, prefix="/api/v1/inference", tags=["inference"])
-app.include_router(observability.router, prefix="/api/v1/observability", tags=["observability"])
+# Curriculum routes
+app.include_router(
+    curriculum.router,
+    prefix="/api/v1/curriculum",
+    tags=["curriculum"]
+)
 
+# AI Inference routes
+app.include_router(
+    inference.router,
+    prefix="/api/v1/inference",
+    tags=["inference"]
+)
 
-# Global exception handler
+# Observability routes
+app.include_router(
+    observability.router,
+    prefix="/api/v1/observability",
+    tags=["observability"]
+)
+
+# Parent portal routes (Phase 1)
+app.include_router(
+    parent.router,
+    prefix="/api/v1/parent",
+    tags=["parent-portal"]
+)
+
+# ============================================================================
+# ROUTE REGISTRATION - PHASE 2 ROUTES (NEW)
+# ============================================================================
+
+# Email service routes
+app.include_router(
+    email.router,
+    prefix="/api/v1/parent/email",
+    tags=["email-service"]
+)
+
+# Password reset routes
+app.include_router(
+    reset.router,
+    prefix="/api/v1",
+    tags=["password-reset"]
+)
+
+# Child linking routes
+app.include_router(
+    linking.router,
+    prefix="/api/v1/parent/children",
+    tags=["child-linking"]
+)
+
+# Notification routes
+app.include_router(
+    notifications.router,
+    prefix="/api/v1/parent/notifications",
+    tags=["notifications"]
+)
+
+# ============================================================================
+# ERROR HANDLERS
+# ============================================================================
+
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+async def global_exception_handler(request, exc):
+    """Global exception handler for unhandled errors"""
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error", "type": type(exc).__name__}
+        content={
+            "success": False,
+            "error": "Internal server error",
+            "message": str(exc) if settings.DEBUG else "An error occurred"
+        }
     )
 
+# ============================================================================
+# STARTUP AND SHUTDOWN EVENTS
+# ============================================================================
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize application on startup"""
+    logger.info("🚀 Peripateticware API Starting...")
+    logger.info(f"📍 Environment: {settings.ENVIRONMENT}")
+    logger.info(f"🔗 Database: {settings.DATABASE_URL}")
+    logger.info(f"🌍 CORS Origins: {settings.CORS_ORIGINS}")
+    logger.info("✅ Phase 1 Routes: ✓ (auth, sessions, curriculum, inference, observability, parent)")
+    logger.info("✅ Phase 2 Routes: ✓ (email, reset, linking, notifications)")
+    logger.info("🎯 API Ready at: http://localhost:8000")
+    logger.info("📚 Documentation: http://localhost:8000/api/docs")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    logger.info("🛑 Peripateticware API Shutting Down...")
+
+# ============================================================================
+# LIFESPAN EVENTS (Alternative for FastAPI 0.93+)
+# ============================================================================
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context manager"""
+    # Startup
+    logger.info("🚀 Peripateticware API Starting...")
+    yield
+    # Shutdown
+    logger.info("🛑 Peripateticware API Shutting Down...")
+
+# Uncomment to use lifespan instead of on_event:
+# app = FastAPI(lifespan=lifespan, ...)
+
+# ============================================================================
+# DEBUGGING AND DEVELOPMENT
+# ============================================================================
 
 if __name__ == "__main__":
+    import uvicorn
+    
+    # Run development server
     uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8010,
-        log_level=settings.LOG_LEVEL.lower()
+        "main:app",
+        host=settings.API_HOST,
+        port=settings.API_PORT,
+        reload=settings.DEBUG,
+        log_level="info"
     )
