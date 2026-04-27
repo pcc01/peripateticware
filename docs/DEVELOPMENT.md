@@ -1,372 +1,740 @@
-# Development Guide
+# 📝 Development Guide - Peripateticware Monorepo
 
-## Local Setup
+**Last Updated:** April 26, 2026  
+**Status:** Active Development
+
+---
+
+## 🎯 Overview
+
+This guide covers development workflow for the Peripateticware monorepo containing:
+- **Backend:** FastAPI Python server
+- **Mobile:** React Native iOS/Android app
+- **Web:** React Vite parent portal
+
+---
+
+## 🛠️ Environment Setup
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.11+
-- Docker & Docker Compose (optional)
-- Git
-
-### Frontend Setup
 
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Create environment file
-cp .env.example .env.local
-
-# Start development server
-npm run dev
+# Required versions
+- Node.js 18+
+- npm 9+
+- Python 3.10+
+- Git 2.30+
+- PostgreSQL 13+ (for backend)
+- Redis (optional, for caching)
 ```
 
-**Frontend will open at:** http://localhost:5173
+### Install Prerequisites
 
-### Backend Setup
+**macOS:**
+```bash
+# Using Homebrew
+brew install node@18 python@3.11 postgresql redis
+```
+
+**Ubuntu/Debian:**
+```bash
+apt-get update
+apt-get install nodejs npm python3.11 python3-pip postgresql redis-server
+```
+
+**Windows:**
+- [Node.js](https://nodejs.org/) - Download and install
+- [Python](https://www.python.org/) - Download and install
+- [PostgreSQL](https://www.postgresql.org/) - Download and install
+- [Git Bash](https://git-scm.com/) - For bash commands
+
+### Initial Setup
 
 ```bash
-cd backend
+# 1. Clone repository
+git clone https://github.com/pcc01/peripateticware.git
+cd peripateticware
 
-# Create virtual environment
+# 2. Create virtual environments
+cd backend
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Create environment file
-cp .env.example .env
-
-# Start server
-python main.py
+# 3. Install all dependencies
+cd backend && pip install -r requirements.txt && cd ..
+npm install
 ```
 
-**Backend available at:** http://localhost:8010  
-**API Docs:** http://localhost:8010/docs
+### Configure Environment Files
 
-### Start Ollama
-
-In another terminal:
-
-```bash
-ollama serve
-
-# Pull models (first time only)
-ollama pull llama2
-ollama pull llava
-```
-
-### Start Database
-
-```bash
-# Using Docker
-docker run -d -p 5432:5432 \
-  -e POSTGRES_USER=peripateticware_user \
-  -e POSTGRES_PASSWORD=peripateticware_secure_password_dev \
-  -e POSTGRES_DB=peripateticware \
-  postgres:15
-
-# Or with Docker Compose
-docker-compose up postgres
-```
-
----
-
-## Code Quality
-
-### Frontend
-
-```bash
-cd frontend
-
-# Lint code
-npm run lint
-
-# Auto-fix linting issues
-npm run lint -- --fix
-
-# Format code
-npm run format
-
-# Type check
-npm run type-check
-
-# Run tests
-npm run test
-
-# Run tests in watch mode
-npm run test:watch
-
-# E2E tests
-npm run e2e
-```
-
-### Backend
-
+**Backend (.env):**
 ```bash
 cd backend
-
-# Format code
-black .
-
-# Lint code
-flake8 .
-
-# Type check
-mypy .
-
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test
-pytest tests/test_api.py::test_login
+cp .env.example .env
 ```
 
----
-
-## Testing Strategy
-
-### Unit Tests
-
-**Frontend:**
-- Component rendering
-- Hook behavior
-- Utility functions
-- API service mocking
-
-**Backend:**
-- Route handlers
-- Database queries
-- Service logic
-- Privacy filtering
-
-### Integration Tests
-
-- API contracts
-- Database transactions
-- Auth flow
-- Session lifecycle
-
-### E2E Tests
-
-- Complete user workflows
-- Cross-browser testing
-- Mobile responsiveness
-- Privacy enforcement
-
----
-
-## Git Workflow
-
-### Branch Naming
-
-```
-feature/add-new-feature
-fix/resolve-bug
-docs/update-readme
-refactor/improve-performance
-test/add-tests-for-x
+Edit `backend/.env`:
+```env
+DATABASE_URL=postgresql://user:password@localhost/peripateticware
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+OLLAMA_API_URL=http://localhost:11434
+REDIS_URL=redis://localhost:6379
 ```
 
-### Commit Messages
-
-```
-feat(module): Add feature description
-fix(module): Fix bug description
-docs: Update documentation
-test(module): Add tests
-refactor(module): Improve code
-chore: Update dependencies
-```
-
-### Pull Request Process
-
-1. Create feature branch
-2. Make changes + tests
-3. Ensure tests pass: `npm run test` (frontend), `pytest` (backend)
-4. Format code
-5. Push to GitHub
-6. Create PR with description
-7. Wait for CI/CD checks to pass
-8. Request code review
-9. Merge after approval
-
----
-
-## Docker Development
-
-### Using Docker Compose
-
+**Mobile (.env.local):**
 ```bash
-# Start all services
-docker-compose up
-
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f backend
-
-# Rebuild images
-docker-compose build --no-cache
-
-# Run specific service
-docker-compose up backend postgres
+cd mobile
+cp .env.example .env.local
 ```
 
-### Service Access
+Edit `mobile/.env.local`:
+```env
+EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1
+EXPO_PUBLIC_WS_URL=ws://localhost:8000
+```
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8010
-- Database: localhost:5432
-- Redis: localhost:6379
-- Ollama: localhost:11434
+**Web (.env.local):**
+```bash
+cd web
+cp .env.example .env.local
+```
+
+Edit `web/.env.local`:
+```env
+VITE_API_URL=http://localhost:8000/api/v1
+```
 
 ---
 
-## Debugging
+## 🚀 Running Services
 
-### Frontend Debugging
+### All Services (Terminal Multiplexing)
 
+**Using tmux (recommended):**
 ```bash
-# Enable verbose logging
-export DEBUG=peripateticware:*
+# Install tmux
+brew install tmux  # or apt-get install tmux
 
-# Browser DevTools
-# - React DevTools
-# - Network tab for API calls
-# - Console for errors
-# - Application tab for storage
+# Create new session with 3 windows
+tmux new-session -d -s peripateticware -n backend
+tmux new-window -t peripateticware -n mobile
+tmux new-window -t peripateticware -n web
 
-# Pseudo-localization testing
-localStorage.setItem('pseudo-loc', 'true')
-location.reload()
+# Run services
+tmux send-keys -t peripateticware:backend "cd backend && python -m uvicorn main:app --reload" Enter
+tmux send-keys -t peripateticware:mobile "cd mobile && npm start" Enter
+tmux send-keys -t peripateticware:web "cd web && npm run dev" Enter
+
+# View all windows
+tmux attach-session -t peripateticware
 ```
+
+**Using separate terminals (simpler):**
+
+Terminal 1 - Backend:
+```bash
+cd backend
+source venv/bin/activate  # Activate virtual environment
+python -m uvicorn main:app --reload --port 8000
+# API: http://localhost:8000
+# Docs: http://localhost:8000/docs
+```
+
+Terminal 2 - Mobile:
+```bash
+cd mobile
+npm start
+# Scan QR code with Expo Go or press 'i'/'a'
+```
+
+Terminal 3 - Web:
+```bash
+cd web
+npm run dev
+# Opens http://localhost:5173
+```
+
+---
+
+## 📂 Project Structure Reference
+
+### Backend Structure
+
+```
+backend/
+├── app/
+│   ├── __init__.py
+│   └── models.py          SQLAlchemy models
+├── routes/
+│   ├── auth.py            Authentication endpoints
+│   ├── sessions.py        Session management
+│   ├── curriculum.py      Activity management
+│   ├── inference.py       AI/RAG endpoints
+│   └── observability.py   Monitoring endpoints
+├── services/
+│   ├── rag_orchestrator.py    RAG logic
+│   ├── sync_engine.py         Data sync
+│   └── privacy_engine.py      FERPA/COPPA compliance
+├── core/
+│   ├── security.py        Authentication logic
+│   ├── database.py        DB connection
+│   ├── cache.py           Caching logic
+│   ├── config.py          Configuration
+│   └── dependencies.py    FastAPI dependencies
+├── main.py                Application entry point
+├── requirements.txt       Python dependencies
+└── Dockerfile             Docker configuration
+```
+
+### Mobile Structure
+
+```
+mobile/
+├── src/
+│   ├── screens/
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   └── RegisterScreen.tsx
+│   │   ├── student/
+│   │   │   ├── StudentDashboard.tsx
+│   │   │   ├── ActivityScreen.tsx
+│   │   │   └── SessionScreen.tsx
+│   │   └── teacher/
+│   │       ├── TeacherDashboard.tsx
+│   │       └── MonitoringScreen.tsx
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── LoadingSpinner.tsx
+│   │   ├── student/
+│   │   └── teacher/
+│   ├── hooks/
+│   │   ├── useNativeLocation.ts
+│   │   ├── useNativeCamera.ts
+│   │   └── useOfflineSync.ts
+│   ├── services/
+│   │   └── api.ts
+│   ├── stores/
+│   │   ├── authStore.ts
+│   │   ├── sessionStore.ts
+│   │   └── locationStore.ts
+│   ├── types/
+│   │   └── index.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── app.json               Expo config
+└── package.json
+```
+
+### Web Structure
+
+```
+web/
+├── src/
+│   ├── pages/
+│   │   ├── LoginPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   ├── ChildProgressPage.tsx
+│   │   ├── CommunicationPage.tsx
+│   │   ├── ReportsPage.tsx
+│   │   └── SettingsPage.tsx
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── LoadingSpinner.tsx
+│   │   ├── parent/
+│   │   │   ├── ChildProgressWidget.tsx
+│   │   │   ├── RecentActivities.tsx
+│   │   │   └── MessageCenter.tsx
+│   │   └── dashboard/
+│   │       └── ProgressChart.tsx
+│   ├── hooks/
+│   │   ├── useChildProgress.ts
+│   │   ├── useMessages.ts
+│   │   └── useFetch.ts
+│   ├── services/
+│   │   └── api.ts
+│   ├── stores/
+│   │   ├── parentAuthStore.ts
+│   │   ├── progressStore.ts
+│   │   └── uiStore.ts
+│   ├── types/
+│   │   └── parent.ts
+│   ├── styles/
+│   │   └── globals.css
+│   ├── App.tsx
+│   └── main.tsx
+├── vite.config.ts
+└── package.json
+```
+
+---
+
+## 🔧 Common Development Tasks
+
+### Adding a New Endpoint (Backend)
+
+1. **Create route function in `backend/routes/`:**
+```python
+# backend/routes/students.py
+from fastapi import APIRouter, Depends
+
+router = APIRouter(prefix="/students", tags=["students"])
+
+@router.get("/")
+async def list_students(db = Depends(get_db)):
+    """Get all students"""
+    return {"students": []}
+
+@router.get("/{student_id}")
+async def get_student(student_id: str, db = Depends(get_db)):
+    """Get a specific student"""
+    return {"id": student_id}
+```
+
+2. **Register in `backend/main.py`:**
+```python
+from routes import students
+
+app.include_router(students.router, prefix="/api/v1")
+```
+
+3. **Add tests in `backend/tests/`:**
+```python
+def test_list_students(client):
+    response = client.get("/api/v1/students/")
+    assert response.status_code == 200
+```
+
+### Adding a New Component (Mobile or Web)
+
+1. **Create component file:**
+```typescript
+// mobile/src/components/student/ActivityCard.tsx
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+interface ActivityCardProps {
+  title: string;
+  description: string;
+  onPress: () => void;
+}
+
+export const ActivityCard: React.FC<ActivityCardProps> = ({
+  title,
+  description,
+  onPress,
+}) => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.description}>{description}</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  description: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+  },
+});
+```
+
+2. **Export from index:**
+```typescript
+// mobile/src/components/student/index.ts
+export { ActivityCard } from './ActivityCard';
+```
+
+3. **Use in screens:**
+```typescript
+import { ActivityCard } from '../../components/student';
+
+// In your screen component
+<ActivityCard 
+  title="Explore Nature" 
+  onPress={() => navigation.navigate('Activity')} 
+/>
+```
+
+### Adding a New Page/Screen
+
+**Mobile Screen:**
+```typescript
+// mobile/src/screens/student/ActivitiesScreen.tsx
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Text } from 'react-native';
+import { LoadingSpinner } from '../../components/common';
+
+export const ActivitiesScreen = ({ navigation }: any) => {
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch activities
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) return <LoadingSpinner />;
+
+  return (
+    <ScrollView>
+      <Text>Activities</Text>
+    </ScrollView>
+  );
+};
+```
+
+**Web Page:**
+```typescript
+// web/src/pages/ActivitiesPage.tsx
+import React, { useState, useEffect } from 'react';
+import { LoadingSpinner } from '../components/common';
+
+export default function ActivitiesPage() {
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch activities
+    setIsLoading(false);
+  }, []);
+
+  if (isLoading) return <LoadingSpinner />;
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Activities</h1>
+    </div>
+  );
+}
+```
+
+---
+
+## 🧪 Testing
+
+### Run All Tests
+```bash
+npm test --workspaces
+```
+
+### Run Specific Tests
+```bash
+# Mobile tests
+cd mobile && npm test
+
+# Web tests
+cd web && npm test
+
+# Backend tests
+cd backend && pytest
+```
+
+### Write Tests
+
+**Mobile (Jest):**
+```typescript
+// mobile/src/__tests__/stores/authStore.test.ts
+import { useAuthStore } from '../../stores/authStore';
+
+describe('authStore', () => {
+  it('should login user', async () => {
+    const { login } = useAuthStore.getState();
+    await login('test@example.com', 'password');
+    const { user } = useAuthStore.getState();
+    expect(user).toBeDefined();
+  });
+});
+```
+
+**Web (Vitest):**
+```typescript
+// web/src/__tests__/stores/parentAuthStore.test.ts
+import { describe, it, expect } from 'vitest';
+import { useParentAuthStore } from '../../stores/parentAuthStore';
+
+describe('parentAuthStore', () => {
+  it('should login parent', async () => {
+    const { login } = useParentAuthStore.getState();
+    await login('parent@example.com', 'password');
+    const { parent } = useParentAuthStore.getState();
+    expect(parent).toBeDefined();
+  });
+});
+```
+
+**Backend (Pytest):**
+```python
+# backend/tests/test_auth.py
+def test_login(client):
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "test@example.com", "password": "password"}
+    )
+    assert response.status_code == 200
+    assert "token" in response.json()
+```
+
+---
+
+## 🔍 Debugging
 
 ### Backend Debugging
 
 ```bash
-# Set log level
-export LOG_LEVEL=DEBUG
+# Enable debug mode
+export FLASK_ENV=development
+export FLASK_DEBUG=1
 
-# Enable SQL logging
-export SQLALCHEMY_ECHO=true
+# Use debugger
+python -m pdb backend/main.py
 
-# Use pdb
-import pdb; pdb.set_trace()
+# Or use IDE debugger (VS Code)
+# Add to .vscode/launch.json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["main:app", "--reload"],
+      "cwd": "${workspaceFolder}/backend"
+    }
+  ]
+}
+```
 
-# View logs
-docker-compose logs -f backend
-tail -f logs/*.log
+### Mobile Debugging
+
+```bash
+# Use Expo DevTools
+# Press 'j' in terminal while app is running
+
+# Or connect debugger in Expo Go app
+# Shake device and select "Debug remote JS"
+```
+
+### Web Debugging
+
+```bash
+# Use browser DevTools
+# Press F12 in browser
+
+# Or use VS Code debugger
+# Install "Debugger for Chrome" extension
 ```
 
 ---
 
-## Performance Profiling
+## 📦 Dependency Management
 
-### Frontend
+### Adding Dependencies
+
+**Backend:**
+```bash
+cd backend
+pip install new-package
+pip freeze > requirements.txt
+```
+
+**Mobile:**
+```bash
+cd mobile
+npm install new-package
+```
+
+**Web:**
+```bash
+cd web
+npm install new-package
+```
+
+### Updating Dependencies
 
 ```bash
-# Lighthouse audit
-npm run build
-npx lighthouse http://localhost:5173
+# Update all
+npm update --workspaces
 
-# React DevTools Profiler
-# - Record interaction
-# - Analyze rendering
-# - Find bottlenecks
+# Update specific workspace
+npm update --workspace=mobile
 ```
+
+---
+
+## 🎨 Code Style
+
+### JavaScript/TypeScript
+
+**Prettier config** (auto-formats on save):
+```json
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "es5"
+}
+```
+
+**ESLint config** (enforces rules):
+```bash
+npm run lint --workspaces
+```
+
+### Python
+
+**Black** (auto-formatter):
+```bash
+cd backend
+black .
+```
+
+**Pylint** (linter):
+```bash
+cd backend
+pylint app/
+```
+
+---
+
+## 🔄 Git Workflow
+
+### Creating a Feature Branch
+
+```bash
+# Create branch from main
+git checkout -b feature/add-activity-filters
+
+# Make changes
+git add .
+git commit -m "feat: add activity filters to discovery screen"
+
+# Push to remote
+git push origin feature/add-activity-filters
+
+# Create Pull Request on GitHub
+```
+
+### Commit Message Format
+
+Follow Conventional Commits:
+```
+feat: add user authentication
+fix: resolve session timeout issue
+docs: update API documentation
+style: format code with prettier
+refactor: reorganize store structure
+test: add tests for auth flow
+chore: update dependencies
+```
+
+### Branch Naming Convention
+
+```
+feature/add-something          New feature
+fix/resolve-bug                Bug fix
+docs/update-readme             Documentation
+refactor/reorganize-code       Code reorganization
+test/add-tests-for-feature     Tests
+```
+
+---
+
+## 🚀 Performance Optimization
 
 ### Backend
+- Use database indexes
+- Implement caching (Redis)
+- Optimize queries
+- Use async/await properly
 
+### Mobile
+- Code splitting by route
+- Image optimization
+- Lazy loading screens
+- Minimize bundle size
+
+### Web
+- Code splitting by route
+- Image optimization
+- CSS-in-JS optimization
+- Bundle analysis
+
+---
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**"Port already in use"**
 ```bash
-# Use py-spy for profiling
-pip install py-spy
-py-spy record -o profile.svg -- python main.py
-
-# Use time module
-import time
-start = time.time()
-# code to profile
-print(f"Took {time.time() - start}s")
+# Kill process on port
+lsof -ti:8000 | xargs kill -9
+# or
+npx kill-port 8000
 ```
 
----
-
-## Common Tasks
-
-### Adding a New API Endpoint
-
-1. Define route in `backend/routes/*.py`
-2. Define database model if needed
-3. Add tests in `backend/tests/`
-4. Update OpenAPI docs (automatic)
-5. Update frontend API service
-
-### Adding a New Component
-
-1. Create in `frontend/src/components/`
-2. Add TypeScript props interface
-3. Add tests
-4. Add to Storybook
-5. Export from index
-
-### Adding a Translation
-
-1. Add key to `frontend/src/locales/{lang}/*.json`
-2. Use in component: `const { t } = useTranslation()`
-3. Test with pseudo-loc: `localStorage.setItem('pseudo-loc', 'true')`
-
-### Running Database Migrations
-
+**"npm ERR! peer dep missing"**
 ```bash
-# Create migration
-alembic revision --autogenerate -m "Add new column"
+npm install --save-peer
+```
 
-# Apply migration
-alembic upgrade head
+**"ModuleNotFoundError" in Python**
+```bash
+cd backend
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-# Rollback
-alembic downgrade -1
+**"expo not found" in mobile**
+```bash
+npm install -g expo-cli
+npm start
 ```
 
 ---
 
-## Environment Variables
+## 📚 Resources
 
-### Frontend (.env.local)
-
-```env
-VITE_API_URL=http://localhost:8010/api/v1
-VITE_WEBSOCKET_URL=ws://localhost:8010/api/v1
-VITE_DEFAULT_LANGUAGE=en
-VITE_LOG_LEVEL=debug
-```
-
-### Backend (.env)
-
-```env
-ENVIRONMENT=development
-LOG_LEVEL=DEBUG
-LLM_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-DATABASE_URL=postgresql://user:pass@localhost:5432/peripateticware
-SECRET_KEY=dev-key-change-in-production
-```
+- [FastAPI Docs](https://fastapi.tiangolo.com/)
+- [React Native Docs](https://reactnative.dev/)
+- [React Docs](https://react.dev/)
+- [TypeScript Docs](https://www.typescriptlang.org/)
+- [Zustand Docs](https://github.com/pmndrs/zustand)
 
 ---
 
-## Useful Resources
+## 💡 Tips & Best Practices
 
-- [React Documentation](https://react.dev)
-- [FastAPI Documentation](https://fastapi.tiangolo.com)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs)
+1. **Always create feature branches** - Never commit to main
+2. **Write tests first** - TDD improves code quality
+3. **Keep commits small** - Easier to review and revert
+4. **Document as you code** - Future you will thank present you
+5. **Run all tests before pushing** - Catch issues early
+6. **Use meaningful variable names** - Code is read more than written
+7. **Reuse components** - DRY principle
+8. **Keep functions small** - Single responsibility
+9. **Use types** - TypeScript catches bugs early
+10. **Review your own code** - Before asking others
 
+---
+
+**Happy coding! 🚀**
+
+*For questions, check [README.md](../README.md) or create an issue on GitHub.*
