@@ -44,8 +44,8 @@ app = FastAPI(
     title="Peripateticware API",
     description="AI-powered contextual learning platform with parent portal",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url="/api/docs",           # Swagger UI - working
+    redoc_url=None,                  # ReDoc disabled (blank page issue)
     openapi_url="/api/openapi.json"
 )
 
