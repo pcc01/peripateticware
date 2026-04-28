@@ -54,6 +54,10 @@ services:
       OLLAMA_MODEL_VISION: llava
       OLLAMA_MODEL_AUDIO: whisper
       
+      # Security & CORS
+      CORS_ORIGINS: '["*"]'
+      SECRET_KEY: dev-secret-key-change-in-production
+      
       # Application
       LOG_LEVEL: INFO
       ENVIRONMENT: development
@@ -157,4 +161,3 @@ volumes:
 networks:
   peripateticware-mesh:
     driver: bridge
-

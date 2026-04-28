@@ -3,6 +3,7 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
+import json
 
 
 class Settings(BaseSettings):
@@ -39,14 +40,15 @@ class Settings(BaseSettings):
     # API Configuration
     API_PORT: int = 8010
     API_HOST: str = "0.0.0.0"
+    ALLOWED_HOSTS: list = ["*"]
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     
-    # CORS
-    CORS_ORIGINS: list = ["*"]
+    # CORS - Store as string, parse as needed
+    CORS_ORIGINS_STR: str = os.getenv("CORS_ORIGINS", '["*"]')
     
     # Vector DB
     VECTOR_DIMENSION: int = 384  # For sentence-transformers/all-MiniLM-L6-v2
@@ -60,8 +62,15 @@ class Settings(BaseSettings):
     ENABLE_METRICS: bool = True
     PROMETHEUS_PORT: int = 8001
     
+    @property
+    def CORS_ORIGINS(self) -> list:
+        """Parse CORS_ORIGINS from string to list"""
+        try:
+            return json.loads(self.CORS_ORIGINS_STR)
+        except (json.JSONDecodeError, TypeError):
+            return ["*"]
+    
     class Config:
-        env_file = ".env"
         case_sensitive = True
 
 

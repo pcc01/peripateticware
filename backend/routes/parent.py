@@ -3,6 +3,8 @@ Parent Portal API Routes
 Endpoints for parent authentication, child progress tracking, messages, and reporting
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import uuid4
@@ -46,19 +48,6 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
-class ParentProfileResponse(BaseModel):
-    """Parent account response"""
-    id: str
-    email: str
-    name: str
-    phone: Optional[str] = None
-    created_at: str
-    children: List['ChildLinkResponse'] = []
-
-    class Config:
-        from_attributes = True
-
-
 class ChildLinkResponse(BaseModel):
     """Child link response"""
     id: str
@@ -72,10 +61,23 @@ class ChildLinkResponse(BaseModel):
         from_attributes = True
 
 
+class ParentProfileResponse(BaseModel):
+    """Parent account response"""
+    id: str
+    email: str
+    name: str
+    phone: Optional[str] = None
+    created_at: str
+    children: List[ChildLinkResponse] = []
+
+    class Config:
+        from_attributes = True
+
+
 class LinkChildRequest(BaseModel):
     """Link child to parent account"""
     link_code: str = Field(..., min_length=6, max_length=6)
-    relationship: str = Field(..., regex="^(mother|father|guardian|grandparent|other)$")
+    relationship: str = Field(..., pattern="^(mother|father|guardian|grandparent|other)$")
 
 
 class CompetencyProgressResponse(BaseModel):
@@ -175,8 +177,8 @@ class MonthlyReportResponse(BaseModel):
 class SettingsRequest(BaseModel):
     """Parent settings update"""
     dark_mode: Optional[bool] = None
-    language: Optional[str] = Field(None, regex="^(en|es|ar|ja)$")
-    email_frequency: Optional[str] = Field(None, regex="^(daily|weekly|biweekly|monthly)$")
+    language: Optional[str] = Field(None, pattern="^(en|es|ar|ja)$")
+    email_frequency: Optional[str] = Field(None, pattern="^(daily|weekly|biweekly|monthly)$")
     notifications_enabled: Optional[bool] = None
     push_notifications_enabled: Optional[bool] = None
 
@@ -714,7 +716,7 @@ async def update_settings(
 async def export_report(
     parent_id: str = Query(...),
     report_id: str = None,
-    format: str = Query("pdf", regex="^(pdf|excel|csv)$"),
+    format: str = Query("pdf", pattern="^(pdf|excel|csv)$"),
     db: AsyncSession = Depends(get_db)
 ):
     """Export report as PDF, Excel, or CSV"""
