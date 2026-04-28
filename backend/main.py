@@ -35,8 +35,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Database tables are created via database/init.sql in PostgreSQL container
+# We use AsyncEngine which doesn't support synchronous create_all()
+# Tables will be created when the database initializes
 
 # Initialize FastAPI app
 app = FastAPI(
