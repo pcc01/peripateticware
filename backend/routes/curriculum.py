@@ -1,7 +1,8 @@
 """Curriculum management routes"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from pydantic import BaseModel
 from typing import List, Optional
@@ -115,6 +116,55 @@ async def get_curriculum_unit(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch curriculum unit"
+        )
+
+
+@router.get("/units")
+def list_curriculum_units_paginated(
+    subject: Optional[str] = None,
+    grade_level: Optional[int] = None,
+    page: int = 1,
+    page_size: int = 50,
+    db: Session = Depends(get_db)
+):
+    """List curriculum units with pagination (for activity mapping)"""
+    try:
+        query = db.query(CurriculumUnit).filter(CurriculumUnit.is_active == True)
+        
+        if subject:
+            query = query.filter(CurriculumUnit.subject.ilike(f"%{subject}%"))
+        if grade_level:
+            query = query.filter(CurriculumUnit.grade_level == grade_level)
+        
+        total = query.count()
+        offset = (page - 1) * page_size
+        units = query.order_by(CurriculumUnit.title).offset(offset).limit(page_size).all()
+        
+        total_pages = (total + page_size - 1) // page_size
+        
+        return {
+            "items": [
+                CurriculumResponse(
+                    curriculum_id=str(unit.id),
+                    title=unit.title,
+                    subject=unit.subject,
+                    grade_level=unit.grade_level,
+                    bloom_level=unit.bloom_level,
+                    marzano_level=unit.marzano_level
+                )
+                for unit in units
+            ],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages
+        }
+    
+    except Exception as e:
+        logger.error(f"Error listing curriculum: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list curriculum units"
         )
 
 
