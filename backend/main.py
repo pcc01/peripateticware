@@ -10,6 +10,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
+from routes.health import router as health_router
+
 
 # Import all route modules
 from routes import (
@@ -103,7 +105,9 @@ app.include_router(
     prefix="/api/v1/auth",
     tags=["authentication"]
 )
-
+app.include_router(
+    health_router, prefix="/api/v1/health"
+)
 # Session management routes
 app.include_router(
     sessions.router,

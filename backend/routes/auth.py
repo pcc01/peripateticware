@@ -1,5 +1,5 @@
 """Authentication routes"""
-
+from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -158,4 +158,180 @@ async def get_current_user_info(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch user"
+        )
+# File: backend/routes/auth.py
+# UPDATED - Phase 3 Sprint 1 Task 1.5
+# ADD THIS ENDPOINT to your existing auth.py (keep existing endpoints)
+
+# Existing endpoints should already be here:
+# - POST /auth/login
+# - POST /auth/register
+# - GET /auth/me
+# - POST /auth/logout
+
+# ============================================
+# Token Refresh Endpoint (NEW - Phase 3 Sprint 1)
+# ============================================
+
+@router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+async def refresh_token(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # Your existing auth dependency
+):
+    """
+    Refresh access token when it expires
+    
+    🚩 MOBILE REQUIREMENT: Mobile calls this when token expires or on 401 errors
+    
+    This endpoint keeps users logged in without requiring re-authentication
+    Mobile will call this automatically before token expires
+    
+    Request:
+    - Header: Authorization: Bearer {current_token}
+    
+    Response:
+    {
+      "access_token": "new_token_here",
+      "token_type": "bearer",
+      "expires_in": 3600,
+      "user": {
+        "id": "...",
+        "email": "...",
+        "name": "..."
+      }
+    }
+    
+    Raises:
+    - 401: Token invalid or expired (user must login again)
+    - 403: User deactivated (user must login again)
+    - 500: Server error
+    """
+    try:
+        logger.info(f"Token refresh requested for user {current_user.id}")
+        
+        # Step 1: Verify user still exists in database
+        user = db.query(User).filter(User.id == current_user.id).first()
+        
+        if not user:
+            logger.warning(f"Token refresh: user {current_user.id} not found")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Step 2: Verify user account is not deleted
+        if user.deleted_at is not None:
+            logger.warning(f"Token refresh: user {current_user.id} account deleted")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account has been deleted",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Step 3: Create new access token (1 hour expiration)
+        access_token_expires = timedelta(hours=1)
+        new_access_token = create_access_token(
+            data={"sub": str(user.id)},
+            expires_delta=access_token_expires
+        )
+        
+        logger.info(f"Token refreshed successfully for user {user.id}")
+        
+        # Step 4: Return new token
+        return {
+            "access_token": new_access_token,
+            "token_type": "bearer",
+            "expires_in": 3600,  # 1 hour in seconds
+            "user": {
+                "id": str(user.id),
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+            }
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (auth errors)
+        raise
+    except Exception as e:
+        logger.error(f"Token refresh error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token refresh failed"
+        )
+
+
+# ============================================
+# Token Refresh Endpoint (Phase 3 Sprint 1)
+# ============================================
+
+@router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+async def refresh_token(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Refresh access token when it expires
+    
+    Mobile calls this when token expires or on 401 errors.
+    Keeps users logged in without re-authentication.
+    
+    Request:
+    - Header: Authorization: Bearer {current_token}
+    
+    Response:
+    {
+      "access_token": "new_token_here",
+      "token_type": "bearer",
+      "expires_in": 86400
+    }
+    
+    Raises:
+    - 401: Token invalid or expired
+    - 403: User deactivated
+    - 500: Server error
+    """
+    try:
+        logger.info(f"Token refresh requested for user {current_user.id}")
+        
+        # Verify user still exists
+        query = select(User).where(User.id == current_user.id)
+        result = await db.execute(query)
+        user = result.scalar()
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Verify user account not deleted
+        if user.deleted_at is not None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account has been deleted",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        # Create new access token
+        new_access_token = SecurityManager.create_access_token(
+            data={"sub": str(user.id), "email": user.email}
+        )
+        
+        logger.info(f"Token refreshed successfully for user {user.id}")
+        
+        return TokenResponse(
+            access_token=new_access_token,
+            expires_in=86400
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Token refresh error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token refresh failed"
         )

@@ -3,6 +3,20 @@ import { User, LoginRequest, RegisterRequest, AuthState } from '../types';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
+import { create } from 'zustand';
+import { User, LoginRequest, RegisterRequest, AuthState } from '../types';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+
+// ADD THESE DEBUG LINES:
+console.log('📱 authStore.ts loading...');
+console.log('🔍 process.env.EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+
+// ADD THIS:
+console.log('✅ API_BASE_URL set to:', API_BASE_URL);
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface AuthStore extends AuthState {
@@ -187,7 +201,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         return;
       }
 
-      const response = await axios.get(`${API_BASE_URL}/users/me`, {
+      const response = await axios.get(`${API_BASE_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

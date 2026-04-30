@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 
 // API configuration
 export const API_CONFIG = {
-  baseURL: process.env.VITE_API_URL || 'http://localhost:8010/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8010/api/v1',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
