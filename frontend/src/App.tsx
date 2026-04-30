@@ -4,72 +4,196 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@hooks/useAuth'
 import { useUIStore } from '@stores/uiStore'
 
-// Pages - stubs for now, will implement
+// ============================================================================
+// Auth Pages
+// ============================================================================
 const LoginPage = () => <div>Login Page (TODO)</div>
 const RegisterPage = () => <div>Register Page (TODO)</div>
-const TeacherDashboard = () => <div>Teacher Dashboard (TODO)</div>
-const StudentDashboard = () => <div>Student Dashboard (TODO)</div>
-const SessionPage = () => <div>Session Page (TODO)</div>
 const NotFoundPage = () => <div>404 Not Found</div>
 
-// Components - stubs for now
+// ============================================================================
+// Student Pages (Stubs)
+// ============================================================================
+const StudentDashboard = () => <div>Student Dashboard (TODO)</div>
+const SessionPage = () => <div>Session Page (TODO)</div>
+
+// ============================================================================
+// Teacher Pages - Phase 4 Implementation
+// ============================================================================
+import ActivityListPage from '@pages/teacher/ActivityListPage'
+import ActivityDetailPage from '@pages/teacher/ActivityDetailPage'
+import ProjectsPage from '@pages/teacher/ProjectsPage'
+import ProjectDetailPage from '@pages/teacher/ProjectDetailPage'
+
+/**
+ * Teacher Dashboard with nested routing
+ * Routes all teacher-specific paths (/teacher/*)
+ */
+const TeacherDashboard: React.FC = () => {
+  return (
+    <Routes>
+      {/* Activities Routes */}
+      <Route path="activities" element={<ActivityListPage />} />
+      <Route path="activities/new" element={<ActivityDetailPage />} />
+      <Route path="activities/:id/edit" element={<ActivityDetailPage />} />
+
+      {/* Projects Routes */}
+      <Route path="projects" element={<ProjectsPage />} />
+      <Route path="projects/new" element={<ProjectDetailPage />} />
+      <Route path="projects/:id" element={<ProjectDetailPage />} />
+
+      {/* Default: redirect to activities */}
+      <Route path="" element={<Navigate to="activities" replace />} />
+      <Route path="*" element={<Navigate to="activities" replace />} />
+    </Routes>
+  )
+}
+
+// ============================================================================
+// Header Component
+// ============================================================================
 const Header = ({ user }: any) => (
-  <header>
-    <h1>Peripateticware</h1>
-    {user && <p>Welcome, {user.full_name}</p>}
+  <header className="bg-white dark:bg-slate-900 shadow border-b border-slate-200 dark:border-slate-700">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Peripateticware
+        </h1>
+        {user && (
+          <div className="text-right">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Welcome,{' '}
+              <span className="font-semibold text-slate-900 dark:text-white">
+                {user.full_name}
+              </span>
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 capitalize">
+              {user.role}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   </header>
 )
 
+// ============================================================================
+// Protected Route Component
+// ============================================================================
 /**
- * Protected route component
+ * ProtectedRoute: Ensures user is authenticated and has required role
+ *
+ * @param children - React component(s) to render if authorized
+ * @param roles - Optional array of allowed roles (if omitted, all authenticated users allowed)
+ *
+ * @example
+ * <ProtectedRoute roles={['teacher', 'admin']}>
+ *   <TeacherDashboard />
+ * </ProtectedRoute>
  */
-const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: string[] }> = ({
-  children,
-  roles,
-}) => {
+const ProtectedRoute: React.FC<{
+  children: React.ReactNode
+  roles?: string[]
+}> = ({ children, roles }) => {
   const { isAuthenticated, user } = useAuth()
 
+  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
+  // Check role if specified
   if (roles && user && !roles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
+          <p className="text-slate-600 mt-2">
+            You do not have permission to access this page.
+          </p>
+          <a href="/" className="text-blue-600 hover:underline mt-4 inline-block">
+            Go to home
+          </a>
+        </div>
+      </div>
+    )
   }
 
   return <>{children}</>
 }
 
+// ============================================================================
+// Main App Component
+// ============================================================================
 /**
- * Main App component
+ * App Component
+ *
+ * Main routing and layout component for Peripateticware
+ *
+ * Route Structure:
+ * /                          - Home (redirects to /login or /teacher or /student)
+ * /login                     - Login page
+ * /register                  - Registration page
+ * /teacher/*                 - Teacher dashboard (protected, requires 'teacher' or 'admin' role)
+ *   /teacher/activities      - Activity list page
+ *   /teacher/activities/new  - Create new activity
+ *   /teacher/activities/:id/edit - Edit activity
+ *   /teacher/projects        - Project list page
+ *   /teacher/projects/new    - Create new project
+ *   /teacher/projects/:id    - View/edit project
+ * /student/*                 - Student dashboard (protected, requires 'student' role)
+ * /session/:sessionId        - Session page (protected)
+ * /404                       - Not found page
+ * /*                         - Catch-all (redirects to 404)
  */
 const App: React.FC = () => {
-  const { i18n, t } = useTranslation()
+  const { i18n } = useTranslation()
   const { isDarkMode } = useUIStore()
   const { isAuthenticated, user } = useAuth()
 
-  // Apply dark mode
+  // ========================================================================
+  // Dark Mode Setup
+  // ========================================================================
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
     }
   }, [isDarkMode])
 
-  // Apply RTL/LTR based on language
+  // ========================================================================
+  // RTL/LTR Setup
+  // ========================================================================
   useEffect(() => {
-    const dir = i18n.language.startsWith('ar') ? 'rtl' : 'ltr'
+    // Detect if language is RTL (Arabic, Hebrew, Urdu, etc.)
+    const dir = i18n.language.startsWith('ar') || 
+                i18n.language.startsWith('he') || 
+                i18n.language.startsWith('ur') 
+      ? 'rtl' 
+      : 'ltr'
     document.documentElement.dir = dir
+    document.documentElement.lang = i18n.language
   }, [i18n.language])
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+        {/* Header - Show if authenticated */}
         {isAuthenticated && <Header user={user} />}
 
+        {/* Main Content */}
         <main className="flex-1">
           <Routes>
+            {/* ============================================================
+                Auth Routes (Public)
+                ============================================================ */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* ============================================================
+                Teacher Routes (Protected)
+                ============================================================ */}
             <Route
               path="/teacher/*"
               element={
@@ -78,6 +202,10 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* ============================================================
+                Student Routes (Protected)
+                ============================================================ */}
             <Route
               path="/student/*"
               element={
@@ -86,6 +214,10 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* ============================================================
+                Session Route (Protected - any authenticated user)
+                ============================================================ */}
             <Route
               path="/session/:sessionId"
               element={
@@ -94,19 +226,29 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+
+            {/* ============================================================
+                Home Route
+                ============================================================ */}
             <Route
               path="/"
               element={
                 isAuthenticated ? (
+                  // Redirect authenticated users to their dashboard
                   <Navigate
                     to={user?.role === 'student' ? '/student' : '/teacher'}
                     replace
                   />
                 ) : (
+                  // Redirect unauthenticated users to login
                   <Navigate to="/login" replace />
                 )
               }
             />
+
+            {/* ============================================================
+                Catch-All Routes (Not Found)
+                ============================================================ */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

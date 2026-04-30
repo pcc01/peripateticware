@@ -9,6 +9,10 @@ from core.database import get_db
 from core.security import SecurityManager
 from core.dependencies import get_current_user
 from models.database import User, UserRole
+from fastapi.security import OAuth2PasswordBearer
+
+# OAuth2 scheme for token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 import logging
 
 logger = logging.getLogger(__name__)
@@ -191,7 +195,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/refresh", response_model=TokenResponse, status_code=status.HTTP_200_OK)
 async def refresh_token(
     db: Session = Depends(get_db),
-    current_user: User = Depends(verify_token)  # Your existing auth dependency
+    current_user: User = Depends(get_current_user)  # Your existing auth dependency
 ):
     """
     Refresh access token when it expires
