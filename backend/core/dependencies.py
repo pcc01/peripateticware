@@ -107,3 +107,6 @@ async def optional_user(
     except Exception as e:
         logger.debug(f"Optional user auth failed: {e}")
         return None
+    
+    # Alias for compatibility
+verify_token = get_current_user
