@@ -94,6 +94,7 @@ class LearningSession(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     curriculum_id = Column(UUID(as_uuid=True), ForeignKey("curriculum_units.id"))
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True)
     
     # Session data
     title = Column(String(255))
@@ -120,6 +121,7 @@ class LearningSession(Base):
     # Relationships
     user = relationship("User", back_populates="learning_sessions")
     curriculum = relationship("CurriculumUnit", back_populates="learning_sessions")
+    activity = relationship("Activity", back_populates="sessions")
     multimodal_inputs = relationship("MultimodalInput", back_populates="session")
     triple_join_records = relationship("TripleJoinRecord", back_populates="session")
 
@@ -220,3 +222,125 @@ class SyncLog(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     synced_at = Column(DateTime, nullable=True)
+
+
+class ActivityType(str, enum.Enum):
+    """Activity type enumeration"""
+    INQUIRY = "inquiry"
+    DISCUSSION = "discussion"
+    HANDS_ON = "hands_on"
+    VIRTUAL = "virtual"
+    HYBRID = "hybrid"
+
+
+class ActivityStatus(str, enum.Enum):
+    """Activity status enumeration"""
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
+
+
+class Activity(Base):
+    """Teacher-created learning activity"""
+    __tablename__ = "activities"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    
+    # Basic Info
+    title = Column(String(255), index=True, nullable=False)
+    description = Column(Text, nullable=False)
+    learning_objectives = Column(JSONB, default=list)  # List of objectives
+    
+    # Location Trigger
+    location_latitude = Column(Float, nullable=False)
+    location_longitude = Column(Float, nullable=False)
+    location_radius_meters = Column(Integer, default=100)
+    location_name = Column(String(255), nullable=False)
+    
+    # Metadata
+    grade_level = Column(Integer, nullable=False)  # 3-12
+    subject = Column(String(100), index=True, nullable=False)
+    difficulty_level = Column(Integer, default=3)  # 1-5
+    estimated_duration_minutes = Column(Integer, nullable=False)
+    
+    # Materials/Resources
+    materials_needed = Column(JSONB, default=list)
+    resources = Column(JSONB, default=list)  # URLs, references
+    
+    # Curriculum Mapping
+    curriculum_unit_ids = Column(ARRAY(UUID(as_uuid=True)), default=list)
+    bloom_level = Column(Integer, nullable=False)  # 1-6
+    
+    # Activity Type
+    activity_type = Column(Enum(ActivityType), default=ActivityType.INQUIRY)
+    
+    # Status & Visibility
+    status = Column(Enum(ActivityStatus), default=ActivityStatus.DRAFT, index=True)
+    is_active = Column(Boolean, default=True)
+    is_shareable = Column(Boolean, default=False)
+    
+    # Metadata
+    view_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    published_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    teacher = relationship("User")
+    projects = relationship("Project", secondary="project_activities", back_populates="activities")
+    sessions = relationship("LearningSession", back_populates="activity")
+
+
+class ProjectStatus(str, enum.Enum):
+    """Project status enumeration"""
+    PLANNING = "planning"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+
+class Project(Base):
+    """Teacher-managed project (collection of activities)"""
+    __tablename__ = "projects"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    
+    # Basic Info
+    title = Column(String(255), index=True, nullable=False)
+    description = Column(Text, nullable=False)
+    
+    # Scope
+    grade_level = Column(Integer, nullable=False)
+    subject = Column(String(100), index=True, nullable=False)
+    duration_weeks = Column(Integer, nullable=False)
+    
+    # Timeline
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=True)
+    
+    # Status
+    status = Column(Enum(ProjectStatus), default=ProjectStatus.PLANNING, index=True)
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    teacher = relationship("User")
+    activities = relationship("Activity", secondary="project_activities", back_populates="projects")
+
+
+class ProjectActivity(Base):
+    """Association between projects and activities with ordering"""
+    __tablename__ = "project_activities"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id = Column(UUID(as_uuid=True), ForeignKey("projects.id"), index=True)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
+    
+    # Ordering within project
+    order = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)

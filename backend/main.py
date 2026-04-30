@@ -24,7 +24,9 @@ from routes import (
     email,              # NEW - Phase 2
     reset,              # NEW - Phase 2
     linking,            # NEW - Phase 2
-    notifications       # NEW - Phase 2
+    notifications,      # NEW - Phase 2
+    activities,         # NEW - Phase 3 Teacher Features
+    projects,           # NEW - Phase 3 Teacher Features
 )
 
 from core.config import settings
@@ -107,7 +109,7 @@ app.include_router(
 )
 app.include_router(
     health_router, prefix="/api/v1/health"
-)
+    )
 # Session management routes
 app.include_router(
     sessions.router,
@@ -173,6 +175,22 @@ app.include_router(
     notifications.router,
     prefix="/api/v1/parent/notifications",
     tags=["notifications"]
+)
+
+# ============================================================================
+# ROUTE REGISTRATION - PHASE 3 ROUTES (Teacher Features)
+# ============================================================================
+
+# Activity management routes
+app.include_router(
+    activities.router,
+    tags=["teacher-activities"]
+)
+
+# Project management routes
+app.include_router(
+    projects.router,
+    tags=["teacher-projects"]
 )
 
 # ============================================================================
