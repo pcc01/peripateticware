@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "Peripateticware",
+    "slug": "peripateticware",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "scheme": "peripateticware",
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static",
+      "build": {
+        "babel": {
+          "include": ["./node_modules/react-native-web"]
+        }
+      }
+    },
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.peripateticware.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs your location to provide contextual learning experiences.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to provide contextual learning experiences."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.peripateticware.app",
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Peripateticware to access your location."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Peripateticware to access your camera."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Peripateticware to access your microphone."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "peripateticware-mobile"
+      },
+      "apiBaseUrl": "http://localhost:8000/api"
+    }
+  }
+}

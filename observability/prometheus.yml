@@ -1,4 +1,3 @@
-# Prometheus Configuration for Peripateticware
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -21,7 +20,7 @@ scrape_configs:
   - job_name: 'fastapi'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['fastapi:8010']
+      - targets: ['fastapi:8000']
     scrape_interval: 10s
 
   - job_name: 'postgres'

@@ -6,9 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    
     "ios": {
-      "supportsTabletMode": true,
+     
       "bundleIdentifier": "com.peripateticware.app"
     },
     "android": {
@@ -18,9 +18,7 @@
       },
       "package": "com.peripateticware.app"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+  
     "plugins": [
       [
         "expo-location",

@@ -10,6 +10,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
+from routes.health import router as health_router
+
 
 # Import all route modules
 from routes import (
@@ -44,8 +46,8 @@ app = FastAPI(
     title="Peripateticware API",
     description="AI-powered contextual learning platform with parent portal",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url="/api/docs",           # Swagger UI - working
+    redoc_url=None,                  # ReDoc disabled (blank page issue)
     openapi_url="/api/openapi.json"
 )
 
@@ -103,7 +105,9 @@ app.include_router(
     prefix="/api/v1/auth",
     tags=["authentication"]
 )
-
+app.include_router(
+    health_router, prefix="/api/v1/health"
+)
 # Session management routes
 app.include_router(
     sessions.router,
