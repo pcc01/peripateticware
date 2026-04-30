@@ -1,4 +1,4 @@
-# File: backend/core/database.py
+# File: backend/config/database.py
 # Updated for Phase 3 with PgBouncer connection pooling
 
 import os
@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# SQLAlchemy declarative base for models
+# SQLAlchemy ORM Base class for all models
 Base = declarative_base()
 
 # Get database URL from environment
@@ -79,6 +79,7 @@ def receive_connect(dbapi_conn, connection_record):
 @event.listens_for(engine, "checkout")
 def receive_checkout(dbapi_conn, connection_record, connection_proxy):
     """Called when a connection is checked out from the pool"""
+    # This is useful for connection monitoring
     pass
 
 @event.listens_for(engine, "checkin")
@@ -174,6 +175,7 @@ def cleanup_database():
     logger.info("Database connections closed")
 
 # Monitoring query for PgBouncer stats
+# Can be called periodically to monitor pool health
 PGBOUNCER_STATS_QUERY = """
 SELECT 
     database,
