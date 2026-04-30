@@ -36,7 +36,7 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetVerify(BaseModel):
     """Verify reset token"""
     token: str
-    new_password: str = Field(..., min_length=8, pattern=r"(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])")
+    new_password: str = Field(..., min_length=8)
 
 
 class PasswordResetResponse(BaseModel):
