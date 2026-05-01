@@ -37,7 +37,7 @@ htmlcov/
 .env
 .env.local
 .env.*.local
-
+apply_license.py
 # Logs
 logs/
 *.log
