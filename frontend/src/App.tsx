@@ -7,10 +7,13 @@ import { useUIStore } from '@stores/uiStore'
 // ============================================================================
 // Auth Pages
 // ============================================================================
-const LoginPage = () => <div>Login Page (TODO)</div>
-const RegisterPage = () => <div>Register Page (TODO)</div>
-const NotFoundPage = () => <div>404 Not Found</div>
+import { LoginScreen } from '@components/auth/LoginScreen'
+import { SignUpScreen } from '@components/auth/SignUpScreen'
+import { SplashScreen } from '@components/auth/SplashScreen'
 
+const LoginPage = LoginScreen
+const RegisterPage = SignUpScreen
+const NotFoundPage = () => <div>404 Not Found</div>
 // ============================================================================
 // Student Pages (Stubs)
 // ============================================================================
@@ -230,22 +233,20 @@ const App: React.FC = () => {
             {/* ============================================================
                 Home Route
                 ============================================================ */}
-            <Route
-              path="/"
-              element={
-                isAuthenticated ? (
-                  // Redirect authenticated users to their dashboard
-                  <Navigate
-                    to={user?.role === 'student' ? '/student' : '/teacher'}
-                    replace
-                  />
-                ) : (
-                  // Redirect unauthenticated users to login
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+           {/* Splash screen on first load */}
+           <Route path="/splash" element={<SplashScreen />} />
 
+           {/* Home route */}
+           <Route
+             path="/"  
+             element={
+              isAuthenticated ? (
+                <Navigate to={user?.role === 'student' ? '/student' : '/teacher'} replace />
+              ) : (
+                <Navigate to="/splash" replace />
+    )
+  }
+/>
             {/* ============================================================
                 Catch-All Routes (Not Found)
                 ============================================================ */}

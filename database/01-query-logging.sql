@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 -- File: database/01-query-logging.sql
 -- Phase 3: Query logging and analysis setup
 -- Run this on the PostgreSQL database to enable slow query logging

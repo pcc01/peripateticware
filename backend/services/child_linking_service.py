@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 """
 Child Linking Service - Parent-Child Account Linking
 Handles 6-digit verification codes and relationship management

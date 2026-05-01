@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 -- File: database/03-indexes.sql
 -- Phase 3: Strategic Index Creation
 -- These indexes optimize the top 5 slow queries and common access patterns

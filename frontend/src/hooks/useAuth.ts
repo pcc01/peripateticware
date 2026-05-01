@@ -1,5 +1,9 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 import { useCallback } from 'react'
-import { useAuthStore } from '@stores/authStore'
+import { useAuthStore } from '@stores/auth'
 import { apiClient } from '@/config/api'
 import { LoginRequest, RegisterRequest, User } from '@types/auth'
 
