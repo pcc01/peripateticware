@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 import { describe, it, expect } from 'vitest'
 import { Localization } from '@utils/localization'
@@ -48,17 +48,17 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
       const result = Localization.pseudoLocalize('abc')
 
       // Should contain the accented versions
-      expect(result).toContain('ā')
-      expect(result).toContain('ḃ')
-      expect(result).toContain('č')
+      expect(result).toContain('Ä')
+      expect(result).toContain('á¸ƒ')
+      expect(result).toContain('Ä')
     })
 
     it('should map uppercase letters to accented versions', () => {
       const result = Localization.pseudoLocalize('ABC')
 
-      expect(result).toContain('Ā')
-      expect(result).toContain('Ḃ')
-      expect(result).toContain('Č')
+      expect(result).toContain('Ä€')
+      expect(result).toContain('á¸‚')
+      expect(result).toContain('ÄŒ')
     })
   })
 
@@ -86,19 +86,19 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
       expect(name).toBe('English')
     })
 
-    it('should return Español for es', () => {
+    it('should return EspaÃ±ol for es', () => {
       const name = Localization.getLanguageName('es')
-      expect(name).toBe('Español')
+      expect(name).toBe('EspaÃ±ol')
     })
 
-    it('should return العربية for ar', () => {
+    it('should return Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© for ar', () => {
       const name = Localization.getLanguageName('ar')
-      expect(name).toBe('العربية')
+      expect(name).toBe('Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©')
     })
 
-    it('should return 日本語 for ja', () => {
+    it('should return æ—¥æœ¬èªž for ja', () => {
       const name = Localization.getLanguageName('ja')
-      expect(name).toBe('日本語')
+      expect(name).toBe('æ—¥æœ¬èªž')
     })
 
     it('should fallback to code for unknown language', () => {
@@ -186,7 +186,7 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
 
     it('should format EUR currency', () => {
       const result = Localization.formatCurrency(1234.56, 'de-DE', 'EUR')
-      expect(result).toContain('€')
+      expect(result).toContain('â‚¬')
     })
 
     it('should fallback gracefully for invalid locale', () => {
@@ -257,3 +257,4 @@ describe('Localization - String Externalization & Pseudo-Loc', () => {
     })
   })
 })
+

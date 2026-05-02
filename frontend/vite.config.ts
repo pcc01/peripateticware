@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+// Copyright (c) 2026 Paul Christopher Cerda
+// // This source code is licensed under the Business Source License 1.1
+//found in the LICENSE.md file in the root directory of this source tree.
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -13,23 +13,15 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/components'),
       '@pages': path.resolve(__dirname, './src/pages'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
       '@stores': path.resolve(__dirname, './src/stores'),
       '@services': path.resolve(__dirname, './src/services'),
+      '@hooks': path.resolve(__dirname, './src/hooks'),
       '@types': path.resolve(__dirname, './src/types'),
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@locales': path.resolve(__dirname, './src/locales'),
-      '@tests': path.resolve(__dirname, './src/tests'),
     },
   },
   server: {
     port: 5173,
-    open: true,
-    cors: true,
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    minify: 'terser',
+    host: '0.0.0.0',
   },
 })
+

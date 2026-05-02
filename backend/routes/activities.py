@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from core.database import get_db
-from core.security import get_current_user
+from core.dependencies import get_current_user
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from schemas.activities import (
     ActivityCreate, 

@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 // Phase 6: Student Capture, Notebook, Portfolio, Progress Types
 // Import existing types
@@ -192,3 +192,4 @@ export interface SessionContext {
   location_latitude?: number;
   location_longitude?: number;
 }
+
