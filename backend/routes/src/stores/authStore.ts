@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 import { create } from 'zustand';
 import { User, LoginRequest, RegisterRequest, AuthState } from '../types';
@@ -13,13 +13,13 @@ import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 
 // ADD THESE DEBUG LINES:
-console.log('📱 authStore.ts loading...');
-console.log('🔍 process.env.EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
+console.log('ðŸ“± authStore.ts loading...');
+console.log('ðŸ” process.env.EXPO_PUBLIC_API_URL:', process.env.EXPO_PUBLIC_API_URL);
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 // ADD THIS:
-console.log('✅ API_BASE_URL set to:', API_BASE_URL);
+console.log('âœ… API_BASE_URL set to:', API_BASE_URL);
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -239,3 +239,4 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ error: null });
   },
 }));
+

@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 /**
  * useLocation Custom Hook
@@ -173,14 +173,14 @@ export const useLocation = () => {
   // Calculate distance between two coordinates (in meters)
   const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number) => {
     const R = 6371e3; // Earth's radius in meters
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
+    const Ï†1 = (lat1 * Math.PI) / 180;
+    const Ï†2 = (lat2 * Math.PI) / 180;
+    const Î”Ï† = ((lat2 - lat1) * Math.PI) / 180;
+    const Î”Î» = ((lng2 - lng1) * Math.PI) / 180;
 
     const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      Math.sin(Î”Ï† / 2) * Math.sin(Î”Ï† / 2) +
+      Math.cos(Ï†1) * Math.cos(Ï†2) * Math.sin(Î”Î» / 2) * Math.sin(Î”Î» / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distance in meters
@@ -224,3 +224,4 @@ function getGeolocationErrorMessage(code: number): string {
 }
 
 export default useLocation;
+

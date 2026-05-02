@@ -1,24 +1,21 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 
-// Import all translation files
-import en_common from '@locales/en/common.json'
-import en_teacher from '@locales/en/teacher.json'
-import en_student from '@locales/en/student.json'
-import en_curriculum from '@locales/en/curriculum.json'
-
-import es_common from '@locales/es/common.json'
-import es_teacher from '@locales/es/teacher.json'
-import es_student from '@locales/es/student.json'
-import es_curriculum from '@locales/es/curriculum.json'
-
-import ar_common from '@locales/ar/common.json'
-import ja_common from '@locales/ar/common.json' // TODO: Replace with actual Japanese
+// TODO: Import locale files when available
+// import en_common from '@locales/en/common.json'
+// import en_teacher from '@locales/en/teacher.json'
+// import en_student from '@locales/en/student.json'
+// import en_curriculum from '@locales/en/curriculum.json'
+// import es_common from '@locales/es/common.json'
+// import es_teacher from '@locales/es/teacher.json'
+// import es_student from '@locales/es/student.json'
+// import es_curriculum from '@locales/es/curriculum.json'
+// import ar_common from '@locales/ar/common.json'
 
 // Define supported languages and their properties
 export const SUPPORTED_LANGUAGES = {
@@ -48,27 +45,25 @@ export const SUPPORTED_LANGUAGES = {
   },
 }
 
-// Translation resources
+// Translation resources (empty for now - will be filled in later)
 const resources = {
   en: {
-    common: en_common,
-    teacher: en_teacher,
-    student: en_student,
-    curriculum: en_curriculum,
+    common: {},
+    teacher: {},
+    student: {},
+    curriculum: {},
   },
   es: {
-    common: es_common,
-    teacher: es_teacher,
-    student: es_student,
-    curriculum: es_curriculum,
+    common: {},
+    teacher: {},
+    student: {},
+    curriculum: {},
   },
   ar: {
-    common: ar_common,
-    // TODO: Add Arabic teacher, student, curriculum
+    common: {},
   },
   ja: {
-    common: ja_common,
-    // TODO: Add Japanese teacher, student, curriculum
+    common: {},
   },
 }
 

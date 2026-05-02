@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosRequestConfig } from 'axios';
@@ -114,10 +114,10 @@ class OfflineQueueManager {
         }
 
         await apiClient(config);
-        console.log(`✓ Synced: ${request.id}`);
+        console.log(`âœ“ Synced: ${request.id}`);
       } catch (error: any) {
         console.warn(
-          `✗ Failed to sync ${request.id}: ${error.message}`
+          `âœ— Failed to sync ${request.id}: ${error.message}`
         );
 
         request.retries++;
@@ -208,3 +208,4 @@ class OfflineQueueManager {
 
 // Export singleton instance
 export const offlineQueue = new OfflineQueueManager();
+

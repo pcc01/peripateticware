@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 // Email validation
 export const isValidEmail = (email: string): boolean => {
@@ -112,3 +112,4 @@ export const validateForm = (
 export const hasErrors = (errors: ValidationErrors): boolean => {
   return Object.values(errors).some((error) => error !== undefined);
 };
+

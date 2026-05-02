@@ -5,16 +5,27 @@
 """
 Authentication-related Pydantic schemas
 """
+from __future__ import annotations
 
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
-
+class UserResponse(BaseModel):
+    """User information response"""
+    id: str = Field(..., description="User ID")
+    email: str = Field(..., description="User email")
+    first_name: str = Field(..., description="User first name")
+    last_name: str = Field(..., description="User last name")
+    role: str = Field(..., description="User role")
+    is_active: bool = Field(default=True, description="Whether user is active")
+    created_at: Optional[str] = Field(None, description="User creation timestamp")
+    
 class TokenResponse(BaseModel):
     """JWT token response after successful authentication"""
     access_token: str = Field(..., description="JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
     expires_in: int = Field(..., description="Token expiration time in seconds")
+    user: "UserResponse" = Field(..., description="User information")
 
 
 class TokenData(BaseModel):
@@ -61,15 +72,6 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str = Field(..., description="Refresh token")
 
 
-class UserResponse(BaseModel):
-    """User information response"""
-    id: str = Field(..., description="User ID")
-    email: str = Field(..., description="User email")
-    first_name: str = Field(..., description="User first name")
-    last_name: str = Field(..., description="User last name")
-    role: str = Field(..., description="User role")
-    is_active: bool = Field(default=True, description="Whether user is active")
-    created_at: Optional[str] = Field(None, description="User creation timestamp")
     
     class Config:
         from_attributes = True

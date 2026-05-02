@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
+
 import React, { useRef, useState } from 'react';
 import { Camera, Mic, Type, Grid3x3, Ruler } from 'lucide-react';
 import { CaptureType, CaptureFormData, SessionContext } from '../../types/student';

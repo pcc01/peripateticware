@@ -1,6 +1,6 @@
-# Copyright (c) 2026 Paul Christopher Cerda
-# This source code is licensed under the Business Source License 1.1
-# found in the LICENSE.md file in the root directory of this source tree.
+﻿// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
 
 /**
  * Localization utilities
@@ -14,65 +14,65 @@ import { SUPPORTED_LANGUAGES } from '@/config/i18n'
  * Expands text by ~30% to test layout overflow
  * Scrambles text to verify all UI strings are externalized (not hardcoded)
  *
- * Example: "Hello" → "Ħēļļōxxxxxxxxxxxxxxxxxx"
+ * Example: "Hello" â†’ "Ä¦Ä“Ä¼Ä¼Åxxxxxxxxxxxxxxxxxx"
  */
 export function pseudoLocalize(text: string): string {
   if (!text) return text
 
   // Map of characters for pseudo-localization
   const charMap: Record<string, string> = {
-    a: 'ā',
-    b: 'ḃ',
-    c: 'č',
-    d: 'đ',
-    e: 'ē',
-    f: 'ƒ',
-    g: 'ğ',
-    h: 'ħ',
-    i: 'ī',
-    j: 'ĵ',
-    k: 'ķ',
-    l: 'ļ',
-    m: 'ṃ',
-    n: 'ņ',
-    o: 'ō',
-    p: 'ṗ',
-    q: 'q̃',
-    r: 'ŕ',
-    s: 'š',
-    t: 'ţ',
-    u: 'ū',
-    v: 'ṽ',
-    w: 'ŵ',
-    x: 'x̃',
-    y: 'ŷ',
-    z: 'ž',
-    A: 'Ā',
-    B: 'Ḃ',
-    C: 'Č',
-    D: 'Đ',
-    E: 'Ē',
-    F: 'Ƒ',
-    G: 'Ğ',
-    H: 'Ħ',
-    I: 'Ī',
-    J: 'Ĵ',
-    K: 'Ķ',
-    L: 'Ļ',
-    M: 'Ṃ',
-    N: 'Ņ',
-    O: 'Ō',
-    P: 'Ṗ',
-    Q: 'Q̃',
-    R: 'Ŕ',
-    S: 'Š',
-    T: 'Ţ',
-    U: 'Ū',
-    V: 'Ṽ',
-    W: 'Ŵ',
-    X: 'X̃',
-    Y: 'Ŷ',
-    Z: 'Ž',
+    a: 'Ä',
+    b: 'á¸ƒ',
+    c: 'Ä',
+    d: 'Ä‘',
+    e: 'Ä“',
+    f: 'Æ’',
+    g: 'ÄŸ',
+    h: 'Ä§',
+    i: 'Ä«',
+    j: 'Äµ',
+    k: 'Ä·',
+    l: 'Ä¼',
+    m: 'á¹ƒ',
+    n: 'Å†',
+    o: 'Å',
+    p: 'á¹—',
+    q: 'qÌƒ',
+    r: 'Å•',
+    s: 'Å¡',
+    t: 'Å£',
+    u: 'Å«',
+    v: 'á¹½',
+    w: 'Åµ',
+    x: 'xÌƒ',
+    y: 'Å·',
+    z: 'Å¾',
+    A: 'Ä€',
+    B: 'á¸‚',
+    C: 'ÄŒ',
+    D: 'Ä',
+    E: 'Ä’',
+    F: 'Æ‘',
+    G: 'Äž',
+    H: 'Ä¦',
+    I: 'Äª',
+    J: 'Ä´',
+    K: 'Ä¶',
+    L: 'Ä»',
+    M: 'á¹‚',
+    N: 'Å…',
+    O: 'ÅŒ',
+    P: 'á¹–',
+    Q: 'QÌƒ',
+    R: 'Å”',
+    S: 'Å ',
+    T: 'Å¢',
+    U: 'Åª',
+    V: 'á¹¼',
+    W: 'Å´',
+    X: 'XÌƒ',
+    Y: 'Å¶',
+    Z: 'Å½',
   }
 
   // Pseudo-localize by:
@@ -214,3 +214,4 @@ export const Localization = {
 }
 
 export default Localization
+
