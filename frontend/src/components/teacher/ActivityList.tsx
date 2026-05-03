@@ -2,375 +2,244 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-/**
- * ActivityList Component
- * Displays activities in grid/list view with filtering, search, and pagination
- * 
- * Features:
- * - Grid/List view toggle
- * - Filter by subject, grade level, difficulty, status
- * - Search by title
- * - Pagination
- * - Activity cards with quick actions
- * - Loading states
- * - Empty states
- */
+import { useTeacherStore } from '@/stores/teacher'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import ActivityCard from './ActivityCard'
 
-import React, { useState, useEffect } from 'react';
-import { clsx } from 'clsx';
-import { useActivityStore } from '../../stores/teacher';
-import { ActivityStatus } from '../../types/teacher';
-import ActivityCard from './ActivityCard';
-import Button from '../common/Button';
-import LoadingSpinner from '../common/LoadingSpinner';
-
-interface ActivityListProps {
-  onActivitySelect?: (activityId: string) => void;
-  showFilters?: boolean;
-  compact?: boolean;
-}
-
-const SUBJECTS = [
-  'English',
-  'Mathematics',
-  'Science',
-  'Social Studies',
-  'History',
-  'Geography',
-  'Biology',
-  'Chemistry',
-  'Physics',
-  'Health',
-  'Physical Education',
-  'Arts',
-  'Music',
-  'Technology',
-];
-
-const STATUSES: ActivityStatus[] = ['draft', 'published', 'archived'];
-const GRADES = Array.from({ length: 10 }, (_, i) => i + 3); // 3-12
-
-export const ActivityList: React.FC<ActivityListProps> = ({
-  onActivitySelect,
-  showFilters = true,
-  compact = false,
-}) => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchTerm, setSearchTerm] = useState('');
-
+export function ActivityList() {
+  const navigate = useNavigate()
   const {
     activities,
-    paginatedActivities,
     loading,
     error,
-    filters,
     fetchActivities,
-    deleteActivity,
-    publishActivity,
-    archiveActivity,
-    setFilters,
-    clearError,
-  } = useActivityStore();
+    totalPages,
+    currentPage,
+    setCurrentPage,
+    clearError
+  } = useTeacherStore()
 
-  // Fetch activities on component mount and when filters change
+  const [page, setPage] = useState(1)
+  const [filters, setFilters] = useState({
+    subject: '',
+    grade_level: '',
+    status: ''
+  })
+
+  // Fetch activities on mount and when page/filters change
   useEffect(() => {
-    fetchActivities(filters);
-  }, [filters, fetchActivities]);
+    const params: any = { page }
+    if (filters.subject) params.subject = filters.subject
+    if (filters.grade_level) params.grade_level = parseInt(filters.grade_level)
+    if (filters.status) params.status = filters.status
 
-  // Handle search
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    // Filter locally or we could add search to backend
-    // For now, just update local state
-  };
+    fetchActivities(params).catch(console.error)
+  }, [page, filters, fetchActivities])
 
-  // Handle filter changes
-  const handleFilterChange = (key: keyof typeof filters, value: any) => {
-    setFilters({ [key]: value, page: 1 }); // Reset to page 1 on filter change
-  };
-
-  // Handle pagination
   const handlePageChange = (newPage: number) => {
-    setFilters({ page: newPage });
-  };
+    setPage(newPage)
+    setCurrentPage(newPage)
+    window.scrollTo(0, 0)
+  }
 
-  // Filter activities locally by search term
-  const filteredActivities = activities.filter((activity) =>
-    activity.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value
+    }))
+    setPage(1) // Reset to first page when filtering
+  }
+
+  const handleClearFilters = () => {
+    setFilters({ subject: '', grade_level: '', status: '' })
+    setPage(1)
+  }
 
   return (
-    <div className={clsx(compact ? 'space-y-3' : 'space-y-4')}>
+    <div className="activity-list-container p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-bold text-gray-900">Activities</h1>
+          <p className="text-gray-600 mt-1">Manage your educational activities</p>
+        </div>
+        <button
+          onClick={() => navigate('/teacher/activities/new')}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+        >
+          + Create Activity
+        </button>
+      </div>
+
       {/* Error Message */}
       {error && (
-        <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 flex items-start justify-between">
-          <div className="flex-1">
-            <p className="font-medium">Error Loading Activities</p>
-            <p className="text-sm mt-1">{error}</p>
-          </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex justify-between items-center">
+          <p className="text-red-800">{error}</p>
           <button
             onClick={clearError}
-            className="text-red-800 dark:text-red-200 hover:text-red-900 dark:hover:text-red-100 ml-4"
+            className="text-red-600 hover:text-red-800 font-bold"
           >
-            ×
+            ✕
           </button>
         </div>
       )}
 
-      {/* Header Controls */}
-      <div className={clsx(
-        'flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between',
-        compact ? 'text-sm' : ''
-      )}>
-        {/* Search Bar */}
-        <div className="flex-1 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search activities..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className={clsx(
-              'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600',
-              'bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
-              'placeholder-gray-500 dark:placeholder-gray-400',
-              'focus:outline-none focus:ring-2 focus:ring-blue-500',
-              compact ? 'text-sm' : 'text-base'
-            )}
-          />
-        </div>
-
-        {/* View Mode Toggle */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={clsx(
-              'px-3 py-1 rounded transition-colors',
-              viewMode === 'grid'
-                ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-            )}
-            title="Grid View"
-          >
-            ⊞
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={clsx(
-              'px-3 py-1 rounded transition-colors',
-              viewMode === 'list'
-                ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-            )}
-            title="List View"
-          >
-            ☰
-          </button>
-        </div>
-      </div>
-
       {/* Filters */}
-      {showFilters && (
-        <div className={clsx(
-          'grid gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
-          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-        )}>
-          {/* Subject Filter */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Subject
             </label>
             <select
-              value={filters.subject || ''}
-              onChange={(e) => handleFilterChange('subject', e.target.value || undefined)}
-              className={clsx(
-                'w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600',
-                'bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500'
-              )}
+              value={filters.subject}
+              onChange={(e) => handleFilterChange('subject', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Subjects</option>
-              {SUBJECTS.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
-              ))}
+              <option value="Science">Science</option>
+              <option value="Math">Math</option>
+              <option value="Language">Language</option>
+              <option value="History">History</option>
+              <option value="Art">Art</option>
+              <option value="PE">PE</option>
             </select>
           </div>
 
-          {/* Grade Level Filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Grade Level
             </label>
             <select
-              value={filters.grade_level || ''}
-              onChange={(e) =>
-                handleFilterChange('grade_level', e.target.value ? parseInt(e.target.value) : undefined)
-              }
-              className={clsx(
-                'w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600',
-                'bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500'
-              )}
+              value={filters.grade_level}
+              onChange={(e) => handleFilterChange('grade_level', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Grades</option>
-              {GRADES.map((grade) => (
-                <option key={grade} value={grade}>
-                  Grade {grade}
-                </option>
+              {Array.from({ length: 10 }, (_, i) => i + 3).map(grade => (
+                <option key={grade} value={grade}>Grade {grade}</option>
               ))}
             </select>
           </div>
 
-          {/* Difficulty Filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Difficulty
-            </label>
-            <select
-              value={filters.difficulty || ''}
-              onChange={(e) =>
-                handleFilterChange('difficulty', e.target.value ? parseInt(e.target.value) : undefined)
-              }
-              className={clsx(
-                'w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600',
-                'bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500'
-              )}
-            >
-              <option value="">All Levels</option>
-              <option value="1">Very Easy</option>
-              <option value="2">Easy</option>
-              <option value="3">Medium</option>
-              <option value="4">Hard</option>
-              <option value="5">Very Hard</option>
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Status
             </label>
             <select
-              value={filters.status || ''}
-              onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-              className={clsx(
-                'w-full px-2 py-1 rounded border border-gray-300 dark:border-gray-600',
-                'bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500'
-              )}
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Statuses</option>
-              {STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
             </select>
           </div>
+
+          <div className="flex items-end">
+            <button
+              onClick={handleClearFilters}
+              className="w-full px-3 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center py-12">
-          <LoadingSpinner size="lg" />
+        <div className="flex justify-center py-12">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading activities...</p>
+          </div>
         </div>
       )}
 
       {/* Empty State */}
-      {!loading && filteredActivities.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 dark:text-gray-500 text-4xl mb-2">○</div>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">No activities found</p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-            Try adjusting your filters or create a new activity
+      {!loading && activities.length === 0 && (
+        <div className="text-center py-12 bg-white rounded-lg shadow">
+          <div className="text-5xl mb-4">📋</div>
+          <p className="text-gray-600 text-lg mb-4">No activities found</p>
+          <p className="text-gray-500 mb-6">
+            {Object.values(filters).some(v => v) 
+              ? 'Try adjusting your filters' 
+              : 'Create your first activity to get started'}
           </p>
-        </div>
-      )}
-
-      {/* Activities Grid/List */}
-      {!loading && filteredActivities.length > 0 && (
-        <div
-          className={clsx(
-            'grid gap-3',
-            viewMode === 'grid'
-              ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              : 'grid-cols-1'
-          )}
-        >
-          {filteredActivities.map((activity) => (
-            <div
-              key={activity.id}
-              onClick={() => onActivitySelect?.(activity.id)}
-              className={clsx(
-                onActivitySelect && 'cursor-pointer'
-              )}
+          {!Object.values(filters).some(v => v) && (
+            <button
+              onClick={() => navigate('/teacher/activities/new')}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
             >
-              <ActivityCard
-                activity={activity}
-                onEdit={(id) => onActivitySelect?.(id)}
-                onDelete={() => deleteActivity(activity.id)}
-                onPublish={() => publishActivity(activity.id)}
-                onArchive={() => archiveActivity(activity.id)}
-                compact={compact}
-              />
-            </div>
-          ))}
+              Create Activity
+            </button>
+          )}
         </div>
       )}
 
-      {/* Pagination */}
-      {!loading && paginatedActivities && paginatedActivities.total_pages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handlePageChange(Math.max(1, filters.page - 1))}
-            disabled={filters.page === 1}
-          >
-            ← Previous
-          </Button>
-
-          <div className="flex gap-1">
-            {Array.from({ length: paginatedActivities.total_pages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={clsx(
-                  'px-2 py-1 rounded text-sm font-medium transition-colors',
-                  filters.page === page
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600'
-                )}
-              >
-                {page}
-              </button>
+      {/* Activities Grid */}
+      {!loading && activities.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {activities.map(activity => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                onEdit={(id) => navigate(`/teacher/activities/${id}/edit`)}
+                onViewDetail={(id) => navigate(`/teacher/activities/${id}`)}
+              />
             ))}
           </div>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handlePageChange(Math.min(paginatedActivities.total_pages, filters.page + 1))}
-            disabled={filters.page === paginatedActivities.total_pages}
-          >
-            Next →
-          </Button>
-        </div>
-      )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 font-semibold"
+              >
+                Previous
+              </button>
 
-      {/* Results Info */}
-      {!loading && paginatedActivities && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          Showing {(filters.page - 1) * filters.page_size + 1}-
-          {Math.min(filters.page * filters.page_size, paginatedActivities.total)} of{' '}
-          {paginatedActivities.total} activities
-        </p>
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => handlePageChange(p)}
+                    className={`px-3 py-2 rounded-lg font-semibold transition-colors ${
+                      page === p
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 font-semibold"
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* Results info */}
+          <div className="text-center mt-6 text-gray-600">
+            <p>Page {currentPage} of {totalPages}</p>
+          </div>
+        </>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ActivityList;
+export default ActivityList

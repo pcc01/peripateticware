@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProjectStore } from '../../stores/teacher';
+import { useTeacherStore } from '../../stores/teacher';
 import { Project, ProjectFilters } from '../../types/teacher';
 import ProjectCard from '../../components/teacher/ProjectCard';
 import ProjectBuilder from '../../components/teacher/ProjectBuilder';
@@ -30,7 +30,7 @@ export const ProjectsPage: React.FC = () => {
     fetchProjects,
     deleteProject,
     setFilters,
-  } = useProjectStore();
+  } = useTeacherStore();
 
   useEffect(() => {
     fetchProjects(filters);

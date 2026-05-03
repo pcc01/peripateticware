@@ -7,7 +7,7 @@
  * Provides convenient access to project store methods
  */
 
-import { useProjectStore } from '../stores/teacher';
+import { useTeacherStore } from '../stores/teacher';
 import { Project, ProjectFilters, ProjectFormData } from '../types/teacher';
 
 export const useProject = () => {
@@ -28,7 +28,7 @@ export const useProject = () => {
     reorderActivities,
     setFilters,
     clearError,
-  } = useProjectStore();
+  } = useTeacherStore();
 
   return {
     // State

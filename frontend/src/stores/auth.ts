@@ -3,101 +3,165 @@
 // found in the LICENSE.md file in the root directory of this source tree.
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { User, AuthState } from '@types/auth'
 
-interface AuthStore extends AuthState {
-  login: (credentials: { email: string; password: string }) => Promise<void>
+export interface User {
+  user_id: string
+  email: string
+  username: string
+  full_name: string
+  role: 'teacher' | 'student' | 'parent' | 'admin'
+  is_active: boolean
+}
+
+interface AuthStore {
+  user: User | null
+  isAuthenticated: boolean
+  loading: boolean
+  error: string | null
+  
+  login: (email: string, password: string) => Promise<void>
+  logout: () => void
+  clearError: () => void
   setUser: (user: User | null) => void
-  setToken: (token: string | null) => void
-  setLoading: (isLoading: boolean) => void
-  setError: (error: string | null) => void
-  clearAuth: () => void
+  checkAuth: () => Promise<void>
 }
 
-const initialState: AuthState = {
+const API_BASE = 'http://localhost:8000/api/v1'
+
+export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  token: null,
   isAuthenticated: false,
-  isLoading: false,
+  loading: false,
   error: null,
-}
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set) => ({
-      ...initialState,
+  login: async (email: string, password: string) => {
+    set({ loading: true, error: null })
+    try {
+      console.log('[Auth] Starting login for:', email)
+      console.log('[Auth] Sending payload:', { email, password })
+      
+      // Send login request - EXACT format backend expects
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
 
-      login: async (credentials: { email: string; password: string }) => {
-        set({ isLoading: true, error: null })
-        try {
-          const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(credentials),
-          })
+      console.log('[Auth] Response status:', response.status)
 
-          if (!response.ok) {
-            throw new Error('Login failed')
-          }
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('[Auth] Backend error:', errorData)
+        throw new Error(errorData.detail || 'Login failed')
+      }
 
-          const data = await response.json()
-          
-          set({
-            token: data.access_token,
-            user: {
-              id: data.user.id,
-              email: data.user.email,
-              name: `${data.user.first_name} ${data.user.last_name}`,
-              role: data.user.role,
-              school_id: 'default',
-              created_at: data.user.created_at,
-            },
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          })
+      const data = await response.json()
+      console.log('[Auth] Login successful, received token')
+      
+      // Store token
+      localStorage.setItem('auth_token', data.access_token)
+      console.log('[Auth] Token stored in localStorage')
 
-          // Store token in localStorage
-          localStorage.setItem('auth_token', data.access_token)
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Login failed'
-          set({
-            isLoading: false,
-            error: errorMessage,
-            isAuthenticated: false,
-          })
-          throw error
+      // Fetch user profile
+      console.log('[Auth] Fetching user profile with token...')
+      const userResponse = await fetch(`${API_BASE}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${data.access_token}`
         }
-      },
+      })
 
-      setUser: (user) =>
-        set({
-          user,
-          isAuthenticated: user !== null,
-        }),
+      console.log('[Auth] User profile response status:', userResponse.status)
 
-      setToken: (token) =>
-        set({
-          token,
-          isAuthenticated: token !== null,
-        }),
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json()
+        console.error('[Auth] Failed to fetch user:', errorData)
+        throw new Error('Failed to fetch user profile')
+      }
 
-      setLoading: (isLoading) => set({ isLoading }),
-
-      setError: (error) => set({ error }),
-
-      clearAuth: () => set(initialState),
-    }),
-    {
-      name: 'auth-store',
-      partialize: (state) => ({
-        user: state.user,
-        token: state.token,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      const userData = await userResponse.json()
+      console.log('[Auth] User profile received:', userData)
+      
+      set({
+        user: userData,
+        isAuthenticated: true,
+        loading: false,
+        error: null
+      })
+      
+      console.log('[Auth] LOGIN COMPLETE ✅')
+    } catch (error: any) {
+      const errorMessage = error.message || 'Login failed'
+      console.error('[Auth] ERROR:', errorMessage)
+      
+      set({
+        error: errorMessage,
+        loading: false,
+        isAuthenticated: false,
+        user: null
+      })
+      throw error
     }
-  )
-)
+  },
+
+  logout: () => {
+    console.log('[Auth] Logging out')
+    localStorage.removeItem('auth_token')
+    set({
+      user: null,
+      isAuthenticated: false,
+      error: null
+    })
+  },
+
+  clearError: () => set({ error: null }),
+
+  setUser: (user: User | null) => {
+    set({
+      user,
+      isAuthenticated: !!user
+    })
+  },
+
+  checkAuth: async () => {
+    set({ loading: true })
+    try {
+      const token = localStorage.getItem('auth_token')
+      
+      if (!token) {
+        console.log('[Auth] No token in localStorage')
+        set({ loading: false, isAuthenticated: false })
+        return
+      }
+
+      console.log('[Auth] Checking token validity...')
+      const response = await fetch(`${API_BASE}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        console.error('[Auth] Token invalid')
+        localStorage.removeItem('auth_token')
+        set({ loading: false, isAuthenticated: false })
+        return
+      }
+
+      const userData = await response.json()
+      console.log('[Auth] Token valid, user:', userData.email)
+      
+      set({
+        user: userData,
+        isAuthenticated: true,
+        loading: false
+      })
+    } catch (error) {
+      console.error('[Auth] checkAuth error:', error)
+      localStorage.removeItem('auth_token')
+      set({
+        loading: false,
+        isAuthenticated: false
+      })
+    }
+  }
+}))

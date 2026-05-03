@@ -2,384 +2,279 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-/**
- * Zustand stores for teacher features
- * Manages state for activities, projects, and UI
- */
+import { create } from 'zustand'
+import { Activity, CreateActivityInput, UpdateActivityInput, ActivityListResponse, FilterParams } from '@/types/teacher'
 
-import { create } from 'zustand';
-import {
-  Activity,
-  ActivityFormData,
-  ActivityFilters,
-  Project,
-  ProjectFormData,
-  ProjectFilters,
-  PaginatedActivityResponse,
-  PaginatedProjectResponse,
-} from '../types/teacher';
-import { activityApi, projectApi } from '../services/teacher';
-
-// ============================================================================
-// ACTIVITY STORE
-// ============================================================================
-
-interface ActivityState {
-  // Data
-  activities: Activity[];
-  paginatedActivities: PaginatedActivityResponse | null;
-  selectedActivity: Activity | null;
-  
+interface TeacherStore {
   // State
-  loading: boolean;
-  error: string | null;
-  
-  // Filters
-  filters: ActivityFilters;
-  
+  activities: Activity[]
+  currentActivity: Activity | null
+  loading: boolean
+  error: string | null
+  totalPages: number
+  currentPage: number
+  pageSize: number
+
   // Actions
-  fetchActivities: (filters: ActivityFilters) => Promise<void>;
-  fetchActivity: (id: string) => Promise<void>;
-  createActivity: (data: ActivityFormData) => Promise<Activity>;
-  updateActivity: (id: string, data: Partial<ActivityFormData>) => Promise<Activity>;
-  deleteActivity: (id: string) => Promise<void>;
-  publishActivity: (id: string) => Promise<Activity>;
-  archiveActivity: (id: string) => Promise<Activity>;
-  setFilters: (filters: Partial<ActivityFilters>) => void;
-  clearError: () => void;
+  fetchActivities: (params?: FilterParams) => Promise<void>
+  getActivity: (id: string) => Promise<Activity>
+  createActivity: (data: CreateActivityInput) => Promise<Activity>
+  updateActivity: (id: string, data: UpdateActivityInput) => Promise<Activity>
+  deleteActivity: (id: string) => Promise<void>
+  publishActivity: (id: string) => Promise<Activity>
+  archiveActivity: (id: string) => Promise<Activity>
+  setCurrentPage: (page: number) => void
+  clearError: () => void
+  clearCurrentActivity: () => void
 }
 
-export const useActivityStore = create<ActivityState>((set, get) => ({
+const API_BASE = 'http://localhost:8000/api/v1/teacher/activities'
+
+/**
+ * Get auth token from localStorage
+ */
+function getAuthToken(): string {
+  const token = localStorage.getItem('auth_token')
+  if (!token) {
+    throw new Error('No authentication token found')
+  }
+  return token
+}
+
+/**
+ * Fetch helper with error handling
+ */
+async function apiCall<T>(
+  url: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const token = getAuthToken()
+  
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.detail || `API error: ${response.status}`)
+  }
+
+  return response.json()
+}
+
+export const useTeacherStore = create<TeacherStore>((set, get) => ({
   // Initial state
   activities: [],
-  paginatedActivities: null,
-  selectedActivity: null,
+  currentActivity: null,
   loading: false,
   error: null,
-  filters: {
-    page: 1,
-    page_size: 20,
-  },
+  totalPages: 1,
+  currentPage: 1,
+  pageSize: 10,
 
-  // Fetch activities list
-  async fetchActivities(filters: ActivityFilters) {
-    set({ loading: true, error: null });
+  /**
+   * Fetch activities list with optional filters
+   */
+  fetchActivities: async (params = {}) => {
+    set({ loading: true, error: null })
     try {
-      const response = await activityApi.list(filters);
+      const query = new URLSearchParams(
+        Object.entries(params).reduce((acc, [key, value]) => {
+          if (value !== undefined && value !== null) {
+            acc[key] = String(value)
+          }
+          return acc
+        }, {} as Record<string, string>)
+      ).toString()
+
+      const url = query ? `${API_BASE}?${query}` : API_BASE
+      const data = await apiCall<ActivityListResponse>(url)
+
       set({
-        paginatedActivities: response,
-        activities: response.items as unknown as Activity[],
-        filters,
-      });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch activities' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Fetch single activity
-  async fetchActivity(id: string) {
-    set({ loading: true, error: null });
-    try {
-      const activity = await activityApi.get(id);
-      set({ selectedActivity: activity });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch activity' });
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Create activity
-  async createActivity(data: ActivityFormData) {
-    set({ loading: true, error: null });
-    try {
-      const activity = await activityApi.create(data);
-      set((state) => ({
-        activities: [activity as unknown as Activity, ...state.activities],
-      }));
-      return activity;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create activity';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Update activity
-  async updateActivity(id: string, data: Partial<ActivityFormData>) {
-    set({ loading: true, error: null });
-    try {
-      const activity = await activityApi.update(id, data);
-      set((state) => ({
-        activities: state.activities.map((a) => (a.id === id ? (activity as unknown as Activity) : a)),
-        selectedActivity: state.selectedActivity?.id === id ? (activity as unknown as Activity) : state.selectedActivity,
-      }));
-      return activity;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update activity';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Delete activity
-  async deleteActivity(id: string) {
-    set({ loading: true, error: null });
-    try {
-      await activityApi.delete(id);
-      set((state) => ({
-        activities: state.activities.filter((a) => a.id !== id),
-        selectedActivity: state.selectedActivity?.id === id ? null : state.selectedActivity,
-      }));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete activity';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Publish activity
-  async publishActivity(id: string) {
-    set({ loading: true, error: null });
-    try {
-      const activity = await activityApi.publish(id);
-      set((state) => ({
-        activities: state.activities.map((a) => (a.id === id ? (activity as unknown as Activity) : a)),
-      }));
-      return activity;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to publish activity';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Archive activity
-  async archiveActivity(id: string) {
-    set({ loading: true, error: null });
-    try {
-      const activity = await activityApi.archive(id);
-      set((state) => ({
-        activities: state.activities.map((a) => (a.id === id ? (activity as unknown as Activity) : a)),
-      }));
-      return activity;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to archive activity';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Set filters
-  setFilters(newFilters: Partial<ActivityFilters>) {
-    set((state) => ({
-      filters: { ...state.filters, ...newFilters },
-    }));
-    // Auto-fetch with new filters
-    get().fetchActivities({ ...get().filters, ...newFilters });
-  },
-
-  // Clear error
-  clearError() {
-    set({ error: null });
-  },
-}));
-
-// ============================================================================
-// PROJECT STORE
-// ============================================================================
-
-interface ProjectState {
-  // Data
-  projects: Project[];
-  paginatedProjects: PaginatedProjectResponse | null;
-  selectedProject: Project | null;
-  
-  // State
-  loading: boolean;
-  error: string | null;
-  
-  // Filters
-  filters: ProjectFilters;
-  
-  // Actions
-  fetchProjects: (filters: ProjectFilters) => Promise<void>;
-  fetchProject: (id: string) => Promise<void>;
-  createProject: (data: ProjectFormData) => Promise<Project>;
-  updateProject: (id: string, data: Partial<ProjectFormData>) => Promise<Project>;
-  deleteProject: (id: string) => Promise<void>;
-  addActivityToProject: (projectId: string, activityId: string, order?: number) => Promise<void>;
-  removeActivityFromProject: (projectId: string, activityId: string) => Promise<void>;
-  reorderActivities: (projectId: string, activities: { id: string; order: number }[]) => Promise<void>;
-  setFilters: (filters: Partial<ProjectFilters>) => void;
-  clearError: () => void;
-}
-
-export const useProjectStore = create<ProjectState>((set, get) => ({
-  // Initial state
-  projects: [],
-  paginatedProjects: null,
-  selectedProject: null,
-  loading: false,
-  error: null,
-  filters: {
-    page: 1,
-    page_size: 20,
-  },
-
-  // Fetch projects list
-  async fetchProjects(filters: ProjectFilters) {
-    set({ loading: true, error: null });
-    try {
-      const response = await projectApi.list(filters);
+        activities: data.items || [],
+        totalPages: data.total_pages || 1,
+        currentPage: data.page || 1,
+        pageSize: data.page_size || 10,
+        loading: false,
+        error: null
+      })
+    } catch (error: any) {
       set({
-        paginatedProjects: response,
-        projects: response.items as unknown as Project[],
-        filters,
-      });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch projects' });
-    } finally {
-      set({ loading: false });
+        error: error.message || 'Failed to fetch activities',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Fetch single project
-  async fetchProject(id: string) {
-    set({ loading: true, error: null });
+  /**
+   * Get single activity by ID
+   */
+  getActivity: async (id: string) => {
+    set({ loading: true, error: null })
     try {
-      const project = await projectApi.get(id);
-      set({ selectedProject: project });
-    } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to fetch project' });
-    } finally {
-      set({ loading: false });
+      const data = await apiCall<{ data: Activity }>(`${API_BASE}/${id}`)
+      const activity = data.data
+      set({
+        currentActivity: activity,
+        loading: false,
+        error: null
+      })
+      return activity
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to fetch activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Create project
-  async createProject(data: ProjectFormData) {
-    set({ loading: true, error: null });
+  /**
+   * Create new activity
+   */
+  createActivity: async (data: CreateActivityInput) => {
+    set({ loading: true, error: null })
     try {
-      const project = await projectApi.create(data);
-      set((state) => ({
-        projects: [project as unknown as Project, ...state.projects],
-      }));
-      return project;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create project';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
+      const response = await apiCall<{ data: Activity }>(API_BASE, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
+      const newActivity = response.data
+
+      set(state => ({
+        activities: [...state.activities, newActivity],
+        loading: false,
+        error: null
+      }))
+
+      return newActivity
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to create activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Update project
-  async updateProject(id: string, data: Partial<ProjectFormData>) {
-    set({ loading: true, error: null });
+  /**
+   * Update existing activity
+   */
+  updateActivity: async (id: string, data: UpdateActivityInput) => {
+    set({ loading: true, error: null })
     try {
-      const project = await projectApi.update(id, data);
-      set((state) => ({
-        projects: state.projects.map((p) => (p.id === id ? (project as unknown as Project) : p)),
-        selectedProject: state.selectedProject?.id === id ? (project as unknown as Project) : state.selectedProject,
-      }));
-      return project;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update project';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
+      const response = await apiCall<{ data: Activity }>(`${API_BASE}/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      })
+      const updated = response.data
+
+      set(state => ({
+        activities: state.activities.map(a => a.id === id ? updated : a),
+        currentActivity: state.currentActivity?.id === id ? updated : state.currentActivity,
+        loading: false,
+        error: null
+      }))
+
+      return updated
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to update activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Delete project
-  async deleteProject(id: string) {
-    set({ loading: true, error: null });
+  /**
+   * Delete activity by ID
+   */
+  deleteActivity: async (id: string) => {
+    set({ loading: true, error: null })
     try {
-      await projectApi.delete(id);
-      set((state) => ({
-        projects: state.projects.filter((p) => p.id !== id),
-        selectedProject: state.selectedProject?.id === id ? null : state.selectedProject,
-      }));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete project';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
+      await apiCall<void>(`${API_BASE}/${id}`, {
+        method: 'DELETE'
+      })
+
+      set(state => ({
+        activities: state.activities.filter(a => a.id !== id),
+        currentActivity: state.currentActivity?.id === id ? null : state.currentActivity,
+        loading: false,
+        error: null
+      }))
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to delete activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Add activity to project
-  async addActivityToProject(projectId: string, activityId: string, order?: number) {
-    set({ loading: true, error: null });
+  /**
+   * Publish activity (change status to published)
+   */
+  publishActivity: async (id: string) => {
+    set({ loading: true, error: null })
     try {
-      await projectApi.addActivity(projectId, activityId, order);
-      await get().fetchProject(projectId); // Refresh project
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to add activity to project';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
+      const response = await apiCall<{ data: Activity }>(`${API_BASE}/${id}/publish`, {
+        method: 'POST'
+      })
+      const updated = response.data
+
+      set(state => ({
+        activities: state.activities.map(a => a.id === id ? updated : a),
+        currentActivity: state.currentActivity?.id === id ? updated : state.currentActivity,
+        loading: false,
+        error: null
+      }))
+
+      return updated
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to publish activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Remove activity from project
-  async removeActivityFromProject(projectId: string, activityId: string) {
-    set({ loading: true, error: null });
+  /**
+   * Archive activity (change status to archived)
+   */
+  archiveActivity: async (id: string) => {
+    set({ loading: true, error: null })
     try {
-      await projectApi.removeActivity(projectId, activityId);
-      await get().fetchProject(projectId); // Refresh project
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to remove activity from project';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
+      const response = await apiCall<{ data: Activity }>(`${API_BASE}/${id}/archive`, {
+        method: 'POST'
+      })
+      const updated = response.data
+
+      set(state => ({
+        activities: state.activities.map(a => a.id === id ? updated : a),
+        currentActivity: state.currentActivity?.id === id ? updated : state.currentActivity,
+        loading: false,
+        error: null
+      }))
+
+      return updated
+    } catch (error: any) {
+      set({
+        error: error.message || 'Failed to archive activity',
+        loading: false
+      })
+      throw error
     }
   },
 
-  // Reorder activities
-  async reorderActivities(projectId: string, activities: { id: string; order: number }[]) {
-    set({ loading: true, error: null });
-    try {
-      await projectApi.reorderActivities(projectId, activities);
-      await get().fetchProject(projectId); // Refresh project
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to reorder activities';
-      set({ error: message });
-      throw error;
-    } finally {
-      set({ loading: false });
-    }
-  },
-
-  // Set filters
-  setFilters(newFilters: Partial<ProjectFilters>) {
-    set((state) => ({
-      filters: { ...state.filters, ...newFilters },
-    }));
-    // Auto-fetch with new filters
-    get().fetchProjects({ ...get().filters, ...newFilters });
-  },
-
-  // Clear error
-  clearError() {
-    set({ error: null });
-  },
-}));
+  // Utility actions
+  setCurrentPage: (page: number) => set({ currentPage: page }),
+  clearError: () => set({ error: null }),
+  clearCurrentActivity: () => set({ currentActivity: null })
+}))

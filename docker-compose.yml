@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: peripateticware_secure_password_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - "5432:5432"
     healthcheck:

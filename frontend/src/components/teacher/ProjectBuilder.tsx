@@ -22,7 +22,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Project, ProjectFormData } from '../../types/teacher';
-import { useProjectStore } from '../../stores/teacher';
+import { useTeacherStore } from '../../stores/teacher';
 import Button from '../common/Button';
 
 // Validation schema
@@ -72,7 +72,7 @@ export const ProjectBuilder: React.FC<ProjectBuilderProps> = ({
   compact = false,
 }) => {
   const { createProject, updateProject, loading, error, clearError } =
-    useProjectStore();
+    useTeacherStore();
 
   const {
     register,

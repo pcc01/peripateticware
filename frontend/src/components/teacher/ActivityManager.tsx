@@ -2,281 +2,610 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ActivityCreateRequest, Activity, ActivityZone, ZoneShape } from '@types/session'
-import { Difficulty } from '@/config/constants'
-import Card from '@components/common/Card'
-import Input from '@components/common/Input'
-import Select from '@components/common/Select'
-import Button from '@components/common/Button'
-import Modal from '@components/common/Modal'
-import Map from '@components/common/Map'
-import useGeolocation from '@hooks/useGeolocation'
+import { useTeacherStore } from '@/stores/teacher'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Activity, CreateActivityInput } from '@/types/teacher'
 
-interface ActivityManagerProps {
-  curriculumId: string
-  onActivityCreated?: (activity: Activity) => void
-}
+const ActivityManager = () => {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { activities, getActivity, createActivity, updateActivity, loading, error, clearCurrentActivity } = useTeacherStore()
 
-const ActivityManager: React.FC<ActivityManagerProps> = ({ curriculumId, onActivityCreated }) => {
-  const { t } = useTranslation(['teacher', 'common'])
-  const { coordinates } = useGeolocation()
-  const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<'basic' | 'location' | 'zone' | 'review'>(
-    'basic'
-  )
-  const [isLoading, setIsLoading] = useState(false)
-
-  const [formData, setFormData] = useState<ActivityCreateRequest>({
-    name: '',
-    curriculum_id: curriculumId,
-    latitude: coordinates?.latitude || 40.7128,
-    longitude: coordinates?.longitude || -74.006,
+  const isEditing = !!id
+  const [formData, setFormData] = useState<CreateActivityInput>({
+    title: '',
+    description: '',
+    grade_level: 5,
+    subject: 'Science',
+    difficulty_level: 3,
+    location_latitude: 47.6839,
+    location_longitude: -122.3081,
+    location_radius_meters: 500,
     location_name: '',
-    zone: {
-      id: '',
-      name: '',
-      location: {
-        latitude: coordinates?.latitude || 40.7128,
-        longitude: coordinates?.longitude || -74.006,
-        name: '',
-      },
-      shape: ZoneShape.CIRCLE,
-      radius: 100,
-    },
-    difficulty: Difficulty.MEDIUM,
-    duration_minutes: 30,
-    objectives: [],
-    instructions: '',
+    estimated_duration_minutes: 45,
+    materials_needed: [],
     resources: [],
-    tags: [],
+    learning_objectives: [],
+    curriculum_unit_ids: [],
+    bloom_level: 'understand',
+    activity_type: 'outdoor',
+    is_shareable: false
   })
 
-  const difficultyOptions = Object.values(Difficulty).map((d) => ({
-    value: d,
-    label: d.charAt(0).toUpperCase() + d.slice(1),
-  }))
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [submitError, setSubmitError] = useState('')
+  const [newMaterial, setNewMaterial] = useState('')
+  const [newObjective, setNewObjective] = useState('')
+  const [newResource, setNewResource] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleNext = () => {
-    const steps: Array<'basic' | 'location' | 'zone' | 'review'> = ['basic', 'location', 'zone', 'review']
-    const currentIndex = steps.indexOf(step)
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1])
+  // Load existing activity if editing
+  useEffect(() => {
+    if (isEditing && id) {
+      getActivity(id)
+        .then(activity => {
+          setFormData({
+            title: activity.title,
+            description: activity.description,
+            grade_level: activity.grade_level,
+            subject: activity.subject,
+            difficulty_level: activity.difficulty_level,
+            location_latitude: activity.location_latitude,
+            location_longitude: activity.location_longitude,
+            location_radius_meters: activity.location_radius_meters,
+            location_name: activity.location_name,
+            estimated_duration_minutes: activity.estimated_duration_minutes,
+            materials_needed: activity.materials_needed,
+            resources: activity.resources,
+            learning_objectives: activity.learning_objectives,
+            curriculum_unit_ids: activity.curriculum_unit_ids,
+            bloom_level: activity.bloom_level,
+            activity_type: activity.activity_type,
+            is_shareable: activity.is_shareable
+          })
+        })
+        .catch(err => {
+          setSubmitError('Failed to load activity: ' + err.message)
+        })
     }
+
+    return () => {
+      clearCurrentActivity()
+    }
+  }, [isEditing, id, getActivity, clearCurrentActivity])
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.title?.trim()) {
+      newErrors.title = 'Title is required'
+    } else if (formData.title.length < 3) {
+      newErrors.title = 'Title must be at least 3 characters'
+    } else if (formData.title.length > 200) {
+      newErrors.title = 'Title must be less than 200 characters'
+    }
+
+    if (!formData.subject) {
+      newErrors.subject = 'Subject is required'
+    }
+
+    if (!formData.grade_level || formData.grade_level < 3 || formData.grade_level > 12) {
+      newErrors.grade_level = 'Grade must be between 3 and 12'
+    }
+
+    if (formData.difficulty_level && (formData.difficulty_level < 1 || formData.difficulty_level > 5)) {
+      newErrors.difficulty_level = 'Difficulty must be between 1 and 5'
+    }
+
+    if (formData.estimated_duration_minutes && formData.estimated_duration_minutes < 1) {
+      newErrors.estimated_duration_minutes = 'Duration must be at least 1 minute'
+    }
+
+    if (formData.location_latitude && (formData.location_latitude < -90 || formData.location_latitude > 90)) {
+      newErrors.location_latitude = 'Latitude must be between -90 and 90'
+    }
+
+    if (formData.location_longitude && (formData.location_longitude < -180 || formData.location_longitude > 180)) {
+      newErrors.location_longitude = 'Longitude must be between -180 and 180'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  const handlePrevious = () => {
-    const steps: Array<'basic' | 'location' | 'zone' | 'review'> = ['basic', 'location', 'zone', 'review']
-    const currentIndex = steps.indexOf(step)
-    if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1])
-    }
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitError('')
+    setIsSubmitting(true)
 
-  const handleSubmit = async () => {
-    setIsLoading(true)
+    if (!validateForm()) {
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      // TODO: Call activity service to create activity
-      console.log('Creating activity:', formData)
-      setIsOpen(false)
-    } finally {
-      setIsLoading(false)
+      if (isEditing && id) {
+        await updateActivity(id, formData)
+      } else {
+        await createActivity(formData)
+      }
+
+      navigate('/teacher/activities')
+    } catch (error: any) {
+      setSubmitError(error.message || 'An error occurred while saving')
+      setIsSubmitting(false)
     }
+  }
+
+  const handleAddMaterial = () => {
+    if (newMaterial.trim()) {
+      setFormData({
+        ...formData,
+        materials_needed: [...(formData.materials_needed || []), newMaterial.trim()]
+      })
+      setNewMaterial('')
+    }
+  }
+
+  const handleRemoveMaterial = (index: number) => {
+    setFormData({
+      ...formData,
+      materials_needed: formData.materials_needed?.filter((_, i) => i !== index) || []
+    })
+  }
+
+  const handleAddObjective = () => {
+    if (newObjective.trim()) {
+      setFormData({
+        ...formData,
+        learning_objectives: [...(formData.learning_objectives || []), newObjective.trim()]
+      })
+      setNewObjective('')
+    }
+  }
+
+  const handleRemoveObjective = (index: number) => {
+    setFormData({
+      ...formData,
+      learning_objectives: formData.learning_objectives?.filter((_, i) => i !== index) || []
+    })
+  }
+
+  const handleAddResource = () => {
+    if (newResource.trim()) {
+      setFormData({
+        ...formData,
+        resources: [...(formData.resources || []), newResource.trim()]
+      })
+      setNewResource('')
+    }
+  }
+
+  const handleRemoveResource = (index: number) => {
+    setFormData({
+      ...formData,
+      resources: formData.resources?.filter((_, i) => i !== index) || []
+    })
   }
 
   return (
-    <>
-      <Button onClick={() => setIsOpen(true)} variant="primary">
-        {t('teacher:activities.createNewActivity')}
-      </Button>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-2">
+        {isEditing ? 'Edit Activity' : 'Create Activity'}
+      </h1>
+      <p className="text-gray-600 mb-6">
+        {isEditing ? 'Update your activity details' : 'Create a new educational activity'}
+      </p>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false)
-          setStep('basic')
-        }}
-        title={t('teacher:activities.createNewActivity')}
-        size="lg"
-        footer={
-          <div className="flex gap-2 justify-between w-full">
-            <div>
-              <Button
-                variant="secondary"
-                onClick={handlePrevious}
-                disabled={step === 'basic'}
-              >
-                {t('common:previous')}
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setIsOpen(false)}
-              >
-                {t('common:cancel')}
-              </Button>
-              {step === 'review' ? (
-                <Button
-                  variant="primary"
-                  onClick={handleSubmit}
-                  isLoading={isLoading}
-                >
-                  {t('common:save')}
-                </Button>
-              ) : (
-                <Button variant="primary" onClick={handleNext}>
-                  {t('common:next')}
-                </Button>
-              )}
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg p-8 shadow">
+        {/* Error Alert */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+            <p className="font-semibold">Error</p>
+            <p>{submitError}</p>
           </div>
-        }
-      >
-        {/* Step 1: Basic Info */}
-        {step === 'basic' && (
-          <div className="space-y-4">
-            <Input
-              label={t('teacher:activities.activityName')}
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
+        )}
+
+        {/* Basic Information Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Basic Information</h2>
+
+          {/* Title */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.title ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter activity title"
+              maxLength={200}
             />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            <p className="text-gray-500 text-xs mt-1">{formData.title?.length || 0}/200</p>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Select
-                label={t('teacher:activities.difficulty')}
-                value={formData.difficulty}
-                onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as Difficulty })}
-                options={difficultyOptions}
-              />
-
-              <Input
-                label={t('teacher:activities.duration')}
-                type="number"
-                value={formData.duration_minutes}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    duration_minutes: parseInt(e.target.value),
-                  })
-                }
-              />
-            </div>
-
-            <Input
-              label={t('teacher:activities.instructions')}
-              value={formData.instructions}
-              onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-              multiline
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter activity description"
               rows={4}
             />
           </div>
-        )}
+        </div>
 
-        {/* Step 2: Location */}
-        {step === 'location' && (
-          <div className="space-y-4">
-            <Input
-              label={t('teacher:activities.locationName')}
+        {/* Academic Information Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Academic Information</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Grade Level */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Grade Level <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.grade_level}
+                onChange={(e) => setFormData({ ...formData, grade_level: parseInt(e.target.value) })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.grade_level ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                {Array.from({ length: 10 }, (_, i) => i + 3).map(grade => (
+                  <option key={grade} value={grade}>Grade {grade}</option>
+                ))}
+              </select>
+              {errors.grade_level && <p className="text-red-500 text-sm mt-1">{errors.grade_level}</p>}
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Subject <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.subject ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="Science">Science</option>
+                <option value="Math">Math</option>
+                <option value="Language">Language</option>
+                <option value="History">History</option>
+                <option value="Art">Art</option>
+                <option value="PE">PE</option>
+              </select>
+              {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
+            </div>
+
+            {/* Difficulty Level */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Difficulty Level: {formData.difficulty_level}/5
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={formData.difficulty_level || 3}
+                  onChange={(e) => setFormData({ ...formData, difficulty_level: parseInt(e.target.value) })}
+                  className="flex-1"
+                />
+                <span className="text-sm font-semibold text-gray-600">
+                  {'★'.repeat(formData.difficulty_level || 3)}{'☆'.repeat(5 - (formData.difficulty_level || 3))}
+                </span>
+              </div>
+            </div>
+
+            {/* Bloom's Level */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Bloom's Taxonomy Level
+              </label>
+              <select
+                value={formData.bloom_level}
+                onChange={(e) => setFormData({ ...formData, bloom_level: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="remember">Remember</option>
+                <option value="understand">Understand</option>
+                <option value="apply">Apply</option>
+                <option value="analyze">Analyze</option>
+                <option value="evaluate">Evaluate</option>
+                <option value="create">Create</option>
+              </select>
+            </div>
+
+            {/* Duration */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Estimated Duration (minutes)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.estimated_duration_minutes}
+                onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.estimated_duration_minutes ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {errors.estimated_duration_minutes && (
+                <p className="text-red-500 text-sm mt-1">{errors.estimated_duration_minutes}</p>
+              )}
+            </div>
+
+            {/* Activity Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Activity Type
+              </label>
+              <select
+                value={formData.activity_type}
+                onChange={(e) => setFormData({ ...formData, activity_type: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="outdoor">Outdoor</option>
+                <option value="indoor">Indoor</option>
+                <option value="virtual">Virtual</option>
+                <option value="mixed">Mixed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Location Information Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Location Information</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Latitude
+              </label>
+              <input
+                type="number"
+                step="0.0001"
+                value={formData.location_latitude}
+                onChange={(e) => setFormData({ ...formData, location_latitude: parseFloat(e.target.value) || 0 })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.location_latitude ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g., 47.6839"
+              />
+              {errors.location_latitude && <p className="text-red-500 text-sm mt-1">{errors.location_latitude}</p>}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Longitude
+              </label>
+              <input
+                type="number"
+                step="0.0001"
+                value={formData.location_longitude}
+                onChange={(e) => setFormData({ ...formData, location_longitude: parseFloat(e.target.value) || 0 })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.location_longitude ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="e.g., -122.3081"
+              />
+              {errors.location_longitude && <p className="text-red-500 text-sm mt-1">{errors.location_longitude}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Location Name
+            </label>
+            <input
+              type="text"
               value={formData.location_name}
               onChange={(e) => setFormData({ ...formData, location_name: e.target.value })}
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label={t('teacher:activities.latitude')}
-                type="number"
-                step="0.0001"
-                value={formData.latitude}
-                onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) })}
-              />
-              <Input
-                label={t('teacher:activities.longitude')}
-                type="number"
-                step="0.0001"
-                value={formData.longitude}
-                onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) })}
-              />
-            </div>
-
-            {/* Mini map */}
-            <Map
-              center={[formData.latitude, formData.longitude]}
-              zoom={15}
-              height="300px"
-              onLocationSelect={(location) =>
-                setFormData({
-                  ...formData,
-                  latitude: location.latitude,
-                  longitude: location.longitude,
-                  location_name: location.name,
-                })
-              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Downtown Park, Science Museum"
             />
           </div>
-        )}
 
-        {/* Step 3: Zone */}
-        {step === 'zone' && (
-          <div className="space-y-4">
-            <Input
-              label={t('teacher:activities.setZoneRadius')}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2 mt-4">
+              Location Radius (meters)
+            </label>
+            <input
               type="number"
-              value={formData.zone.radius || 100}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  zone: { ...formData.zone, radius: parseInt(e.target.value) },
-                })
-              }
-              hint="Radius in meters for circular zone"
-            />
-
-            <Map
-              center={[formData.latitude, formData.longitude]}
-              zoom={15}
-              height="300px"
-              zones={[formData.zone]}
-              editable
+              min="1"
+              value={formData.location_radius_meters}
+              onChange={(e) => setFormData({ ...formData, location_radius_meters: parseInt(e.target.value) || 500 })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="500"
             />
           </div>
-        )}
+        </div>
 
-        {/* Step 4: Review */}
-        {step === 'review' && (
-          <div className="space-y-4">
-            <Card title={t('teacher:activities.activityName')}>
-              <p className="text-lg font-medium">{formData.name}</p>
-            </Card>
+        {/* Materials Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Materials & Resources</h2>
 
-            <Card title={t('teacher:activities.location')}>
-              <p>{formData.location_name}</p>
-              <p className="text-sm text-color-text-secondary">
-                {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
-              </p>
-            </Card>
-
-            <Card title={t('teacher:activities.instructions')}>
-              <p>{formData.instructions}</p>
-            </Card>
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">{t('teacher:activities.difficulty')}:</span>
-                <p>{formData.difficulty}</p>
-              </div>
-              <div>
-                <span className="font-medium">{t('teacher:activities.duration')}:</span>
-                <p>{formData.duration_minutes} min</p>
-              </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Materials Needed
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newMaterial}
+                onChange={(e) => setNewMaterial(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Microscopes, Beakers, Worksheets"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMaterial())}
+              />
+              <button
+                type="button"
+                onClick={handleAddMaterial}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(formData.materials_needed || []).map((material, index) => (
+                <div
+                  key={index}
+                  className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2"
+                >
+                  <span>{material}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMaterial(index)}
+                    className="font-bold hover:text-blue-900"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </Modal>
-    </>
+
+          <div className="mt-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Additional Resources
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newResource}
+                onChange={(e) => setNewResource(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., Online videos, PDF guides, websites"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddResource())}
+              />
+              <button
+                type="button"
+                onClick={handleAddResource}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(formData.resources || []).map((resource, index) => (
+                <div
+                  key={index}
+                  className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full flex items-center gap-2"
+                >
+                  <span>{resource}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveResource(index)}
+                    className="font-bold hover:text-purple-900"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Learning Objectives Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Learning Objectives</h2>
+
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={newObjective}
+              onChange={(e) => setNewObjective(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., Understand photosynthesis process"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddObjective())}
+            />
+            <button
+              type="button"
+              onClick={handleAddObjective}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(formData.learning_objectives || []).map((objective, index) => (
+              <div
+                key={index}
+                className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center gap-2"
+              >
+                <span>{objective}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveObjective(index)}
+                  className="font-bold hover:text-green-900"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Additional Options */}
+        <div className="pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Additional Options</h2>
+          
+          <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <input
+              type="checkbox"
+              id="shareable"
+              checked={formData.is_shareable || false}
+              onChange={(e) => setFormData({ ...formData, is_shareable: e.target.checked })}
+              className="w-4 h-4"
+            />
+            <label htmlFor="shareable" className="ml-3 text-sm font-semibold text-gray-700 cursor-pointer flex-1">
+              Make this activity shareable with other teachers
+            </label>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3 pt-6 border-t border-gray-200">
+          <button
+            type="submit"
+            disabled={isSubmitting || loading}
+            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting || loading ? (
+              <span className="flex items-center justify-center">
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                Saving...
+              </span>
+            ) : (
+              isEditing ? 'Update Activity' : 'Create Activity'
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/teacher/activities')}
+            disabled={isSubmitting}
+            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   )
 }
 

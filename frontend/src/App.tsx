@@ -11,11 +11,10 @@ import { useUIStore } from '@stores/uiStore'
 // ============================================================================
 // Auth Pages
 // ============================================================================
-import { LoginScreen } from '@components/auth/LoginScreen'
+import LoginPage from '@pages/LoginPage'
 import { SignUpScreen } from '@components/auth/SignUpScreen'
 import { SplashScreen } from '@components/auth/SplashScreen'
 
-const LoginPage = LoginScreen
 const RegisterPage = SignUpScreen
 const NotFoundPage = () => <div>404 Not Found</div>
 // ============================================================================

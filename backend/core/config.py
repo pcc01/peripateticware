@@ -51,8 +51,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     
-    # CORS - Store as string, parse as needed
-    CORS_ORIGINS_STR: str = os.getenv("CORS_ORIGINS", '["*"]')
+    # CORS - Default includes localhost:5173 for development
+    CORS_ORIGINS_STR: str = os.getenv(
+        "CORS_ORIGINS", 
+        '["http://localhost:5173", "http://localhost:3000", "*"]'
+    )
     
     # Vector DB
     VECTOR_DIMENSION: int = 384  # For sentence-transformers/all-MiniLM-L6-v2
@@ -70,9 +73,13 @@ class Settings(BaseSettings):
     def CORS_ORIGINS(self) -> list:
         """Parse CORS_ORIGINS from string to list"""
         try:
-            return json.loads(self.CORS_ORIGINS_STR)
+            origins = json.loads(self.CORS_ORIGINS_STR)
+            # Ensure list format
+            if isinstance(origins, str):
+                return [origins]
+            return origins if isinstance(origins, list) else ["*"]
         except (json.JSONDecodeError, TypeError):
-            return ["*"]
+            return ["http://localhost:5173", "http://localhost:3000", "*"]
     
     class Config:
         case_sensitive = True

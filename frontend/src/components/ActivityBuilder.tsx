@@ -19,7 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Activity, ActivityFormData, ActivityType } from '../types/teacher';
-import { useActivityStore } from '../stores/teacher';
+import { useTeacherStore } from '../stores/teacher';
 
 // Validation schema
 const activitySchema = z.object({
@@ -82,7 +82,7 @@ export const ActivityBuilder: React.FC<ActivityBuilderProps> = ({
   onCancel,
 }) => {
   const [currentTab, setCurrentTab] = useState<'basic' | 'location' | 'curriculum' | 'metadata' | 'resources'>('basic');
-  const { createActivity, updateActivity, loading, error, clearError } = useActivityStore();
+  const { createActivity, updateActivity, loading, error, clearError } = useTeacherStore();
 
   const {
     register,
