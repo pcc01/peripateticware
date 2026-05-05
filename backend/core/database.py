@@ -18,7 +18,7 @@ Base = declarative_base()
 # Get database URL from environment
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://peripateticware_user:peripateticware_secure_password_dev@postgres:5432/peripateticware"
+  
 )
 
 # Detect if using PgBouncer
@@ -28,6 +28,8 @@ print(f"[Database] Connecting to: {DATABASE_URL.replace(':peripateticware_user:p
 print(f"[Database] Using PgBouncer: {USE_PGBOUNCER}")
 
 # Create async engine (IMPORTANT: postgresql+asyncpg:// not postgresql://)
+# Make sure the DATABASE_URL uses asyncpg driver
+
 engine = create_async_engine(
     DATABASE_URL,
     poolclass=QueuePool,

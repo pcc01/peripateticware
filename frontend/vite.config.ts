@@ -8,6 +8,13 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+      protocol: 'ws'
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

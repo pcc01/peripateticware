@@ -1,169 +1,146 @@
 version: '3.9'
 
 services:
+  # PostgreSQL Database
   postgres:
-    image: pgvector/pgvector:pg16
+    image: postgres:16-alpine
     container_name: peripateticware-postgres
+    restart: unless-stopped
     environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: peripateticware
-      POSTGRES_USER: peripateticware_user
-      POSTGRES_PASSWORD: peripateticware_secure_password_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U peripateticware_user -d peripateticware"]
-      interval: 5s
-      timeout: 10s
-      retries: 30
-      start_period: 60s
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-peripateticware}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - peripateticware-mesh
-    restart: unless-stopped
+      - peripateticware
 
+  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: peripateticware-redis
+    restart: unless-stopped
     ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - peripateticware-mesh
+      - "${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    networks:
+      - peripateticware
 
-  fastapi:
+  # FastAPI Backend
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: peripateticware-fastapi
+    container_name: peripateticware-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-peripateticware}
+      REDIS_URL: redis://redis:6379
+      
+      # LLM Configuration - Choose your provider
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      
+      # Ollama (Local) - runs on host at http://host.docker.internal:11434
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-mistral}
+      
+      # Claude/Anthropic (Cloud)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:- }
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-1}
+      
+      # OpenAI (Cloud - Optional)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:- }
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo}
+      
+      # Other config
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+asyncpg://peripateticware_user:peripateticware_secure_password_dev@postgres:5432/peripateticware
-      REDIS_URL: redis://redis:6379/0
-      LLM_PROVIDER: claude
-      CLAUDE_API_KEY: ${CLAUDE_API_KEY:-sk-ant-your-api-key-here}
-      CLAUDE_MODEL: claude-3-5-sonnet-20241022
-      CLAUDE_MAX_TOKENS: 2048
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
-      OLLAMA_MODEL_TEXT: llama2
-      OLLAMA_MODEL_VISION: llava
-      OLLAMA_MODEL_AUDIO: whisper
-      CORS_ORIGINS: '["http://localhost:5173", "http://localhost:3000", "http://localhost:19000", "http://localhost:19006", "*"]'
-      ALLOWED_HOSTS: '["*"]'
-      SECRET_KEY: dev-secret-key-change-in-production
-      LOG_LEVEL: INFO
-      ENVIRONMENT: development
-      DEBUG: "True"
-      API_HOST: "0.0.0.0"
-      API_PORT: "8000"
     volumes:
       - ./backend:/app
-    ports:
-      - "8000:8000"
+      - ./uploads:/app/uploads
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-    networks:
-      - peripateticware-mesh
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 5s
+      interval: 30s
       timeout: 10s
-      retries: 30
-      start_period: 120s
-    restart: unless-stopped
+      retries: 3
+    networks:
+      - peripateticware
 
-  web:
+  # React Frontend
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: peripateticware-web
-    depends_on:
-      fastapi:
-        condition: service_healthy
+      target: dev
+    container_name: peripateticware-frontend
+    restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:8000/api
-      NODE_ENV: development
+      VITE_API_URL: ${FRONTEND_API_URL:-http://localhost:8000}
+      VITE_ENV: ${ENVIRONMENT:-development}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    ports:
-      - "5173:5173"
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev -- --host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
-      - peripateticware-mesh
-    restart: unless-stopped
+      - peripateticware
 
+  # ============================================================================
+  # OPTIONAL: Nginx Reverse Proxy (production only)
+  # ============================================================================
   nginx:
     image: nginx:alpine
     container_name: peripateticware-nginx
-    depends_on:
-      fastapi:
-        condition: service_healthy
-      web:
-        condition: service_started
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
-    networks:
-      - peripateticware-mesh
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: peripateticware-prometheus
     volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    networks:
-      - peripateticware-mesh
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: peripateticware-grafana
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-    ports:
-      - "3000:3000"
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
-      - prometheus
+      - backend
+      - frontend
     networks:
-      - peripateticware-mesh
-    restart: unless-stopped
+      - peripateticware
+    profiles:
+      - production
 
 volumes:
   postgres_data:
-  redis_data:
-  prometheus_data:
-  grafana_data:
+    driver: local
+  ollama_data:
+    driver: local
 
 networks:
-  peripateticware-mesh:
+  peripateticware:
     driver: bridge

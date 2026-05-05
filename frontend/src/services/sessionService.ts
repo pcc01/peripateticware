@@ -11,7 +11,7 @@ import {
   InquiryEntry,
 } from '@types/session'
 import { ApiResponse, ApiListResponse } from '@types/api'
-import { Privacy } from '@utils/privacy'
+import { Privacy } from '@/utils/privacy'
 
 export const sessionService = {
   /**

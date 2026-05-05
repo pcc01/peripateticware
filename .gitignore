@@ -114,3 +114,7 @@ frontend/.env.*.local
 # Mobile
 mobile/.env.local
 mobile/.env.*.local
+
+# Codefetch
+codefetch/
+codefetch/*.md

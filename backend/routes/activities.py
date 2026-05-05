@@ -5,7 +5,8 @@
 """Activity management endpoints"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
@@ -21,6 +22,14 @@ from schemas.activities import (
     PaginatedActivityResponse,
 )
 
+# Helper function to extract role
+def get_user_role(user: User) -> str:
+    """Extract role as uppercase string, handling both enum and string cases"""
+    if hasattr(user.role, 'value'):
+        return str(user.role.value).upper()
+    return str(user.role).upper()
+
+
 router = APIRouter(
     prefix="/api/v1/teacher/activities",
     tags=["activities"],
@@ -32,12 +41,12 @@ router = APIRouter(
 async def create_activity(
     activity: ActivityCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new activity"""
     
     # Verify teacher role
-    if current_user.role.value != "teacher":
+    if get_user_role(current_user) != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can create activities"
@@ -67,8 +76,8 @@ async def create_activity(
     )
     
     db.add(db_activity)
-    db.commit()
-    db.refresh(db_activity)
+    await db.commit()
+    await db.refresh(db_activity)
     
     return db_activity
 
@@ -82,25 +91,30 @@ async def list_activities(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """List activities for current teacher"""
     
+    # DEBUG: Check what role we're getting
+    print(f"DEBUG: current_user.role = {current_user.role}")
+    print(f"DEBUG: current_user.role type = {type(current_user.role)}")
+    print(f"DEBUG: current_user.role.value = {current_user.role.value if hasattr(current_user.role, 'value') else 'NO VALUE ATTR'}")
+    
     # Verify teacher role
-    if current_user.role.value != "teacher":
+    if get_user_role(current_user) != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can view activities"
         )
     
     # Build query
-    query = db.query(Activity).filter(Activity.teacher_id == current_user.id)
+    stmt = select(Activity).where(Activity.teacher_id == current_user.id)
     
     # Apply filters
     if status_filter:
         try:
             status_enum = ActivityStatus(status_filter)
-            query = query.filter(Activity.status == status_enum)
+            stmt = stmt.where(Activity.status == status_enum)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -108,20 +122,42 @@ async def list_activities(
             )
     
     if subject:
-        query = query.filter(Activity.subject.ilike(f"%{subject}%"))
+        stmt = stmt.where(Activity.subject.ilike(f"%{subject}%"))
     
     if grade_level:
-        query = query.filter(Activity.grade_level == grade_level)
+        stmt = stmt.where(Activity.grade_level == grade_level)
     
     if difficulty:
-        query = query.filter(Activity.difficulty_level == difficulty)
+        stmt = stmt.where(Activity.difficulty_level == difficulty)
     
     # Count total
-    total = query.count()
+    count_stmt = select(Activity).where(Activity.teacher_id == current_user.id)
+    
+    if status_filter:
+        try:
+            status_enum = ActivityStatus(status_filter)
+            count_stmt = count_stmt.where(Activity.status == status_enum)
+        except ValueError:
+            pass
+    
+    if subject:
+        count_stmt = count_stmt.where(Activity.subject.ilike(f"%{subject}%"))
+    
+    if grade_level:
+        count_stmt = count_stmt.where(Activity.grade_level == grade_level)
+    
+    if difficulty:
+        count_stmt = count_stmt.where(Activity.difficulty_level == difficulty)
+    
+    result = await db.execute(count_stmt)
+    total = len(result.scalars().all())
     
     # Paginate
     offset = (page - 1) * page_size
-    activities = query.order_by(Activity.created_at.desc()).offset(offset).limit(page_size).all()
+    stmt = stmt.order_by(Activity.created_at.desc()).offset(offset).limit(page_size)
+    
+    result = await db.execute(stmt)
+    activities = result.scalars().all()
     
     # Calculate total pages
     total_pages = (total + page_size - 1) // page_size
@@ -139,11 +175,13 @@ async def list_activities(
 async def get_activity(
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get activity details"""
     
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    stmt = select(Activity).where(Activity.id == activity_id)
+    result = await db.execute(stmt)
+    activity = result.scalar_one_or_none()
     
     if not activity:
         raise HTTPException(
@@ -161,7 +199,7 @@ async def get_activity(
     # Increment view count if not the owner
     if activity.teacher_id != current_user.id:
         activity.view_count += 1
-        db.commit()
+        await db.commit()
     
     return activity
 
@@ -171,11 +209,13 @@ async def update_activity(
     activity_id: UUID,
     activity_update: ActivityUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update an activity"""
     
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    stmt = select(Activity).where(Activity.id == activity_id)
+    result = await db.execute(stmt)
+    activity = result.scalar_one_or_none()
     
     if not activity:
         raise HTTPException(
@@ -202,8 +242,8 @@ async def update_activity(
     
     activity.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(activity)
+    await db.commit()
+    await db.refresh(activity)
     
     return activity
 
@@ -212,11 +252,13 @@ async def update_activity(
 async def delete_activity(
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Delete an activity"""
     
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    stmt = select(Activity).where(Activity.id == activity_id)
+    result = await db.execute(stmt)
+    activity = result.scalar_one_or_none()
     
     if not activity:
         raise HTTPException(
@@ -231,19 +273,21 @@ async def delete_activity(
             detail="You can only delete your own activities"
         )
     
-    db.delete(activity)
-    db.commit()
+    await db.delete(activity)
+    await db.commit()
 
 
 @router.post("/{activity_id}/publish", response_model=ActivityResponse)
 async def publish_activity(
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Publish an activity (move from draft to published)"""
     
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    stmt = select(Activity).where(Activity.id == activity_id)
+    result = await db.execute(stmt)
+    activity = result.scalar_one_or_none()
     
     if not activity:
         raise HTTPException(
@@ -269,8 +313,8 @@ async def publish_activity(
     activity.published_at = datetime.utcnow()
     activity.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(activity)
+    await db.commit()
+    await db.refresh(activity)
     
     return activity
 
@@ -279,11 +323,13 @@ async def publish_activity(
 async def archive_activity(
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Archive an activity"""
     
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    stmt = select(Activity).where(Activity.id == activity_id)
+    result = await db.execute(stmt)
+    activity = result.scalar_one_or_none()
     
     if not activity:
         raise HTTPException(
@@ -301,7 +347,7 @@ async def archive_activity(
     activity.status = ActivityStatus.ARCHIVED
     activity.updated_at = datetime.utcnow()
     
-    db.commit()
-    db.refresh(activity)
+    await db.commit()
+    await db.refresh(activity)
     
     return activity

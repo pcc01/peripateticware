@@ -17,11 +17,19 @@ import { SplashScreen } from '@components/auth/SplashScreen'
 
 const RegisterPage = SignUpScreen
 const NotFoundPage = () => <div>404 Not Found</div>
+
 // ============================================================================
-// Student Pages (Stubs)
+// Student Pages
 // ============================================================================
-const StudentDashboard = () => <div>Student Dashboard (TODO)</div>
-const SessionPage = () => <div>Session Page (TODO)</div>
+import StudentDashboard from '@pages/StudentDashboard'
+const SessionPage = () => (
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+      Session
+    </h2>
+    <p className="text-slate-600 dark:text-slate-400">Session content coming soon...</p>
+  </div>
+)
 
 // ============================================================================
 // Teacher Pages - Phase 4 Implementation
@@ -54,6 +62,11 @@ const TeacherDashboard: React.FC = () => {
     </Routes>
   )
 }
+
+// ============================================================================
+// Parent Pages
+// ============================================================================
+import ParentDashboard from '@pages/ParentDashboard'
 
 // ============================================================================
 // Header Component
@@ -93,7 +106,7 @@ const Header = ({ user }: any) => (
  * @param roles - Optional array of allowed roles (if omitted, all authenticated users allowed)
  *
  * @example
- * <ProtectedRoute roles={['teacher', 'admin']}>
+ * <ProtectedRoute roles={['TEACHER', 'ADMIN']}>
  *   <TeacherDashboard />
  * </ProtectedRoute>
  */
@@ -108,21 +121,28 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/login" replace />
   }
 
-  // Check role if specified
-  if (roles && user && !roles.includes(user.role)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
-          <p className="text-slate-600 mt-2">
-            You do not have permission to access this page.
-          </p>
-          <a href="/" className="text-blue-600 hover:underline mt-4 inline-block">
-            Go to home
-          </a>
+  // Check role if specified (case-insensitive)
+  if (roles && user) {
+    const userRole = String(user.role).toUpperCase()
+    const allowedRoles = roles.map(r => r.toUpperCase())
+    
+    console.log(`Checking role: userRole=${userRole}, allowedRoles=${JSON.stringify(allowedRoles)}`)
+    
+    if (!allowedRoles.includes(userRole)) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Unauthorized</h1>
+            <p className="text-slate-600 mt-2">
+              You do not have permission to access this page.
+            </p>
+            <a href="/" className="text-blue-600 hover:underline mt-4 inline-block">
+              Go to home
+            </a>
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 
   return <>{children}</>
@@ -137,17 +157,18 @@ const ProtectedRoute: React.FC<{
  * Main routing and layout component for Peripateticware
  *
  * Route Structure:
- * /                          - Home (redirects to /login or /teacher or /student)
+ * /                          - Home (redirects to /login or /teacher or /student or /parent)
  * /login                     - Login page
  * /register                  - Registration page
- * /teacher/*                 - Teacher dashboard (protected, requires 'teacher' or 'admin' role)
+ * /teacher/*                 - Teacher dashboard (protected, requires 'TEACHER' or 'ADMIN' role)
  *   /teacher/activities      - Activity list page
  *   /teacher/activities/new  - Create new activity
  *   /teacher/activities/:id/edit - Edit activity
  *   /teacher/projects        - Project list page
  *   /teacher/projects/new    - Create new project
  *   /teacher/projects/:id    - View/edit project
- * /student/*                 - Student dashboard (protected, requires 'student' role)
+ * /student/*                 - Student dashboard (protected, requires 'STUDENT' role)
+ * /parent/*                  - Parent dashboard (protected, requires 'PARENT' role)
  * /session/:sessionId        - Session page (protected)
  * /404                       - Not found page
  * /*                         - Catch-all (redirects to 404)
@@ -203,7 +224,7 @@ const App: React.FC = () => {
             <Route
               path="/teacher/*"
               element={
-                <ProtectedRoute roles={['teacher', 'admin']}>
+                <ProtectedRoute roles={['TEACHER', 'ADMIN']}>
                   <TeacherDashboard />
                 </ProtectedRoute>
               }
@@ -215,8 +236,20 @@ const App: React.FC = () => {
             <Route
               path="/student/*"
               element={
-                <ProtectedRoute roles={['student']}>
+                <ProtectedRoute roles={['STUDENT']}>
                   <StudentDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ============================================================
+                Parent Routes (Protected)
+                ============================================================ */}
+            <Route
+              path="/parent/*"
+              element={
+                <ProtectedRoute roles={['PARENT']}>
+                  <ParentDashboard />
                 </ProtectedRoute>
               }
             />
@@ -236,20 +269,31 @@ const App: React.FC = () => {
             {/* ============================================================
                 Home Route
                 ============================================================ */}
-           {/* Splash screen on first load */}
-           <Route path="/splash" element={<SplashScreen />} />
+            {/* Splash screen on first load */}
+            <Route path="/splash" element={<SplashScreen />} />
 
-           {/* Home route */}
-           <Route
-             path="/"  
-             element={
-              isAuthenticated ? (
-                <Navigate to={user?.role === 'student' ? '/student' : '/teacher'} replace />
-              ) : (
-                <Navigate to="/splash" replace />
-    )
-  }
-/>
+            {/* Home route */}
+            <Route
+              path="/"  
+              element={
+                (() => {
+                  console.log('Home route rendering:', { isAuthenticated, userRole: user?.role })
+                  return isAuthenticated ? (
+                    user ? (
+                      <>
+                        {console.log('Redirecting based on role:', String(user.role).toUpperCase())}
+                        <Navigate to={String(user.role).toUpperCase() === 'STUDENT' ? '/student' : String(user.role).toUpperCase() === 'PARENT' ? '/parent' : '/teacher'} replace />
+                      </>
+                    ) : (
+                      <Navigate to="/login" replace />
+                    )
+                  ) : (
+                    <Navigate to="/splash" replace />
+                  )
+                })()
+              }
+            />
+
             {/* ============================================================
                 Catch-All Routes (Not Found)
                 ============================================================ */}

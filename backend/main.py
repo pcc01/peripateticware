@@ -15,6 +15,27 @@ from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
 from routes.health import router as health_router
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = FastAPI()
+
+# ============================================================================
+# CORS Configuration (Add this immediately after creating the app)
+# ============================================================================
+cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins if cors_origins != ["*"] else ["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
 
 
 # Import all route modules

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+asyncpg://peripateticware_user:peripateticware_secure_password_dev@postgres:5432/peripateticware"
+        os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@postgres:5432/peripateticware")
     )
     
     # Redis

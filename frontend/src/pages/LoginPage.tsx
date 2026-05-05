@@ -16,10 +16,25 @@ const LoginPage = () => {
 
   // Test credentials (from your API initialization)
   const testUsers = [
-    { email: 'teacher@example.com', password: 'SecurePassword123', role: 'teacher' },
-    { email: 'student@example.com', password: 'SecurePassword123', role: 'student' },
-    { email: 'parent@example.com', password: 'SecurePassword123', role: 'parent' }
+    { email: 'teacher@example.com', password: 'SecurePassword123', role: 'TEACHER' },
+    { email: 'student@example.com', password: 'SecurePassword123', role: 'STUDENT' },
+    { email: 'parent@example.com', password: 'SecurePassword123', role: 'PARENT' }
   ]
+
+  const getRedirectPath = (role: string): string => {
+    const upperRole = String(role).toUpperCase()
+    switch (upperRole) {
+      case 'TEACHER':
+      case 'ADMIN':
+        return '/teacher'
+      case 'STUDENT':
+        return '/student'
+      case 'PARENT':
+        return '/parent'
+      default:
+        return '/teacher'
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,8 +51,18 @@ const LoginPage = () => {
     }
 
     try {
-      await login(email, password)
-      navigate('/teacher')
+      const result = await login(email, password)
+      console.log('Login result:', result)
+      
+      // Get the user from auth store
+      const state = useAuthStore.getState()
+      const userRole = state.user?.role
+      console.log('User role after login:', userRole)
+      
+      const redirectPath = getRedirectPath(userRole || 'TEACHER')
+      console.log('Redirecting to:', redirectPath)
+      
+      navigate(redirectPath, { replace: true })
     } catch (err: any) {
       setLocalError(err.message || 'Login failed. Please try again.')
     }
@@ -49,8 +74,18 @@ const LoginPage = () => {
     setLocalError('')
 
     try {
-      await login(testEmail, testPassword)
-      navigate('/teacher')
+      const result = await login(testEmail, testPassword)
+      console.log('Login result:', result)
+      
+      // Get the user from auth store
+      const state = useAuthStore.getState()
+      const userRole = state.user?.role
+      console.log('User role after login:', userRole)
+      
+      const redirectPath = getRedirectPath(userRole || 'TEACHER')
+      console.log('Redirecting to:', redirectPath)
+      
+      navigate(redirectPath, { replace: true })
     } catch (err: any) {
       setLocalError(err.message || 'Login failed. Please try again.')
     }
@@ -156,7 +191,7 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-semibold disabled:opacity-50"
             >
-              <span className="capitalize">{user.role}</span>
+              <span className="capitalize">{user.role.toLowerCase()}</span>
               <br />
               <span className="text-xs text-gray-500">{user.email}</span>
             </button>

@@ -39,6 +39,13 @@ class RegisterRequest(BaseModel):
     role: UserRole = UserRole.STUDENT
 
 
+def get_role_value(user_role) -> str:
+    """Extract role as uppercase string"""
+    if hasattr(user_role, 'value'):
+        return str(user_role.value).upper()
+    return str(user_role).upper()
+
+
 @router.post("/register", response_model=dict)
 async def register(
     request: RegisterRequest,
@@ -82,7 +89,7 @@ async def register(
             "email": new_user.email,
             "username": new_user.username,
             "full_name": new_user.full_name,
-            "role": new_user.role.value if hasattr(new_user.role, 'value') else new_user.role
+            "role": get_role_value(new_user.role)
         }
     
     except HTTPException:
@@ -138,7 +145,7 @@ async def login(
                 email=user.email,
                 first_name=user.full_name.split()[0] if user.full_name else "",
                 last_name=user.full_name.split()[-1] if user.full_name and len(user.full_name.split()) > 1 else "",
-                role=user.role.value if hasattr(user.role, 'value') else user.role,
+                role=get_role_value(user.role),
                 is_active=user.is_active,
                 created_at=user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else None
             )
@@ -165,7 +172,7 @@ async def get_current_user_info(
             "email": current_user.email,
             "username": current_user.username,
             "full_name": current_user.full_name,
-            "role": current_user.role.value if hasattr(current_user.role, 'value') else current_user.role,
+            "role": get_role_value(current_user.role),
             "is_active": current_user.is_active
         }
     except Exception as e:
@@ -213,7 +220,7 @@ async def refresh_token(
                 email=user.email,
                 first_name=user.full_name.split()[0] if user.full_name else "",
                 last_name=user.full_name.split()[-1] if user.full_name and len(user.full_name.split()) > 1 else "",
-                role=user.role.value if hasattr(user.role, 'value') else user.role,
+                role=get_role_value(user.role),
                 is_active=user.is_active,
                 created_at=user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else None
             )
