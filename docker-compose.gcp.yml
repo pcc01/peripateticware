@@ -1,0 +1,519 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
+version: '3.9'
+
+# ============================================================================
+# GCP DEPLOYMENT CONFIGURATION - Phase 1-3 + Phase 7 Parent Portal
+# ============================================================================
+# Cost-optimized for thousands of users on Google Cloud
+# Self-managed PostgreSQL + Ollama GPU option + Claude/OpenAI fallback
+# Main App on ports 8000/3000, Phase 7 on ports 8001/3001
+# ============================================================================
+
+services:
+  # ============================================================================
+  # PHASE 1-3: MAIN APPLICATION DATABASE
+  # ============================================================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: peripateticware-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-peripateticware}
+      # GCP-optimized PostgreSQL tuning
+      POSTGRES_INITDB_ARGS: >
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c effective_io_concurrency=200
+        -c work_mem=16MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/scripts/backup-database.sh:/docker-entrypoint-initdb.d/backup.sh
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # ============================================================================
+  # PHASE 1-3: MAIN APPLICATION CACHE
+  # ============================================================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: peripateticware-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # PHASE 1-3: MAIN APPLICATION BACKEND
+  # ============================================================================
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: peripateticware-backend
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-peripateticware}
+      REDIS_URL: redis://redis:6379
+      
+      # LLM Configuration - Choose Provider
+      LLM_PROVIDER: ${LLM_PROVIDER:-claude}
+      
+      # Ollama (Local GPU or GCP Compute Engine with GPU)
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-mistral}
+      
+      # Claude (Recommended for GCP)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-1}
+      
+      # OpenAI (Alternative)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo}
+      
+      # Authentication & Security
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24}
+      
+      # OAuth (GitHub + Google)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      OAUTH_REDIRECT_URL: ${OAUTH_REDIRECT_URL:-https://yourdomain.com/auth/callback}
+      
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["https://yourdomain.com"]}
+      
+      # GCP Configuration
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
+      GCP_REGION: ${GCP_REGION:-us-central1}
+      GCP_CREDENTIALS: ${GCP_CREDENTIALS:-}
+      
+      # Email (for notifications)
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      
+      # Parent Portal Settings (Phase 7 compatible)
+      PARENT_NOTIFICATION_ENABLED: ${PARENT_NOTIFICATION_ENABLED:-true}
+      PARENT_NOTIFICATION_FREQUENCY: ${PARENT_NOTIFICATION_FREQUENCY:-weekly}
+      PARENT_DATA_RETENTION_DAYS: ${PARENT_DATA_RETENTION_DAYS:-365}
+      GDPR_ENABLED: ${GDPR_ENABLED:-true}
+      
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # PHASE 1-3: MAIN APPLICATION FRONTEND
+  # ============================================================================
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: peripateticware-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${FRONTEND_API_URL:-https://api.yourdomain.com}
+      VITE_ENV: ${ENVIRONMENT:-production}
+      VITE_OAUTH_GITHUB_ID: ${GITHUB_CLIENT_ID:-}
+      VITE_OAUTH_GOOGLE_ID: ${GOOGLE_CLIENT_ID:-}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ============================================================================
+  # PHASE 7: PARENT PORTAL DATABASE (NEW)
+  # ============================================================================
+
+  postgres-parent:
+    image: postgres:16-alpine
+    container_name: peripateticware-postgres-parent
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER_PARENT:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD_PARENT:-postgres}
+      POSTGRES_DB: ${DB_NAME_PARENT:-peripateticware_parent_portal}
+      # GCP-optimized tuning (same as main database)
+      POSTGRES_INITDB_ARGS: >
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c effective_io_concurrency=200
+        -c work_mem=16MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+    volumes:
+      - postgres_data_parent:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_PARENT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER_PARENT:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # ============================================================================
+  # PHASE 7: PARENT PORTAL CACHE (NEW)
+  # ============================================================================
+
+  redis-parent:
+    image: redis:7-alpine
+    container_name: peripateticware-redis-parent
+    restart: unless-stopped
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data_parent:/data
+    ports:
+      - "${REDIS_PORT_PARENT:-6380}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================================================
+  # PHASE 7: PARENT PORTAL BACKEND (NEW)
+  # ============================================================================
+
+  backend-parent:
+    build:
+      context: ./parent-portal/backend
+      dockerfile: Dockerfile
+    container_name: peripateticware-backend-parent
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://${DB_USER_PARENT:-postgres}:${DB_PASSWORD_PARENT:-postgres}@postgres-parent:5432/${DB_NAME_PARENT:-peripateticware_parent_portal}
+      REDIS_URL: redis://redis-parent:6379
+      MAIN_DB_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-peripateticware}
+      MAIN_DB_READER_URL: postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-peripateticware}
+      
+      # Authentication
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY_PARENT:-change-this-in-production}
+      JWT_ALGORITHM: ${JWT_ALGORITHM_PARENT:-HS256}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS_PARENT:-24}
+      
+      # OAuth
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      
+      # LLM
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS_PARENT:-["https://yourdomain.com"]}
+      
+      # GCP Configuration
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
+      GCP_REGION: ${GCP_REGION:-us-central1}
+      GCP_CREDENTIALS: ${GCP_CREDENTIALS:-}
+      
+      # Email
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      
+      # Parent Portal Settings
+      PARENT_NOTIFICATION_ENABLED: ${PARENT_NOTIFICATION_ENABLED:-true}
+      PARENT_NOTIFICATION_FREQUENCY: ${PARENT_NOTIFICATION_FREQUENCY:-weekly}
+      PARENT_DATA_RETENTION_DAYS: ${PARENT_DATA_RETENTION_DAYS:-365}
+      GDPR_ENABLED: ${GDPR_ENABLED:-true}
+      
+    ports:
+      - "${BACKEND_PORT_PARENT:-8001}:8000"
+    depends_on:
+      postgres-parent:
+        condition: service_healthy
+      redis-parent:
+        condition: service_healthy
+    volumes:
+      - ./parent-portal/backend:/app
+      - ./uploads-parent:/app/uploads
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================================================
+  # PHASE 7: PARENT PORTAL FRONTEND (NEW)
+  # ============================================================================
+
+  frontend-parent:
+    build:
+      context: ./parent-portal/frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: peripateticware-frontend-parent
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${FRONTEND_API_URL_PARENT:-https://parent-api.yourdomain.com}
+      VITE_MAIN_APP_URL: ${FRONTEND_MAIN_APP_URL:-https://yourdomain.com}
+      VITE_ENV: ${ENVIRONMENT:-production}
+      VITE_OAUTH_GITHUB_ID: ${GITHUB_CLIENT_ID:-}
+      VITE_OAUTH_GOOGLE_ID: ${GOOGLE_CLIENT_ID:-}
+    ports:
+      - "${FRONTEND_PORT_PARENT:-3001}:3000"
+    depends_on:
+      - backend-parent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ============================================================================
+  # Ollama (Optional - GPU Compute Engine Only)
+  # Leave disabled for cost optimization. Use Claude/OpenAI APIs instead.
+  # For GPU deployment: Deploy on separate GCP Compute Engine instance with GPU
+  # ============================================================================
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: peripateticware-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   environment:
+  #     OLLAMA_HOST: 0.0.0.0:11434
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #   networks:
+  #     - peripateticware
+
+  # ============================================================================
+  # NGINX Reverse Proxy (Production Only)
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: peripateticware-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/ssl:/etc/nginx/ssl:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+      - frontend
+      - backend-parent
+      - frontend-parent
+    networks:
+      - peripateticware
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data_parent:
+    driver: local
+  redis_data_parent:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  peripateticware:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# GCP DEPLOYMENT NOTES
+# ============================================================================
+# Production GCP Deployment:
+# 1. Use Compute Engine (e2-standard-2) for cost optimization
+# 2. Use Cloud Storage for static assets (CDN via Cloud CDN)
+# 3. Use Cloud Load Balancing for traffic distribution
+# 4. Use Instance Groups for auto-scaling
+# 5. Use Cloud Logging for monitoring
+# 6. Use Secret Manager for credentials
+# 7. Use VPC for network isolation
+#
+# Phase 7 Integration:
+# - Main app and parent portal run on separate ports
+# - Main: 3000 (frontend), 8000 (backend)
+# - Parent: 3001 (frontend), 8001 (backend)
+# - Use Cloud Load Balancer to route based on path or subdomain
+# - Example: api.yourdomain.com → main backend
+#           parent-api.yourdomain.com → parent backend
+#           parent.yourdomain.com → parent frontend
+#
+# GCP-Specific:
+# - Use gcloud to deploy: gcloud compute instances create peripateticware ...
+# - Use Cloud SQL for managed database (slightly higher cost)
+# - Use Memorystore for managed Redis (slightly higher cost)
+# - Free tier eligible: 1 f1-micro instance (limited)
+#
+# Cost Optimization:
+# - This config uses ~$250-350/month on GCP (e2-standard-2 + storage)
+# - Ollama GPU adds ~$300-400/month (n1-standard-4 + 1 GPU)
+# - Claude API: ~$0.01-0.02 per request
+# - Total for thousands of users: ~$500-700/month with Claude
+#
+# Scaling Considerations:
+# - Backend: 2 cores, 2GB RAM per instance
+# - Frontend: 1 core, 512MB RAM per instance
+# - Database: 25 connections per instance (Phase 1-3 + Phase 7)
+# - Redis: 10,000 connections per instance (Phase 1-3 + Phase 7)
+# - Cloud Load Balancer distributes across instance group

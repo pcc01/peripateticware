@@ -1,97 +1,100 @@
 {
+  "copyright": "Copyright (c) 2026 Paul Christopher Cerda",
+  "license": "Business Source License 1.1",
+  "licenseFile": "LICENSE.md",
   "subjects": {
-    "mathematics": "数学",
-    "science": "科学",
-    "english": "英語",
-    "socialStudies": "社会科",
-    "biology": "生物学",
-    "chemistry": "化学",
-    "physics": "物理学",
-    "history": "歴史",
-    "geography": "地理",
-    "artsAndCrafts": "芸術と工芸",
-    "physicalEducation": "体育"
+    "mathematics": "\u6570\u5b66",
+    "science": "\u79d1\u5b66",
+    "english": "\u82f1\u8a9e",
+    "socialStudies": "\u793e\u4f1a\u79d1",
+    "biology": "\u751f\u7269\u5b66",
+    "chemistry": "\u5316\u5b66",
+    "physics": "\u7269\u7406\u5b66",
+    "history": "\u6b74\u53f2",
+    "geography": "\u5730\u7406",
+    "artsAndCrafts": "\u82b8\u8853\u3068\u5de5\u82b8",
+    "physicalEducation": "\u4f53\u80b2"
   },
   "gradeLevels": {
-    "k": "幼稚園",
-    "1": "1年生",
-    "2": "2年生",
-    "3": "3年生",
-    "4": "4年生",
-    "5": "5年生",
-    "6": "6年生",
-    "7": "7年生",
-    "8": "8年生",
-    "9": "9年生",
-    "10": "10年生",
-    "11": "11年生",
-    "12": "12年生"
+    "k": "\u5e7c\u7a1a\u5712",
+    "1": "1\u5e74\u751f",
+    "2": "2\u5e74\u751f",
+    "3": "3\u5e74\u751f",
+    "4": "4\u5e74\u751f",
+    "5": "5\u5e74\u751f",
+    "6": "6\u5e74\u751f",
+    "7": "7\u5e74\u751f",
+    "8": "8\u5e74\u751f",
+    "9": "9\u5e74\u751f",
+    "10": "10\u5e74\u751f",
+    "11": "11\u5e74\u751f",
+    "12": "12\u5e74\u751f"
   },
   "bloomLevels": {
     "1": {
-      "name": "記憶",
-      "description": "基本的な事実と概念を思い出す"
+      "name": "\u8a18\u61b6",
+      "description": "\u57fa\u672c\u7684\u306a\u4e8b\u5b9f\u3068\u6982\u5ff5\u3092\u601d\u3044\u51fa\u3059"
     },
     "2": {
-      "name": "理解",
-      "description": "アイデアや概念を説明する"
+      "name": "\u7406\u89e3",
+      "description": "\u30a2\u30a4\u30c7\u30a2\u3084\u6982\u5ff5\u3092\u8aac\u660e\u3059\u308b"
     },
     "3": {
-      "name": "応用",
-      "description": "情報を新しい状況で使用する"
+      "name": "\u5fdc\u7528",
+      "description": "\u60c5\u5831\u3092\u65b0\u3057\u3044\u72b6\u6cc1\u3067\u4f7f\u7528\u3059\u308b"
     },
     "4": {
-      "name": "分析",
-      "description": "アイデア間の関係を描く"
+      "name": "\u5206\u6790",
+      "description": "\u30a2\u30a4\u30c7\u30a2\u9593\u306e\u95a2\u4fc2\u3092\u63cf\u304f"
     },
     "5": {
-      "name": "評価",
-      "description": "決定や選択を正当化する"
+      "name": "\u8a55\u4fa1",
+      "description": "\u6c7a\u5b9a\u3084\u9078\u629e\u3092\u6b63\u5f53\u5316\u3059\u308b"
     },
     "6": {
-      "name": "創造",
-      "description": "新しいアイデアや製品を作成する"
+      "name": "\u5275\u9020",
+      "description": "\u65b0\u3057\u3044\u30a2\u30a4\u30c7\u30a2\u3084\u88fd\u54c1\u3092\u4f5c\u6210\u3059\u308b"
     }
   },
   "marzanoLevels": {
     "1": {
-      "name": "想起",
-      "description": "特定の情報を想起する"
+      "name": "\u60f3\u8d77",
+      "description": "\u7279\u5b9a\u306e\u60c5\u5831\u3092\u60f3\u8d77\u3059\u308b"
     },
     "2": {
-      "name": "理解",
-      "description": "基本的な意味を理解する"
+      "name": "\u7406\u89e3",
+      "description": "\u57fa\u672c\u7684\u306a\u610f\u5473\u3092\u7406\u89e3\u3059\u308b"
     },
     "3": {
-      "name": "応用",
-      "description": "異なる文脈で知識を使用する"
+      "name": "\u5fdc\u7528",
+      "description": "\u7570\u306a\u308b\u6587\u8108\u3067\u77e5\u8b58\u3092\u4f7f\u7528\u3059\u308b"
     },
     "4": {
-      "name": "分析",
-      "description": "情報を詳細に検証する"
+      "name": "\u5206\u6790",
+      "description": "\u60c5\u5831\u3092\u8a73\u7d30\u306b\u691c\u8a3c\u3059\u308b"
     }
   },
   "difficulties": {
-    "easy": "簡単",
-    "medium": "普通",
-    "hard": "難しい"
+    "easy": "\u7c21\u5358",
+    "medium": "\u666e\u901a",
+    "hard": "\u96e3\u3057\u3044"
   },
   "sampleUnits": {
     "photosynthesis": {
-      "title": "光合成",
-      "description": "植物が光をエネルギーに変える方法を探求する"
+      "title": "\u5149\u5408\u6210",
+      "description": "\u690d\u7269\u304c\u5149\u3092\u30a8\u30cd\u30eb\u30ae\u30fc\u306b\u5909\u3048\u308b\u65b9\u6cd5\u3092\u63a2\u6c42\u3059\u308b"
     },
     "waterCycle": {
-      "title": "水循環",
-      "description": "地球の大気を通じた水の動きを理解する"
+      "title": "\u6c34\u5faa\u74b0",
+      "description": "\u5730\u7403\u306e\u5927\u6c17\u3092\u901a\u3058\u305f\u6c34\u306e\u52d5\u304d\u3092\u7406\u89e3\u3059\u308b"
     },
     "evolution": {
-      "title": "進化",
-      "description": "時間経過による生物学的変化を研究する"
+      "title": "\u9032\u5316",
+      "description": "\u6642\u9593\u7d4c\u904e\u306b\u3088\u308b\u751f\u7269\u5b66\u7684\u5909\u5316\u3092\u7814\u7a76\u3059\u308b"
     },
     "ecosystems": {
-      "title": "生態系",
-      "description": "生物とその環境との関係を探求する"
+      "title": "\u751f\u614b\u7cfb",
+      "description": "\u751f\u7269\u3068\u305d\u306e\u74b0\u5883\u3068\u306e\u95a2\u4fc2\u3092\u63a2\u6c42\u3059\u308b"
     }
   }
 }

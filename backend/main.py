@@ -5,7 +5,7 @@
 """
 Peripateticware - AI-Powered Contextual Learning Platform
 Main FastAPI Application Entry Point
-Updated: April 27, 2026 - Phase 2 Complete
+Updated: May 6, 2026 - Phase 7 Ready
 """
 
 from fastapi import FastAPI, Depends
@@ -15,27 +15,6 @@ from fastapi.responses import JSONResponse
 import logging
 from datetime import datetime
 from routes.health import router as health_router
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = FastAPI()
-
-# ============================================================================
-# CORS Configuration (Add this immediately after creating the app)
-# ============================================================================
-cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins if cors_origins != ["*"] else ["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
-
 
 
 # Import all route modules
@@ -243,20 +222,20 @@ async def global_exception_handler(request, exc):
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    logger.info("Peripateticware API Starting...")
-    logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"Database: {settings.DATABASE_URL}")
-    logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
-    logger.info("Phase 1 Routes: auth, sessions, curriculum, inference, observability, parent")
-    logger.info("Phase 2 Routes: email, reset, linking, notifications")
-    logger.info("Phase 3 Routes: activities, projects")
-    logger.info("API Ready at: http://localhost:8000")
-    logger.info("Documentation: http://localhost:8000/api/docs")
+    logger.info("🚀 Peripateticware API Starting...")
+    logger.info(f"📍 Environment: {settings.ENVIRONMENT}")
+    logger.info(f"🔗 Database: {settings.DATABASE_URL}")
+    logger.info(f"🌍 CORS Origins: {settings.CORS_ORIGINS}")
+    logger.info("✅ Phase 1 Routes: ✓ (auth, sessions, curriculum, inference, observability, parent)")
+    logger.info("✅ Phase 2 Routes: ✓ (email, reset, linking, notifications)")
+    logger.info("✅ Phase 3 Routes: ✓ (activities, projects)")
+    logger.info("🎯 API Ready at: http://localhost:8000")
+    logger.info("📚 Documentation: http://localhost:8000/api/docs")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    logger.info("Peripateticware API Shutting Down...")
+    logger.info("🛑 Peripateticware API Shutting Down...")
 
 # ============================================================================
 # LIFESPAN EVENTS (Alternative for FastAPI 0.93+)
@@ -268,10 +247,10 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan context manager"""
     # Startup
-    logger.info("Peripateticware API Starting...")
+    logger.info("🚀 Peripateticware API Starting...")
     yield
     # Shutdown
-    logger.info("Peripateticware API Shutting Down...")
+    logger.info("🛑 Peripateticware API Shutting Down...")
 
 # Uncomment to use lifespan instead of on_event:
 # app = FastAPI(lifespan=lifespan, ...)

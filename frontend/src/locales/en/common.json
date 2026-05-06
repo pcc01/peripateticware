@@ -1,4 +1,7 @@
 {
+  "copyright": "Copyright (c) 2026 Paul Christopher Cerda",
+  "license": "Business Source License 1.1",
+  "licenseFile": "LICENSE.md",
   "app": {
     "title": "Peripateticware",
     "subtitle": "Contextual AI Tutor",
@@ -78,9 +81,9 @@
     "optional": "Optional",
     "language": "Language",
     "english": "English",
-    "spanish": "Español",
-    "arabic": "العربية",
-    "japanese": "日本語"
+    "spanish": "Espa\u00f1ol",
+    "arabic": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",
+    "japanese": "\u65e5\u672c\u8a9e"
   },
   "errors": {
     "invalidEmail": "Please enter a valid email address",

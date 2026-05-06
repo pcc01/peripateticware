@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
+    CMD wget --quiet --tries=1 --spider http://localhost:5173/ || exit 1
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

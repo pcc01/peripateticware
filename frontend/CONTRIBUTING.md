@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 # Contributing to Peripateticware Frontend
 
 Thank you for your interest in contributing! This guide explains how to set up your development environment, follow coding standards, and submit pull requests.

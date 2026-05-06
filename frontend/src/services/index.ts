@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Paul Christopher Cerda
+// This source code is licensed under the Business Source License 1.1
+// found in the LICENSE.md file in the root directory of this source tree.
+
 // ==============================================================================
 // frontend/src/services/captureService.ts
 // Service for managing student captures (photos, videos, audio, etc.)
