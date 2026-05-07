@@ -1,0 +1,190 @@
+{
+  "jurisdiction_id": "coppa_us",
+  "jurisdiction_name": "United States - Children's Online Privacy Protection Act (COPPA)",
+  "country_code": "US",
+  "subdivision_code": "US",
+  "framework": "coppa",
+  "version": "1.0",
+  "effective_date": "2000-04-21",
+  "last_updated": "2026-05-06",
+  "description": "COPPA protects the privacy of children under 13 in the United States",
+  
+  "student_age_categories": {
+    "young_child": {"min_age": 0, "max_age": 12},
+    "child_boundary": {"min_age": 13, "max_age": 13},
+    "teen": {"min_age": 14, "max_age": 17},
+    "adult": {"min_age": 18, "max_age": 150}
+  },
+  
+  "consent_requirements": {
+    "young_child": {
+      "parental_consent_required": true,
+      "explicit_consent_required": true,
+      "consent_type": "verifiable_parental_consent",
+      "description": "Verifiable parental consent required for children under 13"
+    },
+    "child_boundary": {
+      "parental_consent_required": false,
+      "explicit_consent_required": true,
+      "consent_type": "explicit_child_consent",
+      "description": "Child's own consent sufficient at age 13"
+    },
+    "teen": {
+      "parental_consent_required": false,
+      "explicit_consent_required": true,
+      "consent_type": "explicit",
+      "description": "Teen's consent required"
+    },
+    "adult": {
+      "parental_consent_required": false,
+      "explicit_consent_required": true,
+      "consent_type": "explicit",
+      "description": "Adult's consent required"
+    }
+  },
+  
+  "prohibited_data_collection": {
+    "young_child": [
+      "email_address_persistent",
+      "phone_number",
+      "social_security_number",
+      "credit_card_number",
+      "exact_location_continuous",
+      "photo_with_identifying_info",
+      "video_with_identifying_info",
+      "audio_with_identifying_info"
+    ],
+    "child_boundary": [],
+    "teen": [],
+    "adult": []
+  },
+  
+  "allowed_data_collection": {
+    "educational_purpose": [
+      "first_name_only",
+      "grade_level",
+      "school_name",
+      "learning_performance",
+      "activity_responses",
+      "assessment_results"
+    ],
+    "restricted": [
+      "email_address",
+      "persistent_identifier",
+      "ip_address"
+    ]
+  },
+  
+  "third_party_restrictions": {
+    "forbidden": [
+      "marketing_companies",
+      "advertising_networks",
+      "data_brokers"
+    ],
+    "requires_explicit_consent": [
+      "service_providers_receiving_data",
+      "third_party_analytics"
+    ],
+    "allowed_without_consent": [
+      "school_staff",
+      "school_authorized_agents",
+      "law_enforcement_with_warrant"
+    ]
+  },
+  
+  "data_retention": {
+    "personal_data": {
+      "retention_months": 6,
+      "deletion_method": "delete_not_anonymize",
+      "archival_allowed": false
+    },
+    "learning_activity_data": {
+      "retention_months": 12,
+      "deletion_method": "delete_not_anonymize",
+      "archival_allowed": false
+    },
+    "parental_consent_records": {
+      "retention_months": 24,
+      "deletion_method": "never",
+      "archival_allowed": false
+    }
+  },
+  
+  "compliance_checks": {
+    "parental_notice": {
+      "required": true,
+      "severity": "error",
+      "description": "Must provide clear notice to parents about information collection"
+    },
+    "parental_consent": {
+      "required_for_ages": [0, 12],
+      "method": "verifiable",
+      "severity": "error",
+      "description": "Must obtain verifiable parental consent before collecting data from children under 13"
+    },
+    "parental_access": {
+      "required": true,
+      "severity": "error",
+      "description": "Parents must be able to review and request deletion of child's data"
+    },
+    "no_conditioning": {
+      "required": true,
+      "severity": "error",
+      "description": "Cannot condition participation in educational activity on collection of more data than needed"
+    },
+    "no_marketing": {
+      "required": true,
+      "severity": "error",
+      "description": "Cannot use child's data for marketing or third-party marketing"
+    },
+    "security": {
+      "required": true,
+      "standard": "reasonable_security",
+      "severity": "error",
+      "description": "Must implement reasonable security measures"
+    }
+  },
+  
+  "special_restrictions": {
+    "location_data": {
+      "allowed": false,
+      "exception": "with_parental_consent",
+      "description": "Location tracking generally not allowed for children under 13 without parental consent"
+    },
+    "photos_videos_audio": {
+      "allowed": false,
+      "exception": "anonymous_only",
+      "description": "Cannot collect identifiable photos, videos, or audio from children under 13"
+    },
+    "persistent_identifiers": {
+      "allowed": false,
+      "description": "Cannot use cookies or persistent identifiers to track children under 13"
+    }
+  },
+  
+  "safe_harbor": {
+    "available": true,
+    "description": "FTC safe harbor programs available for compliance",
+    "examples": ["BBBOnLine", "iKeepSafe"]
+  },
+  
+  "warnings": [
+    "COPPA applies to children under 13 - verify all students' ages",
+    "Verifiable parental consent is the gold standard - email alone may not suffice",
+    "Cannot use persistent identifiers or cookies to track children under 13",
+    "Cannot sell or market children's data",
+    "Must delete data upon parental request",
+    "FTC has enforcement power and significant penalty potential ($43,280+ per violation)"
+  ],
+  
+  "requirements": [
+    "Obtain verifiable parental consent before collecting data from children under 13",
+    "Provide parents with notice of data practices",
+    "Allow parents to access, review, and request deletion of child's data",
+    "Do not collect more information than necessary",
+    "Do not condition participation on data collection",
+    "Do not market or share data for marketing purposes",
+    "Implement reasonable security measures",
+    "Have privacy policy clearly stating data practices"
+  ]
+}

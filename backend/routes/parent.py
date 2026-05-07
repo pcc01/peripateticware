@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.config import settings
 from models.database import User, UserRole, LearningSession
-from services.privacy_engine import PrivacyEngine
+from services.privacy_engine import PrivacyComplianceChecker, get_privacy_checker
 
 # ============================================================================
 # SCHEMAS
@@ -202,7 +202,7 @@ class SettingsResponse(BaseModel):
 # ============================================================================
 
 router = APIRouter(prefix="/parent", tags=["parent"])
-privacy_engine = PrivacyEngine()
+privacy_engine = get_privacy_checker()
 
 
 # ============================================================================

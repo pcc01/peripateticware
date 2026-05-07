@@ -7,7 +7,7 @@ Peripateticware - AI-Powered Contextual Learning Platform
 Main FastAPI Application Entry Point
 Updated: May 6, 2026 - Phase 7 Ready
 """
-
+from routes.privacy_locations import router as privacy_locations_router
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware

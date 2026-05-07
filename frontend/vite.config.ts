@@ -9,6 +9,8 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 5173,
+    host: '0.0.0.0',
     hmr: {
       host: 'localhost',
       port: 5173,
@@ -26,9 +28,4 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
     },
   },
-  server: {
-    port: 5173,
-    host: '0.0.0.0',
-  },
 })
-

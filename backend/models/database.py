@@ -2,9 +2,9 @@
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
-"""SQLAlchemy models for Peripateticware"""
+"""SQLAlchemy models for Peripateticware - COMPLETE MERGED (Original + Phase 6 + Phase 5)"""
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, ForeignKey, Text, JSON, Enum
+from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, ForeignKey, Text, JSON, Index, Enum, Table
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import relationship
@@ -14,6 +14,10 @@ import uuid
 import enum
 
 
+# ============================================================================
+# ALL ENUMS (Original + Phase 6 + Phase 5)
+# ============================================================================
+
 class UserRole(str, enum.Enum):
     """User role enumeration"""
     STUDENT = "student"
@@ -21,6 +25,75 @@ class UserRole(str, enum.Enum):
     PARENT = "parent"
     ADMIN = "admin"
 
+
+class ActivityType(str, enum.Enum):
+    """Activity type enumeration"""
+    INQUIRY = "inquiry"
+    DISCUSSION = "discussion"
+    HANDS_ON = "hands_on"
+    VIRTUAL = "virtual"
+    HYBRID = "hybrid"
+
+
+class ActivityStatus(str, enum.Enum):
+    """Activity status enumeration"""
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    ARCHIVED = "archived"
+
+
+class ProjectStatus(str, enum.Enum):
+    """Project status enumeration"""
+    PLANNING = "planning"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
+
+
+class CaptureType(str, enum.Enum):
+    """Type of evidence captured (Phase 6)"""
+    PHOTO = "photo"
+    VIDEO = "video"
+    AUDIO = "audio"
+    TEXT = "text"
+    SKETCH = "sketch"
+    MEASUREMENT = "measurement"
+
+
+class CompetencyStatus(str, enum.Enum):
+    """Student competency progress status (Phase 6)"""
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    PROFICIENT = "proficient"
+    ADVANCED = "advanced"
+
+
+class PrivacyFramework(str, enum.Enum):
+    """Supported privacy frameworks (Phase 5)"""
+    GDPR = "gdpr"
+    CCPA = "ccpa"
+    COPPA = "coppa"
+    PIPEDA = "pipeda"
+    LGPD = "lgpd"
+    PDPA = "pdpa"
+    CUSTOM = "custom"
+
+
+# ============================================================================
+# JUNCTION TABLES
+# ============================================================================
+
+activity_locations = Table(
+    'activity_locations',
+    Base.metadata,
+    Column('activity_id', UUID(as_uuid=True), ForeignKey('activities.id'), primary_key=True),
+    Column('location_id', UUID(as_uuid=True), ForeignKey('cached_locations.id'), primary_key=True)
+)
+
+
+# ============================================================================
+# ORIGINAL USER MODELS (Phase 1-4)
+# ============================================================================
 
 class User(Base):
     """User model"""
@@ -67,6 +140,10 @@ class StudentProfile(Base):
     user = relationship("User", back_populates="student_profile")
 
 
+# ============================================================================
+# ORIGINAL CURRICULUM MODELS (Phase 1-4)
+# ============================================================================
+
 class CurriculumUnit(Base):
     """Curriculum unit or learning objective"""
     __tablename__ = "curriculum_units"
@@ -76,11 +153,11 @@ class CurriculumUnit(Base):
     description = Column(Text)
     subject = Column(String(255), index=True)
     grade_level = Column(Integer)
-    bloom_level = Column(Integer)  # Target Bloom level
-    marzano_level = Column(Integer)  # Target Marzano level
+    bloom_level = Column(Integer)
+    marzano_level = Column(Integer)
     
     # Content
-    content_embedding = Column(Vector(384))  # For RAG
+    content_embedding = Column(Vector(384))
     raw_content = Column(JSONB)
     
     is_active = Column(Boolean, default=True)
@@ -90,6 +167,10 @@ class CurriculumUnit(Base):
     # Relationships
     learning_sessions = relationship("LearningSession", back_populates="curriculum")
 
+
+# ============================================================================
+# ORIGINAL SESSION MODELS (Phase 1-4)
+# ============================================================================
 
 class LearningSession(Base):
     """Learning session (inquiry path)"""
@@ -110,13 +191,13 @@ class LearningSession(Base):
     
     # Session state
     is_active = Column(Boolean, default=True)
-    status = Column(String(50), default="in_progress")  # in_progress, completed, paused
+    status = Column(String(50), default="in_progress")
     
-    # Socratic logs (raw artifacts for teachers)
-    inquiry_log = Column(JSONB)  # Array of inquiry objects
+    # Socratic logs
+    inquiry_log = Column(JSONB)
     
     # Evidence of Learning
-    evidence = Column(JSONB)  # Structured learning outcomes
+    evidence = Column(JSONB)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -138,7 +219,7 @@ class MultimodalInput(Base):
     session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"))
     
     # Input type
-    input_type = Column(String(50))  # image, audio, text, location, sensor
+    input_type = Column(String(50))
     
     # Raw data (PII scrubbed)
     raw_data = Column(JSONB)
@@ -162,12 +243,12 @@ class TripleJoinRecord(Base):
     session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"))
     
     # Triple join components
-    site_context = Column(JSONB)  # WHERE: location-based
-    curriculum_context = Column(JSONB)  # WHY: learning objectives
-    persona_context = Column(JSONB)  # HOW: student learning style
+    site_context = Column(JSONB)
+    curriculum_context = Column(JSONB)
+    persona_context = Column(JSONB)
     
     # Reasoning output
-    inquiry_path = Column(JSONB)  # Generated inquiry pathway
+    inquiry_path = Column(JSONB)
     recommended_resources = Column(ARRAY(String))
     confidence_score = Column(Float)
     
@@ -193,7 +274,7 @@ class ObservabilityLog(Base):
     total_latency_ms = Column(Integer)
     
     # Component breakdowns
-    components = Column(JSONB)  # {"rag_pipeline": 120, "inference": 450, ...}
+    components = Column(JSONB)
     
     # Status
     status_code = Column(Integer)
@@ -213,7 +294,7 @@ class SyncLog(Base):
     session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"), nullable=True)
     
     # Operation
-    operation = Column(String(50))  # create, update, delete
+    operation = Column(String(50))
     entity_type = Column(String(100))
     entity_id = Column(String(255))
     
@@ -228,21 +309,9 @@ class SyncLog(Base):
     synced_at = Column(DateTime, nullable=True)
 
 
-class ActivityType(str, enum.Enum):
-    """Activity type enumeration"""
-    INQUIRY = "inquiry"
-    DISCUSSION = "discussion"
-    HANDS_ON = "hands_on"
-    VIRTUAL = "virtual"
-    HYBRID = "hybrid"
-
-
-class ActivityStatus(str, enum.Enum):
-    """Activity status enumeration"""
-    DRAFT = "draft"
-    PUBLISHED = "published"
-    ARCHIVED = "archived"
-
+# ============================================================================
+# ORIGINAL ACTIVITY MODELS (Phase 1-4)
+# ============================================================================
 
 class Activity(Base):
     """Teacher-created learning activity"""
@@ -254,7 +323,7 @@ class Activity(Base):
     # Basic Info
     title = Column(String(255), index=True, nullable=False)
     description = Column(Text, nullable=False)
-    learning_objectives = Column(JSONB, default=list)  # List of objectives
+    learning_objectives = Column(JSONB, default=list)
     
     # Location Trigger
     location_latitude = Column(Float, nullable=False)
@@ -263,18 +332,18 @@ class Activity(Base):
     location_name = Column(String(255), nullable=False)
     
     # Metadata
-    grade_level = Column(Integer, nullable=False)  # 3-12
+    grade_level = Column(Integer, nullable=False)
     subject = Column(String(100), index=True, nullable=False)
-    difficulty_level = Column(Integer, default=3)  # 1-5
+    difficulty_level = Column(Integer, default=3)
     estimated_duration_minutes = Column(Integer, nullable=False)
     
     # Materials/Resources
     materials_needed = Column(JSONB, default=list)
-    resources = Column(JSONB, default=list)  # URLs, references
+    resources = Column(JSONB, default=list)
     
     # Curriculum Mapping
     curriculum_unit_ids = Column(ARRAY(UUID(as_uuid=True)), default=list)
-    bloom_level = Column(Integer, nullable=False)  # 1-6
+    bloom_level = Column(Integer, nullable=False)
     
     # Activity Type
     activity_type = Column(Enum(ActivityType), default=ActivityType.INQUIRY)
@@ -283,6 +352,13 @@ class Activity(Base):
     status = Column(Enum(ActivityStatus), default=ActivityStatus.DRAFT, index=True)
     is_active = Column(Boolean, default=True)
     is_shareable = Column(Boolean, default=False)
+    
+    # Phase 5 Privacy/Location additions
+    enriched_location_id = Column(UUID(as_uuid=True), ForeignKey("enriched_locations.id"), nullable=True)
+    location_source = Column(String(50), nullable=True)
+    privacy_jurisdiction_id = Column(String(100), index=True, nullable=True)
+    privacy_compliant = Column(Boolean, default=False)
+    last_compliance_check = Column(DateTime, nullable=True)
     
     # Metadata
     view_count = Column(Integer, default=0)
@@ -294,14 +370,10 @@ class Activity(Base):
     teacher = relationship("User")
     projects = relationship("Project", secondary="project_activities", back_populates="activities")
     sessions = relationship("LearningSession", back_populates="activity")
-
-
-class ProjectStatus(str, enum.Enum):
-    """Project status enumeration"""
-    PLANNING = "planning"
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    ARCHIVED = "archived"
+    cached_locations = relationship("CachedLocation", secondary="activity_locations", back_populates="activities_using")
+    compliance_checks = relationship("ComplianceCheck", back_populates="activity")
+    consent_logs = relationship("ConsentLog", back_populates="activity")
+    retention_policies = relationship("DataRetentionPolicy", back_populates="activity")
 
 
 class Project(Base):
@@ -349,201 +421,98 @@ class ProjectActivity(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# ==============================================================================
-# PHASE 6: Student Evidence & Learning Models
-# Add these classes to backend/models/database.py
-# ==============================================================================
 
-import enum
-import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, Integer, Float, Text, DateTime, ForeignKey, Boolean, Enum, ARRAY, Index
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-
-# ==============================================================================
-# ENUMERATIONS FOR PHASE 6
-# ==============================================================================
-
-class CaptureType(str, enum.Enum):
-    """Type of evidence captured by student"""
-    PHOTO = "photo"
-    VIDEO = "video"
-    AUDIO = "audio"
-    TEXT = "text"
-    SKETCH = "sketch"
-    MEASUREMENT = "measurement"
-
-
-class NotebookEntryType(str, enum.Enum):
-    """Type of reflection journal entry"""
-    REFLECTION = "reflection"      # Guided prompts
-    QUESTION = "question"          # Student curiosities
-    DISCOVERY = "discovery"        # What they learned
-    HYPOTHESIS = "hypothesis"      # Predictions
-    FREEFORM = "freeform"         # Open writing
-
-
-class AnnotationType(str, enum.Enum):
-    """Type of annotation on evidence"""
-    TEXT_LABEL = "text_label"
-    BOX = "box"
-    ARROW = "arrow"
-    EXPLANATION = "explanation"
-
-
-class CompetencyStatus(str, enum.Enum):
-    """Status of competency achievement"""
-    NOT_STARTED = "not_started"
-    DEVELOPING = "developing"
-    PROFICIENT = "proficient"
-    ADVANCED = "advanced"
-
-
-class TranscriptionStatus(str, enum.Enum):
-    """Status of audio transcription"""
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-
-# ==============================================================================
-# STUDENT CAPTURE MODEL - Evidence of learning
-# ==============================================================================
+# ============================================================================
+# PHASE 6 MODELS - Student Evidence Capture & Portfolio
+# ============================================================================
 
 class StudentCapture(Base):
-    """Evidence of learning captured by student during activities"""
+    """Evidence of learning captured by student"""
     __tablename__ = "student_captures"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"), nullable=True)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"))
     
-    # CAPTURE METADATA
-    capture_type = Column(Enum(CaptureType), nullable=False, index=True)
-    file_path = Column(String(512), nullable=False)  # Storage location (S3/local)
+    # Capture metadata
+    capture_type = Column(Enum(CaptureType), nullable=False)
+    file_path = Column(String(512))
     file_size_bytes = Column(Integer)
     mime_type = Column(String(100))
     
-    # LOCATION & TIME (Auto-captured)
+    # Location and time
     captured_at = Column(DateTime, default=datetime.utcnow, index=True)
     location_latitude = Column(Float, nullable=True)
     location_longitude = Column(Float, nullable=True)
-    location_name = Column(String(255), nullable=True)
     
-    # AUDIO-SPECIFIC (For ASR - Speech-to-Text)
-    transcript = Column(Text, nullable=True)                    # ASR result text
-    transcript_confidence = Column(Float, nullable=True)        # 0-1 confidence score
-    transcript_language = Column(String(10), nullable=True)     # en, es, ar, ja
-    transcript_status = Column(Enum(TranscriptionStatus), default=TranscriptionStatus.PENDING)
-    transcript_source = Column(String(50), nullable=True)       # whisper, claude, openai
+    # Audio-specific (for ASR)
+    transcript = Column(Text, nullable=True)
+    transcript_confidence = Column(Float, nullable=True)
+    transcript_language = Column(String(10), nullable=True)
     
-    # MEDIA METADATA
-    duration_seconds = Column(Integer, nullable=True)           # For video/audio
-    dimensions = Column(String(20), nullable=True)              # For photos: "1920x1080"
-    description = Column(Text, nullable=True)                   # User-provided caption
+    # Metadata
+    duration_seconds = Column(Integer, nullable=True)
+    dimensions = Column(String(20), nullable=True)
+    description = Column(Text, nullable=True)
     
-    # AUDIT TRAIL
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # RELATIONSHIPS
-    student = relationship("User")
-    activity = relationship("Activity")
-    session = relationship("LearningSession")
-    annotations = relationship("StudentAnnotation", back_populates="capture")
+    # Relationships
+    annotations = relationship("CaptureAnnotation", back_populates="capture")
     notebook_links = relationship("NotebookCaptureLink", back_populates="capture")
-    
-    __table_args__ = (
-        Index('ix_student_captures_student_activity', 'student_id', 'activity_id'),
-        Index('ix_student_captures_captured_at', 'captured_at'),
-    )
 
-
-# ==============================================================================
-# STUDENT NOTEBOOK MODEL - Reflection journal
-# ==============================================================================
 
 class StudentNotebook(Base):
-    """Student reflection journal entries"""
+    """Student learning journal/portfolio"""
     __tablename__ = "student_notebooks"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"), nullable=True)
     
-    # ENTRY CONTENT
-    entry_type = Column(Enum(NotebookEntryType), default=NotebookEntryType.REFLECTION, index=True)
-    prompt = Column(Text, nullable=True)                        # If guided reflection
-    content = Column(Text, nullable=False)                      # Markdown-formatted reflection
+    # Notebook reflection
+    where_notes = Column(Text, nullable=True)
+    why_notes = Column(Text, nullable=True)
+    how_notes = Column(Text, nullable=True)
     
-    # LEARNING CONTEXT
-    learning_objectives_tagged = Column(ARRAY(UUID(as_uuid=True)), default=list)
-    competencies_addressed = Column(ARRAY(String), default=list)  # e.g., ["critical_thinking", "observation"]
+    # Meta-cognition
+    learning_insights = Column(Text, nullable=True)
+    next_steps = Column(Text, nullable=True)
     
-    # REFLECTION QUALITY (Auto-calculated)
-    reflection_depth = Column(String(20), default="surface")  # surface, developing, deep
-    word_count = Column(Integer, default=0)
+    # Teacher assessment
+    rubric_scores = Column(JSONB, nullable=True)
     
-    # AUDIT TRAIL
+    # Metadata
+    is_submitted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    submitted_at = Column(DateTime, nullable=True)
     
-    # RELATIONSHIPS
-    student = relationship("User")
-    activity = relationship("Activity")
-    session = relationship("LearningSession")
+    # Relationships
     linked_captures = relationship("NotebookCaptureLink", back_populates="notebook")
-    teacher_feedback = relationship("NotebookFeedback", back_populates="notebook", cascade="all, delete-orphan")
-    
-    __table_args__ = (
-        Index('ix_student_notebooks_student_activity', 'student_id', 'activity_id'),
-        Index('ix_student_notebooks_created_at', 'created_at'),
-    )
+    teacher_feedback = relationship("NotebookFeedback", back_populates="notebook")
 
 
-# ==============================================================================
-# STUDENT ANNOTATION MODEL - Markup on evidence
-# ==============================================================================
-
-class StudentAnnotation(Base):
-    """Annotations on student evidence (mark-ups, labels, explanations)"""
-    __tablename__ = "student_annotations"
+class CaptureAnnotation(Base):
+    """Teacher or system annotations on student captures"""
+    __tablename__ = "capture_annotations"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     capture_id = Column(UUID(as_uuid=True), ForeignKey("student_captures.id"), index=True)
-    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
-    # ANNOTATION TYPE & CONTENT
-    annotation_type = Column(Enum(AnnotationType), nullable=False)
-    content = Column(Text, nullable=False)                      # Label text or explanation
-    
-    # VISUAL POSITION (For photo annotations)
-    position_x = Column(Float, nullable=True)                   # Relative to image
-    position_y = Column(Float, nullable=True)
-    position_width = Column(Float, nullable=True)
-    position_height = Column(Float, nullable=True)
-    
-    # LEARNING CONTEXT
+    # Annotation content
+    annotation_type = Column(String(50))
     linked_objective = Column(String(255), nullable=True)
     linked_concept = Column(String(255), nullable=True)
-    explanation = Column(Text)                                  # Why is this evidence important?
+    explanation = Column(Text)
     
-    # AUDIT TRAIL
+    # Audit trail
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # RELATIONSHIPS
+    # Relationships
     capture = relationship("StudentCapture", back_populates="annotations")
-    student = relationship("User")
 
-
-# ==============================================================================
-# NOTEBOOK-CAPTURE LINKING MODEL
-# ==============================================================================
 
 class NotebookCaptureLink(Base):
     """Links notebook entries to captured evidence"""
@@ -555,18 +524,10 @@ class NotebookCaptureLink(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    # RELATIONSHIPS
+    # Relationships
     notebook = relationship("StudentNotebook", back_populates="linked_captures")
     capture = relationship("StudentCapture", back_populates="notebook_links")
-    
-    __table_args__ = (
-        Index('ix_notebook_capture_links_notebook_capture', 'notebook_id', 'capture_id'),
-    )
 
-
-# ==============================================================================
-# NOTEBOOK FEEDBACK MODEL - Teacher feedback
-# ==============================================================================
 
 class NotebookFeedback(Base):
     """Teacher feedback on student reflections"""
@@ -576,55 +537,248 @@ class NotebookFeedback(Base):
     notebook_id = Column(UUID(as_uuid=True), ForeignKey("student_notebooks.id"), index=True)
     teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
-    # FEEDBACK CONTENT
-    comment = Column(Text, nullable=False)
-    is_positive = Column(Boolean, default=True)
+    # Feedback
+    feedback_text = Column(Text)
+    rating = Column(Integer)  # 1-5
     
-    # COMPETENCY ASSESSMENT
-    competency_level = Column(String(50))  # emerging, developing, proficient, advanced
-    
-    # AUDIT TRAIL
+    # Metadata
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # RELATIONSHIPS
+    # Relationships
     notebook = relationship("StudentNotebook", back_populates="teacher_feedback")
-    teacher = relationship("User")
 
-
-# ==============================================================================
-# STUDENT COMPETENCY MODEL - Progress tracking
-# ==============================================================================
 
 class StudentCompetency(Base):
-    """Track student competency progress and achievement"""
+    """Track student progress on competencies"""
     __tablename__ = "student_competencies"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
-    
-    # COMPETENCY INFO
     competency_name = Column(String(255), index=True)
+    
+    # Progress tracking
+    status = Column(Enum(CompetencyStatus), default=CompetencyStatus.NOT_STARTED)
+    progress_percentage = Column(Integer, default=0)
+    
+    # Evidence
+    supporting_evidence = Column(JSONB)  # Links to captures/notebooks
+    
+    # Metadata
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ============================================================================
+# PHASE 5 MODELS - Privacy & Location
+# ============================================================================
+
+class CachedLocation(Base):
+    """Cached location data for fast retrieval"""
+    __tablename__ = "cached_locations"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    place_id = Column(String(255), unique=True, index=True)
+    name = Column(String(255), index=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    location_type = Column(String(100))
+    address = Column(String(512))
+    
+    # Educational metadata
+    subjects = Column(ARRAY(String))
+    keywords = Column(ARRAY(String))
+    learning_opportunities = Column(ARRAY(String))
+    
+    # Enrichment data
     description = Column(Text)
-    category = Column(String(100))  # e.g., "critical_thinking", "collaboration"
+    image_url = Column(String(512))
+    wikipedia_url = Column(String(512))
+    wikidata_id = Column(String(100))
     
-    # PROGRESS TRACKING
-    status = Column(Enum(CompetencyStatus), default=CompetencyStatus.NOT_STARTED, index=True)
-    progress_percent = Column(Integer, default=0)               # 0-100%
-    evidence_count = Column(Integer, default=0)                 # Number of supporting captures
+    # Source tracking
+    source = Column(String(50))  # osm, nominatim, wikidata, google
+    rating = Column(Float)
+    user_ratings_total = Column(Integer)
     
-    # ACHIEVEMENT DATES
-    first_achieved_at = Column(DateTime, nullable=True)
-    last_achieved_at = Column(DateTime, nullable=True)
+    # Timestamps
+    cached_at = Column(DateTime, default=datetime.utcnow, index=True)
+    last_accessed = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # AUDIT TRAIL
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    # Relationships
+    activities_using = relationship("Activity", secondary="activity_locations", back_populates="cached_locations")
+    enriched = relationship("EnrichedLocation", uselist=False, back_populates="cached")
+
+
+class EnrichedLocation(Base):
+    """Enriched location data with educational context"""
+    __tablename__ = "enriched_locations"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    cached_location_id = Column(UUID(as_uuid=True), ForeignKey("cached_locations.id"), unique=True)
+    
+    # Enhanced content
+    detailed_description = Column(Text)
+    historical_significance = Column(Text)
+    architect_or_artist = Column(String(255))
+    construction_date = Column(String(50))
+    
+    # Educational enrichment
+    grade_levels = Column(ARRAY(Integer))
+    related_concepts = Column(ARRAY(String))
+    suggested_activities = Column(ARRAY(String))
+    
+    # Metadata
+    enriched_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # RELATIONSHIPS
-    student = relationship("User")
+    # Relationships
+    cached = relationship("CachedLocation", back_populates="enriched")
+
+
+class LocationSearchHistory(Base):
+    """Track location searches for analytics"""
+    __tablename__ = "location_search_history"
     
-    __table_args__ = (
-        Index('ix_student_competencies_student_category', 'student_id', 'category'),
-        Index('ix_student_competencies_status', 'status'),
-    )
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    
+    # Search parameters
+    search_latitude = Column(Float)
+    search_longitude = Column(Float)
+    search_radius = Column(Integer)
+    search_query = Column(String(255))
+    
+    # Results
+    results_count = Column(Integer)
+    
+    # Metadata
+    searched_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class PopularDestinations(Base):
+    """Track popular educational locations in regions"""
+    __tablename__ = "popular_destinations"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    location_id = Column(UUID(as_uuid=True), ForeignKey("cached_locations.id"))
+    
+    # Usage stats
+    usage_count = Column(Integer, default=1)
+    unique_teachers = Column(Integer, default=0)
+    unique_students = Column(Integer, default=0)
+    
+    # Geographic region (for clustering)
+    region_latitude = Column(Float)
+    region_longitude = Column(Float)
+    region_radius_km = Column(Integer)
+    
+    # Metadata
+    last_used = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LocationEnrichmentQueue(Base):
+    """Queue for background enrichment jobs"""
+    __tablename__ = "location_enrichment_queue"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    location_id = Column(UUID(as_uuid=True), ForeignKey("cached_locations.id"))
+    
+    # Job status
+    status = Column(String(50), default="pending")  # pending, processing, completed, failed
+    priority = Column(Integer, default=0)
+    
+    # Subject context
+    subject_context = Column(String(255))
+    
+    # Retry tracking
+    attempt_count = Column(Integer, default=0)
+    last_error = Column(Text)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+
+
+class ComplianceCheck(Base):
+    """Activity compliance check record"""
+    __tablename__ = "compliance_checks"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
+    
+    # Check details
+    jurisdiction = Column(String(100), index=True)
+    is_compliant = Column(Boolean)
+    issues = Column(ARRAY(String))
+    warnings = Column(ARRAY(String))
+    
+    # Metadata
+    checked_at = Column(DateTime, default=datetime.utcnow, index=True)
+    checked_by = Column(String(100))
+    
+    # Relationships
+    activity = relationship("Activity", back_populates="compliance_checks")
+
+
+class ConsentLog(Base):
+    """Consent and privacy audit log"""
+    __tablename__ = "consent_logs"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
+    student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    
+    # Consent details
+    consent_type = Column(String(100))
+    granted = Column(Boolean)
+    jurisdiction = Column(String(100))
+    
+    # Audit trail
+    logged_at = Column(DateTime, default=datetime.utcnow, index=True)
+    expires_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    activity = relationship("Activity", back_populates="consent_logs")
+
+
+class DataRetentionPolicy(Base):
+    """Data retention configuration for activities"""
+    __tablename__ = "data_retention_policies"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
+    
+    # Retention rules
+    retention_days = Column(Integer)
+    retention_reason = Column(String(255))
+    jurisdiction = Column(String(100))
+    
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    activity = relationship("Activity", back_populates="retention_policies")
+
+
+class PrivacyConfiguration(Base):
+    """Privacy configuration for jurisdiction compliance"""
+    __tablename__ = "privacy_configurations"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    jurisdiction = Column(String(100), unique=True, index=True)
+    framework = Column(Enum(PrivacyFramework))
+    
+    # Configuration
+    config_data = Column(JSONB)
+    student_age_limits = Column(JSONB)
+    consent_requirements = Column(JSONB)
+    prohibited_data = Column(ARRAY(String))
+    
+    # Metadata
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
