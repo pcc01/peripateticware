@@ -40,9 +40,9 @@ Peripateticware is built to support outdoor and peripatetic learning. We're crea
 ### Step 1: Find Something to Work On
 
 Start here:
-- **[GitHub Issues](https://github.com/[repo]/issues)** - Look for `good-first-issue` or `help-wanted` labels
+- **[GitHub Issues](https://github.com/pcc01/peripateticware/issues)** - Look for `good-first-issue` or `help-wanted` labels
 - **[Roadmap](ROADMAP.md)** - See planned features and priorities
-- **[Discussions](https://github.com/[repo]/discussions)** - Propose ideas
+- **[Discussions](https://github.com/pcc01/peripateticware/discussions)** - Propose ideas
 - **Ask us**: Comment on an issue if you want to claim it
 
 ### Step 2: Fork & Set Up Locally
@@ -205,7 +205,7 @@ We're committed to a safe, respectful community. All contributors must abide by 
 - ❌ **No harassment**: Bigotry, intimidation, or personal attacks are unacceptable
 - ❌ **No politics**: Avoid unrelated political/religious debates in project spaces
 
-**Reporting Issues**: Contact Paul directly or email [code-of-conduct email]. Reports are handled with discretion.
+**Reporting Issues**: Contact Paul directly or email admin@thewordinbits.com. Reports are handled with discretion.
 
 ---
 
@@ -366,7 +366,7 @@ A: Absolutely! That's encouraged. Share the PR link, tell employers about it.
   - Implemented geofencing notifications
   - Fixed iOS memory leak
   - Improved API documentation
-  - Portfolio: [yourportfolio.com]
+  - Portfolio: thewordinbits.com
 ```
 
 ### Tier 3 (Core)
@@ -376,7 +376,7 @@ A: Absolutely! That's encouraged. Share the PR link, tell employers about it.
   - Mobile performance improvements across platforms
   - Mentored 3 first-time contributors
   - Speaking: EdTech Summit 2026 (Geolocation & Privacy)
-  - Portfolio: [yourportfolio.com]
+  - Portfolio: thewordinbits.com
 ```
 
 ---
