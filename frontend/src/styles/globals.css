@@ -1,0 +1,151 @@
+/* Global styles - Peripateticware Hi-Fi Design System */
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Colors - Hi-Fi Design System */
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --surface-alt: #f5f0e6;
+  --surface-deep: #ede5d4;
+  --border: #e0d8cb;
+  --border-strong: #c9bfaa;
+  --text: #1e1a14;
+  --text-muted: #7a6f5e;
+  --text-faint: #a89d8a;
+  --accent: #4a7c59;
+  --accent-deep: #2d5037;
+  --accent-text: #ffffff;
+  --accent-muted: #eaf2ec;
+  --warn: #c87941;
+  --warn-muted: #f8ece0;
+
+  /* Fonts */
+  --font-head: 'Lora', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
+  /* Radius */
+  --radius-card: 16px;
+  --radius-card-lg: 20px;
+  --radius-btn: 12px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 16px rgba(30, 26, 20, 0.06);
+  --shadow-card-hover: 0 12px 32px rgba(30, 26, 20, 0.10);
+  --shadow-pop: 0 16px 48px rgba(30, 26, 20, 0.14);
+
+  /* Spacing */
+  --section-y: 96px;
+  --section-x: clamp(20px, 5vw, 80px);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background-color: var(--bg);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-btn);
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--accent-text);
+  padding: 12px 28px;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-deep);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.btn-secondary {
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 28px;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background-color: var(--surface-alt);
+  border-color: var(--border-strong);
+}
+
+.card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: 10px 14px;
+  color: var(--text);
+  background-color: var(--surface);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-faint {
+  color: var(--text-faint);
+}
+
+.bg-surface {
+  background-color: var(--surface);
+}
+
+.bg-surface-alt {
+  background-color: var(--surface-alt);
+}
+
+.border {
+  border-color: var(--border);
+}
+
+.text-center {
+  text-align: center;
+}

@@ -1,0 +1,21 @@
+.container { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.25rem; }
+.loading { display: flex; align-items: center; gap: 0.75rem; padding: 1.5rem; justify-content: center; color: #6b7280; }
+.spinner { width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #4a7c59; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.75rem; border-radius: 6px; font-size: 0.875rem; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.header h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+.typeBadge { font-size: 0.75rem; background: #d1fae5; color: #065f46; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 500; }
+.description { font-size: 0.875rem; color: #4b5563; line-height: 1.6; margin-bottom: 1rem; }
+.featuresSection, .educationalSection, .coordinatesSection { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f3f4f6; }
+.featuresSection h4, .educationalSection h4, .coordinatesSection h4 { font-size: 0.875rem; font-weight: 600; margin: 0 0 0.5rem 0; }
+.featuresList { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.featureTag { background: #f3f4f6; color: #374151; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8125rem; }
+.suggestionsUl { margin: 0; padding-left: 1.25rem; }
+.suggestionsUl li { font-size: 0.875rem; color: #4b5563; margin-bottom: 0.375rem; }
+.coordinatePair { display: flex; gap: 1rem; }
+.label { font-size: 0.8125rem; color: #6b7280; font-weight: 500; }
+.value { font-size: 0.8125rem; color: #111827; font-family: monospace; }
+.mapLink a { font-size: 0.8125rem; color: #4a7c59; }
+.refreshBtn { background: white; border: 1px solid #d1d5db; color: #374151; padding: 0.375rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8125rem; margin-top: 0.75rem; }
+.info { font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem; }

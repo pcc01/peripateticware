@@ -1,0 +1,234 @@
+/**
+ * TeacherDashboard.tsx - Complete Implementation
+ * With Peripateticware Design System
+ */
+
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+interface Project {
+  id: string
+  title: string
+  studentCount: number
+  activeSession: number
+  status: 'active' | 'archived'
+}
+
+const TeacherDashboard: React.FC = () => {
+  const navigate = useNavigate()
+  const [projects, setProjects] = useState<Project[]>([
+    {
+      id: '1',
+      title: 'Spring Ecology Studies',
+      studentCount: 24,
+      activeSession: 3,
+      status: 'active'
+    },
+    {
+      id: '2',
+      title: 'Watershed Investigation',
+      studentCount: 18,
+      activeSession: 1,
+      status: 'active'
+    },
+    {
+      id: '3',
+      title: 'Fall Forest Survey',
+      studentCount: 22,
+      activeSession: 0,
+      status: 'archived'
+    }
+  ])
+
+  const totalStudents = projects.reduce((sum, p) => sum + p.studentCount, 0)
+  const activeProjects = projects.filter(p => p.status === 'active').length
+
+  return (
+    <div className="bg">
+      <div className="container py-xl">
+        {/* Header */}
+        <div className="flex-between mb-3xl">
+          <div>
+            <h1 className="mb-md">Teacher Dashboard</h1>
+            <p className="text-muted">
+              Manage your projects, monitor student progress, and create activities
+            </p>
+          </div>
+          <button className="btn btn-primary" onClick={() => navigate('/teacher/projects')}>
+            Manage Projects
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-3 mb-3xl">
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">Total Students</h3>
+              <span className="badge badge-primary">{totalStudents}</span>
+            </div>
+            <p className="text-muted m-0">Across all active projects</p>
+          </div>
+
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">Active Projects</h3>
+              <span className="badge badge-success">{activeProjects}</span>
+            </div>
+            <p className="text-muted m-0">Projects currently running</p>
+          </div>
+
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">Live Sessions</h3>
+              <span className="badge badge-warn">
+                {projects.reduce((sum, p) => sum + p.activeSession, 0)}
+              </span>
+            </div>
+            <p className="text-muted m-0">Sessions in progress</p>
+          </div>
+        </div>
+
+        {/* Projects Section */}
+        <div className="mb-3xl">
+          <div className="flex-between mb-xl">
+            <h2 className="h2 m-0">Your Projects</h2>
+            <button className="btn btn-primary" onClick={() => navigate('/teacher/projects')}>
+              + New Project
+            </button>
+          </div>
+
+          <div className="grid grid-2 gap-lg">
+            {projects.map(project => (
+              <div
+                key={project.id}
+                className="card border-left"
+                style={{
+                  borderLeftColor: 'var(--primary)',
+                  borderLeftWidth: '4px'
+                }}
+              >
+                <div className="flex-between mb-md">
+                  <h3 className="h5 m-0">{project.title}</h3>
+                  <span className={`badge ${project.status === 'active' ? 'badge-success' : 'badge-outline'}`}>
+                    {project.status === 'active' ? 'Active' : 'Archived'}
+                  </span>
+                </div>
+
+                <div className="flex gap-lg mb-lg">
+                  <div>
+                    <p className="text-sm text-muted m-0">Students</p>
+                    <p className="h5 m-0">{project.studentCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted m-0">Live Sessions</p>
+                    <p className="h5 m-0">{project.activeSession}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-sm">
+                  <button
+                    className="btn btn-secondary flex-1"
+                    onClick={() => navigate(`/teacher/projects/${project.id}`)}
+                  >
+                    View Details
+                  </button>
+                  <button
+                    className="btn btn-secondary flex-1"
+                    onClick={() => navigate('/teacher/activities')}
+                  >
+                    Manage Activities
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-2 gap-lg mb-3xl">
+          <div className="card">
+            <h3 className="h5 mb-lg">📊 Recent Activity</h3>
+            <div className="flex-col gap-md">
+              <div className="flex-between text-sm">
+                <span>5 new reflections submitted</span>
+                <span className="text-muted">2 hours ago</span>
+              </div>
+              <div className="flex-between text-sm">
+                <span>12 evidence items uploaded</span>
+                <span className="text-muted">4 hours ago</span>
+              </div>
+              <div className="flex-between text-sm">
+                <span>3 assessments completed</span>
+                <span className="text-muted">Today</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3 className="h5 mb-lg">🎯 Quick Actions</h3>
+            <div className="flex-col gap-sm">
+              <button
+                className="btn btn-text"
+                onClick={() => navigate('/teacher/activities')}
+              >
+                ✏️ Create Activity
+              </button>
+              <button
+                className="btn btn-text"
+                onClick={() => navigate('/teacher/tour')}
+              >
+                🎓 View Tutorial
+              </button>
+              <button className="btn btn-text">
+                📝 Approve Submissions
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="card bg-primary text-white">
+          <div className="flex-between">
+            <div>
+              <h3 className="h5 m-0" style={{ color: 'white' }}>
+                🚀 Getting Started?
+              </h3>
+              <p className="text-sm" style={{ opacity: 0.9 }}>
+                Take the teacher tour to learn how to use Peripateticware
+              </p>
+            </div>
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate('/teacher/tour')}
+            >
+              Start Tour
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        .flex-col {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .flex-1 {
+          flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+          .grid-3 {
+            grid-template-columns: 1fr;
+          }
+          
+          .grid-2 {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+export default TeacherDashboard

@@ -1,0 +1,239 @@
+/**
+ * StudentDashboard.tsx - Complete Implementation
+ * With Peripateticware Design System
+ */
+
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+interface Activity {
+  id: string
+  title: string
+  location: string
+  thumbnail?: string
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  status: 'available' | 'in-progress' | 'completed'
+}
+
+const StudentDashboard: React.FC = () => {
+  const navigate = useNavigate()
+  const [activities, setActivities] = useState<Activity[]>([
+    {
+      id: '1',
+      title: 'Forest Ecosystem Exploration',
+      location: 'Local Forest Reserve',
+      difficulty: 'beginner',
+      status: 'available'
+    },
+    {
+      id: '2',
+      title: 'Water Quality Investigation',
+      location: 'Stream Laboratory',
+      difficulty: 'intermediate',
+      status: 'in-progress'
+    },
+    {
+      id: '3',
+      title: 'Soil Composition Analysis',
+      location: 'Garden Site',
+      difficulty: 'intermediate',
+      status: 'available'
+    }
+  ])
+
+  const completedActivities = activities.filter(a => a.status === 'completed').length
+  const inProgressActivities = activities.filter(a => a.status === 'in-progress').length
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'badge-success'
+      case 'intermediate':
+        return 'badge-warn'
+      case 'advanced':
+        return 'badge-error'
+      default:
+        return 'badge-primary'
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <span className="badge badge-success">Completed</span>
+      case 'in-progress':
+        return <span className="badge badge-primary">In Progress</span>
+      default:
+        return <span className="badge badge-outline">Available</span>
+    }
+  }
+
+  return (
+    <div className="bg">
+      <div className="container py-xl">
+        {/* Header */}
+        <div className="flex-between mb-3xl">
+          <div>
+            <h1 className="mb-md">Welcome to Your Learning Journey</h1>
+            <p className="text-muted">
+              Discover hands-on learning activities tailored to your interests
+            </p>
+          </div>
+          <button className="btn btn-primary" onClick={() => navigate('/student/how-it-works')}>
+            How It Works
+          </button>
+        </div>
+
+        {/* Progress Cards */}
+        <div className="grid grid-3 mb-3xl">
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">Completed Activities</h3>
+              <span className="badge badge-success">{completedActivities}</span>
+            </div>
+            <p className="text-muted m-0">
+              You've completed {completedActivities} activities successfully
+            </p>
+          </div>
+
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">In Progress</h3>
+              <span className="badge badge-primary">{inProgressActivities}</span>
+            </div>
+            <p className="text-muted m-0">
+              {inProgressActivities} activity in progress
+            </p>
+          </div>
+
+          <div className="card">
+            <div className="flex-between mb-md">
+              <h3 className="h6 m-0">Time Spent</h3>
+              <span className="badge badge-outline">12.5h</span>
+            </div>
+            <p className="text-muted m-0">
+              Total time spent on activities
+            </p>
+          </div>
+        </div>
+
+        {/* Activities Section */}
+        <div>
+          <div className="flex-between mb-xl">
+            <h2 className="h2 m-0">Available Activities</h2>
+            <button className="btn btn-text" onClick={() => navigate('/student/how-it-works')}>
+              View Guide →
+            </button>
+          </div>
+
+          <div className="grid grid-2 gap-lg">
+            {activities.map(activity => (
+              <div
+                key={activity.id}
+                className="card cursor-pointer"
+                onClick={() => navigate(`/session/${activity.id}`)}
+                style={{ transition: 'all 0.2s ease' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                {/* Activity Thumbnail */}
+                {activity.thumbnail ? (
+                  <img
+                    src={activity.thumbnail}
+                    alt={activity.title}
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      objectFit: 'cover',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--space-lg)'
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      background: 'var(--primary-muted)',
+                      borderRadius: 'var(--radius-md)',
+                      marginBottom: 'var(--space-lg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <span className="text-muted">📍 {activity.location}</span>
+                  </div>
+                )}
+
+                {/* Activity Info */}
+                <div className="flex-between mb-md">
+                  <h3 className="h5 m-0">{activity.title}</h3>
+                </div>
+
+                <p className="text-sm text-muted mb-md">📍 {activity.location}</p>
+
+                {/* Badges */}
+                <div className="flex gap-sm mb-lg">
+                  <span className={`badge ${getDifficultyColor(activity.difficulty)}`}>
+                    {activity.difficulty.charAt(0).toUpperCase() + activity.difficulty.slice(1)}
+                  </span>
+                  {getStatusBadge(activity.status)}
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  className="btn btn-primary btn-block"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(`/session/${activity.id}`)
+                  }}
+                >
+                  {activity.status === 'in-progress' ? 'Continue' : 'Start Activity'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="card bg-primary text-white mt-3xl">
+          <div className="flex-between">
+            <div>
+              <h3 className="h5 m-0" style={{ color: 'white' }}>
+                📚 Learn About the Platform
+              </h3>
+              <p className="text-sm" style={{ opacity: 0.9 }}>
+                Understand how to make the most of your learning journey
+              </p>
+            </div>
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate('/student/how-it-works')}
+            >
+              View Tutorial
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .grid-3 {
+            grid-template-columns: 1fr;
+          }
+          
+          .grid-2 {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+export default StudentDashboard

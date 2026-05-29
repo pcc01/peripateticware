@@ -1,0 +1,179 @@
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Title -->
+  <text x="600" y="30" font-size="28" font-weight="bold" text-anchor="middle" fill="#1a1a1a">
+    Peripateticware System Architecture
+  </text>
+
+  <!-- CLIENT LAYER -->
+  <g>
+    <text x="50" y="80" font-size="16" font-weight="bold" fill="#0066cc">CLIENT LAYER</text>
+    
+    <!-- Teacher Frontend -->
+    <rect x="50" y="100" width="180" height="120" fill="#e6f2ff" stroke="#0066cc" stroke-width="2" rx="4"/>
+    <text x="140" y="125" font-size="14" font-weight="bold" text-anchor="middle">Teacher Frontend</text>
+    <text x="140" y="145" font-size="12" text-anchor="middle" fill="#333">React + TypeScript</text>
+    <text x="140" y="165" font-size="12" text-anchor="middle" fill="#333">Leaflet Maps</text>
+    <text x="140" y="185" font-size="12" text-anchor="middle" fill="#333">Port 5173</text>
+    <text x="140" y="205" font-size="11" text-anchor="middle" fill="#666">Curriculum, Activities</text>
+  </g>
+
+  <!-- Student Frontend -->
+  <g>
+    <rect x="270" y="100" width="180" height="120" fill="#e6f2ff" stroke="#0066cc" stroke-width="2" rx="4"/>
+    <text x="360" y="125" font-size="14" font-weight="bold" text-anchor="middle">Student Frontend</text>
+    <text x="360" y="145" font-size="12" text-anchor="middle" fill="#333">React + TypeScript</text>
+    <text x="360" y="165" font-size="12" text-anchor="middle" fill="#333">GPS Tracking</text>
+    <text x="360" y="185" font-size="12" text-anchor="middle" fill="#333">Port 5173</text>
+    <text x="360" y="205" font-size="11" text-anchor="middle" fill="#666">Sessions, Inquiries</text>
+  </g>
+
+  <!-- API Layer -->
+  <g>
+    <text x="50" y="280" font-size="16" font-weight="bold" fill="#00aa00">API LAYER</text>
+    
+    <!-- FastAPI Backend -->
+    <rect x="140" y="300" width="220" height="140" fill="#e6ffe6" stroke="#00aa00" stroke-width="2" rx="4"/>
+    <text x="250" y="325" font-size="14" font-weight="bold" text-anchor="middle">FastAPI Backend</text>
+    <text x="250" y="350" font-size="11" text-anchor="middle" fill="#333">• Auth Routes</text>
+    <text x="250" y="368" font-size="11" text-anchor="middle" fill="#333">• Session Management</text>
+    <text x="250" y="386" font-size="11" text-anchor="middle" fill="#333">• Curriculum CRUD</text>
+    <text x="250" y="404" font-size="11" text-anchor="middle" fill="#333">• Inference Endpoints</text>
+    <text x="250" y="422" font-size="11" text-anchor="middle" fill="#333">Port 8010 • WebSocket</text>
+  </g>
+
+  <!-- Arrows from Frontend to Backend -->
+  <path d="M 230 220 L 250 300" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 360 220 L 280 300" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- SERVICES LAYER -->
+  <g>
+    <text x="50" y="530" font-size="16" font-weight="bold" fill="#cc6600">SERVICES</text>
+    
+    <!-- RAG Orchestrator -->
+    <rect x="50" y="550" width="160" height="100" fill="#fff0e6" stroke="#cc6600" stroke-width="2" rx="4"/>
+    <text x="130" y="575" font-size="13" font-weight="bold" text-anchor="middle">RAG Orchestrator</text>
+    <text x="130" y="595" font-size="11" text-anchor="middle" fill="#333">Haystack</text>
+    <text x="130" y="613" font-size="11" text-anchor="middle" fill="#333">Query Processing</text>
+    <text x="130" y="631" font-size="11" text-anchor="middle" fill="#333">Document Retrieval</text>
+  </g>
+
+  <!-- Sync Engine -->
+  <g>
+    <rect x="240" y="550" width="160" height="100" fill="#fff0e6" stroke="#cc6600" stroke-width="2" rx="4"/>
+    <text x="320" y="575" font-size="13" font-weight="bold" text-anchor="middle">Sync Engine</text>
+    <text x="320" y="595" font-size="11" text-anchor="middle" fill="#333">WebSocket Handler</text>
+    <text x="320" y="613" font-size="11" text-anchor="middle" fill="#333">Real-time Updates</text>
+    <text x="320" y="631" font-size="11" text-anchor="middle" fill="#333">Location Tracking</text>
+  </g>
+
+  <!-- Privacy Engine -->
+  <g>
+    <rect x="430" y="550" width="160" height="100" fill="#fff0e6" stroke="#cc6600" stroke-width="2" rx="4"/>
+    <text x="510" y="575" font-size="13" font-weight="bold" text-anchor="middle">Privacy Engine</text>
+    <text x="510" y="595" font-size="11" text-anchor="middle" fill="#333">FERPA/COPPA/GDPR</text>
+    <text x="510" y="613" font-size="11" text-anchor="middle" fill="#333">Data Filtering</text>
+    <text x="510" y="631" font-size="11" text-anchor="middle" fill="#333">Audit Logging</text>
+  </g>
+
+  <!-- Arrows from Backend to Services -->
+  <path d="M 200 440 L 130 550" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 250 440 L 320 550" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 280 440 L 510 550" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- DATA LAYER -->
+  <g>
+    <text x="700" y="80" font-size="16" font-weight="bold" fill="#aa0000">DATA LAYER</text>
+    
+    <!-- PostgreSQL -->
+    <rect x="700" y="100" width="160" height="120" fill="#ffe6e6" stroke="#aa0000" stroke-width="2" rx="4"/>
+    <text x="780" y="125" font-size="14" font-weight="bold" text-anchor="middle">PostgreSQL</text>
+    <text x="780" y="150" font-size="11" text-anchor="middle" fill="#333">Users</text>
+    <text x="780" y="168" font-size="11" text-anchor="middle" fill="#333">Sessions</text>
+    <text x="780" y="186" font-size="11" text-anchor="middle" fill="#333">Curriculum</text>
+    <text x="780" y="204" font-size="11" text-anchor="middle" fill="#333">Evidence</text>
+  </g>
+
+  <!-- Redis Cache -->
+  <g>
+    <rect x="900" y="100" width="160" height="120" fill="#ffe6e6" stroke="#aa0000" stroke-width="2" rx="4"/>
+    <text x="980" y="125" font-size="14" font-weight="bold" text-anchor="middle">Redis Cache</text>
+    <text x="980" y="150" font-size="11" text-anchor="middle" fill="#333">Sessions</text>
+    <text x="980" y="168" font-size="11" text-anchor="middle" fill="#333">Tokens</text>
+    <text x="980" y="186" font-size="11" text-anchor="middle" fill="#333">Query Cache</text>
+    <text x="980" y="204" font-size="11" text-anchor="middle" fill="#333">Rate Limits</text>
+  </g>
+
+  <!-- Arrows from Backend to Data -->
+  <path d="M 360 300 L 780 220" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 360 350 L 980 220" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- LLM PROVIDERS -->
+  <g>
+    <text x="700" y="280" font-size="16" font-weight="bold" fill="#6600aa">LLM PROVIDERS</text>
+    
+    <!-- Ollama -->
+    <rect x="700" y="300" width="160" height="100" fill="#f0e6ff" stroke="#6600aa" stroke-width="2" rx="4"/>
+    <text x="780" y="325" font-size="14" font-weight="bold" text-anchor="middle">Ollama</text>
+    <text x="780" y="350" font-size="11" text-anchor="middle" fill="#333">Local LLM Inference</text>
+    <text x="780" y="368" font-size="11" text-anchor="middle" fill="#333">Port 11434</text>
+    <text x="780" y="386" font-size="11" text-anchor="middle" fill="#333">Models on Host</text>
+  </g>
+
+  <!-- Claude API -->
+  <g>
+    <rect x="900" y="300" width="160" height="100" fill="#f0e6ff" stroke="#6600aa" stroke-width="2" rx="4"/>
+    <text x="980" y="325" font-size="14" font-weight="bold" text-anchor="middle">Claude API</text>
+    <text x="980" y="350" font-size="11" text-anchor="middle" fill="#333">Cloud-based LLM</text>
+    <text x="980" y="368" font-size="11" text-anchor="middle" fill="#333">Switchable Provider</text>
+    <text x="980" y="386" font-size="11" text-anchor="middle" fill="#333">API Key Config</text>
+  </g>
+
+  <!-- Arrows from Services to LLM -->
+  <path d="M 210 550 L 780 400" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 210 550 L 980 400" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- DEPLOYMENT -->
+  <g>
+    <text x="700" y="530" font-size="16" font-weight="bold" fill="#009900">DEPLOYMENT</text>
+    
+    <!-- Docker -->
+    <rect x="700" y="550" width="160" height="80" fill="#e6f9f0" stroke="#009900" stroke-width="2" rx="4"/>
+    <text x="780" y="575" font-size="13" font-weight="bold" text-anchor="middle">Docker</text>
+    <text x="780" y="595" font-size="11" text-anchor="middle" fill="#333">Compose Orchestration</text>
+    <text x="780" y="613" font-size="11" text-anchor="middle" fill="#333">Multi-container</text>
+  </g>
+
+  <!-- Nginx -->
+  <g>
+    <rect x="900" y="550" width="160" height="80" fill="#e6f9f0" stroke="#009900" stroke-width="2" rx="4"/>
+    <text x="980" y="575" font-size="13" font-weight="bold" text-anchor="middle">Nginx</text>
+    <text x="980" y="595" font-size="11" text-anchor="middle" fill="#333">Reverse Proxy</text>
+    <text x="980" y="613" font-size="11" text-anchor="middle" fill="#333">SSL/TLS</text>
+  </g>
+
+  <!-- Legend -->
+  <g>
+    <text x="50" y="730" font-size="14" font-weight="bold" fill="#1a1a1a">Legend:</text>
+    <rect x="50" y="740" width="20" height="20" fill="#e6f2ff" stroke="#0066cc" stroke-width="2"/>
+    <text x="80" y="755" font-size="12">Frontend</text>
+    
+    <rect x="250" y="740" width="20" height="20" fill="#e6ffe6" stroke="#00aa00" stroke-width="2"/>
+    <text x="280" y="755" font-size="12">Backend/API</text>
+    
+    <rect x="470" y="740" width="20" height="20" fill="#fff0e6" stroke="#cc6600" stroke-width="2"/>
+    <text x="500" y="755" font-size="12">Services</text>
+    
+    <rect x="680" y="740" width="20" height="20" fill="#ffe6e6" stroke="#aa0000" stroke-width="2"/>
+    <text x="710" y="755" font-size="12">Data Storage</text>
+    
+    <rect x="900" y="740" width="20" height="20" fill="#f0e6ff" stroke="#6600aa" stroke-width="2"/>
+    <text x="930" y="755" font-size="12">LLM Providers</text>
+  </g>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#666"/>
+    </marker>
+  </defs>
+</svg>

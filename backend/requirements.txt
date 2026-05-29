@@ -1,0 +1,122 @@
+﻿# PERIPATETICWARE - COMPLETE BACKEND REQUIREMENTS
+# Updated: May 25, 2026 - Python 3.12 Compatible (All Conflicts Resolved)
+# FIX HISTORY:
+#   - assemblyai removed       → pulled httpx-ssrf==0.1.0 (does not exist on PyPI)
+#   s
+#   - asyncpg duplicate removed
+#   - aiosmtplib duplicate removed
+#   - aioredis removed         → conflicts with redis 5.x (use redis.asyncio instead)
+#   - opencv-python-headless   → opencv-python has no display server in Docker
+#   - httpx pinned exactly     → prevents resolver from pulling incompatible extras
+
+# ============================================================================
+# CORE FRAMEWORK & SERVER
+# ============================================================================
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+starlette==0.27.0
+
+# ============================================================================
+# DATABASE & ORM
+# ============================================================================
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+pgvector==0.2.4
+alembic==1.13.0
+
+# ============================================================================
+# AUTHENTICATION & SECURITY
+# ============================================================================
+python-jose[cryptography]==3.3.0
+pydantic[email]>=2.9,<3.0
+pydantic-settings==2.1.0
+bcrypt==4.0.1
+passlib==1.7.4
+python-dotenv==1.0.0
+cryptography==41.0.7
+
+# ============================================================================
+# VALIDATION & SERIALIZATION
+# ============================================================================
+email-validator==2.2.0
+validators==0.22.0
+
+# ============================================================================
+# EMAIL
+# ============================================================================
+aiosmtplib==3.0.1
+
+# ============================================================================
+# AI / LLM INTEGRATION
+# 
+#      not exist on PyPI. Upgrade only after verifying dep tree is clean.
+# ============================================================================
+anthropic==0.28.0
+ollama==0.6.2
+httpx==0.27.0
+
+# ============================================================================
+# AUDIO PROCESSING (Phase 6)
+# FIX: assemblyai removed — pulls httpx-ssrf==0.1.0 transitively.
+#      Re-add only after a compatible version is confirmed on PyPI.
+#      Local ASR via Whisper is the recommended replacement.
+# ============================================================================
+librosa==0.11.0
+pydub==0.25.1
+soundfile==0.12.1
+numpy==1.26.4
+
+# ============================================================================
+# CACHING & SESSION MANAGEMENT
+# FIX: aioredis removed — deprecated, conflicts with redis 5.x
+#      Use redis.asyncio (built into redis 5.x) instead
+# ============================================================================
+redis==5.0.1
+
+# ============================================================================
+# ASYNC & HTTP
+# ============================================================================
+aiofiles==23.2.1
+aiohttp==3.9.1
+
+# ============================================================================
+# LOGGING & MONITORING
+# ============================================================================
+python-json-logger==2.0.7
+structlog==23.3.0
+prometheus-client==0.19.0
+
+# ============================================================================
+# TESTING
+# ============================================================================
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+pytz==2023.3.post1
+python-dateutil==2.8.2
+
+# ============================================================================
+# PDF GENERATION
+# ============================================================================
+reportlab==4.0.9
+pypdf==3.17.1
+
+# ============================================================================
+# IMAGE PROCESSING
+# FIX: opencv-python-headless replaces opencv-python (no display in Docker)
+# ============================================================================
+Pillow==10.1.0
+opencv-python-headless==4.8.1.78
+
+# ============================================================================
+# GEOLOCATION
+# ============================================================================
+geopy==2.3.0
+geoalchemy2==0.14.1
+shapely==2.0.2
