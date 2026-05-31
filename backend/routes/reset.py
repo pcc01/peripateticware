@@ -3,54 +3,50 @@
 # found in the LICENSE.md file in the root directory of this source tree.
 
 """
-Password Reset Routes - Public password reset flow
+Password Reset Routes — uses SignedURL service for time-limited tokens.
+Token TTL: 60 minutes (configurable in services/signed_url.py)
 """
 
-from fastapi import APIRouter, HTTPException, status
+import logging
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
+
+from core.database import get_db
+from models.user import User
+from services.signed_url import SignedURL, SignedURLError, SignedURLExpired
+from services.email_service import send_password_reset_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/public/password", tags=["password_reset"])
 
 
 class ForgotPasswordRequest(BaseModel):
-    """Request to start password reset"""
     email: EmailStr
 
-
 class ForgotPasswordResponse(BaseModel):
-    """Response to forgot password request"""
     success: bool
     message: str
     email: EmailStr
 
-
 class ResetTokenValidation(BaseModel):
-    """Validate reset token"""
     token: str
     valid: bool
     email: Optional[str] = None
     expires_in_minutes: Optional[int] = None
 
-
 class ResetPasswordRequest(BaseModel):
-    """Request to reset password"""
     token: str
-    new_password: str = Field(
-        ...,
-        min_length=8,
-        description="Password must be at least 8 characters with uppercase, lowercase, number, and special character"
-    )
-
+    new_password: str = Field(..., min_length=8)
 
 class ResetPasswordResponse(BaseModel):
-    """Response to password reset"""
     success: bool
     message: str
 
-
 class PasswordRequirements(BaseModel):
-    """Password requirements"""
     min_length: int = 8
     requires_uppercase: bool = True
     requires_lowercase: bool = True
@@ -59,98 +55,99 @@ class PasswordRequirements(BaseModel):
     special_characters: str = "@$!%*?&"
 
 
-@router.post("/forgot", response_model=ForgotPasswordResponse)
-async def forgot_password(request: ForgotPasswordRequest) -> ForgotPasswordResponse:
-    """Start password reset flow"""
-    # In production:
-    # 1. Check if email exists in database
-    # 2. Generate reset token
-    # 3. Send email with reset link
-    
-    print(f"📧 Password reset requested for {request.email}")
-    
-    return ForgotPasswordResponse(
-        success=True,
-        message="If an account exists with this email, you will receive a password reset link",
-        email=request.email
-    )
+def _validate_password_strength(password: str) -> list:
+    errors = []
+    if len(password) < 8:
+        errors.append("At least 8 characters")
+    if not any(c.isupper() for c in password):
+        errors.append("At least one uppercase letter")
+    if not any(c.islower() for c in password):
+        errors.append("At least one lowercase letter")
+    if not any(c.isdigit() for c in password):
+        errors.append("At least one number")
+    if not any(c in "@$!%*?&" for c in password):
+        errors.append("At least one special character (@$!%*?&)")
+    return errors
 
 
 @router.get("/requirements", response_model=PasswordRequirements)
 async def get_password_requirements() -> PasswordRequirements:
-    """Get password requirements"""
     return PasswordRequirements()
+
+
+@router.post("/forgot", response_model=ForgotPasswordResponse)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ForgotPasswordResponse:
+    """Initiate password reset. Always returns success to prevent user enumeration."""
+    result = await db.execute(select(User).where(User.email == request.email))
+    user = result.scalar_one_or_none()
+
+    if user:
+        token = SignedURL.generate(
+            purpose="password_reset",
+            payload={"user_id": str(user.id), "email": user.email},
+        )
+        await send_password_reset_email(user.email, token)
+        logger.info("Password reset email sent to user %s", user.id)
+
+    return ForgotPasswordResponse(
+        success=True,
+        message="If an account exists with this email, you will receive a reset link shortly.",
+        email=request.email,
+    )
 
 
 @router.get("/reset/{token}", response_model=ResetTokenValidation)
 async def validate_reset_token(token: str) -> ResetTokenValidation:
-    """Validate a reset token"""
-    # In production, validate token in database
-    
-    if not token or len(token) < 20:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid token format"
-        )
-    
-    print(f"🔐 Validating reset token: {token[:20]}...")
-    
-    # Mock validation (in production, check database)
-    is_valid = True
-    
-    if is_valid:
+    """Validate a reset token before showing the new-password form."""
+    try:
+        data = SignedURL.validate(token, purpose="password_reset")
         return ResetTokenValidation(
             token=token,
             valid=True,
-            email="user@example.com",
-            expires_in_minutes=45
+            email=data.get("email"),
+            expires_in_minutes=SignedURL.expires_in_minutes(token),
         )
-    else:
-        return ResetTokenValidation(
-            token=token,
-            valid=False
-        )
+    except SignedURLExpired:
+        return ResetTokenValidation(token=token, valid=False)
+    except SignedURLError:
+        raise HTTPException(status_code=400, detail="Invalid token")
 
 
 @router.post("/reset", response_model=ResetPasswordResponse)
-async def reset_password(request: ResetPasswordRequest) -> ResetPasswordResponse:
-    """Reset password with token"""
-    # Validate password strength
-    password = request.new_password
-    
-    errors = []
-    
-    if len(password) < 8:
-        errors.append("Password must be at least 8 characters")
-    
-    if not any(c.isupper() for c in password):
-        errors.append("Password must contain at least one uppercase letter")
-    
-    if not any(c.islower() for c in password):
-        errors.append("Password must contain at least one lowercase letter")
-    
-    if not any(c.isdigit() for c in password):
-        errors.append("Password must contain at least one number")
-    
-    if not any(c in "@$!%*?&" for c in password):
-        errors.append("Password must contain at least one special character (@$!%*?&)")
-    
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ResetPasswordResponse:
+    """Reset password using a valid signed token."""
+    try:
+        data = SignedURL.validate(request.token, purpose="password_reset")
+    except SignedURLExpired:
+        raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+    except SignedURLError:
+        raise HTTPException(status_code=400, detail="Invalid or tampered reset token.")
+
+    errors = _validate_password_strength(request.new_password)
     if errors:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"errors": errors}
-        )
-    
-    # In production:
-    # 1. Validate token
-    # 2. Hash password
-    # 3. Update in database
-    # 4. Invalidate all sessions
-    # 5. Send confirmation email
-    
-    print(f"🔐 Resetting password with token: {request.token[:20]}...")
-    
-    return ResetPasswordResponse(
-        success=True,
-        message="Password has been reset successfully. Please log in with your new password."
-    )
+        raise HTTPException(status_code=400, detail={"errors": errors})
+
+    from uuid import UUID
+    try:
+        user_id = UUID(data["user_id"])
+    except (KeyError, ValueError):
+        raise HTTPException(status_code=400, detail="Invalid token payload")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    user.hashed_password = pwd_context.hash(request.new_password)
+    await db.commit()
+    logger.info("Password reset for user %s", user_id)
+
+    return ResetPasswordResponse(success=True, message="Password reset successfully. You can now log in.")

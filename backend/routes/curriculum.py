@@ -15,7 +15,7 @@ import logging
 
 from core.database import get_db
 from core.config import settings
-from core.security import get_current_user
+from core.dependencies import get_current_user
 from models.database import User, CurriculumUnit
 from services.wikimedia_service import get_location_context_for_activity
 from services.activity_generation_service import ActivityGenerationService
@@ -34,8 +34,8 @@ class CreateCurriculumRequest(BaseModel):
     description: str
     subject: str
     grade_level: int
-    bloom_level: int
-    marzano_level: int
+    bloom_level: Optional[int] = None
+    marzano_level: Optional[int] = None
     content: dict
 
 
@@ -45,8 +45,8 @@ class CurriculumResponse(BaseModel):
     title: str
     subject: str
     grade_level: int
-    bloom_level: int
-    marzano_level: int
+    bloom_level: Optional[int] = None
+    marzano_level: Optional[int] = None
     
     class Config:
         from_attributes = True

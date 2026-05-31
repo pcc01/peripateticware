@@ -1,11 +1,7 @@
 /* TeacherDashboard.module.css - Uses existing design system */
 
 .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px;
-  background-color: var(--bg);
-  min-height: 100vh;
+  /* Padding and centering handled by DashboardShell */
 }
 
 .header {

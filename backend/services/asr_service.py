@@ -51,9 +51,9 @@ class ASRService:
         self.enabled = True
         
         # PRIMARY: Whisper on Ollama (LOCAL INFERENCE)
-        self.ollama_host = settings.OLLAMA_HOST if hasattr(settings, 'OLLAMA_HOST') else None
+        self.ollama_host = getattr(settings, 'OLLAMA_BASE_URL', None) or getattr(settings, 'OLLAMA_HOST', None)
         self.ollama_enabled = settings.OLLAMA_ENABLED if hasattr(settings, 'OLLAMA_ENABLED') else True
-        self.whisper_model = 'whisper'  # Ollama's whisper model name
+        self.whisper_model = getattr(settings, 'OLLAMA_MODEL_AUDIO', 'whisper')
         
         # FALLBACK: Cloud providers
         self.openai_api_key = settings.OPENAI_API_KEY if hasattr(settings, 'OPENAI_API_KEY') else None

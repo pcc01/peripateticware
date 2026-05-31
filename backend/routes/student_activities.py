@@ -48,6 +48,9 @@ from services.privacy_engine import log_access, enforce_on_submission
 from schemas.student_activities import (
     StudentActivitySummary,
     StudentActivityDetail,
+    ActivityPhaseDetail,
+    ActivityPhases,
+    ActivityTeacher,
     StudentPaginatedActivityResponse,
     StartSessionRequest,
     LearningSessionResponse,
@@ -207,8 +210,50 @@ async def get_student_activity(
         raise HTTPException(status_code=403, detail="Activity is not published")
 
     summary = _activity_to_summary(activity)
+
+    # Fetch teacher name for the detail view
+    teacher_name = "Your Teacher"
+    try:
+        if activity.teacher_id:
+            t_result = await db.execute(select(User).where(User.id == activity.teacher_id))
+            teacher_obj = t_result.scalar()
+            if teacher_obj:
+                teacher_name = teacher_obj.full_name or teacher_obj.email
+    except Exception:
+        pass
+
+    # Build phases from description / learning_objectives
+    objs = activity.learning_objectives or []
+    orient_instructions = activity.description or "Arrive at the location and orient yourself."
+    inquiry_instructions = ("\n".join(str(o) for o in objs)
+                            if objs else "Explore, observe, and collect evidence.")
+    reflect_instructions = "Review your evidence and reflect on what you learned."
+    due_str = activity.created_at.isoformat() if activity.created_at else None
+
+    phases = ActivityPhases(
+        orient=ActivityPhaseDetail(
+            title="Orient",
+            instructions=orient_instructions,
+            due_date=due_str or "",
+        ),
+        inquiry=ActivityPhaseDetail(
+            title="Inquiry",
+            instructions=inquiry_instructions,
+            due_date=due_str or "",
+        ),
+        reflect=ActivityPhaseDetail(
+            title="Reflect",
+            instructions=reflect_instructions,
+            due_date=due_str or "",
+        ),
+    )
+
     return StudentActivityDetail(
         **summary,
+        location=activity.location_name,
+        due_date=due_str,
+        teacher=ActivityTeacher(name=teacher_name),
+        phases=phases,
         location_info=activity.location_info,
         resources=activity.resources or [],
         suggested_lessons=activity.suggested_lessons or [],
@@ -789,3 +834,172 @@ async def _get_owned_session(
         )
 
     return session
+
+
+# =============================================================================
+# STUDENT DASHBOARD — GET /dashboard
+# =============================================================================
+
+@router.get("/dashboard")
+async def get_student_dashboard(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Student dashboard summary: recent activities, session counts, progress snapshot.
+    Frontend: useStudentStore.fetchDashboard() → GET /api/v1/student/dashboard
+    """
+    # Recent sessions (last 5)
+    sessions_result = await db.execute(
+        select(LearningSession)
+        .where(LearningSession.user_id == current_user.id)
+        .order_by(LearningSession.created_at.desc())
+        .limit(5)
+    )
+    recent_sessions = sessions_result.scalars().all()
+
+    # Total sessions count
+    total_result = await db.execute(
+        select(func.count()).where(LearningSession.user_id == current_user.id)
+    )
+    total_sessions = total_result.scalar() or 0
+
+    # Active (in-progress) sessions
+    active_result = await db.execute(
+        select(func.count()).where(
+            and_(
+                LearningSession.user_id == current_user.id,
+                LearningSession.status == "in_progress",
+            )
+        )
+    )
+    active_sessions = active_result.scalar() or 0
+
+    # Published activities available
+    activities_result = await db.execute(
+        select(Activity)
+        .where(and_(Activity.status == "published", Activity.is_active == True))
+        .order_by(Activity.created_at.desc())
+        .limit(5)
+    )
+    recent_activities = activities_result.scalars().all()
+
+    return {
+        "student_id": str(current_user.id),
+        "student_name": current_user.full_name or current_user.email,
+        "total_sessions": total_sessions,
+        "active_sessions": active_sessions,
+        "recent_sessions": [
+            {
+                "id": str(s.id),
+                "title": s.title,
+                "status": s.status,
+                "created_at": s.created_at.isoformat() if s.created_at else None,
+                "completed_at": s.completed_at.isoformat() if s.completed_at else None,
+            }
+            for s in recent_sessions
+        ],
+        "recent_activities": [
+            {
+                "id": str(a.id),
+                "title": a.title,
+                "subject": a.subject,
+                "description": a.description or "",
+                "grade_level": a.grade_level,
+                "estimated_duration_minutes": a.estimated_duration_minutes,
+                "location_name": a.location_name,
+                "location": a.location_name,
+                "bloom_level": a.bloom_level,
+                "status": str(a.status.value) if hasattr(a.status, "value") else str(a.status),
+                "due_date": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in recent_activities
+        ],
+    }
+
+
+# =============================================================================
+# STUDENT PROGRESS — GET /progress
+# =============================================================================
+
+@router.get("/progress")
+async def get_student_progress(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Student competency progress summary.
+    Frontend: useStudentStore.fetchProgress() → GET /api/v1/student/progress
+    """
+    # Count completed sessions by subject as a proxy for progress
+    sessions_result = await db.execute(
+        select(LearningSession)
+        .where(
+            and_(
+                LearningSession.user_id == current_user.id,
+                LearningSession.status == "completed",
+            )
+        )
+    )
+    completed_sessions = sessions_result.scalars().all()
+
+    # Try to get competency data from student_competencies table
+    try:
+        from models.database import StudentCompetency
+        comp_result = await db.execute(
+            select(StudentCompetency)
+            .where(StudentCompetency.student_id == current_user.id)
+            .order_by(StudentCompetency.assessed_at.desc())
+        )
+        competencies = comp_result.scalars().all()
+        progress_items = [
+            {
+                "competency_name": c.competency_name,
+                "bloom_level": c.bloom_level,
+                "score": c.score,
+                "status": c.status.value if hasattr(c.status, "value") else str(c.status),
+                "assessed_at": c.assessed_at.isoformat() if c.assessed_at else None,
+            }
+            for c in competencies
+        ]
+    except Exception:
+        progress_items = []
+
+    return {
+        "student_id": str(current_user.id),
+        "completed_sessions": len(completed_sessions),
+        "progress": progress_items,
+    }
+
+
+# =============================================================================
+# STUDENT PROJECTS — GET /projects
+# =============================================================================
+
+@router.get("/projects")
+async def get_student_projects(
+    status: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Student's learning sessions filtered by status (used as 'projects' by frontend).
+    Frontend: useStudentStore.fetchActiveProjects() → GET /api/v1/student/projects?status=active
+    """
+    q = select(LearningSession).where(LearningSession.user_id == current_user.id)
+    if status:
+        q = q.where(LearningSession.status == status)
+    q = q.order_by(LearningSession.updated_at.desc()).limit(20)
+    result = await db.execute(q)
+    sessions = result.scalars().all()
+    return [
+        {
+            "id": str(s.id),
+            "title": s.title or "Untitled Session",
+            "status": s.status,
+            "activity_id": str(s.activity_id) if s.activity_id else None,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+            "completed_at": s.completed_at.isoformat() if s.completed_at else None,
+        }
+        for s in sessions
+    ]

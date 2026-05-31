@@ -1,11 +1,7 @@
 /* AdminDashboard.module.css - Uses Peripateticware Design System */
 
 .container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: var(--section-x);
-  background-color: var(--bg);
-  min-height: 100vh;
+  /* Padding and centering handled by DashboardShell */
 }
 
 .header {
@@ -432,6 +428,25 @@
   font-size: var(--font-size-lg);
   font-weight: 700;
   margin: 0 0 var(--space-lg) 0;
+  color: var(--text);
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.statItem:last-child {
+  border-bottom: none;
+}
+
+.statItem .value {
+  font-weight: 600;
   color: var(--text);
 }
 

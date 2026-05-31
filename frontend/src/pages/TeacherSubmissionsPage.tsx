@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -151,7 +152,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                       <strong>{submission.phase.toUpperCase()}</strong>
                         </p>
                         <p className="text-xs text-gray-500">{t("landing:submitted", "Submitted:")}
-                      {new Date(submission.submitted_at).toLocaleDateString()}
+                      {fmtDate(submission.submitted_at)}
                         </p>
                       </div>
 

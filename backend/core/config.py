@@ -102,6 +102,18 @@ class Settings(BaseSettings):
     ASR_ENABLED: bool = os.getenv("ASR_ENABLED", "false").lower() == "true"
     ASSEMBLYAI_API_KEY: str = os.getenv("ASSEMBLYAI_API_KEY", "")
 
+    # ── Email / SMTP ──────────────────────────────────────────────────────────
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", "noreply@peripateticware.com")
+    EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "Peripateticware")
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    # Set EMAIL_DRY_RUN=false in production to send real emails
+    EMAIL_DRY_RUN: bool = os.getenv("EMAIL_DRY_RUN", "true").lower() == "true"
+
     # ── Phase 7: Student-Initiated Activities ─────────────────────────────────
     FIELD_NOTES_ENABLED: bool = os.getenv("FIELD_NOTES_ENABLED", "true").lower() == "true"
     PEER_PROJECTS_ENABLED: bool = os.getenv("PEER_PROJECTS_ENABLED", "true").lower() == "true"

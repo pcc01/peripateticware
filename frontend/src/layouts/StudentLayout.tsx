@@ -1,0 +1,55 @@
+// Copyright (c) 2026 Paul Christopher Cerda
+import React from 'react';
+import DashboardShell, { NavGroup } from './DashboardShell';
+
+const STUDENT_NAV: NavGroup[] = [
+  {
+    label: 'Explore & Do',
+    items: [
+      { icon: '🗺', label: 'Find Activities',  path: '/student', end: true },
+      { icon: '▶️', label: 'Active Session',   path: '/student/activities' },
+    ],
+  },
+  {
+    label: 'My Work',
+    items: [
+      { icon: '📓', label: 'Field Notes',    path: '/student/field-notes' },
+      { icon: '📔', label: 'Journal',        path: '/student/journal' },
+    ],
+  },
+  {
+    label: 'Create',
+    items: [
+      { icon: '💡', label: 'Self Projects',  path: '/student/self-projects' },
+      { icon: '🤝', label: 'Peer Projects',  path: '/student/peer-projects' },
+      { icon: '🗺️', label: 'My Challenges',  path: '/student/proposals' },
+    ],
+  },
+  {
+    label: 'Progress',
+    items: [
+      { icon: '📈', label: 'How It Works',   path: '/student/how-it-works' },
+    ],
+  },
+  {
+    label: 'Account',
+    items: [
+      { icon: '⚙️', label: 'Settings', path: '/student/settings' },
+    ],
+  },
+];
+
+interface Props { children: React.ReactNode }
+
+const StudentLayout: React.FC<Props> = ({ children }) => (
+  <DashboardShell
+    navGroups={STUDENT_NAV}
+    roleLabel="Student Dashboard"
+    roleColor="bg-sky-700"
+    accentColor="text-sky-700"
+  >
+    {children}
+  </DashboardShell>
+);
+
+export default StudentLayout;

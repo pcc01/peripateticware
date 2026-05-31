@@ -1,7 +1,7 @@
 // File: frontend/src/services/auth.ts
 // Purpose: API calls for authentication including email confirmation and password reset
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = '/api/v1';
 
 export interface AuthResponse {
   access_token: string;

@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = '/api/v1'
 
 interface Activity {
   id: string | number

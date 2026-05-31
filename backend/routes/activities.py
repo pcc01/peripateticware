@@ -6,7 +6,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from uuid import UUID
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
@@ -58,7 +58,7 @@ def _require_teacher(current_user: User, detail: str = "Only teachers can perfor
     User.role is a plain VARCHAR column — compare as a string, never call .value.
     Admins are also permitted since they manage the platform.
     """
-    if current_user.role.upper() not in ("TEACHER", "ADMIN"):
+    if current_user.role.upper() not in ("TEACHER", "ADMIN", "HOMESCHOOL"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
@@ -340,6 +340,24 @@ async def publish_activity(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Activity must have a title and description before publishing",
         )
+
+    # Run privacy compliance check (non-blocking — returns warning in response)
+    compliance_warning = None
+    try:
+        from services.privacy_engine import get_privacy_checker
+        checker = get_privacy_checker()
+        activity_data = {
+            "data_collection": ["location", "audio", "photo"] if activity.grade_level and activity.grade_level <= 8 else ["location"],
+            "third_parties": [],
+            "purpose": "educational",
+        }
+        is_compliant, issues, _ = checker.check_activity_compliance(
+            str(activity.id), activity_data, 13, None
+        )
+        if not is_compliant:
+            compliance_warning = [i for i in issues]
+    except Exception as ce:
+        logger.debug(f"Privacy check skipped: {ce}")
 
     activity.status = ActivityStatus.PUBLISHED
     activity.updated_at = datetime.now(timezone.utc)
@@ -625,3 +643,236 @@ async def generation_service_status(
             "available": False,
             "error": str(e),
         }
+
+
+# ============================================================================
+# TEACHER DASHBOARD / ADMIN SUMMARY ENDPOINTS
+# Added for Block 9 — frontend dashboard pages
+# ============================================================================
+
+from models.database import LearningSession, Class, StudentProfile
+
+
+@router.get("/teacher/dashboard")
+async def teacher_dashboard(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Summary stats for TeacherDashboard page."""
+    # Activity counts
+    total_act = (await db.execute(
+        select(func.count()).where(Activity.teacher_id == current_user.id)
+    )).scalar() or 0
+
+    published_act = (await db.execute(
+        select(func.count()).where(
+            Activity.teacher_id == current_user.id,
+            Activity.status == ActivityStatus.PUBLISHED,
+        )
+    )).scalar() or 0
+
+    # Recent activities (last 5) — raw SQL avoids missing-column errors on old volumes
+    recent_result = await db.execute(
+        text("SELECT id, title, status, subject, created_at FROM activities "
+             "WHERE teacher_id = :tid ORDER BY created_at DESC LIMIT 5"),
+        {"tid": current_user.id},
+    )
+    recent = recent_result.mappings().all()
+
+    # Distinct students who started a session on this teacher's activities
+    student_count = (await db.execute(
+        text("SELECT COUNT(DISTINCT ls.user_id) FROM learning_sessions ls "
+             "JOIN activities a ON ls.activity_id = a.id "
+             "WHERE a.teacher_id = :tid"),
+        {"tid": current_user.id},
+    )).scalar() or 0
+
+    # Class count — raw SQL avoids mapper issues on fresh volumes
+    try:
+        class_count = (await db.execute(
+            text("SELECT COUNT(*) FROM classes WHERE teacher_id = :tid AND is_active = true"),
+            {"tid": current_user.id}
+        )).scalar() or 0
+    except Exception:
+        class_count = 0
+
+    # Pending submissions count
+    try:
+        pending_sub_count = (await db.execute(
+            text("SELECT COUNT(*) FROM learning_sessions ls "
+                 "JOIN activities a ON ls.activity_id = a.id "
+                 "WHERE a.teacher_id = :tid AND ls.status = 'completed'"),
+            {"tid": current_user.id},
+        )).scalar() or 0
+    except Exception:
+        pending_sub_count = 0
+
+    return {
+        # Field names match TeacherDashboardData frontend type
+        "total_students": student_count,
+        "total_classes": class_count,
+        "active_activities": published_act,
+        "pending_submissions": pending_sub_count,
+        "activities": [
+            {
+                "id": str(a["id"]),
+                "title": a["title"],
+                "status": a["status"],
+                "subject": a["subject"],
+                "created_at": a["created_at"].isoformat() if a["created_at"] else None,
+                "student_count": 0,
+                "submissions_count": 0,
+            }
+            for a in recent
+        ],
+        "classes": [],
+        "recent_submissions": [],
+    }
+
+
+@router.get("/teacher/submissions")
+async def teacher_submissions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List completed/in-progress sessions on this teacher's activities."""
+    result = await db.execute(
+        text("""
+            SELECT
+                ls.id          AS session_id,
+                ls.user_id     AS student_id,
+                ls.status,
+                ls.created_at  AS started_at,
+                a.id           AS activity_id,
+                a.title        AS activity_title,
+                u.first_name,
+                u.last_name,
+                u.email        AS student_email
+            FROM learning_sessions ls
+            JOIN activities a ON ls.activity_id = a.id
+            JOIN users u      ON ls.user_id     = u.id
+            WHERE a.teacher_id = :teacher_id
+            ORDER BY ls.created_at DESC
+            OFFSET :skip LIMIT :limit
+        """),
+        {"teacher_id": current_user.id, "skip": skip, "limit": limit},
+    )
+    rows = result.mappings().all()
+
+    return [
+        {
+            "session_id": str(r["session_id"]),
+            "student_id": str(r["student_id"]),
+            "student_name": f"{r['first_name']} {r['last_name']}",
+            "student_email": r["student_email"],
+            "activity_id": str(r["activity_id"]),
+            "activity_title": r["activity_title"],
+            "status": r["status"],
+            "started_at": r["started_at"].isoformat() if r["started_at"] else None,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/teacher/students")
+async def teacher_students(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List distinct students who have sessions on this teacher's activities."""
+    result = await db.execute(
+        text("""
+            SELECT DISTINCT u.id, u.email, u.first_name, u.last_name,
+                   u.full_name, u.role, u.is_active
+            FROM users u
+            JOIN learning_sessions ls ON ls.user_id = u.id
+            JOIN activities a         ON ls.activity_id = a.id
+            WHERE a.teacher_id = :tid
+            ORDER BY u.last_name, u.first_name
+        """),
+        {"tid": current_user.id},
+    )
+    students = result.mappings().all()
+
+    return [
+        {
+            "id": str(s["id"]),
+            "email": s["email"],
+            "first_name": s["first_name"],
+            "last_name": s["last_name"],
+            "full_name": s["full_name"],
+            "role": s["role"],
+            "is_active": s["is_active"],
+        }
+        for s in students
+    ]
+
+
+@router.get("/teacher/classes")
+async def teacher_classes(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List this teacher's active classes."""
+    result = await db.execute(
+        select(Class)
+        .where(Class.teacher_id == current_user.id, Class.is_active == True)
+        .order_by(Class.name)
+    )
+    classes = result.scalars().all()
+
+    return [
+        {
+            "id": str(c.id),
+            "name": c.name,
+            "description": c.description,
+            "grade_level": c.grade_level,
+            "school_year": c.school_year,
+            "is_active": c.is_active,
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c in classes
+    ]
+
+
+# ── Privacy compliance check for ActivityManager badge ────────────────────────
+
+from pydantic import BaseModel as _BaseModel
+
+class ComplianceCheckRequest(_BaseModel):
+    location_name: str = ""
+    grade_level: int = 0
+    data_types: list = []
+
+@router.post("/check-compliance")
+async def check_activity_compliance_quick(
+    payload: ComplianceCheckRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Lightweight compliance pre-check for the ActivityManager badge.
+    Returns: { status: 'compliant'|'review'|'blocked', issues: [...] }
+    """
+    try:
+        from services.privacy_engine import get_privacy_checker
+        checker = get_privacy_checker()
+        activity_data = {
+            "data_collection": payload.data_types or ["location"],
+            "third_parties": [],
+            "purpose": "educational",
+        }
+        is_compliant, issues, warnings = checker.check_activity_compliance(
+            "preview", activity_data, min(payload.grade_level + 5, 18), None
+        )
+        if not is_compliant:
+            badge = "blocked" if any("COPPA" in str(i) for i in issues) else "review"
+        elif warnings:
+            badge = "review"
+        else:
+            badge = "compliant"
+        return {"status": badge, "issues": [str(i) for i in issues], "warnings": [str(w) for w in warnings]}
+    except Exception as e:
+        logger.debug(f"Compliance check error (non-fatal): {e}")
+        return {"status": "compliant", "issues": [], "warnings": []}

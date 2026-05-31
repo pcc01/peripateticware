@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -11,6 +12,7 @@ import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import InquiryInterface from '@/components/student/InquiryInterface'
+import AristotelianPrompt from '@/components/student/AristotelianPrompt'
 import sessionService from '@/services/sessionService'
 import { Privacy } from '@utils/privacy'
 
@@ -24,6 +26,7 @@ const SessionPage: React.FC = () => {
   const [evidence, setEvidence] = useState<EvidenceOfLearning | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<'inquiry' | 'evidence' | 'history'>('inquiry');
+  const [promptedQuestion, setPromptedQuestion] = useState<string>('');
 
   useEffect(() => {
     loadSessionData();
@@ -147,10 +150,19 @@ const SessionPage: React.FC = () => {
 
       {/* Inquiry Tab */}
       {tab === 'inquiry' &&
-      <InquiryInterface
-        session={session}
-        onInquirySubmitted={handleInquirySubmitted} />
-
+      <div>
+        <AristotelianPrompt
+          onUseQuestion={(text) => setPromptedQuestion(text)}
+        />
+        <InquiryInterface
+          session={session}
+          initialText={promptedQuestion}
+          onInquirySubmitted={(inquiry) => {
+            setPromptedQuestion('');
+            handleInquirySubmitted(inquiry);
+          }}
+        />
+      </div>
       }
 
       {/* Evidence Tab */}
@@ -265,7 +277,7 @@ const SessionPage: React.FC = () => {
 
         <div className="space-y-3">
               {session.inquiry_log.map((inquiry, idx) =>
-          <Card key={idx} subtitle={new Date(inquiry.timestamp).toLocaleString()}>
+          <Card key={idx} subtitle={fmtDateTime(inquiry.timestamp)}>
                   <p className="font-medium mb-2">{inquiry.question}</p>
                   {inquiry.Aristotelian_prompt &&
             <p className="text-sm text-color-primary italic mb-2">

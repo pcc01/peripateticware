@@ -14,7 +14,7 @@ export class ApiClient {
   private baseURL: string
 
   constructor(baseURL?: string) {
-    this.baseURL = baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+    this.baseURL = baseURL || '/api/v1'
 
     this.client = axios.create({
       baseURL: this.baseURL,

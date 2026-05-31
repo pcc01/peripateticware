@@ -6,7 +6,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 
 // API configuration
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: '/api/v1',  // relative — routes through Vite proxy in dev, nginx in prod
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

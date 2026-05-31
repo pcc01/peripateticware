@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -182,7 +183,7 @@ export const StudentDashboard: React.FC = () => {
                   <h3>{session.title}</h3>
                   <p>{session.location}</p>
                   <p className={styles.time}>
-                    {new Date(session.start_time).toLocaleString()}
+                    {fmtDateTime(session.start_time)}
                   </p>
                 </div>
                 <button className={styles.joinBtn}>{t("landing:view_details", "View Details")}</button>
@@ -224,8 +225,8 @@ export const StudentDashboard: React.FC = () => {
                   <span>{activity.subject}</span>
                   <span>{activity.location}</span>
                 </div>
-                <div className={styles.dueDate}>{t("landing:due", "Due:")}
-              {new Date(activity.due_date).toLocaleDateString()}
+                <div className={styles.dueDate}>{t("landing:due", "Due: ")}
+              {activity.due_date ? fmtDate(activity.due_date) : '—'}
                 </div>
               </div>
           )}
@@ -243,7 +244,7 @@ export const StudentDashboard: React.FC = () => {
                 <div className={styles.evidenceType}>{evidence.capture_type}</div>
                 <div className={styles.evidenceInfo}>
                   <p>{evidence.description || 'No description'}</p>
-                  <small>{new Date(evidence.created_at).toLocaleDateString()}</small>
+                  <small>{fmtDate(evidence.created_at)}</small>
                 </div>
               </div>
           )}

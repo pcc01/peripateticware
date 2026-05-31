@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -91,26 +92,13 @@ export const TeacherDashboard: React.FC = () => {
       {/* Header */}
       <div className={styles.header}>
         <h1>{t("landing:teacher_dashboard", "Teacher Dashboard")}</h1>
-        <button onClick={handleRefresh} className={styles.refreshBtn} disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
+        <div style={{ marginLeft: 'auto' }}>
+          <button onClick={handleRefresh} className={styles.refreshBtn} disabled={loading}
+            style={{ fontSize: '0.75rem', padding: '6px 14px' }}>
+            {loading ? '↻ Refreshing…' : '↻ Refresh'}
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={() => navigate('/teacher/settings')}
-        className={styles.settingsBtn}
-        title={t("landing:teacherdashboard.settings", "Settings")}>{t("landing:teacherdashboard.settings", "\u2699\uFE0F Settings")}
-
-
-      </button>
-
-      <button
-        onClick={handleLogout}
-        className={styles.logoutBtn}
-        title={t("landing:teacherdashboard.logout", "Logout")}>{t("landing:teacherdashboard.logout", "\uD83D\uDEAA Logout")}
-
-
-      </button>
       
       {/* Error Message */}
       {error &&
@@ -216,7 +204,7 @@ export const TeacherDashboard: React.FC = () => {
                   <h3>{submission.student_name}</h3>
                   <p className={styles.projectId}>{submission.project_id}</p>
                   <small>{t("landing:submitted", "Submitted:")}
-                {new Date(submission.submitted_at).toLocaleDateString()}
+                {fmtDate(submission.submitted_at)}
                   </small>
                 </div>
                 <span

@@ -1,14 +1,29 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import styles from './SettingsPages.module.css';
+
+const ADMIN_TOKEN_KEY = 'admin_panel_token';
 
 export const AdminSettingsPage = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
+  // Admin panel auth (separate from main JWT)
+  const [adminToken, setAdminToken] = useState<string>(localStorage.getItem(ADMIN_TOKEN_KEY) || '');
+  const [adminLoginUsername, setAdminLoginUsername] = useState('admin');
+  const [adminLoginPassword, setAdminLoginPassword] = useState('');
+  const [adminLoginError, setAdminLoginError] = useState('');
+
+  // Env vars loaded from backend
+  const [envCategories, setEnvCategories] = useState<any[]>([]);
+  const [editingEnv, setEditingEnv] = useState<Record<string, string>>({});
+  const [envSaveStatus, setEnvSaveStatus] = useState<Record<string, string>>({});
+  const [envLoading, setEnvLoading] = useState(false);
+
+  // UI settings (local only)
   const [settings, setSettings] = useState({
     colorScheme: 'field-guide',
     language: 'en',
@@ -24,18 +39,84 @@ export const AdminSettingsPage = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
+  // Load env vars when token is available
+  useEffect(() => {
+    if (adminToken) loadEnvVars();
+  }, [adminToken]);
+
+  const handleAdminLogin = async () => {
+    setAdminLoginError('');
+    try {
+      const res = await fetch('/api/v1/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: adminLoginUsername, password: adminLoginPassword }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setAdminLoginError(err.detail || 'Login failed');
+        return;
+      }
+      const data = await res.json();
+      const token = data.token;
+      localStorage.setItem(ADMIN_TOKEN_KEY, token);
+      setAdminToken(token);
+      setAdminLoginPassword('');
+    } catch {
+      setAdminLoginError('Could not connect to admin API');
+    }
+  };
+
+  const loadEnvVars = async () => {
+    setEnvLoading(true);
+    try {
+      const res = await fetch(`/api/v1/admin/env?token=${adminToken}`);
+      if (res.status === 401) {
+        localStorage.removeItem(ADMIN_TOKEN_KEY);
+        setAdminToken('');
+        return;
+      }
+      const data = await res.json();
+      setEnvCategories(Array.isArray(data) ? data : []);
+    } catch {
+      setEnvCategories([]);
+    } finally {
+      setEnvLoading(false);
+    }
+  };
+
+  const handleEnvChange = (key: string, value: string) => {
+    setEditingEnv((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleEnvSave = async (key: string) => {
+    const value = editingEnv[key];
+    if (value === undefined) return;
+    setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saving' }));
+    try {
+      const res = await fetch(`/api/v1/admin/env/${key}?token=${adminToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value }),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saved' }));
+      setTimeout(() => setEnvSaveStatus((prev) => ({ ...prev, [key]: '' })), 2000);
+      setEditingEnv((prev) => { const n = { ...prev }; delete n[key]; return n; });
+      loadEnvVars();
+    } catch {
+      setEnvSaveStatus((prev) => ({ ...prev, [key]: 'error' }));
+    }
+  };
+
   const handleChange = (key: string, value: any) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: value
-    }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
     setHasChanges(true);
     setSaveStatus('');
   };
 
   const handleSave = async () => {
     try {
-      // TODO: Connect to API to save settings
       setSaveStatus('Settings saved successfully!');
       setHasChanges(false);
       setTimeout(() => setSaveStatus(''), 3000);
@@ -228,6 +309,85 @@ export const AdminSettingsPage = () => {
             <p><strong>{t("landing:adminsettingspage.last_updated", "Last Updated:")}</strong> 2026-05-24</p>
             <p><strong>{t("landing:database", "Database:")}</strong>{t("landing:postgresql_16_pgvector", "PostgreSQL 16 + pgvector")}</p>
           </div>
+        </section>
+
+        {/* ── Environment Variable Editor ─────────────────────────── */}
+        <section className={styles.section}>
+          <h2>⚙️ Environment Variables</h2>
+          {!adminToken ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 320 }}>
+              <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                Log in with the admin panel credentials to view and edit environment variables.
+              </p>
+              <input
+                type="text"
+                placeholder="Username"
+                value={adminLoginUsername}
+                onChange={(e) => setAdminLoginUsername(e.target.value)}
+                style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={adminLoginPassword}
+                onChange={(e) => setAdminLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
+              />
+              {adminLoginError && <p style={{ color: '#dc2626', fontSize: '0.8rem' }}>{adminLoginError}</p>}
+              <button onClick={handleAdminLogin} className={styles.primaryBtn}>
+                Unlock Env Panel
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <button onClick={loadEnvVars} className={styles.secondaryBtn} disabled={envLoading}>
+                  {envLoading ? 'Loading…' : '↻ Refresh'}
+                </button>
+                <button
+                  onClick={() => { localStorage.removeItem('admin_panel_token'); setAdminToken(''); setEnvCategories([]); }}
+                  className={styles.secondaryBtn}
+                >
+                  Lock Panel
+                </button>
+              </div>
+              {envCategories.map((cat: any) => (
+                <details key={cat.category} style={{ marginBottom: 12 }}>
+                  <summary style={{ fontWeight: 600, cursor: 'pointer', padding: '4px 0' }}>
+                    {cat.category} ({cat.variables?.length || 0})
+                  </summary>
+                  <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {(cat.variables || []).map((v: any) => (
+                      <div key={v.key} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <label style={{ minWidth: 200, fontSize: '0.8rem', fontFamily: 'monospace', color: '#374151' }}>
+                          {v.key}
+                        </label>
+                        <input
+                          type={v.encrypted ? 'password' : 'text'}
+                          defaultValue={v.value}
+                          onChange={(e) => handleEnvChange(v.key, e.target.value)}
+                          style={{ flex: 1, padding: '4px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: '0.8rem', fontFamily: 'monospace' }}
+                        />
+                        <button
+                          onClick={() => handleEnvSave(v.key)}
+                          style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: 4,
+                            background: envSaveStatus[v.key] === 'saved' ? '#059669' : '#3b82f6',
+                            color: 'white', border: 'none', cursor: 'pointer' }}
+                          disabled={!editingEnv[v.key]}
+                        >
+                          {envSaveStatus[v.key] === 'saving' ? '…' : envSaveStatus[v.key] === 'saved' ? '✓' : 'Save'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ))}
+              {envCategories.length === 0 && !envLoading && (
+                <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>No environment variables loaded.</p>
+              )}
+            </div>
+          )}
         </section>
 
         <section className={styles.section} style={{ borderColor: '#dc2626' }}>

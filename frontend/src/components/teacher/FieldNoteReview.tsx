@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -36,7 +37,7 @@ export const FieldNoteReview: React.FC<FieldNoteReviewProps> = ({ classId }) => 
   const loadNotes = () => {
     setLoading(true);
     teacherFieldNoteApi.list({
-      class_id: classId,
+      class_id: classId || undefined,
       status: statusFilter || undefined
     }).
     then((r) => setNotes(r.items)).
@@ -288,7 +289,7 @@ export const FieldNoteReview: React.FC<FieldNoteReviewProps> = ({ classId }) => 
             }
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
                   <span>{note.capture_count}{t("landing:fieldnotereview.captures", "captures")}</span>
-                  <span>{new Date(note.updated_at).toLocaleDateString()}</span>
+                  <span>{fmtDate(note.updated_at)}</span>
                 </div>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0
@@ -344,7 +345,7 @@ export const PeerProjectReview: React.FC<PeerProjectReviewProps> = ({ classId })
     const status = tab === 'pending' ? 'pending_approval' :
     tab === 'published' ? 'published' :
     undefined;
-    teacherPeerProjectApi.list({ class_id: classId, status }).
+    teacherPeerProjectApi.list({ class_id: classId || undefined, status }).
     then((r) => setProjects(r.items)).
     catch(() => setError('Could not load peer projects')).
     finally(() => setLoading(false));
@@ -658,5 +659,4 @@ export const PeerProjectReview: React.FC<PeerProjectReviewProps> = ({ classId })
     </div>);
 
 };
-
 export default PeerProjectReview;

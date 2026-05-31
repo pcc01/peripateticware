@@ -149,3 +149,5 @@ select:focus {
 .text-center {
   text-align: center;
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }

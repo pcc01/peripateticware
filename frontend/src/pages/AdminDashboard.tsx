@@ -19,6 +19,7 @@ export const AdminDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [showCreateUserForm, setShowCreateUserForm] = useState(false);
+  const [privacyStats, setPrivacyStats] = useState<{ active_consents: number; frameworks: string[] } | null>(null);
   const [newUserData, setNewUserData] = useState<Types.SignupRequest>({
     email: '',
     password: '',
@@ -54,6 +55,15 @@ export const AdminDashboard: React.FC = () => {
     const loadData = async () => {
       try {
         await Promise.all([fetchDashboard(), fetchUsers(0, 20), fetchAnalytics()]);
+        // 14h.4 — Privacy live counts
+        const token = localStorage.getItem('auth_token')
+        const pRes = await fetch('/api/v1/privacy/status', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }).catch(() => null)
+        if (pRes?.ok) {
+          const pd = await pRes.json()
+          setPrivacyStats({ active_consents: pd.active_rule_count ?? 0, frameworks: pd.active_frameworks ?? [] })
+        }
       } catch (err) {
         console.error('Failed to load dashboard:', err);
       }
@@ -156,6 +166,38 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </section>
       }
+
+      {/* 14h.4 — Privacy live-counts widget */}
+      {privacyStats && (
+        <section className={styles.section}>
+          <h2>🔒 {t("landing:privacy_status", "Privacy Status")}</h2>
+          <div className={styles.statsSection}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>{t("landing:active_frameworks", "Active Frameworks")}</div>
+              <div className={styles.statValue}>{privacyStats.frameworks.length}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--text-faint)' }}>
+                {privacyStats.frameworks.join(', ') || '—'}
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>{t("landing:active_rules", "Active Rules")}</div>
+              <div className={styles.statValue}>{privacyStats.active_consents}</div>
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2 flex-wrap">
+            <button onClick={() => window.location.href='/admin/privacy'}
+              className="px-3 py-1 rounded text-sm border"
+              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
+              {t("landing:configure_privacy", "Configure Privacy")}
+            </button>
+            <button onClick={() => window.location.href='/admin/logs'}
+              className="px-3 py-1 rounded text-sm border"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+              {t("landing:view_audit_log", "View Audit Log")}
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Analytics */}
       {analytics &&

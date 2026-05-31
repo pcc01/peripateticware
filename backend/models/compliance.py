@@ -9,6 +9,11 @@ Maps to the three tables created in migration 20260527_privacy_engine_tables:
   - compliance_rules
   - rule_audit_log
   - consent_records
+
+Extended by migration 20260530_compliance_rules_regulation_type:
+  - compliance_rules.regulation_type       ('privacy' | 'ai' | 'data_protection')
+  - compliance_rules.ai_student_permitted  (bool, fast enforcement column)
+  - compliance_rules.ai_teacher_permitted  (bool, fast enforcement column)
 """
 
 import uuid
@@ -36,8 +41,18 @@ class ComplianceRule(Base):
     created_at          = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
     previous_version_id = Column(String(256), nullable=True)
     change_log          = Column(Text,        nullable=True)
-    is_active           = Column(Boolean,     default=True, nullable=False)
+    is_active           = Column(Boolean,     default=True,  nullable=False)
     audit_hash          = Column(String(256), nullable=True)
+    # Regulation category — added migration 20260530_compliance_rules_regulation_type
+    # 'privacy'         — data privacy laws (GDPR, COPPA, CCPA, LGPD, PDPA, etc.)
+    # 'ai'              — AI-specific regulations (EU AI Act, EO 14110, CN Generative AI, etc.)
+    # 'data_protection' — broader frameworks spanning both
+    regulation_type       = Column(String(20),  nullable=False, default='privacy')
+    # Denormalised convenience flags for fast enforcement queries.
+    # True = permitted in that context; False = prohibited / requires review.
+    # Defaults to True so existing privacy rules are unaffected.
+    ai_student_permitted  = Column(Boolean,    nullable=False, default=True)
+    ai_teacher_permitted  = Column(Boolean,    nullable=False, default=True)
 
     def __repr__(self) -> str:
         return f"<ComplianceRule {self.rule_id} v{self.version}>"

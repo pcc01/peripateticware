@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from core.config import settings
+from core.dependencies import get_current_user as _get_current_user
 from models.database import User, UserRole, LearningSession
 from services.privacy_engine import PrivacyEngine, log_access
 
@@ -206,148 +207,10 @@ privacy_engine = PrivacyEngine()
 
 
 # ============================================================================
-# AUTHENTICATION ENDPOINTS
+# AUTHENTICATION
+# Parents register and log in via the main auth system: POST /api/v1/auth/login
+# The endpoints below have been removed — they used fake bcrypt and fake JWT.
 # ============================================================================
-
-@router.post("/auth/register", response_model=dict)
-async def register_parent(
-    request: ParentRegisterRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Register a new parent account
-    
-    Returns:
-        - parent: ParentProfileResponse
-        - token: TokenResponse
-    """
-    try:
-        # Check if email already exists
-        from sqlalchemy import select
-        existing = await db.execute(
-            select(User).where(User.email == request.email)
-        )
-        if existing.scalar():
-            raise HTTPException(status_code=400, detail="Email already registered")
-        
-        # Create new parent user (mock implementation)
-        # In production, this would use proper password hashing (bcrypt)
-        parent = User(
-            id=str(uuid4()),
-            email=request.email,
-            full_name=request.name,
-            role=UserRole.PARENT,
-            password_hash="hashed_password_here",  # TODO: Use bcrypt
-            is_active=True,
-        )
-        
-        db.add(parent)
-        await db.commit()
-        await db.refresh(parent)
-        
-        # Generate tokens
-        access_token = f"access_token_{parent.id}"
-        refresh_token = f"refresh_token_{parent.id}"
-        
-        return {
-            "parent": {
-                "id": str(parent.id),
-                "email": parent.email,
-                "name": parent.full_name,
-                "children": [],
-                "created_at": parent.created_at.isoformat(),
-            },
-            "token": {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "token_type": "bearer",
-                "expires_in": int((datetime.utcnow() + timedelta(hours=24)).timestamp()),
-            }
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/auth/login", response_model=dict)
-async def login_parent(
-    request: ParentLoginRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Login parent with email and password
-    
-    Returns:
-        - parent: ParentProfileResponse
-        - token: TokenResponse
-    """
-    try:
-        from sqlalchemy import select
-        
-        result = await db.execute(
-            select(User).where(
-                User.email == request.email,
-                User.role == UserRole.PARENT
-            )
-        )
-        parent = result.scalar()
-        
-        if not parent or parent.password_hash != f"hashed_{request.password}":  # TODO: Use bcrypt verify
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        
-        # Generate tokens
-        access_token = f"access_token_{parent.id}"
-        refresh_token = f"refresh_token_{parent.id}"
-        
-        return {
-            "parent": {
-                "id": str(parent.id),
-                "email": parent.email,
-                "name": parent.full_name,
-                "children": [],
-                "created_at": parent.created_at.isoformat(),
-            },
-            "token": {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "token_type": "bearer",
-                "expires_in": int((datetime.utcnow() + timedelta(hours=24)).timestamp()),
-            }
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/auth/refresh", response_model=dict)
-async def refresh_token(
-    request: TokenRefreshRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    """Refresh JWT token"""
-    try:
-        # Extract parent ID from refresh token
-        parent_id = request.refresh_token.replace("refresh_token_", "")
-        
-        # Generate new access token
-        access_token = f"access_token_{parent_id}"
-        
-        return {
-            "token": {
-                "access_token": access_token,
-                "refresh_token": request.refresh_token,
-                "token_type": "bearer",
-                "expires_in": int((datetime.utcnow() + timedelta(hours=24)).timestamp()),
-            }
-        }
-    
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Token refresh failed")
-
 
 # ============================================================================
 # PROFILE ENDPOINTS
@@ -355,21 +218,18 @@ async def refresh_token(
 
 @router.get("/profile", response_model=ParentProfileResponse)
 async def get_parent_profile(
-    parent_id: str = Query(...),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get parent profile and linked children"""
     try:
         from sqlalchemy import select
-        
         result = await db.execute(
-            select(User).where(User.id == parent_id, User.role == UserRole.PARENT)
+            select(User).where(User.id == current_user.id, User.role == UserRole.PARENT)
         )
         parent = result.scalar()
-        
         if not parent:
             raise HTTPException(status_code=404, detail="Parent not found")
-        
         return {
             "id": str(parent.id),
             "email": parent.email,
@@ -453,11 +313,11 @@ async def link_child(
 
 @router.get("/children", response_model=List[ChildLinkResponse])
 async def list_parent_children(
-    parent_id: str = Query(...),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all children linked to parent"""
-    # This would query the parent-child relationship table
+    # Child linking not yet built — returns empty list so dashboard renders
     return []
 
 
@@ -467,29 +327,37 @@ async def list_parent_children(
 
 @router.get("/children/{child_id}/progress", response_model=ChildProgressResponse)
 async def get_child_progress(
-    parent_id: str = Query(...),
-    child_id: str = None,
+    child_id: str,
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed progress for a specific child"""
     try:
-        # Query child's learning sessions and aggregate progress
-        result = await db.execute(
-            f"SELECT * FROM learning_sessions WHERE user_id = '{child_id}'"
-        )
+        from uuid import UUID as _UUID
+        child_uuid = _UUID(child_id)  # validates format, prevents injection
 
-        # Privacy audit — parent viewing child data
+        # Parameterised query — no f-string SQL
+        from sqlalchemy import select as _sel, func as _fn
+        from models.database import LearningSession as _LS
+        completed = (await db.execute(
+            _sel(_fn.count()).select_from(_LS).where(
+                _LS.user_id == child_uuid,
+                _LS.status == "completed",
+            )
+        )).scalar() or 0
+
+        # Privacy audit
         try:
             await log_access(
-                actor_id=parent_id,
-                actor_role="parent",
+                actor_id=str(current_user.id),
+                actor_role=current_user.role,
                 action="PARENT_VIEW",
                 data_type="child_progress",
                 student_id=child_id,
                 rules_applied=[],
                 compliance_status="COMPLIANT",
                 db=db,
-                notes=f"parent_id={parent_id} child_id={child_id}",
+                notes=f"parent_id={current_user.id} child_id={child_id}",
             )
         except Exception as _audit_err:
             import logging as _log
@@ -497,15 +365,17 @@ async def get_child_progress(
 
         return {
             "child_id": child_id,
-            "child_name": "Sample Child",
-            "grade": 5,
+            "child_name": "Child",
+            "grade": 0,
             "competencies": [],
-            "activities_completed": 0,
+            "activities_completed": completed,
             "hours_learned": 0.0,
-            "engagement_score": 85,
+            "engagement_score": 0,
             "last_active": datetime.utcnow().isoformat(),
         }
 
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid child_id format")
     except HTTPException:
         raise
     except Exception as e:
@@ -514,22 +384,20 @@ async def get_child_progress(
 
 @router.get("/children/{child_id}/activities", response_model=List[ActivityResponse])
 async def get_child_activities(
-    parent_id: str = Query(...),
-    child_id: str = None,
+    child_id: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get activity history for a child (paginated)"""
     try:
-        # Query recent learning sessions for the child
-        result = await db.execute(
-            f"SELECT * FROM learning_sessions WHERE user_id = '{child_id}' "
-            f"ORDER BY completed_at DESC LIMIT {limit} OFFSET {offset}"
-        )
-        
+        from uuid import UUID as _UUID
+        _UUID(child_id)  # validate UUID format before any DB use
+        # Child activity history — stub returning empty list until child linking is built
         return []
-    
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid child_id format")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -753,3 +621,40 @@ async def export_report(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# =============================================================================
+# PARENT DASHBOARD — GET /parent/dashboard
+# =============================================================================
+
+from sqlalchemy import select as _select, func as _func
+
+@router.get("/dashboard")
+async def get_parent_dashboard(
+    current_user: User = Depends(_get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Parent dashboard: linked children with basic progress summary.
+    Frontend: useParentStore.fetchDashboard() → GET /api/v1/parent/dashboard
+    """
+    # Get linked children (users with STUDENT role linked to this parent)
+    # For now, return all students the parent has access to via email domain or direct link
+    # This uses the child-linking model if present, otherwise returns empty list with helpful structure
+    try:
+        from models.database import Activity
+        # Count published activities for context
+        activity_count_result = await db.execute(
+            _select(_func.count()).where(Activity.status == "published", Activity.is_active == True)
+        )
+        total_activities = activity_count_result.scalar() or 0
+    except Exception:
+        total_activities = 0
+
+    return {
+        "parent_id": str(current_user.id),
+        "parent_name": current_user.full_name or current_user.email,
+        "children": [],  # Populated via /parent/children after linking
+        "total_available_activities": total_activities,
+        "message": "Link children via POST /api/v1/parent/children/link to see their progress here.",
+    }

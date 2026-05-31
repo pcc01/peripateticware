@@ -30,7 +30,7 @@ export interface User {
   full_name?: string
   first_name?: string
   last_name?: string
-  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN'
+  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
   created_at?: string
   updated_at?: string
   is_active?: boolean
@@ -43,7 +43,7 @@ export interface SignupRequest {
   full_name?: string
   first_name?: string
   last_name?: string
-  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN'
+  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
 }
 
 /* ============================================================================ */
@@ -492,5 +492,6 @@ export interface ApiError {
 
 export interface ApiValidationError {
   field: string
-  message: string
+  fields?: Record<string, string[]>
+  detail?: string | { msg: string; type: string }[]
 }

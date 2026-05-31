@@ -47,19 +47,40 @@ class StudentActivitySummary(BaseModel):
         from_attributes = True
 
 
+class ActivityPhaseDetail(BaseModel):
+    title: str
+    instructions: str
+    due_date: str  # ISO string
+
+
+class ActivityPhases(BaseModel):
+    orient:  ActivityPhaseDetail
+    inquiry: ActivityPhaseDetail
+    reflect: ActivityPhaseDetail
+
+
+class ActivityTeacher(BaseModel):
+    name: str
+
+
 class StudentActivityDetail(StudentActivitySummary):
     """
     Full activity detail shown on the activity brief / Phase 1 screen (03 / 04).
-    Adds location narrative, resources, and taxonomy info.
+    Adds location narrative, resources, taxonomy info, and frontend-expected
+    phase/teacher/location shape.
     """
-    location_info:    Optional[str]   = None
-    resources:        List[Dict]      = []
-    suggested_lessons: Optional[List] = []
-    marzano_level:    Optional[int]   = None
-    dok_level:        Optional[int]   = None
-    solo_level:       Optional[int]   = None
-    primary_framework: Optional[str]  = "blooms"
-    created_at:       Optional[datetime] = None
+    location_info:     Optional[str]           = None
+    location:          Optional[str]           = None   # alias of location_name for frontend
+    due_date:          Optional[str]           = None   # ISO string
+    teacher:           Optional[ActivityTeacher] = None
+    phases:            Optional[ActivityPhases]  = None
+    resources:         List[Dict]              = []
+    suggested_lessons: Optional[List]          = []
+    marzano_level:     Optional[int]           = None
+    dok_level:         Optional[int]           = None
+    solo_level:        Optional[int]           = None
+    primary_framework: Optional[str]           = "blooms"
+    created_at:        Optional[datetime]      = None
 
 
 class StudentPaginatedActivityResponse(BaseModel):

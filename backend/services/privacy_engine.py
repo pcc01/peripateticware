@@ -47,13 +47,33 @@ _RULES_TTL = 3600  # 1 hour — rules update infrequently
 # ─────────────────────────────────────────────────────────────────────────────
 
 class PrivacyFramework(str, Enum):
-    GDPR   = "gdpr"
-    CCPA   = "ccpa"
-    COPPA  = "coppa"
-    FERPA  = "ferpa"
-    PIPEDA = "pipeda"
-    LGPD   = "lgpd"
-    PDPA   = "pdpa"
+    # ── Data privacy laws ──────────────────────────────────────────────────
+    GDPR           = "gdpr"
+    CCPA           = "ccpa"
+    COPPA          = "coppa"
+    FERPA          = "ferpa"
+    PIPEDA         = "pipeda"
+    LGPD           = "lgpd"
+    PDPA           = "pdpa"
+    APPI           = "appi"            # Japan
+    PRIVACY_ACT_AU = "privacy_act_au"  # Australia
+    DPDP           = "dpdp"            # India
+    PIPA           = "pipa"            # South Korea
+    LFPDPPP        = "lfpdppp"         # Mexico
+    POPIA          = "popia"           # South Africa
+    UAE_DP         = "uae_dp"          # UAE
+    PRIVACY_ACT_NZ = "privacy_act_nz"  # New Zealand
+    IL_PPL         = "il_ppl"          # Israel
+    NFADP          = "nfadp"           # Switzerland (nFADP)
+    # ── AI regulations ────────────────────────────────────────────────────
+    EU_AI_ACT = "eu_ai_act"
+    US_AI_EO  = "us_ai_eo"   # EO 14110 + NIST AI RMF
+    US_CA_AI  = "us_ca_ai"   # California AI bills
+    CN_AI     = "cn_ai"       # China Generative AI Measures
+    GB_AI     = "gb_ai"       # UK AI Safety Institute
+    CA_AIDA   = "ca_aida"     # Canada AIDA (Bill C-27)
+    SG_AI     = "sg_ai"       # Singapore AI Governance
+    # ── Catch-all ─────────────────────────────────────────────────────────
     CUSTOM = "custom"
 
 

@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -107,7 +108,7 @@ const SessionMonitor: React.FC<SessionMonitorProps> = ({ session }) => {
             <div key={idx} className="text-xs p-2 bg-color-bg-secondary rounded">
                   <p className="font-medium line-clamp-2">{inquiry.question || inquiry.text}</p>
                   <p className="text-color-text-tertiary text-xs mt-1">
-                    {new Date(inquiry.timestamp).toLocaleTimeString()}
+                    {fmtTime(inquiry.timestamp)}
                   </p>
                 </div>
             )}
@@ -127,7 +128,7 @@ const SessionMonitor: React.FC<SessionMonitorProps> = ({ session }) => {
             <div>
               <span className="font-medium">{t('teacher:sessions.startTime')}:</span>
               <p className="text-color-text-secondary text-xs">
-                {new Date(session.created_at).toLocaleTimeString()}
+                {fmtTime(session.created_at)}
               </p>
             </div>
             <div>

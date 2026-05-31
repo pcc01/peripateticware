@@ -12,6 +12,7 @@ class UserRole(str, enum.Enum):
     TEACHER = "TEACHER"
     PARENT = "PARENT"
     ADMIN = "ADMIN"
+    HOMESCHOOL = "HOMESCHOOL"
 
 class User(Base):
     __tablename__ = 'users'
@@ -25,6 +26,8 @@ class User(Base):
     role = Column(String(50), default='STUDENT', nullable=False, index=True)
     avatar_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    age_group = Column(String(20), nullable=True)  # under_13 | under_16 | under_18 | adult
+    requires_parental_consent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

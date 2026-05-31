@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -16,7 +17,8 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// API_BASE is the bare host — paths below include /api/v1 explicitly
+const API_BASE = ''
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('auth_token')
@@ -210,7 +212,7 @@ export default function AdminPrivacyConfigPage() {
                 {j.framework && <span style={{ marginLeft: '0.5rem', background: '#eef', color: '#446', borderRadius: 4, padding: '0.1rem 0.4rem', fontSize: '0.75rem' }}>{j.framework.toUpperCase()}</span>}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                {j.created_at && <span style={{ fontSize: '0.8rem', color: '#999' }}>Updated {new Date(j.created_at).toLocaleDateString()}</span>}
+                {j.created_at && <span style={{ fontSize: '0.8rem', color: '#999' }}>Updated {fmtDate(j.created_at)}</span>}
                 <span style={{ color: '#888' }}>{expanded === j.rule_id ? '▲' : '▼'}</span>
               </div>
             </div>
@@ -251,7 +253,7 @@ export default function AdminPrivacyConfigPage() {
                               <tr key={h.rule_id} style={{ borderBottom: '1px solid #ddd' }}>
                                 <td style={{ padding: '0.4rem 0.6rem' }}><code>{h.rule_id}</code></td>
                                 <td style={{ padding: '0.4rem 0.6rem' }}>v{h.version}</td>
-                                <td style={{ padding: '0.4rem 0.6rem' }}>{h.created_at ? new Date(h.created_at).toLocaleDateString() : '—'}</td>
+                                <td style={{ padding: '0.4rem 0.6rem' }}>{h.created_at ? fmtDate(h.created_at) : '—'}</td>
                                 <td style={{ padding: '0.4rem 0.6rem' }}>{h.change_log || '—'}</td>
                               </tr>
                             ))}

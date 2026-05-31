@@ -2,7 +2,7 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InquiryEntry, LearningSession } from '@/types/session';
 import { InputType } from '@/config/constants';
@@ -15,12 +15,19 @@ import inferenceService from '@/services/inferenceService';
 interface InquiryInterfaceProps {
   session: LearningSession;
   onInquirySubmitted?: (inquiry: InquiryEntry) => void;
+  /** Pre-fill the text input (e.g. from AristotelianPrompt "Use this question") */
+  initialText?: string;
 }
 
-const InquiryInterface: React.FC<InquiryInterfaceProps> = ({ session, onInquirySubmitted }) => {
+const InquiryInterface: React.FC<InquiryInterfaceProps> = ({ session, onInquirySubmitted, initialText }) => {
   const { t } = useTranslation(['STUDENT', 'common']);
   const [inputType, setInputType] = useState<InputType>(InputType.TEXT);
-  const [textInput, setTextInput] = useState('');
+  const [textInput, setTextInput] = useState(initialText ?? '');
+
+  // Sync when parent pushes a new prompted question
+  useEffect(() => {
+    if (initialText) setTextInput(initialText);
+  }, [initialText]);
   const [audioInput, setAudioInput] = useState<File | null>(null);
   const [imageInput, setImageInput] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);

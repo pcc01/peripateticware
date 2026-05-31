@@ -320,6 +320,37 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* 14i.1 — Privacy First section */}
+      <section style={{ background: 'var(--primary-muted)', padding: '5rem var(--section-x, 1.5rem)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h2 className="h-section text-center" style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>
+            {t('privacy_first_title', '🔒 Privacy First')}
+          </h2>
+          <p className="text-center" style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 3rem' }}>
+            {t('privacy_first_desc', 'Built for K-12 from day one. Compliant with major privacy frameworks — not as an afterthought.')}
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+            {[
+              { badge: 'FERPA', title: t('ferpa_title', 'FERPA'), desc: t('ferpa_desc', 'Student education records protected under US federal law.') },
+              { badge: 'COPPA', title: t('coppa_title', 'COPPA'), desc: t('coppa_desc', 'Parental consent flow built in for students under 13.') },
+              { badge: 'GDPR', title: t('gdpr_title', 'GDPR'), desc: t('gdpr_desc', 'Full data portability and right to erasure for EU students.') },
+              { badge: 'CCPA', title: t('ccpa_title', 'CCPA'), desc: t('ccpa_desc', 'California privacy rights — opt-out and data deletion supported.') },
+            ].map(({ badge, title, desc }) => (
+              <div key={badge} style={{ background: 'var(--surface)', borderRadius: '1rem', padding: '1.5rem', border: '1px solid var(--border)' }}>
+                <span style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+                  {badge}
+                </span>
+                <h3 style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '0.5rem' }}>{title}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--text-faint)' }}>
+            {t('no_ads_no_tracking', 'No ads. No tracking. No selling student data. Ever.')}
+          </p>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="testimonials-section">
         <div className="testimonials-inner">

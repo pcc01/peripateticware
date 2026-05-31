@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
@@ -6,6 +7,7 @@ import styles from './SettingsPages.module.css';
 
 export const TeacherSettingsPage = () => {
   const { t } = useTranslation('landing');
+  const { skin, setSkin, skins } = useSkin();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
@@ -77,13 +79,12 @@ export const TeacherSettingsPage = () => {
           <div className={styles.settingGroup}>
             <label>{t("landing:color_scheme", "Color Scheme")}</label>
             <select
-              value={settings.colorScheme}
-              onChange={(e) => handleChange('colorScheme', e.target.value)}
+              value={skin}
+              onChange={(e) => setSkin(e.target.value as Skin)}
               className={styles.select}>
-              
-              <option value="field-guide">{t("landing:field_guide_green", "Field Guide (Green)")}</option>
-              <option value="terrain">{t("landing:terrain_orange", "Terrain (Orange)")}</option>
-              <option value="atmosphere">{t("landing:atmosphere_dark", "Atmosphere (Dark)")}</option>
+              {skins.map((s) => (
+                <option key={s} value={s}>{SKIN_LABELS[s]}</option>
+              ))}
             </select>
           </div>
 

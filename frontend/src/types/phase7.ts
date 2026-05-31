@@ -284,3 +284,41 @@ export interface AudioCaptureResult {
 }
 
 export type AudioRecordingState = 'idle' | 'recording' | 'stopped' | 'uploading' | 'done' | 'error';
+
+// ============================================================================
+// STUDENT PROPOSALS — Reverse Scavenger Hunt
+// ============================================================================
+
+export type ProposalStatus = 'draft' | 'pending' | 'approved' | 'rejected';
+
+export interface Proposal {
+  id: string;
+  title: string;
+  challenge_description: string;
+  location_hint: string;
+  subject: string;
+  note_to_teacher: string;
+  status: ProposalStatus;
+  teacher_feedback: string;
+  student_id: string;
+  student_name?: string;
+  approved_activity_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProposalCreate {
+  title: string;
+  challenge_description: string;
+  location_hint?: string;
+  subject?: string;
+  note_to_teacher?: string;
+}
+
+export interface ProposalUpdate {
+  title?: string;
+  challenge_description?: string;
+  location_hint?: string;
+  subject?: string;
+  note_to_teacher?: string;
+}

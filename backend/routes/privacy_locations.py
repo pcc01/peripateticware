@@ -18,7 +18,7 @@ from core.config import settings
 from services.privacy_engine import get_privacy_checker
 from services.privacy_config_loader import PrivacyConfigurationLoader
 from services.multi_backend_location_service import get_location_service
-from services.iapp_privacy_crawler import run_privacy_crawler
+from services.iapp_privacy_crawler import run_privacy_crawler, run_jurisdiction_crawl, get_supported_countries
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -370,17 +370,21 @@ async def crawl_privacy_regulations(
                 detail="IAPP crawler is disabled"
             )
         
-        # Run crawler in background
-        background_tasks.add_task(
-            run_privacy_crawler,
-            sources=settings.IAPP_CRAWLER_SOURCES_LIST,
-            config_directory=settings.PRIVACY_CONFIG_DIR,
-            auto_load=settings.PRIVACY_AUTO_LOAD
-        )
-        
+        # Run crawler in a background task with its own DB session
+        async def _run_crawler():
+            from core.database import get_session_factory
+            async with get_session_factory()() as db_session:
+                await run_privacy_crawler(
+                    db=db_session,
+                    auto_load=getattr(settings, "PRIVACY_AUTO_LOAD", False),
+                )
+
+        background_tasks.add_task(_run_crawler)
+
         return {
             "success": True,
-            "message": "Privacy crawler started in background. Check status for results."
+            "message": "Privacy crawler started in background. Regulations will be checked against public sources.",
+            "supported_countries": get_supported_countries(),
         }
     
     except Exception as e:

@@ -3,13 +3,16 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 import i18n from './config/i18n'
 import axios from 'axios'
 import { useAuthStore } from './stores/auth'
 
 import './design-system.css'
+import { useSkin } from './hooks/useSkin'
+import CookieConsentBanner from './components/CookieConsentBanner'
+import ParentConsentPage from './pages/ParentConsentPage'
 import './styles/globals.css'
 import './styles/landing.css'
 
@@ -39,28 +42,70 @@ import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
 import { TeacherTourPage } from './pages/teacher/TeacherTourPage'
 import ActivityManager from './components/teacher/ActivityManager'
 import { TeacherSettingsPage } from './pages/TeacherSettingsPage'
-import TeacherActivityListPage from './pages/teacher/ActivityListPage'
+import { TeacherApprovalDashboard } from './components/teacher/TeacherApprovalDashboard'
+import RubricsPage from './pages/teacher/RubricsPage'
+import RubricBuilder from './components/teacher/RubricBuilder'
+import StudentActivityPreview from './components/teacher/StudentActivityPreview'
+import { FieldNoteEditor as _FieldNoteEditor } from './components/student/FieldNoteEditor'
+import { SelfProjectView as _SelfProjectView } from './components/student/SelfProjectView'
+import { FieldNoteReview as _FieldNoteReview } from './components/teacher/FieldNoteReview'
 import TeacherSubmissionsPage from './pages/TeacherSubmissionsPage'
 
 import StudentHowItWorksPage from './pages/student/StudentHowItWorksPage'
 import SessionPage from './pages/SessionPage'
 import { StudentSettingsPage } from './pages/StudentSettingsPage'
+import FieldNotesListPage from './pages/student/FieldNotesListPage'
+import SelfProjectsListPage from './pages/student/SelfProjectsListPage'
+import PeerProjectsListPage from './pages/student/PeerProjectsListPage'
+import PeerProjectDetailPage from './pages/student/PeerProjectDetailPage'
+import ProposalsListPage from './pages/student/ProposalsListPage'
+import ProposalFormPage from './pages/student/ProposalFormPage'
+import TeacherProposalReviewPage from './pages/teacher/TeacherProposalReviewPage'
 import StudentActivityDetailPage from './pages/StudentActivityDetailPage'
 
 import ParentFeaturesPage from './pages/parent/ParentFeaturesPage'
+import LinkChildPage from './pages/LinkChildPage'
+import VerifyEmailPendingPage from './pages/auth/VerifyEmailPendingPage'
+import VerifyEmailPage from './pages/auth/VerifyEmailPage'
+import TeacherLayout from './layouts/TeacherLayout'
+import StudentLayout from './layouts/StudentLayout'
+import ParentLayout from './layouts/ParentLayout'
+import AdminLayout from './layouts/AdminLayout'
+import HomeschoolLayout from './layouts/HomeschoolLayout'
+import HomeschoolDashboard from './pages/homeschool/HomeschoolDashboard'
+import HomeschoolChildrenPage from './pages/homeschool/HomeschoolChildrenPage'
+import HomeschoolProgressPage from './pages/homeschool/HomeschoolProgressPage'
+import HomeschoolRequirementsPage from './pages/homeschool/HomeschoolRequirementsPage'
+import HomeschoolCoveragePage from './pages/homeschool/HomeschoolCoveragePage'
+import HomeschoolExportPage from './pages/homeschool/HomeschoolExportPage'
+import HomeschoolSettingsPage from './pages/homeschool/HomeschoolSettingsPage'
+
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import ParentProgressPage from './pages/ParentProgressPage'
 import { ParentSettingsPage } from './pages/ParentSettingsPage'
 
 import { AdminSettingsPage } from './pages/AdminSettingsPage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AdminClassesPage from './pages/admin/AdminClassesPage'
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage'
+import AdminSystemPage from './pages/admin/AdminSystemPage'
+import TeacherStudentsPage from './pages/teacher/TeacherStudentsPage'
+import RubricImportPage from './pages/teacher/RubricImportPage'
+import StandardsImportPage from './pages/teacher/StandardsImportPage'
+import TeacherStandardsPage from './pages/teacher/TeacherStandardsPage'
+import CurriculumImportPage from './pages/admin/CurriculumImportPage'
+import AdminStandardsPage from './pages/admin/AdminStandardsPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import NotFoundPage from './pages/NotFoundPage'
+import StudentJournalPage from './pages/student/StudentJournalPage'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = '/api/v1'
 
 interface User {
   id: string
   email: string
-  role: 'student' | 'teacher' | 'parent' | 'admin'
+  role: 'student' | 'teacher' | 'parent' | 'admin' | 'homeschool'
   name?: string
   first_name?: string
   last_name?: string
@@ -155,7 +200,7 @@ const LoginScreenWrapper: React.FC = () => {
     try {
       const response = await authService.login(email, password)
       const role = (response.role || 'student').toLowerCase()
-      navigate(role === 'teacher' ? '/teacher' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
+      navigate(role === 'teacher' ? '/teacher/activities' : role === 'homeschool' ? '/homeschool' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Check credentials.')
     } finally { setLoading(false) }
@@ -176,7 +221,7 @@ const SignUpScreenWrapper: React.FC = () => {
     try {
       const response = await authService.signup(formData)
       const role = (response.role || formData.role).toLowerCase()
-      navigate(role === 'teacher' ? '/teacher' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
+      navigate(role === 'teacher' ? '/teacher/activities' : role === 'homeschool' ? '/homeschool' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Signup failed. Try again.')
     } finally { setLoading(false) }
@@ -185,39 +230,42 @@ const SignUpScreenWrapper: React.FC = () => {
   return <SignUpScreen onSignup={handleSignup} error={error} loading={loading} formData={formData} onFormChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))} />
 }
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string }> = ({ children, requiredRole }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string | string[] }> = ({ children, requiredRole }) => {
   if (!authService.isAuthenticated()) return <Navigate to="/login" replace />
   if (requiredRole) {
     const user = authService.getUser()
     const userRole = user?.role?.toLowerCase()
-    if (userRole !== requiredRole && userRole !== 'admin') return <Navigate to="/" replace />
+    const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+    if (!allowed.includes(userRole ?? '') && userRole !== 'admin') return <Navigate to="/" replace />
   }
   return <>{children}</>
 }
 
+
+// ── Phase 7 page wrappers (components need props derived from route params) ──
+
+const FieldNoteEditorPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  return <_FieldNoteEditor noteId={id} />
+}
+const SelfProjectViewPage: React.FC = () => <_SelfProjectView />
+// classId defaults to undefined → component receives || undefined → shows all classes
+const FieldNoteReviewPage: React.FC = () => <_FieldNoteReview classId="" />
+
 const App: React.FC = () => {
-  const [direction, setDirection] = useState<'field-guide' | 'terrain' | 'atmosphere'>('field-guide')
+  const { skin, setSkin } = useSkin()
+  // Legacy alias so any remaining DIRECTION_COLORS refs still resolve
+  const direction = skin
+  const setDirection = setSkin
   const location = useLocation()
 
-  useEffect(() => {
-    const saved = localStorage.getItem('designDirection')
-    if (saved) setDirection(saved as any)
-  }, [])
-
   useEffect(() => { useAuthStore.getState().checkAuth() }, [])
-
-  useEffect(() => {
-    const colors = DIRECTION_COLORS[direction]
-    document.documentElement.style.setProperty('--color-primary', colors.primary)
-    document.documentElement.style.setProperty('--color-secondary', colors.secondary)
-    document.documentElement.style.setProperty('--color-background', colors.background)
-    localStorage.setItem('designDirection', direction)
-  }, [direction])
 
   // RTL support — set dir attribute on <html> whenever language changes
   useEffect(() => {
     const RTL_LANGS = ['ar', 'he', 'fa', 'ur']
     const applyDir = (lng: string) => {
+      if (!lng) return
       const lang = lng.split('-')[0]
       document.documentElement.dir = RTL_LANGS.includes(lang) ? 'rtl' : 'ltr'
       document.documentElement.lang = lng
@@ -236,53 +284,91 @@ const App: React.FC = () => {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
+          <Route path="/parent-consent/:token" element={<ParentConsentPage />} />
           <Route path="/login" element={<LoginScreenWrapper />} />
           <Route path="/signup" element={<SignUpScreenWrapper />} />
+          <Route path="/verify-email-pending" element={<VerifyEmailPendingPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
 
           {/* STUDENT */}
-          <Route path="/student" element={<ProtectedRoute requiredRole="student"><StudentDashboard /></ProtectedRoute>} />
-          <Route path="/student/how-it-works" element={<ProtectedRoute requiredRole="student"><StudentHowItWorksPage /></ProtectedRoute>} />
-          <Route path="/student/settings" element={<ProtectedRoute requiredRole="student"><StudentSettingsPage /></ProtectedRoute>} />
+          <Route path="/student" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentDashboard /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/how-it-works" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentHowItWorksPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/settings" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentSettingsPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/field-notes" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNotesListPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/field-notes/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNoteEditorPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/self-projects" element={<ProtectedRoute requiredRole="student"><StudentLayout><SelfProjectsListPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/self-projects/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><SelfProjectViewPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/peer-projects" element={<ProtectedRoute requiredRole="student"><StudentLayout><PeerProjectsListPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/peer-projects/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><PeerProjectDetailPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/proposals" element={<ProtectedRoute requiredRole="student"><StudentLayout><ProposalsListPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/proposals/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><ProposalFormPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/activities" element={<ProtectedRoute requiredRole="student"><Navigate to="/student" replace /></ProtectedRoute>} />
-          <Route path="/student/activities/:id" element={<ProtectedRoute requiredRole="student"><StudentActivityDetailPage /></ProtectedRoute>} />
+          <Route path="/student/activities/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentActivityDetailPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/session/:id" element={<ProtectedRoute requiredRole="student"><SessionPage /></ProtectedRoute>} />
 
           {/* TEACHER */}
-          <Route path="/teacher" element={<ProtectedRoute requiredRole="teacher"><TeacherDashboard /></ProtectedRoute>} />
-          <Route path="/teacher/projects" element={<ProtectedRoute requiredRole="teacher"><ProjectsPage /></ProtectedRoute>} />
-          <Route path="/teacher/projects/:id" element={<ProtectedRoute requiredRole="teacher"><ProjectDetailPage /></ProtectedRoute>} />
-          <Route path="/teacher/activities" element={<ProtectedRoute requiredRole="teacher"><ActivityListPage /></ProtectedRoute>} />
-          <Route path="/teacher/activities/new" element={<ProtectedRoute requiredRole="teacher"><ActivityManager /></ProtectedRoute>} />
-          <Route path="/teacher/activities/:id" element={<ProtectedRoute requiredRole="teacher"><ActivityManager /></ProtectedRoute>} />
-          <Route path="/teacher/tour" element={<ProtectedRoute requiredRole="teacher"><TeacherTourPage /></ProtectedRoute>} />
-          <Route path="/teacher/settings" element={<ProtectedRoute requiredRole="teacher"><TeacherSettingsPage /></ProtectedRoute>} />
-          <Route path="/teacher/submissions" element={<ProtectedRoute requiredRole="teacher"><TeacherSubmissionsPage /></ProtectedRoute>} />
-          <Route path="/teacher/all-activities" element={<ProtectedRoute requiredRole="teacher"><TeacherActivityListPage /></ProtectedRoute>} />
-          <Route path="/teacher/students" element={<ProtectedRoute requiredRole="teacher"><ComingSoonPage feature="Student Management" returnTo="/teacher" /></ProtectedRoute>} />
+          <Route path="/teacher" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherDashboard /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/projects" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/projects/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectDetailPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/activities/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/activities/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/tour" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherTourPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/settings" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherSettingsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/submissions" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherSubmissionsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/field-note-review" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><FieldNoteReviewPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/peer-project-review" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherApprovalDashboard /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/proposal-review" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherProposalReviewPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/rubrics" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/rubrics/import" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricImportPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/standards" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherStandardsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/standards/import" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><StandardsImportPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/rubrics/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricBuilder /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/rubrics/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricBuilder /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/activities/:id/student-preview" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><StudentActivityPreview /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/all-activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/students" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherStudentsPage /></TeacherLayout></ProtectedRoute>} />
 
           {/* PARENT */}
-          <Route path="/parent" element={<ProtectedRoute requiredRole="parent"><ParentDashboard /></ProtectedRoute>} />
-          <Route path="/parent/features" element={<ProtectedRoute requiredRole="parent"><ParentFeaturesPage /></ProtectedRoute>} />
-          <Route path="/parent/progress" element={<ProtectedRoute requiredRole="parent"><ParentProgressPage /></ProtectedRoute>} />
-          <Route path="/parent/settings" element={<ProtectedRoute requiredRole="parent"><ParentSettingsPage /></ProtectedRoute>} />
-          <Route path="/parent/messages" element={<ProtectedRoute requiredRole="parent"><ComingSoonPage feature="Messages" returnTo="/parent" /></ProtectedRoute>} />
-          <Route path="/parent/calendar" element={<ProtectedRoute requiredRole="parent"><ComingSoonPage feature="Calendar" returnTo="/parent" /></ProtectedRoute>} />
-          <Route path="/parent/reports" element={<ProtectedRoute requiredRole="parent"><ComingSoonPage feature="Reports" returnTo="/parent" /></ProtectedRoute>} />
-          <Route path="/parent/notifications" element={<ProtectedRoute requiredRole="parent"><ComingSoonPage feature="Notifications" returnTo="/parent" /></ProtectedRoute>} />
+          <Route path="/parent" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/features" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentFeaturesPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/progress" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentProgressPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/settings" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentSettingsPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/link-child" element={<ProtectedRoute requiredRole="parent"><ParentLayout><LinkChildPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/messages" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Messages" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/calendar" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Calendar" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/reports" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Reports" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/notifications" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Notifications" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
+
+          {/* HOMESCHOOL */}
+          <Route path="/homeschool" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolDashboard /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/children" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolChildrenPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/progress" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolProgressPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/activities" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityListPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/activities/new" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/activities/:id" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/requirements" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolRequirementsPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/coverage" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolCoveragePage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/export" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolExportPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
 
           {/* ADMIN */}
-          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/privacy" element={<ProtectedRoute requiredRole="admin"><AdminPrivacyConfigPage /></ProtectedRoute>} />
-          <Route path="/admin/logs" element={<ProtectedRoute requiredRole="admin"><AdminAuditLogPage /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminSettingsPage /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><ComingSoonPage feature="User Management" returnTo="/admin" /></ProtectedRoute>} />
-          <Route path="/admin/classes" element={<ProtectedRoute requiredRole="admin"><ComingSoonPage feature="Class Management" returnTo="/admin" /></ProtectedRoute>} />
-          <Route path="/admin/system" element={<ProtectedRoute requiredRole="admin"><ComingSoonPage feature="System Settings" returnTo="/admin" /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><ComingSoonPage feature="Analytics" returnTo="/admin" /></ProtectedRoute>} />
-          <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><ComingSoonPage feature="Help Center" returnTo="/admin" /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminUsersPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/classes" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminClassesPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAnalyticsPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/system" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSystemPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/privacy" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPrivacyConfigPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/logs" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminAuditLogPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettingsPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/curriculum/import" element={<ProtectedRoute requiredRole="admin"><AdminLayout><CurriculumImportPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/standards" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminStandardsPage /></AdminLayout></ProtectedRoute>} />
 
-          {/* ERRORS */}
-          <Route path="/404" element={<NotFoundPage />} />
+          {/* STUDENT — Journal */}
+          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />
+
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>

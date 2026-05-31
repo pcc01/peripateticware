@@ -97,17 +97,30 @@ export const useCaptureStore = create<CaptureState>((set, get) => ({
     }
   },
 
-  // Create capture
+  // Create capture — multipart upload to /api/v1/student/captures/upload
   async createCapture(sessionId: string, data: CaptureFormData) {
     set({ loading: true, error: null });
     try {
-      // TODO: Replace with actual API call
-      // const capture = await captureApi.create(sessionId, data);
-      // set((state) => ({
-      //   captures: [capture, ...state.captures],
-      // }));
-      // return capture;
-      throw new Error('API not yet implemented');
+      const token = localStorage.getItem('auth_token') ?? '';
+      const formData = new FormData();
+      formData.append('file', data.file, data.file.name);
+      formData.append('capture_type', data.capture_type);
+      formData.append('session_id', sessionId);
+      if (data.title)       formData.append('title', data.title);
+      if (data.description) formData.append('description', data.description);
+
+      const res = await fetch('/api/v1/student/captures/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.detail ?? `Upload failed (${res.status})`);
+      }
+      const capture: Capture = await res.json();
+      set((state) => ({ captures: [capture, ...state.captures] }));
+      return capture;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create capture';
       set({ error: message });

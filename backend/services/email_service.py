@@ -3,254 +3,220 @@
 # found in the LICENSE.md file in the root directory of this source tree.
 
 """
-Email Service - Parent Portal Email Digest System
-Handles scheduled emails, progress summaries, notifications
+Email Service
+=============
+Sends transactional emails via aiosmtplib (async SMTP).
+
+Config (env vars, all optional in dev — EMAIL_DRY_RUN=true by default):
+  SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_USE_TLS
+  EMAIL_FROM, EMAIL_FROM_NAME, FRONTEND_URL, EMAIL_DRY_RUN
+
+In development (EMAIL_DRY_RUN=true) every email is logged but not sent.
+Set EMAIL_DRY_RUN=false and provide real SMTP credentials in production.
+
+Supported email types:
+  send_verification_email(to, token)       — account confirmation on signup
+  send_password_reset_email(to, token)     — password reset link
+  send_parent_consent_email(to, token, student_name)
+  send_welcome_email(to, name, role)       — after email verified
+  send_notification(to, subject, body_html) — generic
 """
 
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
-from enum import Enum
-import asyncio
-from pydantic import BaseModel, EmailStr
+import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Optional
+
+import aiosmtplib
+
+from core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
-class EmailFrequency(str, Enum):
-    """Email frequency preferences"""
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    MONTHLY = "monthly"
-    NEVER = "never"
+# ---------------------------------------------------------------------------
+# HTML template helpers
+# ---------------------------------------------------------------------------
+
+_BASE_STYLE = """
+<style>
+  body{font-family:system-ui,Arial,sans-serif;background:#f4f4f4;margin:0;padding:0}
+  .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:8px;overflow:hidden;
+        box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .hdr{background:#1b4332;padding:28px 32px}
+  .hdr h1{margin:0;color:#fff;font-size:22px;font-weight:700}
+  .hdr p{margin:4px 0 0;color:#a7f3d0;font-size:13px}
+  .body{padding:32px}
+  .body p{color:#374151;line-height:1.6;margin:0 0 16px}
+  .btn{display:inline-block;background:#1b4332;color:#fff!important;text-decoration:none;
+       padding:12px 28px;border-radius:6px;font-weight:600;font-size:15px;margin:8px 0 20px}
+  .note{font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;margin-top:24px;padding-top:16px}
+  .ftr{background:#f9fafb;padding:16px 32px;text-align:center;font-size:12px;color:#9ca3af}
+</style>
+"""
 
 
-class EmailType(str, Enum):
-    """Types of emails sent"""
-    PROGRESS_DIGEST = "progress_digest"
-    ACHIEVEMENT = "achievement"
-    CONCERN = "concern"
-    ACTIVITY_COMPLETE = "activity_complete"
-    PASSWORD_RESET = "password_reset"
+def _wrap(header_title: str, header_sub: str, body_html: str) -> str:
+    return f"""<!DOCTYPE html><html><head><meta charset="UTF-8">{_BASE_STYLE}</head>
+<body><div class="wrap">
+  <div class="hdr"><h1>{header_title}</h1><p>{header_sub}</p></div>
+  <div class="body">{body_html}</div>
+  <div class="ftr">Peripateticware &mdash; Learning in Motion &middot;
+    <a href="{settings.FRONTEND_URL}/settings" style="color:#9ca3af">Email preferences</a>
+  </div>
+</div></body></html>"""
 
 
-class EmailRequest(BaseModel):
-    """Email request model"""
-    to_email: EmailStr
-    subject: str
-    body: str
-    email_type: EmailType
-    parent_id: str
+# ---------------------------------------------------------------------------
+# Core send function
+# ---------------------------------------------------------------------------
 
-
-class ProgressDigest(BaseModel):
-    """Weekly/monthly progress summary"""
-    parent_id: str
-    child_id: str
-    child_name: str
-    period: str  # "weekly" or "monthly"
-    activities_completed: int
-    hours_learned: float
-    new_competencies: List[str]
-    achievements: List[str]
-    concerns: List[str]
-    growth_areas: List[str]
-    class_average: float
-    child_average: float
-
-
-class EmailService:
-    """Handles email sending and scheduling"""
-    
-    def __init__(self):
-        self.smtp_host = "smtp.gmail.com"  # Configure with your SMTP
-        self.smtp_port = 587
-        self.sender_email = "noreply@peripateticware.com"
-        self.scheduled_jobs = {}
-        self.email_queue = []
-    
-    async def send_email(self, request: EmailRequest) -> bool:
-        """Send an email"""
-        try:
-            email_body = self._build_email_body(request)
-            
-            # In production, use actual SMTP
-            # For now, log to console
-            print(f"📧 Email sent to {request.to_email}")
-            print(f"   Subject: {request.subject}")
-            print(f"   Type: {request.email_type}")
-            
-            return True
-        except Exception as e:
-            print(f"❌ Error sending email: {e}")
-            return False
-    
-    async def send_progress_digest(self, digest: ProgressDigest) -> bool:
-        """Send a progress digest email"""
-        subject = f"Weekly Progress Update - {digest.child_name}" if digest.period == "weekly" else f"Monthly Progress Report - {digest.child_name}"
-        
-        body = self._build_digest_body(digest)
-        
-        request = EmailRequest(
-            to_email=digest.parent_id,  # In production, fetch parent email
-            subject=subject,
-            body=body,
-            email_type=EmailType.PROGRESS_DIGEST,
-            parent_id=digest.parent_id
+async def _send(to: str, subject: str, html: str, text: Optional[str] = None) -> bool:
+    """
+    Send an email. Returns True on success.
+    In dry-run mode logs the email instead of sending.
+    """
+    if settings.EMAIL_DRY_RUN or not settings.SMTP_HOST:
+        logger.info(
+            "EMAIL DRY-RUN | To: %s | Subject: %s\n"
+            "(Set SMTP_HOST and EMAIL_DRY_RUN=false to send real emails)",
+            to, subject,
         )
-        
-        return await self.send_email(request)
-    
-    async def send_password_reset(self, email: EmailStr, reset_token: str, parent_id: str) -> bool:
-        """Send password reset email"""
-        reset_link = f"https://peripateticware.com/reset-password?token={reset_token}"
-        
-        body = f"""
-        <h1>Password Reset Request</h1>
-        <p>Click the link below to reset your password:</p>
-        <a href="{reset_link}">{reset_link}</a>
-        <p>This link expires in 1 hour.</p>
-        <p>If you didn't request this, ignore this email.</p>
-        """
-        
-        request = EmailRequest(
-            to_email=email,
-            subject="Password Reset - Peripateticware",
-            body=body,
-            email_type=EmailType.PASSWORD_RESET,
-            parent_id=parent_id
-        )
-        
-        return await self.send_email(request)
-    
-    async def send_achievement(self, email: EmailStr, child_name: str, achievement: str, parent_id: str) -> bool:
-        """Send achievement notification email"""
-        body = f"""
-        <h1>🎉 Achievement Unlocked!</h1>
-        <p>{child_name} has achieved: <strong>{achievement}</strong></p>
-        <p>Log in to the parent portal to see more details.</p>
-        """
-        
-        request = EmailRequest(
-            to_email=email,
-            subject=f"Achievement: {child_name} - {achievement}",
-            body=body,
-            email_type=EmailType.ACHIEVEMENT,
-            parent_id=parent_id
-        )
-        
-        return await self.send_email(request)
-    
-    async def send_concern(self, email: EmailStr, child_name: str, concern: str, parent_id: str) -> bool:
-        """Send concern notification email"""
-        body = f"""
-        <h1>⚠️ Learning Concern</h1>
-        <p>We've noticed a concern with {child_name}'s learning:</p>
-        <p><strong>{concern}</strong></p>
-        <p>Please log in to the parent portal for more details and to contact the teacher.</p>
-        """
-        
-        request = EmailRequest(
-            to_email=email,
-            subject=f"Learning Concern: {child_name}",
-            body=body,
-            email_type=EmailType.CONCERN,
-            parent_id=parent_id
-        )
-        
-        return await self.send_email(request)
-    
-    def schedule_digest(self, parent_id: str, frequency: EmailFrequency, time_of_day: str = "09:00") -> bool:
-        """Schedule recurring digest emails"""
-        if frequency == EmailFrequency.NEVER:
-            return False
-        
-        job_id = f"digest_{parent_id}_{frequency}"
-        
-        # In production, use APScheduler or Celery
-        print(f"📅 Scheduled {frequency} digest for {parent_id} at {time_of_day}")
-        self.scheduled_jobs[job_id] = {
-            "parent_id": parent_id,
-            "frequency": frequency,
-            "time": time_of_day,
-            "created_at": datetime.utcnow()
-        }
-        
         return True
-    
-    def cancel_digest(self, parent_id: str) -> bool:
-        """Cancel scheduled digests"""
-        job_ids = [jid for jid in self.scheduled_jobs if parent_id in jid]
-        
-        for job_id in job_ids:
-            del self.scheduled_jobs[job_id]
-            print(f"❌ Cancelled digest: {job_id}")
-        
-        return len(job_ids) > 0
-    
-    def _build_email_body(self, request: EmailRequest) -> str:
-        """Build email HTML body"""
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; }}
-                .container {{ max-width: 600px; margin: 0 auto; }}
-                .header {{ background-color: #007bff; color: white; padding: 20px; }}
-                .content {{ padding: 20px; }}
-                .footer {{ background-color: #f8f9fa; padding: 10px; text-align: center; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>{request.subject}</h1>
-                </div>
-                <div class="content">
-                    {request.body}
-                </div>
-                <div class="footer">
-                    <p>Peripateticware - Contextual AI Learning</p>
-                    <p><a href="https://peripateticware.com/settings">Manage Email Preferences</a></p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-    
-    def _build_digest_body(self, digest: ProgressDigest) -> str:
-        """Build progress digest email body"""
-        period_text = "This Week" if digest.period == "weekly" else "This Month"
-        
-        return f"""
-        <h2>{period_text}'s Progress for {digest.child_name}</h2>
-        
-        <h3>📊 Summary</h3>
-        <ul>
-            <li>Activities Completed: <strong>{digest.activities_completed}</strong></li>
-            <li>Hours of Learning: <strong>{digest.hours_learned:.1f}</strong></li>
-            <li>Your Average: <strong>{digest.child_average:.1f}%</strong></li>
-            <li>Class Average: <strong>{digest.class_average:.1f}%</strong></li>
-        </ul>
-        
-        <h3>🎯 New Competencies</h3>
-        <ul>
-            {chr(10).join([f"<li>{c}</li>" for c in digest.new_competencies])}
-        </ul>
-        
-        <h3>🏆 Achievements</h3>
-        <ul>
-            {chr(10).join([f"<li>{a}</li>" for a in digest.achievements])}
-        </ul>
-        
-        <h3>📈 Growth Areas</h3>
-        <ul>
-            {chr(10).join([f"<li>{g}</li>" for g in digest.growth_areas])}
-        </ul>
-        
-        {f'<h3>⚠️ Concerns</h3><ul>{chr(10).join([f"<li>{c}</li>" for c in digest.concerns])}</ul>' if digest.concerns else ''}
-        
-        <p><a href="https://peripateticware.com/dashboard">View Full Dashboard</a></p>
-        """
+
+    msg = MIMEMultipart("alternative")
+    msg["From"] = f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM}>"
+    msg["To"] = to
+    msg["Subject"] = subject
+
+    if text:
+        msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+
+    try:
+        await aiosmtplib.send(
+            msg,
+            hostname=settings.SMTP_HOST,
+            port=settings.SMTP_PORT,
+            username=settings.SMTP_USER or None,
+            password=settings.SMTP_PASSWORD or None,
+            start_tls=settings.SMTP_USE_TLS,
+        )
+        logger.info("Email sent | To: %s | Subject: %s", to, subject)
+        return True
+    except Exception as exc:
+        logger.error("Email send failed | To: %s | %s", to, exc)
+        return False
 
 
-# Global email service instance
-email_service = EmailService()
+# ---------------------------------------------------------------------------
+# Transactional email functions
+# ---------------------------------------------------------------------------
+
+async def send_verification_email(to: str, token: str) -> bool:
+    """Send account email-verification link after signup."""
+    link = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    html = _wrap(
+        "Confirm your email",
+        "One more step to get started",
+        f"""
+        <p>Thanks for signing up! Click below to confirm your email address and
+        activate your Peripateticware account.</p>
+        <a class="btn" href="{link}">Confirm Email Address</a>
+        <p class="note">This link expires in <strong>24 hours</strong>.
+        If you didn't create an account, you can safely ignore this email.<br>
+        Or copy this URL: {link}</p>
+        """,
+    )
+    return await _send(to, "Confirm your Peripateticware account", html)
+
+
+async def send_password_reset_email(to: str, token: str) -> bool:
+    """Send password-reset link."""
+    link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+    html = _wrap(
+        "Reset your password",
+        "We received a request to reset your password",
+        f"""
+        <p>Click below to choose a new password. This link is valid for
+        <strong>60 minutes</strong>.</p>
+        <a class="btn" href="{link}">Reset Password</a>
+        <p class="note">If you didn't request this, ignore this email &mdash;
+        your password won't change.<br>Or copy this URL: {link}</p>
+        """,
+    )
+    return await _send(to, "Reset your Peripateticware password", html)
+
+
+async def send_welcome_email(to: str, name: str, role: str) -> bool:
+    """Send welcome email after account is verified."""
+    role_label = {"TEACHER": "teacher", "STUDENT": "student",
+                  "PARENT": "parent", "HOMESCHOOL": "homeschool parent"}.get(role.upper(), "user")
+    dashboard_link = f"{settings.FRONTEND_URL}/{role_label if role_label != 'user' else ''}"
+    html = _wrap(
+        f"Welcome, {name}!",
+        "Your account is ready",
+        f"""
+        <p>Your Peripateticware account is confirmed. You're signed up as a
+        <strong>{role_label}</strong>.</p>
+        <a class="btn" href="{dashboard_link}">Go to your dashboard</a>
+        <p>If you have questions, reply to this email — we read everything.</p>
+        """,
+    )
+    return await _send(to, f"Welcome to Peripateticware, {name}!", html)
+
+
+async def send_parent_consent_email(to: str, token: str, student_name: str) -> bool:
+    """Send parental consent request link."""
+    link = f"{settings.FRONTEND_URL}/parent-consent/{token}"
+    html = _wrap(
+        "Parental consent required",
+        f"Action needed for {student_name}'s account",
+        f"""
+        <p>A Peripateticware account has been created for <strong>{student_name}</strong>.
+        Because they are under 13, we need your consent before they can use the app.</p>
+        <a class="btn" href="{link}">Review &amp; Give Consent</a>
+        <p class="note">This link expires in <strong>72 hours</strong>.
+        If you did not request this, please ignore it. No account will be activated
+        without your action.<br>Or copy this URL: {link}</p>
+        """,
+    )
+    return await _send(to, f"Consent needed for {student_name}'s Peripateticware account", html)
+
+
+async def send_notification(to: str, subject: str, body_html: str) -> bool:
+    """Generic notification email."""
+    html = _wrap("Peripateticware", "Notification", f"<p>{body_html}</p>")
+    return await _send(to, subject, html)
+
+
+async def send_progress_digest(
+    to: str,
+    child_name: str,
+    period: str,
+    activities_completed: int,
+    hours_learned: float,
+    new_competencies: list,
+    achievements: list,
+) -> bool:
+    """Send weekly/monthly progress digest to parent."""
+    period_label = "This Week" if period == "weekly" else "This Month"
+    comp_list = "".join(f"<li>{c}</li>" for c in new_competencies) or "<li>None yet</li>"
+    ach_list = "".join(f"<li>{a}</li>" for a in achievements) or "<li>None yet</li>"
+    html = _wrap(
+        f"{period_label}'s Progress",
+        f"{child_name} on Peripateticware",
+        f"""
+        <p>Here's {child_name}'s learning summary for {period_label.lower()}.</p>
+        <p>✅ <strong>{activities_completed}</strong> activities completed &nbsp;|&nbsp;
+           ⏱ <strong>{hours_learned:.1f}</strong> hours of learning</p>
+        <h3 style="color:#1b4332;margin:20px 0 8px">New Competencies</h3>
+        <ul style="padding-left:20px;color:#374151">{comp_list}</ul>
+        <h3 style="color:#1b4332;margin:20px 0 8px">Achievements</h3>
+        <ul style="padding-left:20px;color:#374151">{ach_list}</ul>
+        <a class="btn" href="{settings.FRONTEND_URL}/parent/progress">View Full Report</a>
+        """,
+    )
+    subject = (f"Weekly Progress: {child_name}" if period == "weekly"
+               else f"Monthly Report: {child_name}")
+    return await _send(to, subject, html)

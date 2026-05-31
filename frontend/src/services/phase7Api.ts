@@ -19,6 +19,7 @@ import type {
   PeerProjectResponse,
   PeerProjectGrade, PeerProjectGradeCreate,
   CrossClassShare, AudioCaptureResult,
+  Proposal, ProposalCreate, ProposalUpdate,
 } from '../types/phase7'
 
 // ============================================================================
@@ -237,8 +238,42 @@ export const audioApi = {
 
   // Build stream URL using the same base the apiClient uses
   streamUrl: (captureId: string): string => {
-    const base = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')
+    const base = '/api/v1'
       .replace(/\/$/, '')
     return `${base}/student/captures/${captureId}/stream`
   },
+}
+// ============================================================================
+// PROPOSAL APIs  (student + teacher)
+// ============================================================================
+
+export const proposalApi = {
+  // Student: CRUD
+  create: (data: ProposalCreate) =>
+    apiClient.post<{ id: string; status: string }>('/proposals', data).then(r => r.data),
+
+  list: () =>
+    apiClient.get<Proposal[]>('/proposals').then(r => r.data),
+
+  get: (id: string) =>
+    apiClient.get<Proposal>(`/proposals/${id}`).then(r => r.data),
+
+  update: (id: string, data: ProposalUpdate) =>
+    apiClient.put<{ ok: boolean }>(`/proposals/${id}`, data).then(r => r.data),
+
+  submit: (id: string) =>
+    apiClient.post<{ status: string }>(`/proposals/${id}/submit`).then(r => r.data),
+
+  remove: (id: string) =>
+    apiClient.delete(`/proposals/${id}`).then(r => r.data),
+
+  // Teacher: review queue
+  listPending: () =>
+    apiClient.get<Proposal[]>('/teacher/proposals').then(r => r.data),
+
+  approve: (id: string) =>
+    apiClient.post<{ status: string; activity_id: string }>(`/teacher/proposals/${id}/approve`).then(r => r.data),
+
+  reject: (id: string, feedback: string) =>
+    apiClient.post<{ status: string }>(`/teacher/proposals/${id}/reject`, { feedback }).then(r => r.data),
 }

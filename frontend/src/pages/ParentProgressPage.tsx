@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -289,7 +290,7 @@ export const ParentProgressPage: React.FC = () => {
                       <div>
                         <p className="text-sm font-medium text-purple-900">{t("landing:from", "From")}{digest.teacher.name}</p>
                         <p className="text-sm text-purple-800 mt-1">{t("landing:message_sent", "Message sent:")}
-                      {new Date(digest.teacher.message_sent_at).toLocaleDateString()}
+                      {fmtDate(digest.teacher.message_sent_at)}
                         </p>
                       </div>
                     </div>

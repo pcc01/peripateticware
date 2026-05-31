@@ -2,13 +2,26 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export function Footer() {
   const { t } = useTranslation('landing');
   const currentYear = new Date().getFullYear();
+
+  // 14g.1 — Dynamic privacy badges from active jurisdictions
+  const [privacyBadges, setPrivacyBadges] = useState<string[]>(['COPPA', 'FERPA', 'GDPR', 'SOC 2'])
+  useEffect(() => {
+    fetch('/api/v1/privacy/status')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.active_frameworks?.length) {
+          setPrivacyBadges(data.active_frameworks.map((f: string) => f.split('_')[0].toUpperCase()))
+        }
+      })
+      .catch(() => {/* keep defaults */})
+  }, [])
 
   return (
     <footer className="footer">
@@ -18,11 +31,13 @@ export function Footer() {
           <h3 className="footer-title">{t('footer.brand_title')}</h3>
           <p className="footer-desc">{t('footer.brand_desc')}</p>
           <div className="footer-badges">
-            <span className="badge">SOC 2</span>
-            <span className="badge">COPPA</span>
-            <span className="badge">FERPA</span>
-            <span className="badge">GDPR</span>
+            {privacyBadges.map(badge => (
+              <span key={badge} className="badge">{badge}</span>
+            ))}
           </div>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-faint)' }}>
+            {t('footer.privacy_protected', 'Your data is protected under these frameworks')}
+          </p>
         </div>
 
         {/* Column 2: Product */}

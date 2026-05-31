@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -22,6 +22,81 @@ from services.input_normalization_service import normalize_input
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# ── Inference cache helpers ───────────────────────────────────────────────────
+import hashlib, json as _json
+from sqlalchemy import select as _select, func as _func
+from models.database import CachedLocation, EnrichedLocation
+
+
+def _cache_key(location_name: str, subject: str, grade_level: int, bloom_level: str) -> str:
+    """Deterministic hash used as place_id for inference cache entries."""
+    raw = _json.dumps({
+        "loc": (location_name or "").strip().lower(),
+        "sub": (subject or "").strip().lower(),
+        "grade": grade_level,
+        "bloom": (bloom_level or "").strip().lower(),
+    }, sort_keys=True)
+    return "infer:" + hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+async def _get_cached_inference(db, location_name: str, subject: str, grade_level: int, bloom_level: str):
+    """Return EnrichedLocation if a prior inference result is cached."""
+    key = _cache_key(location_name, subject, grade_level, bloom_level)
+    result = await db.execute(
+        _select(CachedLocation).where(CachedLocation.place_id == key)
+    )
+    cached = result.scalar_one_or_none()
+    if cached and cached.enriched_data:
+        # Update access stats
+        cached.access_count = (cached.access_count or 0) + 1
+        await db.commit()
+        return cached.enriched_data
+    return None
+
+
+async def _write_inference_cache(
+    db, location_name: str, subject: str, grade_level: int, bloom_level: str,
+    question: str, resources: list, confidence: float
+):
+    """Persist inference result so the next identical request is instant."""
+    key = _cache_key(location_name, subject, grade_level, bloom_level)
+    result = await db.execute(
+        _select(CachedLocation).where(CachedLocation.place_id == key)
+    )
+    cached = result.scalar_one_or_none()
+    if not cached:
+        from datetime import datetime
+        cached = CachedLocation(
+            name=f"[cache] {location_name} / {subject} / g{grade_level} / {bloom_level}",
+            latitude=0.0,
+            longitude=0.0,
+            place_id=key,
+            source="inference_cache",
+        )
+        db.add(cached)
+        await db.flush()  # get id
+
+    if cached.enriched_data:
+        enriched = cached.enriched_data
+        enriched.learning_opportunities = resources
+        enriched.description = question
+        enriched.enrichment_quality = confidence
+        enriched.usage_count = (enriched.usage_count or 0) + 1
+    else:
+        from models.database import EnrichedLocation
+        enriched = EnrichedLocation(
+            cached_location_id=cached.id,
+            learning_opportunities=resources,
+            description=question,
+            enrichment_quality=confidence,
+            enrichment_source="llm_inference",
+            subjects=[subject] if subject else [],
+            grade_levels=[grade_level] if grade_level else [],
+        )
+        db.add(enriched)
+
+    await db.commit()
 
 
 class InquiryRequest(BaseModel):
@@ -56,12 +131,33 @@ async def process_inquiry(
     - Persona context (HOW)
     """
     try:
+        # ── Cache lookup ──────────────────────────────────────────────────────
+        loc_ctx = request.location or {}
+        cur_ctx = request.curriculum_context or {}
+        per_ctx = request.persona_context or {}
+        location_name = loc_ctx.get("name") or loc_ctx.get("address") or ""
+        subject       = cur_ctx.get("subject", "")
+        grade_level   = int(cur_ctx.get("grade_level") or per_ctx.get("grade_level") or 0)
+        bloom_level   = cur_ctx.get("bloom_level") or per_ctx.get("bloom_level") or ""
+
+        cached = await _get_cached_inference(db, location_name, subject, grade_level, bloom_level)
+        if cached:
+            logger.info(f"Inference cache hit: {location_name}/{subject}/g{grade_level}/{bloom_level}")
+            return InferenceResponse(
+                session_id=request.session_id,
+                reasoning_path={"site": loc_ctx, "curriculum": cur_ctx, "persona": per_ctx, "cache": True},
+                next_question=cached.description or "",
+                resources=cached.learning_opportunities or [],
+                confidence=cached.enrichment_quality or 0.9,
+            )
+
+        # ── Cache miss — call LLM ─────────────────────────────────────────────
         # Normalize text input if provided
         normalized_text = request.text
         if request.text:
             norm_result = await normalize_input("text", request.text)
             normalized_text = norm_result.get("data", request.text)
-        
+
         # Prepare inquiry for RAG orchestrator
         inquiry = {
             "session_id": request.session_id,
@@ -69,14 +165,25 @@ async def process_inquiry(
                 "type": request.input_type,
                 "text": normalized_text,
             },
-            "location": request.location or {},
-            "curriculum": request.curriculum_context or {},
-            "persona": request.persona_context or {},
+            "location": loc_ctx,
+            "curriculum": cur_ctx,
+            "persona": per_ctx,
         }
-        
+
         # Call LLM for inference
         response = await _call_llm_inference(inquiry)
-        
+
+        # ── Write result to cache ─────────────────────────────────────────────
+        try:
+            await _write_inference_cache(
+                db, location_name, subject, grade_level, bloom_level,
+                question=response.get("question", ""),
+                resources=response.get("resources", []),
+                confidence=response.get("confidence", 0.8),
+            )
+        except Exception as cache_err:
+            logger.warning(f"Cache write failed (non-fatal): {cache_err}")
+
         return InferenceResponse(
             session_id=request.session_id,
             reasoning_path={

@@ -1,6 +1,36 @@
-// src/stores/teacher.ts - UPDATED
+// src/stores/teacher.ts
+// Block 4: All stubs replaced with real API calls + Bearer auth
 import { create } from 'zustand'
 import type { Activity, Project } from '@/types/teacher'
+
+const API_BASE = '/api/v1'
+
+/** Read Bearer token from the same localStorage key auth store uses */
+function authHeader(): Record<string, string> {
+  const token = localStorage.getItem('auth_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+/** Shared fetch wrapper — throws on non-2xx */
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(),
+      ...(options.headers as Record<string, string> | undefined),
+    },
+  })
+  if (!res.ok) {
+    const detail = await res.text()
+    throw new Error(detail || res.statusText)
+  }
+  if (res.status === 204) return undefined as unknown as T
+  return res.json()
+}
 
 /**
  * ActivityPayload - Data structure for saving activities
@@ -85,8 +115,8 @@ export interface TeacherStore {
   clearError: () => void
 }
 
-export const useTeacherStore = create<TeacherStore>((set) => ({
-  // Initial state
+export const useTeacherStore = create<TeacherStore>((set, get) => ({
+  // ── Initial state ────────────────────────────────────────────────────────
   activities: [],
   paginatedActivities: [],
   selectedActivity: null,
@@ -106,60 +136,50 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   loading: false,
   error: null,
 
-  // Activity actions
+  // ── Activity actions ─────────────────────────────────────────────────────
+
   fetchActivities: async (params?: any) => {
-    set({ activityLoading: true })
+    set({ activityLoading: true, activityError: null })
     try {
-      set({ activityLoading: false })
+      const qs = params ? '?' + new URLSearchParams(params).toString() : ''
+      const data = await apiFetch<{ activities: Activity[]; total_pages?: number }>(
+        `/activities${qs}`
+      )
+      // Backend may return array or { activities, total_pages }
+      const activities = Array.isArray(data) ? data : data.activities ?? []
+      const totalPages = Array.isArray(data) ? 1 : data.total_pages ?? 1
+      set({ activities, paginatedActivities: activities, totalPages, activityLoading: false })
     } catch (error) {
       set({ activityError: String(error), activityLoading: false })
     }
   },
 
   fetchActivity: async (id: string) => {
-    set({ activityLoading: true })
+    set({ activityLoading: true, activityError: null })
     try {
-      set({ activityLoading: false })
+      const activity = await apiFetch<Activity>(`/activities/${id}`)
+      set({ currentActivity: activity, selectedActivity: activity, activityLoading: false })
     } catch (error) {
       set({ activityError: String(error), activityLoading: false })
     }
   },
 
   getActivity: async (id: string) => {
-    set({ activityLoading: true })
-    try {
-      set({ activityLoading: false })
-    } catch (error) {
-      set({ activityError: String(error), activityLoading: false })
-    }
+    return get().fetchActivity(id)
   },
 
   createActivity: async (data: Partial<Activity>) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
-      const activity: Activity = {
-        id: 'stub',
-        teacher_id: 'stub',
-        title: data.title || '',
-        description: data.description || '',
-        location_latitude: data.location_latitude || 0,
-        location_longitude: data.location_longitude || 0,
-        location_radius_meters: data.location_radius_meters || 0,
-        location_name: data.location_name || '',
-        grade_level: data.grade_level || 0,
-        subject: data.subject || '',
-        difficulty_level: data.difficulty_level || 0,
-        estimated_duration_minutes: data.estimated_duration_minutes || 0,
-        curriculum_unit_ids: [],
-        learning_objectives: [],
-        materials_needed: [],
-        resources: [],
-        status: 'draft',
-        is_shareable: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      set({ loading: false })
+      const activity = await apiFetch<Activity>('/activities', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      set((state) => ({
+        activities: [...state.activities, activity],
+        currentActivity: activity,
+        loading: false,
+      }))
       return activity
     } catch (error) {
       set({ error: String(error), loading: false })
@@ -168,10 +188,17 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   },
 
   updateActivity: async (id: string, data: Partial<Activity>) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
-      const activity: Activity = { id } as Activity
-      set({ loading: false })
+      const activity = await apiFetch<Activity>(`/activities/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      })
+      set((state) => ({
+        activities: state.activities.map((a) => (a.id === id ? activity : a)),
+        currentActivity: activity,
+        loading: false,
+      }))
       return activity
     } catch (error) {
       set({ error: String(error), loading: false })
@@ -180,27 +207,47 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   },
 
   deleteActivity: async (id: string) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
-      set({ loading: false })
+      await apiFetch<void>(`/activities/${id}`, { method: 'DELETE' })
+      set((state) => ({
+        activities: state.activities.filter((a) => a.id !== id),
+        loading: false,
+      }))
+    } catch (error) {
+      set({ error: String(error), loading: false })
+      throw error
+    }
+  },
+
+  publishActivity: async (id: string) => {
+    set({ loading: true, error: null })
+    try {
+      const activity = await apiFetch<Activity>(`/activities/${id}/publish`, {
+        method: 'POST',
+      })
+      set((state) => ({
+        activities: state.activities.map((a) => (a.id === id ? activity : a)),
+        currentActivity: activity,
+        loading: false,
+      }))
     } catch (error) {
       set({ error: String(error), loading: false })
     }
   },
 
-  publishActivity: async (id: string) => {
-    try {
-      // TODO: Implement
-    } catch (error) {
-      set({ error: String(error) })
-    }
-  },
-
   archiveActivity: async (id: string) => {
+    set({ loading: true, error: null })
     try {
-      // TODO: Implement
+      const activity = await apiFetch<Activity>(`/activities/${id}/archive`, {
+        method: 'POST',
+      })
+      set((state) => ({
+        activities: state.activities.map((a) => (a.id === id ? activity : a)),
+        loading: false,
+      }))
     } catch (error) {
-      set({ error: String(error) })
+      set({ error: String(error), loading: false })
     }
   },
 
@@ -209,17 +256,13 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   },
 
   /**
-   * saveActivity - Save or update an activity with location and Ollama data
-   * Handles both draft and published statuses
-   * Used by ActivityBuilder component
+   * saveActivity — create or update from ActivityPayload (used by ActivityBuilder)
+   * Derives teacher_id from JWT on the backend; removes hardcoded stub.
    */
   saveActivity: async (data: ActivityPayload) => {
     set({ loading: true, error: null })
     try {
-      // Convert ActivityPayload to Activity format
-      const activity: Activity = {
-        id: data.id || `activity_${Date.now()}`,
-        teacher_id: 'current_teacher_id', // TODO: Get from auth store
+      const body = {
         title: data.title,
         description: data.description,
         subject: data.subject,
@@ -227,113 +270,91 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
         activity_type: data.activity_type,
         difficulty_level: data.difficulty_level,
         estimated_duration_minutes: data.estimated_duration_minutes,
-
-        // Location fields
-        location_latitude: data.location.latitude || 0,
-        location_longitude: data.location.longitude || 0,
-        location_address: data.location.address || '',
-        location_name: data.location.address || '',
-        location_radius_meters: 1000, // Default 1km radius
-
-        // Learning & Assessment
-        learning_objectives: data.learning_objectives || [],
+        location_latitude: data.location.latitude,
+        location_longitude: data.location.longitude,
+        location_address: data.location.address,
+        location_name: data.location.address,
+        location_radius_meters: 1000,
+        wiki_location_id: data.location.wikiId,
+        learning_objectives: data.learning_objectives,
         bloom_level: data.bloom_level,
         assessment_type: data.assessment_type,
-
-        // Materials & Resources
-        materials_needed: data.materials_needed || [],
-        resources: data.resources || [],
-
-        // Curriculum & Meta
-        curriculum_unit_ids: data.curriculum_units || [],
-
-        // Status
-        status: data.status || 'draft',
-        is_shareable: false,
-
-        // Timestamps
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-
-        // Extended fields for location features
-        ...(data.location_info && { location_info: data.location_info }),
-        ...(data.location.wikiId && { wiki_location_id: data.location.wikiId }),
-        ...(data.suggested_lessons && { suggested_lessons: data.suggested_lessons }),
+        materials_needed: data.materials_needed,
+        resources: data.resources,
+        curriculum_unit_ids: data.curriculum_units,
+        location_info: data.location_info,
+        suggested_lessons: data.suggested_lessons,
+        status: data.status,
       }
 
-      // API call to save activity
-      const endpoint = `/api/v1/activities${data.id ? `/${data.id}` : ''}`
-      const response = await fetch(endpoint, {
-        method: data.id ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(activity)
-      })
+      const savedActivity = data.id
+        ? await apiFetch<Activity>(`/activities/${data.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(body),
+          })
+        : await apiFetch<Activity>('/activities', {
+            method: 'POST',
+            body: JSON.stringify(body),
+          })
 
-      if (!response.ok) {
-        throw new Error(`Failed to save activity: ${response.statusText}`)
-      }
-
-      const savedActivity = await response.json()
-
-      // Update local state with API response
       set((state) => {
         if (data.id) {
-          // Update existing activity
           return {
-            activities: state.activities.map(a => a.id === data.id ? savedActivity : a),
+            activities: state.activities.map((a) => (a.id === data.id ? savedActivity : a)),
             currentActivity: savedActivity,
             loading: false,
           }
-        } else {
-          // Create new activity
-          return {
-            activities: [...state.activities, savedActivity],
-            currentActivity: savedActivity,
-            loading: false,
-          }
+        }
+        return {
+          activities: [...state.activities, savedActivity],
+          currentActivity: savedActivity,
+          loading: false,
         }
       })
 
       return savedActivity
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      set({ error: errorMessage, loading: false })
+      const msg = error instanceof Error ? error.message : String(error)
+      set({ error: msg, loading: false })
       throw error
     }
   },
 
-  // Project actions
+  // ── Project actions ──────────────────────────────────────────────────────
+
   fetchProjects: async (params?: any) => {
-    set({ projectLoading: true })
+    set({ projectLoading: true, projectError: null })
     try {
-      set({ projectLoading: false })
+      const qs = params ? '?' + new URLSearchParams(params).toString() : ''
+      const data = await apiFetch<{ projects: Project[]; total_pages?: number } | Project[]>(
+        `/teacher/projects${qs}`
+      )
+      const projects = Array.isArray(data) ? data : (data as any).projects ?? []
+      const totalPages = Array.isArray(data) ? 1 : (data as any).total_pages ?? 1
+      set({ projects, paginatedProjects: projects, totalPages, projectLoading: false })
     } catch (error) {
       set({ projectError: String(error), projectLoading: false })
     }
   },
 
   fetchProject: async (id: string) => {
-    set({ projectLoading: true })
+    set({ projectLoading: true, projectError: null })
     try {
-      set({ projectLoading: false })
+      const project = await apiFetch<Project>(`/teacher/projects/${id}`)
+      set({ selectedProject: project, projectLoading: false })
     } catch (error) {
       set({ projectError: String(error), projectLoading: false })
     }
   },
 
   createProject: async (data: Partial<Project>) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
-      const project: Project = {
-        id: 'stub',
-        teacher_id: 'stub',
-        title: data.title || '',
-        description: data.description || '',
-        status: 'draft',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      set({ loading: false })
+      const project = await apiFetch<Project>('/teacher/projects', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      set((state) => ({ projects: [...state.projects, project], loading: false }))
       return project
     } catch (error) {
       set({ error: String(error), loading: false })
@@ -342,10 +363,17 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   },
 
   updateProject: async (id: string, data: Partial<Project>) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
-      const project: Project = { id } as Project
-      set({ loading: false })
+      const project = await apiFetch<Project>(`/teacher/projects/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      })
+      set((state) => ({
+        projects: state.projects.map((p) => (p.id === id ? project : p)),
+        selectedProject: project,
+        loading: false,
+      }))
       return project
     } catch (error) {
       set({ error: String(error), loading: false })
@@ -354,37 +382,58 @@ export const useTeacherStore = create<TeacherStore>((set) => ({
   },
 
   deleteProject: async (id: string) => {
-    set({ loading: true })
+    set({ loading: true, error: null })
     try {
+      await apiFetch<void>(`/teacher/projects/${id}`, { method: 'DELETE' })
+      set((state) => ({
+        projects: state.projects.filter((p) => p.id !== id),
+        loading: false,
+      }))
+    } catch (error) {
+      set({ error: String(error), loading: false })
+      throw error
+    }
+  },
+
+  addActivityToProject: async (projectId: string, activityId: string) => {
+    set({ loading: true, error: null })
+    try {
+      await apiFetch<void>(`/teacher/projects/${projectId}/activities`, {
+        method: 'POST',
+        body: JSON.stringify({ activity_id: activityId }),
+      })
       set({ loading: false })
     } catch (error) {
       set({ error: String(error), loading: false })
     }
   },
 
-  addActivityToProject: async (projectId: string, activityId: string) => {
-    try {
-      // TODO: Implement
-    } catch (error) {
-      set({ error: String(error) })
-    }
-  },
-
   removeActivityFromProject: async (projectId: string, activityId: string) => {
+    set({ loading: true, error: null })
     try {
-      // TODO: Implement
+      await apiFetch<void>(`/teacher/projects/${projectId}/activities/${activityId}`, {
+        method: 'DELETE',
+      })
+      set({ loading: false })
     } catch (error) {
-      set({ error: String(error) })
+      set({ error: String(error), loading: false })
     }
   },
 
   reorderActivities: async (projectId: string, activityIds: string[]) => {
+    set({ loading: true, error: null })
     try {
-      // TODO: Implement
+      await apiFetch<void>(`/teacher/projects/${projectId}/activities/reorder`, {
+        method: 'PUT',
+        body: JSON.stringify({ activity_ids: activityIds }),
+      })
+      set({ loading: false })
     } catch (error) {
-      set({ error: String(error) })
+      set({ error: String(error), loading: false })
     }
   },
+
+  // ── Pagination / filter helpers ──────────────────────────────────────────
 
   setCurrentPage: (page: number) => {
     set({ currentPage: page })

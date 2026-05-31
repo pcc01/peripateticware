@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -43,7 +44,7 @@ const EvidencePortfolio: React.FC<EvidencePortfolioProps> = ({ studentId }) => {
   <div className="space-y-4">
       {collections.map((collection) =>
     <div key={collection.id} className="flex gap-4 pb-4 border-l-2 border-blue-500 pl-4">
-          <div className="text-sm font-medium">{new Date(collection.created_at).toLocaleDateString()}</div>
+          <div className="text-sm font-medium">{fmtDate(collection.created_at)}</div>
           <div className="flex-1">
             <h4 className="font-semibold">{collection.title}</h4>
             <p className="text-gray-600 text-sm">{collection.description}</p>

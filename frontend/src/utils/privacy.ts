@@ -17,7 +17,7 @@
 
 import axios from 'axios'
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL ?? 'http://localhost:8000'
+const API_BASE = '/api/v1'
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('auth_token')

@@ -19,9 +19,10 @@ const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   password_confirm: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['TEACHER', 'STUDENT', 'PARENT', 'ADMIN'] as const, {
+  role: z.enum(['TEACHER', 'STUDENT', 'PARENT', 'ADMIN', 'HOMESCHOOL'] as const, {
     errorMap: () => ({ message: 'Please select a role' })
-  })
+  }),
+  age_confirmed: z.boolean().refine(val => val === true, { message: 'You must confirm your age to continue' }),
 }).refine((data) => data.password === data.password_confirm, {
   message: "Passwords don't match",
   path: ["password_confirm"]
@@ -38,6 +39,7 @@ interface SignupScreenProps {
     first_name: string;
     last_name: string;
     role: string;
+    age_confirmed: boolean;
   };
   onFormChange?: (field: string, value: string) => void;
 }
@@ -45,9 +47,11 @@ interface SignupScreenProps {
 type SignUpFormData = z.infer<typeof signupSchema>;
 
 const ROLE_OPTIONS = [
-{ value: 'TEACHER' as UserRole, label: '👨‍🏫 Teacher', description: 'Create activities and track student progress' },
-{ value: 'STUDENT' as UserRole, label: '👨‍🎓 Student', description: 'Capture evidence and track learning' },
-{ value: 'PARENT' as UserRole, label: '👩‍👩‍👦 Parent', description: 'Monitor child\'s progress' }];
+  { value: 'TEACHER'    as UserRole, label: '👨‍🏫 Teacher',           desc: 'Create activities and monitor students' },
+  { value: 'STUDENT'    as UserRole, label: '👨‍🎓 Student',           desc: 'Complete activities and submit evidence' },
+  { value: 'PARENT'     as UserRole, label: '👩‍👩‍👦 Parent',            desc: 'View your child\'s progress' },
+  { value: 'HOMESCHOOL' as UserRole, label: '🏡 Homeschool Parent',  desc: 'Teach your children and track state requirements' },
+];
 
 
 export default function SignupScreen({
@@ -71,7 +75,8 @@ export default function SignupScreen({
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      role: 'STUDENT'
+      role: 'STUDENT',
+    age_confirmed: false
     }
   });
 
@@ -91,7 +96,8 @@ export default function SignupScreen({
         password_confirm: data.password_confirm,
         first_name: data.first_name,
         last_name: data.last_name,
-        role: data.role as 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN'
+        role: data.role as 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN',
+        age_group: data.role === 'STUDENT' ? 'under_18' : 'adult'
       });
 
       setTimeout(() => {
@@ -100,15 +106,8 @@ export default function SignupScreen({
 
         console.log('[SignUpScreen] Navigating based on role:', userRole);
 
-        if (userRole === 'TEACHER' || userRole === 'ADMIN') {
-          navigate('/teacher/activities', { replace: true });
-        } else if (userRole === 'STUDENT') {
-          navigate('/student', { replace: true });
-        } else if (userRole === 'PARENT') {
-          navigate('/parent', { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
+        // Account created — must verify email before accessing dashboard
+        navigate('/verify-email-pending', { replace: true, state: { email: data.email } });
       }, 300);
     } catch (err) {
       console.error('[SignUpScreen] Signup error:', err);
@@ -239,27 +238,41 @@ export default function SignupScreen({
               <label className="block text-sm font-medium text-gray-700 mb-3">{t("landing:i_am_a", "I am a...")}
 
               </label>
-              <div className="space-y-2">
+              <div className="flex gap-2">
                 {ROLE_OPTIONS.map((option) =>
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleRoleSelect(option.value)}
-                  className={`w-full p-3 border-2 rounded-lg text-left transition ${
-                  role === option.value ?
-                  'border-blue-500 bg-blue-50' :
-                  'border-gray-200 hover:border-gray-300'}`
+                  className={`flex-1 py-2 px-3 border-2 rounded-lg text-center font-medium transition text-sm ${
+                  role === option.value
+                    ? 'border-green-600 bg-green-50 text-green-800'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`
                   }>
-                  
-                    <div className="font-medium text-gray-900">{option.label}</div>
-                    <div className="text-xs text-gray-600">{option.description}</div>
-                  </button>
+                  {option.label}
+                </button>
                 )}
               </div>
               {errors.role &&
               <p className="text-red-600 text-xs mt-1">{errors.role.message}</p>
               }
             </div>
+
+            {/* 14b.1 — COPPA age confirmation */}
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
+              <input
+                type="checkbox"
+                id="age_confirmed"
+                {...register('age_confirmed')}
+                className="mt-0.5 w-4 h-4 accent-blue-600 cursor-pointer"
+              />
+              <label htmlFor="age_confirmed" className="text-sm text-gray-700 cursor-pointer leading-snug">
+                {t("landing:age_confirmation", "I confirm that I am 13 years of age or older, or that I have parental consent to create this account.")}
+              </label>
+            </div>
+            {errors.age_confirmed && (
+              <p className="text-red-600 text-xs -mt-1">{errors.age_confirmed.message}</p>
+            )}
 
             <button
               type="submit"
@@ -287,11 +300,8 @@ export default function SignupScreen({
             </Link>
           </p>
         </div>
-
-        <div className="text-center mt-6">
-          <p className="text-white text-xs opacity-75">{t('signupscreen.2026_peripateticware_all_rights_reserved', '© 2026 Peripateticware. All rights reserved.')}</p>
-        </div>
       </div>
-    </div>);
+    </div>
+  );
+};
 
-}

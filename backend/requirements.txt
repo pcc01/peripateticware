@@ -120,3 +120,11 @@ opencv-python-headless==4.8.1.78
 geopy==2.3.0
 geoalchemy2==0.14.1
 shapely==2.0.2
+
+# Rate limiting
+slowapi==0.1.9
+
+# ============================================================================
+# SPREADSHEET SUPPORT (standards/rubrics upload, CSV export)
+# ============================================================================
+openpyxl==3.1.2

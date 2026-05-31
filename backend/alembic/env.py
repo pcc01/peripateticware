@@ -4,17 +4,22 @@ import os
 import sys
 from pathlib import Path
 
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
+# Inside the container /app IS the backend package root — no 'backend.' prefix
+app_root = Path(__file__).parent.parent
+sys.path.insert(0, str(app_root))
 
-from backend.core.database import Base
-from backend.models.database import User, Activity, ActivityStatus, ActivityType, CurriculumUnit, Project
-from backend.models.assessment import LocationContext, AssessmentRubric
+from core.database import Base
+from models.database import User, Activity, ActivityStatus, ActivityType, CurriculumUnit, Project
+from models.assessment import LocationContext, AssessmentRubric
 
 config = context.config
 
-# Use credentials from docker-compose.yml
-database_url = 'postgresql://peripateticware:peripateticware_secure_password_dev@localhost:5432/peripateticware'
+# Use DATABASE_URL from environment; swap asyncpg for sync psycopg2 driver
+_async_url = os.environ.get(
+    'DATABASE_URL',
+    'postgresql+asyncpg://peripateticware:peripateticware_secure_password_dev@postgres:5432/peripateticware'
+)
+database_url = _async_url.replace('postgresql+asyncpg://', 'postgresql://')
 
 def run_migrations_offline():
     context.configure(url=database_url, target_metadata=Base.metadata, literal_binds=True, dialect_opts={"paramstyle": "named"})

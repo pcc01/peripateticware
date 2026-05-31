@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -528,7 +529,7 @@ export const FieldNoteList: React.FC<FieldNoteListProps> = ({
                     </span>
               }
                   <span>{note.capture_count}{t("landing:fieldnoteeditor.captures", "captures")}</span>
-                  <span>{new Date(note.updated_at).toLocaleDateString()}</span>
+                  <span>{fmtDate(note.updated_at)}</span>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />

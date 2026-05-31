@@ -3,7 +3,7 @@
 // found in the LICENSE.md file in the root directory of this source tree.
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
@@ -40,6 +40,9 @@ export default function LoginScreen({
   onPasswordChange
 }: LoginScreenProps = {}) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const verifiedBanner = searchParams.get('verified') === '1';
+  const errorParam = searchParams.get('error');
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error: authError, user } = useAuthStore();
   const { t } = useTranslation('landing');
@@ -47,6 +50,7 @@ export default function LoginScreen({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors }
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema)
@@ -81,6 +85,9 @@ export default function LoginScreen({
         } else if (userRole === 'parent') {
           console.log('[LoginScreen] ✅ Navigating to /parent');
           navigate('/parent', { replace: true });
+        } else if (userRole === 'homeschool') {
+          console.log('[LoginScreen] ✅ Navigating to /homeschool');
+          navigate('/homeschool', { replace: true });
         } else {
           console.log('[LoginScreen] ❌ No role match! userRole was:', userRole);
           navigate('/', { replace: true });
@@ -90,6 +97,14 @@ export default function LoginScreen({
       console.error('[LoginScreen] Login error:', err);
     }
   };
+
+  const statusBanner = verifiedBanner
+    ? <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">✅ Email confirmed! You can now sign in.</div>
+    : errorParam === 'link_expired'
+    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">⏰ That link has expired. Please request a new one.</div>
+    : errorParam === 'invalid_link'
+    ? <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">❌ That link is invalid. Please try again.</div>
+    : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-green-500 flex items-center justify-center px-4">
@@ -114,17 +129,31 @@ export default function LoginScreen({
             </p>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm">
-            <p className="font-semibold text-blue-900 mb-2">
-              {t('auth.demo_accounts_title')}
-            </p>
-            <ul className="text-blue-800 space-y-1 text-xs">
-              <li>{t('auth.demo_teacher')}</li>
-              <li>{t('auth.demo_student')}</li>
-              <li>{t('auth.demo_parent')}</li>
-            </ul>
-            <p className="text-blue-700 mt-2">{t('auth.demo_password')}</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-xs font-semibold text-blue-900 mb-2">Try a demo account</p>
+            <div className="flex gap-2">
+              {[
+                { label: 'Teacher', email: 'teacher@example.com' },
+                { label: 'Student', email: 'student@example.com' },
+                { label: 'Parent',  email: 'parent@example.com'  },
+              ].map(({ label, email }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => {
+                    setValue('email', email);
+                    setValue('password', 'SecurePassword123');
+                  }}
+                  className="flex-1 py-1.5 text-xs font-medium border border-blue-300 bg-white text-blue-700 rounded hover:bg-blue-100 transition"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-1.5">Password: <code className="font-mono">SecurePassword123</code></p>
           </div>
+
+          {statusBanner}
 
           {(authError || error) &&
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
@@ -214,23 +243,22 @@ export default function LoginScreen({
             <div className="flex-1 border-t border-gray-300"></div>
           </div>
 
-          <p className="text-center text-gray-600 text-sm">
-            {t('auth.no_account')}{' '}
-            <Link
-              to="/signup"
-              className="text-blue-600 hover:text-blue-700 font-semibold">
-              
-              {t('auth.signup_link')}
-            </Link>
-          </p>
-        </div>
-
-        <div className="text-center mt-6">
-          <p className="text-white text-xs opacity-75">
-            {t('auth.copyright')}
-          </p>
+          <div className="text-center text-sm space-y-2">
+            <div>
+              <Link to="/forgot-password" className="text-gray-500 hover:text-green-700 underline">
+                Forgot your password?
+              </Link>
+            </div>
+            <p className="text-gray-600">
+              {t('auth.no_account')}{' '}
+              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
+                {t('auth.signup_link')}
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
-    </div>);
+    </div>
+  );
+};
 
-}

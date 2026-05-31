@@ -7,6 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Upload, MapPin, Clock, Users, FileText, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { useApiData, useStudent } from '@/services/api';
+import { fmtDate } from '@/utils/date';
 
 /**
  * StudentActivityDetailPage
@@ -133,7 +134,7 @@ export const StudentActivityDetailPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 text-gray-700">
               <Clock className="w-4 h-4" />{t("landing:due", "Due:")}
-              {new Date(activity.due_date).toLocaleDateString()}
+              {fmtDate(activity.due_date)}
             </div>
             <div className="flex items-center gap-2 text-gray-700">
               <Users className="w-4 h-4" />
@@ -176,7 +177,7 @@ export const StudentActivityDetailPage: React.FC = () => {
                   </p>
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm text-blue-800">
-                      <strong>{t("landing:due", "Due:")}</strong> {new Date(activity.phases.orient.due_date).toLocaleDateString()}
+                      <strong>{t("landing:due", "Due:")}</strong> {fmtDate(activity.phases.orient.due_date)}
                     </p>
                   </div>
                 </div>
@@ -192,7 +193,7 @@ export const StudentActivityDetailPage: React.FC = () => {
                   </p>
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm text-blue-800">
-                      <strong>{t("landing:due", "Due:")}</strong> {new Date(activity.phases.inquiry.due_date).toLocaleDateString()}
+                      <strong>{t("landing:due", "Due:")}</strong> {fmtDate(activity.phases.inquiry.due_date)}
                     </p>
                   </div>
 
@@ -302,7 +303,7 @@ export const StudentActivityDetailPage: React.FC = () => {
                   </p>
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <p className="text-sm text-blue-800">
-                      <strong>{t("landing:due", "Due:")}</strong> {new Date(activity.phases.reflect.due_date).toLocaleDateString()}
+                      <strong>{t("landing:due", "Due:")}</strong> {fmtDate(activity.phases.reflect.due_date)}
                     </p>
                   </div>
                 </div>

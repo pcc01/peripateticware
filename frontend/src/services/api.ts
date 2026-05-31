@@ -15,7 +15,9 @@ import * as Types from './types'
 /* API CLIENT SETUP */
 /* ============================================================================ */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+// Always use relative path so requests route through the Vite proxy.
+// This ensures /api/v1/... hits http://backend:8000/api/v1/... in Docker dev.
+const API_BASE_URL = '/api/v1'
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -408,27 +410,27 @@ export const curriculumApi = {
 
 export const teacherApi = {
   async getStudents(): Promise<Types.User[]> {
-    const response = await axiosInstance.get<Types.User[]>('/teacher/students')
+    const response = await axiosInstance.get<Types.User[]>('/activities/teacher/students')
     return response.data
   },
 
   async getClasses(): Promise<Types.TeacherClass[]> {
-    const response = await axiosInstance.get<Types.TeacherClass[]>('/teacher/classes')
+    const response = await axiosInstance.get<Types.TeacherClass[]>('/activities/teacher/classes')
     return response.data
   },
 
   async getSubmissions(): Promise<Types.TeacherSubmission[]> {
-    const response = await axiosInstance.get<Types.TeacherSubmission[]>('/teacher/submissions')
+    const response = await axiosInstance.get<Types.TeacherSubmission[]>('/activities/teacher/submissions')
     return response.data
   },
 
   async getDashboard(): Promise<Types.TeacherDashboardData> {
-    const response = await axiosInstance.get<Types.TeacherDashboardData>('/teacher/dashboard')
+    const response = await axiosInstance.get<Types.TeacherDashboardData>('/activities/teacher/dashboard')
     return response.data
   },
 
   async getActivities(): Promise<Types.Activity[]> {
-    const response = await axiosInstance.get<Types.Activity[]>('/teacher/activities')
+    const response = await axiosInstance.get<Types.Activity[]>('/activities')
     return response.data
   },
 }
@@ -623,7 +625,7 @@ export function useTeacher() {
     getActivity: (id: string) =>
       axiosInstance.get<Types.Activity>(`/teacher/activities/${id}`).then((r) => r.data),
     createActivity: (data: Types.CreateActivityRequest) =>
-      axiosInstance.post<Types.Activity>('/teacher/activities', data).then((r) => r.data),
+      axiosInstance.post<Types.Activity>('/activities', data).then((r) => r.data),
     updateActivity: (id: string, data: Types.UpdateActivityRequest) =>
       axiosInstance.put<Types.Activity>(`/teacher/activities/${id}`, data).then((r) => r.data),
     deleteActivity: (id: string) =>

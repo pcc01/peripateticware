@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -17,7 +18,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE = ''
 const PAGE_SIZE = 25
 
 function getAuthHeader(): Record<string, string> {
@@ -238,7 +239,7 @@ export default function AdminAuditLogPage() {
                       onClick={() => setExpanded(isOpen ? null : row.id)}
                     >
                       <td style={{ padding: '0.7rem 1rem', color: '#555', whiteSpace: 'nowrap' }}>
-                        {row.timestamp ? new Date(row.timestamp).toLocaleString() : '—'}
+                        {row.timestamp ? fmtDateTime(row.timestamp) : '—'}
                       </td>
                       <td style={{ padding: '0.7rem 1rem', fontWeight: 500 }}>{row.action}</td>
                       <td style={{ padding: '0.7rem 1rem', color: '#666' }}>{row.data_type || '—'}</td>

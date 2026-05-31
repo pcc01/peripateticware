@@ -292,11 +292,7 @@ class Activity(Base):
     # =========================================================================
     # ACTIVITY TYPE & AI SUGGESTIONS
     # =========================================================================
-    activity_type = Column(
-        Enum("inquiry", "field_observation", "hands_on", "project",
-             "discussion", "experiment", name="activity_type"),
-        default="inquiry"
-    )
+    activity_type = Column(String(50), default="inquiry")  # inquiry | field_observation | hands_on | project | discussion | experiment | discovery
     suggested_lessons = Column(JSONB, default=list)
 
     # =========================================================================
@@ -318,10 +314,7 @@ class Activity(Base):
     # =========================================================================
     # STATUS & VISIBILITY
     # =========================================================================
-    status = Column(
-        Enum("draft", "published", "archived", name="activity_status"),
-        default="draft", index=True
-    )
+    status = Column(String(50), default="draft", index=True)  # draft | published | archived
     is_active = Column(Boolean, default=True)
     is_shareable = Column(Boolean, default=False)
 
@@ -1243,3 +1236,60 @@ class AdminSession(Base):
     revoked    = Column(Boolean, default=False, nullable=False)
 
     admin = relationship("AdminUserModel")
+
+
+# =============================================================================
+# SHARED INFRASTRUCTURE — STANDARDS, RUBRICS & EXPORT
+# =============================================================================
+
+class StandardsSet(Base):
+    """
+    A named set of criteria used for rubrics, curriculum standards, or
+    homeschool state reporting requirements.
+    type: 'rubric' | 'curriculum' | 'state_reporting'
+    owner_id: teacher/homeschool user, or NULL for admin-managed global sets
+    """
+    __tablename__ = "standards_sets"
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name        = Column(String(255), nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    type        = Column(String(50), nullable=False, index=True)   # rubric | curriculum | state_reporting
+    owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    state_code  = Column(String(10), nullable=True)                 # e.g. "TX", "CA" for state_reporting
+    is_global   = Column(Boolean, default=False)                    # True = admin-managed, visible to all
+    source_file = Column(String(512), nullable=True)                # original upload filename
+    criteria    = Column(JSONB, default=list)                       # [{id, name, description, category, required, weight}]
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    owner       = relationship("User", foreign_keys=[owner_id])
+    mappings    = relationship("ActivityStandardsMap", back_populates="standards_set",
+                               cascade="all, delete-orphan")
+
+
+class ActivityStandardsMap(Base):
+    """Maps an activity to criteria within a standards set."""
+    __tablename__ = "activity_standards_map"
+
+    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id     = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=False, index=True)
+    standards_set_id= Column(UUID(as_uuid=True), ForeignKey("standards_sets.id"), nullable=False, index=True)
+    criterion_id    = Column(String(100), nullable=False)           # matches criteria[].id in the set
+    coverage_level  = Column(String(50), default="partial")         # partial | full | exceeds
+    notes           = Column(Text, nullable=True)
+    mapped_by       = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    ai_suggested    = Column(Boolean, default=False)
+    created_at      = Column(DateTime, default=datetime.utcnow)
+
+    activity        = relationship("Activity", foreign_keys=[activity_id])
+    standards_set   = relationship("StandardsSet", back_populates="mappings")
+    mapper          = relationship("User", foreign_keys=[mapped_by])
+
+    __table_args__ = (
+        # One mapping per activity+set+criterion
+        __import__('sqlalchemy').UniqueConstraint(
+            "activity_id", "standards_set_id", "criterion_id",
+            name="uq_activity_standards_criterion"
+        ),
+    )

@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -54,7 +55,7 @@ export const PrivacyPage: React.FC = () => {
           )}
           {privacyStatus.last_updated && (
             <span style={{ color: '#888', marginLeft: 'auto' }}>
-              {t('privacy.last_updated', 'Last updated')}: {new Date(privacyStatus.last_updated).toLocaleDateString()}
+              {t('privacy.last_updated', 'Last updated')}: {fmtDate(privacyStatus.last_updated)}
             </span>
           )}
         </div>

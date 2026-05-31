@@ -513,10 +513,65 @@ const playerStyles: Record<string, React.CSSProperties> = {
 
 
 // =============================================================================
+// TranscriptBlock — polls GET /api/v1/student/captures/:id until transcript appears
+// =============================================================================
+
+function TranscriptBlock({ captureId }: { captureId: string }) {
+  const [transcript, setTranscript] = React.useState<string | null>(null);
+  const [polling, setPolling] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!captureId) return;
+    const token = localStorage.getItem("auth_token") ?? "";
+    let attempts = 0;
+    const maxAttempts = 20; // poll for up to ~40s
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch(`/api/v1/student/captures/${captureId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.transcript) {
+            setTranscript(data.transcript);
+            setPolling(false);
+            clearInterval(interval);
+          }
+        }
+      } catch { /* ignore */ }
+      if (attempts >= maxAttempts) {
+        setPolling(false);
+        clearInterval(interval);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [captureId]);
+
+  if (transcript) {
+    return (
+      <div style={{ marginTop: 8, padding: "8px 12px", background: "#f0fdf4", borderRadius: 8, fontSize: 13, color: "#166534" }}>
+        <strong>Transcript:</strong> {transcript}
+      </div>
+    );
+  }
+  if (polling) {
+    return (
+      <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280", textAlign: "center" }}>
+        ✍️ Transcribing…
+      </div>
+    );
+  }
+  return null;
+}
+
+// =============================================================================
 // AudioCapture.tsx
 // Wrapper component used inside CaptureToolbar.
 // Handles: record → save blob → upload to server → show player.
-// transcript is NOT shown (ASR_ENABLED=false in Phase 7).
+// transcript is polled after upload (ASR enabled — karanchopda333/whisper via Ollama).
 // =============================================================================
 
 interface AudioCaptureProps {
@@ -543,7 +598,7 @@ export const AudioCapture = ({
 
   const getAuthToken = (): string => {
     // Replace with your actual auth token retrieval
-    return localStorage.getItem("access_token") ?? "";
+    return localStorage.getItem("auth_token") ?? "";
   };
 
   const uploadAudio = async (blob: Blob, durationSeconds: number) => {
@@ -556,7 +611,7 @@ export const AudioCapture = ({
       // Determine file extension from MIME type
       const ext = blob.type.includes("ogg") ? "ogg" : "webm";
       formData.append("file", blob, `recording.${ext}`);
-      formData.append("type", "audio");
+      formData.append("capture_type", "audio");
       formData.append("duration_seconds", String(Math.round(durationSeconds)));
       formData.append(`${contextType}_id`, contextId);
 
@@ -565,8 +620,8 @@ export const AudioCapture = ({
         await new Promise<void>((resolve) => {
           navigator.geolocation.getCurrentPosition(
             (pos) => {
-              formData.append("location_lat", String(pos.coords.latitude));
-              formData.append("location_lng", String(pos.coords.longitude));
+              formData.append("latitude", String(pos.coords.latitude));
+              formData.append("longitude", String(pos.coords.longitude));
               resolve();
             },
             () => resolve(), // ignore geolocation errors
@@ -634,8 +689,7 @@ export const AudioCapture = ({
             knownDurationSeconds={savedCapture.duration_seconds as number}
             showDownload={true}
           />
-          {/* NOTE: No transcript UI — ASR_ENABLED=false in Phase 7 */}
-          {/* When ASR is enabled in Phase 8+, a "Transcribing…" / transcript block goes here */}
+          <TranscriptBlock captureId={savedCapture.id} />
         </>
       )}
     </div>

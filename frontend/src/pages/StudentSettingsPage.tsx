@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
@@ -6,6 +7,7 @@ import styles from './SettingsPages.module.css';
 
 export const StudentSettingsPage = () => {
   const { t } = useTranslation('landing');
+  const { skin, setSkin, skins } = useSkin();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
@@ -71,13 +73,12 @@ export const StudentSettingsPage = () => {
           <div className={styles.settingGroup}>
             <label>{t("landing:color_scheme", "Color Scheme")}</label>
             <select
-              value={settings.colorScheme}
-              onChange={(e) => handleChange('colorScheme', e.target.value)}
+              value={skin}
+              onChange={(e) => setSkin(e.target.value as Skin)}
               className={styles.select}>
-              
-              <option value="field-guide">{t("landing:field_guide_green", "Field Guide (Green)")}</option>
-              <option value="terrain">{t("landing:terrain_orange", "Terrain (Orange)")}</option>
-              <option value="atmosphere">{t("landing:atmosphere_dark", "Atmosphere (Dark)")}</option>
+              {skins.map((s) => (
+                <option key={s} value={s}>{SKIN_LABELS[s]}</option>
+              ))}
             </select>
           </div>
 
@@ -158,6 +159,51 @@ export const StudentSettingsPage = () => {
           <div className={styles.settingGroup}>
             <p>{t("landing:password_last_changed_30_days_ago", "Password last changed: 30 days ago")}</p>
             <button className={styles.secondaryBtn}>{t("landing:change_password", "Change Password")}</button>
+          </div>
+        </section>
+
+        {/* 14d.3 — My Data section */}
+        <section className={styles.section}>
+          <h2>{t("landing:my_data", "My Data")}</h2>
+          <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
+            {t("landing:my_data_desc", "Download or delete your personal data. This cannot be undone.")}
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('auth_token')
+                  const res = await fetch('/api/v1/privacy/my-data', {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                  })
+                  const data = await res.json()
+                  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a'); a.href = url
+                  a.download = 'my-peripateticware-data.json'; a.click()
+                  URL.revokeObjectURL(url)
+                } catch { alert('Export failed') }
+              }}
+              className={styles.saveBtn}
+            >
+              {t("landing:download_my_data", "⬇ Download My Data")}
+            </button>
+            <button
+              onClick={async () => {
+                if (!confirm(t("landing:confirm_delete_data", "Delete all your personal data? This cannot be undone."))) return
+                try {
+                  const token = localStorage.getItem('auth_token')
+                  await fetch('/api/v1/privacy/my-data', {
+                    method: 'DELETE',
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                  })
+                  alert(t("landing:data_deleted", "Your data has been anonymised."))
+                } catch { alert('Deletion failed') }
+              }}
+              className={styles.dangerBtn}
+            >
+              {t("landing:delete_my_data", "🗑 Delete My Data")}
+            </button>
           </div>
         </section>
 

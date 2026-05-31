@@ -21,6 +21,7 @@ Rules are data, not code: update them through the admin UI or POST
 """
 
 import asyncio
+import uuid
 import hashlib
 import json
 import os
@@ -458,17 +459,17 @@ async def seed(engine) -> None:
                         change_log, is_active, audit_hash
                     ) VALUES (
                         :rule_id, :regulation_id, :version, :jurisdiction,
-                        :effective_date, :rule_definition::jsonb, :created_by,
+                        :effective_date, cast(:rule_definition as jsonb), :created_by,
                         :change_log, true, :audit_hash
                     )
                     ON CONFLICT (rule_id) DO NOTHING
                 """),
                 {
-                    "rule_id": rule["rule_id"],
+                    "rule_id": str(uuid.uuid5(uuid.NAMESPACE_DNS, rule["rule_id"])),
                     "regulation_id": rule["regulation_id"],
                     "version": rule["version"],
                     "jurisdiction": rule["jurisdiction"],
-                    "effective_date": rule["effective_date"],
+                    "effective_date": datetime.fromisoformat(rule["effective_date"].replace("Z", "")),
                     "rule_definition": json.dumps(rule_def),
                     "created_by": rule["created_by"],
                     "change_log": rule["change_log"],

@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS users (
                         CHECK (role IN ('STUDENT', 'TEACHER', 'PARENT', 'ADMIN')),
     avatar_url      VARCHAR(512),
     is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
+    age_group       VARCHAR(20)  NULL,
+    requires_parental_consent BOOLEAN NOT NULL DEFAULT FALSE,
     created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP    NOT NULL DEFAULT NOW()
 );
@@ -160,7 +162,10 @@ CREATE TABLE IF NOT EXISTS activities (
     inquiry_phase              TEXT,
     reflect_phase              TEXT,
     location                   VARCHAR(255),
-    due_date                   TIMESTAMP
+    due_date                   TIMESTAMP,
+    -- Student-proposed activity metadata
+    is_student_proposed        BOOLEAN      NOT NULL DEFAULT FALSE,
+    proposed_by_student_id     UUID         REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);
@@ -411,11 +416,347 @@ CREATE INDEX IF NOT EXISTS idx_activity_submissions_status      ON activity_subm
 -- ---------------------------------------------------------------------------
 INSERT INTO users (email, username, first_name, last_name, full_name, hashed_password, role, is_active)
 VALUES
-    ('student@example.com', 'student', 'Alex',     'Johnson', 'Alex Johnson',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT', TRUE),
-    ('teacher@example.com', 'teacher', 'Jane',     'Smith',   'Jane Smith',            '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'TEACHER', TRUE),
-    ('parent@example.com',  'parent',  'Margaret', 'Brown',   'Margaret Brown',        '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'PARENT',  TRUE),
-    ('admin@example.com',   'admin',   'Paul',     'Admin',   'Paul Christopher Cerda','$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'ADMIN',   TRUE)
+    ('student@example.com',    'student',    'Alex',     'Johnson', 'Alex Johnson',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE),
+    ('teacher@example.com',    'teacher',    'Jane',     'Smith',   'Jane Smith',            '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'TEACHER',    TRUE),
+    ('parent@example.com',     'parent',     'Margaret', 'Brown',   'Margaret Brown',        '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'PARENT',     TRUE),
+    ('admin@example.com',      'admin',      'Paul',     'Admin',   'Paul Christopher Cerda','$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'ADMIN',      TRUE),
+    ('homeschool@example.com', 'homeschool', 'Sarah',    'Rivera',  'Sarah Rivera',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'HOMESCHOOL', TRUE),
+    ('child1@example.com',     'emma_r',     'Emma',     'Rivera',  'Emma Rivera',           '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE),
+    ('child2@example.com',     'lucas_r',    'Lucas',    'Rivera',  'Lucas Rivera',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE)
 ON CONFLICT (email) DO NOTHING;
+
+-- Link homeschool children to their parent
+INSERT INTO homeschool_children (id, parent_id, child_id, grade_level, age_band)
+SELECT uuid_generate_v4(), p.id, c.id, grade, band
+FROM (SELECT id FROM users WHERE email = 'homeschool@example.com') p,
+     (VALUES
+       ('child1@example.com', 4, 'k6'),
+       ('child2@example.com', 7, 'm712')
+     ) AS kids(email, grade, band)
+JOIN users c ON c.email = kids.email
+ON CONFLICT (parent_id, child_id) DO NOTHING;
+
+-- ---------------------------------------------------------------------------
+-- Homeschool demo seed — activities, state standards, mappings, sessions
+-- Seeded for Sarah Rivera (homeschool@example.com) and her children:
+--   Emma Rivera  (child1@example.com, grade 4, K–6)
+--   Lucas Rivera (child2@example.com, grade 7, 7–12)
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_hs       UUID;  -- Sarah Rivera (homeschool parent)
+  v_emma     UUID;  -- Emma Rivera  (grade 4)
+  v_lucas    UUID;  -- Lucas Rivera (grade 7)
+  v_std_set  UUID := uuid_generate_v4();  -- standards set
+
+  -- Activity IDs
+  v_a1 UUID := uuid_generate_v4();  -- Creek Habitat Study       (gr 4 Science)
+  v_a2 UUID := uuid_generate_v4();  -- Map Your Neighborhood     (gr 4 Geography)
+  v_a3 UUID := uuid_generate_v4();  -- Local History Walk        (gr 4 Social Studies)
+  v_a4 UUID := uuid_generate_v4();  -- Native Plant Journal      (gr 7 Science)
+  v_a5 UUID := uuid_generate_v4();  -- Weather Station Setup     (gr 7 Earth Science)
+  v_a6 UUID := uuid_generate_v4();  -- Farmers Market Maths      (gr 7 Math)
+BEGIN
+  SELECT id INTO v_hs    FROM users WHERE email = 'homeschool@example.com' LIMIT 1;
+  SELECT id INTO v_emma  FROM users WHERE email = 'child1@example.com'     LIMIT 1;
+  SELECT id INTO v_lucas FROM users WHERE email = 'child2@example.com'     LIMIT 1;
+
+  IF v_hs IS NULL THEN RETURN; END IF;
+
+  -- ── Activities ──────────────────────────────────────────────────────────
+  INSERT INTO activities (
+    id, teacher_id, title, description, subject, grade_level,
+    activity_type, difficulty_level, estimated_duration_minutes,
+    bloom_level, assessment_type, status, is_active,
+    location_name, created_at, updated_at
+  ) VALUES
+    (v_a1, v_hs,
+     'Creek Habitat Study',
+     'Visit a local creek or drainage channel. Sketch the habitat and identify at least 5 organisms — insects, plants, birds, or fish. Use a field guide or photo ID app. Record water clarity, flow rate (fast/slow), and any signs of pollution.',
+     'Science', 4, 'discovery', 2, 75, 'analyze', 'observation', 'published', TRUE,
+     'Local creek or drainage channel', NOW() - INTERVAL '45 days', NOW() - INTERVAL '45 days'),
+
+    (v_a2, v_hs,
+     'Map Your Neighborhood',
+     'Walk a 6-block radius of your home with a blank sheet of paper. Draw a sketch map including streets, landmarks, green spaces, and points of interest. Use cardinal directions and add a legend. Compare your map to a digital map — what did you include that Google Maps misses?',
+     'Geography', 4, 'inquiry', 2, 60, 'create', 'portfolio', 'published', TRUE,
+     'Home neighbourhood', NOW() - INTERVAL '38 days', NOW() - INTERVAL '38 days'),
+
+    (v_a3, v_hs,
+     'Local History Walk',
+     'Find 3 historical markers, plaques, or buildings within 2 km of home. Photograph each and research the story behind it. Write 2–3 sentences per site explaining why it was significant. Discuss: how has the area changed since then?',
+     'Social Studies', 4, 'discovery', 2, 90, 'evaluate', 'portfolio', 'published', TRUE,
+     'Local downtown or neighbourhood', NOW() - INTERVAL '30 days', NOW() - INTERVAL '30 days'),
+
+    (v_a4, v_hs,
+     'Native Plant Journal',
+     'Over two weeks, photograph and document 8 native plants in your area. For each entry record: common name, scientific name, leaf shape, habitat, and one ecological role (e.g. food source, erosion control). Sketch at least 3 in detail.',
+     'Science', 7, 'inquiry', 3, 120, 'analyze', 'portfolio', 'published', TRUE,
+     'Local parks and wild spaces', NOW() - INTERVAL '40 days', NOW() - INTERVAL '40 days'),
+
+    (v_a5, v_hs,
+     'Weather Station Setup',
+     'Build or assemble a basic weather station (thermometer, rain gauge, wind vane). Record temperature, precipitation, and wind direction every day for 14 days. Graph the results and identify one pattern or anomaly. Compare your data to the official forecast — how close were you?',
+     'Earth Science', 7, 'inquiry', 3, 30, 'evaluate', 'portfolio', 'published', TRUE,
+     'Home or garden', NOW() - INTERVAL '50 days', NOW() - INTERVAL '50 days'),
+
+    (v_a6, v_hs,
+     'Farmers Market Mathematics',
+     'Visit a local farmers market with a $20 budget. Before buying anything, choose 5 items and calculate the best value-per-unit. Apply a 8.25% sales tax. Track what you actually spent vs. your plan. Calculate the percentage difference between the cheapest and most expensive vendor for the same item.',
+     'Mathematics', 7, 'discovery', 3, 90, 'apply', 'observation', 'published', TRUE,
+     'Local farmers market', NOW() - INTERVAL '22 days', NOW() - INTERVAL '22 days')
+  ON CONFLICT DO NOTHING;
+
+  -- ── State Reporting Standards Set ────────────────────────────────────────
+  -- Modelled on a generic US state homeschool annual report requirement.
+  INSERT INTO standards_sets (
+    id, name, description, type, owner_id, state_code, is_global,
+    source_file, source_checksum, processing_status, last_processed_at, valid_until,
+    criteria, created_at, updated_at
+  ) VALUES (
+    v_std_set,
+    'Texas Home Education Required Subjects 2025–26',
+    'Annual reporting requirements for home-educated students under Texas Education Code §26.003. Students must receive instruction in the required subjects appropriate to their grade level.',
+    'state_reporting',
+    v_hs,
+    'TX',
+    FALSE,
+    NULL,        -- source_file
+    NULL,        -- source_checksum (manually entered, no Ollama processing)
+    'complete',  -- processing_status
+    NOW(),       -- last_processed_at
+    '2026-12-31'::DATE,  -- valid_until (calendar year end for reporting requirements)
+    '[
+      {"id": "TX-LA",  "code": "TX-LA",  "subject": "Language Arts",       "description": "Reading, writing, spelling, grammar, and oral communication appropriate to grade level"},
+      {"id": "TX-MA",  "code": "TX-MA",  "subject": "Mathematics",          "description": "Arithmetic, geometry, algebra readiness, and practical mathematics"},
+      {"id": "TX-SCI", "code": "TX-SCI", "subject": "Science",              "description": "Life science, earth science, physical science with hands-on observation and inquiry"},
+      {"id": "TX-SS",  "code": "TX-SS",  "subject": "Social Studies",       "description": "Texas history, US history, geography, civics, and economics"},
+      {"id": "TX-HE",  "code": "TX-HE",  "subject": "Health Education",     "description": "Personal health, nutrition, safety, and physical fitness"},
+      {"id": "TX-FA",  "code": "TX-FA",  "subject": "Fine Arts",            "description": "Visual art, music, theatre, or dance — at least one discipline per year"},
+      {"id": "TX-PE",  "code": "TX-PE",  "subject": "Physical Education",   "description": "Regular physical activity and movement education"}
+    ]'::jsonb,
+    NOW() - INTERVAL '60 days',
+    NOW() - INTERVAL '60 days'
+  ) ON CONFLICT DO NOTHING;
+
+  -- ── Activity → Standards Mappings ────────────────────────────────────────
+  INSERT INTO activity_standards_map
+    (id, activity_id, standards_set_id, criterion_id, coverage_level, notes, mapped_by, ai_suggested)
+  VALUES
+    -- Creek Habitat Study → Science (full) + Language Arts (partial — observation journal)
+    (uuid_generate_v4(), v_a1, v_std_set, 'TX-SCI', 'full',
+     'Meets life science and earth science observation objectives through habitat identification and organism recording.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a1, v_std_set, 'TX-LA',  'partial',
+     'Field sketching and written descriptions address descriptive writing strand.', v_hs, TRUE),
+
+    -- Map Your Neighborhood → Social Studies (full) + Math (partial — scale)
+    (uuid_generate_v4(), v_a2, v_std_set, 'TX-SS',  'full',
+     'Covers geography strand: spatial thinking, cardinal directions, map-making.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a2, v_std_set, 'TX-MA',  'partial',
+     'Map scale and distance estimation addresses practical mathematics.', v_hs, TRUE),
+
+    -- Local History Walk → Social Studies (full) + Language Arts (partial)
+    (uuid_generate_v4(), v_a3, v_std_set, 'TX-SS',  'full',
+     'Addresses Texas and US history strands through primary-source sites.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a3, v_std_set, 'TX-LA',  'partial',
+     'Written site descriptions address informational writing.', v_hs, TRUE),
+
+    -- Native Plant Journal → Science (full) + Language Arts (partial)
+    (uuid_generate_v4(), v_a4, v_std_set, 'TX-SCI', 'full',
+     'Life science: classification, ecological relationships, scientific naming convention.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a4, v_std_set, 'TX-LA',  'partial',
+     'Journal entries and sketches address descriptive and scientific writing.', v_hs, TRUE),
+
+    -- Weather Station Setup → Science (full) + Math (partial)
+    (uuid_generate_v4(), v_a5, v_std_set, 'TX-SCI', 'full',
+     'Earth science strand: meteorology, data collection, pattern analysis.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a5, v_std_set, 'TX-MA',  'partial',
+     'Graphing temperature and precipitation data addresses data and statistics strand.', v_hs, TRUE),
+
+    -- Farmers Market Maths → Math (full) + Social Studies (partial — economics)
+    (uuid_generate_v4(), v_a6, v_std_set, 'TX-MA',  'full',
+     'Percentages, unit pricing, tax calculation, and budgeting address practical mathematics.', v_hs, FALSE),
+    (uuid_generate_v4(), v_a6, v_std_set, 'TX-SS',  'partial',
+     'Producer/consumer economics and market pricing address economics strand.', v_hs, TRUE)
+  ON CONFLICT ON CONSTRAINT uq_activity_standards_criterion DO NOTHING;
+
+  -- ── Learning Sessions for Emma (grade 4) ────────────────────────────────
+  INSERT INTO learning_sessions
+    (id, user_id, activity_id, title, status, location_name, created_at, updated_at, completed_at)
+  VALUES
+    (uuid_generate_v4(), v_emma, v_a1, 'Creek Habitat Study',
+     'completed', 'Barton Creek Greenbelt',
+     NOW() - INTERVAL '42 days', NOW() - INTERVAL '42 days', NOW() - INTERVAL '42 days'),
+
+    (uuid_generate_v4(), v_emma, v_a2, 'Map Your Neighborhood',
+     'completed', 'Home neighbourhood',
+     NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days', NOW() - INTERVAL '35 days'),
+
+    (uuid_generate_v4(), v_emma, v_a3, 'Local History Walk',
+     'in_progress', 'Downtown',
+     NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days', NULL)
+  ON CONFLICT DO NOTHING;
+
+  -- ── Learning Sessions for Lucas (grade 7) ────────────────────────────────
+  INSERT INTO learning_sessions
+    (id, user_id, activity_id, title, status, location_name, created_at, updated_at, completed_at)
+  VALUES
+    (uuid_generate_v4(), v_lucas, v_a4, 'Native Plant Journal — Week 1',
+     'completed', 'Zilker Park',
+     NOW() - INTERVAL '38 days', NOW() - INTERVAL '31 days', NOW() - INTERVAL '31 days'),
+
+    (uuid_generate_v4(), v_lucas, v_a4, 'Native Plant Journal — Week 2',
+     'completed', 'Bull Creek District Park',
+     NOW() - INTERVAL '30 days', NOW() - INTERVAL '24 days', NOW() - INTERVAL '24 days'),
+
+    (uuid_generate_v4(), v_lucas, v_a5, 'Weather Station — Week 1',
+     'completed', 'Home garden',
+     NOW() - INTERVAL '48 days', NOW() - INTERVAL '41 days', NOW() - INTERVAL '41 days'),
+
+    (uuid_generate_v4(), v_lucas, v_a5, 'Weather Station — Week 2',
+     'completed', 'Home garden',
+     NOW() - INTERVAL '40 days', NOW() - INTERVAL '33 days', NOW() - INTERVAL '33 days'),
+
+    (uuid_generate_v4(), v_lucas, v_a6, 'Farmers Market Mathematics',
+     'completed', 'SFC Farmers Market',
+     NOW() - INTERVAL '20 days', NOW() - INTERVAL '20 days', NOW() - INTERVAL '20 days')
+  ON CONFLICT DO NOTHING;
+
+END $$;
+
+-- ---------------------------------------------------------------------------
+-- Global state reporting requirement sets (15 states, is_global=TRUE)
+-- Owned by the admin seed user. All homeschool families in these states share
+-- these sets automatically — no upload needed.
+-- Source: bluefolder.app/guides/homeschool-records (March 2026)
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE v_admin UUID;
+BEGIN
+  SELECT id INTO v_admin FROM users WHERE role = 'ADMIN' ORDER BY created_at LIMIT 1;
+  IF v_admin IS NULL THEN RETURN; END IF;
+
+  -- TEXAS — zero regulation
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='TX' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Texas Homeschool Requirements 2025–26',
+      'Texas has no state record-keeping requirements for homeschoolers under Texas Education Code §26.003. Families are not required to notify the district, track attendance, or submit any documentation.',
+      'state_reporting',v_admin,'TX',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"TX-ATT","code":"TX-ATT","subject":"Attendance","category":"attendance","required":false,"description":"No attendance tracking required by state law. Voluntary tracking recommended.","weight":1.0},{"id":"TX-CUR","code":"TX-CUR","subject":"Curriculum","category":"curriculum","required":false,"description":"No curriculum submission or approval required.","weight":1.0},{"id":"TX-TEST","code":"TX-TEST","subject":"Testing / Evaluation","category":"testing","required":false,"description":"No standardized testing or evaluations required.","weight":1.0},{"id":"TX-PORT","code":"TX-PORT","subject":"Portfolio / Work Samples","category":"portfolio","required":false,"description":"No portfolio required. Recommended for re-enrollment or college applications.","weight":1.0},{"id":"TX-IMMU","code":"TX-IMMU","subject":"Immunization Records","category":"immunization","required":false,"description":"No state immunization record requirement for homeschoolers.","weight":1.0},{"id":"TX-TRAN","code":"TX-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"No progress reports required. High school transcripts strongly recommended.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- ILLINOIS — minimal (required subjects, no submission)
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='IL' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Illinois Homeschool Requirements 2025–26',
+      'Illinois requires specific subjects to be taught but no notifications, registration, or submissions to the district.',
+      'state_reporting',v_admin,'IL',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"IL-ATT","code":"IL-ATT","subject":"Attendance","category":"attendance","required":false,"description":"No attendance record requirement.","weight":1.0},{"id":"IL-CUR","code":"IL-CUR","subject":"Required Subjects","category":"curriculum","required":true,"description":"Must teach: language arts, math, biological/physical science, social sciences, fine arts, and physical development. No submission required.","weight":1.0},{"id":"IL-TEST","code":"IL-TEST","subject":"Testing / Evaluation","category":"testing","required":false,"description":"No standardized testing required.","weight":1.0},{"id":"IL-PORT","code":"IL-PORT","subject":"Portfolio","category":"portfolio","required":false,"description":"No portfolio required.","weight":1.0},{"id":"IL-IMMU","code":"IL-IMMU","subject":"Immunization Records","category":"immunization","required":false,"description":"No immunization requirement for homeschoolers.","weight":1.0},{"id":"IL-TRAN","code":"IL-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"No progress reports required.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- CALIFORNIA — PSA annual filing
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='CA' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'California Homeschool Requirements 2025–26',
+      'California homeschool families typically operate as a private school (PSA filing). File annually Oct 1–15.',
+      'state_reporting',v_admin,'CA',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"CA-ATT","code":"CA-ATT","subject":"Attendance","category":"attendance","required":true,"description":"Maintain attendance register. Equivalent to 175 days recommended.","weight":1.0},{"id":"CA-CUR","code":"CA-CUR","subject":"PSA Filing + Subjects","category":"curriculum","required":true,"description":"File annual Private School Affidavit (PSA) between Oct 1–15. Must teach: English, math, social sciences, science, fine arts, health, PE.","weight":1.0},{"id":"CA-TEST","code":"CA-TEST","subject":"Testing","category":"testing","required":false,"description":"No standardized testing required for PSA families.","weight":1.0},{"id":"CA-PORT","code":"CA-PORT","subject":"Portfolio","category":"portfolio","required":false,"description":"No portfolio required.","weight":1.0},{"id":"CA-IMMU","code":"CA-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain immunization records. Required for school-sponsored activities.","weight":1.0},{"id":"CA-TRAN","code":"CA-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"Transcripts required for college-bound high schoolers.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- FLORIDA — notice of intent + annual evaluation
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='FL' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Florida Homeschool Requirements 2025–26',
+      'Florida requires annual Notice of Intent to the school district and an annual evaluation (test, teacher eval, or portfolio review).',
+      'state_reporting',v_admin,'FL',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"FL-ATT","code":"FL-ATT","subject":"Attendance","category":"attendance","required":false,"description":"No specific day/hour count, but a log is recommended.","weight":1.0},{"id":"FL-CUR","code":"FL-CUR","subject":"Notice of Intent","category":"curriculum","required":true,"description":"File written Notice of Intent with school district superintendent within 30 days of beginning homeschooling and by August 1 each year.","weight":1.0},{"id":"FL-TEST","code":"FL-TEST","subject":"Annual Evaluation","category":"testing","required":true,"description":"Choose: (1) standardized test, (2) certified teacher evaluation, or (3) portfolio review. Results kept on file.","weight":1.0},{"id":"FL-PORT","code":"FL-PORT","subject":"Portfolio","category":"portfolio","required":true,"description":"Maintain a portfolio of work samples and activity log. Required if choosing portfolio evaluation.","weight":1.0},{"id":"FL-IMMU","code":"FL-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain Florida Form 680 or exemption on file.","weight":1.0},{"id":"FL-TRAN","code":"FL-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"No formal transcripts required beyond evaluation results.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- NORTH CAROLINA — annual notice + standardized test
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='NC' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'North Carolina Homeschool Requirements 2025–26',
+      'NC requires annual notice to DNPE, 9 months of instruction, immunization records, and annual standardized testing.',
+      'state_reporting',v_admin,'NC',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"NC-ATT","code":"NC-ATT","subject":"Attendance","category":"attendance","required":true,"description":"Operate for at least 9 calendar months. Maintain attendance records on file.","weight":1.0},{"id":"NC-CUR","code":"NC-CUR","subject":"DNPE Notice + Subjects","category":"curriculum","required":true,"description":"File annual notice with NC Division of Non-Public Education (DNPE). Must teach: math, language arts, science, social studies.","weight":1.0},{"id":"NC-TEST","code":"NC-TEST","subject":"Annual Standardized Test","category":"testing","required":true,"description":"Administer a nationally standardized test annually. Results kept on file for one year.","weight":1.0},{"id":"NC-PORT","code":"NC-PORT","subject":"Portfolio","category":"portfolio","required":false,"description":"No portfolio required.","weight":1.0},{"id":"NC-IMMU","code":"NC-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain current immunization record or waiver on file.","weight":1.0},{"id":"NC-TRAN","code":"NC-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"No progress reports required.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- GEORGIA — declaration + 180 days + monthly reports + testing every 3 years
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='GA' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Georgia Homeschool Requirements 2025–26',
+      'GA requires annual Declaration of Intent, 180 days of instruction, monthly progress reports, and standardized testing every 3 years.',
+      'state_reporting',v_admin,'GA',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"GA-ATT","code":"GA-ATT","subject":"Attendance","category":"attendance","required":true,"description":"180 days of instruction (4.5 hrs/day). Keep on file.","weight":1.0},{"id":"GA-CUR","code":"GA-CUR","subject":"Declaration + Subjects","category":"curriculum","required":true,"description":"Annual Declaration of Intent with local superintendent. Must teach: reading, language arts, math, social studies, science.","weight":1.0},{"id":"GA-TEST","code":"GA-TEST","subject":"Testing Every 3 Years","category":"testing","required":true,"description":"Nationally standardized test every 3 years. Results kept on file.","weight":1.0},{"id":"GA-PORT","code":"GA-PORT","subject":"Monthly Progress Reports","category":"portfolio","required":true,"description":"Maintain monthly progress reports for each required subject.","weight":1.0},{"id":"GA-IMMU","code":"GA-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain Certificate of Immunization or exemption on file.","weight":1.0},{"id":"GA-TRAN","code":"GA-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"Monthly reports satisfy progress reporting.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- VIRGINIA — annual notice + annual assessment submitted to district
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='VA' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Virginia Homeschool Requirements 2025–26',
+      'VA requires annual Notice of Intent by Aug 15 and submission of annual assessment results (test or evaluator) by Aug 1.',
+      'state_reporting',v_admin,'VA',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"VA-ATT","code":"VA-ATT","subject":"Attendance","category":"attendance","required":true,"description":"180 days of instruction per year. Keep records on file.","weight":1.0},{"id":"VA-CUR","code":"VA-CUR","subject":"Notice of Intent","category":"curriculum","required":true,"description":"File annual Notice of Intent with school division by August 15.","weight":1.0},{"id":"VA-TEST","code":"VA-TEST","subject":"Annual Assessment","category":"testing","required":true,"description":"Submit annual evidence of progress: standardized test (50th percentile+) OR licensed teacher evaluation. Submit to division by August 1.","weight":1.0},{"id":"VA-PORT","code":"VA-PORT","subject":"Portfolio (optional)","category":"portfolio","required":false,"description":"Portfolio optional — used in the teacher evaluation path.","weight":1.0},{"id":"VA-IMMU","code":"VA-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain immunization records for school-sponsored activities.","weight":1.0},{"id":"VA-TRAN","code":"VA-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"High school transcripts strongly recommended.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- OHIO — 900 hours + annual notification + assessment submitted
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='OH' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Ohio Homeschool Requirements 2025–26',
+      'OH requires annual notification to the local district, 900 instructional hours, and annual assessment results submitted to the superintendent.',
+      'state_reporting',v_admin,'OH',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"OH-ATT","code":"OH-ATT","subject":"Attendance — Hours","category":"attendance","required":true,"description":"900 instructional hours per year. Maintain a log of hours on file.","weight":1.0},{"id":"OH-CUR","code":"OH-CUR","subject":"Annual Notification + Subjects","category":"curriculum","required":true,"description":"File annual notification with local superintendent. Must teach: language arts, math, science, health, social studies, fine arts, PE.","weight":1.0},{"id":"OH-TEST","code":"OH-TEST","subject":"Annual Assessment","category":"testing","required":true,"description":"Annual assessment: standardized test OR portfolio review by certified teacher. Submit results to superintendent annually.","weight":1.0},{"id":"OH-PORT","code":"OH-PORT","subject":"Portfolio (optional)","category":"portfolio","required":false,"description":"Portfolio optional — used in the portfolio assessment path.","weight":1.0},{"id":"OH-IMMU","code":"OH-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain immunization records or signed exemption.","weight":1.0},{"id":"OH-TRAN","code":"OH-TRAN","subject":"Transcripts","category":"transcripts","required":false,"description":"High school transcripts strongly recommended.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- NEW YORK — IHIP + quarterly reports + annual assessment (highest regulation)
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='NY' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'New York Homeschool Requirements 2025–26',
+      'NY is the highest-regulation state: requires an annual IHIP, four quarterly reports, and annual assessment results submitted to the district.',
+      'state_reporting',v_admin,'NY',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"NY-ATT","code":"NY-ATT","subject":"Attendance — Hours","category":"attendance","required":true,"description":"900 hrs/year (grades 1–6) or 990 hrs/year (grades 7–12). Include hours in quarterly reports.","weight":1.0},{"id":"NY-CUR","code":"NY-CUR","subject":"IHIP Filing","category":"curriculum","required":true,"description":"File Individualized Home Instruction Plan (IHIP) with district superintendent by July 1. Must list subjects, textbooks, and instructors. 10 required subjects (gr 1–6) or 17 subjects (gr 7–12).","weight":1.0},{"id":"NY-TEST","code":"NY-TEST","subject":"Annual Assessment","category":"testing","required":true,"description":"Annual assessment: standardized test (grades 4–8 and annually thereafter) OR narrative evaluation by certified teacher. Submit results to district by June 1.","weight":1.0},{"id":"NY-PORT","code":"NY-PORT","subject":"Quarterly Progress Reports","category":"portfolio","required":true,"description":"Submit four quarterly reports to the district each year. Each report must include: hours per subject, grade or narrative per subject, and materials used.","weight":1.0},{"id":"NY-IMMU","code":"NY-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain immunization records. Required under NY Public Health Law.","weight":1.0},{"id":"NY-TRAN","code":"NY-TRAN","subject":"Transcripts","category":"transcripts","required":true,"description":"Quarterly reports constitute ongoing progress documentation. Formal transcripts required for high school graduation.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+  -- PENNSYLVANIA — notarized affidavit + portfolio + annual evaluator (highest regulation)
+  IF NOT EXISTS (SELECT 1 FROM standards_sets WHERE state_code='PA' AND type='state_reporting' AND is_global=TRUE) THEN
+    INSERT INTO standards_sets (id,name,description,type,owner_id,state_code,is_global,source_checksum,processing_status,last_processed_at,valid_until,criteria,created_at,updated_at) VALUES (
+      uuid_generate_v4(),
+      'Pennsylvania Homeschool Requirements 2025–26',
+      'PA is one of the highest-regulation states: notarized affidavit, portfolio of work samples, and annual evaluation by a licensed PA teacher or psychologist.',
+      'state_reporting',v_admin,'PA',TRUE,NULL,'complete',NOW(),'2026-12-31'::DATE,
+      '[{"id":"PA-ATT","code":"PA-ATT","subject":"Attendance — Hours","category":"attendance","required":true,"description":"900 hrs/year (elementary) or 990 hrs/year (secondary). Log of instructional hours required in portfolio.","weight":1.0},{"id":"PA-CUR","code":"PA-CUR","subject":"Notarized Affidavit","category":"curriculum","required":true,"description":"File notarized affidavit with school district superintendent by August 1. List subjects, materials, and instructor qualifications.","weight":1.0},{"id":"PA-TEST","code":"PA-TEST","subject":"Annual Evaluation","category":"testing","required":true,"description":"Annual evaluation by a licensed PA teacher or psychologist OR standardized test. Submit results to district by June 30. Student must show sustained progress.","weight":1.0},{"id":"PA-PORT","code":"PA-PORT","subject":"Portfolio of Work Samples","category":"portfolio","required":true,"description":"Maintain portfolio: activity log, work samples per subject, reading list. Portfolio reviewed by licensed evaluator as part of annual evaluation.","weight":1.0},{"id":"PA-IMMU","code":"PA-IMMU","subject":"Immunization Records","category":"immunization","required":true,"description":"Maintain immunization records or signed exemption under PA School Code.","weight":1.0},{"id":"PA-TRAN","code":"PA-TRAN","subject":"Transcripts","category":"transcripts","required":true,"description":"Annual evaluation constitutes progress documentation. Keep all evaluations permanently. Transcripts required for high school graduation.","weight":1.0}]'::jsonb,
+      NOW(),NOW()
+    );
+  END IF;
+
+END $$;
 
 INSERT INTO curriculum_units (title, description, subject, grade_level)
 VALUES
@@ -443,6 +784,117 @@ FROM teacher, (VALUES
     ('School Garden Project',     'Design and maintain a sustainable garden at school',                 'Environmental Science',3, 3, 120,'School Campus',   47.6062, -122.3321, 3)
 ) AS act(title, description, subject, grade_level, difficulty_level, duration, location_name, lat, lon, bloom_level)
 ON CONFLICT DO NOTHING;
+
+-- ---------------------------------------------------------------------------
+-- Sample student proposals — Reverse Scavenger Hunt
+-- Seeded under student@example.com (Alex Johnson) for demo purposes.
+-- One approved (with matching Activity), one pending, two drafts.
+-- ---------------------------------------------------------------------------
+DO $$
+DECLARE
+  v_student_id  UUID;
+  v_teacher_id  UUID;
+  v_activity_id UUID := uuid_generate_v4();
+  v_p1          UUID := uuid_generate_v4();
+  v_p2          UUID := uuid_generate_v4();
+  v_p3          UUID := uuid_generate_v4();
+  v_p4          UUID := uuid_generate_v4();
+BEGIN
+  SELECT id INTO v_student_id FROM users WHERE email = 'student@example.com' LIMIT 1;
+  SELECT id INTO v_teacher_id FROM users WHERE email = 'teacher@example.com' LIMIT 1;
+
+  IF v_student_id IS NULL THEN RETURN; END IF;
+
+  -- 1. APPROVED — also creates the published Activity
+  IF NOT EXISTS (SELECT 1 FROM student_proposals WHERE title = 'Stream Watch: Find 3 Native Plants') THEN
+    INSERT INTO activities (
+      id, teacher_id, title, description, subject, grade_level,
+      activity_type, difficulty_level, estimated_duration_minutes,
+      bloom_level, assessment_type, status, is_active,
+      is_student_proposed, proposed_by_student_id, created_at, updated_at
+    ) VALUES (
+      v_activity_id, v_teacher_id,
+      'Stream Watch: Find 3 Native Plants',
+      'Visit any stream or creek near your home or school. Identify at least 3 native plants growing along the bank — photograph each one and write a sentence explaining what makes it native to the region.' || E'\n\n' ||
+      '📍 Location: Any local stream, creek, or riverbank' || E'\n\n' ||
+      '💡 Proposed by: Alex Johnson',
+      'Science', 5, 'discovery', 2, 60,
+      'apply', 'observation', 'published', TRUE,
+      TRUE, v_student_id, NOW(), NOW()
+    );
+
+    INSERT INTO student_proposals (
+      id, student_id, title, challenge_description, location_hint,
+      subject, note_to_teacher, status, teacher_feedback,
+      approved_activity_id, created_at, updated_at
+    ) VALUES (
+      v_p1, v_student_id,
+      'Stream Watch: Find 3 Native Plants',
+      'Visit any stream or creek near your home or school. Identify at least 3 native plants growing along the bank — photograph each one and write a sentence explaining what makes it native to the region.',
+      'Any local stream, creek, or riverbank',
+      'Science',
+      'I did this with my family last weekend and thought it would make a great challenge for the class!',
+      'approved', '',
+      v_activity_id, NOW() - INTERVAL '5 days', NOW() - INTERVAL '3 days'
+    );
+  END IF;
+
+  -- 2. PENDING — awaiting teacher review
+  IF NOT EXISTS (SELECT 1 FROM student_proposals WHERE title = 'Shadow Tracker: Map Your Shadow at 3 Times of Day') THEN
+    INSERT INTO student_proposals (
+      id, student_id, title, challenge_description, location_hint,
+      subject, note_to_teacher, status, teacher_feedback,
+      approved_activity_id, created_at, updated_at
+    ) VALUES (
+      v_p2, v_student_id,
+      'Shadow Tracker: Map Your Shadow at 3 Times of Day',
+      'Go outside at morning, noon, and late afternoon and trace your shadow on the ground (or measure its length). Record the time, direction, and length each time. Can you explain why it changes?',
+      'Any open outdoor space — a yard, park, or school field works great',
+      'Science',
+      'We learned about the sun's movement in class and I thought this would be a fun way to see it for real.',
+      'pending', '',
+      NULL, NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'
+    );
+  END IF;
+
+  -- 3. DRAFT — still being worked on
+  IF NOT EXISTS (SELECT 1 FROM student_proposals WHERE title = 'Sidewalk Ecosystem') THEN
+    INSERT INTO student_proposals (
+      id, student_id, title, challenge_description, location_hint,
+      subject, note_to_teacher, status, teacher_feedback,
+      approved_activity_id, created_at, updated_at
+    ) VALUES (
+      v_p3, v_student_id,
+      'Sidewalk Ecosystem',
+      'Pick a 1-metre square of sidewalk or pavement and look closely. How many different living things can you find — ants, moss, weeds pushing through cracks? Sketch what you see and describe each organism.',
+      'Any sidewalk, pavement crack, or urban surface',
+      'Environmental Studies',
+      '',
+      'draft', '',
+      NULL, NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'
+    );
+  END IF;
+
+  -- 4. REJECTED with feedback — ready for revision
+  IF NOT EXISTS (SELECT 1 FROM student_proposals WHERE title = 'Find a Place That Smells Like Nature') THEN
+    INSERT INTO student_proposals (
+      id, student_id, title, challenge_description, location_hint,
+      subject, note_to_teacher, status, teacher_feedback,
+      approved_activity_id, created_at, updated_at
+    ) VALUES (
+      v_p4, v_student_id,
+      'Find a Place That Smells Like Nature',
+      'Go somewhere outside that smells interesting — the woods, a garden, near water. Describe the smell and try to figure out what''s causing it.',
+      'Anywhere outside',
+      'Science',
+      '',
+      'rejected',
+      'Love the idea! Can you add a more specific observation task — for example, identifying the source plant or describing 3 distinct smells? That would make it more measurable.',
+      NULL, NOW() - INTERVAL '4 days', NOW() - INTERVAL '3 days'
+    );
+  END IF;
+
+END $$;
 
 -- ===========================================================================
 -- Phase 5 / 6 / 7 tables — appended to complete the schema
@@ -958,6 +1410,115 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_admin  ON admin_sessions(admin_id);
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_token  ON admin_sessions(token_hash);
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expiry ON admin_sessions(expires_at);
+
+-- ---------------------------------------------------------------------------
+-- standards_sets
+-- ---------------------------------------------------------------------------
+-- Stores both teacher-created rubric standards and homeschool state-reporting
+-- requirements.  criteria is a JSONB array of {id, code, description, subject}
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS standards_sets (
+    id                  UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name                VARCHAR(255) NOT NULL,
+    description         TEXT,
+    -- type values:
+    --   'state_standards'  — official academic standards (TEKS, NGSS, etc.)
+    --                        shared globally; uploaded once per state by admin/teacher
+    --   'state_reporting'  — homeschool annual reporting requirements (vary by state)
+    --                        personal to a homeschool parent, or global if admin uploads
+    --   'rubric'           — teacher-created assessment rubric
+    --   'custom'           — any other custom criteria set
+    type                VARCHAR(50)  NOT NULL,
+    owner_id            UUID         REFERENCES users(id) ON DELETE SET NULL,
+    state_code          VARCHAR(10),
+    is_global           BOOLEAN      NOT NULL DEFAULT FALSE,
+    source_file         VARCHAR(512),
+    -- SHA-256 hex digest of the uploaded source file.
+    -- On re-upload, if checksum matches the stored value the Ollama extraction
+    -- step is skipped and the cached criteria are returned immediately.
+    source_checksum     VARCHAR(64),
+    -- Ollama extraction lifecycle
+    -- 'pending'    — file uploaded, extraction queued
+    -- 'processing' — Ollama is running
+    -- 'complete'   — criteria extracted and cached in criteria JSONB
+    -- 'failed'     — extraction failed; criteria may be empty
+    processing_status   VARCHAR(20)  NOT NULL DEFAULT 'complete',
+    last_processed_at   TIMESTAMP,
+    -- Academic validity window.
+    -- state_standards  → defaults to July 31 of the current school year
+    -- state_reporting  → defaults to December 31 of the current calendar year
+    -- rubric/custom    → NULL (no expiry)
+    -- When NOW() > valid_until the set is considered stale; the UI prompts
+    -- the owner to re-verify or re-upload.
+    valid_until         DATE,
+    criteria            JSONB        NOT NULL DEFAULT '[]',
+    created_at          TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_standards_sets_owner  ON standards_sets(owner_id);
+CREATE INDEX IF NOT EXISTS idx_standards_sets_type   ON standards_sets(type);
+
+-- ---------------------------------------------------------------------------
+-- activity_standards_map
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS activity_standards_map (
+    id               UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    activity_id      UUID         NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+    standards_set_id UUID         NOT NULL REFERENCES standards_sets(id) ON DELETE CASCADE,
+    criterion_id     VARCHAR(100) NOT NULL,
+    coverage_level   VARCHAR(50)  DEFAULT 'partial',
+    notes            TEXT,
+    mapped_by        UUID         REFERENCES users(id) ON DELETE SET NULL,
+    ai_suggested     BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_activity_standards_criterion
+        UNIQUE (activity_id, standards_set_id, criterion_id)
+);
+CREATE INDEX IF NOT EXISTS idx_asm_activity   ON activity_standards_map(activity_id);
+CREATE INDEX IF NOT EXISTS idx_asm_standards  ON activity_standards_map(standards_set_id);
+
+-- ---------------------------------------------------------------------------
+-- homeschool_children
+-- ---------------------------------------------------------------------------
+-- Links a HOMESCHOOL-role parent to the child STUDENT accounts they own.
+-- Created here for fresh installs; main.py startup DDL also creates it
+-- idempotently for existing volumes.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS homeschool_children (
+    id           UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    parent_id    UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    child_id     UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    grade_level  INTEGER      DEFAULT 0,
+    age_band     VARCHAR(10)  DEFAULT 'k6',
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW(),
+    UNIQUE(parent_id, child_id)
+);
+CREATE INDEX IF NOT EXISTS idx_hs_children_parent ON homeschool_children(parent_id);
+CREATE INDEX IF NOT EXISTS idx_hs_children_child  ON homeschool_children(child_id);
+
+-- ---------------------------------------------------------------------------
+-- student_proposals  (Reverse Scavenger Hunt)
+-- ---------------------------------------------------------------------------
+-- Students propose place-based challenges. Teacher approves → becomes Activity.
+-- States: draft → pending → approved | rejected
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS student_proposals (
+    id                   UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id           UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title                VARCHAR(255) NOT NULL,
+    challenge_description TEXT        NOT NULL,
+    location_hint        VARCHAR(500) DEFAULT '',
+    subject              VARCHAR(100) DEFAULT 'General',
+    note_to_teacher      TEXT         DEFAULT '',
+    status               VARCHAR(20)  NOT NULL DEFAULT 'draft'
+                             CHECK (status IN ('draft','pending','approved','rejected')),
+    teacher_feedback     TEXT         DEFAULT '',
+    approved_activity_id UUID         REFERENCES activities(id) ON DELETE SET NULL,
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_proposals_student ON student_proposals(student_id);
+CREATE INDEX IF NOT EXISTS idx_proposals_status  ON student_proposals(status);
 
 -- ===========================================================================
 -- Verification

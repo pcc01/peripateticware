@@ -4,14 +4,15 @@
 
 """Learning sessions routes"""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import uuid
 from core.database import get_db
+from core.dependencies import get_current_user
 from models.database import LearningSession, User, TripleJoinRecord
 import logging
 
@@ -286,3 +287,85 @@ async def get_inquiry_log(
         )
 
 
+
+
+# ── Session monitoring events (M-14) ──────────────────────────────────────
+
+class SessionEventCreate(BaseModel):
+    event_type: str  # phase_started | phase_completed | capture_added | geofence_exit
+    phase: Optional[str] = None
+    metadata: Optional[dict] = None
+
+class SessionEventResponse(BaseModel):
+    id: str
+    session_id: str
+    event_type: str
+    phase: Optional[str]
+    metadata: Optional[dict]
+    created_at: str
+
+@router.post("/{session_id}/events", status_code=201)
+async def log_session_event(
+    session_id: str,
+    body: SessionEventCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Student fires events during a session — teacher dashboard polls these."""
+    try:
+        await db.execute(text("""
+            CREATE TABLE IF NOT EXISTS session_events (
+                id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                session_id  UUID NOT NULL,
+                student_id  UUID,
+                event_type  VARCHAR(50) NOT NULL,
+                phase       VARCHAR(30),
+                metadata    JSONB,
+                created_at  TIMESTAMP DEFAULT NOW()
+            )
+        """))
+        result = await db.execute(
+            text("""
+                INSERT INTO session_events (session_id, student_id, event_type, phase, metadata)
+                VALUES (:sid, :uid, :etype, :phase, :meta::jsonb)
+                RETURNING id, created_at
+            """),
+            {
+                "sid": session_id,
+                "uid": str(current_user.id),
+                "etype": body.event_type,
+                "phase": body.phase,
+                "meta": __import__('json').dumps(body.metadata or {}),
+            }
+        )
+        row = result.fetchone()
+        await db.commit()
+        return {"id": str(row[0]), "created_at": str(row[1])}
+    except Exception as e:
+        logger.error(f"Event log error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to log event")
+
+
+@router.get("/{session_id}/events")
+async def get_session_events(
+    session_id: str,
+    since: Optional[str] = Query(None, description="ISO timestamp — return events after this time"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Teacher polls this to see live student progress."""
+    try:
+        where = "WHERE session_id = :sid"
+        params: dict = {"sid": session_id}
+        if since:
+            where += " AND created_at > :since::timestamp"
+            params["since"] = since
+        result = await db.execute(
+            text(f"SELECT * FROM session_events {where} ORDER BY created_at ASC"),
+            params
+        )
+        rows = result.mappings().all()
+        return {"events": [dict(r) for r in rows], "count": len(rows)}
+    except Exception as e:
+        logger.error(f"Events fetch error: {e}")
+        return {"events": [], "count": 0}

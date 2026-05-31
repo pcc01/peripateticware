@@ -36,7 +36,7 @@ i18n
     fallbackLng: 'en',
     lng: 'en',
     defaultNS: 'landing',
-    ns: ['landing'],
+    ns: ['landing', 'STUDENT', 'TEACHER', 'common', 'curriculum'],
     backend: {
       // CRITICAL FIX: Use /locales path (Vite serves /public at /)
       // NOT ./locales or /public/locales

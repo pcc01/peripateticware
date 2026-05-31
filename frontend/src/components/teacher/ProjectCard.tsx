@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -176,9 +177,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Timeline Info */}
       <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 mb-3">
-        <p>{t("landing:start", "Start:")}{new Date(project.start_date).toLocaleDateString()}</p>
+        <p>{t("landing:start", "Start:")}{fmtDate(project.start_date)}</p>
         {project.end_date &&
-        <p>{t("landing:end", "End:")}{new Date(project.end_date).toLocaleDateString()}</p>
+        <p>{t("landing:end", "End:")}{fmtDate(project.end_date)}</p>
         }
       </div>
 

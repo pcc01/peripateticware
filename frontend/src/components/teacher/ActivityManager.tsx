@@ -36,11 +36,35 @@ const ActivityManager = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 14e.3 — Privacy compliance badge: debounced check when location or grade changes
+  useEffect(() => {
+    if (complianceTimer) clearTimeout(complianceTimer)
+    const timer = setTimeout(async () => {
+      try {
+        const token = localStorage.getItem('auth_token')
+        const res = await fetch('/api/v1/activities/check-compliance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({
+            location_name: formData.location_name || '',
+            grade_level: formData.grade_level || 0,
+            data_types: ['location', 'audio', 'photo'],
+          }),
+        })
+        if (res.ok) setCompliance(await res.json())
+      } catch { /* non-fatal */ }
+    }, 1200)
+    setComplianceTimer(timer)
+    return () => clearTimeout(timer)
+  }, [formData.location_name, formData.grade_level])
   const [submitError, setSubmitError] = useState('');
   const [newMaterial, setNewMaterial] = useState('');
   const [newObjective, setNewObjective] = useState('');
   const [newResource, setNewResource] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [compliance, setCompliance] = useState<{ status: 'compliant'|'review'|'blocked'; issues: string[] } | null>(null);
+  const [complianceTimer, setComplianceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   // Load existing activity if editing
   useEffect(() => {
@@ -199,6 +223,23 @@ const ActivityManager = () => {
       <p className="text-gray-600 mb-6">
         {isEditing ? 'Update your activity details' : 'Create a new educational activity'}
       </p>
+
+      {/* 14e.3 — Privacy compliance badge */}
+      {compliance && (
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-4 text-sm font-medium ${
+          compliance.status === 'compliant' ? 'bg-green-50 text-green-700 border border-green-200' :
+          compliance.status === 'review'    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                             'bg-red-50 text-red-700 border border-red-200'
+        }`}>
+          <span>{compliance.status === 'compliant' ? '✅' : compliance.status === 'review' ? '⚠️' : '🚫'}</span>
+          <span>{compliance.status === 'compliant' ? t("landing:privacy_compliant","Privacy Compliant") :
+                 compliance.status === 'review'    ? t("landing:privacy_review_needed","Privacy Review Needed") :
+                                                    t("landing:privacy_blocked","Privacy Issue — Review Required")}</span>
+          {compliance.issues.length > 0 && (
+            <span className="ml-1 text-xs opacity-75">({compliance.issues.slice(0,2).join('; ')})</span>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg p-8 shadow">
         {/* Error Alert */}
@@ -583,6 +624,15 @@ const ActivityManager = () => {
 
         {/* Buttons */}
         <div className="flex gap-3 pt-6 border-t border-gray-200">
+          {isEditing && id && (
+            <button
+              type="button"
+              onClick={() => navigate(`/teacher/activities/${id}/student-preview`)}
+              className="px-5 py-3 border rounded-lg font-semibold text-sm transition-colors hover:bg-gray-50"
+              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
+              👁 {t("landing:preview_as_student", "Preview as Student")}
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting || loading}

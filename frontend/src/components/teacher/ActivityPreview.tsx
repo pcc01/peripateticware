@@ -1,3 +1,4 @@
+import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
@@ -210,11 +211,11 @@ const ActivityPreview = () => {
           <div className="grid grid-cols-2 gap-6 text-sm">
             <div>
               <p className="text-gray-600 font-semibold">{t("landing:created", "Created")}</p>
-              <p className="text-gray-900">{new Date(currentActivity.created_at).toLocaleDateString()}</p>
+              <p className="text-gray-900">{fmtDate(currentActivity.created_at)}</p>
             </div>
             <div>
               <p className="text-gray-600 font-semibold">{t("landing:activitypreview.last_updated", "Last Updated")}</p>
-              <p className="text-gray-900">{new Date(currentActivity.updated_at).toLocaleDateString()}</p>
+              <p className="text-gray-900">{fmtDate(currentActivity.updated_at)}</p>
             </div>
             <div>
               <p className="text-gray-600 font-semibold">{t("landing:shareable", "Shareable")}</p>

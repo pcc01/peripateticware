@@ -7,14 +7,22 @@ Admin Routes - Environment management, auth, and LLM testing
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import os
 import json
-from datetime import datetime, timedelta
+import hashlib
+import secrets
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 import bcrypt
 import httpx
 from pathlib import Path
+from uuid import uuid4
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, delete
+from core.database import get_db
+from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
@@ -129,18 +137,37 @@ DEMO_ADMIN = {
     "created_at": datetime.now(),
 }
 
-ADMIN_SESSIONS: Dict[str, Dict] = {}  # token -> {user_id, expires_at}
-
-
 def verify_password(plain_password: str, password_hash: str) -> bool:
     """Verify password against bcrypt hash"""
     return bcrypt.checkpw(plain_password.encode(), password_hash.encode())
 
 
 def generate_session_token() -> str:
-    """Generate a simple session token"""
-    import secrets
+    """Generate a secure session token"""
     return secrets.token_urlsafe(32)
+
+
+def hash_token(token: str) -> str:
+    """SHA-256 hash of token for safe storage in DB"""
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+async def verify_admin_token_db(token: str, db: AsyncSession) -> str:
+    """Verify admin session token against DB — returns admin_id string."""
+    from models.database import AdminSession, AdminUserModel
+    if not token:
+        raise HTTPException(status_code=401, detail="Admin token required")
+    token_hash = hash_token(token)
+    result = await db.execute(
+        select(AdminSession).where(
+            AdminSession.token_hash == token_hash,
+            AdminSession.expires_at > datetime.now(timezone.utc).replace(tzinfo=None),
+        )
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid or expired admin session")
+    return str(session.admin_id)
 
 
 # ============================================================================
@@ -148,51 +175,78 @@ def generate_session_token() -> str:
 # ============================================================================
 
 @router.post("/auth/login", response_model=Dict[str, Any])
-async def admin_login(credentials: AdminLogin):
-    """Login to admin panel"""
-    if credentials.username != DEMO_ADMIN["username"]:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+async def admin_login(credentials: AdminLogin, db: AsyncSession = Depends(get_db)):
+    """Login to admin panel — creates a DB-persisted session."""
+    from models.database import AdminUserModel, AdminSession
 
-    if not verify_password(credentials.password, DEMO_ADMIN["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    # Look up admin user in DB first; fall back to DEMO_ADMIN if table is empty
+    result = await db.execute(
+        select(AdminUserModel).where(AdminUserModel.username == credentials.username)
+    )
+    db_admin = result.scalar_one_or_none()
 
-    # Create session
+    if db_admin:
+        if not verify_password(credentials.password, db_admin.password_hash):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        if not db_admin.is_active:
+            raise HTTPException(status_code=401, detail="Account inactive")
+        admin_id = str(db_admin.id)
+        db_admin.last_login = datetime.now()
+    else:
+        # Fall back to in-code DEMO_ADMIN (first boot before migrations run)
+        if credentials.username != DEMO_ADMIN["username"]:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        if not verify_password(credentials.password, DEMO_ADMIN["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        admin_id = DEMO_ADMIN["id"]
+
+    # Create DB-persisted session
     token = generate_session_token()
-    ADMIN_SESSIONS[token] = {
-        "user_id": DEMO_ADMIN["id"],
-        "expires_at": datetime.now() + timedelta(hours=8),
-    }
+    token_hash = hash_token(token)
+    expires_at = datetime.now() + timedelta(hours=8)
+
+    session = AdminSession(
+        id=uuid4(),
+        admin_id=admin_id if db_admin is None else db_admin.id,
+        token_hash=token_hash,
+        expires_at=expires_at,
+        created_at=datetime.now(),
+    )
+    db.add(session)
+    try:
+        await db.commit()
+    except Exception:
+        # Graceful fallback if admin_sessions table doesn't exist yet
+        await db.rollback()
 
     return {
         "token": token,
         "user": {
-            "id": DEMO_ADMIN["id"],
-            "username": DEMO_ADMIN["username"],
-            "role": DEMO_ADMIN["role"],
+            "id": admin_id,
+            "username": credentials.username,
+            "role": "admin",
         },
-        "expires_at": ADMIN_SESSIONS[token]["expires_at"].isoformat(),
+        "expires_at": expires_at.isoformat(),
     }
 
 
 @router.post("/auth/logout")
-async def admin_logout(token: str = None):
-    """Logout from admin panel"""
-    if token in ADMIN_SESSIONS:
-        del ADMIN_SESSIONS[token]
+async def admin_logout(token: str = None, db: AsyncSession = Depends(get_db)):
+    """Logout from admin panel — deletes DB session."""
+    if token:
+        from models.database import AdminSession
+        token_hash = hash_token(token)
+        await db.execute(delete(AdminSession).where(AdminSession.token_hash == token_hash))
+        try:
+            await db.commit()
+        except Exception:
+            await db.rollback()
     return {"message": "Logged out"}
 
 
-def verify_admin_token(token: str) -> str:
-    """Verify admin session token - returns user_id"""
-    if not token or token not in ADMIN_SESSIONS:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
-    session = ADMIN_SESSIONS[token]
-    if datetime.now() > session["expires_at"]:
-        del ADMIN_SESSIONS[token]
-        raise HTTPException(status_code=401, detail="Session expired")
-
-    return session["user_id"]
+async def verify_admin_token(token: str = None, db: AsyncSession = Depends(get_db)) -> str:
+    """FastAPI dependency — verifies admin token against DB, returns admin_id."""
+    return await verify_admin_token_db(token, db)
 
 
 # ============================================================================
@@ -200,9 +254,9 @@ def verify_admin_token(token: str) -> str:
 # ============================================================================
 
 @router.get("/env", response_model=list[EnvCategory])
-async def get_env_variables(token: str = None):
+async def get_env_variables(token: str = None, db: AsyncSession = Depends(get_db)):
     """Get all environment variables grouped by category"""
-    verify_admin_token(token)
+    await verify_admin_token_db(token, db)
 
     env_vars: Dict[str, list] = {}
 
@@ -243,10 +297,11 @@ async def get_env_variables(token: str = None):
 async def update_env_variable(
     key: str,
     body: Dict[str, str] = Body(...),
-    token: str = None
+    token: str = None,
+    db: AsyncSession = Depends(get_db),
 ):
     """Update an environment variable (with confirmation)"""
-    verify_admin_token(token)
+    await verify_admin_token_db(token, db)
 
     new_value = body.get("value", "")
 
@@ -292,9 +347,9 @@ async def update_env_variable(
 # ============================================================================
 
 @router.post("/llm/test", response_model=LLMTestResponse)
-async def test_llm_provider(request: LLMTestRequest, token: str = None):
+async def test_llm_provider(request: LLMTestRequest, token: str = None, db: AsyncSession = Depends(get_db)):
     """Test LLM provider (Ollama or Claude)"""
-    verify_admin_token(token)
+    await verify_admin_token_db(token, db)
 
     start_time = datetime.now()
 
@@ -402,4 +457,221 @@ async def admin_health():
         "timestamp": datetime.now().isoformat(),
         "llm_provider": os.getenv("LLM_PROVIDER", "ollama"),
         "environment": os.getenv("ENVIRONMENT", "development"),
+    }
+
+
+# ============================================================================
+# JWT-AUTHENTICATED ADMIN ENDPOINTS (called by the main admin frontend)
+# These use the standard Bearer token, not the admin panel token.
+# They require the authenticated user to have role=ADMIN.
+# ============================================================================
+
+def _require_admin_role(current_user) -> None:
+    if current_user.role.upper() != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin role required")
+
+
+@router.get("/dashboard")
+async def admin_dashboard(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin overview dashboard — user counts, activity counts, system status."""
+    from models.database import User, Activity, LearningSession
+    _require_admin_role(current_user)
+
+    from sqlalchemy import text as _text
+    total_users = (await db.execute(_text("SELECT COUNT(*) FROM users"))).scalar() or 0
+    teachers    = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'TEACHER'"))).scalar() or 0
+    students    = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'STUDENT'"))).scalar() or 0
+    parents     = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'PARENT'"))).scalar() or 0
+    total_activities = (await db.execute(_text("SELECT COUNT(*) FROM activities"))).scalar() or 0
+    published   = (await db.execute(_text("SELECT COUNT(*) FROM activities WHERE LOWER(status::text) = 'published'"))).scalar() or 0
+    sessions    = (await db.execute(_text("SELECT COUNT(*) FROM learning_sessions"))).scalar() or 0
+
+    return {
+        # Field names match AdminDashboardData frontend type
+        "users_count": total_users,
+        "activities_count": total_activities,
+        "sessions_count": sessions,
+        "analytics": {
+            "total_users": total_users,
+            "total_teachers": teachers,
+            "total_students": students,
+            "total_parents": parents,
+            "total_activities": total_activities,
+            "total_sessions": sessions,
+            "average_session_attendance": 0,
+            "system_uptime": 100,
+            "database_size": "N/A",
+        },
+        "recent_users": [],
+        # Legacy fields kept for any other consumers
+        "by_role": {"teacher": teachers, "student": students, "parent": parents},
+        "published_activities": published,
+        "system_status": "healthy",
+        "llm_provider": os.environ.get("LLM_PROVIDER", "ollama"),
+        "environment": os.environ.get("ENVIRONMENT", "development"),
+    }
+
+
+@router.get("/users")
+async def list_admin_users(
+    skip: int = 0,
+    limit: int = 20,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all users with pagination."""
+    from models.database import User
+    _require_admin_role(current_user)
+
+    total = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
+    result = await db.execute(select(User).offset(skip).limit(limit).order_by(User.created_at.desc()))
+    users = result.scalars().all()
+
+    return {
+        "items": [
+            {
+                "id": str(u.id),
+                "email": u.email,
+                "username": u.username,
+                "full_name": u.full_name,
+                "role": u.role,
+                "is_active": u.is_active,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+            }
+            for u in users
+        ],
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+    }
+
+
+@router.post("/users")
+async def create_admin_user(
+    body: Dict[str, Any] = Body(...),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a user (admin action)."""
+    from models.database import User
+    from core.security import SecurityManager
+    _require_admin_role(current_user)
+
+    user = User(
+        id=uuid4(),
+        email=body["email"].lower(),
+        username=body.get("username", body["email"].split("@")[0]),
+        hashed_password=SecurityManager.hash_password(body.get("password", "TempPass123!")),
+        full_name=body.get("full_name", ""),
+        role=body.get("role", "STUDENT").upper(),
+        is_active=True,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return {"id": str(user.id), "email": user.email, "role": user.role}
+
+
+@router.put("/users/{user_id}")
+async def update_admin_user(
+    user_id: str,
+    body: Dict[str, Any] = Body(...),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update a user (admin action)."""
+    from models.database import User
+    _require_admin_role(current_user)
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    for field in ("full_name", "role", "is_active"):
+        if field in body:
+            setattr(user, field, body[field])
+    user.updated_at = datetime.now()
+    await db.commit()
+    return {"id": str(user.id), "email": user.email, "role": user.role, "is_active": user.is_active}
+
+
+@router.delete("/users/{user_id}", status_code=204)
+async def delete_admin_user(
+    user_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a user (admin action)."""
+    from models.database import User
+    _require_admin_role(current_user)
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    await db.delete(user)
+    await db.commit()
+
+
+@router.get("/classes")
+async def list_admin_classes(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all classes across all teachers."""
+    from models.database import Class as ClassModel
+    _require_admin_role(current_user)
+    from sqlalchemy import text as _t
+    result = await db.execute(_t("""
+        SELECT c.id, c.name, c.description, c.grade_level, c.school_year,
+               c.is_active, c.created_at,
+               u.full_name AS teacher_name,
+               COUNT(DISTINCT ce.student_id) AS student_count
+        FROM classes c
+        LEFT JOIN users u ON u.id = c.teacher_id
+        LEFT JOIN class_enrollments ce ON ce.class_id = c.id
+        GROUP BY c.id, u.full_name
+        ORDER BY c.name
+    """))
+    rows = result.mappings().all()
+    return [
+        {
+            "id": str(r["id"]),
+            "name": r["name"],
+            "description": r["description"],
+            "grade_level": r["grade_level"],
+            "school_year": r["school_year"],
+            "is_active": r["is_active"],
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            "teacher_name": r["teacher_name"],
+            "student_count": r["student_count"] or 0,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/analytics")
+async def admin_analytics(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """System-wide analytics snapshot."""
+    from models.database import User, Activity, LearningSession
+    _require_admin_role(current_user)
+
+    active_users = (await db.execute(select(func.count()).where(User.is_active == True))).scalar() or 0
+    completed_sessions = (await db.execute(
+        select(func.count()).where(LearningSession.status == "completed")
+    )).scalar() or 0
+
+    return {
+        "active_users": active_users,
+        "completed_sessions": completed_sessions,
+        "storage_used_mb": 0,
+        "api_requests_today": 0,
     }

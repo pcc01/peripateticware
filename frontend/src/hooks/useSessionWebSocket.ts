@@ -39,7 +39,7 @@ export const useSessionWebSocket = (sessionId: string | null, enabled: boolean =
 
   // Get WebSocket URL from environment
   const getWebSocketURL = useCallback(() => {
-    const baseURL = process.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+    const baseURL = '/api/v1'
     const wsURL = baseURL.replace(/^http/, 'ws')
     return `${wsURL}/sessions/${sessionId}/monitor`
   }, [sessionId])

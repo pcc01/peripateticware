@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand'
+import { create } from 'zustand'
 
 /**
  * Peripateticware Auth Store â€” Zustand
@@ -53,6 +53,7 @@ export interface AuthStore {
     last_name?: string
     name?: string
     role?: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN'
+    age_group?: string
   }) => Promise<void>
 
   logout: () => void
