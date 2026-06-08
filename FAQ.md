@@ -29,7 +29,7 @@ This is a "source-available" license, which means:
 - Personal learning projects
 
 **Not Free For:**
-- School districts and charter management organizations (entities managing 5+ classrooms)
+- School districts and charter management organizations (entities managing 2+ classrooms)
 - Companies offering it as a service (SaaS)
 - Reselling or rebranding
 
