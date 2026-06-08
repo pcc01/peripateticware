@@ -664,7 +664,7 @@ Features considered for roadmap based on demand and alignment with vision.
 - Personal use
 
 **Commercial Licensing:**
-- Schools (5+ classrooms)
+- Schools (2+ classrooms)
 - Districts
 - Educational publishers
 - EdTech companies
@@ -686,13 +686,13 @@ Contact Paul Christopher Cerda for corporate licensing.
 
 ### **Can universities use it?**
 
-Yes! Universities fall under "Institutional Entities" if they manage 5+ classrooms/courses.
+Yes! Universities fall under "Institutional Entities" if they manage 2+ classrooms/courses.
 
 Commercial licensing applies. Contact Paul Christopher Cerda for academic pricing.
 
 ### **What about non-profit schools?**
 
-Non-profit schools are still "Institutional Entities" if managing 5+ classrooms.
+Non-profit schools are still "Institutional Entities" if managing 2+ classrooms.
 
 Commercial licensing required, but non-profit discounts available.
 
