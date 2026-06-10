@@ -1,0 +1,237 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERIPATETICWARE: Local Development with Ollama + Docker
+# ═══════════════════════════════════════════════════════════════════════════
+# USAGE:
+#   1. Start Ollama on host: ollama serve (Windows: run Ollama app)
+#   2. In project root: docker-compose up -d
+#   3. Access app at: http://localhost:3000
+#   4. Login: student@example.com / SecurePass123!
+#
+# SWITCHING TO CLAUDE API:
+#   1. Set ANTHROPIC_API_KEY in .env
+#   2. Change LLM_PROVIDER=claude in .env
+#   3. Run: docker-compose restart backend
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+services:
+  # ────────────────────────────────────────────────────────────────────────
+  # PostgreSQL + pgvector (with automatic user initialization)
+  # ────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: peripateticware-postgres
+    environment:
+      # ✅ FIXED: Explicitly set these to ensure user is created
+      POSTGRES_DB: ${DB_NAME:-peripateticware}
+      POSTGRES_USER: ${DB_USER:-peripateticware_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-peripateticware_secure_password_dev}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Persistent database storage
+      - postgres_data:/var/lib/postgresql/data
+      # Initialize database on first run
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-peripateticware_user} -d ${DB_NAME:-peripateticware}"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    networks:
+      - peripateticware
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ────────────────────────────────────────────────────────────────────────
+  # Redis Cache
+  # ────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: peripateticware-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - peripateticware
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ────────────────────────────────────────────────────────────────────────
+  # FastAPI Backend
+  # ────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      # Force rebuild: docker-compose build --no-cache backend
+    container_name: peripateticware-backend
+    env_file:
+      - .env
+    # ✅ FIXED: Ensure postgres and redis are healthy before starting backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # ── Core Configuration ───────────────────────────────────────────────
+      PYTHONPATH: /app
+      # Force Python to ignore stale .pyc bytecode by redirecting cache to a fresh dir
+      PYTHONPYCACHEPREFIX: /tmp/pycache
+      # ✅ FIXED: Use asyncpg driver (async-compatible)
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-peripateticware_user}:${DB_PASSWORD:-peripateticware_secure_password_dev}@postgres:5432/${DB_NAME:-peripateticware}
+      REDIS_URL: redis://redis:6379/0
+      PYTHONUNBUFFERED: 1
+
+      # ── LLM Provider ─────────────────────────────────────────────────────
+      # Default: Use Ollama on host machine
+      # IMPORTANT: Ollama must be running on your host before starting containers
+      # Mac/Linux: ollama pull mistral && ollama serve
+      # Windows:   Run Ollama desktop app (https://ollama.ai)
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      
+      # Ollama Local (on Host) - Container reaches it via host.docker.internal
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL_TEXT: ${OLLAMA_MODEL_TEXT:-mistral}
+      OLLAMA_MODEL_VISION: ${OLLAMA_MODEL_VISION:-llava}
+      OLLAMA_TIMEOUT: 300
+
+      # Claude API (Anthropic) - for fallback/testing
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-4-20250514}
+      CLAUDE_MAX_TOKENS: 2048
+
+      # ── Security & CORS ──────────────────────────────────────────────────
+      # ✅ FIXED: Ensure these JWT secrets are set from .env
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
+      CORS_ORIGINS: '["http://localhost:3000", "http://localhost:19000", "http://localhost:19006", "http://localhost", "http://localhost:80", "*"]'
+      ALLOWED_HOSTS: '["*"]'
+
+      # ── Application Configuration ────────────────────────────────────────
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: "True"
+      LOG_LEVEL: INFO
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+
+      # ── Email / SMTP ─────────────────────────────────────────────────────
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@peripateticware.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Peripateticware}
+      EMAIL_DRY_RUN: ${EMAIL_DRY_RUN:-true}
+      API_BASE_URL: http://localhost:8000
+
+      # ── Media & Audio ────────────────────────────────────────────────────
+      MEDIA_ROOT: /app/media
+      AUDIO_ENABLED: "true"
+      AUDIO_MAX_DURATION_SECONDS: "30"
+      AUDIO_MAX_FILE_SIZE_MB: "5"
+      ASR_ENABLED: "true"
+      OLLAMA_MODEL_AUDIO: "karanchopda333/whisper:latest"
+
+      # ── Image Compression ────────────────────────────────────────────────
+      IMAGE_MAX_DIMENSION_PX: "1920"
+      IMAGE_JPEG_QUALITY: "82"
+      IMAGE_PNG_COMPRESS_LEVEL: "7"
+      IMAGE_WEBP_QUALITY: "80"
+      IMAGE_MAX_FILE_SIZE_MB: "20"
+
+      # ── Feature Flags ────────────────────────────────────────────────────
+      FIELD_NOTES_ENABLED: "true"
+      PEER_PROJECTS_ENABLED: "true"
+      DEFAULT_PEER_PROJECT_APPROVAL_MODE: "teacher_gate"
+      DEFAULT_MAX_ACTIVE_SELF_PROJECTS: "2"
+
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - media_files:/app/media
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - peripateticware
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ────────────────────────────────────────────────────────────────────────
+  # React Frontend (Vite)
+  # ────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: peripateticware-frontend
+    depends_on:
+      - backend
+    environment:
+      # Server-side proxy target — Vite dev server forwards /auth/* and /api/* here.
+      # Must be the Docker service name; "localhost" inside this container is NOT the backend.
+      VITE_PROXY_TARGET: http://backend:8000
+      # Browser-side URLs — used by client code for direct fetch/axios calls.
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost/api}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    #  - ./frontend/src:/app/src
+     # - ./frontend/public:/app/public
+      #- ./frontend/index.html:/app/index.html
+      #- ./frontend/vite.config.ts:/app/vite.config.ts
+    networks:
+      - peripateticware
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  peripateticware:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_files:
