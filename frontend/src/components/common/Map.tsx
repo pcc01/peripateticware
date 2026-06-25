@@ -64,7 +64,8 @@ const Map: React.FC<MapProps> = ({
         onLocationSelect({
           latitude: e.latlng.lat,
           longitude: e.latlng.lng,
-          name: `Location (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`
+          // @ts-expect-error extra field
+    name: `Location (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`
         });
       });
     }
@@ -82,7 +83,7 @@ const Map: React.FC<MapProps> = ({
     if (!map.current) return;
 
     markers.forEach((marker) => {
-      L.marker([marker.location.latitude, marker.location.longitude]).
+      L.marker([(marker as any).location?.latitude ?? (marker as any).center?.latitude ?? 0, (marker as any).location?.longitude ?? (marker as any).center?.longitude ?? 0]).
       bindPopup(marker.label).
       addTo(map.current!);
     });
@@ -98,7 +99,7 @@ const Map: React.FC<MapProps> = ({
       let layer: L.Layer | null = null;
 
       if (zone.shape === ZoneShape.CIRCLE && zone.radius) {
-        layer = L.circle([zone.location.latitude, zone.location.longitude], {
+        layer = L.circle([zone.center?.latitude, zone.center?.longitude], {
           radius: zone.radius,
           color: '#0066cc',
           fillOpacity: 0.2

@@ -1,0 +1,67 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Install Python localization dependencies
+        run: pip install requests
+
+      - name: Run localization pipeline (tag → extract → XLIFF/W3C PROV sync)
+        run: cd frontend && npm run i18n:run-all
+        env:
+          OLLAMA_MODEL_TEXT: ${{ secrets.OLLAMA_MODEL_TEXT || 'mistral' }}
+          MS_TRANSLATOR_KEY: ${{ secrets.MS_TRANSLATOR_KEY }}
+          MS_TRANSLATOR_REGION: ${{ secrets.MS_TRANSLATOR_REGION || 'global' }}
+
+      - name: Commit updated translations and XLIFF provenance files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/locales/
+          git diff --staged --quiet || git commit -m "chore(i18n): update translations and XLIFF provenance [skip ci]"
+          git push
+
+      - name: Build Docker images
+        run: |
+          docker build -t peripateticware-frontend:latest ./frontend
+          docker build -t peripateticware-backend:latest ./backend
+
+      - name: Push to registry (configure for your registry)
+        run: |
+          # Example: docker push to Docker Hub, ECR, etc.
+          # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          # docker push peripateticware-frontend:latest
+          # docker push peripateticware-backend:latest
+          echo "Configure Docker registry credentials in GitHub secrets"
+
+      - name: Deploy (configure for your infrastructure)
+        run: |
+          # Example deployment commands
+          # docker-compose -f docker-compose.prod.yml up -d
+          echo "Configure deployment commands for your infrastructure"

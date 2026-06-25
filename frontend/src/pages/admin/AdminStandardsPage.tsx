@@ -21,6 +21,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
+import { useTranslation } from 'react-i18next';
 
 interface StandardsSet {
   id: string;
@@ -73,6 +74,7 @@ function ExpiryBadge({ set }: { set: StandardsSet }) {
 }
 
 const AdminStandardsPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [sets, setSets]         = useState<StandardsSet[]>([]);
   const [loading, setLoading]   = useState(true);
@@ -135,11 +137,8 @@ const AdminStandardsPage: React.FC = () => {
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 4 }}>Standards Library</h1>
-        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.88rem' }}>
-          Global standards sets shared across all users. State academic standards (TEKS, NGSS,
-          Common Core) and state homeschool reporting requirements are managed here.
-        </p>
+        <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 4 }}>{t('pages_admin_adminstandardspage.standards_library', 'Standards Library')}</h1>
+        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.88rem' }}>{t('pages_admin_adminstandardspage.global_standards_sets_shared_across_all_', 'Global standards sets shared across all users. State academic standards (TEKS, NGSS, Common Core) and state homeschool reporting requirements are managed here.')}</p>
       </div>
 
       {error && (
@@ -168,7 +167,7 @@ const AdminStandardsPage: React.FC = () => {
         </button>
       </div>
 
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_admin_adminstandardspage.loading', 'Loading…')}</p>}
 
       {/* ── State Academic Standards ───────────────────────────────────────── */}
       <Section

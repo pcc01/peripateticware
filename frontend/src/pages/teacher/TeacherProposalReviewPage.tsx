@@ -5,8 +5,10 @@
 import React, { useEffect, useState } from 'react'
 import { proposalApi } from '../../services/phase7Api'
 import type { Proposal } from '../../types/phase7'
+import { useTranslation } from 'react-i18next';
 
 const TeacherProposalReviewPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState<string | null>(null)
@@ -58,12 +60,8 @@ const TeacherProposalReviewPage: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>
-        Student Challenge Proposals
-      </h1>
-      <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-        Review student-created reverse scavenger hunts. Approved proposals become live activities.
-      </p>
+      <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>{t('pages_teacher_teacherproposalreviewpage.student_challenge_proposals', 'Student Challenge Proposals')}</h1>
+      <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherproposalreviewpage.review_studentcreated_reverse_scavenger_', 'Review student-created reverse scavenger hunts. Approved proposals become live activities.')}</p>
 
       {error && (
         <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm">{error}</div>
@@ -72,8 +70,8 @@ const TeacherProposalReviewPage: React.FC = () => {
       {proposals.length === 0 ? (
         <div className="text-center py-20" style={{ color: 'var(--text-muted)' }}>
           <div className="text-5xl mb-4">✅</div>
-          <p className="text-lg font-medium">All caught up!</p>
-          <p className="text-sm mt-1">No proposals waiting for review.</p>
+          <p className="text-lg font-medium">{t('pages_teacher_teacherproposalreviewpage.all_caught_up', 'All caught up!')}</p>
+          <p className="text-sm mt-1">{t('pages_teacher_teacherproposalreviewpage.no_proposals_waiting_for_review', 'No proposals waiting for review.')}</p>
         </div>
       ) : (
         <ul className="space-y-4">
@@ -108,7 +106,7 @@ const TeacherProposalReviewPage: React.FC = () => {
                     {/* Challenge description */}
                     <div className="mt-4">
                       <p className="text-xs font-semibold uppercase tracking-wide mb-1"
-                         style={{ color: 'var(--text-muted)' }}>Challenge</p>
+                         style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherproposalreviewpage.challenge', 'Challenge')}</p>
                       <p className="text-sm whitespace-pre-wrap" style={{ color: 'var(--text)' }}>
                         {p.challenge_description}
                       </p>
@@ -118,7 +116,7 @@ const TeacherProposalReviewPage: React.FC = () => {
                     {p.location_hint && (
                       <div className="mt-3">
                         <p className="text-xs font-semibold uppercase tracking-wide mb-1"
-                           style={{ color: 'var(--text-muted)' }}>Location Hint</p>
+                           style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherproposalreviewpage.location_hint', 'Location Hint')}</p>
                         <p className="text-sm" style={{ color: 'var(--text)' }}>{p.location_hint}</p>
                       </div>
                     )}
@@ -126,9 +124,7 @@ const TeacherProposalReviewPage: React.FC = () => {
                     {/* Note to teacher */}
                     {p.note_to_teacher && (
                       <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
-                        <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-600">
-                          Student's note to you
-                        </p>
+                        <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-600">{t('pages_teacher_teacherproposalreviewpage.students_note_to_you', 'Student\'s note to you')}</p>
                         <p className="text-sm text-blue-800">{p.note_to_teacher}</p>
                       </div>
                     )}
@@ -136,9 +132,7 @@ const TeacherProposalReviewPage: React.FC = () => {
                     {/* Feedback field */}
                     <div className="mt-4">
                       <label className="block text-xs font-semibold uppercase tracking-wide mb-1"
-                             style={{ color: 'var(--text-muted)' }}>
-                        Feedback for student (required if rejecting)
-                      </label>
+                             style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti', 'Feedback for student (required if rejecting)')}</label>
                       <textarea
                         rows={2}
                         value={feedbackMap[p.id] ?? ''}

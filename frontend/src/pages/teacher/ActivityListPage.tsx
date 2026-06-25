@@ -41,7 +41,7 @@ const ActivityListPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/activities`, {
+        const res = await axios.get(`${API_BASE}/activities`, {
           headers: getAuthHeader(),
         })
         // Handle both array response and paginated { items: [...] } response
@@ -209,8 +209,27 @@ const ActivityListPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div style={{ marginLeft: '16px', flexShrink: 0 }}>
+              <div style={{ marginLeft: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {statusBadge(activity.status)}
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    navigate(`/teacher/activities/${activity.id}/student-preview`)
+                  }}
+                  title="Preview as Student"
+                  style={{
+                    background: 'none',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    padding: '4px 10px',
+                    fontSize: '0.78rem',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  👁 Student View
+                </button>
               </div>
             </div>
           ))}

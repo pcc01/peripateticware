@@ -1,4 +1,4 @@
-﻿# PERIPATETICWARE - COMPLETE BACKEND REQUIREMENTS
+# PERIPATETICWARE - COMPLETE BACKEND REQUIREMENTS
 # Updated: May 25, 2026 - Python 3.12 Compatible (All Conflicts Resolved)
 # FIX HISTORY:
 #   - assemblyai removed       → pulled httpx-ssrf==0.1.0 (does not exist on PyPI)
@@ -32,7 +32,7 @@ alembic==1.13.0
 python-jose[cryptography]==3.3.0
 pydantic[email]>=2.9,<3.0
 pydantic-settings==2.1.0
-bcrypt==4.0.1
+bcrypt==3.2.2
 passlib==1.7.4
 python-dotenv==1.0.0
 cryptography==41.0.7
@@ -120,11 +120,13 @@ opencv-python-headless==4.8.1.78
 geopy==2.3.0
 geoalchemy2==0.14.1
 shapely==2.0.2
+geoip2==4.8.0          # MaxMind GeoLite2 IP geolocation (country lookup for geo/hint)
 
 # Rate limiting
 slowapi==0.1.9
 
+# AI batch scheduler
+apscheduler==3.10.4
+
 # ============================================================================
-# SPREADSHEET SUPPORT (standards/rubrics upload, CSV export)
-# ============================================================================
-openpyxl==3.1.2
+# SPREADSHEET SUPPORT (standa

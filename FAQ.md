@@ -29,7 +29,7 @@ This is a "source-available" license, which means:
 - Personal learning projects
 
 **Not Free For:**
-- School districts and charter management organizations (entities managing 2+ classrooms)
+- School districts and charter management organizations (entities managing 5+ classrooms)
 - Companies offering it as a service (SaaS)
 - Reselling or rebranding
 
@@ -42,13 +42,13 @@ Contact Paul Christopher Cerda for pricing based on your organization's size and
 
 ### **What if I'm a large school district?**
 
-School districts and institutional entities (managing more than 2 classrooms) require a commercial license.
+School districts and institutional entities (managing more than 5 classrooms) require a commercial license.
 
 This includes:
 - School districts (all schools in the district)
 - Charter management organizations (CMOs)
-- Multi-site operators (2+ school locations)
-- Any entity managing 2+ classrooms
+- Multi-site operators (5+ school locations)
+- Any entity managing 5+ classrooms
 
 Contact Paul Christopher Cerda for licensing terms and pricing.
 
@@ -664,7 +664,7 @@ Features considered for roadmap based on demand and alignment with vision.
 - Personal use
 
 **Commercial Licensing:**
-- Schools (2+ classrooms)
+- Schools (5+ classrooms)
 - Districts
 - Educational publishers
 - EdTech companies
@@ -686,13 +686,13 @@ Contact Paul Christopher Cerda for corporate licensing.
 
 ### **Can universities use it?**
 
-Yes! Universities fall under "Institutional Entities" if they manage 2+ classrooms/courses.
+Yes! Universities fall under "Institutional Entities" if they manage 5+ classrooms/courses.
 
 Commercial licensing applies. Contact Paul Christopher Cerda for academic pricing.
 
 ### **What about non-profit schools?**
 
-Non-profit schools are still "Institutional Entities" if managing 2+ classrooms.
+Non-profit schools are still "Institutional Entities" if managing 5+ classrooms.
 
 Commercial licensing required, but non-profit discounts available.
 

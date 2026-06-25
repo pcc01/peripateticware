@@ -5,7 +5,7 @@ import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, XCircle, Clock, User, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, FileText, PenLine, Eye } from 'lucide-react';
 import { useApiData, useTeacher } from '@/services/api';
 import { SubmissionQueryParams } from '@/services/api';
 
@@ -24,7 +24,7 @@ import { SubmissionQueryParams } from '@/services/api';
 
 export const TeacherSubmissionsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { getSubmissions, approveSubmission, rejectSubmission } = useTeacher();
+  const { getSubmissions, approveSubmission, rejectSubmission, reviewFieldPhase, getSubmissionDetail } = useTeacher();
 
   // State
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending_review' | 'approved' | 'rejected'>('pending_review');
@@ -32,6 +32,10 @@ export const TeacherSubmissionsPage: React.FC = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [score, setScore] = useState(4);
   const [page, setPage] = useState(0);
+  // Field review state
+  const [fieldReviewMode, setFieldReviewMode] = useState(false);
+  const [fieldFeedback, setFieldFeedback] = useState('');
+  const [fieldActionPending, setFieldActionPending] = useState(false);
 
   // Fetch submissions
   const params: SubmissionQueryParams = {
@@ -45,7 +49,13 @@ export const TeacherSubmissionsPage: React.FC = () => {
     [page, statusFilter]
   );
 
-  const selectedSubmission = submissionsData?.items.find((s) => s.id === selectedSubmissionId);
+  // API returns TeacherSubmission[] directly; guard against paginated shape if backend changes
+  const submissions: any[] = Array.isArray((submissionsData as any)?.items)
+    ? (submissionsData as any).items
+    : Array.isArray(submissionsData)
+    ? (submissionsData as any[])
+    : [];
+  const selectedSubmission = submissions.find((s: any) => s.id === selectedSubmissionId);
 
   const handleApprove = async () => {
     if (!selectedSubmissionId) return;
@@ -75,6 +85,45 @@ export const TeacherSubmissionsPage: React.FC = () => {
     } catch (err) {
       console.error('Rejection failed:', err);
     }
+  };
+
+  const handleFieldReview = async (approve?: boolean, reject?: boolean) => {
+    if (!selectedSubmissionId) return;
+    setFieldActionPending(true);
+    try {
+      await reviewFieldPhase(selectedSubmissionId, {
+        feedback: fieldFeedback,
+        approve,
+        reject,
+      });
+      setFieldReviewMode(false);
+      setFieldFeedback('');
+      refetch();
+    } catch (err) {
+      console.error('Field review failed:', err);
+    } finally {
+      setFieldActionPending(false);
+    }
+  };
+
+  // Helper: phase badge for submission list items
+  const PhaseBadge = ({ s }: { s: any }) => {
+    if (!s.completion_mode || s.completion_mode === 'field_only') return null;
+    if (s.completion_phase === 'field_work' && s.field_phase_status === 'submitted') {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+          🏕️ Field Work Ready
+        </span>
+      );
+    }
+    if (s.completion_phase === 'reflection') {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+          <PenLine className="w-3 h-3" /> Reflection Phase
+        </span>
+      );
+    }
+    return null;
   };
 
   return (
@@ -126,11 +175,11 @@ export const TeacherSubmissionsPage: React.FC = () => {
               </div> :
             error ?
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error.message}</p>
+                <p className="text-red-800">{error}</p>
               </div> :
-            submissionsData?.items && submissionsData.items.length > 0 ?
+            submissions.length > 0 ?
             <div className="space-y-4">
-                {submissionsData.items.map((submission) =>
+                {submissions.map((submission: any) =>
               <div
                 key={submission.id}
                 onClick={() => setSelectedSubmissionId(submission.id)}
@@ -149,8 +198,9 @@ export const TeacherSubmissionsPage: React.FC = () => {
                           {submission.activity_title}
                         </p>
                         <p className="text-xs text-gray-500 mt-2">{t("landing:phase", "Phase:")}
-                      <strong>{submission.phase.toUpperCase()}</strong>
+                      <strong>{submission.phase?.toUpperCase?.() ?? '—'}</strong>
                         </p>
+                        <div className="mt-1"><PhaseBadge s={submission} /></div>
                         <p className="text-xs text-gray-500">{t("landing:submitted", "Submitted:")}
                       {fmtDate(submission.submitted_at)}
                         </p>
@@ -158,13 +208,13 @@ export const TeacherSubmissionsPage: React.FC = () => {
 
                       <div className="flex items-center gap-2">
                         {submission.status === 'pending_review' &&
-                    <Clock className="w-5 h-5 text-yellow-600" title={t("landing:pending_review", "Pending Review")} />
+                    <Clock className="w-5 h-5 text-yellow-600" aria-label={t("landing:pending_review", "Pending Review")} />
                     }
                         {submission.status === 'approved' &&
-                    <CheckCircle className="w-5 h-5 text-green-600" title={t("landing:approved", "Approved")} />
+                    <CheckCircle className="w-5 h-5 text-green-600" aria-label={t("landing:approved", "Approved")} />
                     }
                         {submission.status === 'rejected' &&
-                    <XCircle className="w-5 h-5 text-red-600" title={t("landing:rejected", "Rejected")} />
+                    <XCircle className="w-5 h-5 text-red-600" aria-label={t("landing:rejected", "Rejected")} />
                     }
                         <span className="text-sm font-medium text-gray-700 ml-2">
                           {submission.evidence.length} {t('common.items', 'items')}
@@ -183,7 +233,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
             }
 
             {/* Pagination */}
-            {submissionsData && submissionsData.total > 10 &&
+            {submissionsData && (submissionsData?.total ?? submissions.length) > 10 &&
             <div className="flex justify-center items-center gap-4 mt-8">
                 <button
                 onClick={() => setPage(Math.max(0, page - 1))}
@@ -193,11 +243,11 @@ export const TeacherSubmissionsPage: React.FC = () => {
 
               </button>
                 <span className="text-gray-600">{t("landing:page", "Page")}
-                {page + 1}{t("landing:of", "of")}{Math.ceil(submissionsData.total / 10)}
+                {page + 1}{t("landing:of", "of")}{Math.ceil((submissionsData?.total ?? submissions.length) / 10)}
                 </span>
                 <button
                 onClick={() => setPage(page + 1)}
-                disabled={(page + 1) * 10 >= submissionsData.total}
+                disabled={(page + 1) * 10 >= (submissionsData?.total ?? submissions.length)}
                 className="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-50">{t("landing:teachersubmissionspage.next", "Next")}
 
 
@@ -244,6 +294,82 @@ export const TeacherSubmissionsPage: React.FC = () => {
                   )}
                   </div>
                 </div>
+
+                {/* Field Work Review Panel — shown for Field + Reflection activities */}
+                {selectedSubmission.completion_mode === 'field_and_reflection' &&
+                 selectedSubmission.completion_phase === 'field_work' && (
+                  <div className="mb-6 pb-6 border-b">
+                    <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                      🏕️ Field Work Review
+                      {selectedSubmission.field_phase_status === 'reviewed' && (
+                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Reviewed</span>
+                      )}
+                      {selectedSubmission.field_phase_status === 'approved' && (
+                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Approved</span>
+                      )}
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-3">
+                      The student has completed their field work. Leave feedback and optionally
+                      {selectedSubmission.require_field_approval
+                        ? ' approve to unlock the reflection phase.'
+                        : ' the student can already start reflecting.'}
+                    </p>
+                    {!fieldReviewMode ? (
+                      <button
+                        onClick={() => { setFieldReviewMode(true); setFieldFeedback(selectedSubmission.field_phase_feedback || ''); }}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+                      >
+                        🏕️ Review Field Work
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        <textarea
+                          value={fieldFeedback}
+                          onChange={(e) => setFieldFeedback(e.target.value)}
+                          placeholder="Comment on the field observations, evidence quality, or what to focus on in the reflection..."
+                          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          rows={3}
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => handleFieldReview(false, false)}
+                            disabled={fieldActionPending}
+                            className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                          >
+                            💬 Send Feedback
+                          </button>
+                          {selectedSubmission.require_field_approval && (
+                            <button
+                              onClick={() => handleFieldReview(true, false)}
+                              disabled={fieldActionPending}
+                              className="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                            >
+                              ✓ Approve + Unlock Reflection
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleFieldReview(false, true)}
+                            disabled={fieldActionPending}
+                            className="px-3 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                          >
+                            ✗ Send Back
+                          </button>
+                          <button
+                            onClick={() => setFieldReviewMode(false)}
+                            className="px-3 py-1.5 border rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {selectedSubmission.field_phase_feedback && !fieldReviewMode && (
+                      <div className="mt-3 text-xs text-gray-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                        <span className="font-medium">Your feedback: </span>{selectedSubmission.field_phase_feedback}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Feedback Form */}
                 {selectedSubmission.status === 'pending_review' &&

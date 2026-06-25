@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 /**
- * Peripateticware Auth Store â€” Zustand
+ * Peripateticware Auth Store â€" Zustand
  * 
  * Features:
  * âœ… Persistent token & user in localStorage
@@ -16,10 +16,13 @@ import { create } from 'zustand'
 export interface User {
   id?: string
   email: string
+  full_name?: string
   first_name?: string
   last_name?: string
   name?: string
   role: string  // Accept any role format (uppercase or lowercase)
+  org_id?: string | null  // null = standalone teacher / platform admin
+  is_active?: boolean
 }
 
 export interface AuthStore {
@@ -52,8 +55,14 @@ export interface AuthStore {
     first_name?: string
     last_name?: string
     name?: string
-    role?: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN'
+    role?: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
     age_group?: string
+    school_name?: string
+    country_code?: string
+    subdivision_code?: string
+    has_under_13?: boolean
+    org_type_v2?: string
+    ip_country_hint?: string
   }) => Promise<void>
 
   logout: () => void
@@ -143,8 +152,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           password: credentials.password,
         }
 
-        // âœ… API endpoint: /api/auth/login â†’ rewritten to /api/v1/auth/login by vite proxy
-        const response = await fetch('/auth/login', {
+        // Direct API endpoint — no proxy dependency
+        const response = await fetch('/api/v1/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -152,8 +161,26 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
+          const detail = errorData?.detail
+          // COPPA: student account awaiting parental consent
+          if (detail === 'parental_consent_required') {
+            const email = credentials.email || ''
+            // Derive a deterministic 64-char hex token from the email for the consent URL.
+            // The authoritative hash is stored on the backend; this is a display-only redirect.
+            const emailBytes = new TextEncoder().encode(email.toLowerCase())
+            const hashBuffer = await crypto.subtle.digest('SHA-256', emailBytes).catch(() => null)
+            let studentHash = '0'.repeat(64)
+            if (hashBuffer) {
+              studentHash = Array.from(new Uint8Array(hashBuffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('')
+            }
+            set({ isLoading: false })
+            window.location.href = `/parent-consent/${studentHash}`
+            return
+          }
           const errorMsg =
-            errorData.detail ||
+            detail ||
             errorData.message ||
             `Login failed (${response.status})`
           throw new Error(errorMsg)
@@ -173,6 +200,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           id: data.user_id,
           email: data.email,
           role: (data.role || 'STUDENT').toLowerCase(),
+          org_id: data.org_id ?? null,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -208,13 +236,18 @@ export const useAuthStore = create<AuthStore>((set, get) => {
       first_name?: string
       last_name?: string
       name?: string
-      role?: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN'
+      role?: 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
+      school_name?: string
+      country_code?: string
+      subdivision_code?: string
+      has_under_13?: boolean
+      org_type_v2?: string
+      ip_country_hint?: string
     }) => {
       set({ isLoading: true, error: null })
 
       try {
-        // âœ… API endpoint: /api/auth/signup â†’ rewritten to /api/v1/auth/signup by vite proxy
-        const response = await fetch('/auth/signup', {
+        const response = await fetch('/api/v1/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -224,7 +257,13 @@ export const useAuthStore = create<AuthStore>((set, get) => {
             first_name: data.first_name,
             last_name: data.last_name,
             name: data.name,
-            role: (data.role || 'STUDENT').toLowerCase(),
+            role: (data.role || 'TEACHER').toUpperCase(),
+            school_name: data.school_name,
+            country_code: data.country_code,
+            subdivision_code: data.subdivision_code,
+            has_under_13: data.has_under_13,
+            org_type_v2: data.org_type_v2,
+            ip_country_hint: data.ip_country_hint,
           }),
         })
 
@@ -239,7 +278,6 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
         const result = await response.json()
 
-        // âœ… FIXED: Same as login â€” backend returns user_id, email, role at top level
         const token = result.access_token || result.token
 
         if (!token) {
@@ -249,7 +287,9 @@ export const useAuthStore = create<AuthStore>((set, get) => {
         const user: User = {
           id: result.user_id,
           email: result.email,
-          role: (result.role || 'STUDENT').toLowerCase(),
+          role: (result.role || 'TEACHER').toLowerCase(),
+          org_id: result.org_id ?? null,
+          is_active: result.is_active ?? false,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -315,7 +355,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
         })
 
         if (!response.ok) {
-          // âœ… Token expired or invalid â€” clear auth
+          // âœ… Token expired or invalid â€" clear auth
           set({
             user: null,
             token: null,
@@ -329,11 +369,15 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
         const data = await response.json()
 
-        // âœ… Token still valid â€” update user if changed
-        if (data.user) {
-          set({ user: data.user })
-          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(data.user))
+        // /auth/me returns { user_id, email, role } at top level
+        const freshUser: User = {
+          id: data.user_id ?? get().user?.id,
+          email: data.email ?? get().user?.email ?? '',
+          role: data.role ? data.role.toLowerCase() : (get().user?.role ?? ''),
+          org_id: data.org_id !== undefined ? (data.org_id ?? null) : get().user?.org_id,
         }
+        set({ user: freshUser, isAuthenticated: true })
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshUser))
       } catch (err: any) {
         console.warn('Auth check failed:', err.message)
         // Don't clear auth on network error, just continue
@@ -345,28 +389,17 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 })
 
 /**
- * Helper hook to get auth token for use in fetch calls
+ * Convenience selector — returns the current raw JWT token.
  * Usage: const token = useAuthToken()
  */
-export const useAuthToken = () => {
-  const token = useAuthStore((state) => state.token)
-  return token
+export const useAuthToken = (): string | null => {
+  return useAuthStore((state) => state.token)
 }
 
 /**
- * Helper hook to check if user is authenticated
- * Usage: const isAuth = useIsAuthenticated()
+ * Convenience selector — returns true when the user is logged in.
+ * Usage: const isLoggedIn = useIsAuthenticated()
  */
-export const useIsAuthenticated = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  return isAuthenticated
-}
-
-/**
- * Helper hook to get current user
- * Usage: const user = useCurrentUser()
- */
-export const useCurrentUser = () => {
-  const user = useAuthStore((state) => state.user)
-  return user
+export const useIsAuthenticated = (): boolean => {
+  return useAuthStore((state) => !!state.user && !!state.token)
 }

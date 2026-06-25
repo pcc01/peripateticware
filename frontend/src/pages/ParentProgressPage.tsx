@@ -38,8 +38,8 @@ export const ParentProgressPage: React.FC = () => {
 
   // Set first child as default
   React.useEffect(() => {
-    if (!selectedChildId && childrenData?.items && childrenData.items.length > 0) {
-      setSelectedChildId(childrenData.items[0].id);
+    if (!selectedChildId && childrenData && childrenData.length > 0) {
+      setSelectedChildId(childrenData[0].id);
     }
   }, [childrenData, selectedChildId]);
 
@@ -79,7 +79,7 @@ export const ParentProgressPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Child Selector */}
-        {childrenData && childrenData.items.length > 1 &&
+        {childrenData && childrenData.length > 1 &&
         <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('forms.select_child', 'Select Child')}
@@ -89,7 +89,7 @@ export const ParentProgressPage: React.FC = () => {
             onChange={(e) => setSelectedChildId(e.target.value)}
             className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
             
-              {childrenData.items.map((child) =>
+              {childrenData.map((child) =>
             <option key={child.id} value={child.id}>
                   {child.name} - {child.grade}
                 </option>
@@ -98,11 +98,24 @@ export const ParentProgressPage: React.FC = () => {
           </div>
         }
 
-        {loading ?
-        <div className="flex justify-center items-center h-96">
+        {childrenLoading ? (
+          <div className="flex justify-center items-center h-96">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
-          </div> :
-        progress ?
+          </div>
+        ) : !childrenData?.length ? (
+          <div className="text-center py-20 bg-white rounded-xl border border-gray-200 mt-4">
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👨‍👧</div>
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">{t('pages_parentprogresspage.no_children_linked_yet', 'No children linked yet')}</h2>
+            <p className="text-gray-500 mb-4">{t('pages_parentprogresspage.link_your_childs_account_to_start_tracki', 'Link your child\'s account to start tracking their learning progress.')}</p>
+            <a href="/parent/link-child" className="px-5 py-2 rounded-lg text-white font-medium" style={{ background: 'var(--primary)' }}>
+              Link a child
+            </a>
+          </div>
+        ) : loading ? (
+          <div className="flex justify-center items-center h-96">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+          </div>
+        ) : progress ?
         <div className="space-y-6">
             {/* This Week Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -286,29 +299,25 @@ export const ParentProgressPage: React.FC = () => {
                   {/* Teacher Message */}
                   <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                     <div className="flex items-start gap-3">
-                      <MessageSquare className="w-5 h-5 text-purple-600 mt-1 flex-shrink-0" />
+                      <MessageSquare className="w-5 h-5 text-purple-500 flex-shrink-0 mt-1" />
                       <div>
-                        <p className="text-sm font-medium text-purple-900">{t("landing:from", "From")}{digest.teacher.name}</p>
-                        <p className="text-sm text-purple-800 mt-1">{t("landing:message_sent", "Message sent:")}
-                      {fmtDate(digest.teacher.message_sent_at)}
-                        </p>
+                        <p className="text-sm font-medium text-gray-900">{t('pages_parentprogresspage.teacher_note', 'Teacher Note')}</p>
+                        <p className="text-sm text-gray-700 mt-1">{digest?.teacher_message || 'No message this week.'}</p>
                       </div>
                     </div>
                   </div>
                 </div>
-            }
+              }
             </div>
-          </div> :
-
-        <div className="text-center py-12 bg-white rounded-lg">
-            <p className="text-gray-600">
-              {t('messages.no_progress_data', 'No progress data available yet')}
-            </p>
           </div>
-        }
+        : (
+          <div className="text-center py-16 bg-white rounded-xl border border-gray-200 mt-4">
+            <p className="text-gray-400">{t('pages_parentprogresspage.no_progress_data_yet_for_this_child', 'No progress data yet for this child.')}</p>
+          </div>
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default ParentProgressPage;

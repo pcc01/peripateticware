@@ -101,11 +101,19 @@ def parse_json_defensively(cleaned_text: str, texts: list[str]) -> list[str]:
         except json.JSONDecodeError:
             pass
     
-    # Line-by-line fallback regex extraction
-    strings = re.findall(r'"([^"\\]*(?:\\.[^"\\]*)*)"', text)
+    # Line-by-line fallback: strip JSON key patterns ("key":) first, then extract
+    # remaining quoted string values. Avoids lookahead backtracking artifacts.
+    text_values_only = re.sub(r'"[^"\\]*(?:\\.[^"\\]*)*"\s*:', '', text)
+    strings = re.findall(r'"([^"\\]*(?:\\.[^"\\]*)*)"', text_values_only)
     if len(strings) == expected_len:
         return strings
-        
+
+    # Partial recovery: if the model truncated its output and returned fewer strings
+    # than expected, return what we have padded with empty strings so the caller can
+    # fill the gaps sequentially rather than retranslating the whole batch.
+    if 0 < len(strings) < expected_len:
+        return strings + [""] * (expected_len - len(strings))
+
     raise ValueError(f"Could not extract a JSON list of expected length ({expected_len}) from LLM response.")
 
 
@@ -180,7 +188,7 @@ class UniversalOrchestrator:
                 key = input("🔑 ANTHROPIC_API_KEY not found in environment. Please paste your key: ").strip()
                 if not key: raise ValueError("Missing ANTHROPIC_API_KEY token.")
             self.client = Anthropic(api_key=key)
-            self.active_model = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
+            self.active_model = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
             
         elif self.provider == "GEMINI":
             from google import genai
@@ -372,39 +380,53 @@ class UniversalOrchestrator:
                 )
                 return res.text
             elif self.provider == "OLLAMA":
-                # Direct API request to avoid CLI escape crashes
+                # Use /api/chat with assistant pre-seeding to anchor Tower/instruction-tuned
+                # models into valid JSON before they generate a single token.
+                pre_seed = '{"translations": ['
+                ollama_result = ""
                 try:
-                    url = "http://localhost:11434/api/generate"
+                    url = "http://localhost:11434/api/chat"
                     payload = {
                         "model": self.active_model,
-                        "prompt": prompt,
-                        "system": self.system_prompt,
-                        "options": {
-                            "temperature": float(self.temperature)
-                        },
+                        "messages": [
+                            {"role": "system", "content": self.system_prompt},
+                            {"role": "user", "content": prompt},
+                            {"role": "assistant", "content": pre_seed}
+                        ],
                         "stream": False,
-                        "format": "json"  # Enforces structured output formatting natively
+                        "format": "json",
+                        "options": {"temperature": float(self.temperature)}
                     }
                     res = requests.post(url, json=payload, timeout=300)
                     res.raise_for_status()
-                    return res.json().get("response", "")
+                    continuation = res.json().get("message", {}).get("content", "")
+                    ollama_result = self.clean_llm_chatter(continuation)
                 except Exception:
                     # Fallback to CLI using standard input (stdin) to prevent WinError 206 command-line limits
-                    cmd = ["ollama", "run", self.active_model]
-                    result = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", check=True)
-                    return result.stdout
+                    try:
+                        cmd = ["ollama", "run", self.active_model]
+                        cli = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", check=True)
+                        ollama_result = self.clean_llm_chatter(cli.stdout)
+                    except Exception:
+                        pass
+                # Empty check is outside both try blocks so it propagates to retry_call
+                if not ollama_result.strip():
+                    raise ValueError("Ollama returned empty response (API and CLI both failed) — will retry")
+                return ollama_result
             return ""
 
+        cleaned = ""
         try:
             # Execute with structured exponential retries
             raw_response = self.retry_call(run_call)
             cleaned = self.clean_llm_chatter(raw_response)
-            
+
             # Use robust defensive JSON parser to locate the list even if nested in objects
             return parse_json_defensively(cleaned, texts)
         except Exception as e:
             # Gracefully self-heal: Fallback sequentially if batch compilation failed
             print(f"   ⚠️  Batch compilation failed ({e}). Self-healing with paced sequential fallback...")
+            print(f"   [DEBUG] Failed response (first 600 chars): {repr(cleaned[:600])}")
             results = []
             for text in texts:
                 translated = self.retry_call(lambda: self.translate_single(text, lang_name, lang_code))
@@ -529,8 +551,11 @@ def parse_existing_xliff_with_prov(path: Path) -> dict:
     return res
 
 def write_xliff_prov_file(path: Path, lang: str, en_flat_strings: dict, target_flat_strings: dict, meta_tracking: dict, prov_graph: dict):
-    root = ET.Element("xliff", version="1.2", xmlns="urn:oasis:names:tc:xliff:document:1.2")
-    file_el = ET.SubElement(root, "file", {"source-language": SOURCE_LANG_CODE, "target-language": lang.lower(), "datatype": "plaintext", "original": "landing.json"})
+    # FIX (Bug 2): Register namespace so ElementTree uses it properly and
+    # parse_existing_xliff_with_prov can find elements via the ns prefix.
+    ET.register_namespace('', 'urn:oasis:names:tc:xliff:document:1.2')
+    root = ET.Element("{urn:oasis:names:tc:xliff:document:1.2}xliff", version="1.2")
+    file_el = ET.SubElement(root, "{urn:oasis:names:tc:xliff:document:1.2}file", {"source-language": SOURCE_LANG_CODE, "target-language": lang.lower(), "datatype": "plaintext", "original": f"{lang.lower()}.json"})
     header_el = ET.SubElement(file_el, "header")
     meta_group = ET.SubElement(header_el, "meta-group", category="w3c-prov-jsonld")
     meta_prov_node = ET.SubElement(meta_group, "meta", type="provenance-graph")
@@ -551,12 +576,14 @@ def write_xliff_prov_file(path: Path, lang: str, en_flat_strings: dict, target_f
         with open(path, "wb") as f: f.write(b'<?xml version="1.0" encoding="utf-8"?>\n' + raw_xml_bytes)
 
 def get_target_languages() -> list[str]:
+    """Scans locales/ for flat {lang}.json files (excluding en.json = source)."""
     languages = []
     if not LOCALES_DIR.exists(): return languages
-    for folder in LOCALES_DIR.iterdir():
-        if folder.is_dir() and folder.name != "en":
-            lang_map = {"es": "Spanish", "fr": "French", "de": "German", "ja": "Japanese", "ar": "Arabic", "he": "Hebrew", "it": "Italian", "zh": "Chinese", "tu": "Turkish", "pt-br": "Portuguese"}
-            languages.append((folder.name.upper(), lang_map.get(folder.name.lower(), folder.name.upper())))
+    lang_map = {"es": "Spanish", "fr": "French", "de": "German", "ja": "Japanese", "ar": "Arabic", "he": "Hebrew", "it": "Italian", "zh": "Chinese", "tr": "Turkish", "pt-br": "Portuguese"}
+    for f in LOCALES_DIR.iterdir():
+        if f.is_file() and f.suffix == '.json' and f.stem.lower() != SOURCE_LANG_CODE:
+            code = f.stem
+            languages.append((code, lang_map.get(code.lower(), code.upper())))
     return languages
 
 # =====================================================================
@@ -649,9 +676,10 @@ def sync_pipeline():
         print(f"❌ Core engine initialization error: {e}")
         return
 
-    en_nested = load_json(LOCALES_DIR / "en" / "landing.json")
+    en_full = load_json(LOCALES_DIR / "en.json")
+    en_nested = en_full.get("landing", {})
     if not en_nested:
-        print("❌ Error: en/landing.json source template asset is missing or empty.")
+        print("❌ Error: en.json 'landing' namespace is missing or empty.")
         return
 
     en_strings = flatten_json(en_nested)
@@ -663,17 +691,20 @@ def sync_pipeline():
     locale_telemetry_report = {}
 
     for lang_code, lang_name in target_langs:
-        folder = LOCALES_DIR / lang_code.lower()
-        json_path = folder / "landing.json"
-        xlf_path = folder / "landing.xlf"
-        
+        # New flat structure: public/locales/fr.json (merged namespaces file)
+        # XLF lives alongside: public/locales/fr.xlf
+        json_path = LOCALES_DIR / f"{lang_code}.json"
+        xlf_path  = LOCALES_DIR / f"{lang_code}.xlf"
+
         # Load or reset locale targets defensively
         if reset_languages:
             target_json = {}
             xlf_dataset = {"strings": {}, "global_prov": {"@context": {}, "@graph": []}}
             print(f"🧹 Clean Reset: Wiped previous target translations and provenance dataset for: [{lang_code}] ({lang_name})")
         else:
-            target_json = flatten_json(load_json(json_path))
+            # Read only the 'landing' namespace from the merged file
+            full_merged = load_json(json_path)
+            target_json = flatten_json(full_merged.get("landing", {}))
             xlf_dataset = parse_existing_xliff_with_prov(xlf_path)
             
         global_prov = xlf_dataset["global_prov"]
@@ -731,7 +762,8 @@ def sync_pipeline():
                 engine.set_dynamic_override(cat, inst, temp)
                 
                 # Determine batch size dynamically based on provider type to prevent LLM alignment errors
-                batch_size = 10 if engine.provider in ["OLLAMA", "CLAUDE", "GEMINI"] else 50
+                # OLLAMA uses 5 (not 10) — local models truncate output on long/dense batches
+                batch_size = 5 if engine.provider == "OLLAMA" else (10 if engine.provider in ["CLAUDE", "GEMINI"] else 50)
                 translated_results = []
                 
                 for i in range(0, len(group_keys), batch_size):
@@ -761,11 +793,21 @@ def sync_pipeline():
                     if idx < len(translated_results):
                         target_json[key] = translated_results[idx]
 
-        # Step 3: Cleanup unmapped keys and save files
-        for k in [k for k in target_json if k not in en_strings]: 
-            del target_json[k]
-            
-        save_json(json_path, unflatten_json(target_json))
+        # Step 3: Prune stale keys (keys in target that no longer exist in English source)
+        stale = [k for k in target_json if k not in en_strings]
+        if stale:
+            print(f"\n  ⚠️  WARNING [{lang_code}]: {len(stale)} stale key(s) will be removed from the build.")
+            print(f"      These keys exist in the translation but not in the English source.")
+            print(f"      Removing them means those strings will fall back to English at runtime.")
+            for k in stale:
+                print(f"        - {k}")
+            for k in stale:
+                del target_json[k]
+
+        # Save — update only the 'landing' namespace in the merged file
+        full_merged = load_json(json_path) if json_path.exists() else {}
+        full_merged["landing"] = unflatten_json(target_json)
+        save_json(json_path, full_merged)
         write_xliff_prov_file(xlf_path, lang_code, en_strings, target_json, meta_tracking, global_prov)
         
         # Save results for final metrics telemetry
@@ -773,15 +815,16 @@ def sync_pipeline():
         
     # --- FINAL METRIC ANALYTICS REPORT ---
     print("\n" + "=" * 60)
-    print("📊 FINAL EXECUTION LOCALIZATION TELEMETRY REPORT")
+    print("\n" + "=" * 60)
+    print("\U0001f4ca FINAL EXECUTION LOCALIZATION TELEMETRY REPORT")
     print("=" * 60)
     print(f"Engine Architecture utilized: {engine.get_method_string()}")
     print(f"Total billing-eligible characters handled across the complete call: {grand_total_characters:,} characters")
     print("\nBreakdown Per Target Locale Workspace:")
     for loc_name, loc_count in locale_telemetry_report.items():
-        print(f"  • {loc_name.ljust(15)} : {loc_count:,} characters out to translation network")
+        print(f"  \u2022 {loc_name.ljust(15)} : {loc_count:,} characters out to translation network")
     print("=" * 60)
-    print("\n🏁 Translation and provenance synchronization complete.")
+    print("\n\U0001f3c1 Translation and provenance synchronization complete.")
 
 if __name__ == "__main__":
     sync_pipeline()

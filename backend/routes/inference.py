@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import Optional, List
+from core.rate_limit import ai_rate_limit
 import httpx
 from core.database import get_db
 from core.config import settings
@@ -102,11 +103,35 @@ async def _write_inference_cache(
 class InquiryRequest(BaseModel):
     """Student inquiry request"""
     session_id: str
-    input_type: str  # "text", "image", "audio", "multimodal"
+    input_type: str = "text"  # "text", "image", "audio", "multimodal"
+    # Accept both field name variants from different callers
     text: Optional[str] = None
+    input_text: Optional[str] = None   # alias used by OllamaLessonSuggestions
+    # Accept flat location fields (from OllamaLessonSuggestions)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    location_name: Optional[str] = None
+    bloom_level: Optional[int] = None
+    student_id: Optional[str] = None   # ignored but accepted
+    # Accept nested context dicts (from student inquiry flow)
     location: Optional[dict] = None
     curriculum_context: Optional[dict] = None
     persona_context: Optional[dict] = None
+
+    def effective_text(self) -> str:
+        """Return whichever text field was populated."""
+        return self.text or self.input_text or ""
+
+    def effective_location(self) -> dict:
+        """Merge flat + nested location into one dict."""
+        loc = dict(self.location or {})
+        if self.location_name:
+            loc.setdefault("name", self.location_name)
+        if self.latitude is not None:
+            loc.setdefault("latitude", self.latitude)
+        if self.longitude is not None:
+            loc.setdefault("longitude", self.longitude)
+        return loc
 
 
 class InferenceResponse(BaseModel):
@@ -114,6 +139,7 @@ class InferenceResponse(BaseModel):
     session_id: str
     reasoning_path: dict
     next_question: str
+    response: str = ""      # alias for next_question — consumed by OllamaLessonSuggestions
     resources: List[str]
     confidence: float
 
@@ -121,7 +147,8 @@ class InferenceResponse(BaseModel):
 @router.post("/inquiry", response_model=InferenceResponse)
 async def process_inquiry(
     request: InquiryRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),   # enforces per-org RPM limit; returns org_id for ledger tracking
 ):
     """
     Process student inquiry using triple-join reasoning engine.
@@ -132,31 +159,41 @@ async def process_inquiry(
     """
     try:
         # ── Cache lookup ──────────────────────────────────────────────────────
-        loc_ctx = request.location or {}
+        loc_ctx = request.effective_location()
         cur_ctx = request.curriculum_context or {}
         per_ctx = request.persona_context or {}
         location_name = loc_ctx.get("name") or loc_ctx.get("address") or ""
         subject       = cur_ctx.get("subject", "")
         grade_level   = int(cur_ctx.get("grade_level") or per_ctx.get("grade_level") or 0)
-        bloom_level   = cur_ctx.get("bloom_level") or per_ctx.get("bloom_level") or ""
+        bloom_level   = cur_ctx.get("bloom_level") or per_ctx.get("bloom_level") or str(request.bloom_level or "")
 
-        cached = await _get_cached_inference(db, location_name, subject, grade_level, bloom_level)
+        # Cache lookup — wrapped so schema mismatches (missing columns) fall
+        # through to the LLM rather than returning 500.
+        cached = None
+        try:
+            cached = await _get_cached_inference(db, location_name, subject, grade_level, bloom_level)
+        except Exception as cache_err:
+            logger.warning(f"Cache lookup skipped (schema issue?): {cache_err}")
+
         if cached:
             logger.info(f"Inference cache hit: {location_name}/{subject}/g{grade_level}/{bloom_level}")
+            cached_q = cached.description or ""
             return InferenceResponse(
                 session_id=request.session_id,
                 reasoning_path={"site": loc_ctx, "curriculum": cur_ctx, "persona": per_ctx, "cache": True},
-                next_question=cached.description or "",
+                next_question=cached_q,
+                response=cached_q,
                 resources=cached.learning_opportunities or [],
                 confidence=cached.enrichment_quality or 0.9,
             )
 
         # ── Cache miss — call LLM ─────────────────────────────────────────────
-        # Normalize text input if provided
-        normalized_text = request.text
-        if request.text:
-            norm_result = await normalize_input("text", request.text)
-            normalized_text = norm_result.get("data", request.text)
+        # Normalize text input if provided (accept either field name)
+        raw_text = request.effective_text()
+        normalized_text = raw_text
+        if raw_text:
+            norm_result = await normalize_input("text", raw_text)
+            normalized_text = norm_result.get("data", raw_text)
 
         # Prepare inquiry for RAG orchestrator
         inquiry = {
@@ -170,8 +207,8 @@ async def process_inquiry(
             "persona": per_ctx,
         }
 
-        # Call LLM for inference
-        response = await _call_llm_inference(inquiry)
+        # Call LLM for inference — pass raw_text so provider can use it directly
+        response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text)
 
         # ── Write result to cache ─────────────────────────────────────────────
         try:
@@ -428,15 +465,20 @@ async def health_check():
         llm_status = "unavailable"
         
         if settings.LLM_PROVIDER.lower() == "ollama":
-            # Quick check if Ollama is running
-            try:
-                async with httpx.AsyncClient(timeout=5) as client:
-                    response = await client.get(
-                        f"{settings.OLLAMA_BASE_URL}/api/tags"
-                    )
-                llm_status = "available" if response.status_code == 200 else "unavailable"
-            except:
-                llm_status = "unavailable"
+            # Check if Ollama is running — try configured URL, fall back to localhost
+            urls_to_try = [settings.OLLAMA_BASE_URL]
+            if "host.docker.internal" in settings.OLLAMA_BASE_URL:
+                urls_to_try.append(settings.OLLAMA_BASE_URL.replace(
+                    "host.docker.internal", "localhost"))
+            for _url in urls_to_try:
+                try:
+                    async with httpx.AsyncClient(timeout=10) as client:
+                        response = await client.get(f"{_url}/api/tags")
+                    if response.status_code == 200:
+                        llm_status = "available"
+                        break
+                except Exception:
+                    llm_status = "unavailable"
         elif settings.LLM_PROVIDER.lower() == "claude":
             llm_status = "available" if settings.CLAUDE_API_KEY else "no_key"
         
@@ -464,20 +506,29 @@ async def health_check():
 # HELPER FUNCTIONS - FULLY IMPLEMENTED
 # ============================================================================
 
-async def _call_llm_inference(inquiry: dict) -> dict:
-    """Call configured LLM (Ollama or Claude) for text generation"""
+async def _call_llm_inference(inquiry: dict, explicit_prompt: str = "") -> dict:
+    """Call configured LLM (Ollama or Claude) for text generation.
+
+    If ``explicit_prompt`` is supplied (e.g. from OllamaLessonSuggestions) we
+    use it verbatim so the caller gets exactly the output they requested.
+    Otherwise we fall back to a generic Peri guiding-question prompt.
+    """
     try:
-        prompt = f"""
+        if explicit_prompt and explicit_prompt.strip():
+            prompt = explicit_prompt
+        else:
+            prompt = f"""
 Based on this learning context:
 - Location: {inquiry.get('location', {}).get('name', 'Unknown')}
 - Topic: {inquiry.get('curriculum', {}).get('topic', 'General Science')}
 - Student Level: {inquiry.get('persona', {}).get('level', 'Beginner')}
 
-Generate a Socratic question that guides discovery and critical thinking. 
-The question should encourage observation, hypothesis formation, or deeper analysis.
+Generate a guiding question from Peri that advances the student's inquiry toward real knowledge.
+The question must be answerable through observation, analysis, or reasoning from evidence — not a philosophical prompt.
+It should move the student one step: from noticing to classifying, from classifying to explaining causes, or from explaining to applying.
 Keep it concise (1-2 sentences).
 """
-        
+
         # Route to appropriate provider
         if settings.LLM_PROVIDER.lower() == "claude":
             return await _call_claude_inference(prompt)
@@ -494,74 +545,49 @@ Keep it concise (1-2 sentences).
 
 
 async def _call_claude_inference(prompt: str) -> dict:
-    """Call Claude API for inference"""
+    """Call Claude API for inference — delegates HTTP to agents/provider.py."""
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": settings.CLAUDE_API_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": settings.CLAUDE_MODEL,
-                    "max_tokens": settings.CLAUDE_MAX_TOKENS,
-                    "messages": [
-                        {"role": "user", "content": prompt}
-                    ]
-                }
-            )
-        
-        if response.status_code == 200:
-            data = response.json()
-            question = data["content"][0]["text"] if data.get("content") else ""
-            logger.info(f"Claude inference successful - Model: {settings.CLAUDE_MODEL}")
-            return {
-                "question": question[:300],
-                "resources": [
-                    "https://example.com/resource1",
-                    "https://example.com/resource2"
-                ],
-                "confidence": 0.90
-            }
-        else:
-            logger.error(f"Claude API error: {response.status_code}")
-            return {"question": "", "resources": [], "confidence": 0.0}
-    
+        from agents.provider import call_claude as _call_claude
+        question = await _call_claude(
+            messages=[{"role": "user", "content": prompt}],
+            model=settings.CLAUDE_MODEL,
+            max_tokens=settings.CLAUDE_MAX_TOKENS,
+            timeout=30,
+        )
+        logger.info(f"Claude inference successful - Model: {settings.CLAUDE_MODEL}")
+        return {
+            "question": question,
+            "resources": [
+                "https://example.com/resource1",
+                "https://example.com/resource2"
+            ],
+            "confidence": 0.90
+        }
     except Exception as e:
         logger.error(f"Claude inference error: {e}")
         return {"question": "", "resources": [], "confidence": 0.0}
 
 
 async def _call_ollama_inference(prompt: str) -> dict:
-    """Call Ollama API for inference"""
+    """Call Ollama API for inference — delegates HTTP to agents/provider.py."""
     try:
-        async with httpx.AsyncClient(timeout=60) as client:
-            response = await client.post(
-                f"{settings.OLLAMA_BASE_URL}/api/generate",
-                json={
-                    "model": settings.OLLAMA_MODEL_TEXT,
-                    "prompt": prompt,
-                    "stream": False,
-                }
-            )
-        
-        if response.status_code == 200:
-            data = response.json()
-            logger.info(f"Ollama inference successful - Model: {settings.OLLAMA_MODEL_TEXT}")
-            return {
-                "question": data.get("response", "")[:300],
-                "resources": [
-                    "https://example.com/resource1",
-                    "https://example.com/resource2"
-                ],
-                "confidence": 0.85
-            }
-        else:
-            logger.error(f"Ollama error: {response.status_code}")
-            return {"question": "", "resources": [], "confidence": 0.0}
-    
+        from agents.provider import call_ollama as _call_ollama
+        # Legacy /api/generate used a plain prompt; /api/chat (used by provider.py)
+        # accepts a messages list.  Wrap the prompt as a single user message.
+        question = await _call_ollama(
+            messages=[{"role": "user", "content": prompt}],
+            model=settings.OLLAMA_MODEL_TEXT,
+            timeout=60,
+        )
+        logger.info(f"Ollama inference successful - Model: {settings.OLLAMA_MODEL_TEXT}")
+        return {
+            "question": question,  # no truncation
+            "resources": [
+                "https://example.com/resource1",
+                "https://example.com/resource2"
+            ],
+            "confidence": 0.85
+        }
     except Exception as e:
         logger.error(f"Ollama inference error: {e}")
         return {"question": "", "resources": [], "confidence": 0.0}

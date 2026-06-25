@@ -20,7 +20,7 @@ from models.assessment import AssessmentRubric
 from models.database import Activity
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1/rubrics", tags=["rubrics"])
+router = APIRouter(prefix="/rubrics", tags=["rubrics"])
 
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────

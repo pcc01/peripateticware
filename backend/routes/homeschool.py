@@ -149,6 +149,29 @@ async def create_child(
 ):
     _require_homeschool(current_user)
 
+    # Free tier: max 2 children — upgrade to add more
+    from sqlalchemy import text as _t
+    tier_row = (await db.execute(
+        _t("SELECT license_tier FROM organizations WHERE id = :oid"),
+        {"oid": str(current_user.org_id)},
+    )).scalar() if current_user.org_id else "free"
+    tier = tier_row or "free"
+
+    if tier in ("free", "homeschool_free", None):
+        child_count = (await db.execute(
+            _t("SELECT COUNT(*) FROM homeschool_children WHERE parent_id = :pid"),
+            {"pid": str(current_user.id)},
+        )).scalar() or 0
+        if child_count >= 2:
+            raise HTTPException(
+                status_code=402,
+                detail=(
+                    "The free plan supports up to 2 children. "
+                    "Upgrade to Homeschool Family ($12/mo) to add more children "
+                    "and unlock portfolio exports and state standards reports."
+                ),
+            )
+
     # Check email not already taken
     existing = (await db.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if existing:
@@ -394,32 +417,379 @@ async def coverage_summary(
     }
 
 
-# ── Export ────────────────────────────────────────────────────────────────
+# ── Export / Reports ──────────────────────────────────────────────────────
+#
+# Supports any date range (monthly / quarterly / annual / custom).
+# GET  /homeschool/report?child_id=&from=YYYY-MM-DD&to=YYYY-MM-DD&format=pdf|csv
+# POST /homeschool/export/portfolio  (legacy alias — same as GET with body)
 
-@router.post("/export/portfolio")
-async def export_portfolio(
-    child_id: str = Body(...),
-    format: str = Body("pdf"),
+import io as _io
+import csv as _csv
+from datetime import date as _date
+from fastapi.responses import StreamingResponse as _StreamingResponse
+
+async def _fetch_report_data(
+    db,
+    parent_id: str,
+    child_id:  str,
+    date_from: _date,
+    date_to:   _date,
+) -> dict:
+    """Fetch all data needed for a period report."""
+
+    # Verify ownership
+    child_row = (await db.execute(
+        text("""
+            SELECT u.id, u.first_name, u.last_name, u.full_name,
+                   hc.grade_level, hc.age_band
+            FROM homeschool_children hc
+            JOIN users u ON u.id = hc.child_id
+            WHERE hc.parent_id = :pid AND hc.child_id = :cid
+        """),
+        {"pid": parent_id, "cid": child_id},
+    )).first()
+    if not child_row:
+        raise HTTPException(status_code=404, detail="Child not found")
+
+    parent_row = (await db.execute(
+        text("SELECT first_name, last_name FROM users WHERE id = :pid"),
+        {"pid": parent_id},
+    )).first()
+
+    # Sessions in the date range
+    sessions = (await db.execute(
+        text("""
+            SELECT ls.id, ls.created_at, ls.completed_at, ls.status,
+                   a.title AS activity_title, a.subject, a.grade_level,
+                   a.location_name, a.estimated_duration_minutes,
+                   a.bloom_level, a.completion_mode,
+                   COUNT(DISTINCT ec.id) AS evidence_count
+            FROM learning_sessions ls
+            JOIN activities a ON a.id = ls.activity_id
+            LEFT JOIN evidence_captures ec ON ec.session_id = ls.id
+            WHERE ls.user_id = :cid
+              AND DATE(ls.created_at) BETWEEN :from_d AND :to_d
+            GROUP BY ls.id, a.title, a.subject, a.grade_level,
+                     a.location_name, a.estimated_duration_minutes,
+                     a.bloom_level, a.completion_mode
+            ORDER BY ls.created_at ASC
+        """),
+        {"cid": child_id, "from_d": date_from, "to_d": date_to},
+    )).mappings().all()
+
+    # Standards coverage for the period
+    standards = (await db.execute(
+        text("""
+            SELECT asm.criterion_id, asm.coverage_level,
+                   ss.name AS set_name, ss.state_code,
+                   a.title AS activity_title, a.subject
+            FROM activity_standards_map asm
+            JOIN standards_sets ss ON ss.id = asm.standards_set_id
+            JOIN activities a      ON a.id  = asm.activity_id
+            JOIN learning_sessions ls ON ls.activity_id = a.id AND ls.user_id = :cid
+            WHERE DATE(ls.created_at) BETWEEN :from_d AND :to_d
+              AND ss.owner_id = :pid
+            ORDER BY ss.name, asm.criterion_id
+        """),
+        {"cid": child_id, "pid": parent_id, "from_d": date_from, "to_d": date_to},
+    )).mappings().all()
+
+    completed = [s for s in sessions if s["status"] == "completed"]
+    total_minutes = sum(
+        (s["estimated_duration_minutes"] or 45) for s in completed
+    )
+
+    subjects: dict[str, int] = {}
+    for s in sessions:
+        sub = s["subject"] or "General"
+        subjects[sub] = subjects.get(sub, 0) + 1
+
+    return {
+        "child":       {
+            "id":         child_id,
+            "name":       child_row[3] or f"{child_row[1]} {child_row[2]}",
+            "first_name": child_row[1],
+            "grade":      child_row[4],
+            "age_band":   child_row[5],
+        },
+        "parent":      {"name": f"{parent_row[0]} {parent_row[1]}"},
+        "period":      {"from": str(date_from), "to": str(date_to)},
+        "sessions":    [dict(s) for s in sessions],
+        "completed":   len(completed),
+        "total":       len(sessions),
+        "hours":       round(total_minutes / 60, 1),
+        "subjects":    subjects,
+        "standards":   [dict(s) for s in standards],
+    }
+
+
+def _build_csv(data: dict) -> bytes:
+    buf = _io.StringIO()
+    w   = _csv.writer(buf)
+
+    w.writerow(["Peripateticware — Activity Log"])
+    w.writerow(["Child",  data["child"]["name"]])
+    w.writerow(["Period", f"{data['period']['from']} to {data['period']['to']}"])
+    w.writerow(["Generated", str(_date.today())])
+    w.writerow([])
+    w.writerow(["Date", "Activity", "Subject", "Location",
+                "Grade Level", "Status", "Est. Minutes", "Evidence Items", "Bloom Level"])
+
+    for s in data["sessions"]:
+        started = s["created_at"]
+        if hasattr(started, "date"):
+            started = started.date()
+        w.writerow([
+            str(started),
+            s["activity_title"] or "",
+            s["subject"] or "",
+            s["location_name"] or "",
+            s["grade_level"] or "",
+            s["status"] or "",
+            s["estimated_duration_minutes"] or 45,
+            s["evidence_count"] or 0,
+            s["bloom_level"] or "",
+        ])
+
+    w.writerow([])
+    w.writerow(["Summary"])
+    w.writerow(["Total activities",   data["total"]])
+    w.writerow(["Completed",          data["completed"]])
+    w.writerow(["Total hours",        data["hours"]])
+    w.writerow([])
+    w.writerow(["Subject", "Sessions"])
+    for subj, count in data["subjects"].items():
+        w.writerow([subj, count])
+
+    if data["standards"]:
+        w.writerow([])
+        w.writerow(["Standards Coverage"])
+        w.writerow(["Criterion ID", "Standards Set", "State", "Coverage", "Activity", "Subject"])
+        for s in data["standards"]:
+            w.writerow([
+                s["criterion_id"], s["set_name"], s["state_code"] or "",
+                s["coverage_level"], s["activity_title"], s["subject"] or "",
+            ])
+
+    return buf.getvalue().encode("utf-8-sig")  # BOM for Excel compatibility
+
+
+def _build_pdf(data: dict) -> bytes:
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.platypus import (
+            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        )
+    except ImportError:
+        raise HTTPException(status_code=501, detail="reportlab not installed")
+
+    buf    = _io.BytesIO()
+    doc    = SimpleDocTemplate(buf, pagesize=letter,
+                               leftMargin=inch, rightMargin=inch,
+                               topMargin=inch, bottomMargin=inch)
+    styles = getSampleStyleSheet()
+    story  = []
+
+    GREEN  = colors.HexColor("#2d6a4f")
+    LIGHT  = colors.HexColor("#f0fdf4")
+    GREY   = colors.HexColor("#6b7280")
+
+    h1 = ParagraphStyle("h1", parent=styles["Heading1"], textColor=GREEN, fontSize=20, spaceAfter=4)
+    h2 = ParagraphStyle("h2", parent=styles["Heading2"], textColor=GREEN, fontSize=13, spaceBefore=14, spaceAfter=6)
+    sm = ParagraphStyle("sm", parent=styles["Normal"], fontSize=9, textColor=GREY)
+    bd = ParagraphStyle("bd", parent=styles["Normal"], fontSize=10, leading=16)
+
+    # Cover
+    story.append(Paragraph("Peripateticware", ParagraphStyle("brand", parent=h1, fontSize=10, textColor=GREY)))
+    story.append(Paragraph(f"Portfolio Report — {data['child']['name']}", h1))
+    story.append(Paragraph(
+        f"Period: {data['period']['from']} to {data['period']['to']} &nbsp;|&nbsp; "
+        f"Generated: {_date.today()} &nbsp;|&nbsp; Parent: {data['parent']['name']}",
+        sm,
+    ))
+    story.append(HRFlowable(width="100%", color=GREEN, spaceAfter=12))
+
+    # Summary stats
+    story.append(Paragraph("Period Summary", h2))
+    summary_data = [
+        ["Activities completed", str(data["completed"])],
+        ["Total activities",     str(data["total"])],
+        ["Estimated hours",      str(data["hours"])],
+        ["Subjects covered",     ", ".join(data["subjects"].keys()) or "—"],
+    ]
+    t = Table(summary_data, colWidths=[2.2*inch, 4*inch])
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (0,-1), LIGHT),
+        ("FONTNAME",   (0,0), (0,-1), "Helvetica-Bold"),
+        ("FONTSIZE",   (0,0), (-1,-1), 9),
+        ("GRID",       (0,0), (-1,-1), 0.3, colors.HexColor("#d1fae5")),
+        ("ROWBACKGROUNDS", (0,0), (-1,-1), [colors.white, LIGHT]),
+        ("LEFTPADDING",  (0,0), (-1,-1), 8),
+        ("RIGHTPADDING", (0,0), (-1,-1), 8),
+        ("TOPPADDING",   (0,0), (-1,-1), 5),
+        ("BOTTOMPADDING",(0,0), (-1,-1), 5),
+    ]))
+    story.append(t)
+
+    # Activity log
+    story.append(Paragraph("Activity Log", h2))
+    if data["sessions"]:
+        rows = [["Date", "Activity", "Subject", "Location", "Status", "Evidence"]]
+        for s in data["sessions"]:
+            d = s["created_at"]
+            if hasattr(d, "date"):
+                d = d.date()
+            rows.append([
+                str(d),
+                (s["activity_title"] or "")[:40],
+                (s["subject"] or "")[:20],
+                (s["location_name"] or "")[:25],
+                s["status"] or "",
+                str(s["evidence_count"] or 0),
+            ])
+        t2 = Table(rows, colWidths=[0.9*inch, 2*inch, 1*inch, 1.3*inch, 0.8*inch, 0.6*inch])
+        t2.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,0),  GREEN),
+            ("TEXTCOLOR",     (0,0), (-1,0),  colors.white),
+            ("FONTNAME",      (0,0), (-1,0),  "Helvetica-Bold"),
+            ("FONTSIZE",      (0,0), (-1,-1), 8),
+            ("ROWBACKGROUNDS",(0,1), (-1,-1), [colors.white, LIGHT]),
+            ("GRID",          (0,0), (-1,-1), 0.2, colors.HexColor("#d1fae5")),
+            ("LEFTPADDING",   (0,0), (-1,-1), 5),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 5),
+            ("TOPPADDING",    (0,0), (-1,-1), 4),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+        ]))
+        story.append(t2)
+    else:
+        story.append(Paragraph("No activities recorded in this period.", bd))
+
+    # Standards coverage
+    if data["standards"]:
+        story.append(Paragraph("Standards Coverage", h2))
+        std_rows = [["Criterion", "Standards Set", "State", "Coverage", "Activity"]]
+        for s in data["standards"]:
+            std_rows.append([
+                s["criterion_id"][:15],
+                (s["set_name"] or "")[:20],
+                s["state_code"] or "",
+                s["coverage_level"] or "",
+                (s["activity_title"] or "")[:30],
+            ])
+        t3 = Table(std_rows, colWidths=[1.1*inch, 1.6*inch, 0.5*inch, 0.8*inch, 2.1*inch])
+        t3.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0), (-1,0),  GREEN),
+            ("TEXTCOLOR",     (0,0), (-1,0),  colors.white),
+            ("FONTNAME",      (0,0), (-1,0),  "Helvetica-Bold"),
+            ("FONTSIZE",      (0,0), (-1,-1), 8),
+            ("ROWBACKGROUNDS",(0,1), (-1,-1), [colors.white, LIGHT]),
+            ("GRID",          (0,0), (-1,-1), 0.2, colors.HexColor("#d1fae5")),
+            ("LEFTPADDING",   (0,0), (-1,-1), 5),
+            ("RIGHTPADDING",  (0,0), (-1,-1), 5),
+            ("TOPPADDING",    (0,0), (-1,-1), 4),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+        ]))
+        story.append(t3)
+
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(
+        "Generated by Peripateticware · peripateticware.com",
+        ParagraphStyle("foot", parent=sm, alignment=1),
+    ))
+
+    doc.build(story)
+    return buf.getvalue()
+
+
+@router.get("/report")
+async def generate_report(
+    child_id:  str,
+    date_from: str,
+    date_to:   str,
+    format:    str = "pdf",
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Generate a period report for a homeschool child.
+    format = pdf | csv
+    date_from / date_to = YYYY-MM-DD
+    """
     _require_homeschool(current_user)
 
-    # Verify ownership
-    row = (await db.execute(
-        text("SELECT child_id FROM homeschool_children WHERE parent_id = :pid AND child_id = :cid"),
-        {"pid": current_user.id, "cid": child_id},
-    )).scalar_one_or_none()
-    if not row:
-        raise HTTPException(status_code=404, detail="Child not found")
+    # Reports and portfolio exports require Homeschool Family plan
+    from sqlalchemy import text as _t2
+    if current_user.org_id:
+        tier_r = (await db.execute(
+            _t2("SELECT license_tier FROM organizations WHERE id = :oid"),
+            {"oid": str(current_user.org_id)},
+        )).scalar() or "free"
+    else:
+        tier_r = "free"
 
-    # TODO: wire to export_service.py when SH-6 is built
-    return {
-        "status": "queued",
-        "message": "Portfolio export queued. This feature will be available once the export service is built (SH-6).",
-        "child_id": child_id,
-        "format": format,
-    }
+    if tier_r in ("free", "homeschool_free"):
+        raise HTTPException(
+            status_code=402,
+            detail=(
+                "Portfolio exports and compliance reports require the Homeschool Family plan ($12/mo). "
+                "Upgrade to generate PDF portfolios and state standards reports."
+            ),
+        )
+
+    try:
+        d_from = _date.fromisoformat(date_from)
+        d_to   = _date.fromisoformat(date_to)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Dates must be YYYY-MM-DD")
+
+    if d_from > d_to:
+        raise HTTPException(status_code=422, detail="date_from must be before date_to")
+
+    data     = await _fetch_report_data(db, str(current_user.id), child_id, d_from, d_to)
+    child_fn = data["child"]["name"].replace(" ", "_")
+    period   = f"{date_from}_to_{date_to}"
+
+    if format == "csv":
+        content  = _build_csv(data)
+        filename = f"Peripateticware_{child_fn}_{period}.csv"
+        return _StreamingResponse(
+            _io.BytesIO(content),
+            media_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+    content  = _build_pdf(data)
+    filename = f"Peripateticware_Portfolio_{child_fn}_{period}.pdf"
+    return _StreamingResponse(
+        _io.BytesIO(content),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/export/portfolio")
+async def export_portfolio(
+    child_id:  str  = Body(...),
+    format:    str  = Body("pdf"),
+    date_from: str  = Body(None),
+    date_to:   str  = Body(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Legacy POST alias — delegates to GET /report."""
+    from datetime import date as _d
+    today = _d.today()
+    if not date_from:
+        # Default to current month
+        date_from = today.replace(day=1).isoformat()
+    if not date_to:
+        date_to = today.isoformat()
+    return await generate_report(child_id, date_from, date_to, format, current_user, db)
+
+
     result_sets = []
     for s in sets:
         set_id   = str(s["id"])

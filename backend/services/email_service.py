@@ -15,11 +15,13 @@ In development (EMAIL_DRY_RUN=true) every email is logged but not sent.
 Set EMAIL_DRY_RUN=false and provide real SMTP credentials in production.
 
 Supported email types:
-  send_verification_email(to, token)       — account confirmation on signup
-  send_password_reset_email(to, token)     — password reset link
+  send_verification_email(to, token)                               — account confirmation on signup
+  send_password_reset_email(to, token)                             — password reset link
   send_parent_consent_email(to, token, student_name)
-  send_welcome_email(to, name, role)       — after email verified
-  send_notification(to, subject, body_html) — generic
+  send_welcome_email(to, name, role)                               — after email verified
+  send_classroom_invite_email(to, teacher_name, classroom_name,    — student classroom invite
+                               org_name, join_url)
+  send_notification(to, subject, body_html)                        — generic
 """
 
 import logging
@@ -182,6 +184,40 @@ async def send_parent_consent_email(to: str, token: str, student_name: str) -> b
         """,
     )
     return await _send(to, f"Consent needed for {student_name}'s Peripateticware account", html)
+
+
+async def send_classroom_invite_email(
+    to: str,
+    teacher_name: str,
+    classroom_name: str,
+    org_name: str,
+    join_url: str,
+) -> bool:
+    """
+    Send a classroom invitation to a prospective student.
+
+    join_url should be the full URL, e.g. https://app.peripateticware.com/join/<token>
+    """
+    html = _wrap(
+        "You've been invited to join a class",
+        f"{org_name} — {classroom_name}",
+        f"""
+        <p><strong>{teacher_name}</strong> has invited you to join their class
+        <strong>{classroom_name}</strong> on Peripateticware — an outdoor and
+        field-based learning platform.</p>
+        <a class="btn" href="{join_url}">Accept Invitation</a>
+        <p>Clicking the button will take you to a short sign-up form. It only
+        takes a minute, and you'll be enrolled in the class automatically.</p>
+        <p class="note">This invite link expires in <strong>14 days</strong>.
+        If you weren't expecting this, you can safely ignore it.<br>
+        Or copy this URL: {join_url}</p>
+        """,
+    )
+    return await _send(
+        to,
+        f"{teacher_name} invited you to join {classroom_name} on Peripateticware",
+        html,
+    )
 
 
 async def send_notification(to: str, subject: str, body_html: str) -> bool:

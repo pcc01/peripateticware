@@ -503,7 +503,7 @@ async def log_access(
         compliance_status=compliance_status,
         jurisdiction_ids=jurisdiction_ids or [],
         notes=notes,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.utcnow(),
     )
     db.add(row)
     try:

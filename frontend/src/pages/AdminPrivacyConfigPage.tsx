@@ -14,16 +14,8 @@ import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import apiClient from '@/config/api'
 import { useTranslation } from 'react-i18next';
-
-// API_BASE is the bare host — paths below include /api/v1 explicitly
-const API_BASE = ''
-
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('auth_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
 
 interface JurisdictionRow {
   rule_id: string
@@ -71,25 +63,69 @@ export default function AdminPrivacyConfigPage() {
   const [addLoading, setAddLoading] = useState(false)
 
   // Add form state
-  const [newRuleId, setNewRuleId]         = useState('')
+  // rule_id must be a valid UUID (the DB column is UUID PRIMARY KEY).
+  // Auto-generate one so the user doesn't have to type a UUID manually.
+  const genUUID = () => crypto.randomUUID()
+  const [newRuleId, setNewRuleId]         = useState(() => genUUID())
   const [newRegId, setNewRegId]           = useState('')
   const [newVersion, setNewVersion]       = useState('1.0')
   const [newJurisdiction, setNewJurisdiction] = useState('')
   const [newEffDate, setNewEffDate]       = useState(new Date().toISOString().split('T')[0])
   const [newJson, setNewJson]             = useState(EMPTY_RULE)
   const [newChangeLog, setNewChangeLog]   = useState('')
+  const [frameworkStatus, setFrameworkStatus] = useState<Record<string, boolean>>({})
+  const [frameworkSaving, setFrameworkSaving] = useState<string | null>(null)
+
+  const KNOWN_FRAMEWORKS = [
+    { id: 'ferpa', label: 'FERPA', region: 'US Schools', color: '#1d4ed8', bg: '#dbeafe',
+      desc: 'Family Educational Rights and Privacy Act — student record privacy.' },
+    { id: 'coppa', label: 'COPPA', region: 'US (Under 13)', color: '#7c3aed', bg: '#ede9fe',
+      desc: "Children's Online Privacy Protection Act — parental consent for under-13s." },
+    { id: 'ccpa', label: 'CCPA', region: 'California', color: '#b45309', bg: '#fef3c7',
+      desc: 'California Consumer Privacy Act — data rights for CA residents.' },
+    { id: 'gdpr', label: 'GDPR', region: 'European Union', color: '#065f46', bg: '#d1fae5',
+      desc: 'General Data Protection Regulation — comprehensive EU data protection.' },
+  ]
+
+  async function loadFrameworkStatus() {
+    try {
+      const res = await apiClient.get(`/api/v1/privacy/status`)
+      const active: string[] = (res.data?.frameworks_enforced || []).map((f: string) => f.toLowerCase())
+      const status: Record<string, boolean> = {}
+      KNOWN_FRAMEWORKS.forEach(f => { status[f.id] = active.includes(f.id) })
+      setFrameworkStatus(status)
+    } catch { /* non-fatal */ }
+  }
+
+  async function toggleFramework(frameworkId: string, currentlyActive: boolean) {
+    setFrameworkSaving(frameworkId)
+    try {
+      if (currentlyActive) {
+        // Deactivate: set is_active=false on all rules for this framework
+        await apiClient.patch(`/api/v1/privacy/rules/framework/${frameworkId}/deactivate`, {})
+      } else {
+        // Activate: POST seed rule if none exist, or re-activate
+        await apiClient.patch(`/api/v1/privacy/rules/framework/${frameworkId}/activate`, {})
+      }
+      await loadFrameworkStatus()
+      await loadJurisdictions()
+    } catch (err: any) {
+      console.error('Failed to toggle framework', err)
+    } finally {
+      setFrameworkSaving(null)
+    }
+  }
 
   useEffect(() => {
     loadJurisdictions()
+    loadFrameworkStatus()
   }, [])
 
   async function loadJurisdictions() {
     setLoading(true)
     setError(null)
     try {
-      const res = await axios.get(`${API_BASE}/api/v1/privacy/jurisdictions`, {
-        headers: getAuthHeader(),
-      })
+      const res = await apiClient.get(`/api/v1/privacy/jurisdictions`)
       setJurisdictions(res.data)
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load jurisdictions')
@@ -102,15 +138,34 @@ export default function AdminPrivacyConfigPage() {
     setDetailLoading(true)
     setRuleDetail(null)
     try {
-      const res = await axios.get(`${API_BASE}/api/v1/privacy/rules/${ruleId}`, {
-        headers: getAuthHeader(),
-      })
+      const res = await apiClient.get(`/api/v1/privacy/rules/${ruleId}`)
       setRuleDetail(res.data)
     } catch (err: any) {
       console.error('Failed to load rule detail', err)
     } finally {
       setDetailLoading(false)
     }
+  }
+
+  function downloadJson() {
+    // Export the current privacy configuration (frameworks + jurisdictions) as JSON.
+    const payload = {
+      exported_at: new Date().toISOString(),
+      frameworks_enforced: Object.entries(frameworkStatus)
+        .filter(([, on]) => on)
+        .map(([id]) => id),
+      framework_status: frameworkStatus,
+      jurisdictions,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `privacy-config-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   function toggleExpand(ruleId: string) {
@@ -131,8 +186,8 @@ export default function AdminPrivacyConfigPage() {
 
     try {
       const parsed = JSON.parse(newJson)
-      await axios.post(
-        `${API_BASE}/api/v1/privacy/rules`,
+      await apiClient.post(
+        `/api/v1/privacy/rules`,
         {
           rule_id:        newRuleId,
           regulation_id:  newRegId,
@@ -141,11 +196,11 @@ export default function AdminPrivacyConfigPage() {
           effective_date: new Date(newEffDate).toISOString(),
           rule_definition: parsed,
           change_log:     newChangeLog || null,
-        },
-        { headers: getAuthHeader() }
+        }
       )
-      setAddSuccess(`Rule ${newRuleId} created successfully`)
+      setAddSuccess(`Rule created successfully`)
       setShowAddForm(false)
+      setNewRuleId(genUUID())   // fresh UUID ready for next rule
       loadJurisdictions()
     } catch (err: any) {
       const detail = err.response?.data?.detail
@@ -172,6 +227,12 @@ export default function AdminPrivacyConfigPage() {
           ← Back
         </button>
         <h1 style={{ margin: 0, color: '#2d4a3e', fontSize: '1.6rem' }}>{t('adminprivacyconfigpage.privacy_configuration', '🔒 Privacy Configuration')}</h1>
+        <button
+          onClick={downloadJson}
+          style={{ marginLeft: 'auto', background: '#2d4a3e', color: '#fff', border: 'none', borderRadius: 8, padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+        >
+          ⬇ Download as JSON
+        </button>
       </div>
 
       {addSuccess && (
@@ -179,6 +240,51 @@ export default function AdminPrivacyConfigPage() {
           ✅ {addSuccess}
         </div>
       )}
+
+      {/* Quick Framework Setup */}
+      <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,.08)', padding: '1.5rem', marginBottom: '2rem' }}>
+        <h2 style={{ margin: '0 0 4px', color: '#2d4a3e', fontSize: '1.1rem' }}>{t('pages_adminprivacyconfigpage.compliance_frameworks', 'Compliance Frameworks')}</h2>
+        <p style={{ margin: '0 0 1.2rem', color: '#666', fontSize: '0.85rem' }}>{t('pages_adminprivacyconfigpage.toggle_which_privacy_frameworks_are_acti', 'Toggle which privacy frameworks are actively enforced. Pre-seeded on first boot — enable the ones applicable to your jurisdiction.')}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+          {KNOWN_FRAMEWORKS.map(fw => {
+            const active = frameworkStatus[fw.id] ?? false
+            const saving = frameworkSaving === fw.id
+            return (
+              <div key={fw.id} style={{
+                border: `2px solid ${active ? fw.color : '#e5e7eb'}`,
+                borderRadius: 10, padding: '14px 16px',
+                background: active ? fw.bg : '#fafafa',
+                transition: 'all 0.2s',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      fontWeight: 800, fontSize: '0.9rem', color: active ? fw.color : '#6b7280',
+                      background: active ? 'white' : '#e5e7eb',
+                      padding: '2px 8px', borderRadius: 6,
+                    }}>{fw.label}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{fw.region}</span>
+                  </div>
+                  <button
+                    onClick={() => toggleFramework(fw.id, active)}
+                    disabled={saving}
+                    style={{
+                      padding: '4px 12px', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700,
+                      border: 'none', cursor: saving ? 'wait' : 'pointer',
+                      background: active ? fw.color : '#e5e7eb',
+                      color: active ? 'white' : '#374151',
+                      opacity: saving ? 0.6 : 1,
+                    }}
+                  >
+                    {saving ? '…' : active ? '✓ On' : 'Off'}
+                  </button>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: '#6b7280', lineHeight: 1.4 }}>{fw.desc}</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Active Jurisdictions */}
       <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,.08)', padding: '1.5rem', marginBottom: '2rem' }}>
@@ -276,9 +382,31 @@ export default function AdminPrivacyConfigPage() {
           {addError && <div style={{ background: '#fdecea', border: '1px solid #f5c6cb', borderRadius: 8, padding: '0.8rem 1.2rem', marginBottom: '1rem', color: '#721c24' }}>❌ {addError}</div>}
 
           <form onSubmit={submitNewRule}>
+            {/* Rule ID — auto-generated UUID (required by DB schema) */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.9rem', color: '#444' }}>
+                Rule ID (auto-generated UUID)
+                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                  <input
+                    readOnly
+                    value={newRuleId}
+                    style={{ flex: 1, border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.7rem', fontSize: '0.85rem', fontFamily: 'monospace', background: '#f9f9f9', color: '#555' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setNewRuleId(genUUID())}
+                    title="Generate a new UUID"
+                    style={{ padding: '0.5rem 0.8rem', borderRadius: 6, border: '1px solid #ccc', background: '#fff', cursor: 'pointer', fontSize: '1rem' }}
+                  >↻</button>
+                </div>
+                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                  Unique identifier stored in the database — generated automatically.
+                </span>
+              </label>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               {[
-                ['Rule ID', newRuleId, setNewRuleId, 'e.g. FERPA-1974-US-FEDERAL-v2.2'],
                 ['Regulation ID', newRegId, setNewRegId, 'e.g. FERPA-1974-US-FEDERAL'],
                 ['Version', newVersion, setNewVersion, 'e.g. 2.2'],
                 ['Jurisdiction', newJurisdiction, setNewJurisdiction, 'e.g. US_FEDERAL'],

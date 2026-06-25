@@ -101,7 +101,7 @@ const PeerProjectDetailPage: React.FC = () => {
           >
             {submitting ? t('starting', 'Starting…') : t('start_response', 'Start Response')}
           </button>
-        ) : response.status === 'submitted' || response.status === 'reviewed' ? (
+        ) : (response.status as string) === 'submitted' || (response.status as string) === 'reviewed' ? (
           <div className="text-center py-4" style={{ color: 'var(--primary)' }}>
             ✓ {t('response_submitted', 'Response submitted')}
           </div>

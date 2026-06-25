@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -35,14 +35,25 @@ except ImportError as e:
 # PASSWORD HASHING - Try passlib first, fallback to bcrypt
 # ============================================================================
 
+# Always import bcrypt directly — passlib 1.7.4 raises AttributeError (not ImportError)
+# when initialised against bcrypt >= 4.0; the old except ImportError fallback never fired.
+import bcrypt as _bcrypt
+
 try:
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    logger.info("âœ… Using passlib for password hashing")
+    # Probe: passlib 1.7.4 + bcrypt >= 4.0 initialises fine but .verify() raises
+    # ValueError("hash could not be identified") at runtime because passlib's bcrypt
+    # backend can't register against bcrypt 4.x internals.  Catch that here so the
+    # fallback fires, rather than silently returning False on every login.
+    _probe_hash = pwd_context.hash("_passlib_probe_")
+    if not pwd_context.verify("_passlib_probe_", _probe_hash):
+        raise ValueError("passlib verify returned False for known-good probe hash")
+    logger.info("✅ Using passlib for password hashing")
     HAS_PASSLIB = True
-except ImportError:
-    logger.warning("âš ï¸  passlib not available, using bcrypt directly")
-    import bcrypt
+except Exception as _passlib_err:
+    # passlib 1.7.4 incompatible with bcrypt >= 4.0 at init or verify time.
+    logger.warning(f"⚠️  passlib unavailable or incompatible — using bcrypt directly ({_passlib_err!r})")
     HAS_PASSLIB = False
 
 
@@ -52,8 +63,8 @@ def hash_password(password: str) -> str:
         if HAS_PASSLIB:
             return pwd_context.hash(password)
         else:
-            salt = bcrypt.gensalt()
-            return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+            salt = _bcrypt.gensalt()
+            return _bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
     except Exception as e:
         logger.error(f"âŒ Password hashing error: {e}")
         raise
@@ -77,7 +88,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
             return result
         else:
             # Direct bcrypt verification
-            result = bcrypt.checkpw(
+            result = _bcrypt.checkpw(
                 plain_password.encode('utf-8'),
                 hashed_password.encode('utf-8')
             )
@@ -204,16 +215,20 @@ class SecurityManager:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash password"""
-        return hash_password(password)
-    
+        """Hash password — delegates to module-level hash_password()."""
+        return hash_password(password)  # not recursive; calls module-level fn
+
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
-        """Verify password"""
-        return verify_password(plain_password, hashed_password)
-    
+        """Verify password — delegates to module-level verify_password()."""
+        return verify_password(plain_password, hashed_password)  # not recursive
+
     @staticmethod
-    def create_access_token(data: dict = None, user_id: str = None, expires_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(
+        data: Optional[Dict[str, Any]] = None,
+        user_id: Optional[str] = None,
+        expires_delta: Optional[timedelta] = None,
+    ) -> str:
         """
         Create JWT token
         
@@ -248,4 +263,3 @@ logger.info(f"   Algorithm: {ALGORITHM}")
 logger.info(f"   Token expiration: {ACCESS_TOKEN_EXPIRE_MINUTES} minutes ({ACCESS_TOKEN_EXPIRE_MINUTES // 60} hours)")
 logger.info(f"   Secret key length: {len(SECRET_KEY)} characters")
 logger.info(f"   Password hashing: {'passlib' if HAS_PASSLIB else 'bcrypt'}")
-

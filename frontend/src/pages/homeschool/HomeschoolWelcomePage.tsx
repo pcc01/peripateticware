@@ -1,0 +1,333 @@
+// Copyright (c) 2026 Paul Christopher Cerda
+// Business Source License 1.1
+
+/**
+ * HomeschoolWelcomePage — /homeschool/welcome
+ *
+ * Three-step onboarding wizard shown to new homeschool parents on first login.
+ * Step 1: Add children (name + grade)
+ * Step 2: Pick your state / standards set (optional but recommended)
+ * Step 3: Create your first activity (or skip to dashboard)
+ *
+ * Dismissed via POST /api/v1/onboarding/dismiss — never shown again.
+ */
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import apiClient from '@/config/api';
+import { useTranslation } from 'react-i18next';
+
+const API = import.meta.env.VITE_API_URL || '/api/v1';
+
+// ── US States list ────────────────────────────────────────────────────────────
+const US_STATES = [
+  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
+  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
+  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
+  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada',
+  'New Hampshire','New Jersey','New Mexico','New York','North Carolina',
+  'North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island',
+  'South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
+  'Virginia','Washington','West Virginia','Wisconsin','Wyoming',
+];
+
+// ── Step indicators ───────────────────────────────────────────────────────────
+const STEPS = ['Add Children', 'Your State', 'First Activity'];
+
+interface Child {
+  name:       string;
+  grade:      string;
+  age_band:   string;
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+const HomeschoolWelcomePage: React.FC = () => {
+  const { t } = useTranslation('landing');
+  const navigate  = useNavigate();
+  const [step, setStep]     = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState<string | null>(null);
+
+  // Step 1 state
+  const [children, setChildren] = useState<Child[]>([
+    { name: '', grade: '1', age_band: 'k6' },
+  ]);
+
+  // Step 2 state
+  const [selectedState, setSelectedState] = useState('');
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const addChild = () =>
+    setChildren(prev => [...prev, { name: '', grade: '1', age_band: 'k6' }]);
+
+  const updateChild = (i: number, field: keyof Child, value: string) =>
+    setChildren(prev => prev.map((c, idx) => idx === i ? { ...c, [field]: value } : c));
+
+  const removeChild = (i: number) =>
+    setChildren(prev => prev.filter((_, idx) => idx !== i));
+
+  const saveChildren = async () => {
+    const valid = children.filter(c => c.name.trim());
+    if (!valid.length) { setError('Please add at least one child.'); return; }
+    setError(null);
+    setSaving(true);
+    let anyFailed = false;
+    try {
+      for (const child of valid) {
+        // The backend create_child requires email + password. The wizard only asks
+        // for name/grade, so generate placeholder credentials the parent can edit
+        // later on the Children page. (Previously the POST 422'd and was swallowed,
+        // so children never saved.)
+        const slug = child.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'child';
+        const payload = {
+          full_name:   child.name.trim(),
+          email:       `${slug}.${Math.random().toString(36).slice(2, 7)}@homeschool.local`,
+          password:    'Homeschool@1234',
+          grade_level: parseInt(child.grade) || 0,
+          age_band:    child.age_band,
+        };
+        try {
+          await apiClient.post(`${API}/homeschool/children`, payload);
+        } catch {
+          anyFailed = true;
+        }
+      }
+      // Advance regardless — onboarding must never trap the user on this screen.
+      if (anyFailed) {
+        setError('Some children could not be saved automatically — you can add them later from the Children page.');
+      }
+      setStep(1);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const dismiss = async () => {
+    // Persist a local flag FIRST so the dashboard never bounces back here even if
+    // the onboarding API is unavailable (this was the "can't close / infinite loop").
+    try { localStorage.setItem('hs_onboarding_dismissed', '1'); } catch { /* ignore */ }
+    await apiClient.post(`${API}/onboarding/dismiss`).catch(() => null);
+    navigate('/homeschool');
+  };
+
+  const goToDashboard = async () => {
+    await dismiss();
+  };
+
+  const goToNewActivity = async () => {
+    await apiClient.post(`${API}/onboarding/dismiss`).catch(() => null);
+    navigate('/homeschool/activities/new');
+  };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div style={{
+      minHeight: '100vh', background: 'var(--bg)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '2rem 1rem',
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 560,
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        borderRadius: '0.75rem', overflow: 'hidden',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
+      }}>
+        {/* Header */}
+        <div style={{ background: 'var(--primary)', padding: '1.5rem 2rem', position: 'relative' }}>
+          <button
+            onClick={goToDashboard}
+            style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '0.25rem' }}
+            title="Skip setup"
+          >
+            <X size={18} />
+          </button>
+          <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>{t('pages_homeschool_homeschoolwelcomepage.welcome_to_peripateticware', 'Welcome to Peripateticware 🌿')}</h1>
+          <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.4rem 0 0', fontSize: '0.9rem' }}>{t('pages_homeschool_homeschoolwelcomepage.lets_get_you_set_up_in_3_quick_steps', 'Let\'s get you set up in 3 quick steps.')}</p>
+        </div>
+
+        {/* Step indicator */}
+        <div style={{ display: 'flex', padding: '1rem 2rem', gap: '0.5rem', borderBottom: '1px solid var(--border)' }}>
+          {STEPS.map((label, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1 }}>
+              <div style={{
+                width: 24, height: 24, borderRadius: '50%',
+                background: i < step ? 'var(--primary)' : i === step ? 'var(--primary)' : 'var(--border)',
+                color: i <= step ? '#fff' : 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.75rem', fontWeight: 700, flexShrink: 0,
+              }}>
+                {i < step ? <CheckCircle size={14} /> : i + 1}
+              </div>
+              <span style={{
+                fontSize: '0.75rem',
+                color: i === step ? 'var(--text)' : 'var(--text-muted)',
+                fontWeight: i === step ? 600 : 400,
+                whiteSpace: 'nowrap',
+              }}>
+                {label}
+              </span>
+              {i < STEPS.length - 1 && (
+                <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: '0.25rem' }} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Step content */}
+        <div style={{ padding: '1.75rem 2rem' }}>
+
+          {/* ── Step 0: Children ── */}
+          {step === 0 && (
+            <div>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.4rem' }}>{t('pages_homeschool_homeschoolwelcomepage.who_are_you_teaching', 'Who are you teaching?')}</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{t('pages_homeschool_homeschoolwelcomepage.add_each_childs_name_and_grade_you_can_a', 'Add each child\'s name and grade. You can add more children later from the Children page.')}</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+                {children.map((child, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      value={child.name}
+                      onChange={e => updateChild(i, 'name', e.target.value)}
+                      placeholder={`Child ${i + 1} name`}
+                      style={{
+                        flex: '1 1 160px', padding: '0.5rem 0.75rem',
+                        border: '1px solid var(--border)', borderRadius: '0.35rem',
+                        background: 'var(--bg)', color: 'var(--text)', fontSize: '0.875rem',
+                      }}
+                    />
+                    <select
+                      value={child.grade}
+                      onChange={e => updateChild(i, 'grade', e.target.value)}
+                      style={{
+                        padding: '0.5rem 0.75rem', border: '1px solid var(--border)',
+                        borderRadius: '0.35rem', background: 'var(--bg)', color: 'var(--text)',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {['K','1','2','3','4','5','6','7','8','9','10','11','12'].map(g => (
+                        <option key={g} value={g === 'K' ? '0' : g}>Grade {g}</option>
+                      ))}
+                    </select>
+                    {children.length > 1 && (
+                      <button
+                        onClick={() => removeChild(i)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.25rem' }}
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={addChild}
+                style={{
+                  background: 'none', border: '1px dashed var(--border)',
+                  color: 'var(--text-muted)', borderRadius: '0.35rem',
+                  padding: '0.4rem 0.9rem', cursor: 'pointer', fontSize: '0.8rem',
+                  width: '100%', marginBottom: '1.25rem',
+                }}
+              >
+                + Add another child
+              </button>
+
+              {error && <p style={{ color: '#b91c1c', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
+            </div>
+          )}
+
+          {/* ── Step 1: State ── */}
+          {step === 1 && (
+            <div>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.4rem' }}>{t('pages_homeschool_homeschoolwelcomepage.which_state_do_you_homeschool_in', 'Which state do you homeschool in?')}</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{t('pages_homeschool_homeschoolwelcomepage.this_helps_peripateticware_show_the_righ', 'This helps Peripateticware show the right state reporting requirements and standards sets. You can change this any time in Settings.')}</p>
+              <select
+                value={selectedState}
+                onChange={e => setSelectedState(e.target.value)}
+                style={{
+                  width: '100%', padding: '0.6rem 0.75rem',
+                  border: '1px solid var(--border)', borderRadius: '0.35rem',
+                  background: 'var(--bg)', color: 'var(--text)', fontSize: '0.9rem',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                <option value="">— Select your state (optional) —</option>
+                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolwelcomepage.35_us_states_require_homeschool_parents_', '35 US states require homeschool parents to keep learning records. Peripateticware generates the reports automatically from your activity log.')}</p>
+            </div>
+          )}
+
+          {/* ── Step 2: First activity ── */}
+          {step === 2 && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌿</div>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.5rem' }}>{t('pages_homeschool_homeschoolwelcomepage.youre_all_set', 'You\'re all set!')}</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.75rem', lineHeight: 1.6 }}>{t('pages_homeschool_homeschoolwelcomepage.ready_to_create_your_first_outdoor_activ', 'Ready to create your first outdoor activity? Peri will suggest Aristotelian inquiry questions tailored to your location and subject.')}</p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={goToNewActivity}
+                  style={{
+                    padding: '0.7rem 1.5rem', borderRadius: '0.4rem',
+                    background: 'var(--primary)', color: '#fff',
+                    border: 'none', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
+                  }}
+                >
+                  Create first activity →
+                </button>
+                <button
+                  onClick={goToDashboard}
+                  style={{
+                    padding: '0.7rem 1.25rem', borderRadius: '0.4rem',
+                    background: 'transparent', color: 'var(--text-muted)',
+                    border: '1px solid var(--border)', fontWeight: 500, fontSize: '0.9rem', cursor: 'pointer',
+                  }}
+                >
+                  Go to dashboard
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation footer */}
+        {step < 2 && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '1rem 2rem', borderTop: '1px solid var(--border)',
+            background: 'var(--surface-alt, var(--surface))',
+          }}>
+            <button
+              onClick={() => step > 0 ? setStep(s => s - 1) : goToDashboard()}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem' }}
+            >
+              <ChevronLeft size={16} />
+              {step === 0 ? 'Skip setup' : 'Back'}
+            </button>
+
+            <button
+              onClick={() => {
+                if (step === 0) saveChildren();
+                else setStep(s => s + 1);
+              }}
+              disabled={saving}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.3rem',
+                padding: '0.55rem 1.3rem', borderRadius: '0.4rem',
+                background: 'var(--primary)', color: '#fff',
+                border: 'none', fontWeight: 600, fontSize: '0.875rem',
+                cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.7 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : step === 1 ? 'Continue' : 'Continue'}
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default HomeschoolWelcomePage;

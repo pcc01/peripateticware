@@ -4,6 +4,7 @@
 
 """Activity management endpoints - MERGED (Existing + Phase 5 + ActivityBuilder)"""
 
+from pydantic import BaseModel as _BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
@@ -23,6 +24,7 @@ from schemas.activities import (
     ActivityResponse,
     ActivityListResponse,
     PaginatedActivityResponse,
+    SharedLibraryActivityResponse,
 )
 # Phase 5 imports
 from schemas.activities_extended import (
@@ -111,6 +113,10 @@ async def create_activity(
         suggested_lessons=getattr(activity, "suggested_lessons", []),
         activity_type=ActivityType(activity.activity_type.value),
         is_shareable=activity.is_shareable,
+        share_scope=getattr(activity, "share_scope", "org") or "org",
+        language=getattr(activity, "language", None),
+        state_standard=getattr(activity, "state_standard", None),
+        discipline=getattr(activity, "discipline", None),
         status=ActivityStatus.DRAFT,
     )
 
@@ -184,6 +190,33 @@ async def list_activities(
         page=page,
         page_size=page_size,
         total_pages=total_pages,
+    )
+
+
+@router.get("/shared-library", response_model=List[SharedLibraryActivityResponse])
+async def get_shared_library_early(
+    scope: Optional[str] = Query(None, description="'org' or 'all'; default: show both scopes accessible to user"),
+    subject: Optional[str] = Query(None),
+    grade_level: Optional[int] = Query(None),
+    language: Optional[str] = Query(None),
+    state_standard: Optional[str] = Query(None),
+    discipline: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(30, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return published, shareable activities from all teachers.
+    NOTE: This route must appear before /{activity_id} to avoid route shadowing.
+    Delegates to the canonical get_shared_library implementation below.
+    """
+    return await get_shared_library(
+        scope=scope, subject=subject, grade_level=grade_level,
+        language=language, state_standard=state_standard, discipline=discipline,
+        search=search, page=page, page_size=page_size,
+        current_user=current_user, db=db,
     )
 
 
@@ -837,9 +870,269 @@ async def teacher_classes(
     ]
 
 
+# ── Submission review endpoints (called by TeacherSubmissionsPage) ────────────
+#
+# These operate on learning_sessions (which the teacher submissions list returns)
+# and upsert into activity_submissions for phase tracking.
+
+class FieldReviewRequest(_BaseModel):
+    feedback:       str  = ""
+    approve:        bool = False  # True = explicitly unlock reflection (gated mode)
+    reject:         bool = False  # True = send back for more field work
+
+
+class FinalReviewRequest(_BaseModel):
+    feedback: str  = ""
+    score:    int  = 4
+
+
+def _now():
+    return datetime.now(timezone.utc)
+
+
+async def _upsert_submission(db: AsyncSession, session_id: str, student_id: str,
+                             activity_id: str) -> dict:
+    """Return existing activity_submission row or create one, as a dict."""
+    row = (await db.execute(
+        text("SELECT id FROM activity_submissions WHERE session_id = :sid"),
+        {"sid": session_id},
+    )).first()
+    if row:
+        return {"id": str(row[0])}
+    await db.execute(
+        text("""
+            INSERT INTO activity_submissions
+                (id, student_id, activity_id, session_id,
+                 submission_status, completion_phase,
+                 field_phase_status, reflection_status,
+                 created_at, updated_at)
+            SELECT
+                uuid_generate_v4(), :student_id, :activity_id, :session_id,
+                'submitted',
+                CASE WHEN a.completion_mode = 'field_and_reflection'
+                     THEN 'field_work' ELSE 'complete' END,
+                CASE WHEN a.completion_mode = 'field_and_reflection'
+                     THEN 'submitted' ELSE 'not_applicable' END,
+                CASE WHEN a.completion_mode = 'field_and_reflection'
+                     THEN 'not_started' ELSE 'not_applicable' END,
+                NOW(), NOW()
+            FROM activities a WHERE a.id = :activity_id
+        """),
+        {"student_id": student_id, "activity_id": activity_id, "session_id": session_id},
+    )
+    await db.commit()
+    row = (await db.execute(
+        text("SELECT id FROM activity_submissions WHERE session_id = :sid"),
+        {"sid": session_id},
+    )).first()
+    return {"id": str(row[0])}
+
+
+@router.post("/teacher/submissions/{session_id}/approve")
+async def approve_submission(
+    session_id: str,
+    body: FinalReviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Approve final submission — mark session graded, write teacher feedback."""
+    # Verify session belongs to this teacher's activity
+    row = (await db.execute(
+        text("""
+            SELECT ls.user_id, ls.activity_id
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    sub = await _upsert_submission(db, session_id, str(row[0]), str(row[1]))
+
+    await db.execute(
+        text("""
+            UPDATE activity_submissions
+            SET    submission_status = 'graded',
+                   completion_phase  = 'complete',
+                   teacher_feedback  = :feedback,
+                   grade             = :score,
+                   graded_at         = NOW(),
+                   updated_at        = NOW()
+            WHERE  id = :sub_id
+        """),
+        {"feedback": body.feedback, "score": body.score, "sub_id": sub["id"]},
+    )
+    await db.execute(
+        text("UPDATE learning_sessions SET status = 'completed' WHERE id = :sid"),
+        {"sid": session_id},
+    )
+    await db.commit()
+    return {"status": "approved", "submission_id": sub["id"]}
+
+
+@router.post("/teacher/submissions/{session_id}/reject")
+async def reject_submission(
+    session_id: str,
+    body: FinalReviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reject final submission with feedback."""
+    row = (await db.execute(
+        text("""
+            SELECT ls.user_id, ls.activity_id
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    sub = await _upsert_submission(db, session_id, str(row[0]), str(row[1]))
+
+    await db.execute(
+        text("""
+            UPDATE activity_submissions
+            SET    submission_status = 'draft',
+                   teacher_feedback  = :feedback,
+                   updated_at        = NOW()
+            WHERE  id = :sub_id
+        """),
+        {"feedback": body.feedback, "sub_id": sub["id"]},
+    )
+    await db.commit()
+    return {"status": "rejected", "submission_id": sub["id"]}
+
+
+@router.post("/teacher/submissions/{session_id}/review-field")
+async def review_field_phase(
+    session_id: str,
+    body: FieldReviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Teacher reviews the field work phase of a Field + Reflection activity.
+
+    - Always saves field_phase_feedback.
+    - If body.approve = True  → sets field_phase_status='approved', unlocks reflection.
+    - If body.reject = True   → sets field_phase_status='rejected', sends back to student.
+    - Otherwise               → sets field_phase_status='reviewed' (student can still proceed
+                                 if require_field_approval=FALSE on the activity).
+    """
+    row = (await db.execute(
+        text("""
+            SELECT ls.user_id, ls.activity_id, a.completion_mode, a.require_field_approval
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if row[2] != "field_and_reflection":
+        raise HTTPException(status_code=400, detail="Activity is not Field + Reflection type")
+
+    sub = await _upsert_submission(db, session_id, str(row[0]), str(row[1]))
+
+    if body.reject:
+        new_field_status = "rejected"
+    elif body.approve:
+        new_field_status = "approved"
+    else:
+        new_field_status = "reviewed"
+
+    await db.execute(
+        text("""
+            UPDATE activity_submissions
+            SET    field_phase_status      = :field_status,
+                   field_phase_feedback    = :feedback,
+                   field_phase_reviewed_at = NOW(),
+                   updated_at              = NOW()
+            WHERE  id = :sub_id
+        """),
+        {"field_status": new_field_status, "feedback": body.feedback, "sub_id": sub["id"]},
+    )
+    await db.commit()
+    return {"status": new_field_status, "submission_id": sub["id"]}
+
+
+@router.get("/teacher/submissions/{session_id}/detail")
+async def submission_detail(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Full submission detail including field phase and reflection status."""
+    row = (await db.execute(
+        text("""
+            SELECT
+                ls.id             AS session_id,
+                ls.user_id        AS student_id,
+                ls.status         AS session_status,
+                ls.created_at     AS started_at,
+                ls.completed_at,
+                ls.evidence,
+                a.id              AS activity_id,
+                a.title           AS activity_title,
+                a.completion_mode,
+                a.require_field_approval,
+                u.first_name, u.last_name,
+                sub.id                    AS sub_id,
+                sub.submission_status,
+                sub.completion_phase,
+                sub.field_phase_status,
+                sub.field_phase_feedback,
+                sub.field_phase_reviewed_at,
+                sub.reflection_status,
+                sub.reflection_content,
+                sub.linked_field_note_id,
+                sub.teacher_feedback,
+                sub.grade
+            FROM learning_sessions ls
+            JOIN activities a  ON a.id  = ls.activity_id
+            JOIN users u       ON u.id  = ls.user_id
+            LEFT JOIN activity_submissions sub ON sub.session_id = ls.id
+            WHERE ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "session_id":             str(row[0]),
+        "student_id":             str(row[1]),
+        "student_name":           f"{row[10]} {row[11]}",
+        "session_status":         row[2],
+        "started_at":             row[3].isoformat() if row[3] else None,
+        "completed_at":           row[4].isoformat() if row[4] else None,
+        "evidence":               row[5] or [],
+        "activity_id":            str(row[6]),
+        "activity_title":         row[7],
+        "completion_mode":        row[8],
+        "require_field_approval": row[9],
+        "submission_id":          str(row[12]) if row[12] else None,
+        "submission_status":      row[13],
+        "completion_phase":       row[14],
+        "field_phase_status":     row[15],
+        "field_phase_feedback":   row[16],
+        "field_phase_reviewed_at":row[17].isoformat() if row[17] else None,
+        "reflection_status":      row[18],
+        "reflection_content":     row[19],
+        "linked_field_note_id":   str(row[20]) if row[20] else None,
+        "teacher_feedback":       row[21],
+        "grade":                  row[22],
+    }
+
+
 # ── Privacy compliance check for ActivityManager badge ────────────────────────
 
-from pydantic import BaseModel as _BaseModel
 
 class ComplianceCheckRequest(_BaseModel):
     location_name: str = ""
@@ -875,4 +1168,263 @@ async def check_activity_compliance_quick(
         return {"status": badge, "issues": [str(i) for i in issues], "warnings": [str(w) for w in warnings]}
     except Exception as e:
         logger.debug(f"Compliance check error (non-fatal): {e}")
-        return {"status": "compliant", "issues": [], "warnings": []}
+        return {"status": "unknown", "issues": [], "warnings": []}
+
+
+# ============================================================================
+# SHARED LIBRARY ENDPOINTS
+# ============================================================================
+
+@router.get("/shared-library", response_model=List[SharedLibraryActivityResponse])
+async def get_shared_library(
+    scope: Optional[str] = Query(None, description="'org' or 'all'; default: show both scopes accessible to user"),
+    subject: Optional[str] = Query(None),
+    grade_level: Optional[int] = Query(None),
+    language: Optional[str] = Query(None),
+    state_standard: Optional[str] = Query(None),
+    discipline: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(30, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return published, shareable activities from all teachers.
+    - scope='org': only activities shared within the user's org
+    - scope='all': all globally shared activities
+    - scope=None: org activities from user's org + all globally shared ones
+    Excludes the current user's own activities (use the regular list endpoint for those).
+    """
+    user_org_id = str(current_user.org_id) if current_user.org_id else None
+
+    # Build the query using raw SQL for flexibility
+    where_clauses = [
+        "a.is_shareable = TRUE",
+        "a.status = 'published'",
+        "a.teacher_id != :uid",
+    ]
+    params: dict = {"uid": str(current_user.id), "offset": (page - 1) * page_size, "limit": page_size}
+
+    # Scope filtering
+    if scope == "org":
+        if user_org_id:
+            where_clauses.append("a.share_scope = 'org' AND u.org_id = :org_id")
+            params["org_id"] = user_org_id
+        else:
+            # User has no org — can't see org-scoped content
+            where_clauses.append("FALSE")
+    elif scope == "all":
+        where_clauses.append("a.share_scope = 'all'")
+    else:
+        # Default: show globally shared + org-scoped from same org
+        if user_org_id:
+            where_clauses.append(
+                "(a.share_scope = 'all' OR (a.share_scope = 'org' AND u.org_id = :org_id))"
+            )
+            params["org_id"] = user_org_id
+        else:
+            where_clauses.append("a.share_scope = 'all'")
+
+    if subject:
+        where_clauses.append("LOWER(a.subject) LIKE :subject")
+        params["subject"] = f"%{subject.lower()}%"
+    if grade_level:
+        where_clauses.append("a.grade_level = :grade_level")
+        params["grade_level"] = grade_level
+    if language:
+        where_clauses.append("LOWER(a.language) = :language")
+        params["language"] = language.lower()
+    if state_standard:
+        where_clauses.append("LOWER(a.state_standard) = :state_standard")
+        params["state_standard"] = state_standard.lower()
+    if discipline:
+        where_clauses.append("LOWER(a.discipline) LIKE :discipline")
+        params["discipline"] = f"%{discipline.lower()}%"
+    if search:
+        where_clauses.append(
+            "(LOWER(a.title) LIKE :search OR LOWER(a.description) LIKE :search OR LOWER(a.location_name) LIKE :search)"
+        )
+        params["search"] = f"%{search.lower()}%"
+
+    where_sql = " AND ".join(where_clauses)
+
+    rows = (await db.execute(text(f"""
+        SELECT
+            a.id, a.title, a.description, a.subject, a.grade_level,
+            a.difficulty_level, a.estimated_duration_minutes, a.activity_type,
+            a.bloom_level, a.location_name, a.share_scope,
+            a.language, a.state_standard, a.discipline, a.created_at,
+            COALESCE(u.full_name, u.email) AS author_name,
+            o.name AS author_org
+        FROM activities a
+        JOIN users u ON u.id = a.teacher_id
+        LEFT JOIN organizations o ON o.id = u.org_id
+        WHERE {where_sql}
+        ORDER BY a.created_at DESC
+        OFFSET :offset LIMIT :limit
+    """), params)).fetchall()
+
+    return [
+        SharedLibraryActivityResponse(
+            id=r[0], title=r[1], description=r[2], subject=r[3],
+            grade_level=r[4], difficulty_level=r[5],
+            estimated_duration_minutes=r[6],
+            activity_type=r[7] or "inquiry",
+            bloom_level=r[8] or 1,
+            location_name=r[9] or "",
+            share_scope=r[10] or "org",
+            language=r[11], state_standard=r[12], discipline=r[13],
+            created_at=r[14],
+            author_name=r[15], author_org=r[16],
+        )
+        for r in rows
+    ]
+
+
+@router.post("/{activity_id}/copy", status_code=status.HTTP_201_CREATED)
+async def copy_shared_activity(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Copy a shared library activity into the current teacher's own library as a draft."""
+    _require_teacher(current_user, "Only teachers can copy activities")
+
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    src = result.scalar_one_or_none()
+    if not src:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if not src.is_shareable or src.status != ActivityStatus.PUBLISHED:
+        raise HTTPException(status_code=403, detail="This activity is not available for copying")
+
+    copy = Activity(
+        teacher_id=current_user.id,
+        title=f"[Copy] {src.title}",
+        description=src.description,
+        location_latitude=src.location_latitude,
+        location_longitude=src.location_longitude,
+        location_radius_meters=src.location_radius_meters,
+        location_name=src.location_name,
+        grade_level=src.grade_level,
+        subject=src.subject,
+        difficulty_level=src.difficulty_level,
+        estimated_duration_minutes=src.estimated_duration_minutes,
+        materials_needed=src.materials_needed or [],
+        resources=src.resources or [],
+        learning_objectives=src.learning_objectives or [],
+        curriculum_unit_ids=src.curriculum_unit_ids or [],
+        bloom_level=src.bloom_level,
+        marzano_level=src.marzano_level,
+        dok_level=src.dok_level,
+        solo_level=src.solo_level,
+        primary_framework=src.primary_framework or "blooms",
+        activity_type=src.activity_type,
+        assessment_type=src.assessment_type or "formative",
+        language=src.language,
+        state_standard=src.state_standard,
+        discipline=src.discipline,
+        # Copy is private draft by default
+        is_shareable=False,
+        share_scope="org",
+        status=ActivityStatus.DRAFT,
+    )
+    db.add(copy)
+    await db.commit()
+    await db.refresh(copy)
+    return {"id": str(copy.id), "title": copy.title, "status": "draft"}
+
+
+# ── Professor / Teacher: Fieldwork Location Map ─────────────────────────────
+
+@router.get("/{activity_id}/fieldwork-locations")
+async def get_fieldwork_locations(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Returns GPS snapshots for every field-note and evidence-capture submitted
+    against this activity that has lat/lng stored.
+
+    College professors use this for the CourseFieldworkTracker map.
+    K-12 teachers can also use it for post-session review.
+    No live streaming — purely historical.
+    """
+    from models.student_models import EvidenceCapture
+    from models.database import StudentFieldNote, LearningSession as _LS, User as _User
+    from sqlalchemy import literal, union_all
+
+    allowed_roles = {"TEACHER", "PROFESSOR", "ADMIN", "HOMESCHOOL"}
+    if current_user.role.upper() not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Teacher or professor access required")
+
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if current_user.role.upper() != "ADMIN" and activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not own this activity")
+
+    # ── Query 1: EvidenceCapture (direct activity_id FK) ──────────────────
+    ec_q = (
+        select(
+            EvidenceCapture.student_id.cast(text("TEXT")).label("student_id"),
+            _User.full_name.label("student_name"),
+            EvidenceCapture.location_latitude.label("latitude"),
+            EvidenceCapture.location_longitude.label("longitude"),
+            text("NULL").label("location_name"),
+            EvidenceCapture.created_at.label("submitted_at"),
+            EvidenceCapture.title.label("title"),
+            literal("capture").label("type"),
+        )
+        .join(_User, _User.id == EvidenceCapture.student_id)
+        .where(
+            EvidenceCapture.activity_id == activity_id,
+            EvidenceCapture.location_latitude.is_not(None),
+        )
+    )
+
+    # ── Query 2: StudentFieldNote via session join ─────────────────────────
+    fn_q = (
+        select(
+            StudentFieldNote.student_id.cast(text("TEXT")).label("student_id"),
+            _User.full_name.label("student_name"),
+            StudentFieldNote.location_latitude.label("latitude"),
+            StudentFieldNote.location_longitude.label("longitude"),
+            StudentFieldNote.location_name.label("location_name"),
+            StudentFieldNote.created_at.label("submitted_at"),
+            StudentFieldNote.title.label("title"),
+            literal("field_note").label("type"),
+        )
+        .join(_LS, _LS.id == StudentFieldNote.session_id)
+        .join(_User, _User.id == StudentFieldNote.student_id)
+        .where(
+            _LS.activity_id == activity_id,
+            StudentFieldNote.location_latitude.is_not(None),
+        )
+    )
+
+    try:
+        combined = union_all(ec_q, fn_q)
+        rows = (await db.execute(combined)).mappings().all()
+        return {
+            "activity_id": str(activity_id),
+            "locations": [
+                {
+                    "student_id":   r["student_id"],
+                    "student_name": r["student_name"] or "Student",
+                    "latitude":     float(r["latitude"]),
+                    "longitude":    float(r["longitude"]),
+                    "location_name": r["location_name"],
+                    "submitted_at": r["submitted_at"].isoformat() if r["submitted_at"] else None,
+                    "title":        r["title"],
+                    "type":         r["type"],
+                }
+                for r in rows
+            ],
+            "count": len(rows),
+        }
+    except Exception as e:
+        logger.error(f"Fieldwork locations query error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch fieldwork locations")

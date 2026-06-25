@@ -8,7 +8,6 @@
   "license": "BSL-1.1",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
     "linters": "eslint src --ext ts,tsx",
@@ -16,8 +15,19 @@
     "i18n:tag": "node scripts/ast_tagger.cjs",
     "i18n:extract": "npx i18next-parser --config i18next-parser.config.cjs",
     "i18n:fix-logs": "python scripts/fix_i18n_conflicts.py",
-    "i18n:sync": "python scripts/translate_sync.py",
-    "i18n:run-all": "npx run-s i18n:tag i18n:sync"
+    "i18n:sync": "python scripts/translate_sync.py --non-interactive --provider OLLAMA",
+    "i18n:sync:ci": "python scripts/translate_sync.py --non-interactive --provider OLLAMA",
+    "i18n:prepare": "npx run-s i18n:tag i18n:extract",
+    "i18n:run-all": "npx run-s i18n:tag i18n:extract i18n:sync",
+    "build": "npm run i18n:run-all && tsc -b && vite build",
+    "build:no-i18n": "tsc -b && vite build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed --project=chromium",
+    "test:e2e:report": "playwright show-report playwright-report",
+    "test:e2e:teacher": "playwright test tests/e2e/teacher-flows.spec.ts",
+    "test:e2e:student": "playwright test tests/e2e/student-flows.spec.ts",
+    "test:e2e:admin": "playwright test tests/e2e/admin-flows.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.4.0",
@@ -40,7 +50,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.60.4",
+    "@playwright/test": "^1.49.0",
     "@types/leaflet": "^1.9.8",
     "@types/node": "^20.14.11",
     "@types/react": "^19.0.0",

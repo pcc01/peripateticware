@@ -86,6 +86,7 @@ export interface SelfProjectShareRequest {
 export type FieldNoteStatus = 'draft' | 'shared' | 'submitted' | 'promoted' | 'rejected';
 
 export interface FieldNote {
+  capture_count?: number
   id: string;
   student_id: string;
   self_project_id?: string;
@@ -321,4 +322,25 @@ export interface ProposalUpdate {
   location_hint?: string;
   subject?: string;
   note_to_teacher?: string;
+}
+
+// ============================================================================
+// PROFESSOR — FIELDWORK LOCATION MAP
+// ============================================================================
+
+export interface FieldworkLocation {
+  student_id: string
+  student_name: string
+  latitude: number
+  longitude: number
+  location_name: string | null
+  submitted_at: string | null
+  title: string | null
+  type: 'field_note' | 'capture'
+}
+
+export interface FieldworkLocationsResponse {
+  activity_id: string
+  locations: FieldworkLocation[]
+  count: number
 }

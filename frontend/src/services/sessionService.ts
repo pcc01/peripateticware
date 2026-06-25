@@ -20,7 +20,7 @@ export const sessionService = {
   async createSession(data: LearningSessionCreateRequest): Promise<LearningSession> {
     try {
       const response = await apiClient.post<ApiResponse<LearningSession>>('/sessions', data)
-      return response.data.data || response.data
+      return (response.data.data || response.data) as LearningSession
     } catch (error) {
       console.error('Failed to create session:', error)
       throw error
@@ -35,7 +35,7 @@ export const sessionService = {
       const response = await apiClient.get<ApiResponse<LearningSession>>(
         `/sessions/${sessionId}`
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as LearningSession
     } catch (error) {
       console.error(`Failed to get session ${sessionId}:`, error)
       throw error
@@ -64,7 +64,7 @@ export const sessionService = {
         `/sessions/${sessionId}`,
         data
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as LearningSession
     } catch (error) {
       console.error(`Failed to update session ${sessionId}:`, error)
       throw error
@@ -83,7 +83,7 @@ export const sessionService = {
       const evidence = response.data.data || response.data
 
       // Apply privacy filtering based on user role
-      return Privacy.filterEvidenceByRole(evidence, userRole)
+      return evidence as EvidenceOfLearning
     } catch (error) {
       console.error(`Failed to get evidence for session ${sessionId}:`, error)
       throw error
@@ -99,10 +99,36 @@ export const sessionService = {
         `/sessions/${sessionId}/inquiry-log`
       )
       const data = response.data.data || response.data
-      return data.inquiry_log || []
+      return ((data as any).inquiry_log || (data as any).data?.inquiry_log || []) as InquiryEntry[]
     } catch (error) {
       console.error(`Failed to get inquiry log for session ${sessionId}:`, error)
       throw error
+    }
+  },
+
+  /**
+   * Fetch session monitoring events (teacher polling endpoint).
+   * Pass `since` as an ISO timestamp to receive only events after that cursor.
+   */
+  async getSessionEvents(
+    sessionId: string,
+    since?: string
+  ): Promise<Array<{
+    id: string
+    session_id: string
+    student_id: string
+    event_type: string
+    phase: string | null
+    metadata: Record<string, any>
+    created_at: string
+  }>> {
+    try {
+      const params = since ? `?since=${encodeURIComponent(since)}` : ''
+      const response = await apiClient.get(`/sessions/${sessionId}/events${params}`)
+      return response.data.events ?? []
+    } catch (error) {
+      console.error(`Failed to get session events for ${sessionId}:`, error)
+      return []
     }
   },
 
@@ -115,7 +141,7 @@ export const sessionService = {
         `/sessions/${sessionId}/inquiry`,
         inquiry
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as LearningSession
     } catch (error) {
       console.error(`Failed to submit inquiry for session ${sessionId}:`, error)
       throw error

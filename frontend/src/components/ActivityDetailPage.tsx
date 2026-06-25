@@ -9,11 +9,13 @@
 
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Activity } from '../../types/teacher';
-import { useTeacherStore } from '../../stores/teacher';
-import ActivityBuilder from '../../components/ActivityBuilder';
-import ActivityPreview from '../../components/teacher/ActivityPreview';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Activity } from '@/types/teacher';
+import { useTeacherStore } from '@/stores/teacher';
+import ActivityBuilder from './teacher/EnhancedActivityBuilder';
+import ActivityPreview from '@/components/teacher/ActivityPreview';
+
+const LoadingSpinner = () => <div style={{padding:'2rem',textAlign:'center'}}>Loading…</div>
+;
 
 export const ActivityDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();

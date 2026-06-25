@@ -18,6 +18,12 @@ export interface Activity {
   resources: string[] // Keep as strings
   status: 'draft' | 'published' | 'archived'
   is_shareable: boolean
+  share_scope?: 'org' | 'all'
+  language?: string
+  state_standard?: string
+  discipline?: string
+  bloom_level?: string
+  activity_type?: ActivityType
   created_at: string
   updated_at: string
   archived_at?: string
@@ -39,11 +45,14 @@ export interface ActivityFormData {
   materials_needed?: string[]
   resources?: string[]
   is_shareable?: boolean
+  share_scope?: 'org' | 'all'
+  language?: string
+  state_standard?: string
+  discipline?: string
 }
 
 // IMPORTANT: ActivityType is a UNION TYPE, not an interface
-export type ActivityType = 
-  | 'inquiry'
+export type ActivityType = 'outdoor' | 'field_study' | 'inquiry'
   | 'discussion'
   | 'hands_on'
   | 'virtual'
@@ -65,6 +74,7 @@ export interface Project {
 }
 
 export interface ProjectFormData {
+  subject?: string
   title: string
   description: string
   start_date?: string
@@ -151,7 +161,7 @@ export interface ProjectListResponse {
   created_at?: string
 }
 
-export type ProjectStatus = 'draft' | 'active' | 'completed'
+export type ProjectStatus = 'planning' | 'draft' | 'active' | 'completed'
 
 export interface CreateActivityInput {
   title: string
@@ -164,6 +174,27 @@ export interface CreateActivityInput {
   subject: string
   difficulty_level: number
   estimated_duration_minutes: number
+  materials_needed?: string[]
+  resources?: string[]
+  learning_objectives?: string[]
+  bloom_level?: string
+  activity_type?: ActivityType
+  is_shareable?: boolean
+  share_scope?: 'org' | 'all'
+  language?: string
+  state_standard?: string
+  discipline?: string
+  curriculum_unit_ids?: string[]
 }
 
 export interface UpdateActivityInput extends Partial<CreateActivityInput> {}
+export interface CurriculumCreateRequest {
+  title: string
+  description: string
+  subject: string
+  grade_level: number
+  bloom_level?: number
+  marzano_level?: number
+  standards?: string[]
+  content?: Record<string, unknown>
+}

@@ -1,10 +1,10 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
 """Authentication and authorization dependencies"""
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -16,6 +16,48 @@ import logging
 logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
+
+
+async def get_user_from_token_str(token: str, db: AsyncSession) -> User:
+    """Shared helper — validate a raw JWT string and return the User."""
+    user_id = SecurityManager.extract_user_id_from_token(token)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive")
+    return user
+
+
+async def get_current_user_flexible(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Auth dependency that accepts token from Authorization header OR ?token= query param.
+    Use this for endpoints loaded directly by the browser (<img>, <video>, <audio> tags)
+    where setting an Authorization header is not possible.
+    """
+    # 1. Authorization: Bearer <token>
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1]
+        return await get_user_from_token_str(token, db)
+    # 2. ?token=<jwt>
+    token = request.query_params.get("token")
+    if token:
+        return await get_user_from_token_str(token, db)
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 async def get_current_user(
@@ -112,6 +154,36 @@ async def optional_user(
         logger.debug(f"Optional user auth failed: {e}")
         return None
     
-    # Alias for compatibility
-verify_token = get_current_user
 
+# Alias for compatibility
+verify_token = SecurityManager.verify_token
+
+async def get_current_platform_admin(
+    request: "Request",
+    credentials=Depends(security),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """
+    Dependency: requires the caller to be a Peripateticware platform operator
+    (users.is_platform_admin = True).  Distinct from role=ADMIN (org admin).
+    Use this on all /platform/* routes.
+    """
+    from core.config import settings as _s
+    # Second-factor: static X-Platform-Secret header (skip check if secret not configured)
+    if _s.PLATFORM_API_SECRET:
+        given = request.headers.get("X-Platform-Secret", "")
+        import hmac as _hmac
+        if not _hmac.compare_digest(given, _s.PLATFORM_API_SECRET):
+            raise HTTPException(status_code=403, detail="Invalid platform secret.")
+
+    user = await get_current_user(credentials=credentials, db=db)
+    if not getattr(user, "is_platform_admin", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Platform admin access required.",
+        )
+    return user
+
+
+# Alias — some routes import this name
+require_platform_admin = get_current_platform_admin

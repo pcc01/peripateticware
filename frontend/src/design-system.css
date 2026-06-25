@@ -16,6 +16,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Noto+Sans+JP:wght@400;600;700&display=swap');
 
+/* Activate Tailwind utility classes (flex, grid, spacing, rtl: variants, etc.)
+   Must come AFTER @import statements per CSS spec. */
+@tailwind utilities;
+
 /* ============================================================================
    ROOT VARIABLES
    ============================================================================ */
@@ -132,7 +136,7 @@ body[data-direction="atmosphere"] {
   --primary: #a89dd5;         /* Purple */
   --primary-light: #b8aee2;
   --primary-deep: #9088c5;
-  --primary-muted: #f0ece8;
+  --primary-muted: #2a2840;   /* dark purple tint for dark mode */
   --secondary: #4a9ef0;       /* Blue */
   --bg: #141c17;
   --surface: #1a2320;
@@ -142,6 +146,15 @@ body[data-direction="atmosphere"] {
   --text: #f5f5f5;
   --text-muted: #b0b0b0;
   --text-faint: #808080;
+}
+
+/* Atmosphere: force inputs/selects to use skin vars */
+body[data-direction="atmosphere"] input,
+body[data-direction="atmosphere"] select,
+body[data-direction="atmosphere"] textarea {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
 }
 
 /* RTL Support (Arabic) */

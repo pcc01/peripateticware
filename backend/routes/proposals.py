@@ -80,7 +80,7 @@ def _serialize(r: dict) -> dict:
     return {
         "id": str(r["id"]),
         "title": r["title"],
-        "challenge_description": r["challenge_description"],
+        "challenge_description": r.get("challenge_description", ""),
         "location_hint": r["location_hint"] or "",
         "subject": r["subject"] or "General",
         "note_to_teacher": r["note_to_teacher"] or "",

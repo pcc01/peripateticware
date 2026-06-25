@@ -35,8 +35,15 @@ import ParentDashboard from './pages/ParentDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminPrivacyConfigPage from './pages/AdminPrivacyConfigPage'
 import AdminAuditLogPage from './pages/AdminAuditLogPage'
+import AdminAIConfigPage from './pages/admin/AdminAIConfigPage'
+import OrgAIConfigPage from './pages/org/admin/OrgAIConfigPage'
+import AdminHelpPage from './pages/admin/AdminHelpPage'
 
 import ActivityListPage from './pages/teacher/ActivityListPage'
+import SharedLibraryPage from './pages/teacher/SharedLibraryPage'
+import TeacherClassroomPage from './pages/teacher/TeacherClassroomPage'
+import TeacherClassroomsPage from './pages/teacher/TeacherClassroomsPage'
+import TeacherWelcomePage from './pages/teacher/TeacherWelcomePage'
 import ProjectsPage from './pages/teacher/ProjectsPage'
 import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
 import { TeacherTourPage } from './pages/teacher/TeacherTourPage'
@@ -44,6 +51,17 @@ import ActivityManager from './components/teacher/ActivityManager'
 import { TeacherSettingsPage } from './pages/TeacherSettingsPage'
 import { TeacherApprovalDashboard } from './components/teacher/TeacherApprovalDashboard'
 import RubricsPage from './pages/teacher/RubricsPage'
+import ReflectionEditorPage from './pages/student/ReflectionEditorPage'
+import PrivacyEnginePage from './pages/PrivacyEnginePage'
+import PrivacyConfirmationPage from './pages/PrivacyConfirmationPage'
+import PlatformShell from './layouts/PlatformShell'
+import PlatformOverviewPage from './pages/platform/PlatformOverviewPage'
+import PlatformOrgsPage from './pages/platform/PlatformOrgsPage'
+import PlatformOrgDetailPage from './pages/platform/PlatformOrgDetailPage'
+import PlatformUsagePage from './pages/platform/PlatformUsagePage'
+import PlatformAuditLogPage from './pages/platform/PlatformAuditLogPage'
+import PlatformAISettingsPage from './pages/platform/PlatformAISettingsPage'
+import OriginStoryPage from './pages/OriginStoryPage'
 import RubricBuilder from './components/teacher/RubricBuilder'
 import StudentActivityPreview from './components/teacher/StudentActivityPreview'
 import { FieldNoteEditor as _FieldNoteEditor } from './components/student/FieldNoteEditor'
@@ -60,10 +78,14 @@ import PeerProjectsListPage from './pages/student/PeerProjectsListPage'
 import PeerProjectDetailPage from './pages/student/PeerProjectDetailPage'
 import ProposalsListPage from './pages/student/ProposalsListPage'
 import ProposalFormPage from './pages/student/ProposalFormPage'
+import StudentActivitiesPage from './pages/student/StudentActivitiesPage'
 import TeacherProposalReviewPage from './pages/teacher/TeacherProposalReviewPage'
 import StudentActivityDetailPage from './pages/StudentActivityDetailPage'
 
 import ParentFeaturesPage from './pages/parent/ParentFeaturesPage'
+import ParentCalendarPage from './pages/ParentCalendarPage'
+import ParentNotificationsPage from './pages/ParentNotificationsPage'
+import ParentReportsPage from './pages/ParentReportsPage'
 import LinkChildPage from './pages/LinkChildPage'
 import VerifyEmailPendingPage from './pages/auth/VerifyEmailPendingPage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
@@ -73,6 +95,7 @@ import ParentLayout from './layouts/ParentLayout'
 import AdminLayout from './layouts/AdminLayout'
 import HomeschoolLayout from './layouts/HomeschoolLayout'
 import HomeschoolDashboard from './pages/homeschool/HomeschoolDashboard'
+import HomeschoolWelcomePage from './pages/homeschool/HomeschoolWelcomePage'
 import HomeschoolChildrenPage from './pages/homeschool/HomeschoolChildrenPage'
 import HomeschoolProgressPage from './pages/homeschool/HomeschoolProgressPage'
 import HomeschoolRequirementsPage from './pages/homeschool/HomeschoolRequirementsPage'
@@ -94,9 +117,11 @@ import TeacherStudentsPage from './pages/teacher/TeacherStudentsPage'
 import RubricImportPage from './pages/teacher/RubricImportPage'
 import StandardsImportPage from './pages/teacher/StandardsImportPage'
 import TeacherStandardsPage from './pages/teacher/TeacherStandardsPage'
+import TeacherSessionMonitorPage from './pages/teacher/TeacherSessionMonitorPage'
 import CurriculumImportPage from './pages/admin/CurriculumImportPage'
 import AdminStandardsPage from './pages/admin/AdminStandardsPage'
 import ComingSoonPage from './pages/ComingSoonPage'
+import ParentMessagesPage from './pages/ParentMessagesPage'
 import NotFoundPage from './pages/NotFoundPage'
 import StudentJournalPage from './pages/student/StudentJournalPage'
 
@@ -124,7 +149,7 @@ interface AuthResponse {
 
 class AuthService {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const endpoints = [`${API_BASE}/api/v1/auth/login`, `${API_BASE}/api/auth/login`, `${API_BASE}/auth/login`]
+    const endpoints = [`${API_BASE}/auth/login`]
     for (const endpoint of endpoints) {
       try {
         const response = await axios.post(endpoint, { email, password })
@@ -146,8 +171,8 @@ class AuthService {
     throw new Error('No valid auth endpoint found')
   }
 
-  async signup(data: { email: string; password: string; password_confirm?: string; first_name?: string; last_name?: string; name?: string; role?: string }): Promise<AuthResponse> {
-    const endpoints = [`${API_BASE}/api/v1/auth/signup`, `${API_BASE}/api/auth/signup`, `${API_BASE}/auth/signup`]
+  async signup(data: { email: string; password: string; password_confirm?: string; first_name?: string; last_name?: string; name?: string; role?: string; age_confirmed?: boolean; [key: string]: any }): Promise<AuthResponse> {
+    const endpoints = [`${API_BASE}/auth/signup`]
     for (const endpoint of endpoints) {
       try {
         const response = await axios.post(endpoint, data)
@@ -211,7 +236,7 @@ const LoginScreenWrapper: React.FC = () => {
 
 const SignUpScreenWrapper: React.FC = () => {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({ email: '', password: '', password_confirm: '', first_name: '', last_name: '', role: 'student' })
+  const [formData, setFormData] = useState({ email: '', password: '', password_confirm: '', first_name: '', last_name: '', role: 'student', age_confirmed: false })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -219,7 +244,7 @@ const SignUpScreenWrapper: React.FC = () => {
     e.preventDefault(); setError(''); setLoading(true)
     if (formData.password !== formData.password_confirm) { setError('Passwords do not match'); setLoading(false); return }
     try {
-      const response = await authService.signup(formData)
+      const response = await authService.signup({ ...formData, age_confirmed: true })
       const role = (response.role || formData.role).toLowerCase()
       navigate(role === 'teacher' ? '/teacher/activities' : role === 'homeschool' ? '/homeschool' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
     } catch (err: any) {
@@ -282,6 +307,8 @@ const App: React.FC = () => {
           {/* PUBLIC */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/privacy-engine" element={<PrivacyEnginePage />} />
+          <Route path="/about/origin" element={<OriginStoryPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
           <Route path="/parent-consent/:token" element={<ParentConsentPage />} />
@@ -291,6 +318,17 @@ const App: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/privacy-confirmed" element={<PrivacyConfirmationPage />} />
+
+          {/* Platform super-admin routes — all wrapped in PlatformShell (back + logout header) */}
+          <Route element={<PlatformShell />}>
+            <Route path="/platform" element={<PlatformOverviewPage />} />
+            <Route path="/platform/orgs" element={<PlatformOrgsPage />} />
+            <Route path="/platform/orgs/:orgId" element={<PlatformOrgDetailPage />} />
+            <Route path="/platform/usage" element={<PlatformUsagePage />} />
+            <Route path="/platform/audit-log" element={<PlatformAuditLogPage />} />
+            <Route path="/platform/ai-settings" element={<AdminAIConfigPage />} />
+          </Route>
 
           {/* STUDENT */}
           <Route path="/student" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentDashboard /></StudentLayout></ProtectedRoute>} />
@@ -304,12 +342,14 @@ const App: React.FC = () => {
           <Route path="/student/peer-projects/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><PeerProjectDetailPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/proposals" element={<ProtectedRoute requiredRole="student"><StudentLayout><ProposalsListPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/proposals/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><ProposalFormPage /></StudentLayout></ProtectedRoute>} />
-          <Route path="/student/activities" element={<ProtectedRoute requiredRole="student"><Navigate to="/student" replace /></ProtectedRoute>} />
+          <Route path="/student/reflection/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><ReflectionEditorPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/activities" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentActivitiesPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/activities/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentActivityDetailPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/session/:id" element={<ProtectedRoute requiredRole="student"><SessionPage /></ProtectedRoute>} />
 
           {/* TEACHER */}
           <Route path="/teacher" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherDashboard /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/welcome" element={<ProtectedRoute requiredRole="teacher"><TeacherWelcomePage /></ProtectedRoute>} />
           <Route path="/teacher/projects" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectsPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/projects/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectDetailPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
@@ -327,9 +367,13 @@ const App: React.FC = () => {
           <Route path="/teacher/standards/import" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><StandardsImportPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/rubrics/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricBuilder /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/rubrics/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricBuilder /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/shared-library" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><SharedLibraryPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/:id/student-preview" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><StudentActivityPreview /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/all-activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/sessions/:id/monitor" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherSessionMonitorPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/students" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherStudentsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/classrooms" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherClassroomsPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/classrooms/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherClassroomPage /></TeacherLayout></ProtectedRoute>} />
 
           {/* PARENT */}
           <Route path="/parent" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
@@ -337,13 +381,14 @@ const App: React.FC = () => {
           <Route path="/parent/progress" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentProgressPage /></ParentLayout></ProtectedRoute>} />
           <Route path="/parent/settings" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentSettingsPage /></ParentLayout></ProtectedRoute>} />
           <Route path="/parent/link-child" element={<ProtectedRoute requiredRole="parent"><ParentLayout><LinkChildPage /></ParentLayout></ProtectedRoute>} />
-          <Route path="/parent/messages" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Messages" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
-          <Route path="/parent/calendar" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Calendar" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
-          <Route path="/parent/reports" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Reports" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
-          <Route path="/parent/notifications" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ComingSoonPage feature="Notifications" returnTo="/parent" /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/messages" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentMessagesPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/calendar" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentCalendarPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/reports" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentReportsPage /></ParentLayout></ProtectedRoute>} />
+          <Route path="/parent/notifications" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentNotificationsPage /></ParentLayout></ProtectedRoute>} />
 
           {/* HOMESCHOOL */}
           <Route path="/homeschool" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolDashboard /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/welcome" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolWelcomePage /></ProtectedRoute>} />
           <Route path="/homeschool/children" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolChildrenPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/progress" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolProgressPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityListPage /></HomeschoolLayout></ProtectedRoute>} />
@@ -353,6 +398,7 @@ const App: React.FC = () => {
           <Route path="/homeschool/coverage" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolCoveragePage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/export" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolExportPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/rubrics" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricsPage /></HomeschoolLayout></ProtectedRoute>} />
 
           {/* ADMIN */}
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
@@ -365,6 +411,11 @@ const App: React.FC = () => {
           <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettingsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/curriculum/import" element={<ProtectedRoute requiredRole="admin"><AdminLayout><CurriculumImportPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/standards" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminStandardsPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/ai-config" element={<ProtectedRoute requiredRole="admin"><AdminLayout><OrgAIConfigPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/rubrics/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminHelpPage /></AdminLayout></ProtectedRoute>} />
 
           {/* STUDENT — Journal */}
           <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />

@@ -3,6 +3,7 @@
 // Used by: teacher (rubrics), admin (curriculum), homeschool (state requirements)
 
 import React, { useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -80,6 +81,7 @@ const StepIndicator: React.FC<{ current: Step }> = ({ current }) => {
 export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
   setType, title, description, onSave, onComplete, onCancel,
 }) => {
+  const { t } = useTranslation('landing');
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -225,7 +227,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
 
           {file && (
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Set name</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.set_name', 'Set name')}</label>
               <input value={setName} onChange={e => setSetName(e.target.value)}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }} />
             </div>
@@ -245,8 +247,8 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
       {step === 'parsing' && (
         <div style={{ textAlign: 'center', padding: '64px 0' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🔍</div>
-          <h2 style={{ fontFamily: 'var(--font-head)', marginBottom: 8 }}>Analysing document…</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 32 }}>The AI is extracting criteria from your file. This may take 10–30 seconds.</p>
+          <h2 style={{ fontFamily: 'var(--font-head)', marginBottom: 8 }}>{t('components_shared_extractionwizard.analysing_document', 'Analysing document…')}</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 32 }}>{t('components_shared_extractionwizard.the_ai_is_extracting_criteria_from_your_', 'The AI is extracting criteria from your file. This may take 10–30 seconds.')}</p>
           <div style={{ width: 48, height: 48, border: '4px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
         </div>
       )}
@@ -267,7 +269,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Set name <span style={{ color: 'var(--error, red)' }}>*</span></label>
             <input value={setName} onChange={e => setSetName(e.target.value)}
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box', marginBottom: 12 }} />
-            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Description</label>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.description', 'Description')}</label>
             <textarea value={setDesc} onChange={e => setSetDesc(e.target.value)} rows={2}
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box', resize: 'vertical' }} />
           </div>
@@ -287,18 +289,18 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
               <div key={c.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
                   <div>
-                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Name</label>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('components_shared_extractionwizard.name', 'Name')}</label>
                     <input value={c.name} onChange={e => updateCriterion(i, 'name', e.target.value)}
                       style={{ display: 'block', width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.88rem', boxSizing: 'border-box', marginTop: 3 }} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Category</label>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('components_shared_extractionwizard.category', 'Category')}</label>
                     <input value={c.category} onChange={e => updateCriterion(i, 'category', e.target.value)}
                       style={{ display: 'block', width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.88rem', boxSizing: 'border-box', marginTop: 3 }} />
                   </div>
                 </div>
                 <div style={{ marginBottom: 10 }}>
-                  <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
+                  <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('components_shared_extractionwizard.description', 'Description')}</label>
                   <textarea value={c.description} onChange={e => updateCriterion(i, 'description', e.target.value)} rows={2}
                     style={{ display: 'block', width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.85rem', boxSizing: 'border-box', marginTop: 3, resize: 'vertical' }} />
                 </div>
@@ -332,7 +334,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
       {step === 'saving' && (
         <div style={{ textAlign: 'center', padding: '64px 0' }}>
           <div style={{ width: 48, height: 48, border: '4px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 24px' }} />
-          <p style={{ color: 'var(--text-muted)' }}>Saving your criteria set…</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t('components_shared_extractionwizard.saving_your_criteria_set', 'Saving your criteria set…')}</p>
         </div>
       )}
 

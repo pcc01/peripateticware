@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStudentStore } from '@/stores';
 import styles from './StudentDashboard.module.css';
 import { useAuthStore } from '@/stores/auth';
+import { PendingReflectionQueue } from '@/components/student/PendingReflectionQueue';
 export const StudentDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
@@ -79,21 +80,8 @@ export const StudentDashboard: React.FC = () => {
         </button>
       </div>
 
-      <button
-        onClick={() => navigate('/student/settings')}
-        className={styles.settingsBtn}
-        title={t("landing:studentdashboard.settings", "Settings")}>{t("landing:studentdashboard.settings", "\u2699\uFE0F Settings")}
-
-
-      </button>
-
-      <button
-        onClick={handleLogout}
-        className={styles.logoutBtn}
-        title={t("landing:studentdashboard.logout", "Logout")}>{t("landing:studentdashboard.logout", "\uD83D\uDEAA Logout")}
-
-
-      </button>
+      {/* Settings + Logout live in the sidebar (DashboardShell) \u2014 removed from the
+          dashboard body to avoid duplicate controls. */}
 
       {/* Error Message */}
       {error &&
@@ -128,6 +116,11 @@ export const StudentDashboard: React.FC = () => {
           </div>
         </section>
       }
+
+      {/* Pending Reflection Queue — shown only when student has items */}
+      <section className={styles.section}>
+        <PendingReflectionQueue compact />
+      </section>
 
       {/* Active Projects */}
       <section className={styles.section}>
@@ -208,7 +201,7 @@ export const StudentDashboard: React.FC = () => {
           </div> :
 
         <div className={styles.activitiesGrid}>
-            {activities.slice(0, 3).map((activity) =>
+            {activities.slice(0, 3).map((activity: any) =>
           <div
             key={activity.id}
             className={styles.activityCard}

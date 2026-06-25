@@ -86,7 +86,7 @@ export class ApiClient {
 
     // Re-throw with formatted error
     const apiError = new ApiClientError(
-      error.response?.data?.detail || error.message,
+      (typeof error.response?.data?.detail === "string" ? error.response.data.detail : JSON.stringify(error.response?.data?.detail)) || error.message,
       error.response?.status || 500,
       error
     )

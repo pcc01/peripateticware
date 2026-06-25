@@ -3,22 +3,28 @@ import { useTranslation } from 'react-i18next';
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Compass, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Compass, Mail, Lock, User, ArrowLeft, MapPin } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth';
-import type { UserRole } from '@/types/auth';
+import { useGeoHint } from '../../hooks/useGeoHint';
+import type { UserRole } from '@/config/constants';
 import { SyntheticEvent } from 'react';
 
 const signupSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
   last_name: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  password_confirm: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(8, 'At least 8 characters')
+    .regex(/[A-Z]/, 'At least one uppercase letter')
+    .regex(/[a-z]/, 'At least one lowercase letter')
+    .regex(/[0-9]/, 'At least one number')
+    .regex(/[@$!%*?&]/, 'At least one special character (@$!%*?&)'),
+  password_confirm: z.string().min(8, 'At least 8 characters'),
   role: z.enum(['TEACHER', 'STUDENT', 'PARENT', 'ADMIN', 'HOMESCHOOL'] as const, {
     errorMap: () => ({ message: 'Please select a role' })
   }),
@@ -46,11 +52,12 @@ interface SignupScreenProps {
 
 type SignUpFormData = z.infer<typeof signupSchema>;
 
+// NOTE: STUDENT is intentionally removed — students join via teacher invite link only.
+// Directing students to /join/:token keeps classrooms organised and prevents orphan accounts.
 const ROLE_OPTIONS = [
-  { value: 'TEACHER'    as UserRole, label: '👨‍🏫 Teacher',           desc: 'Create activities and monitor students' },
-  { value: 'STUDENT'    as UserRole, label: '👨‍🎓 Student',           desc: 'Complete activities and submit evidence' },
-  { value: 'PARENT'     as UserRole, label: '👩‍👩‍👦 Parent',            desc: 'View your child\'s progress' },
-  { value: 'HOMESCHOOL' as UserRole, label: '🏡 Homeschool Parent',  desc: 'Teach your children and track state requirements' },
+  { value: 'TEACHER'    as UserRole, label: '👨‍🏫 Teacher',           desc: 'Create activities, invite students, and monitor progress' },
+  { value: 'PARENT'     as UserRole, label: '👩‍👩‍👦 Parent',            desc: 'View your child\'s progress and communicate with teachers' },
+  { value: 'HOMESCHOOL' as UserRole, label: '🏡 Homeschool Parent',  desc: 'Teach your children, track state requirements, and generate portfolio reports' },
 ];
 
 
@@ -62,9 +69,26 @@ export default function SignupScreen({
   onFormChange
 }: SignupScreenProps = {}) {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<UserRole>('STUDENT');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('TEACHER');
+  const [schoolName, setSchoolName] = useState('');
   const { signup, isLoading, error: authError } = useAuthStore();
   const { t } = useTranslation('landing');
+
+  // ── Teaching Context state (sprint 2E) ────────────────────────────────────
+  const geoHint = useGeoHint();
+  const [countryCode, setCountryCode]         = useState<string>('');
+  const [subdivisionCode, setSubdivisionCode] = useState<string>('');
+  const [hasUnder13, setHasUnder13]           = useState<boolean>(true);
+  const [orgTypeV2, setOrgTypeV2]             = useState<string>('');
+
+  // Pre-fill country from geo hint when it loads
+  useEffect(() => {
+    if (geoHint.countryCode && !countryCode) {
+      setCountryCode(geoHint.countryCode);
+    }
+  }, [geoHint.countryCode]);
+
+  const showTeachingContext = selectedRole === 'TEACHER' || selectedRole === 'HOMESCHOOL';
 
   const {
     register,
@@ -75,8 +99,8 @@ export default function SignupScreen({
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      role: 'STUDENT',
-    age_confirmed: false
+      role: 'TEACHER',
+      age_confirmed: false
     }
   });
 
@@ -89,37 +113,46 @@ export default function SignupScreen({
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      // ✅ FIXED: Pass correct fields to match new auth.ts interface
       await signup({
         email: data.email,
         password: data.password,
         password_confirm: data.password_confirm,
         first_name: data.first_name,
         last_name: data.last_name,
-        role: data.role as 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN',
-        age_group: data.role === 'STUDENT' ? 'under_18' : 'adult'
+        role: data.role as import('@/config/constants').UserRole,
+        school_name: (selectedRole === 'TEACHER' || selectedRole === 'HOMESCHOOL') && schoolName.trim()
+          ? schoolName.trim()
+          : undefined,
+        // Teaching Context fields
+        country_code:     countryCode || undefined,
+        subdivision_code: subdivisionCode || undefined,
+        has_under_13:     showTeachingContext ? hasUnder13 : undefined,
+        org_type_v2:      orgTypeV2 || undefined,
+        ip_country_hint:  geoHint.countryCode || undefined,
       });
 
-      setTimeout(() => {
-        const authStore = useAuthStore.getState();
-        const userRole = authStore.user?.role?.toUpperCase();
-
-        console.log('[SignUpScreen] Navigating based on role:', userRole);
-
-        // Account created — must verify email before accessing dashboard
+      // Navigate based on whether the account is immediately active (EMAIL_DRY_RUN / dev)
+      // or needs email verification (production).
+      const signedUpUser = useAuthStore.getState().user;
+      if (signedUpUser?.is_active) {
+        navigate('/login', {
+          replace: true,
+          state: { successMessage: 'Account created! You can now sign in.' },
+        });
+      } else {
         navigate('/verify-email-pending', { replace: true, state: { email: data.email } });
-      }, 300);
+      }
     } catch (err) {
       console.error('[SignUpScreen] Signup error:', err);
-      // Error is handled by store
+      // Error displayed via authError from the store
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-green-500 flex items-center justify-center px-4 py-8">
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #6b9e7e 50%, #d4a574 100%)' }}>
+      <div className="absolute inset-0" style={{ opacity: 0.12, pointerEvents: 'none' }}>
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl" style={{ background: '#faf7f2' }}></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl" style={{ background: '#faf7f2' }}></div>
       </div>
 
       <div className="relative z-10 w-full max-w-md">
@@ -238,13 +271,13 @@ export default function SignupScreen({
               <label className="block text-sm font-medium text-gray-700 mb-3">{t("landing:i_am_a", "I am a...")}
 
               </label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {ROLE_OPTIONS.map((option) =>
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => handleRoleSelect(option.value)}
-                  className={`flex-1 py-2 px-3 border-2 rounded-lg text-center font-medium transition text-sm ${
+                  className={`py-2 px-3 border-2 rounded-lg text-center font-medium transition text-sm ${
                   role === option.value
                     ? 'border-green-600 bg-green-50 text-green-800'
                     : 'border-gray-200 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`
@@ -258,50 +291,102 @@ export default function SignupScreen({
               }
             </div>
 
-            {/* 14b.1 — COPPA age confirmation */}
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100">
-              <input
-                type="checkbox"
-                id="age_confirmed"
-                {...register('age_confirmed')}
-                className="mt-0.5 w-4 h-4 accent-blue-600 cursor-pointer"
-              />
-              <label htmlFor="age_confirmed" className="text-sm text-gray-700 cursor-pointer leading-snug">
-                {t("landing:age_confirmation", "I confirm that I am 13 years of age or older, or that I have parental consent to create this account.")}
-              </label>
-            </div>
-            {errors.age_confirmed && (
-              <p className="text-red-600 text-xs -mt-1">{errors.age_confirmed.message}</p>
+            {/* School / homeschool name — shown for teacher and homeschool roles */}
+            {(selectedRole === 'TEACHER' || selectedRole === 'HOMESCHOOL') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {selectedRole === 'TEACHER' ? 'School name (optional)' : 'Family / co-op name (optional)'}
+                </label>
+                <input
+                  type="text"
+                  value={schoolName}
+                  onChange={e => setSchoolName(e.target.value)}
+                  placeholder={selectedRole === 'TEACHER' ? 'e.g. Springfield Elementary' : 'e.g. Rivera Family'}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <p className="text-xs text-gray-400 mt-1">{t('components_auth_signupscreen.you_can_change_this_later_in_your_organi', 'You can change this later in your organisation settings.')}</p>
+              </div>
             )}
 
+            {/* ── Teaching Context (sprint 2E) — TEACHER / HOMESCHOOL only ─── */}
+            {showTeachingContext && (
+              <div className="border border-green-200 rounded-xl p-4 bg-green-50 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin className="w-4 h-4 text-green-700" />
+                  <span className="text-sm font-semibold text-green-800">Teaching Context</span>
+                  {geoHint.isLoading && (
+                    <span className="text-xs text-gray-400 ml-1">Detecting location…</span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 -mt-1">{t('components_auth_signupscreen.helps_us_apply_the_right_privacy_framewo', 'Helps us apply the right privacy frameworks (FERPA, COPPA, GDPR, etc.) for your students.')}</p>
+
+                {/* Country */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">{t('components_auth_signupscreen.country', 'Country')}</label>
+                  <select
+                    value={countryCode}
+                    onChange={e => setCountryCode(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                  >
+                    <option value="">Select country</option>
+                    <option value="US">🇺🇸 United States</option>
+                    <option value="GB">🇬🇧 United Kingdom</option>
+                    <option value="CA">🇨🇦 Canada</option>
+                    <option value="AU">🇦🇺 Australia</option>
+                    <option value="DE">🇩🇪 Germany</option>
+                    <option value="FR">🇫🇷 France</option>
+                    <option value="NL">🇳🇱 Netherlands</option>
+                    <option value="OTHER">🌍 Other</option>
+                  </select>
+                </div>
+
+                {/* Under-13 question */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-2">{t('components_auth_signupscreen.do_any_of_your_students_have_children_u', 'Do any of your students / children have a birthday after today minus 13 years?')}</label>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" name="under13" value="yes" checked={hasUnder13}
+                        onChange={() => setHasUnder13(true)}
+                        className="accent-green-600" />
+                      <span className="text-sm text-gray-700">Yes — some are under 13</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="radio" name="under13" value="no" checked={!hasUnder13}
+                        onChange={() => setHasUnder13(false)}
+                        className="accent-green-600" />
+                      <span className="text-sm text-gray-700">No — all 13+</span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{t('components_auth_signupscreen.this_determines_whether_coppa_applies_', 'This determines whether COPPA applies to your account.')}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              
-              {isLoading ?
-              <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>{t("landing:creating_account", "Creating account...")}
-
-              </> :
-
-              'Create Account'
-              }
+              className="w-full flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 px-4 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {t('components_auth_signupscreen.creating_account', 'Creating account...')}
+                </>
+              ) : (
+                t('components_auth_signupscreen.create_account', 'Create account')
+              )}
             </button>
           </form>
 
-          <p className="text-center text-gray-600 text-sm mt-6">{t("landing:already_have_an_account", "Already have an account?")}
-            {' '}
-            <Link
-              to="/login"
-              className="text-blue-600 hover:text-blue-700 font-semibold">{t("landing:signupscreen.sign_in", "Sign in")}
-
-
+          <p className="text-center text-sm text-gray-500 mt-5">
+            {t('components_auth_signupscreen.already_have_an_account', 'Already have an account?')}{' '}
+            <Link to="/login" className="text-green-700 hover:underline font-medium">
+              {t('components_auth_signupscreen.sign_in', 'Sign in')}
             </Link>
           </p>
         </div>
       </div>
     </div>
   );
-};
-
+}

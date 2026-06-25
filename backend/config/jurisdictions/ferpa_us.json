@@ -1,0 +1,26 @@
+{
+  "jurisdiction_id": "ferpa_us",
+  "name": "FERPA",
+  "full_name": "Family Educational Rights and Privacy Act",
+  "country_code": "US",
+  "subdivision_code": null,
+  "applies_to": [
+    "school",
+    "district"
+  ],
+  "framework": "ferpa",
+  "description": "FERPA protects the privacy of student education records at institutions receiving federal funding. Grants parents/eligible students the right to access and correct records.",
+  "key_requirements": [
+    "Annual notification of FERPA rights",
+    "Written consent before disclosing PII from education records",
+    "Right to review and request amendment of records",
+    "Directory information policy"
+  ],
+  "data_categories_covered": [
+    "education_records",
+    "student_pii",
+    "academic_performance"
+  ],
+  "ai_student_permitted": true,
+  "ai_teacher_permitted": true
+}

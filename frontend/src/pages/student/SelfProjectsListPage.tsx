@@ -14,7 +14,7 @@ const SelfProjectsListPage: React.FC = () => {
 
   useEffect(() => {
     selfProjectApi.list()
-      .then(setProjects)
+      .then((data: any) => setProjects(Array.isArray(data) ? data : (data?.items ?? data?.projects ?? [])))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [])

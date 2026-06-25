@@ -480,14 +480,32 @@ async def admin_dashboard(
     from models.database import User, Activity, LearningSession
     _require_admin_role(current_user)
 
+    # Consolidated into 2 queries instead of 7 sequential round-trips.
     from sqlalchemy import text as _text
-    total_users = (await db.execute(_text("SELECT COUNT(*) FROM users"))).scalar() or 0
-    teachers    = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'TEACHER'"))).scalar() or 0
-    students    = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'STUDENT'"))).scalar() or 0
-    parents     = (await db.execute(_text("SELECT COUNT(*) FROM users WHERE UPPER(role::text) = 'PARENT'"))).scalar() or 0
-    total_activities = (await db.execute(_text("SELECT COUNT(*) FROM activities"))).scalar() or 0
-    published   = (await db.execute(_text("SELECT COUNT(*) FROM activities WHERE LOWER(status::text) = 'published'"))).scalar() or 0
-    sessions    = (await db.execute(_text("SELECT COUNT(*) FROM learning_sessions"))).scalar() or 0
+    user_row = (await db.execute(_text("""
+        SELECT
+            COUNT(*)                                                        AS total_users,
+            COUNT(*) FILTER (WHERE UPPER(role::text) = 'TEACHER')         AS teachers,
+            COUNT(*) FILTER (WHERE UPPER(role::text) = 'STUDENT')         AS students,
+            COUNT(*) FILTER (WHERE UPPER(role::text) = 'PARENT')          AS parents
+        FROM users
+    """))).mappings().one()
+
+    act_row = (await db.execute(_text("""
+        SELECT
+            COUNT(*)                                                        AS total_activities,
+            COUNT(*) FILTER (WHERE LOWER(status::text) = 'published')     AS published,
+            (SELECT COUNT(*) FROM learning_sessions)                       AS sessions
+        FROM activities
+    """))).mappings().one()
+
+    total_users      = int(user_row["total_users"] or 0)
+    teachers         = int(user_row["teachers"]    or 0)
+    students         = int(user_row["students"]    or 0)
+    parents          = int(user_row["parents"]     or 0)
+    total_activities = int(act_row["total_activities"] or 0)
+    published        = int(act_row["published"]        or 0)
+    sessions         = int(act_row["sessions"]         or 0)
 
     return {
         # Field names match AdminDashboardData frontend type
@@ -623,19 +641,20 @@ async def list_admin_classes(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all classes across all teachers."""
-    from models.database import Class as ClassModel
+    """List all classrooms across all teachers."""
     _require_admin_role(current_user)
     from sqlalchemy import text as _t
     result = await db.execute(_t("""
-        SELECT c.id, c.name, c.description, c.grade_level, c.school_year,
+        SELECT c.id, c.name, c.grade_level, c.subject,
                c.is_active, c.created_at,
-               u.full_name AS teacher_name,
-               COUNT(DISTINCT ce.student_id) AS student_count
-        FROM classes c
+               u.full_name AS teacher_name, u.email AS teacher_email,
+               o.name AS org_name,
+               COUNT(DISTINCT cs.student_id) AS student_count
+        FROM classrooms c
         LEFT JOIN users u ON u.id = c.teacher_id
-        LEFT JOIN class_enrollments ce ON ce.class_id = c.id
-        GROUP BY c.id, u.full_name
+        LEFT JOIN organizations o ON o.id = c.org_id
+        LEFT JOIN classroom_students cs ON cs.classroom_id = c.id
+        GROUP BY c.id, u.full_name, u.email, o.name
         ORDER BY c.name
     """))
     rows = result.mappings().all()
@@ -643,12 +662,13 @@ async def list_admin_classes(
         {
             "id": str(r["id"]),
             "name": r["name"],
-            "description": r["description"],
             "grade_level": r["grade_level"],
-            "school_year": r["school_year"],
+            "subject": r["subject"],
             "is_active": r["is_active"],
             "created_at": r["created_at"].isoformat() if r["created_at"] else None,
             "teacher_name": r["teacher_name"],
+            "teacher_email": r["teacher_email"],
+            "org_name": r["org_name"],
             "student_count": r["student_count"] or 0,
         }
         for r in rows
@@ -662,12 +682,17 @@ async def admin_analytics(
 ):
     """System-wide analytics snapshot."""
     from models.database import User, Activity, LearningSession
+    from sqlalchemy import text as _text
     _require_admin_role(current_user)
 
-    active_users = (await db.execute(select(func.count()).where(User.is_active == True))).scalar() or 0
-    completed_sessions = (await db.execute(
-        select(func.count()).where(LearningSession.status == "completed")
-    )).scalar() or 0
+    # Single consolidated query instead of 2 sequential round-trips.
+    row = (await db.execute(_text("""
+        SELECT
+            (SELECT COUNT(*) FROM users WHERE is_active = true)                 AS active_users,
+            (SELECT COUNT(*) FROM learning_sessions WHERE status = 'completed') AS completed_sessions
+    """))).mappings().one()
+    active_users       = int(row["active_users"]       or 0)
+    completed_sessions = int(row["completed_sessions"] or 0)
 
     return {
         "active_users": active_users,

@@ -9,6 +9,7 @@
 
 import { create } from 'zustand'
 import * as Types from '../types'
+import type { StudentProgress as _SP } from '../services/types'
 import { apiServices } from '../services/api'
 
 /* ============================================================================ */
@@ -737,7 +738,7 @@ export const useParentStore = create<ParentState>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const progress = await apiServices.parent.getChildProgress(childId)
-      set({ childProgress: progress, selectedChildId: childId })
+      set({ childProgress: progress as any, selectedChildId: childId })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch child progress'
       set({ error: message })

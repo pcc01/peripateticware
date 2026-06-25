@@ -106,27 +106,9 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  if (loading && !dashboardData) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>
-          <p>{t("landing:loading_dashboard", "Loading dashboard...")}</p>
-        </div>
-      </div>);
-
-  }
-
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <button
-        onClick={() => navigate('/admin/settings')}
-        className={styles.settingsBtn}
-        title={t("landing:admindashboard.settings", "Settings")}>{t("landing:admindashboard.settings", "\u2699\uFE0F Settings")}
-
-
-      </button>
-      
+      {/* Header is always rendered immediately \u2014 data sections appear once loaded */}
       <div className={styles.header}>
         <h1>{t("landing:admin_dashboard", "Admin Dashboard")}</h1>
         <button onClick={handleRefresh} className={styles.refreshBtn} disabled={loading}>
@@ -134,13 +116,13 @@ export const AdminDashboard: React.FC = () => {
         </button>
       </div>
 
-      <button
-        onClick={handleLogout}
-        className={styles.logoutBtn}
-        title={t("landing:admindashboard.logout", "Logout")}>{t("landing:admindashboard.logout", "\uD83D\uDEAA Logout")}
+      {/* Inline loading indicator \u2014 does not replace the heading */}
+      {loading && !dashboardData && (
+        <div className={styles.loading}>
+          <p>{t("landing:loading_dashboard", "Loading dashboard...")}</p>
+        </div>
+      )}
 
-
-      </button>
       {/* Error Message */}
       {error &&
       <div className={styles.error}>
@@ -154,11 +136,21 @@ export const AdminDashboard: React.FC = () => {
       <section className={styles.statsSection}>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>{t("landing:total_users", "Total Users")}</div>
-            <div className={styles.statValue}>{dashboardData.users_count}</div>
+            <div
+              className={styles.statValue}
+              style={{ cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={() => navigate('/admin/users')}
+              title="View all users"
+            >{dashboardData.users_count}</div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>{t("landing:total_activities", "Total Activities")}</div>
-            <div className={styles.statValue}>{dashboardData.activities_count}</div>
+            <div
+              className={styles.statValue}
+              style={{ cursor: 'pointer', textDecoration: 'underline' }}
+              onClick={() => navigate('/teacher/activities')}
+              title="View all activities"
+            >{dashboardData.activities_count}</div>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statLabel}>{t("landing:total_sessions", "Total Sessions")}</div>
@@ -208,15 +200,27 @@ export const AdminDashboard: React.FC = () => {
               <h3>{t("landing:user_breakdown", "User Breakdown")}</h3>
               <div className={styles.statItem}>
                 <span>{t("landing:teachers", "Teachers")}</span>
-                <span className={styles.value}>{analytics.total_teachers || 0}</span>
+                <span
+                  className={styles.value}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => navigate('/admin/users?role=TEACHER')}
+                >{analytics.total_teachers || 0}</span>
               </div>
               <div className={styles.statItem}>
                 <span>{t("landing:admindashboard.students", "Students")}</span>
-                <span className={styles.value}>{analytics.total_students || 0}</span>
+                <span
+                  className={styles.value}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => navigate('/admin/users?role=STUDENT')}
+                >{analytics.total_students || 0}</span>
               </div>
               <div className={styles.statItem}>
                 <span>{t("landing:parents", "Parents")}</span>
-                <span className={styles.value}>{analytics.total_parents || 0}</span>
+                <span
+                  className={styles.value}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => navigate('/admin/users?role=PARENT')}
+                >{analytics.total_parents || 0}</span>
               </div>
             </div>
 
@@ -369,14 +373,14 @@ export const AdminDashboard: React.FC = () => {
           </p>
             <div className={styles.paginationButtons}>
               <button
-              onClick={() => fetchUsers(Math.max(0, pagination.skip - 20), 20)}
-              disabled={pagination.skip === 0}>{t("landing:admindashboard.previous", "Previous")}
+              onClick={() => fetchUsers(Math.max(0, (pagination as any)?.skip - 20), 20)}
+              disabled={(pagination as any)?.skip === 0}>{t("landing:admindashboard.previous", "Previous")}
 
 
             </button>
               <button
-              onClick={() => fetchUsers(pagination.skip + 20, 20)}
-              disabled={pagination.skip + 20 >= pagination.total}>{t("landing:admindashboard.next", "Next")}
+              onClick={() => fetchUsers((pagination as any)?.skip + 20, 20)}
+              disabled={(pagination as any)?.skip + 20 >= pagination.total}>{t("landing:admindashboard.next", "Next")}
 
 
             </button>
@@ -404,60 +408,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </section>
       }
-      {/* Admin Navigation */}
-      <section className={styles.section}>
-        <h2>{t("landing:admin_tools", "Admin Tools")}</h2>
-        <div className={styles.adminNav}>
-          <button
-            onClick={() => navigate('/admin/users')}
-            className={styles.navCard}>{t("landing:admindashboard.user_management", "\uD83D\uDC65 User Management")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/classes')}
-            className={styles.navCard}>{t("landing:admindashboard.classes", "\uD83C\uDFEB Classes")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/system')}
-            className={styles.navCard}>{t("landing:admindashboard.system_health", "\uD83D\uDDA5\uFE0F System Health")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/privacy')}
-            className={styles.navCard}>{t("landing:privacy_config", "\uD83D\uDD12 Privacy Config")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/logs')}
-            className={styles.navCard}>{t("landing:audit_logs", "\uD83D\uDCCB Audit Logs")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/analytics')}
-            className={styles.navCard}>{t("landing:admindashboard.analytics", "\uD83D\uDCCA Analytics")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/settings')}
-            className={styles.navCard}>{t("landing:admindashboard.settings", "\u2699\uFE0F Settings")}
-
-
-          </button>
-          <button
-            onClick={() => navigate('/admin/help')}
-            className={styles.navCard}>{t("landing:help", "\u2753 Help")}
-
-
-          </button>
-        </div>
-      </section>
+      {/* Navigation handled by left sidebar */}
     </div>);
 
 };

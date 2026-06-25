@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
+import { useTranslation } from 'react-i18next';
 
 interface Child { id: string; email: string; full_name: string; is_active: boolean; grade_level: number; age_band: string; created_at: string; }
 
@@ -13,6 +14,7 @@ function authHeader() {
 const AGE_BAND_LABELS: Record<string, string> = { k6: 'K–6', m712: '7–12', h1318: '13–18' };
 
 export const HomeschoolChildrenPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,30 +59,30 @@ export const HomeschoolChildrenPage: React.FC = () => {
 
       {showAdd && (
         <form onSubmit={handleAdd} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 24, marginBottom: 28 }}>
-          <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-head)' }}>Add Child Account</h3>
+          <h3 style={{ margin: '0 0 16px', fontFamily: 'var(--font-head)' }}>{t('pages_homeschool_homeschoolchildrenpage.add_child_account', 'Add Child Account')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>Full name *</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.full_name', 'Full name *')}</label>
               <input required value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>Email *</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.email', 'Email *')}</label>
               <input required type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>Password *</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.password', 'Password *')}</label>
               <input required type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>Grade level</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.grade_level', 'Grade level')}</label>
               <input type="number" min={0} max={12} value={form.grade_level} onChange={e => setForm(p => ({ ...p, grade_level: parseInt(e.target.value) }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>Age band</label>
+              <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.age_band', 'Age band')}</label>
               <select value={form.age_band} onChange={e => setForm(p => ({ ...p, age_band: e.target.value }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }}>
                 <option value="k6">K–6 (Ages 5–12)</option>
@@ -96,12 +98,12 @@ export const HomeschoolChildrenPage: React.FC = () => {
         </form>
       )}
 
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolchildrenpage.loading', 'Loading…')}</p>}
 
       {!loading && children.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>👧</div>
-          <p>No children added yet. Add your first child to get started.</p>
+          <p>{t('pages_homeschool_homeschoolchildrenpage.no_children_added_yet_add_your_first_chi', 'No children added yet. Add your first child to get started.')}</p>
         </div>
       )}
 

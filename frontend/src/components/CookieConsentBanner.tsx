@@ -66,4 +66,14 @@ const CookieConsentBanner: React.FC = () => {
         </p>
         <button
           onClick={dismiss}
-      
+
+          className="ml-4 px-4 py-2 bg-[var(--primary)] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition flex-shrink-0"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default CookieConsentBanner;

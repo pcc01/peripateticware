@@ -12,7 +12,10 @@ from typing import Optional, List, Dict, Set
 from enum import Enum
 import asyncio
 import json
+import logging
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationType(str, Enum):
@@ -204,8 +207,11 @@ class WebSocketNotificationService:
                     for websocket in self.active_connections[parent_id]:
                         try:
                             await websocket.send_json(message)
-                        except:
-                            pass
+                        except Exception as ws_err:  # NASA Rule 7: no bare except
+                            logger.debug(
+                                "WebSocket send failed (client likely disconnected): %s",
+                                ws_err,
+                            )
                 
                 print(f"✅ Marked notification {notification_id} as read")
                 return True

@@ -12,7 +12,7 @@ const StudentHowItWorksPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg">
+    <div className="bg sihw-student">
       <div className="container py-5xl">
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-5xl)' }}>
@@ -112,19 +112,19 @@ const StudentHowItWorksPage: React.FC = () => {
           <div className="grid grid-2 gap-2xl">
             <div>
               <h3 className="h5 mb-md" style={{ color: 'white' }}>{t("landing:be_curious", "Be Curious")}</h3>
-              <p style={{ opacity: 0.9 }}>{t("landing:ask_lots_of_questions_and_explore_deeply", "Ask lots of questions and explore deeply. There are no wrong questions!")}</p>
+              <p style={{ opacity: 0.9, color: 'rgba(255,255,255,0.9)' }}>{t("landing:ask_lots_of_questions_and_explore_deeply", "Ask lots of questions and explore deeply. There are no wrong questions!")}</p>
             </div>
             <div>
               <h3 className="h5 mb-md" style={{ color: 'white' }}>{t("landing:take_detailed_notes", "Take Detailed Notes")}</h3>
-              <p style={{ opacity: 0.9 }}>{t("landing:write_down_what_you_observe_even_small_d", "Write down what you observe, even small details that might seem unimportant.")}</p>
+              <p style={{ opacity: 0.9, color: 'rgba(255,255,255,0.9)' }}>{t("landing:write_down_what_you_observe_even_small_d", "Write down what you observe, even small details that might seem unimportant.")}</p>
             </div>
             <div>
               <h3 className="h5 mb-md" style={{ color: 'white' }}>{t("landing:collaborate", "Collaborate")}</h3>
-              <p style={{ opacity: 0.9 }}>{t("landing:work_with_your_teammates_and_share_your_", "Work with your teammates and share your observations and ideas.")}</p>
+              <p style={{ opacity: 0.9, color: 'rgba(255,255,255,0.9)' }}>{t("landing:work_with_your_teammates_and_share_your_", "Work with your teammates and share your observations and ideas.")}</p>
             </div>
             <div>
               <h3 className="h5 mb-md" style={{ color: 'white' }}>{t("landing:think_critically", "Think Critically")}</h3>
-              <p style={{ opacity: 0.9 }}>{t("landing:analyze_your_data_and_think_about_what_i", "Analyze your data and think about what it means and why it matters.")}</p>
+              <p style={{ opacity: 0.9, color: 'rgba(255,255,255,0.9)' }}>{t("landing:analyze_your_data_and_think_about_what_i", "Analyze your data and think about what it means and why it matters.")}</p>
             </div>
           </div>
         </div>
@@ -138,9 +138,17 @@ const StudentHowItWorksPage: React.FC = () => {
       </div>
 
       <style>{`
+        /* Scope explicit, even columns so the cards don't wrap into an
+           asymmetric "2 + 1 / 3 + 1" layout inside the narrower dashboard
+           content area (the global .grid-* use auto-fit minmax). */
+        .sihw-student .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .sihw-student .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 1000px) {
+          .sihw-student .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 768px) {
-          .grid-3 { grid-template-columns: 1fr; }
-          .grid-2 { grid-template-columns: 1fr; }
+          .sihw-student .grid-3 { grid-template-columns: 1fr; }
+          .sihw-student .grid-2 { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>);

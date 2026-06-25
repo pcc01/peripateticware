@@ -8,12 +8,81 @@
  * Child linking has its own page at /parent/link-child
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useParentStore } from '@/stores';
 import styles from './ParentDashboard.module.css';
 import { fmtDate } from '@/utils/date';
+
+// ── Consent status mini-panel ─────────────────────────────────────────────────
+interface ConsentStatus {
+  childId: string;
+  childName: string;
+  studentHash: string;
+  hasConsent: boolean;
+  loading: boolean;
+}
+
+async function fetchConsentForChild(childId: string, childName: string): Promise<ConsentStatus> {
+  // Derive student_hash using the same SHA-256 approach as the backend
+  const idBytes = new TextEncoder().encode(childId);
+  let studentHash = '0'.repeat(64);
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', idBytes);
+    studentHash = Array.from(new Uint8Array(buf))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  } catch { /* fallback to zero hash */ }
+
+  try {
+    const token = localStorage.getItem('auth_token');
+    const res = await fetch(`/api/v1/privacy/consent/${studentHash}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { childId, childName, studentHash, hasConsent: data.has_active_consent, loading: false };
+    }
+  } catch { /* non-fatal */ }
+  return { childId, childName, studentHash, hasConsent: false, loading: false };
+}
+
+function ConsentStatusPanel({ linkedChildren }: { linkedChildren: { id: string; full_name: string }[] }) {
+  const [statuses, setStatuses] = useState<ConsentStatus[]>([]);
+
+  useEffect(() => {
+    if (!linkedChildren.length) return;
+    // Start all loading
+    setStatuses(linkedChildren.map(c => ({ childId: c.id, childName: c.full_name, studentHash: '', hasConsent: false, loading: true })));
+    Promise.all(linkedChildren.map(c => fetchConsentForChild(c.id, c.full_name)))
+      .then(results => setStatuses(results));
+  }, [linkedChildren.map(c => c.id).join(',')]);
+
+  if (!statuses.length) return null;
+
+  return (
+    <section style={{ marginTop: 24, padding: '16px 20px', background: 'var(--surface-alt, #f9fafb)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 12 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'var(--text, #111)' }}>Parental Consent Status</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {statuses.map(s => (
+          <div key={s.childId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'white', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)' }}>
+            <span style={{ fontSize: 14, color: 'var(--text, #111)' }}>{s.childName}</span>
+            {s.loading ? (
+              <span style={{ fontSize: 12, color: 'var(--text-muted, #6b7280)' }}>Checking…</span>
+            ) : s.hasConsent ? (
+              <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>Consent granted ✓</span>
+            ) : (
+              <a href={`/parent-consent/${s.studentHash}`} style={{ fontSize: 12, color: '#b45309', fontWeight: 600, textDecoration: 'underline' }}>
+                Consent pending — Review
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export const ParentDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -87,7 +156,7 @@ export const ParentDashboard: React.FC = () => {
       {/* \u2500\u2500 No children linked \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
       {linkedChildren.length === 0 ? (
         <div className={styles.emptyState} style={{ textAlign: 'center', padding: '48px 32px' }}>
-          <div style={{ fontSize: '3rem', marginBottom: 16 }}>\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC67</div>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>👨‍👩‍👧</div>
           <h2 style={{ marginBottom: 12 }}>
             {t('no_children_linked', 'No children linked yet')}
           </h2>
@@ -106,14 +175,14 @@ export const ParentDashboard: React.FC = () => {
             margin: '0 auto 32px',
             textAlign: 'left',
           }}>
-            <p style={{ fontWeight: 600, marginBottom: 8 }}>What you'll see after linking:</p>
+            <p style={{ fontWeight: 600, marginBottom: 8 }}>{t('pages_parentdashboard.what_youll_see_after_linking', 'What you\'ll see after linking:')}</p>
             <ul style={{ color: 'var(--text-muted)', lineHeight: 2, paddingLeft: 20, margin: 0 }}>
-              <li>\uD83D\uDCCA Overall progress &amp; competency scores</li>
-              <li>\uD83D\uDCDA Active and completed activities</li>
-              <li>\uD83D\uDDD3 Upcoming sessions and due dates</li>
-              <li>\uD83D\uDCF8 Submitted evidence and field notes</li>
-              <li>\uD83D\uDCAC Teacher feedback and messages</li>
-              <li>\uD83D\uDCCB Downloadable progress reports</li>
+              <li>📊 Overall progress &amp; competency scores</li>
+              <li>📚 Active and completed activities</li>
+              <li>🗓️ Upcoming sessions and due dates</li>
+              <li>📸 Submitted evidence and field notes</li>
+              <li>💬 Teacher feedback and messages</li>
+              <li>📋 Downloadable progress reports</li>
             </ul>
           </div>
           <button
@@ -121,7 +190,7 @@ export const ParentDashboard: React.FC = () => {
             className={styles.createBtn}
             style={{ padding: '12px 32px', fontSize: '1rem' }}
           >
-            \uD83D\uDD17 {t('link_your_child', 'Link Your Child')}
+            🔗 {t('link_your_child', 'Link Your Child')}
           </button>
         </div>
       ) : (
@@ -160,10 +229,8 @@ export const ParentDashboard: React.FC = () => {
               {[
                 { icon: '\uD83D\uDCCA', label: 'Progress Reports', path: '/parent/progress' },
                 { icon: '\uD83D\uDCAC', label: 'Messages',         path: '/parent/messages' },
-                { icon: '\uD83D\uDCC5', label: 'Calendar',         path: '/parent/calendar' },
                 { icon: '\uD83D\uDCCB', label: 'Reports',          path: '/parent/reports' },
                 { icon: '\uD83D\uDD14', label: 'Notifications',    path: '/parent/notifications' },
-                { icon: '\u2699\uFE0F', label: 'Settings',         path: '/parent/settings' },
               ].map(({ icon, label, path }) => (
                 <button key={path} onClick={() => navigate(path)} className={styles.navCard}>
                   {icon} {label}
@@ -250,6 +317,11 @@ export const ParentDashboard: React.FC = () => {
             </div>
           )}
         </>
+      )}
+
+      {/* Parental Consent Status — shown whenever children are linked */}
+      {linkedChildren.length > 0 && (
+        <ConsentStatusPanel linkedChildren={linkedChildren} />
       )}
     </div>
   );

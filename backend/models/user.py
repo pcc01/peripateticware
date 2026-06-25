@@ -28,6 +28,11 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     age_group = Column(String(20), nullable=True)  # under_13 | under_16 | under_18 | adult
     requires_parental_consent = Column(Boolean, default=False)
+    org_id = Column(UUID(as_uuid=True), nullable=True)              # FK organisations.id (raw column, no FK constraint in ORM)
+    primary_org_id = Column(UUID(as_uuid=True), nullable=True)      # added by 20260607_org_jurisdiction
+    signup_country_code = Column(String(10), nullable=True)          # added by 20260607_org_jurisdiction
+    is_platform_admin = Column(Boolean, default=False, nullable=False)  # added by 20260606_platform_ledger
+    invite_token_used = Column(String(128), nullable=True)              # which invite token created this account
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

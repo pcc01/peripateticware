@@ -1,0 +1,75 @@
+<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sky background -->
+  <rect width="400" height="260" fill="#dceedd"/>
+
+  <!-- Sun -->
+  <circle cx="340" cy="45" r="28" fill="#f5c842" opacity="0.85"/>
+  <circle cx="340" cy="45" r="20" fill="#fde88a"/>
+
+  <!-- Distant hills -->
+  <ellipse cx="80" cy="210" rx="130" ry="60" fill="#b5d5b8"/>
+  <ellipse cx="320" cy="215" rx="110" ry="55" fill="#b5d5b8"/>
+
+  <!-- Back trees (lighter, smaller) -->
+  <g opacity="0.55">
+    <polygon points="60,160 80,100 100,160" fill="#4a7c59"/>
+    <polygon points="55,165 80,115 105,165" fill="#3a6647"/>
+    <rect x="74" y="160" width="12" height="20" fill="#5a4a30"/>
+
+    <polygon points="290,155 314,90 338,155" fill="#4a7c59"/>
+    <polygon points="285,162 314,105 343,162" fill="#3a6647"/>
+    <rect x="308" y="155" width="12" height="22" fill="#5a4a30"/>
+  </g>
+
+  <!-- Mid trees -->
+  <g>
+    <polygon points="130,195 162,110 194,195" fill="#3a6647"/>
+    <polygon points="124,202 162,128 200,202" fill="#2d5237"/>
+    <rect x="155" y="195" width="14" height="30" fill="#5a4a30"/>
+
+    <polygon points="230,190 258,112 286,190" fill="#3a6647"/>
+    <polygon points="224,198 258,128 292,198" fill="#2d5237"/>
+    <rect x="251" y="190" width="14" height="28" fill="#5a4a30"/>
+  </g>
+
+  <!-- Path / ground -->
+  <ellipse cx="200" cy="248" rx="190" ry="18" fill="#c8b88a" opacity="0.7"/>
+  <path d="M155,248 Q200,232 245,248" stroke="#b8a070" stroke-width="2" fill="none"/>
+
+  <!-- Walking figure -->
+  <g transform="translate(185,185)">
+    <!-- Head -->
+    <circle cx="15" cy="0" r="9" fill="#3a3028"/>
+    <!-- Backpack -->
+    <rect x="8" y="9" width="10" height="13" rx="2" fill="#8b6f47"/>
+    <rect x="10" y="7" width="6" height="4" rx="1" fill="#7a5f3a"/>
+    <!-- Body -->
+    <line x1="15" y1="9" x2="15" y2="34" stroke="#3a3028" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- Walking arms -->
+    <line x1="15" y1="16" x2="5" y2="26" stroke="#3a3028" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="15" y1="16" x2="25" y2="22" stroke="#3a3028" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- Walking stick -->
+    <line x1="5" y1="26" x2="1" y2="40" stroke="#7a6040" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Legs mid-stride -->
+    <line x1="15" y1="34" x2="8" y2="50" stroke="#3a3028" stroke-width="4" stroke-linecap="round"/>
+    <line x1="15" y1="34" x2="22" y2="49" stroke="#3a3028" stroke-width="4" stroke-linecap="round"/>
+    <!-- Boots -->
+    <ellipse cx="8" cy="52" rx="5" ry="3" fill="#3a3028"/>
+    <ellipse cx="22" cy="51" rx="5" ry="3" fill="#3a3028"/>
+  </g>
+
+  <!-- Foreground grass tufts -->
+  <g fill="#4a7c59" opacity="0.7">
+    <ellipse cx="50" cy="252" rx="18" ry="5"/>
+    <ellipse cx="350" cy="250" rx="20" ry="5"/>
+    <ellipse cx="140" cy="255" rx="12" ry="4"/>
+    <ellipse cx="270" cy="254" rx="14" ry="4"/>
+  </g>
+
+  <!-- GPS / location pin hint -->
+  <g transform="translate(190,62)" opacity="0.75">
+    <circle cx="10" cy="10" r="10" fill="#e05a2b"/>
+    <circle cx="10" cy="10" r="5" fill="white"/>
+    <polygon points="10,20 5,14 15,14" fill="#e05a2b"/>
+  </g>
+</svg>

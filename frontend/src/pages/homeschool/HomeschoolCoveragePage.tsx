@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export const HomeschoolCoveragePage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate  = useNavigate();
   const [data, setData]       = useState<CoverageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,7 @@ export const HomeschoolCoveragePage: React.FC = () => {
 
   const toggle = (key: string) => setExpanded(e => ({ ...e, [key]: !e[key] }));
 
-  if (loading) return <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', padding: 32 }}>Loading…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', padding: 32 }}>{t('pages_homeschool_homeschoolcoveragepage.loading', 'Loading…')}</p>;
 
   const sets = data?.standards_sets ?? [];
 
@@ -100,10 +102,8 @@ export const HomeschoolCoveragePage: React.FC = () => {
     <div style={{ fontFamily: 'var(--font-body)', maxWidth: 820 }}>
 
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 6 }}>Coverage Report</h1>
-        <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-          Which state requirements have your children's activities covered this year?
-        </p>
+        <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 6 }}>{t('pages_homeschool_homeschoolcoveragepage.coverage_report', 'Coverage Report')}</h1>
+        <p style={{ color: 'var(--text-muted)', margin: 0 }}>{t('pages_homeschool_homeschoolcoveragepage.which_state_requirements_have_your_child', 'Which state requirements have your children\'s activities covered this year?')}</p>
       </div>
 
       {/* Session summary */}
@@ -122,9 +122,7 @@ export const HomeschoolCoveragePage: React.FC = () => {
       {sets.length === 0 && (
         <div style={{ textAlign: 'center', padding: '56px 0' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📈</div>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 20, maxWidth: 440, margin: '0 auto 20px' }}>
-            Import your state's homeschool reporting requirements to start tracking coverage.
-          </p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 20, maxWidth: 440, margin: '0 auto 20px' }}>{t('pages_homeschool_homeschoolcoveragepage.import_your_states_homeschool_reporting_', 'Import your state\'s homeschool reporting requirements to start tracking coverage.')}</p>
           <button onClick={() => navigate('/homeschool/requirements')}
             style={{ padding: '10px 24px', borderRadius: 8, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
             Import State Requirements

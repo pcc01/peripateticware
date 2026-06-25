@@ -1,0 +1,73 @@
+version: '3.9'
+
+# Development overrides for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+services:
+  frontend:
+    # Override build to use dev server instead of production build
+    command: npm run dev
+    ports:
+      - "3000:3000"
+      - "5173:5173"  # Vite HMR port for hot reload
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+    environment:
+      VITE_ENV: development
+      VITE_DEBUG: 'true'
+      # HMR (Hot Module Reload) configuration for local development
+      # This tells Vite where to fetch updates from
+      VITE_HMR_HOST: localhost
+      VITE_HMR_PORT: 5173
+      VITE_HMR_PROTOCOL: ws
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage to keep node_modules and npm scripts
+
+  backend:
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/routes:/app/routes
+      - ./backend/services:/app/services
+      - ./backend/core:/app/core
+      - ./backend/main.py:/app/main.py
+    environment:
+      ENVIRONMENT: development
+      DEBUG: 'true'
+      LOG_LEVEL: DEBUG
+    ports:
+      - "8000:8000"
+
+  postgres:
+    environment:
+      POSTGRES_INITDB_ARGS: '-c log_statement=all'
+    ports:
+      - "5432:5432"
+    volumes:
+      # Mount database for inspection during development
+      - postgres_data:/var/lib/postgresql/data
+      # Optional: Mount initialization scripts
+      # - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --loglevel debug
+
+# Add development-only service: Mail Server (for email testing)
+# This allows viewing emails sent by the application without actually sending
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: peripateticware-mailhog
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI
+    networks:
+      - peripateticware
+    restart: unless-stopped

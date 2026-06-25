@@ -350,15 +350,16 @@
 
 .field-journal-image {
   width: 100%;
-  height: 350px;
   border-radius: var(--radius-card);
   overflow: hidden;
 }
 
 .field-journal-image img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-width: 460px;
+  object-fit: contain;
+  border-radius: var(--radius-card);
 }
 
 .field-journal-text .h-card {

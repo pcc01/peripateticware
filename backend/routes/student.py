@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.database import get_db
-from core.dependencies import get_current_user
+from core.dependencies import get_current_user, get_current_user_flexible
 from models.database import (
     CaptureAnnotation,
     CaptureType,
@@ -195,6 +195,32 @@ async def upload_capture(
     return capture
 
 
+# Alias routes kept for backwards-compat with older frontend/mobile clients
+@router.post("/captures/audio",  response_model=CaptureResponse, status_code=201, include_in_schema=False)
+@router.post("/captures/photo",  response_model=CaptureResponse, status_code=201, include_in_schema=False)
+@router.post("/captures/video",  response_model=CaptureResponse, status_code=201, include_in_schema=False)
+async def upload_capture_alias(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    capture_type: CaptureType = Form(...),
+    activity_id: Optional[UUID] = Form(None),
+    session_id: Optional[UUID] = Form(None),
+    latitude: Optional[float] = Form(None),
+    longitude: Optional[float] = Form(None),
+    location_name: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Alias for /captures/upload — same handler."""
+    return await upload_capture(
+        background_tasks=background_tasks, file=file, capture_type=capture_type,
+        activity_id=activity_id, session_id=session_id,
+        latitude=latitude, longitude=longitude, location_name=location_name,
+        description=description, current_user=current_user, db=db,
+    )
+
+
 @router.get("/captures/{capture_id}", response_model=CaptureResponse)
 async def get_capture(
     capture_id: UUID,
@@ -230,6 +256,30 @@ async def list_captures(
     stmt = stmt.order_by(StudentCapture.captured_at.desc()).offset(skip).limit(limit)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.get("/captures/{capture_id}/stream")
+async def stream_capture(
+    capture_id: UUID,
+    current_user: User = Depends(get_current_user_flexible),
+    db: AsyncSession = Depends(get_db),
+):
+    """Stream the raw file for an audio/video capture (e.g. for <audio> src)."""
+    from fastapi.responses import FileResponse
+    result = await db.execute(
+        select(StudentCapture).where(
+            StudentCapture.id == capture_id,
+            StudentCapture.student_id == current_user.id,
+        )
+    )
+    capture = result.scalar_one_or_none()
+    if not capture:
+        raise HTTPException(status_code=404, detail="Capture not found")
+    file_path = Path(capture.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found on server")
+    media_type = capture.mime_type or "application/octet-stream"
+    return FileResponse(str(file_path), media_type=media_type)
 
 
 @router.delete("/captures/{capture_id}", status_code=204)

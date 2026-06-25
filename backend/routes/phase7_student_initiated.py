@@ -44,7 +44,7 @@ router = APIRouter()
 # =============================================================================
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.utcnow()
 
 def _require_role(user: User, *roles: str, detail: str = "Forbidden") -> None:
     if user.role.upper() not in [r.upper() for r in roles]:
@@ -148,6 +148,9 @@ def _serialize_peer_project(p: StudentPeerProject) -> dict:
         "teacher_feedback": p.teacher_feedback,
         "published_at": p.published_at.isoformat() if p.published_at else None,
         "author_can_see_individual_responses": p.author_can_see_individual_responses,
+        "location_latitude": p.location_latitude if hasattr(p, 'location_latitude') else None,
+        "location_longitude": p.location_longitude if hasattr(p, 'location_longitude') else None,
+        "location_name": p.location_name if hasattr(p, 'location_name') else None,
         "created_at": p.created_at.isoformat() if p.created_at else None,
         "updated_at": p.updated_at.isoformat() if p.updated_at else None,
     }
@@ -200,6 +203,9 @@ class PeerProjectCreate(BaseModel):
     allowed_capture_types: List[str] = ["photo", "text"]
     audience: str = "whole_class"
     target_student_ids: List[UUID] = []
+    location_latitude: Optional[float] = None
+    location_longitude: Optional[float] = None
+    location_name: Optional[str] = None
 
 class PeerProjectUpdate(BaseModel):
     title: Optional[str] = None
@@ -576,6 +582,9 @@ async def create_peer_project(
         allowed_capture_types=body.allowed_capture_types,
         audience=body.audience,
         target_student_ids=[str(sid) for sid in body.target_student_ids],
+        location_latitude=body.location_latitude,
+        location_longitude=body.location_longitude,
+        location_name=body.location_name,
         status="draft",
         approval_required=(settings.peer_project_approval_mode != "auto_publish"),
         created_at=_now(),

@@ -15,29 +15,44 @@ def get_target_languages() -> list[tuple[str, str]]:
         return languages
     
     lang_map = {
-        "es": "Spanish", "fr": "French", "de": "German", 
-        "ja": "Japanese", "ar": "Arabic", "he": "Hebrew", 
-        "it": "Italian", "zh": "Chinese", "tu": "Turkish", 
+        "es": "Spanish", "fr": "French", "de": "German",
+        "ja": "Japanese", "ar": "Arabic", "he": "Hebrew",
+        "it": "Italian", "zh": "Chinese", "tr": "Turkish",
         "pt-br": "Portuguese"
     }
     
-    for folder in LOCALES_DIR.iterdir():
-        if folder.is_dir() and folder.name.lower() != SOURCE_LANG:
-            code = folder.name.lower()
+    for f in LOCALES_DIR.iterdir():
+        # Flat merged files: fr.json, de.json … (skip en.json = source)
+        if f.is_file() and f.suffix == '.json' and f.stem.lower() != SOURCE_LANG:
+            code = f.stem.lower()
             name = lang_map.get(code, code.upper())
-            languages.append((folder.name, name))
+            languages.append((f.stem, name))
     return sorted(languages, key=lambda x: x[1])
 
 def wipe_locale_files(folder_name: str, lang_name: str, keep_provenance: bool):
-    """Resets landing.json to empty and selectively removes or preserves the XLIFF provenance dataset."""
-    lang_dir = LOCALES_DIR / folder_name.lower()
-    json_path = lang_dir / "landing.json"
-    xlf_path = lang_dir / "landing.xlf"
-    
-    # 1. Reset JSON (wiping active translations forces the translator to re-run)
+    """
+    Resets the 'landing' namespace inside the merged locale file to {}
+    and optionally removes the XLIFF provenance file.
+
+    NOTE: This REMOVES translated text from the build for this locale until
+    translate_sync is run again. Non-English users will see English fallbacks.
+    """
+    lang_code = folder_name.lower()
+    json_path = LOCALES_DIR / f"{lang_code}.json"
+    xlf_path  = LOCALES_DIR / f"{lang_code}.xlf"
+
+    # 1. Reset only the 'landing' namespace; preserve other namespace sections
     if json_path.exists():
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                merged = json.load(f)
+        except json.JSONDecodeError:
+            merged = {}
+        merged["landing"] = {}
         with open(json_path, "w", encoding="utf-8") as f:
-            json.dump({}, f, ensure_ascii=False, indent=2)
+            json.dump(merged, f, ensure_ascii=False, indent=2)
+        print(f"  ⚠️  WARNING: Cleared landing translations for [{folder_name.upper()}].")
+        print(f"      Users of this locale will see English fallback text until translate_sync is run.")
             
     # 2. Delete or preserve XLIFF based on chosen reset type
     if not keep_provenance and xlf_path.exists():

@@ -21,20 +21,11 @@ from datetime import timedelta
 from services.signed_url import SignedURL
 from services.email_service import send_verification_email, send_welcome_email
 
-# Rate limiting — gracefully disabled if slowapi is unavailable
-try:
-    from slowapi import Limiter
-    from slowapi.util import get_remote_address
-    _limiter = Limiter(key_func=get_remote_address)
-    RATE_LIMIT_AVAILABLE = True
-except ImportError:
-    _limiter = None
-    RATE_LIMIT_AVAILABLE = False
-
+# Rate limiting handled by the global app-level limiter (registered in main.py).
+# Per-route limiters are disabled here to avoid the standalone Limiter instance
+# not being attached to app.state, which causes 500s.
 def _rate_limit(rate: str):
-    """Return a slowapi limiter decorator, or a no-op if slowapi is unavailable."""
-    if RATE_LIMIT_AVAILABLE:
-        return _limiter.limit(rate)
+    """No-op — global rate limiting via app.state.limiter in main.py."""
     def noop(fn):
         return fn
     return noop
@@ -109,6 +100,17 @@ class SignupRequest(BaseModel):
     username: Optional[str] = None
     # role is optional — defaults to STUDENT; frontend may pass 'teacher', 'parent', etc.
     role: Optional[str] = "STUDENT"
+    # invite_token — REQUIRED for STUDENT role (students must join via classroom invite).
+    # TEACHER / HOMESCHOOL / PARENT: not required — org is auto-created on first signup.
+    invite_token: Optional[str] = None
+    # school_name — used to name the auto-created org for teachers
+    school_name: Optional[str] = None
+    # ── Location / privacy fields (Teaching Context step — sprint 2C) ─────────
+    country_code:     Optional[str] = None   # ISO-3166-1 alpha-2, from /geo/hint or picker
+    subdivision_code: Optional[str] = None   # e.g. 'US-CA'
+    has_under_13:     Optional[bool] = True  # default safe: assume under-13 students
+    org_type_v2:      Optional[str] = None   # individual_teacher | homeschool_family | …
+    ip_country_hint:  Optional[str] = None   # raw value from /geo/hint (audit only)
 
     class Config:
         json_schema_extra = {
@@ -130,7 +132,9 @@ class TokenResponse(BaseModel):
     user_id: str
     email: str
     role: str
+    org_id: Optional[str] = None
     expires_in: int
+    is_active: Optional[bool] = None
     
     class Config:
         json_schema_extra = {
@@ -227,12 +231,17 @@ async def login(
             )
             user = result.scalar_one_or_none()
         
-        # Try id if email didn't work (if provided)
+        # Try id if email didn't work (if provided) — cast to UUID so asyncpg accepts it
         if not user and body.id:
-            result = await db.execute(
-                select(User).where(User.id == body.id)
-            )
-            user = result.scalar_one_or_none()
+            try:
+                user_uuid = uuid.UUID(body.id)
+            except ValueError:
+                user_uuid = None
+            if user_uuid:
+                result = await db.execute(
+                    select(User).where(User.id == user_uuid)
+                )
+                user = result.scalar_one_or_none()
         
         # User not found
         if not user:
@@ -256,6 +265,11 @@ async def login(
         # Check if user is active
         if not user.is_active:
             logger.warning(f"âŒ Login failed: User inactive {user.email}")
+            if getattr(user, 'requires_parental_consent', False):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="parental_consent_required",
+                )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="User account is inactive",
@@ -263,7 +277,7 @@ async def login(
         
         # Create JWT token - FIXED: use data= parameter
         token = create_access_token(
-            data={"sub": str(user.id)}
+            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False))}
         )
         
         logger.info(f"âœ… Login successful: {user.email} ({user.role})")
@@ -274,6 +288,7 @@ async def login(
             user_id=str(user.id),
             email=user.email,
             role=user.role,
+            org_id=str(user.org_id) if user.org_id else None,
             expires_in=86400  # 24 hours in seconds
         )
         
@@ -313,11 +328,23 @@ async def signup(
                 detail="Passwords do not match",
             )
         
-        # Validate password length
-        if len(body.password) < 6:
+        # Validate password strength
+        pw = body.password
+        pw_errors = []
+        if len(pw) < 8:
+            pw_errors.append("at least 8 characters")
+        if not any(c.isupper() for c in pw):
+            pw_errors.append("at least one uppercase letter")
+        if not any(c.islower() for c in pw):
+            pw_errors.append("at least one lowercase letter")
+        if not any(c.isdigit() for c in pw):
+            pw_errors.append("at least one number")
+        if not any(c in "@$!%*?&" for c in pw):
+            pw_errors.append("at least one special character (@$!%*?&)")
+        if pw_errors:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password must be at least 6 characters",
+                detail=f"Password must have: {', '.join(pw_errors)}",
             )
         
         # Check if email already exists
@@ -333,20 +360,58 @@ async def signup(
                 detail="Email already registered",
             )
         
+        role_upper = (body.role or "STUDENT").upper()
+
+        # ── Student guard: students must use an invite link, not free signup ──
+        if role_upper == "STUDENT":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    "Students must join via a classroom invite link from their teacher. "
+                    "Ask your teacher to send you an invite."
+                ),
+            )
+
         # Create new user with uuid
+        from sqlalchemy import text as _text
+        new_user_id = uuid.uuid4()
+
+        # In development (EMAIL_DRY_RUN=true), auto-activate so users can log in
+        # immediately without waiting for an email that never sends.
+        # In production (EMAIL_DRY_RUN=false), keep is_active=False until verified.
+        from core.config import settings as _cfg
+        auto_activate = _cfg.EMAIL_DRY_RUN or (_cfg.ENVIRONMENT.lower() == "development")
+
         new_user = User(
-            id=uuid.uuid4(),
+            id=new_user_id,
             email=body.email.lower(),
             username=body.username or body.email.lower().split("@")[0],
             hashed_password=SecurityManager.hash_password(body.password),
             first_name=body.first_name,
             last_name=body.last_name,
             full_name=f"{body.first_name} {body.last_name}",
-            role=(body.role or "STUDENT").upper(),
-            is_active=False  # activated after email verification
+            role=role_upper,
+            is_active=auto_activate  # True in dev; False in prod (requires email verify)
         )
 
         db.add(new_user)
+        await db.flush()  # get the ID without committing
+
+        # ── Auto-create org + seed privacy jurisdictions ─────────────────────
+        from services.signup_service import SignupData, create_user_and_org as _create_org
+        _signup_data = SignupData(
+            email=body.email, password=body.password, password_confirm=body.password_confirm,
+            first_name=body.first_name, last_name=body.last_name,
+            username=body.username, role=body.role, invite_token=body.invite_token,
+            school_name=body.school_name,
+            country_code=getattr(body, 'country_code', None),
+            subdivision_code=getattr(body, 'subdivision_code', None),
+            has_under_13=getattr(body, 'has_under_13', True),
+            org_type_v2=getattr(body, 'org_type_v2', None),
+            ip_country_hint=getattr(body, 'ip_country_hint', None),
+        )
+        org_id = await _create_org(db, _signup_data, new_user_id=new_user_id)
+
         await db.commit()
         await db.refresh(new_user)
 
@@ -360,7 +425,7 @@ async def signup(
         except Exception as _e:
             logger.warning("Verification email failed (non-blocking): %s", _e)
 
-        token = create_access_token(data={"sub": str(new_user.id)})
+        token = create_access_token(data={"sub": str(new_user.id), "is_platform_admin": False})
         
         logger.info(f"âœ… Signup successful: {body.email}")
         
@@ -370,7 +435,9 @@ async def signup(
             user_id=str(new_user.id),
             email=new_user.email,
             role=new_user.role,
-            expires_in=86400  # 24 hours in seconds
+            org_id=str(new_user.org_id) if new_user.org_id else None,
+            expires_in=86400,  # 24 hours in seconds
+            is_active=new_user.is_active,
         )
         
     except HTTPException:
@@ -381,6 +448,45 @@ async def signup(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Signup failed due to server error"
         )
+
+# ============================================================================
+# ME ENDPOINT  (called by frontend checkAuth on every app mount)
+# ============================================================================
+
+class MeResponse(BaseModel):
+    user_id: str
+    email: str
+    role: str
+    org_id: Optional[str] = None
+
+@router.get("/me", response_model=MeResponse)
+async def get_current_user(
+    authorization: Optional[str] = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the current user from the JWT token. Used by frontend checkAuth."""
+    from core.security import extract_user_id_from_token
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.split(" ", 1)[1]
+    user_id = extract_user_id_from_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))
+    user = result.scalar_one_or_none()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="User not found or inactive")
+
+    return MeResponse(
+        user_id=str(user.id),
+        email=user.email,
+        role=user.role,
+        org_id=str(user.org_id) if user.org_id else None,
+    )
+
 
 # ============================================================================
 # LOGOUT ENDPOINT
@@ -445,7 +551,7 @@ async def refresh_token(
         
         # Create new token - FIXED: use data= parameter
         new_token = create_access_token(
-            data={"sub": str(user.id)}
+            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False))}
         )
         
         logger.info(f"âœ… Token refreshed for user {user.email}")
@@ -531,16 +637,4 @@ async def resend_verification(
     """
     email = body.get("email", "").lower().strip()
     if email:
-        result = await db.execute(select(User).where(User.email == email, User.is_active == False))
-        user = result.scalar_one_or_none()
-        if user:
-            try:
-                ver_token = SignedURL.generate(
-                    purpose="email_verification",
-                    payload={"user_id": str(user.id), "email": user.email},
-                )
-                await send_verification_email(user.email, ver_token)
-            except Exception as _e:
-                logger.warning("Resend verification failed: %s", _e)
-
-    return {"success": True, "message": "If your account exists and is unverified, a new link has been sent."}
+        result = await db.execu

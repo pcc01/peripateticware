@@ -2,12 +2,15 @@ import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
+import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import styles from './SettingsPages.module.css';
 
 const ADMIN_TOKEN_KEY = 'admin_panel_token';
 
 export const AdminSettingsPage = () => {
   const { t } = useTranslation('landing');
+  const { skin, setSkin, skins } = useSkin();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
@@ -22,6 +25,32 @@ export const AdminSettingsPage = () => {
   const [editingEnv, setEditingEnv] = useState<Record<string, string>>({});
   const [envSaveStatus, setEnvSaveStatus] = useState<Record<string, string>>({});
   const [envLoading, setEnvLoading] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyValue, setNewKeyValue] = useState('');
+  const [newKeyStatus, setNewKeyStatus] = useState('');
+
+  const handleAddConfigKey = async () => {
+    if (!newKeyName.trim() || !adminToken) return;
+    setNewKeyStatus('saving');
+    try {
+      const res = await fetch(`/api/v1/admin/env/${newKeyName.trim()}?token=${adminToken}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: newKeyValue }),
+      });
+      if (res.ok) {
+        setNewKeyStatus('saved');
+        setNewKeyName('');
+        setNewKeyValue('');
+        loadEnvVars();
+        setTimeout(() => setNewKeyStatus(''), 2000);
+      } else {
+        setNewKeyStatus('error');
+      }
+    } catch {
+      setNewKeyStatus('error');
+    }
+  };
 
   // UI settings (local only)
   const [settings, setSettings] = useState({
@@ -158,43 +187,12 @@ export const AdminSettingsPage = () => {
         <section className={styles.section}>
           <h2>{t("landing:appearance", "Appearance")}</h2>
           <div className={styles.settingGroup}>
-            <label>{t("landing:color_scheme", "Color Scheme")}</label>
-            <select
-              value={settings.colorScheme}
-              onChange={(e) => handleChange('colorScheme', e.target.value)}
-              className={styles.select}>
-              
-              <option value="field-guide">{t("landing:field_guide_green", "Field Guide (Green)")}</option>
-              <option value="terrain">{t("landing:terrain_orange", "Terrain (Orange)")}</option>
-              <option value="atmosphere">{t("landing:atmosphere_dark", "Atmosphere (Dark)")}</option>
+            <label>{t("landing:color_scheme", "Theme")}</label>
+            <select value={skin} onChange={(e) => setSkin(e.target.value as Skin)} className={styles.select}>
+              {skins.map(s => <option key={s} value={s}>{SKIN_LABELS[s]}</option>)}
             </select>
           </div>
 
-          <div className={styles.settingGroup}>
-            <label>{t("landing:theme", "Theme")}</label>
-            <div className={styles.radioGroup}>
-              <label>
-                <input
-                  type="radio"
-                  name="theme"
-                  value="light"
-                  checked={settings.theme === 'light'}
-                  onChange={(e) => handleChange('theme', e.target.value)} />{t("landing:light", "Light")}
-
-
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="theme"
-                  value="dark"
-                  checked={settings.theme === 'dark'}
-                  onChange={(e) => handleChange('theme', e.target.value)} />{t("landing:dark", "Dark")}
-
-
-              </label>
-            </div>
-          </div>
         </section>
 
         <section className={styles.section}>
@@ -253,17 +251,7 @@ export const AdminSettingsPage = () => {
           <h2>{t("landing:general_preferences", "General Preferences")}</h2>
           <div className={styles.settingGroup}>
             <label>{t("landing:language", "Language")}</label>
-            <select
-              value={settings.language}
-              onChange={(e) => handleChange('language', e.target.value)}
-              className={styles.select}>
-              
-              <option value="en">{t("landing:english", "English")}</option>
-              <option value="es">{t("landing:espaol", "Espa\xF1ol")}</option>
-              <option value="fr">{t("landing:franais", "Fran\xE7ais")}</option>
-              <option value="ja">日本語</option>
-              <option value="ar">العربية</option>
-            </select>
+            <LocaleSwitcher className={styles.select} />
           </div>
 
           <div className={styles.settingGroup}>
@@ -313,12 +301,10 @@ export const AdminSettingsPage = () => {
 
         {/* ── Environment Variable Editor ─────────────────────────── */}
         <section className={styles.section}>
-          <h2>⚙️ Environment Variables</h2>
+          <h2>{t('pages_adminsettingspage.environment_variables', '⚙️ Environment Variables')}</h2>
           {!adminToken ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 320 }}>
-              <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                Log in with the admin panel credentials to view and edit environment variables.
-              </p>
+              <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>{t('pages_adminsettingspage.log_in_with_the_admin_panel_credentials_', 'Log in with the admin panel credentials to view and edit environment variables.')}</p>
               <input
                 type="text"
                 placeholder="Username"
@@ -384,18 +370,44 @@ export const AdminSettingsPage = () => {
                 </details>
               ))}
               {envCategories.length === 0 && !envLoading && (
-                <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>No environment variables loaded.</p>
+                <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{t('pages_adminsettingspage.no_environment_variables_loaded', 'No environment variables loaded.')}</p>
+              )}
+
+              {/* Add Configuration Key */}
+              {adminToken && (
+                <div style={{ marginTop: 20, padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 }}>
+                  <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#166534', margin: '0 0 12px' }}>{t('pages_adminsettingspage.add_configuration_key', '➕ Add Configuration Key')}</h3>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      placeholder="KEY_NAME"
+                      value={newKeyName}
+                      onChange={e => setNewKeyName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_'))}
+                      style={{ flex: '1 1 160px', padding: '7px 10px', borderRadius: 6, border: '1px solid #86efac', fontFamily: 'monospace', fontSize: '0.85rem' }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="value"
+                      value={newKeyValue}
+                      onChange={e => setNewKeyValue(e.target.value)}
+                      style={{ flex: '2 1 200px', padding: '7px 10px', borderRadius: 6, border: '1px solid #86efac', fontSize: '0.85rem' }}
+                    />
+                    <button
+                      onClick={handleAddConfigKey}
+                      disabled={!newKeyName.trim() || newKeyStatus === 'saving'}
+                      style={{ padding: '7px 18px', borderRadius: 6, border: 'none', background: '#16a34a', color: 'white', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', opacity: !newKeyName.trim() ? 0.5 : 1 }}
+                    >
+                      {newKeyStatus === 'saving' ? '…' : newKeyStatus === 'saved' ? '✓ Saved' : newKeyStatus === 'error' ? 'Error' : 'Add Key'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#166534', marginTop: 8 }}>{t('pages_adminsettingspage.key_names_are_autouppercased_value_is_sa', 'Key names are auto-uppercased. Value is saved immediately and loaded on next server restart.')}</p>
+                </div>
               )}
             </div>
           )}
         </section>
 
-        <section className={styles.section} style={{ borderColor: '#dc2626' }}>
-          <h2 style={{ color: '#dc2626' }}>{t("landing:danger_zone", "Danger Zone")}</h2>
-          <button onClick={handleLogout} className={styles.dangerBtn}>{t("landing:adminsettingspage.logout", "\uD83D\uDEAA Logout")}
-
-          </button>
-        </section>
+        {/* Logout removed \u2014 available in the sidebar (DashboardShell). */}
 
         {saveStatus &&
         <div className={styles.statusMessage}>

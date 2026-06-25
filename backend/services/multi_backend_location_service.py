@@ -120,11 +120,11 @@ class OpenStreetMapBackend(LocationBackend):
         radius_degrees = radius_meters / 111000
         
         overpass_query = f"""
-        [bbox:{latitude - radius_degrees},{longitude - radius_degrees},{latitude + radius_degrees},{longitude + radius_degrees}];
+        [out:json][bbox:{latitude - radius_degrees},{longitude - radius_degrees},{latitude + radius_degrees},{longitude + radius_degrees}];
         (
             {location_filters}
         );
-        out geom;
+        out body;
         """
         
         try:
@@ -495,12 +495,25 @@ class NominatimBackend(LocationBackend):
                 if response.status_code == 200:
                     data = response.json()
                     # Nominatim returns single result, use with OSM for better results
+                    raw_address = data.get("address", {})
+                    if isinstance(raw_address, dict):
+                        # Build a readable string from Nominatim's address object
+                        parts = [
+                            raw_address.get("road", ""),
+                            raw_address.get("city") or raw_address.get("town") or raw_address.get("village", ""),
+                            raw_address.get("state", ""),
+                            raw_address.get("postcode", ""),
+                        ]
+                        address_str = ", ".join(p for p in parts if p)
+                    else:
+                        address_str = str(raw_address)
+
                     location = LocationData(
-                        name=data.get("name", "Location"),
+                        name=data.get("name") or data.get("display_name", "Location"),
                         latitude=float(data.get("lat")),
                         longitude=float(data.get("lon")),
                         location_type="point_of_interest",
-                        address=data.get("address", ""),
+                        address=address_str,
                         place_id=f"nominatim_{data.get('osm_id')}",
                         source="nominatim"
                     )

@@ -45,6 +45,7 @@ from models.database import (
 )
 from models.student_models import EvidenceCapture, NotebookEntry, ActivitySubmission
 from services.privacy_engine import log_access, enforce_on_submission
+from routes.sessions import _fire_location_event
 from schemas.student_activities import (
     StudentActivitySummary,
     StudentActivityDetail,
@@ -98,24 +99,37 @@ def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def _activity_to_summary(a: Activity) -> dict:
-    """Convert ORM Activity to a summary dict matching StudentActivitySummary."""
+    """Convert ORM Activity to a summary dict matching StudentActivitySummary.
+    All nullable fields use safe defaults so NULL DB values don't cause 500s."""
+    def _safe_float(v) -> Optional[float]:
+        try:
+            return float(v) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    def _safe_int(v) -> Optional[int]:
+        try:
+            return int(v) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+
     return {
         "id":                         a.id,
-        "title":                      a.title,
-        "description":                a.description,
-        "subject":                    a.subject,
-        "grade_level":                a.grade_level,
-        "estimated_duration_minutes": a.estimated_duration_minutes,
-        "difficulty_level":           a.difficulty_level,
-        "location_name":              a.location_name,
-        "location_latitude":          a.location_latitude,
-        "location_longitude":         a.location_longitude,
-        "location_radius_meters":     a.location_radius_meters,
-        "bloom_level":                a.bloom_level,
-        "materials_needed":           a.materials_needed or [],
-        "learning_objectives":        a.learning_objectives or [],
-        "assessment_type":            a.assessment_type,
-        "activity_type":              a.activity_type,
+        "title":                      a.title or "Untitled",
+        "description":                a.description or "",
+        "subject":                    a.subject or "",
+        "grade_level":                _safe_int(getattr(a, "grade_level", None)),
+        "estimated_duration_minutes": _safe_int(getattr(a, "estimated_duration_minutes", None)),
+        "difficulty_level":           _safe_int(getattr(a, "difficulty_level", None)),
+        "location_name":              getattr(a, "location_name", None) or "",
+        "location_latitude":          _safe_float(getattr(a, "location_latitude", None)),
+        "location_longitude":         _safe_float(getattr(a, "location_longitude", None)),
+        "location_radius_meters":     _safe_int(getattr(a, "location_radius_meters", None)),
+        "bloom_level":                _safe_int(getattr(a, "bloom_level", None)),
+        "materials_needed":           getattr(a, "materials_needed", None) or [],
+        "learning_objectives":        getattr(a, "learning_objectives", None) or [],
+        "assessment_type":            getattr(a, "assessment_type", None),
+        "activity_type":              getattr(a, "activity_type", None),
     }
 
 
@@ -164,12 +178,14 @@ async def list_student_activities(
     rows = (await db.execute(q)).scalars().all()
 
     # Optional geofence proximity filter / sort
+    # Activities without a fixed location (lat/lon = NULL) are always included.
     if lat is not None and lon is not None:
         MAX_BROWSE_M = 20_000   # 20 km browse radius
         filtered: list[Activity] = []
         for a in rows:
-            dist = _haversine_m(lat, lon, a.location_latitude, a.location_longitude)
-            if dist <= MAX_BROWSE_M:
+            if a.location_latitude is None or a.location_longitude is None:
+                filtered.append(a)   # no fixed location — always show
+            elif _haversine_m(lat, lon, a.location_latitude, a.location_longitude) <= MAX_BROWSE_M:
                 filtered.append(a)
         rows = filtered
 
@@ -366,10 +382,14 @@ async def list_session_evidence(
     """Return all evidence captures for a session owned by the current student."""
     session = await _get_owned_session(session_id, current_user, db)
 
-    q = select(EvidenceCapture).where(
-        EvidenceCapture.session_id == session_id
-    ).order_by(EvidenceCapture.created_at.asc())
-    rows = (await db.execute(q)).scalars().all()
+    try:
+        q = select(EvidenceCapture).where(
+            EvidenceCapture.session_id == session_id
+        ).order_by(EvidenceCapture.created_at.asc())
+        rows = (await db.execute(q)).scalars().all()
+    except Exception:
+        await db.rollback()
+        rows = []
 
     return EvidenceListResponse(
         captures=[EvidenceCaptureResponse(**r.to_dict()) for r in rows],
@@ -450,6 +470,16 @@ async def add_evidence_capture(
     await db.commit()
     await db.refresh(capture)
 
+    # Fire location_update event so teacher map picks up this student's position
+    if capture.location_latitude is not None and capture.location_longitude is not None:
+        await _fire_location_event(
+            db,
+            session_id=capture.session_id,
+            student_id=capture.student_id,
+            latitude=capture.location_latitude,
+            longitude=capture.location_longitude,
+        )
+
     # Privacy audit — log-only, non-blocking
     try:
         enforcement = await enforce_on_submission(
@@ -512,10 +542,14 @@ async def list_session_reflections(
     """Return all notebook entries for a session owned by the current student."""
     await _get_owned_session(session_id, current_user, db)
 
-    q = select(NotebookEntry).where(
-        NotebookEntry.session_id == session_id
-    ).order_by(NotebookEntry.created_at.asc())
-    rows = (await db.execute(q)).scalars().all()
+    try:
+        q = select(NotebookEntry).where(
+            NotebookEntry.session_id == session_id
+        ).order_by(NotebookEntry.created_at.asc())
+        rows = (await db.execute(q)).scalars().all()
+    except Exception:
+        await db.rollback()
+        rows = []
 
     return NotebookListResponse(
         entries=[NotebookEntryResponse(**r.to_dict()) for r in rows],
@@ -697,38 +731,44 @@ async def get_session_progress(
     """
     session = await _get_owned_session(session_id, current_user, db)
 
-    # Count evidence + reflections
-    ec_q = select(func.count(EvidenceCapture.id)).where(
-        EvidenceCapture.session_id == session_id)
-    nb_q = select(func.count(NotebookEntry.id)).where(
-        NotebookEntry.session_id == session_id)
-
-    evidence_count   = (await db.execute(ec_q)).scalar() or 0
-    reflection_count = (await db.execute(nb_q)).scalar() or 0
-
-    # Unique competencies demonstrated across all captures + reflections
-    cap_comps_q = select(EvidenceCapture.competencies).where(
-        EvidenceCapture.session_id == session_id)
-    ref_comps_q = select(NotebookEntry.competencies).where(
-        NotebookEntry.session_id == session_id)
-
+    # Count evidence + reflections (guarded — tables may not exist yet)
+    evidence_count   = 0
+    reflection_count = 0
     all_comps: set[str] = set()
-    for row in (await db.execute(cap_comps_q)).scalars().all():
-        all_comps.update(row or [])
-    for row in (await db.execute(ref_comps_q)).scalars().all():
-        all_comps.update(row or [])
+    all_objs:  set[str] = set()
+    try:
+        ec_q = select(func.count(EvidenceCapture.id)).where(
+            EvidenceCapture.session_id == session_id)
+        nb_q = select(func.count(NotebookEntry.id)).where(
+            NotebookEntry.session_id == session_id)
 
-    # Unique objectives addressed across captures + reflections
-    cap_obj_q = select(EvidenceCapture.learning_objectives).where(
-        EvidenceCapture.session_id == session_id)
-    ref_obj_q = select(NotebookEntry.learning_objectives).where(
-        NotebookEntry.session_id == session_id)
+        evidence_count   = (await db.execute(ec_q)).scalar() or 0
+        reflection_count = (await db.execute(nb_q)).scalar() or 0
 
-    all_objs: set[str] = set()
-    for row in (await db.execute(cap_obj_q)).scalars().all():
-        all_objs.update(row or [])
-    for row in (await db.execute(ref_obj_q)).scalars().all():
-        all_objs.update(row or [])
+        # Unique competencies demonstrated across all captures + reflections
+        cap_comps_q = select(EvidenceCapture.competencies).where(
+            EvidenceCapture.session_id == session_id)
+        ref_comps_q = select(NotebookEntry.competencies).where(
+            NotebookEntry.session_id == session_id)
+
+        for row in (await db.execute(cap_comps_q)).scalars().all():
+            all_comps.update(row or [])
+        for row in (await db.execute(ref_comps_q)).scalars().all():
+            all_comps.update(row or [])
+
+        # Unique objectives addressed across captures + reflections
+        cap_obj_q = select(EvidenceCapture.learning_objectives).where(
+            EvidenceCapture.session_id == session_id)
+        ref_obj_q = select(NotebookEntry.learning_objectives).where(
+            NotebookEntry.session_id == session_id)
+
+        for row in (await db.execute(cap_obj_q)).scalars().all():
+            all_objs.update(row or [])
+        for row in (await db.execute(ref_obj_q)).scalars().all():
+            all_objs.update(row or [])
+    except Exception as _ec_err:
+        logger.warning("get_session_progress: evidence/notebook query failed (tables may not exist): %s", _ec_err)
+        await db.rollback()
 
     # Activity total objectives for percentage
     act_q    = select(Activity).where(Activity.id == session.activity_id)
@@ -949,16 +989,16 @@ async def get_student_progress(
         comp_result = await db.execute(
             select(StudentCompetency)
             .where(StudentCompetency.student_id == current_user.id)
-            .order_by(StudentCompetency.assessed_at.desc())
+            .order_by(StudentCompetency.last_achieved_at.desc())
         )
         competencies = comp_result.scalars().all()
         progress_items = [
             {
                 "competency_name": c.competency_name,
-                "bloom_level": c.bloom_level,
-                "score": c.score,
+                "progress_percent": c.progress_percent,
+                "evidence_count": c.evidence_count,
                 "status": c.status.value if hasattr(c.status, "value") else str(c.status),
-                "assessed_at": c.assessed_at.isoformat() if c.assessed_at else None,
+                "last_achieved_at": c.last_achieved_at.isoformat() if c.last_achieved_at else None,
             }
             for c in competencies
         ]
@@ -973,6 +1013,231 @@ async def get_student_progress(
 
 
 # =============================================================================
+# ── Field + Reflection endpoints ──────────────────────────────────────────────
+
+from pydantic import BaseModel as _BaseModel
+from sqlalchemy import text as _text
+from datetime import timezone as _tz
+
+
+class ReflectionSaveRequest(_BaseModel):
+    reflection_content: dict           # {v:1, sections:[...]} — same shape as ExtendedWritingPanel
+    linked_field_note_id: Optional[str] = None
+    submit: bool = False               # False = save draft, True = submit for teacher review
+
+
+@router.get("/pending-reflection")
+async def pending_reflection_queue(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Returns activities where the student has completed field work but hasn't
+    yet submitted their reflection. Drives the 'Pending Reflection' queue on
+    the student dashboard.
+    """
+    rows = (await db.execute(
+        _text("""
+            SELECT
+                sub.id                    AS sub_id,
+                sub.completion_phase,
+                sub.field_phase_status,
+                sub.field_phase_feedback,
+                sub.reflection_status,
+                sub.linked_field_note_id,
+                ls.id                     AS session_id,
+                ls.created_at             AS started_at,
+                a.id                      AS activity_id,
+                a.title                   AS activity_title,
+                a.subject,
+                a.grade_level,
+                a.completion_mode,
+                a.require_field_approval
+            FROM activity_submissions sub
+            JOIN learning_sessions ls ON ls.id = sub.session_id
+            JOIN activities a         ON a.id  = sub.activity_id
+            WHERE sub.student_id = :uid
+              AND a.completion_mode = 'field_and_reflection'
+              AND sub.reflection_status IN ('not_started', 'in_progress')
+              AND sub.completion_phase = 'field_work'
+            ORDER BY sub.updated_at DESC
+        """),
+        {"uid": str(current_user.id)},
+    )).mappings().all()
+
+    result = []
+    for r in rows:
+        # Determine if student can start/continue reflection
+        can_reflect = True
+        if r["require_field_approval"] and r["field_phase_status"] not in ("approved",):
+            can_reflect = False
+
+        result.append({
+            "submission_id":          str(r["sub_id"]),
+            "session_id":             str(r["session_id"]),
+            "activity_id":            str(r["activity_id"]),
+            "activity_title":         r["activity_title"],
+            "subject":                r["subject"],
+            "grade_level":            r["grade_level"],
+            "completion_phase":       r["completion_phase"],
+            "field_phase_status":     r["field_phase_status"],
+            "field_phase_feedback":   r["field_phase_feedback"],
+            "reflection_status":      r["reflection_status"],
+            "linked_field_note_id":   str(r["linked_field_note_id"]) if r["linked_field_note_id"] else None,
+            "started_at":             r["started_at"].isoformat() if r["started_at"] else None,
+            "can_reflect":            can_reflect,
+            "awaiting_approval":      not can_reflect,
+        })
+    return result
+
+
+@router.post("/submissions/{submission_id}/save-reflection")
+async def save_reflection(
+    submission_id: str,
+    body: ReflectionSaveRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save (draft) or submit the reflection for a Field + Reflection activity.
+    Linked field note is optional — student can write reflection without one.
+    """
+    # Verify ownership
+    row = (await db.execute(
+        _text("""
+            SELECT sub.id, sub.completion_phase, sub.reflection_status,
+                   a.completion_mode, a.require_field_approval,
+                   sub.field_phase_status
+            FROM activity_submissions sub
+            JOIN activities a ON a.id = sub.activity_id
+            WHERE sub.id = :sub_id AND sub.student_id = :uid
+        """),
+        {"sub_id": submission_id, "uid": str(current_user.id)},
+    )).first()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    if row[3] != "field_and_reflection":
+        raise HTTPException(status_code=400, detail="Not a Field + Reflection activity")
+
+    # Check gating
+    if row[4] and row[5] not in ("approved",) and body.submit:
+        raise HTTPException(
+            status_code=403,
+            detail="Your teacher must approve your field work before you can submit the reflection."
+        )
+
+    new_reflection_status = "submitted" if body.submit else "in_progress"
+    new_completion_phase  = "complete"  if body.submit else "reflection"
+    new_sub_status        = "submitted" if body.submit else "draft"
+
+    updates = {
+        "reflection_content":  body.reflection_content,
+        "reflection_status":   new_reflection_status,
+        "completion_phase":    new_completion_phase,
+        "submission_status":   new_sub_status,
+        "sub_id":              submission_id,
+    }
+    if body.linked_field_note_id:
+        await db.execute(
+            _text("""
+                UPDATE activity_submissions
+                SET reflection_content = :reflection_content,
+                    reflection_status  = :reflection_status,
+                    completion_phase   = :completion_phase,
+                    submission_status  = :submission_status,
+                    linked_field_note_id = :note_id,
+                    updated_at         = NOW()
+                WHERE id = :sub_id
+            """),
+            {**updates, "note_id": body.linked_field_note_id},
+        )
+    else:
+        await db.execute(
+            _text("""
+                UPDATE activity_submissions
+                SET reflection_content = :reflection_content,
+                    reflection_status  = :reflection_status,
+                    completion_phase   = :completion_phase,
+                    submission_status  = :submission_status,
+                    updated_at         = NOW()
+                WHERE id = :sub_id
+            """),
+            updates,
+        )
+
+    await db.commit()
+    return {"status": new_reflection_status, "submission_id": submission_id}
+
+
+@router.post("/sessions/{session_id}/complete-field")
+async def complete_field_phase(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Student marks field work as done on a Field + Reflection activity.
+    Creates / updates the activity_submission row to move it into the
+    reflection queue.
+    """
+    row = (await db.execute(
+        _text("""
+            SELECT ls.activity_id, a.completion_mode, a.require_field_approval
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND ls.user_id = :uid
+        """),
+        {"sid": session_id, "uid": str(current_user.id)},
+    )).first()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if row[1] != "field_and_reflection":
+        raise HTTPException(status_code=400, detail="Activity is Field Activity only — no reflection phase")
+
+    activity_id = str(row[0])
+
+    # Upsert submission
+    existing = (await db.execute(
+        _text("SELECT id FROM activity_submissions WHERE session_id = :sid"),
+        {"sid": session_id},
+    )).first()
+
+    if existing:
+        await db.execute(
+            _text("""
+                UPDATE activity_submissions
+                SET completion_phase    = 'field_work',
+                    field_phase_status  = 'submitted',
+                    reflection_status   = 'not_started',
+                    submission_status   = 'draft',
+                    updated_at          = NOW()
+                WHERE id = :sub_id
+            """),
+            {"sub_id": str(existing[0])},
+        )
+    else:
+        await db.execute(
+            _text("""
+                INSERT INTO activity_submissions
+                    (id, student_id, activity_id, session_id,
+                     submission_status, completion_phase,
+                     field_phase_status, reflection_status,
+                     created_at, updated_at)
+                VALUES
+                    (uuid_generate_v4(), :uid, :activity_id, :session_id,
+                     'draft', 'field_work',
+                     'submitted', 'not_started',
+                     NOW(), NOW())
+            """),
+            {"uid": str(current_user.id), "activity_id": activity_id, "session_id": session_id},
+        )
+
+    await db.commit()
+    return {"status": "field_complete", "next_phase": "reflection"}
+
+
 # STUDENT PROJECTS — GET /projects
 # =============================================================================
 

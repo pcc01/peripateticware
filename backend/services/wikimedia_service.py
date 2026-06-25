@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# This source code is licensed under the Business Source License 1.1
+# found in the LICENSE.md file in the root directory of this source tree.
+
 # Wikimedia Location Service
 # File: backend/services/wikimedia_service.py
 
@@ -337,8 +341,8 @@ class WikimediaLocationService:
                     features["population"] = int(
                         claims["P1082"][0].get("mainsnak", {}).get("datavalue", {}).get("value", {}).get("amount", 0)
                     )
-                except:
-                    pass
+                except (TypeError, ValueError, KeyError) as pop_err:  # NASA Rule 7: no bare except
+                    logger.debug("Could not parse Wikidata population claim: %s", pop_err)
             
             # P17 = country
             if "P17" in claims:

@@ -21,7 +21,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !allowedRoles.includes(user.role as UserRole)) {
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -36,6 +36,7 @@ export const RoleBasedRoute: React.FC<{
     STUDENT: '/dashboard/student',
     PARENT: '/dashboard/parent',
     ADMIN: '/dashboard/admin',
+    HOMESCHOOL: '/homeschool',
   };
   return <Navigate to={roleRoutes[user.role]} replace />;
 };

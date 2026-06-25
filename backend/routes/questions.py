@@ -11,7 +11,7 @@ Questions guide students toward evidence-based answers through:
   - Comparison (How does this differ from...?)
   - Evidence (What would prove/disprove this?)
 
-NOT Socratic (not "what is justice?") — these have answers.
+NOT abstract (not "what is justice?") — these have concrete, observable answers grounded in the Aristotelian tradition.
 """
 
 from fastapi import APIRouter, Depends, Query

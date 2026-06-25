@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -37,7 +37,7 @@ Base = declarative_base()
 engine = None
 async_session_factory = None
 
-def get_engine():
+def get_engine():  # -> AsyncEngine (import avoided to keep startup simple)
     """Get or create database engine"""
     global engine
     
@@ -105,10 +105,10 @@ async def get_db() -> AsyncSession:
 # DATABASE INITIALIZATION
 # ============================================================================
 
-async def init_db():
+async def init_db() -> bool:
     """
     Initialize database tables
-    
+
     Creates all tables defined in models that inherit from Base
     """
     try:
@@ -125,10 +125,10 @@ async def init_db():
         logger.error(f"âŒ Database initialization failed: {e}")
         return False
 
-async def check_db_connection():
+async def check_db_connection() -> bool:
     """
     Check if database is accessible
-    
+
     Returns:
         True if connected, False otherwise
     """
@@ -147,10 +147,10 @@ async def check_db_connection():
         logger.error(f"âŒ Database connection failed: {e}")
         return False
 
-async def dispose_db():
+async def dispose_db() -> None:
     """
     Clean up database connections
-    
+
     Call during application shutdown
     """
     global engine
@@ -168,4 +168,3 @@ logger.info("âœ… Database module initialized")
 logger.info(f"   URL: {settings.DATABASE_URL.split('@')[-1]}")
 logger.info(f"   Pool size: 20, Max overflow: 0")
 logger.info(f"   Pool recycle: 3600s (1 hour)")
-

@@ -21,7 +21,7 @@ export const StandardsImportPage: React.FC = () => {
       headers: authHeader(),
       body: JSON.stringify({
         ...payload,
-        type: 'curriculum',
+        type: 'state_standards',   // canonical taxonomy value (was 'curriculum' -> enum error)
         is_global: false,   // scoped to this teacher only
       }),
     });
@@ -35,7 +35,7 @@ export const StandardsImportPage: React.FC = () => {
 
   return (
     <ExtractionWizard
-      setType="curriculum"
+      setType="state_standards"
       title="Import Learning Standards"
       description={
         'Upload a PDF or CSV of the learning standards for your discipline — ' +
@@ -43,7 +43,11 @@ export const StandardsImportPage: React.FC = () => {
         'Once saved, you can tag activities against these standards and track student coverage.'
       }
       onSave={handleSave}
-      onComplete={() => navigate('/teacher/standards')}
+      onComplete={(id) => {
+        // Pass success message to the standards list page via sessionStorage
+        sessionStorage.setItem('standards_import_success', 'Standards imported successfully.');
+        navigate('/teacher/standards');
+      }}
       onCancel={() => navigate('/teacher')}
     />
   );

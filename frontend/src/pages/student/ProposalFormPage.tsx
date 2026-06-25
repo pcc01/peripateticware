@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { proposalApi } from '../../services/phase7Api'
 import type { Proposal } from '../../types/phase7'
+import { useTranslation } from 'react-i18next';
 
 const SUBJECTS = [
   'General', 'Science', 'Geography', 'Social Studies',
@@ -13,6 +14,7 @@ const SUBJECTS = [
 ]
 
 const ProposalFormPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -170,9 +172,7 @@ const ProposalFormPage: React.FC = () => {
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
             Challenge Description <span className="text-red-500">*</span>
           </label>
-          <p className="text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>
-            Tell students what to find, observe, or do. Be specific.
-          </p>
+          <p className="text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalformpage.tell_students_what_to_find_observe_or_do', 'Tell students what to find, observe, or do. Be specific.')}</p>
           <textarea
             name="challenge_description"
             value={form.challenge_description}
@@ -192,12 +192,8 @@ const ProposalFormPage: React.FC = () => {
 
         {/* Location hint */}
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
-            Location Hint
-          </label>
-          <p className="text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>
-            A general hint — don't give away exact coordinates.
-          </p>
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>{t('pages_student_proposalformpage.location_hint', 'Location Hint')}</label>
+          <p className="text-xs mb-1.5" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalformpage.a_general_hint_dont_give_away_exact_coor', 'A general hint — don\'t give away exact coordinates.')}</p>
           <input
             name="location_hint"
             value={form.location_hint}
@@ -216,9 +212,7 @@ const ProposalFormPage: React.FC = () => {
 
         {/* Subject */}
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
-            Subject
-          </label>
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>{t('pages_student_proposalformpage.subject', 'Subject')}</label>
           <select
             name="subject"
             value={form.subject}

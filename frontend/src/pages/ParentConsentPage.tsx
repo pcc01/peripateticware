@@ -1,19 +1,41 @@
 // Copyright (c) 2026 Paul Christopher Cerda — Block 14c
 // Public page (no auth required): /parent-consent/:token
+// Also handles GPS tracking consent: /parent-consent/:token?consent_type=gps&activity_id=<id>&student_id=<id>
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 const ParentConsentPage: React.FC = () => {
   const { token } = useParams<{ token: string }>()
+  const [searchParams] = useSearchParams()
   const { t } = useTranslation('landing')
   const [status, setStatus] = useState<'idle' | 'consented' | 'declined' | 'error'>('idle')
   const [loading, setLoading] = useState(false)
 
+  // GPS tracking consent mode — activated when ?consent_type=gps is present
+  const isGpsConsent   = searchParams.get('consent_type') === 'gps'
+  const gpsActivityId  = searchParams.get('activity_id') ?? ''
+  const gpsStudentId   = searchParams.get('student_id') ?? token ?? ''
+
   const handle = async (consent: boolean) => {
     setLoading(true)
     try {
-      if (consent) {
+      if (isGpsConsent) {
+        // GPS tracking consent — stored per (student, activity)
+        const authToken = localStorage.getItem('auth_token')
+        await fetch('/api/v1/parent/consent/gps', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+          },
+          body: JSON.stringify({
+            activity_id: gpsActivityId,
+            student_id: gpsStudentId,
+            consent_given: consent,
+          }),
+        })
+      } else if (consent) {
         await fetch('/api/v1/privacy/consent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -24,11 +46,10 @@ const ParentConsentPage: React.FC = () => {
             jurisdiction: 'COPPA',
           }),
         })
-        setStatus('consented')
       } else {
         await fetch(`/api/v1/privacy/consent/${token}`, { method: 'DELETE' })
-        setStatus('declined')
       }
+      setStatus(consent ? 'consented' : 'declined')
     } catch {
       setStatus('error')
     } finally {
@@ -47,22 +68,41 @@ const ParentConsentPage: React.FC = () => {
               {t('parental_consent_title', 'Parental Consent Request')}
             </h1>
             <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-              {t('parental_consent_desc',
-                'Your child has created an account on Peripateticware. As a parent or guardian, ' +
-                'your consent is required before they can use features that collect location, ' +
-                'audio, or photo evidence.'
-              )}
+              {isGpsConsent
+                ? t('gps_consent_desc',
+                    "Your child's teacher is requesting real-time GPS location sharing during a specific " +
+                    "fieldwork activity. Location is only shared while the activity is active and is " +
+                    "never sold or used for advertising."
+                  )
+                : t('parental_consent_desc',
+                    'Your child has created an account on Peripateticware. As a parent or guardian, ' +
+                    'your consent is required before they can use features that collect location, ' +
+                    'audio, or photo evidence.'
+                  )
+              }
             </p>
 
             <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--surface-alt)' }}>
               <h3 className="font-semibold mb-2 text-sm" style={{ color: 'var(--text)' }}>
-                {t('what_we_collect', 'What we collect')}
+                {isGpsConsent
+                  ? t('gps_what_we_collect', 'What location sharing means')
+                  : t('what_we_collect', 'What we collect')
+                }
               </h3>
-              <ul className="text-sm space-y-1" style={{ color: 'var(--text-muted)' }}>
-                <li>• {t('collect_location', 'Location (only during active learning sessions)')}</li>
-                <li>• {t('collect_photos', 'Photos and audio recordings (stored securely on our server)')}</li>
-                <li>• {t('collect_learning', 'Learning progress and session notes')}</li>
-              </ul>
+              {isGpsConsent ? (
+                <ul className="text-sm space-y-1" style={{ color: 'var(--text-muted)' }}>
+                  <li>• {t('gps_only_during', 'GPS coordinates shared only during the active fieldwork session')}</li>
+                  <li>• {t('gps_teacher_only', 'Visible only to the class teacher — not other students or the public')}</li>
+                  <li>• {t('gps_stored', 'Location snapshots stored per submission (not continuous tracking)')}</li>
+                  <li>• {t('gps_expires', 'Consent expires automatically when the activity ends (max 30 days)')}</li>
+                </ul>
+              ) : (
+                <ul className="text-sm space-y-1" style={{ color: 'var(--text-muted)' }}>
+                  <li>• {t('collect_location', 'Location (only during active learning sessions)')}</li>
+                  <li>• {t('collect_photos', 'Photos and audio recordings (stored securely on our server)')}</li>
+                  <li>• {t('collect_learning', 'Learning progress and session notes')}</li>
+                </ul>
+              )}
               <p className="text-xs mt-3" style={{ color: 'var(--text-faint)' }}>
                 {t('no_ads', 'We never sell data or show ads. You can withdraw consent at any time.')}
               </p>

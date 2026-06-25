@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "calendar": "Calendar",
+    "activities": "Activities",
+    "settings": "Settings",
+    "progress": "Progress",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "reports": "Reports",
+    "students": "Students",
+    "classrooms": "Classrooms",
+    "rubrics": "Rubrics",
+    "standards": "Standards",
+    "challenges": "Challenges",
+    "library": "Shared Library",
+    "submissions": "Submissions",
+    "users": "Users",
+    "analytics": "Analytics",
+    "privacy": "Privacy",
+    "audit": "Audit Logs",
+    "ai_config": "AI Routing & Keys",
+    "billing": "Billing",
+    "new_activity": "New Activity"
+  }
+}

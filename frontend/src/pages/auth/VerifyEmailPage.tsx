@@ -6,10 +6,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 type Status = 'verifying' | 'success' | 'expired' | 'error';
 
 const VerifyEmailPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const token = params.get('token') || '';
@@ -41,8 +43,8 @@ const VerifyEmailPage: React.FC = () => {
       <div style={styles.page}>
         <div style={styles.card}>
           <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>⏳</div>
-          <h1 style={styles.heading}>Verifying your email…</h1>
-          <p style={styles.sub}>Just a moment.</p>
+          <h1 style={styles.heading}>{t('pages_auth_verifyemailpage.verifying_your_email', 'Verifying your email…')}</h1>
+          <p style={styles.sub}>{t('pages_auth_verifyemailpage.just_a_moment', 'Just a moment.')}</p>
           <div style={styles.spinner} />
         </div>
       </div>
@@ -54,9 +56,9 @@ const VerifyEmailPage: React.FC = () => {
       <div style={styles.page}>
         <div style={styles.card}>
           <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>✅</div>
-          <h1 style={styles.heading}>Email verified!</h1>
+          <h1 style={styles.heading}>{t('pages_auth_verifyemailpage.email_verified', 'Email verified!')}</h1>
           {email && <p style={styles.sub}><strong>{email}</strong> is now active.</p>}
-          <p style={{ ...styles.sub, marginTop: 8 }}>Redirecting you to login…</p>
+          <p style={{ ...styles.sub, marginTop: 8 }}>{t('pages_auth_verifyemailpage.redirecting_you_to_login', 'Redirecting you to login…')}</p>
           <button onClick={() => navigate('/login?verified=1', { replace: true })} style={styles.btn}>
             Go to login
           </button>
@@ -70,8 +72,8 @@ const VerifyEmailPage: React.FC = () => {
       <div style={styles.page}>
         <div style={styles.card}>
           <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>⏰</div>
-          <h1 style={styles.heading}>Link expired</h1>
-          <p style={styles.sub}>Verification links expire after 24 hours. Request a new one below.</p>
+          <h1 style={styles.heading}>{t('pages_auth_verifyemailpage.link_expired', 'Link expired')}</h1>
+          <p style={styles.sub}>{t('pages_auth_verifyemailpage.verification_links_expire_after_24_hours', 'Verification links expire after 24 hours. Request a new one below.')}</p>
           <button onClick={() => navigate('/verify-email-pending', { replace: true })} style={styles.btn}>
             Resend verification email
           </button>
@@ -87,8 +89,8 @@ const VerifyEmailPage: React.FC = () => {
     <div style={styles.page}>
       <div style={styles.card}>
         <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>❌</div>
-        <h1 style={styles.heading}>Verification failed</h1>
-        <p style={styles.sub}>This link is invalid or has already been used.</p>
+        <h1 style={styles.heading}>{t('pages_auth_verifyemailpage.verification_failed', 'Verification failed')}</h1>
+        <p style={styles.sub}>{t('pages_auth_verifyemailpage.this_link_is_invalid_or_has_already_been', 'This link is invalid or has already been used.')}</p>
         <button onClick={() => navigate('/verify-email-pending', { replace: true })} style={styles.btn}>
           Request a new link
         </button>

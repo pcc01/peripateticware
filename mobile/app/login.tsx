@@ -54,7 +54,7 @@ export default function LoginScreen() {
   ];
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]}>
+    <SafeAreaView testID="login-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.inner}

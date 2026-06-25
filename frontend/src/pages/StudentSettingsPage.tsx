@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
@@ -113,17 +114,7 @@ export const StudentSettingsPage = () => {
           <h2>{t("landing:preferences", "Preferences")}</h2>
           <div className={styles.settingGroup}>
             <label>{t("landing:language", "Language")}</label>
-            <select
-              value={settings.language}
-              onChange={(e) => handleChange('language', e.target.value)}
-              className={styles.select}>
-              
-              <option value="en">{t("landing:english", "English")}</option>
-              <option value="es">{t("landing:espaol", "Espa\xF1ol")}</option>
-              <option value="fr">{t("landing:franais", "Fran\xE7ais")}</option>
-              <option value="ja">日本語</option>
-              <option value="ar">العربية</option>
-            </select>
+            <LocaleSwitcher className={styles.select} />
           </div>
 
           <div className={styles.settingGroup}>
@@ -207,12 +198,7 @@ export const StudentSettingsPage = () => {
           </div>
         </section>
 
-        <section className={styles.section} style={{ borderColor: '#dc2626' }}>
-          <h2 style={{ color: '#dc2626' }}>{t("landing:danger_zone", "Danger Zone")}</h2>
-          <button onClick={handleLogout} className={styles.dangerBtn}>{t("landing:studentsettingspage.logout", "\uD83D\uDEAA Logout")}
-
-          </button>
-        </section>
+        {/* Logout removed \u2014 available in the sidebar (DashboardShell). */}
 
         {saveStatus &&
         <div className={styles.statusMessage}>

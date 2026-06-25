@@ -68,6 +68,33 @@ router = APIRouter(prefix="/api/v1/standards", tags=["standards"])
 VALID_TYPES = {"state_standards", "state_reporting", "rubric", "custom"}
 MAX_FILE_BYTES = 10 * 1024 * 1024
 
+# Map legacy / alias set_type values (sent by some frontend import pages) onto the
+# canonical taxonomy so imports don't fail with an enum error. Unknown values fall
+# back to "custom" rather than raising, so an unexpected parser/UI string can't 500.
+_SET_TYPE_ALIASES = {
+    "curriculum": "state_standards",
+    "standard": "state_standards",
+    "standards": "state_standards",
+    "academic": "state_standards",
+    "reporting": "state_reporting",
+    "state_requirements": "state_reporting",
+    "requirements": "state_reporting",
+    "state_report": "state_reporting",
+}
+
+
+def _normalize_set_type(value: Optional[str]) -> str:
+    """Coerce an incoming set_type/type string to a canonical VALID_TYPES value."""
+    if not value:
+        return "rubric"
+    v = value.strip().lower()
+    if v in VALID_TYPES:
+        return v
+    if v in _SET_TYPE_ALIASES:
+        return _SET_TYPE_ALIASES[v]
+    logger.warning("Unknown set_type %r -> falling back to 'custom'", value)
+    return "custom"
+
 
 def _default_valid_until(set_type: str) -> Optional[date]:
     today = date.today()
@@ -166,8 +193,7 @@ async def upload_and_parse(
     if len(file_bytes) > MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="File too large (max 10 MB)")
 
-    if set_type not in VALID_TYPES:
-        raise HTTPException(status_code=422, detail=f"set_type must be one of {sorted(VALID_TYPES)}")
+    set_type = _normalize_set_type(set_type)
 
     checksum = hashlib.sha256(file_bytes).hexdigest()
 
@@ -207,8 +233,7 @@ async def create_standards_set(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if body.type not in VALID_TYPES:
-        raise HTTPException(status_code=422, detail=f"type must be one of {sorted(VALID_TYPES)}")
+    body.type = _normalize_set_type(body.type)
 
     if body.is_global and current_user.role.upper() not in ("ADMIN", "TEACHER"):
         raise HTTPException(status_code=403, detail="Only admins/teachers can create global sets")

@@ -15,14 +15,14 @@ const FieldNotesListPage: React.FC = () => {
 
   useEffect(() => {
     fieldNoteApi.list()
-      .then(setNotes)
+      .then((data: any) => setNotes(Array.isArray(data) ? data : (data?.items ?? [])))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [])
 
   const handleNew = async () => {
     try {
-      const note = await fieldNoteApi.create({ title: 'New Field Note', content: '' })
+      const note = await fieldNoteApi.create({ title: 'New Field Note' } as any)
       navigate(`/student/field-notes/${note.id}`)
     } catch (e: any) {
       setError(e.message)

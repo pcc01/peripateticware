@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
+import { useTranslation } from 'react-i18next';
 
 interface StandardsSet {
   id: string;
@@ -27,10 +28,16 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export const TeacherStandardsPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [sets, setSets] = useState<StandardsSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(() => {
+    const msg = sessionStorage.getItem('standards_import_success');
+    if (msg) { sessionStorage.removeItem('standards_import_success'); return msg; }
+    return null;
+  });
 
   const load = () => {
     setLoading(true);
@@ -88,20 +95,26 @@ export const TeacherStandardsPage: React.FC = () => {
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-        <h1 style={{ fontFamily: 'var(--font-head)', margin: 0, flex: 1 }}>Learning Standards</h1>
+        <h1 style={{ fontFamily: 'var(--font-head)', margin: 0, flex: 1 }}>{t('pages_teacher_teacherstandardspage.learning_standards', 'Learning Standards')}</h1>
         <button onClick={() => navigate('/teacher/standards/import')}
           style={{ padding: '8px 18px', borderRadius: 8, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
           📄 Import Standards
         </button>
       </div>
 
+      {importSuccess && (
+        <div style={{ background: '#d1fae5', border: '1px solid #6ee7b7', borderRadius: 8, padding: '10px 16px', marginBottom: 16, color: '#065f46', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>{importSuccess}</span>
+          <button onClick={() => setImportSuccess(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#065f46', fontSize: '1rem' }}>✕</button>
+        </div>
+      )}
       {error && <p style={{ color: 'var(--error, #c0392b)', marginBottom: 16 }}>{error}</p>}
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherstandardspage.loading', 'Loading…')}</p>}
 
       {!loading && sets.length === 0 && (
         <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📐</div>
-          <p style={{ marginBottom: 20 }}>No standards imported yet. Upload a PDF or CSV of your discipline's learning standards.</p>
+          <p style={{ marginBottom: 20 }}>{t('pages_teacher_teacherstandardspage.no_standards_imported_yet_upload_a_pdf_o', 'No standards imported yet. Upload a PDF or CSV of your discipline\'s learning standards.')}</p>
           <button onClick={() => navigate('/teacher/standards/import')}
             style={{ padding: '10px 28px', borderRadius: 8, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
             Import Standards

@@ -4,7 +4,7 @@
 
 """SQLAlchemy models for Peripateticware"""
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, ForeignKey, Text, JSON, Enum, Index, UniqueConstraint
+from sqlalchemy import Column, String, Integer, Float, DateTime, Date, Boolean, ForeignKey, Text, JSON, Enum, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import relationship
@@ -89,7 +89,7 @@ class LearningSession(Base):
     is_active = Column(Boolean, default=True)
     status = Column(String(50), default="in_progress")  # in_progress, completed, paused
 
-    # Socratic logs (raw artifacts for teachers)
+    # Aristotelian inquiry logs (raw artifacts for teachers)
     inquiry_log = Column(JSONB)  # Array of inquiry objects
 
     # Evidence of Learning
@@ -239,10 +239,10 @@ class Activity(Base):
     # =========================================================================
     # LOCATION-BASED LEARNING
     # =========================================================================
-    location_latitude = Column(Float, nullable=False)
-    location_longitude = Column(Float, nullable=False)
+    location_latitude = Column(Float, nullable=True)
+    location_longitude = Column(Float, nullable=True)
     location_radius_meters = Column(Integer, default=100)
-    location_name = Column(String(255), nullable=False)
+    location_name = Column(String(255), nullable=True)
 
     # WikiLocation data
     location_info = Column(Text, nullable=True)
@@ -312,11 +312,22 @@ class Activity(Base):
     # e.g. {"only_on_submission": true, "require_permission": true}
 
     # =========================================================================
+    # STUDENT MOBILE PHASE CONTENT (teacher-authored)
+    # =========================================================================
+    orient_phase = Column(Text, nullable=True)    # Shown before activity starts
+    inquiry_phase = Column(Text, nullable=True)   # Shown during activity
+    reflect_phase = Column(Text, nullable=True)   # Shown after activity completion
+
+    # =========================================================================
     # STATUS & VISIBILITY
     # =========================================================================
     status = Column(String(50), default="draft", index=True)  # draft | published | archived
     is_active = Column(Boolean, default=True)
     is_shareable = Column(Boolean, default=False)
+    share_scope = Column(String(20), default='org')  # 'org' | 'all'
+    language = Column(String(50), nullable=True)         # content language e.g. 'English'
+    state_standard = Column(String(100), nullable=True)  # US state curriculum standard e.g. 'CA'
+    discipline = Column(String(100), nullable=True)      # academic discipline e.g. 'STEM'
 
     # =========================================================================
     # TIMESTAMPS
@@ -715,11 +726,11 @@ class LocationSearchHistory(Base):
 
     teacher_id  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True)
-    timestamp   = Column(DateTime, default=datetime.utcnow, index=True)
+    searched_at = Column(DateTime, default=datetime.utcnow, index=True)
 
     __table_args__ = (
         Index('idx_location_search_geo',       'latitude', 'longitude'),
-        Index('idx_location_search_timestamp', 'timestamp'),
+        Index('idx_location_search_timestamp', 'searched_at'),
         Index('idx_location_search_teacher',   'teacher_id'),
     )
 
@@ -970,7 +981,7 @@ class StudentSelfProject(Base):
     title           = Column(String(255), nullable=False)
     description     = Column(Text, nullable=True)
     cover_image_url = Column(String(500), nullable=True)
-    status          = Column(Enum(SelfProjectStatus), default=SelfProjectStatus.PERSONAL, nullable=False)
+    status          = Column(String(30), default="personal", nullable=False)
 
     student     = relationship("User", foreign_keys=[student_id])
     field_notes = relationship("StudentFieldNote", back_populates="self_project",
@@ -991,7 +1002,7 @@ class StudentFieldNote(Base):
 
     title       = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    status      = Column(Enum(FieldNoteStatus), default=FieldNoteStatus.DRAFT, nullable=False)
+    status      = Column(String(30), default="draft", nullable=False)
 
     location_latitude  = Column(Float, nullable=True)
     location_longitude = Column(Float, nullable=True)
@@ -1056,11 +1067,10 @@ class StudentPeerProject(Base):
     curriculum_objective_ids = Column(ARRAY(UUID(as_uuid=True)), default=list, nullable=False)
     allowed_capture_types    = Column(ARRAY(String), default=list, nullable=False)
 
-    audience           = Column(Enum(PeerProjectAudience),
-                                default=PeerProjectAudience.WHOLE_CLASS, nullable=False)
+    audience           = Column(String(30), default="whole_class", nullable=False)
     target_student_ids = Column(ARRAY(UUID(as_uuid=True)), default=list, nullable=False)
 
-    status            = Column(Enum(PeerProjectStatus), default=PeerProjectStatus.DRAFT, nullable=False)
+    status            = Column(String(30), default="draft", nullable=False)
     approval_required = Column(Boolean, default=True, nullable=False)
 
     approved_by_teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
@@ -1069,6 +1079,11 @@ class StudentPeerProject(Base):
     published_at           = Column(DateTime, nullable=True)
 
     author_can_see_individual_responses = Column(Boolean, default=False, nullable=False)
+
+    # Optional location — captured from student's GPS when they propose the activity
+    location_latitude  = Column(Float, nullable=True)
+    location_longitude = Column(Float, nullable=True)
+    location_name      = Column(String(255), nullable=True)
 
     author           = relationship("User", foreign_keys=[author_student_id])
     approver         = relationship("User", foreign_keys=[approved_by_teacher_id])
@@ -1114,8 +1129,7 @@ class PeerProjectResponse(Base):
     student_id      = Column(UUID(as_uuid=True), ForeignKey("users.id"),
                              nullable=False, index=True)
 
-    status            = Column(Enum(PeerProjectResponseStatus),
-                               default=PeerProjectResponseStatus.IN_PROGRESS, nullable=False)
+    status            = Column(String(30), default="in_progress", nullable=False)
     notebook_entry_id = Column(UUID(as_uuid=True), ForeignKey("student_notebooks.id"), nullable=True)
     completed_at      = Column(DateTime, nullable=True)
 
@@ -1260,6 +1274,12 @@ class StandardsSet(Base):
     is_global   = Column(Boolean, default=False)                    # True = admin-managed, visible to all
     source_file = Column(String(512), nullable=True)                # original upload filename
     criteria    = Column(JSONB, default=list)                       # [{id, name, description, category, required, weight}]
+    # Cache / expiry columns — written by routes/standards.py.create_standards_set.
+    # These were missing from the model/DDL, causing a TypeError on save ("save failed").
+    source_checksum   = Column(String(64), nullable=True)            # SHA-256 hex of source upload
+    processing_status = Column(String(20), nullable=True, default="complete")  # pending|processing|complete|failed
+    last_processed_at = Column(DateTime, nullable=True)
+    valid_until       = Column(Date, nullable=True)                  # re-verify/re-upload by this date
     created_at  = Column(DateTime, default=datetime.utcnow)
     updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

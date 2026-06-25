@@ -25,19 +25,20 @@ class StudentActivitySummary(BaseModel):
     """
     Lightweight activity card shown in the discovery list (screens 02 / 01).
     Omits rubric details, AI suggestions, and teacher-only fields.
+    Fields are Optional with safe defaults so NULL DB values don't 500.
     """
     id:                          UUID
     title:                       str
-    description:                 str
-    subject:                     str
-    grade_level:                 int
-    estimated_duration_minutes:  int
-    difficulty_level:            int
-    location_name:               str
-    location_latitude:           float
-    location_longitude:          float
-    location_radius_meters:      int
-    bloom_level:                 int
+    description:                 Optional[str] = ""
+    subject:                     Optional[str] = ""
+    grade_level:                 Optional[int] = None
+    estimated_duration_minutes:  Optional[int] = None
+    difficulty_level:            Optional[int] = None
+    location_name:               Optional[str] = ""
+    location_latitude:           Optional[float] = None
+    location_longitude:          Optional[float] = None
+    location_radius_meters:      Optional[int] = None
+    bloom_level:                 Optional[int] = None
     materials_needed:            List[str]     = []
     learning_objectives:         List[Any]     = []
     assessment_type:             Optional[str] = None

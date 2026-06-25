@@ -8,7 +8,7 @@
 // ==============================================================================
 
 import { CaptureType, StudentCapture, TranscriptionStatus } from '../types/student';
-import { apiClient } from './api';
+import { axiosInstance } from './api';
 
 export class CaptureService {
   private baseUrl = '/api/v1/student/captures';
@@ -55,7 +55,7 @@ export class CaptureService {
    * Get a specific capture
    */
   async getCapture(captureId: string): Promise<StudentCapture> {
-    return apiClient.get(`${this.baseUrl}/${captureId}`);
+    return axiosInstance.get(`${this.baseUrl}/${captureId}`);
   }
 
   /**
@@ -73,14 +73,14 @@ export class CaptureService {
     if (filters.skip !== undefined) params.append('skip', String(filters.skip));
     if (filters.limit !== undefined) params.append('limit', String(filters.limit));
 
-    return apiClient.get(`${this.baseUrl}?${params.toString()}`);
+    return axiosInstance.get(`${this.baseUrl}?${params.toString()}`);
   }
 
   /**
    * Delete a capture
    */
   async deleteCapture(captureId: string): Promise<void> {
-    await apiClient.delete(`${this.baseUrl}/${captureId}`);
+    await axiosInstance.delete(`${this.baseUrl}/${captureId}`);
   }
 
   /**
@@ -93,8 +93,8 @@ export class CaptureService {
   }> {
     const capture = await this.getCapture(captureId);
     return {
-      status: capture.transcript_status || TranscriptionStatus.PENDING,
-      transcript: capture.transcript,
+      status: (capture as any).transcript_status || 'pending',
+      transcript: (capture as any).transcript,
       confidence: capture.transcript_confidence
     };
   }
@@ -110,9 +110,9 @@ export class CaptureService {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const status = await this.getTranscriptionStatus(captureId);
       
-      if (status.status === TranscriptionStatus.COMPLETED) {
-        return status.transcript || null;
-      } else if (status.status === TranscriptionStatus.FAILED) {
+      if (status.status === 'complete') {
+        return (status as any).transcript || null;
+      } else if (status.status === 'failed') {
         throw new Error('Transcription failed');
       }
 
@@ -150,7 +150,7 @@ export class NotebookService {
     learningObjectivesTagged?: string[];
     competenciesAddressed?: string[];
   }): Promise<StudentNotebook> {
-    return apiClient.post(this.baseUrl, {
+    return axiosInstance.post(this.baseUrl, {
       entry_type: data.entryType,
       content: data.content,
       prompt: data.prompt,
@@ -165,7 +165,7 @@ export class NotebookService {
    * Get a notebook entry
    */
   async getEntry(entryId: string): Promise<StudentNotebook> {
-    return apiClient.get(`${this.baseUrl}/${entryId}`);
+    return axiosInstance.get(`${this.baseUrl}/${entryId}`);
   }
 
   /**
@@ -181,7 +181,7 @@ export class NotebookService {
     if (filters.skip !== undefined) params.append('skip', String(filters.skip));
     if (filters.limit !== undefined) params.append('limit', String(filters.limit));
 
-    return apiClient.get(`${this.baseUrl}?${params.toString()}`);
+    return axiosInstance.get(`${this.baseUrl}?${params.toString()}`);
   }
 
   /**
@@ -196,14 +196,14 @@ export class NotebookService {
       competenciesAddressed?: string[];
     }
   ): Promise<StudentNotebook> {
-    return apiClient.put(`${this.baseUrl}/${entryId}`, data);
+    return axiosInstance.put(`${this.baseUrl}/${entryId}`, data);
   }
 
   /**
    * Link a capture to a notebook entry
    */
   async linkCapture(entryId: string, captureId: string): Promise<{ status: string }> {
-    return apiClient.post(`${this.baseUrl}/${entryId}/link-capture`, {
+    return axiosInstance.post(`${this.baseUrl}/${entryId}/link-capture`, {
       capture_id: captureId
     });
   }
@@ -230,7 +230,7 @@ export class PortfolioService {
     if (activityId) {
       url += `?activity_id=${activityId}`;
     }
-    return apiClient.get(url);
+    return axiosInstance.get(url);
   }
 
   /**
@@ -241,7 +241,7 @@ export class PortfolioService {
     if (status) {
       url += `?status=${status}`;
     }
-    return apiClient.get(url);
+    return axiosInstance.get(url);
   }
 
   /**
@@ -344,7 +344,7 @@ export const asrService = new ASRService();
 // Service for offline-first storage using IndexedDB
 // ==============================================================================
 
-import Database from 'better-sqlite3';
+// better-sqlite3 removed — browser uses IndexedDB. See AudioRecorder for offline queue.
 
 interface StoredCapture {
   id: string;

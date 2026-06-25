@@ -25,7 +25,7 @@ const CurriculumEditor: React.FC<CurriculumEditorProps> = ({ onSave, initialUnit
   const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<CurriculumCreateRequest>(
-    initialUnit || {
+    (initialUnit as unknown as CurriculumCreateRequest) || {
       title: '',
       description: '',
       subject: '',

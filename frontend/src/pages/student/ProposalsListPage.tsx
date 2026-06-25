@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { proposalApi } from '../../services/phase7Api'
 import type { Proposal } from '../../types/phase7'
+import { useTranslation } from 'react-i18next';
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
   draft:    { bg: 'bg-gray-100',   text: 'text-gray-600',  label: 'Draft' },
@@ -15,6 +16,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }>
 }
 
 const ProposalsListPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate()
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [loading, setLoading]     = useState(true)
@@ -47,10 +49,8 @@ const ProposalsListPage: React.FC = () => {
     <div className="max-w-3xl mx-auto p-6">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>My Challenges</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            Challenge other students to find or interact with a real place.
-          </p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{t('pages_student_proposalslistpage.my_challenges', 'My Challenges')}</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalslistpage.challenge_other_students_to_find_or_inte', 'Challenge other students to find or interact with a real place.')}</p>
         </div>
         <button
           onClick={handleNew}
@@ -68,10 +68,8 @@ const ProposalsListPage: React.FC = () => {
       {proposals.length === 0 ? (
         <div className="text-center py-20" style={{ color: 'var(--text-muted)' }}>
           <div className="text-5xl mb-4">🗺️</div>
-          <p className="text-lg mb-2 font-medium">No challenges yet</p>
-          <p className="text-sm mb-6">
-            Create a reverse scavenger hunt — challenge classmates to find a stream, spot a plant, or visit a place.
-          </p>
+          <p className="text-lg mb-2 font-medium">{t('pages_student_proposalslistpage.no_challenges_yet', 'No challenges yet')}</p>
+          <p className="text-sm mb-6">{t('pages_student_proposalslistpage.create_a_reverse_scavenger_hunt_challeng', 'Create a reverse scavenger hunt — challenge classmates to find a stream, spot a plant, or visit a place.')}</p>
           <button
             onClick={handleNew}
             className="px-6 py-2 rounded-lg text-white font-medium"

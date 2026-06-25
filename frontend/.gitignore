@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.env.local
+.DS_Store
+.vscode
+.idea
+
+# Vite temporary config compilation files (accumulate on Windows with Docker)
+vite.config.ts.timestamp-*.mjs
+tests/e2e/.auth/

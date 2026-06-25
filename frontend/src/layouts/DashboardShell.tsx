@@ -2,12 +2,11 @@
 // Shared persistent sidebar shell used by all role dashboards.
 
 import React, { useState } from 'react';
+import { LogOut } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+import { useTranslation } from 'react-i18next';
+import { useSessionSecurity } from '@/hooks/useSessionSecurity';
 
 export interface NavGroup {
   label: string;
@@ -18,21 +17,17 @@ export interface NavItem {
   label: string;
   path: string;
   icon: string;
-  badge?: number;     // red badge count (e.g. unread submissions)
-  end?: boolean;      // exact match for NavLink (for root paths like /teacher)
+  badge?: number;
+  end?: boolean;
 }
 
 interface DashboardShellProps {
   children: React.ReactNode;
   navGroups: NavGroup[];
   roleLabel: string;
-  roleColor: string;   // Tailwind bg class e.g. 'bg-green-800'
-  accentColor: string; // Tailwind text/border class e.g. 'text-green-700'
+  roleColor: string;
+  accentColor: string;
 }
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 const DashboardShell: React.FC<DashboardShellProps> = ({
   children,
@@ -41,8 +36,10 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
   roleColor,
   accentColor,
 }) => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  useSessionSecurity();
   const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = () => {
@@ -51,18 +48,17 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50" style={{ fontFamily: 'var(--font-body, "DM Sans", system-ui, sans-serif)' }}>
-      {/* ── Sidebar ──────────────────────────────────────────────────── */}
+    <div className="flex min-h-screen" style={{ background: 'var(--bg)', fontFamily: 'var(--font-body, sans-serif)' }}>
       <aside
-        className={`flex flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-200 flex-shrink-0
-                    ${collapsed ? 'w-14' : 'w-56'}`}
+        className={`flex flex-col border-r transition-all duration-200 flex-shrink-0 ${collapsed ? 'w-14' : 'w-56'}`}
+        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
         {/* Sidebar header */}
         <div className={`flex items-center justify-between px-3 py-3 ${roleColor}`}>
           {!collapsed && (
             <div className="min-w-0">
-              <h1 style={{ fontFamily: 'var(--font-head, "Lora", Georgia, serif)', fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.2 }}>
-                Peripateticware
+              <h1 style={{ fontFamily: 'var(--font-head, serif)', fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.2 }}>
+                {t('layouts_dashboardshell.peripateticware', 'Peripateticware')}
               </h1>
               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>{roleLabel}</p>
             </div>
@@ -73,8 +69,45 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             style={{ fontSize: '0.75rem' }}
           >
-            {collapsed ? '›' : '‹'}
+            {collapsed ? '>' : '<'}
           </button>
+        </div>
+
+        {/* Persona + logout */}
+        <div className="px-2 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+          {!collapsed ? (
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-7 h-7 rounded-full ${roleColor} flex items-center justify-center text-white font-bold flex-shrink-0`}
+                style={{ fontSize: '0.7rem' }}
+              >
+                {(user?.full_name || user?.email || '?')[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate" style={{ color: 'var(--text)', fontSize: '0.7rem' }}>
+                  {user?.full_name || user?.email}
+                </p>
+                <p className="truncate" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>{user?.email}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                title="Sign out"
+                className="p-1.5 rounded hover:text-red-600 hover:bg-red-50 transition flex-shrink-0 border border-transparent hover:border-red-200"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="w-full flex justify-center items-center py-1 rounded hover:text-red-600 hover:bg-red-50 transition"
+              title="Sign out"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <LogOut size={15} />
+            </button>
+          )}
         </div>
 
         {/* Nav groups */}
@@ -92,22 +125,25 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
                     <NavLink
                       to={item.path}
                       end={item.end}
-                      className={({ isActive }) =>
-                        `flex items-center gap-2 px-2 py-1.5 rounded-md transition
-                         ${isActive
-                           ? `bg-gray-100 ${accentColor}`
-                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`
-                      }
-                      style={{ fontSize: '0.8rem', fontWeight: 500 }}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-md transition"
+                      style={({ isActive }: { isActive: boolean }) => ({
+                        fontSize: '0.8rem', fontWeight: 500,
+                        background: isActive ? 'var(--surface-alt)' : 'transparent',
+                        color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                      })}
                       title={collapsed ? item.label : undefined}
                     >
                       <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{item.icon}</span>
                       {!collapsed && (
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.label}
+                        </span>
                       )}
                       {!collapsed && item.badge != null && item.badge > 0 && (
-                        <span className="ml-auto bg-red-500 text-white rounded-full flex items-center justify-center flex-shrink-0"
-                          style={{ fontSize: '0.6rem', width: 16, height: 16 }}>
+                        <span
+                          className="ml-auto bg-red-500 text-white rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ fontSize: '0.6rem', width: 16, height: 16 }}
+                        >
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
@@ -118,38 +154,11 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
             </div>
           ))}
         </nav>
-
-        {/* User footer */}
-        <div className="border-t border-gray-100 p-2">
-          {!collapsed ? (
-            <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full ${roleColor} flex items-center justify-center text-white font-bold flex-shrink-0`}
-                style={{ fontSize: '0.7rem' }}>
-                {(user?.full_name || user?.email || '?')[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-800 font-semibold truncate" style={{ fontSize: '0.7rem' }}>
-                  {user?.full_name || user?.email}
-                </p>
-                <p className="text-gray-400 truncate" style={{ fontSize: '0.65rem' }}>{user?.email}</p>
-              </div>
-              <button onClick={handleLogout} title="Logout"
-                className="text-gray-400 hover:text-red-500 transition flex-shrink-0" style={{ fontSize: '0.8rem' }}>
-                ⎋
-              </button>
-            </div>
-          ) : (
-            <button onClick={handleLogout} title="Logout"
-              className="w-full flex justify-center text-gray-400 hover:text-red-500 transition" style={{ fontSize: '0.8rem' }}>
-              ⎋
-            </button>
-          )}
-        </div>
       </aside>
 
-      {/* ── Main content — centred with max-width ──────────────────── */}
+      {/* Main content */}
       <main className="flex-1 overflow-auto" style={{ background: 'var(--bg, #f9f6f1)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 32px', fontFamily: 'var(--font-body, "DM Sans", system-ui, sans-serif)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 32px', fontFamily: 'var(--font-body, sans-serif)' }}>
           {children}
         </div>
       </main>

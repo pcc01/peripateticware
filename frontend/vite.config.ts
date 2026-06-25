@@ -33,17 +33,22 @@ export default defineConfig({
       host: 'localhost',
       port: 3000,
     },
+    watch: {
+      // Use polling for reliable HMR on Windows bind mounts (inotify unreliable)
+      usePolling: true,
+      interval: 1000,
+    },
     proxy: {
       '/auth': {
         // VITE_PROXY_TARGET = server-side Docker service URL (http://backend:8000)
         // VITE_API_URL is a browser-side var and must NOT be used here — inside the
         // container "localhost" resolves to the frontend container, not the backend.
-        target: process.env.VITE_PROXY_TARGET || 'http://backend:8000',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => `/api/v1${path}`,
       },
       '/api': {
-        target: process.env.VITE_PROXY_TARGET || 'http://backend:8000',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path,
       },

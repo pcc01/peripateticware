@@ -15,16 +15,10 @@ import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import apiClient from '@/config/api'
 import { useTranslation } from 'react-i18next';
 
-const API_BASE = ''
 const PAGE_SIZE = 25
-
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('auth_token')
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
 
 type StatusBadge = 'COMPLIANT' | 'WARNING' | 'BLOCKED'
 
@@ -89,8 +83,7 @@ export default function AdminAuditLogPage() {
       if (filterFrom)   params.from_dt = new Date(filterFrom).toISOString()
       if (filterTo)     params.to_dt   = new Date(filterTo).toISOString()
 
-      const res = await axios.get(`${API_BASE}/api/v1/privacy/audit-log`, {
-        headers: getAuthHeader(),
+      const res = await apiClient.get(`/api/v1/privacy/audit-log`, {
         params,
       })
       setRows(res.data.items || [])
@@ -117,8 +110,7 @@ export default function AdminAuditLogPage() {
       if (filterFrom)   params.from_dt = new Date(filterFrom).toISOString()
       if (filterTo)     params.to_dt   = new Date(filterTo).toISOString()
 
-      const res = await axios.get(`${API_BASE}/api/v1/privacy/audit-log/export`, {
-        headers: getAuthHeader(),
+      const res = await apiClient.get(`/api/v1/privacy/audit-log/export`, {
         params,
         responseType: 'blob',
       })

@@ -4,7 +4,7 @@
 
 """Pydantic schemas for activity and project endpoints"""
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -18,6 +18,45 @@ class ActivityTypeEnum(str, Enum):
     HANDS_ON = "hands_on"
     VIRTUAL = "virtual"
     HYBRID = "hybrid"
+
+
+# Coercion maps so clients sending text labels / legacy values don't 422.
+_BLOOM_LABELS = {
+    "remember": 1, "understand": 2, "apply": 3,
+    "analyze": 4, "evaluate": 5, "create": 6,
+}
+_ACTIVITY_TYPE_ALIASES = {
+    "outdoor": "hands_on",
+    "field-observation": "hands_on",
+    "field_observation": "hands_on",
+    "observation": "hands_on",
+    "hands-on": "hands_on",
+    "project": "inquiry",
+    "experiment": "inquiry",
+    "discovery": "inquiry",
+}
+
+
+def _coerce_bloom_level(v):
+    """Accept ints or text labels ('understand') for bloom_level."""
+    if v is None or isinstance(v, int):
+        return v
+    if isinstance(v, str):
+        s = v.strip().lower()
+        if s.isdigit():
+            return int(s)
+        if s in _BLOOM_LABELS:
+            return _BLOOM_LABELS[s]
+    return v
+
+
+def _coerce_activity_type(v):
+    """Map legacy/invalid activity_type strings to a valid enum value."""
+    if isinstance(v, str):
+        s = v.strip().lower()
+        if s in _ACTIVITY_TYPE_ALIASES:
+            return _ACTIVITY_TYPE_ALIASES[s]
+    return v
 
 
 class ActivityStatusEnum(str, Enum):
@@ -53,21 +92,43 @@ class ActivityBase(BaseModel):
     estimated_duration_minutes: int = Field(..., ge=5, le=480)
     materials_needed: List[str] = Field(default_factory=list)
     resources: List[dict] = Field(default_factory=list)
-    learning_objectives: List[str] = Field(..., min_items=1, max_items=10)
+    learning_objectives: List[str] = Field(..., min_length=1, max_length=10)
     curriculum_unit_ids: List[UUID] = Field(default_factory=list)
     bloom_level: int = Field(..., ge=1, le=6)
+    marzano_level: Optional[int] = Field(None, ge=1, le=4, description="Marzano's taxonomy level (1-4)")
+    dok_level: Optional[int] = Field(None, ge=1, le=4, description="Depth of Knowledge level (1-4)")
+    solo_level: Optional[int] = Field(None, ge=1, le=5, description="SOLO taxonomy level (1-5)")
+    rubric_id: Optional[UUID] = None
     activity_type: ActivityTypeEnum = ActivityTypeEnum.INQUIRY
     is_shareable: bool = False
-    
-    @validator('learning_objectives')
+    share_scope: str = Field(default='org', description="'org' = share with same org only, 'all' = share globally")
+    language: Optional[str] = Field(None, max_length=50, description="Content language, e.g. 'English', 'Spanish'")
+    state_standard: Optional[str] = Field(None, max_length=100, description="US state curriculum standard, e.g. 'CA', 'TX'")
+    discipline: Optional[str] = Field(None, max_length=100, description="Academic discipline, e.g. 'STEM', 'Humanities'")
+
+    # ── Student mobile phase content (teacher-authored) ────────────────────────
+    orient_phase: Optional[str] = Field(None, description="Orient phase content shown to students before the activity")
+    inquiry_phase: Optional[str] = Field(None, description="Inquiry phase instructions/prompts shown during the activity")
+    reflect_phase: Optional[str] = Field(None, description="Reflect phase prompt shown after the activity")
+
+    @field_validator('learning_objectives', mode='before')
+    @classmethod
     def validate_objectives(cls, v):
-        """Validate learning objectives"""
+        """Validate learning objectives — empty list gets a default instead of hard-failing."""
         if not v:
-            raise ValueError('At least one learning objective is required')
-        for obj in v:
-            if not isinstance(obj, str) or len(obj) < 3:
-                raise ValueError('Each objective must be at least 3 characters')
-        return v
+            return ["Complete the assigned outdoor learning activity."]
+        filtered = [obj for obj in v if isinstance(obj, str) and len(obj.strip()) >= 3]
+        return filtered or ["Complete the assigned outdoor learning activity."]
+
+    @field_validator('bloom_level', mode='before')
+    @classmethod
+    def _coerce_bloom(cls, v):
+        return _coerce_bloom_level(v)
+
+    @field_validator('activity_type', mode='before')
+    @classmethod
+    def _coerce_type(cls, v):
+        return _coerce_activity_type(v)
 
 
 class ActivityCreate(ActivityBase):
@@ -89,11 +150,42 @@ class ActivityUpdate(BaseModel):
     estimated_duration_minutes: Optional[int] = Field(None, ge=5, le=480)
     materials_needed: Optional[List[str]] = None
     resources: Optional[List[dict]] = None
-    learning_objectives: Optional[List[str]] = Field(None, min_items=1, max_items=10)
+    learning_objectives: Optional[List[str]] = Field(None, min_length=1, max_length=10)
     curriculum_unit_ids: Optional[List[UUID]] = None
     bloom_level: Optional[int] = Field(None, ge=1, le=6)
+    marzano_level: Optional[int] = Field(None, ge=1, le=4)
+    dok_level: Optional[int] = Field(None, ge=1, le=4)
+    solo_level: Optional[int] = Field(None, ge=1, le=5)
+    rubric_id: Optional[UUID] = None
     activity_type: Optional[ActivityTypeEnum] = None
     is_shareable: Optional[bool] = None
+    share_scope: Optional[str] = None
+    language: Optional[str] = Field(None, max_length=50)
+    state_standard: Optional[str] = Field(None, max_length=100)
+    discipline: Optional[str] = Field(None, max_length=100)
+    orient_phase: Optional[str] = None
+    inquiry_phase: Optional[str] = None
+    reflect_phase: Optional[str] = None
+
+    @field_validator('learning_objectives', mode='before')
+    @classmethod
+    def validate_objectives(cls, v):
+        if v is None:
+            return v
+        if not v:
+            return ["Complete the assigned outdoor learning activity."]
+        filtered = [obj for obj in v if isinstance(obj, str) and len(obj.strip()) >= 3]
+        return filtered or ["Complete the assigned outdoor learning activity."]
+
+    @field_validator('bloom_level', mode='before')
+    @classmethod
+    def _coerce_bloom(cls, v):
+        return _coerce_bloom_level(v)
+
+    @field_validator('activity_type', mode='before')
+    @classmethod
+    def _coerce_type(cls, v):
+        return _coerce_activity_type(v)
 
 
 class ActivityResponse(ActivityBase):
@@ -123,10 +215,39 @@ class ActivityListResponse(BaseModel):
     estimated_duration_minutes: int
     status: ActivityStatusEnum
     activity_type: ActivityTypeEnum
+    is_shareable: bool = False
+    share_scope: str = 'org'
+    language: Optional[str] = None
+    state_standard: Optional[str] = None
+    discipline: Optional[str] = None
     view_count: int
     created_at: datetime
     updated_at: datetime
-    
+
+    class Config:
+        from_attributes = True
+
+
+class SharedLibraryActivityResponse(BaseModel):
+    """Activity response for the shared library (includes author info)"""
+    id: UUID
+    title: str
+    description: str
+    subject: str
+    grade_level: int
+    difficulty_level: int
+    estimated_duration_minutes: int
+    activity_type: str
+    bloom_level: int
+    location_name: str
+    share_scope: str
+    language: Optional[str] = None
+    state_standard: Optional[str] = None
+    discipline: Optional[str] = None
+    author_name: Optional[str] = None
+    author_org: Optional[str] = None
+    created_at: datetime
+
     class Config:
         from_attributes = True
 
@@ -154,13 +275,12 @@ class ProjectBase(BaseModel):
     start_date: datetime
     end_date: Optional[datetime] = None
     
-    @validator('end_date')
-    def validate_end_date(cls, v, values):
-        """Validate end_date is after start_date"""
-        if v and 'start_date' in values:
-            if v <= values['start_date']:
+    @model_validator(mode='after')
+    def validate_end_date(self):
+        if self.end_date and self.start_date:
+            if self.end_date <= self.start_date:
                 raise ValueError('End date must be after start date')
-        return v
+        return self
 
 
 class ProjectCreate(ProjectBase):

@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background-color: var(--bg-secondary);
+  background-color: var(--surface-alt);
   padding-bottom: var(--space-xl);
 }
 
@@ -21,7 +21,7 @@
 }
 
 .backBtn {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255,255,255,0.15);
   color: white;
   border: none;
   padding: var(--space-md) var(--space-lg);
@@ -32,7 +32,7 @@
 }
 
 .backBtn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255,255,255,0.25);
 }
 
 .main {
@@ -42,7 +42,7 @@
 }
 
 .section {
-  background-color: white;
+  background-color: var(--surface);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
   margin-bottom: var(--space-xl);
@@ -55,13 +55,13 @@
   margin-bottom: var(--space-lg);
   font-size: var(--font-size-xl);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .settingGroup {
   margin-bottom: var(--space-lg);
   padding-bottom: var(--space-lg);
-  border-bottom: 1px solid var(--bg-secondary);
+  border-bottom: 1px solid var(--surface-alt);
 }
 
 .settingGroup:last-child {
@@ -74,7 +74,7 @@
   display: block;
   margin-bottom: var(--space-md);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: var(--font-size-base);
 }
 
@@ -82,12 +82,18 @@
   width: 100%;
   max-width: 400px;
   padding: var(--space-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
-  background-color: white;
+  background-color: var(--surface, #fff);
+  color: var(--text, #333);
   cursor: pointer;
   transition: all var(--duration-base) var(--ease-in-out);
+}
+
+.select option {
+  color: var(--text, #333);
+  background-color: var(--surface, #fff);
 }
 
 .select:hover {
@@ -98,6 +104,13 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.formRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .radioGroup {
@@ -136,7 +149,7 @@
 
 .helpText {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin: var(--space-md) 0 0 0;
 }
 
@@ -163,9 +176,9 @@
 }
 
 .secondaryBtn {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background-color: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: var(--space-md) var(--space-xl);
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -208,7 +221,7 @@
   gap: var(--space-lg);
   justify-content: flex-end;
   padding-top: var(--space-xl);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   margin-top: var(--space-xl);
 }
 

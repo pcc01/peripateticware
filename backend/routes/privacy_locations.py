@@ -298,17 +298,57 @@ async def enrich_location(
     Returns: learning opportunities, images, historical significance, etc.
     """
     try:
-        # TODO: Fetch location from cache
-        # TODO: If not enriched, enrich with Wikipedia/Wikidata
-        # TODO: Return enriched data
-        
+        from sqlalchemy import select as _sel
+        from models.database import CachedLocation, EnrichedLocation as _EL
+
+        # 1. Check cache
+        result = await db.execute(
+            _sel(CachedLocation).where(CachedLocation.place_id == place_id)
+        )
+        cached = result.scalar_one_or_none()
+        enriched = None
+        if cached:
+            er = await db.execute(
+                _sel(_EL).where(_EL.cached_location_id == cached.id)
+            )
+            enriched = er.scalar_one_or_none()
+
+        if enriched:
+            return {
+                "place_id": place_id,
+                "name": cached.name if cached else place_id,
+                "description": enriched.description,
+                "subjects": enriched.subjects or [],
+                "grade_levels": enriched.grade_levels or [],
+                "learning_opportunities": enriched.learning_opportunities or [],
+                "image_url": enriched.image_url,
+                "enrichment_quality": enriched.enrichment_quality,
+                "source": enriched.enrichment_source,
+            }
+
+        # 2. Cache miss — try Nominatim + Wikipedia (fire-and-forget, return stub)
+        import asyncio, httpx as _httpx
+        loc_name = place_id.replace("-", " ").title()
+        description = None
+        try:
+            async with _httpx.AsyncClient(timeout=5, headers={"User-Agent": "Peripateticware/1.0"}) as c:
+                wiki = await c.get(
+                    f"https://en.wikipedia.org/api/rest_v1/page/summary/{loc_name.replace(' ', '_')}"
+                )
+                if wiki.status_code == 200:
+                    description = wiki.json().get("extract", "")[:500]
+        except Exception:
+            pass
+
         return {
             "place_id": place_id,
-            "subjects": [],
+            "name": loc_name,
+            "description": description,
+            "subjects": [subject] if subject else [],
             "learning_opportunities": [],
             "image_url": None,
-            "description": None,
-            "message": "Location enrichment endpoint - implement database retrieval"
+            "enrichment_quality": 0.3 if description else 0.0,
+            "source": "wikipedia_live" if description else "none",
         }
     
     except Exception as e:
@@ -332,13 +372,37 @@ async def get_popular_locations(
     Helps teachers discover what works well in their region
     """
     try:
-        # TODO: Query popular_destinations table
-        # TODO: Filter by radius
-        # TODO: Return sorted by usage
-        
+        from sqlalchemy import select as _sel, desc as _desc, func as _func
+        from models.database import CachedLocation as _CL
+
+        # Haversine filter approximation using bounding box, then sort by access_count
+        # 1 degree lat ≈ 111 km
+        lat_delta = radius_meters / 111_000
+        lon_delta = radius_meters / (111_000 * abs(import_cos(latitude)) if (import_cos := __import__("math").cos) else 1)
+
+        result = await db.execute(
+            _sel(_CL)
+            .where(
+                _CL.latitude.between(latitude - lat_delta, latitude + lat_delta),
+                _CL.longitude.between(longitude - lon_delta, longitude + lon_delta),
+            )
+            .order_by(_desc(_CL.access_count))
+            .limit(20)
+        )
+        locs = result.scalars().all()
+
         return {
-            "locations": [],
-            "message": "Popular locations endpoint - implement database query"
+            "locations": [
+                {
+                    "place_id": loc.place_id,
+                    "name": loc.name,
+                    "latitude": loc.latitude,
+                    "longitude": loc.longitude,
+                    "usage_count": loc.access_count or 0,
+                }
+                for loc in locs
+            ],
+            "total": len(locs),
         }
     
     except Exception as e:

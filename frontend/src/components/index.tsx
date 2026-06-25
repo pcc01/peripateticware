@@ -4,10 +4,10 @@
  */
 
 import React from 'react';
-import type { Tokens } from './tokens';
+import { tokens as Tokens } from './tokens';
 
 interface ComponentProps {
-  d: Tokens;
+  d: Record<string, any>;
   [key: string]: any;
 }
 

@@ -44,10 +44,10 @@ export function Footer() {
         <div className="footer-column">
           <h3 className="footer-title">{t('footer.product_title')}</h3>
           <ul className="footer-links">
-            <li><a href="#features">{t('footer.product_features')}</a></li>
-            <li><a href="#tools">{t('footer.product_tools')}</a></li>
-            <li><a href="#pricing">{t('footer.product_pricing')}</a></li>
-            <li><a href="#demo">{t('footer.product_demo')}</a></li>
+            <li><Link to="/#features">{t('footer.product_features')}</Link></li>
+            <li><Link to="/#tools">{t('footer.product_tools')}</Link></li>
+            <li><Link to="/#pricing">{t('footer.product_pricing')}</Link></li>
+            <li><Link to="/privacy-engine">{t('footer.product_privacy_engine', 'Privacy Engine')}</Link></li>
           </ul>
         </div>
 
@@ -55,10 +55,9 @@ export function Footer() {
         <div className="footer-column">
           <h3 className="footer-title">{t('footer.company_title')}</h3>
           <ul className="footer-links">
-            <li><a href="#about">{t('footer.company_about')}</a></li>
-            <li><a href="#team">{t('footer.company_team')}</a></li>
-            <li><a href="#blog">{t('footer.company_blog')}</a></li>
-            <li><a href="#careers">{t('footer.company_careers')}</a></li>
+            <li><Link to="/#about">{t('footer.company_about')}</Link></li>
+            <li><a href="mailto:hello@peripateticware.com">{t('footer.company_contact', 'Contact')}</a></li>
+            <li><a href="mailto:hello@peripateticware.com?subject=Careers">{t('footer.company_careers')}</a></li>
           </ul>
         </div>
 
@@ -66,10 +65,8 @@ export function Footer() {
         <div className="footer-column">
           <h3 className="footer-title">{t('footer.resources_title')}</h3>
           <ul className="footer-links">
-            <li><a href="#docs">{t('footer.resources_docs')}</a></li>
-            <li><a href="#guides">{t('footer.resources_guides')}</a></li>
-            <li><a href="#api">{t('footer.resources_api')}</a></li>
-            <li><a href="#support">{t('footer.resources_support')}</a></li>
+            <li><Link to="/privacy-engine">{t('footer.resources_privacy', 'Privacy Engine')}</Link></li>
+            <li><a href="mailto:hello@peripateticware.com?subject=Support">{t('footer.resources_support')}</a></li>
           </ul>
         </div>
 

@@ -14,12 +14,17 @@ Extended by migration 20260530_compliance_rules_regulation_type:
   - compliance_rules.regulation_type       ('privacy' | 'ai' | 'data_protection')
   - compliance_rules.ai_student_permitted  (bool, fast enforcement column)
   - compliance_rules.ai_teacher_permitted  (bool, fast enforcement column)
+
+Extended by migration 20260618_privacy_regulation_catalog:
+  - privacy_regulation_catalog
+  - school_regulation_assignments
+  - user_regulation_assignments
 """
 
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from core.database import Base
@@ -38,51 +43,67 @@ class ComplianceRule(Base):
     sunset_date         = Column(DateTime,    nullable=True)
     rule_definition     = Column(JSONB,       nullable=False)
     created_by          = Column(String(100), default="system")
-    created_at          = Column(DateTime,    default=lambda: datetime.now(timezone.utc))
+    created_at          = Column(DateTime,    default=datetime.utcnow)
     previous_version_id = Column(String(256), nullable=True)
     change_log          = Column(Text,        nullable=True)
     is_active           = Column(Boolean,     default=True,  nullable=False)
     audit_hash          = Column(String(256), nullable=True)
-    # Regulation category — added migration 20260530_compliance_rules_regulation_type
-    # 'privacy'         — data privacy laws (GDPR, COPPA, CCPA, LGPD, PDPA, etc.)
-    # 'ai'              — AI-specific regulations (EU AI Act, EO 14110, CN Generative AI, etc.)
-    # 'data_protection' — broader frameworks spanning both
     regulation_type       = Column(String(20),  nullable=False, default='privacy')
-    # Denormalised convenience flags for fast enforcement queries.
-    # True = permitted in that context; False = prohibited / requires review.
-    # Defaults to True so existing privacy rules are unaffected.
     ai_student_permitted  = Column(Boolean,    nullable=False, default=True)
     ai_teacher_permitted  = Column(Boolean,    nullable=False, default=True)
 
     def __repr__(self) -> str:
-        return f"<ComplianceRule {self.rule_id} v{self.version}>"
+        return "<ComplianceRule {} v{}>".format(self.rule_id, self.version)
+
+
+class UserPrivacyPreference(Base):
+    """Per-user privacy configuration for individual teacher and homeschool accounts."""
+
+    __tablename__ = "user_privacy_preferences"
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id     = Column(UUID(as_uuid=True), nullable=False, unique=True, index=True)
+
+    ferpa_enabled        = Column(Boolean, nullable=False, default=False)
+    coppa_enabled        = Column(Boolean, nullable=False, default=True)
+    data_sharing_enabled = Column(Boolean, nullable=False, default=False)
+    ai_enabled           = Column(Boolean, nullable=False, default=True)
+
+    configured_at = Column(DateTime, nullable=True)
+
+    org_id          = Column(UUID(as_uuid=True), nullable=True)
+    org_governed    = Column(Boolean, nullable=False, default=False)
+    org_governed_at = Column(DateTime, nullable=True)
+
+    created_at    = Column(DateTime, default=datetime.utcnow)
+    updated_at    = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self) -> str:
+        return "<UserPrivacyPreference user={} org_governed={}>".format(self.user_id, self.org_governed)
 
 
 class RuleAuditLog(Base):
-    """
-    Immutable INSERT-only audit trail for every data access event.
-    Never UPDATE or DELETE rows in this table.
-    """
+    """Immutable INSERT-only audit trail for every data access event."""
 
     __tablename__ = "rule_audit_log"
 
     id                  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     rule_id             = Column(String(256), nullable=True)
     data_access_id      = Column(UUID(as_uuid=True), nullable=True)
-    student_id_hash     = Column(String(256), nullable=True)   # SHA-256(student_id + salt)
+    student_id_hash     = Column(String(256), nullable=True)
     action              = Column(String(100), nullable=False)
     data_type           = Column(String(100), nullable=True)
-    timestamp           = Column(DateTime,   default=lambda: datetime.now(timezone.utc), nullable=False)
+    timestamp           = Column(DateTime,   default=datetime.utcnow, nullable=False)
     rules_applied       = Column(JSONB,      nullable=True)
     enforcement_actions = Column(JSONB,      nullable=True)
     compliance_status   = Column(String(20), nullable=False, default="COMPLIANT")
-    actor_id            = Column(String(256), nullable=True)   # hashed
+    actor_id            = Column(String(256), nullable=True)
     actor_role          = Column(String(50),  nullable=True)
     jurisdiction_ids    = Column(JSONB,      nullable=True)
     notes               = Column(Text,       nullable=True)
 
     def __repr__(self) -> str:
-        return f"<RuleAuditLog {self.id} {self.action} {self.compliance_status}>"
+        return "<RuleAuditLog {} {} {}>".format(self.id, self.action, self.compliance_status)
 
 
 class ConsentRecord(Base):
@@ -93,10 +114,10 @@ class ConsentRecord(Base):
     id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     student_id_hash = Column(String(256), nullable=False)
     jurisdiction    = Column(String(50),  nullable=False)
-    consent_type    = Column(String(50),  nullable=False)   # parental_consent | student_assent
+    consent_type    = Column(String(50),  nullable=False)
     data_categories = Column(JSONB,      nullable=False)
-    granted_at      = Column(DateTime,   default=lambda: datetime.now(timezone.utc))
-    granted_by      = Column(String(256), nullable=True)    # hashed parent/guardian ID
+    granted_at      = Column(DateTime,   default=datetime.utcnow)
+    granted_by      = Column(String(256), nullable=True)
     withdrawn_at    = Column(DateTime,   nullable=True)
     is_active       = Column(Boolean,    default=True, nullable=False)
     consent_version = Column(String(10), nullable=True)
@@ -104,4 +125,78 @@ class ConsentRecord(Base):
     user_agent_hash = Column(String(256), nullable=True)
 
     def __repr__(self) -> str:
-        return f"<ConsentRecord {self.id} {self.consent_type} active={self.is_active}>"
+        return "<ConsentRecord {} {} active={}>".format(self.id, self.consent_type, self.is_active)
+
+
+# Privacy Regulation Catalog models (migration 20260618_privacy_regulation_catalog)
+
+
+class PrivacyRegulationCatalog(Base):
+    """User-facing display metadata for each privacy regulation."""
+
+    __tablename__ = "privacy_regulation_catalog"
+    __table_args__ = (
+        UniqueConstraint('jurisdiction_code', 'framework', name='uq_catalog_jurisdiction_framework'),
+    )
+
+    id                = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    rule_id           = Column(String(256), nullable=True)
+    short_name        = Column(String(100), nullable=False)
+    full_name         = Column(String(500), nullable=False)
+    jurisdiction_code = Column(String(50),  nullable=False)
+    region            = Column(String(100), nullable=True)
+    country_codes     = Column(JSONB,       nullable=True)
+    framework         = Column(String(50),  nullable=False)
+    summary           = Column(Text,        nullable=True)
+    key_requirements  = Column(JSONB,       nullable=True)
+    applies_to        = Column(JSONB,       nullable=True)
+    age_threshold     = Column(Integer,     nullable=True)
+    is_child_safety   = Column(Boolean,     nullable=False, default=False)
+    is_featured       = Column(Boolean,     nullable=False, default=False)
+    effective_date    = Column(Date,        nullable=True)
+    source_url        = Column(String(1000), nullable=True)
+    added_by_user_id  = Column(UUID(as_uuid=True), nullable=True)
+    added_by_role     = Column(String(20),  nullable=True)
+    is_active         = Column(Boolean,     nullable=False, default=True)
+    created_at        = Column(DateTime,    server_default="NOW()", nullable=False)
+    updated_at        = Column(DateTime,    server_default="NOW()", nullable=False)
+
+    def __repr__(self) -> str:
+        return "<PrivacyRegulationCatalog {} ({})>".format(self.short_name, self.jurisdiction_code)
+
+
+class SchoolRegulationAssignment(Base):
+    """Which catalog regulations have been assigned to a school/org."""
+
+    __tablename__ = "school_regulation_assignments"
+    __table_args__ = (
+        UniqueConstraint('org_id', 'catalog_id', name='uq_school_assignment_org_catalog'),
+    )
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    org_id      = Column(UUID(as_uuid=True), nullable=False)
+    catalog_id  = Column(UUID(as_uuid=True), nullable=False)
+    assigned_by = Column(UUID(as_uuid=True), nullable=True)
+    assigned_at = Column(DateTime, server_default="NOW()", nullable=False)
+    notes       = Column(Text, nullable=True)
+
+    def __repr__(self) -> str:
+        return "<SchoolRegulationAssignment org={} catalog={}>".format(self.org_id, self.catalog_id)
+
+
+class UserRegulationAssignment(Base):
+    """Which catalog regulations have been assigned by a solo teacher."""
+
+    __tablename__ = "user_regulation_assignments"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'catalog_id', name='uq_user_assignment_user_catalog'),
+    )
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id     = Column(UUID(as_uuid=True), nullable=False)
+    catalog_id  = Column(UUID(as_uuid=True), nullable=False)
+    assigned_at = Column(DateTime, server_default="NOW()", nullable=False)
+    notes       = Column(Text, nullable=True)
+
+    def __repr__(self) -> str:
+        return "<UserRegulationAssignment user={} catalog={}>".format(self.user_id, self.catalog_id)

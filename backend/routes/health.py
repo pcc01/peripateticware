@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -7,7 +7,8 @@
 # Mobile app calls this on startup to verify backend is available
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 from core.database import get_db
 import logging
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/health", tags=["health"])
 
 @router.get("/")
-async def health_check(db: Session = Depends(get_db)):
+async def health_check(db: AsyncSession = Depends(get_db)):
     """
     Health check endpoint for mobile app
     
@@ -36,7 +37,7 @@ async def health_check(db: Session = Depends(get_db)):
     """
     try:
         # Test database connection
-        result = db.execute("SELECT 1")
+        result = await db.execute(text("SELECT 1"))
         db_ok = result.scalar() == 1
     except Exception as e:
         logger.error(f"Health check: database connection failed: {e}")
@@ -54,7 +55,7 @@ async def health_check(db: Session = Depends(get_db)):
 
 
 @router.get("/ready")
-async def readiness_check(db: Session = Depends(get_db)):
+async def readiness_check(db: AsyncSession = Depends(get_db)):
     """
     Readiness check - app is ready to accept traffic
     
@@ -65,7 +66,7 @@ async def readiness_check(db: Session = Depends(get_db)):
     """
     try:
         # Test database
-        result = db.execute("SELECT 1")
+        result = await db.execute(text("SELECT 1"))
         db_ok = result.scalar() == 1
         
         if not db_ok:

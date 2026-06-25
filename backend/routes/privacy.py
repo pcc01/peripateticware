@@ -34,7 +34,7 @@ from fastapi import BackgroundTasks
 from core.database import get_db
 from core.dependencies import get_current_user
 from models.user import User
-from models.compliance import ComplianceRule, RuleAuditLog, ConsentRecord
+from models.compliance import ComplianceRule, RuleAuditLog, ConsentRecord, UserPrivacyPreference
 from services.iapp_privacy_crawler import run_jurisdiction_crawl, get_supported_countries
 from services.privacy_engine import (
     _get_cached_rules,
@@ -79,6 +79,198 @@ class RuleUpsertRequest(BaseModel):
     sunset_date:    Optional[datetime] = None
     change_log:     Optional[str]      = None
     previous_version_id: Optional[str] = None
+
+
+class UserPrivacyPreferenceSchema(BaseModel):
+    ferpa_enabled:        bool
+    coppa_enabled:        bool
+    data_sharing_enabled: bool
+    ai_enabled:           bool
+    configured_at:        Optional[datetime] = None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /me  — current user's privacy prefs (auto-seeds defaults on first call)
+# PUT /me  — save user's explicit choices
+# ─────────────────────────────────────────────────────────────────────────────
+
+_ROLE_DEFAULTS = {
+    # School teachers: FERPA + COPPA both apply
+    "TEACHER":    dict(ferpa_enabled=True,  coppa_enabled=True,  data_sharing_enabled=False, ai_enabled=True),
+    # Homeschool: no institutional FERPA obligation; COPPA still applies
+    "HOMESCHOOL": dict(ferpa_enabled=False, coppa_enabled=True,  data_sharing_enabled=False, ai_enabled=True),
+    # Fallback for any other authenticated role that hits this endpoint
+    "DEFAULT":    dict(ferpa_enabled=False, coppa_enabled=True,  data_sharing_enabled=False, ai_enabled=True),
+}
+
+
+@router.get("/me", response_model=None)
+async def get_my_privacy_prefs(
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    Return the calling user's privacy preferences.
+    On first call for a TEACHER or HOMESCHOOL account the row is auto-seeded
+    with role-appropriate defaults so they never see a blank settings page.
+    configured_at is NULL until the user explicitly saves — the frontend uses
+    this to decide whether to show the "privacy not configured" prompt.
+    """
+    result = await db.execute(
+        select(UserPrivacyPreference).where(UserPrivacyPreference.user_id == current_user.id)
+    )
+    prefs = result.scalar_one_or_none()
+
+    if prefs is None:
+        role_key = current_user.role.upper() if hasattr(current_user, "role") else "DEFAULT"
+        defaults = _ROLE_DEFAULTS.get(role_key, _ROLE_DEFAULTS["DEFAULT"])
+        prefs = UserPrivacyPreference(user_id=current_user.id, **defaults)
+        db.add(prefs)
+        await db.commit()
+        await db.refresh(prefs)
+        logger.info(f"Auto-seeded privacy prefs for user={current_user.id} role={role_key}")
+
+    return {
+        "ferpa_enabled":        prefs.ferpa_enabled,
+        "coppa_enabled":        prefs.coppa_enabled,
+        "data_sharing_enabled": prefs.data_sharing_enabled,
+        "ai_enabled":           prefs.ai_enabled,
+        "configured_at":        prefs.configured_at.isoformat() if prefs.configured_at else None,
+        "role_defaults_applied": prefs.configured_at is None,
+        # Org governance — frontend should show read-only view when True
+        "org_governed":         prefs.org_governed,
+        "org_id":               str(prefs.org_id) if prefs.org_id else None,
+    }
+
+
+@router.put("/me")
+async def save_my_privacy_prefs(
+    body:         UserPrivacyPreferenceSchema,
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    Explicitly save the user's privacy preferences.
+    Sets configured_at — after this the frontend will not show the setup prompt.
+    """
+    result = await db.execute(
+        select(UserPrivacyPreference).where(UserPrivacyPreference.user_id == current_user.id)
+    )
+    prefs = result.scalar_one_or_none()
+
+    now = datetime.utcnow()
+    if prefs is None:
+        prefs = UserPrivacyPreference(user_id=current_user.id)
+        db.add(prefs)
+
+    prefs.ferpa_enabled        = body.ferpa_enabled
+    prefs.coppa_enabled        = body.coppa_enabled
+    prefs.data_sharing_enabled = body.data_sharing_enabled
+    prefs.ai_enabled           = body.ai_enabled
+    prefs.configured_at        = now
+    prefs.updated_at           = now
+
+    await db.commit()
+    logger.info(f"Privacy prefs saved for user={current_user.id}")
+    return {"status": "saved", "configured_at": now.isoformat()}
+
+
+class OrgPrivacyOverrideRequest(BaseModel):
+    """
+    Payload sent when a teacher joins a school or a homeschool teacher joins a coop.
+    The org's privacy policy replaces the user's personal preferences.
+    Called by the org-join flow (admin or system service — not the user themselves).
+    """
+    org_id:              str
+    ferpa_enabled:       bool
+    coppa_enabled:       bool
+    data_sharing_enabled: bool
+    ai_enabled:          bool
+
+
+@router.post("/me/org-join")
+async def apply_org_privacy(
+    body:         OrgPrivacyOverrideRequest,
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    Apply an organisation's privacy policy to the calling user's account.
+
+    Called automatically when a teacher joins a school or a homeschool teacher
+    joins a co-op.  The user's personal choices are overwritten and
+    org_governed=True is set, making the settings read-only in the frontend.
+
+    To undo (teacher leaves the org) call DELETE /privacy/me/org-join.
+    """
+    import uuid as _uuid
+    result = await db.execute(
+        select(UserPrivacyPreference).where(UserPrivacyPreference.user_id == current_user.id)
+    )
+    prefs = result.scalar_one_or_none()
+    now = datetime.utcnow()
+
+    if prefs is None:
+        prefs = UserPrivacyPreference(user_id=current_user.id)
+        db.add(prefs)
+
+    prefs.ferpa_enabled        = body.ferpa_enabled
+    prefs.coppa_enabled        = body.coppa_enabled
+    prefs.data_sharing_enabled = body.data_sharing_enabled
+    prefs.ai_enabled           = body.ai_enabled
+    prefs.org_id               = _uuid.UUID(body.org_id)
+    prefs.org_governed         = True
+    prefs.org_governed_at      = now
+    prefs.configured_at        = now
+    prefs.updated_at           = now
+
+    await db.commit()
+    logger.info(
+        f"Privacy prefs for user={current_user.id} overridden by org={body.org_id}"
+    )
+    return {
+        "status":       "org_governed",
+        "org_id":       body.org_id,
+        "governed_at":  now.isoformat(),
+    }
+
+
+@router.delete("/me/org-join")
+async def release_org_privacy(
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    Release org governance — called when a teacher leaves a school or co-op.
+
+    Restores role-appropriate defaults so the user can configure their own
+    preferences again.  configured_at is reset to NULL so the frontend shows
+    the "please review your privacy settings" prompt.
+    """
+    result = await db.execute(
+        select(UserPrivacyPreference).where(UserPrivacyPreference.user_id == current_user.id)
+    )
+    prefs = result.scalar_one_or_none()
+
+    if prefs is None:
+        return {"status": "no_prefs_found"}
+
+    role_key  = current_user.role.upper() if hasattr(current_user, "role") else "DEFAULT"
+    defaults  = _ROLE_DEFAULTS.get(role_key, _ROLE_DEFAULTS["DEFAULT"])
+    now       = datetime.utcnow()
+
+    for field, val in defaults.items():
+        setattr(prefs, field, val)
+
+    prefs.org_id          = None
+    prefs.org_governed    = False
+    prefs.org_governed_at = None
+    prefs.configured_at   = None   # prompt user to re-confirm their own settings
+    prefs.updated_at      = now
+
+    await db.commit()
+    logger.info(f"Org governance released for user={current_user.id}; defaults restored")
+    return {"status": "released", "role_defaults_applied": True}
 
 
 class ComplianceCheckRequest(BaseModel):
@@ -210,6 +402,52 @@ async def list_jurisdictions(
 # GET /rules/{rule_id}  — admin only
 # ─────────────────────────────────────────────────────────────────────────────
 
+
+# ── Framework activate / deactivate — admin only ──────────────────────────────
+
+@router.patch("/rules/framework/{framework_id}/activate")
+async def activate_framework(
+    framework_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _require_admin(current_user)
+    from models.compliance import ComplianceRule
+    result = await db.execute(
+        select(ComplianceRule).where(
+            ComplianceRule.rule_definition["framework"].astext == framework_id.lower()
+        )
+    )
+    rules = result.scalars().all()
+    if rules:
+        for rule in rules:
+            rule.is_active = True
+        await db.commit()
+        return {"activated": len(rules), "framework": framework_id}
+    else:
+        return {"activated": 0, "framework": framework_id, "note": "No rules found for this framework — seed via startup"}
+
+
+@router.patch("/rules/framework/{framework_id}/deactivate")
+async def deactivate_framework(
+    framework_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _require_admin(current_user)
+    from models.compliance import ComplianceRule
+    result = await db.execute(
+        select(ComplianceRule).where(
+            ComplianceRule.rule_definition["framework"].astext == framework_id.lower()
+        )
+    )
+    rules = result.scalars().all()
+    for rule in rules:
+        rule.is_active = False
+    await db.commit()
+    return {"deactivated": len(rules), "framework": framework_id}
+
+
 @router.get("/rules/{rule_id}")
 async def get_rule(
     rule_id:      str,
@@ -305,7 +543,7 @@ async def upsert_rule(
         sunset_date         = body.sunset_date,
         rule_definition     = body.rule_definition,
         created_by          = current_user.email,
-        created_at          = datetime.now(timezone.utc),
+        created_at          = datetime.utcnow(),
         previous_version_id = body.previous_version_id or previous_version_id,
         change_log          = body.change_log,
         is_active           = True,
@@ -558,7 +796,7 @@ async def record_consent(
     )).scalars().all()
     for rec in existing:
         rec.is_active    = False
-        rec.withdrawn_at = datetime.now(timezone.utc)
+        rec.withdrawn_at = datetime.utcnow()
 
     new_consent = ConsentRecord(
         student_id_hash = body.student_id_hash,
@@ -567,12 +805,67 @@ async def record_consent(
         data_categories = body.data_categories,
         consent_version = body.consent_version,
         is_active       = True,
-        granted_at      = datetime.now(timezone.utc),
+        granted_at      = datetime.utcnow(),
     )
     db.add(new_consent)
+
+    # If this is a parental consent, activate the corresponding student account
+    if body.consent_type == "parental" and body.student_id_hash:
+        try:
+            from models.user import User as _User
+            pending_users = (await db.execute(
+                select(_User).where(
+                    _User.requires_parental_consent == True,
+                    _User.is_active == False,
+                )
+            )).scalars().all()
+            for u in pending_users:
+                if hash_student_id(str(u.id)) == body.student_id_hash:
+                    u.is_active = True
+                    u.requires_parental_consent = False
+                    logger.info(f"Student {u.id} activated after parental consent granted")
+                    break
+        except Exception as e:
+            logger.warning(f"Could not activate student after consent: {e}")
+
     await db.commit()
     logger.info(f"Consent recorded: type={body.consent_type} jurisdiction={body.jurisdiction}")
     return {"status": "recorded", "consent_type": body.consent_type}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /consent/{student_hash}  — public (token serves as auth)
+# Returns current consent status for a student.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/consent/{student_hash}")
+async def get_consent_status(
+    student_hash: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Check consent status for a student (token serves as auth — no JWT required)."""
+    import re
+    if not re.fullmatch(r"[0-9a-f]{64}", student_hash):
+        raise HTTPException(status_code=422, detail="Invalid student_hash format")
+    result = await db.execute(
+        select(ConsentRecord).where(
+            ConsentRecord.student_id_hash == student_hash,
+            ConsentRecord.is_active == True,
+        )
+    )
+    records = result.scalars().all()
+    return {
+        "student_hash": student_hash,
+        "has_active_consent": len(records) > 0,
+        "consents": [
+            {
+                "consent_type": r.consent_type,
+                "jurisdiction": r.jurisdiction,
+                "granted_at": r.granted_at.isoformat() if r.granted_at else None,
+            }
+            for r in records
+        ],
+    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -601,7 +894,7 @@ async def withdraw_consent(
     )
     records = result.scalars().all()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     for rec in records:
         rec.is_active    = False
         rec.withdrawn_at = now

@@ -79,10 +79,10 @@ class InputNormalizationService:
             # Clean text
             text_normalized = text.strip()
             
-            # Enforce maximum length (2000 chars for safety)
-            if len(text_normalized) > 2000:
-                text_normalized = text_normalized[:2000]
-                logger.warning("Text truncated to 2000 characters")
+            # Enforce maximum length — AI suggestion prompts need up to 4000 chars
+            if len(text_normalized) > 8000:
+                text_normalized = text_normalized[:8000]
+                logger.warning("Text truncated to 8000 characters")
             
             return {
                 "type": "text",

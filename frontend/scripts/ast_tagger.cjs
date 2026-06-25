@@ -6,31 +6,36 @@
 //   1. Scans src/ for .tsx/.ts/.jsx/.js files
 //   2. Replaces hardcoded JSX text in <h1–h4>, <p>, <label> with t("key", "fallback")
 //   3. Ensures `import { useTranslation } from 'react-i18next'` is present in every
-//      modified file (was missing — caused "Invalid hook call" crashes)
-//   4. Ensures `const { t } = useTranslation('landing')` is injected into every
-//      component body that calls t() (was missing — caused blank page / 65 broken files)
-//   5. Updates public/locales/en/landing.json with all discovered keys
+//      modified file
+//   4. Ensures `const { t } = useTranslation('landing')` is injected into component
+//      bodies that call t() — ONLY if no useTranslation hook already exists
+//      (prevents clobbering files that use a different namespace like 'auth')
+//   5. Merges discovered keys into the 'landing' namespace of public/locales/en.json
+//
+// Risk 2 (scope collision): scope is derived from the full relative path,
+//   e.g. src/components/auth/LoginScreen.tsx → "components_auth_loginscreen"
+//   This prevents two different index.tsx files from sharing keys.
+//
+// Risk 3 (expression-body misfires): EXPR_RE now requires the JSX to start
+//   with < and end before a semicolon, and the function name must be PascalCase
+//   with a minimum 2-char name. No generics in the return type position.
 //
 // Run: node scripts/ast_tagger.cjs
 
 'use strict';
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
 
-const SRC_DIR = path.resolve(__dirname, '../src');
-const MASTER_EN_PATH = path.resolve(__dirname, '../public/locales/en/landing.json');
+const SRC_DIR       = path.resolve(__dirname, '../src');
+const LOCALES_EN    = path.resolve(__dirname, '../public/locales/en.json');
+const LANDING_NS    = 'landing';
 
 // ─── Locale catalog helpers ───────────────────────────────────────────────────
 
-/**
- * Safely inserts a key into a deeply nested object without corrupting
- * existing parent/child relationships.
- */
 function assignNestedKey(targetObj, keyPath, fallbackValue) {
   const pieces = keyPath.split('.');
   let current = targetObj;
-
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
     if (i === pieces.length - 1) {
@@ -46,157 +51,106 @@ function assignNestedKey(targetObj, keyPath, fallbackValue) {
   }
 }
 
-// ─── Locale key harvesting (read-only, updates catalog) ───────────────────────
+// ─── Key harvesting ───────────────────────────────────────────────────────────
 
-/**
- * Harvests keys from existing t() calls already present in the file.
- * Explicit:  t("auth.email_label", "Email Address")
- * Implicit:  t('nav.teacher.dashboard')
- */
 function harvestExistingTCalls(fileContent, masterCatalog) {
   const explicitRe = /\bt\(\s*['"](?:landing:)?([a-zA-Z0-9_\-.]+)['"]\s*,\s*['"](.*?)['"]\s*\)/g;
   const implicitRe = /\bt\(\s*['"](?:landing:)?([a-zA-Z0-9_\-.]+)['"]\s*\)/g;
-
   let match;
 
   while ((match = explicitRe.exec(fileContent)) !== null) {
-    const keyPath = match[1];
-    const defaultText = match[2].replace(/\\u([0-9a-fA-F]{4})/g, (_, grp) =>
-      String.fromCharCode(parseInt(grp, 16))
+    const keyPath    = match[1];
+    const defaultText = match[2].replace(/\\u([0-9a-fA-F]{4})/g, (_, g) =>
+      String.fromCharCode(parseInt(g, 16))
     );
     assignNestedKey(masterCatalog, keyPath, defaultText);
   }
-
   while ((match = implicitRe.exec(fileContent)) !== null) {
-    const keyPath = match[1];
-    // Only add if not already captured by the explicit pass
+    const keyPath  = match[1];
     const fallback = keyPath.split('.').pop().replace(/_/g, ' ');
     assignNestedKey(masterCatalog, keyPath, fallback);
   }
 }
 
-// ─── Source-file transformation helpers ───────────────────────────────────────
+// ─── Source transformation helpers ───────────────────────────────────────────
 
-/**
- * Ensures `import { useTranslation } from 'react-i18next'` is present.
- * Inserts it after the last existing import statement.
- */
 function ensureUseTranslationImport(content) {
   const importLine = "import { useTranslation } from 'react-i18next';";
-
   if (/import\s*\{[^}]*useTranslation[^}]*\}\s*from\s*['"]react-i18next['"]/.test(content)) {
-    return content; // already present
+    return content;
   }
-
-  // Find the end of the last import block
   const importRe = /^import\s+.+$/gm;
-  let lastImportEnd = 0;
-  let m;
-  while ((m = importRe.exec(content)) !== null) {
-    lastImportEnd = m.index + m[0].length;
-  }
-
-  if (lastImportEnd > 0) {
-    return content.slice(0, lastImportEnd) + '\n' + importLine + content.slice(lastImportEnd);
-  }
-  return importLine + '\n' + content;
+  let lastEnd = 0, m;
+  while ((m = importRe.exec(content)) !== null) lastEnd = m.index + m[0].length;
+  return lastEnd > 0
+    ? content.slice(0, lastEnd) + '\n' + importLine + content.slice(lastEnd)
+    : importLine + '\n' + content;
 }
 
-/**
- * Returns the index of the closing } that matches the { at openPos.
- */
 function findMatchingClose(s, openPos) {
   let depth = 0;
   for (let i = openPos; i < s.length; i++) {
     if (s[i] === '{') depth++;
-    else if (s[i] === '}') {
-      depth--;
-      if (depth === 0) return i;
-    }
+    else if (s[i] === '}') { depth--; if (depth === 0) return i; }
   }
   return s.length - 1;
 }
 
-/**
- * Injects `const { t } = useTranslation('landing');` as the first line inside
- * every React component body that:
- *   - calls t() somewhere inside it, AND
- *   - does not already have the hook declaration
- *
- * Handles both:
- *   Block-body:      const X = () => { ... }  /  function X() { ... }
- *   Expression-body: const X = () => <JSX />;  → converted to block form
- */
 function ensureHookInComponents(content) {
-  const HOOK_DECL = "  const { t } = useTranslation('landing');\n";
-  const T_CALL_RE = /\bt\(['"]/;
-  const HOOK_HAS_RE = /const\s*\{[^}]*\bt\b[^}]*\}\s*=\s*useTranslation/;
+  const HOOK_DECL  = "  const { t } = useTranslation('landing');\n";
+  const T_CALL_RE  = /\bt\(['"]/;
 
-  // ── Pass 1: expression-body one-liners ──────────────────────────────────────
-  // const Name = (...) => <JSX>;   →   const Name = (...) => {\n  hook;\n  return (<JSX>);\n};
-  const EXPR_RE = /^((?:export\s+(?:default\s+)?)?const\s+[A-Z][A-Za-z0-9_]*(?:\s*:\s*\S+)?\s*=\s*(?:\([^)]*\)|\w+)\s*=>)\s*(<[^;]*);?\s*$/gm;
+  // FIX (Risk 1): Check for ANY useTranslation call, not just 'landing'.
+  // This prevents clobbering files that already use a different namespace.
+  const HOOK_HAS_RE = /useTranslation\s*\(/;
+
+  // Pass 1: expression-body one-liners (narrowed — Risk 3)
+  // Only matches PascalCase names with ≥2 chars, no generic type params on LHS
+  const EXPR_RE = /^((?:export\s+(?:default\s+)?)?const\s+[A-Z][A-Za-z][A-Za-z0-9_]*(?:\s*:\s*React\.FC)?\s*=\s*(?:\([^)]*\)|\w+)\s*=>)\s*(<[^;{]*);?\s*$/gm;
 
   content = content.replace(EXPR_RE, (_, decl, jsx) => {
-    if (!T_CALL_RE.test(jsx)) return _;   // no t() — leave alone
+    if (!T_CALL_RE.test(jsx)) return _;
     return `${decl} {\n${HOOK_DECL}  return (${jsx.trim()});\n};\n`;
   });
 
-  // ── Pass 2: block-body components ───────────────────────────────────────────
-  // Match component signatures (function or arrow) up to their opening {
+  // Pass 2: block-body components
   const BLOCK_RE = /(?:export\s+(?:default\s+)?)?(?:function\s+[A-Z][A-Za-z0-9_]*|const\s+[A-Z][A-Za-z0-9_]*(?:\s*:\s*(?:React\s*\.\s*)?(?:FC|VFC|ReactNode|ReactElement|FunctionComponent)(?:<[^>]*>)?)?\s*=\s*(?:\([^)]*\)|\w+)\s*=>)[^{]*\{/g;
 
   const injections = [];
   let m;
   while ((m = BLOCK_RE.exec(content)) !== null) {
-    const openBrace = m.index + m[0].length - 1;
+    const openBrace  = m.index + m[0].length - 1;
     const closeBrace = findMatchingClose(content, openBrace);
-    const body = content.slice(openBrace + 1, closeBrace);
-
+    const body       = content.slice(openBrace + 1, closeBrace);
     if (T_CALL_RE.test(body) && !HOOK_HAS_RE.test(body)) {
-      // Inject just after the newline following '{'
       let pos = openBrace + 1;
       if (content[pos] === '\n') pos++;
       injections.push(pos);
     }
   }
 
-  // Apply injections from last → first to keep earlier positions valid
   for (const pos of injections.sort((a, b) => b - a)) {
     content = content.slice(0, pos) + HOOK_DECL + content.slice(pos);
   }
-
   return content;
 }
 
 // ─── Hardcoded-string replacement ────────────────────────────────────────────
 
-/**
- * Replaces plaintext content inside JSX tags with t("scope.key", "Text").
- * Writes discovered keys into masterCatalog.
- * Returns [modifiedContent, didChange].
- */
 function replaceHardcodedStrings(fileContent, filenameScope, masterCatalog) {
   const JSX_TAG_RE = /<(label|h1|h2|h3|h4|p)([^>]*)>([^<>{|}]+)<\/\1>/g;
   let changed = false;
 
   const result = fileContent.replace(JSX_TAG_RE, (full, tag, attrs, rawText) => {
     const text = rawText.trim();
-
-    // Skip: empty, already a t() call, pure punctuation/numbers, or JSX expressions
     if (
       !text ||
       /^\{/.test(text) ||
       /\bt\(/.test(text) ||
       /^[0-9\s\-+:()!@#$%^&*]+$/.test(text)
-    ) {
-      return full;
-    }
+    ) return full;
 
-    // CRITICAL: normalize whitespace — collapse newlines and runs of spaces to a
-    // single space. Without this, multiline JSX text produces an unterminated
-    // string literal inside the t() fallback argument (esbuild/TypeScript error).
     const normalizedText = text.replace(/\s+/g, ' ').trim();
-
     const cleanKey = normalizedText
       .toLowerCase()
       .replace(/[^a-z0-9_\s]/g, '')
@@ -208,7 +162,6 @@ function replaceHardcodedStrings(fileContent, filenameScope, masterCatalog) {
 
     const scopedKey = `${filenameScope}.${cleanKey}`;
     assignNestedKey(masterCatalog, scopedKey, normalizedText);
-
     changed = true;
     return `<${tag}${attrs}>{t('${scopedKey}', '${normalizedText.replace(/'/g, "\\'")}')}</${tag}>`;
   });
@@ -216,16 +169,79 @@ function replaceHardcodedStrings(fileContent, filenameScope, masterCatalog) {
   return [result, changed];
 }
 
-// ─── File scope derivation ────────────────────────────────────────────────────
+// ─── Object property string replacement ──────────────────────────────────────
+//
+// Catches user-facing strings assigned to known prop names in JS object literals,
+// e.g. inside data arrays like `personaCarousels`:
+//   title: 'Barton Springs Trail'  →  title: t('scope.title_barton_springs_trail', '...')
+//
+// Only props whose names appear in TRANSLATABLE_PROPS are touched.
+// Technical strings (URLs, CSS values, ALL_CAPS constants, short tokens) are skipped.
+// Already-tagged values (followed by `t(`) are skipped via negative lookahead.
 
-/**
- * Derives a stable, dot-free scope token from a file path.
- * e.g. src/components/auth/LoginScreen.tsx → "loginscreen"
- */
+const TRANSLATABLE_PROPS = new Set([
+  'title', 'subtitle', 'label', 'text', 'desc', 'description',
+  'prompt', 'response', 'badge', 'headline', 'intro', 'cta',
+  'secondary_cta', 'placeholder', 'message', 'tooltip',
+  'summary', 'caption', 'heading',
+]);
+
+function isTechnicalString(s) {
+  if (s.length < 3) return true;
+  if (/^[#/]/.test(s)) return true;            // CSS color or path
+  if (/^https?:\/\//.test(s)) return true;     // URL
+  if (/^var\(/.test(s)) return true;           // CSS variable
+  if (/^[A-Z_]{2,}$/.test(s)) return true;    // ALL_CAPS constant
+  if (/^[0-9\s\-+:.()●•]+$/.test(s)) return true; // Numerics / bullets
+  if (/\.(png|svg|jpg|jpeg|gif|webp|css|js|ts)$/i.test(s)) return true;
+  return false;
+}
+
+function replaceObjectStringProps(fileContent, filenameScope, masterCatalog) {
+  const propPattern = [...TRANSLATABLE_PROPS].join('|');
+  // Match:  propName: 'value'  or  propName: "value"
+  // Skip if immediately followed by t( (already tagged)
+  const PROP_RE = new RegExp(
+    `\\b(${propPattern})\\s*:\\s*(?!t\\s*\\()(['"])((?:(?!\\3)[^\\\\]|\\\\.)*)\\3`,
+    'g'
+  );
+
+  let changed = false;
+  const result = fileContent.replace(PROP_RE, (full, prop, quote, rawValue) => {
+    const value = rawValue.trim();
+    if (isTechnicalString(value)) return full;
+
+    const normalizedText = value.replace(/\s+/g, ' ').trim();
+    const cleanKey = normalizedText
+      .toLowerCase()
+      .replace(/[^a-z0-9_\s]/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .substring(0, 40);
+
+    if (!cleanKey) return full;
+
+    const scopedKey = `${filenameScope}.${prop}_${cleanKey}`;
+    assignNestedKey(masterCatalog, scopedKey, normalizedText);
+    changed = true;
+    return `${prop}: t('${scopedKey}', '${normalizedText.replace(/'/g, "\\'")}')`;
+  });
+
+  return [result, changed];
+}
+
+// ─── Scope from full relative path (Risk 2 fix) ───────────────────────────────
+// e.g. src/components/auth/LoginScreen.tsx → "components_auth_loginscreen"
+// Two different index.tsx files → "pages_index" vs "components_index"
+
 function deriveScope(filePath) {
-  return path.basename(filePath, path.extname(filePath))
+  const rel = path.relative(SRC_DIR, filePath);
+  return rel
+    .replace(/\.[^/.]+$/, '')      // strip extension
+    .split(path.sep)
+    .join('_')
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
+    .replace(/[^a-z0-9_]/g, '');
 }
 
 // ─── Main crawler ─────────────────────────────────────────────────────────────
@@ -233,49 +249,71 @@ function deriveScope(filePath) {
 function crawlAndTag() {
   console.log('🔍  ast_tagger: scanning src/ for hardcoded strings and t() calls...\n');
 
-  let masterCatalog = {};
-  if (fs.existsSync(MASTER_EN_PATH)) {
-    try {
-      masterCatalog = JSON.parse(fs.readFileSync(MASTER_EN_PATH, 'utf-8'));
-    } catch {
-      masterCatalog = {};
-    }
+  // Load existing merged en.json, extract the landing namespace
+  let mergedCatalog = {};
+  if (fs.existsSync(LOCALES_EN)) {
+    try { mergedCatalog = JSON.parse(fs.readFileSync(LOCALES_EN, 'utf-8')); }
+    catch { mergedCatalog = {}; }
   }
+  if (!mergedCatalog[LANDING_NS] || typeof mergedCatalog[LANDING_NS] !== 'object') {
+    mergedCatalog[LANDING_NS] = {};
+  }
+  const masterCatalog = mergedCatalog[LANDING_NS];
 
-  let filesScanned = 0;
-  let filesModified = 0;
+  let filesScanned = 0, filesModified = 0;
 
   function processDirectory(dirPath) {
     for (const item of fs.readdirSync(dirPath)) {
       const fullPath = path.join(dirPath, item);
-      const stat = fs.statSync(fullPath);
-
+      const stat     = fs.statSync(fullPath);
       if (stat.isDirectory()) {
         if (!['node_modules', 'public', 'dist', '.git'].includes(item)) {
           processDirectory(fullPath);
         }
       } else if (/\.(ts|tsx|js|jsx)$/.test(item)) {
-        let content = fs.readFileSync(fullPath, 'utf-8');
+        const original = fs.readFileSync(fullPath, 'utf-8');
+        let content    = original;
         filesScanned++;
 
-        // Step A: harvest existing t() calls into catalog (read-only)
         harvestExistingTCalls(content, masterCatalog);
 
-        // Step B: replace hardcoded JSX strings with t() calls
-        const scope = deriveScope(fullPath);
-        const [tagged, didTag] = replaceHardcodedStrings(content, scope, masterCatalog);
-        if (didTag) content = tagged;
+        const scope          = deriveScope(fullPath);
+        const [tagged, did]  = replaceHardcodedStrings(content, scope, masterCatalog);
+        if (did) content = tagged;
 
-        // Step C: if the file now contains any t() call, ensure proper hook setup
+        // Pass 2: object property strings (e.g. carousel data, config arrays)
+        const [propTagged, propDid] = replaceObjectStringProps(content, scope, masterCatalog);
+        if (propDid) content = propTagged;
+
         if (/\bt\(['"]/.test(content)) {
           content = ensureUseTranslationImport(content);
           content = ensureHookInComponents(content);
         }
 
-        // Step D: write back only if something changed
-        const original = fs.readFileSync(fullPath, 'utf-8');
         if (content !== original) {
-          fs.writeFileSync(fullPath, content, 'utf-8');
+          // Safety check: transformed output must not be suspiciously shorter
+          // than the original.  If it is, something went wrong in the regex
+          // passes — skip this file and warn rather than silently truncating it.
+          if (content.length < original.length * 0.85) {
+            console.warn(
+              `  ⚠️  SKIP (output ${content.length}B < 85% of original ${original.length}B): ` +
+              path.relative(SRC_DIR, fullPath)
+            );
+            continue;  // processed inside a for-loop via processDirectory
+          }
+
+          // Atomic write: write to a temp file then rename so a mid-write
+          // failure can never leave the source file truncated.
+          const tmpPath = fullPath + '.ast_tmp';
+          try {
+            fs.writeFileSync(tmpPath, content, 'utf-8');
+            fs.renameSync(tmpPath, fullPath);
+          } catch (writeErr) {
+            // Clean up temp file if rename failed
+            try { fs.unlinkSync(tmpPath); } catch (_) {}
+            console.error(`  ✖  Write failed for ${path.relative(SRC_DIR, fullPath)}: ${writeErr.message}`);
+            continue;
+          }
           filesModified++;
           console.log(`  ✏️  ${path.relative(SRC_DIR, fullPath)}`);
         }
@@ -283,26 +321,22 @@ function crawlAndTag() {
     }
   }
 
-  if (fs.existsSync(SRC_DIR)) {
-    processDirectory(SRC_DIR);
-  }
+  if (fs.existsSync(SRC_DIR)) processDirectory(SRC_DIR);
 
-  // Write updated locale catalog
-  fs.mkdirSync(path.dirname(MASTER_EN_PATH), { recursive: true });
-  fs.writeFileSync(MASTER_EN_PATH, JSON.stringify(masterCatalog, null, 2), 'utf-8');
+  // Write back — update ONLY the landing namespace, preserve others
+  mergedCatalog[LANDING_NS] = masterCatalog;
+  fs.mkdirSync(path.dirname(LOCALES_EN), { recursive: true });
+  fs.writeFileSync(LOCALES_EN, JSON.stringify(mergedCatalog, null, 2), 'utf-8');
 
   console.log(`\n✅  Done.`);
   console.log(`📂  Scanned : ${filesScanned} files`);
   console.log(`✏️   Modified: ${filesModified} files`);
-  console.log(`🗝️   Locale keys in catalog: ${countKeys(masterCatalog)}`);
+  console.log(`🗝️   Landing keys in catalog: ${countKeys(masterCatalog)}`);
 }
 
-/** Recursively counts all leaf keys in a nested object. */
 function countKeys(obj) {
   let n = 0;
-  for (const v of Object.values(obj)) {
-    n += (v && typeof v === 'object') ? countKeys(v) : 1;
-  }
+  for (const v of Object.values(obj)) n += (v && typeof v === 'object') ? countKeys(v) : 1;
   return n;
 }
 

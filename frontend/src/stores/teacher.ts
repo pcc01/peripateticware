@@ -91,7 +91,7 @@ export interface TeacherStore {
   createActivity: (data: Partial<Activity>) => Promise<Activity>
   updateActivity: (id: string, data: Partial<Activity>) => Promise<Activity>
   deleteActivity: (id: string) => Promise<void>
-  getActivity?: (id: string) => Promise<void>
+  getActivity?: (id: string) => Promise<Activity | null>
   publishActivity?: (id: string) => Promise<void>
   archiveActivity?: (id: string) => Promise<void>
   clearCurrentActivity?: () => void
@@ -164,8 +164,14 @@ export const useTeacherStore = create<TeacherStore>((set, get) => ({
     }
   },
 
-  getActivity: async (id: string) => {
-    return get().fetchActivity(id)
+  getActivity: async (id: string): Promise<Activity | null> => {
+    try {
+      const activity = await apiFetch<Activity>(`/activities/${id}`)
+      set({ currentActivity: activity, selectedActivity: activity })
+      return activity
+    } catch {
+      return null
+    }
   },
 
   createActivity: async (data: Partial<Activity>) => {

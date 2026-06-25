@@ -19,6 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
 import { ExtractionWizard } from '@/components/shared/ExtractionWizard';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -172,6 +173,7 @@ function SetCard({ set, onDelete, onRefresh, onCoverage }: {
 type WizardMode = { type: 'state_standards' | 'state_reporting' } | null;
 
 export const HomeschoolRequirementsPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [sets, setSets]       = useState<StandardsSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,16 +244,14 @@ export const HomeschoolRequirementsPage: React.FC = () => {
     );
   }
 
-  if (loading) return <p style={{color:'var(--text-muted)',fontFamily:'var(--font-body)',padding:32}}>Loading…</p>;
+  if (loading) return <p style={{color:'var(--text-muted)',fontFamily:'var(--font-body)',padding:32}}>{t('pages_homeschool_homeschoolrequirementspage.loading', 'Loading…')}</p>;
 
   return (
     <div style={{fontFamily:'var(--font-body)',maxWidth:820}}>
 
       <div style={{marginBottom:28}}>
-        <h1 style={{fontFamily:'var(--font-head)',marginBottom:6}}>Standards & Requirements</h1>
-        <p style={{color:'var(--text-muted)',margin:0}}>
-          Manage the academic standards and reporting requirements used in your coverage report.
-        </p>
+        <h1 style={{fontFamily:'var(--font-head)',marginBottom:6}}>{t('pages_homeschool_homeschoolrequirementspage.standards_requirements', 'Standards & Requirements')}</h1>
+        <p style={{color:'var(--text-muted)',margin:0}}>{t('pages_homeschool_homeschoolrequirementspage.manage_the_academic_standards_and_report', 'Manage the academic standards and reporting requirements used in your coverage report.')}</p>
       </div>
 
       {/* ── State selector ─────────────────────────────────────────────────── */}
@@ -259,9 +259,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
         marginBottom:28,padding:'16px 20px',borderRadius:12,
         background:'var(--surface)',border:'1px solid var(--border)',
       }}>
-        <label style={{display:'block',fontWeight:600,fontSize:'0.9rem',marginBottom:8}}>
-          Your state
-        </label>
+        <label style={{display:'block',fontWeight:600,fontSize:'0.9rem',marginBottom:8}}>{t('pages_homeschool_homeschoolrequirementspage.your_state', 'Your state')}</label>
         <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
           <select
             value={stateCode}
@@ -330,12 +328,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
       {/* ── How it works ──────────────────────────────────────────────────── */}
       <div style={{marginTop:24,padding:'14px 18px',borderRadius:12,background:'var(--surface)',border:'1px solid var(--border)',fontSize:'0.8rem',color:'var(--text-muted)',lineHeight:1.6}}>
         <strong style={{color:'var(--text)'}}>How Ollama caching works</strong>
-        <p style={{margin:'5px 0 0'}}>
-          When you upload a PDF or CSV, Ollama extracts the criteria once and caches them.
-          Re-uploading the same file skips Ollama entirely (checksum match). A different file
-          triggers re-extraction. Pre-seeded state sets were hand-authored and are always instant.
-          Sets expire annually — you'll see a warning near the expiry date.
-        </p>
+        <p style={{margin:'5px 0 0'}}>{t('pages_homeschool_homeschoolrequirementspage.when_you_upload_a_pdf_or_csv_ollama_extr', 'When you upload a PDF or CSV, Ollama extracts the criteria once and caches them. Re-uploading the same file skips Ollama entirely (checksum match). A different file triggers re-extraction. Pre-seeded state sets were hand-authored and are always instant. Sets expire annually — you\'ll see a warning near the expiry date.')}</p>
       </div>
 
     </div>

@@ -49,14 +49,14 @@ const BatchImportModal: React.FC<BatchImportModalProps> = ({
       let rows;
 
       if (selectedFile.name.endsWith('.csv')) {
-        rows = BatchImport.parseCSV(content);
+        rows = parseCSV(content);
       } else if (selectedFile.name.endsWith('.json')) {
-        rows = BatchImport.parseJSON(content);
+        rows = parseJSON(content);
       } else {
         throw new Error('File must be CSV or JSON');
       }
 
-      const result = BatchImport.validateImport(rows, curriculumId);
+      const result = validateImport(rows, curriculumId ? [curriculumId] : []);
       setImportResult(result);
       setStep('preview');
     } catch (error: any) {
@@ -82,7 +82,7 @@ const BatchImportModal: React.FC<BatchImportModalProps> = ({
   };
 
   const handleDownloadTemplate = () => {
-    const csv = BatchImport.generateCSVTemplate();
+    const csv = generateCSVTemplate(['title','description','subject','grade_level']);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

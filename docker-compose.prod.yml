@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Paul Christopher Cerda
+# Business Source License 1.1
+
+# Production overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    restart: always
+    environment:
+      NODE_ENV: production
+      VITE_ENV: production
+      VITE_DEBUG: 'false'
+    # No source volumes in production — use built image
+    volumes: []
+    mem_limit: 512m
+    cpus: '1.0'
+
+  backend:
+    # Production: gunicorn with 4 UvicornWorkers (no --reload)
+    command: >
+      gunicorn main:app
+      --workers 4
+      --worker-class uvicorn.workers.UvicornWorker
+      --bind 0.0.0.0:8000
+      --timeout 120
+      --graceful-timeout 30
+      --log-level info
+      --access-logfile -
+    environment:
+      ENVIRONMENT: production
+      DEBUG: 'false'
+      LOG_LEVEL: INFO
+    volumes: []
+    restart: always
+    mem_limit: 1g
+    cpus: '2.0'
+
+  postgres:
+    restart: always
+    environment:
+      POSTGRES_INITDB_ARGS: >-
+        -c shared_buffers=256MB
+        -c effective_cache_size=512MB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c max_connections=100
+    mem_limit: 1g
+
+  redis:
+    restart: always
+    mem_limit: 256m
+
+  # ── Prometheus metrics ───────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: peripateticware-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "127.0.0.1:9090:9090"   # localhost only — expose via Caddy if needed
+    networks:
+      - peripateticware
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:

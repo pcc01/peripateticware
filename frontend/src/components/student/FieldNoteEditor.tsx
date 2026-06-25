@@ -1,5 +1,6 @@
 import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
+import { ExtendedWritingPanel } from './ExtendedWritingPanel';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -7,9 +8,10 @@ import { useTranslation } from 'react-i18next';
 // frontend/src/components/student/FieldNoteEditor.tsx
 // Full field note editing — title, description, GPS, captures, status actions.
 
-import React, { useEffect, useState } from 'react';
-import { Camera, Loader2, MapPin, Mic, Send, Share2, Trash2, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Camera, FileText, Loader2, MapPin, Mic, Send, Share2, X } from 'lucide-react';
 import { fieldNoteApi } from '../../services/phase7Api';
+import { apiClient } from '../../config/api';
 import { AudioCapture } from './AudioCapture';
 import type { FieldNote, FieldNoteCreate, AudioCaptureResult } from '../../types/phase7';
 
@@ -36,17 +38,25 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!noteId);
   const [showAudio, setShowAudio] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [promotionMessage, setPromotionMessage] = useState('');
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-detect GPS
+  // Auto-detect GPS on mount — stored and attached to every save
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition((pos) => {
-
-      // Just store coordinates; user can name the location
-    }, undefined, { timeout: 5000 });}, []);
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => {
+        setGpsCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      undefined,
+      { timeout: 5000, maximumAge: 60_000 }
+    );
+  }, []);
 
   useEffect(() => {
     if (!noteId) return;
@@ -73,7 +83,9 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
         title: title.trim(),
         description: description.trim() || undefined,
         location_name: locationName.trim() || undefined,
-        self_project_id: selfProjectId
+        self_project_id: selfProjectId,
+        location_latitude: gpsCoords?.lat,
+        location_longitude: gpsCoords?.lng,
       };
       const saved = noteId ?
       await fieldNoteApi.update(noteId, data) :
@@ -121,6 +133,29 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
       setError('Could not link audio to this note');
     }
     setShowAudio(false);
+  };
+
+  const handleFileCapture = async (file: File, captureType: 'photo' | 'video') => {
+    if (!note) return;
+    setUploadingFile(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('capture_type', captureType);
+      form.append('context_type', 'field_note');
+      form.append('context_id', note.id);
+      const res = await apiClient.post<{ id: string }>('/student/captures/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      await fieldNoteApi.addCapture(note.id, res.data.id);
+      const updated = await fieldNoteApi.get(note.id);
+      setNote(updated);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || `Could not upload ${captureType}`);
+    } finally {
+      setUploadingFile(false);
+    }
   };
 
   const handleDeleteCapture = async (captureId: string) => {
@@ -202,21 +237,39 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
           
         </div>
 
-        {/* Description */}
+        {/* Description \u2014 field notes captured in the field.
+             If the description is already JSON (extended format), show the
+             original field_note text read-only so we don't expose raw JSON. */}
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">{t("landing:notes", "Notes")}</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={!canEdit}
-            rows={4}
-            placeholder={t("landing:describe_what_you_observed_noticed_or_wo", "Describe what you observed, noticed, or wondered about\u2026")}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-blue-300
-                       disabled:bg-gray-50 disabled:text-gray-500 resize-none" />
-
-
-          
+          <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+            <FileText className="w-4 h-4 text-blue-500" />
+            {t("landing:notes", "Write Your Notes")}
+            <span className="ml-1 font-normal text-gray-400 text-xs">(type what you observed)</span>
+          </label>
+          {(() => {
+            let isJson = false;
+            let fieldNoteText = description;
+            try {
+              const p = JSON.parse(description);
+              if (p?.v === 2) { isJson = true; fieldNoteText = p.field_note || ''; }
+            } catch {}
+            return isJson ? (
+              // Already has extended sections \u2014 show original field note read-only
+              <div className="w-full border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 min-h-[80px] whitespace-pre-wrap">
+                {fieldNoteText || <span className="text-gray-400 italic">No field notes captured yet.</span>}
+              </div>
+            ) : (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={!canEdit}
+                rows={4}
+                placeholder={t("landing:describe_what_you_observed_noticed_or_wo", "Describe what you observed, noticed, or wondered about\u2026")}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-300
+                           disabled:bg-gray-50 disabled:text-gray-500 resize-none" />
+            );
+          })()}
         </div>
 
         {/* Location */}
@@ -241,34 +294,86 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
         {/* Captures list */}
         {note && note.captures.length > 0 &&
         <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">{t("landing:attached_captures", "Attached Captures (")}
-            {note.captures.length})
+            <label className="block text-xs font-medium text-gray-600 mb-2">
+              Attached Captures ({note.captures.length})
             </label>
-            <div className="space-y-2">
-              {note.captures.map((cap) =>
-            <div key={cap.id}
-            className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    {cap.capture_type === 'audio' && <Mic className="w-3.5 h-3.5 text-blue-500" />}
-                    {cap.capture_type === 'photo' && <Camera className="w-3.5 h-3.5 text-green-500" />}
-                    <span className="capitalize">{cap.capture_type}</span>
-                    {cap.duration_seconds &&
-                <span className="text-gray-400 text-xs">({cap.duration_seconds}{t("landing:fieldnoteeditor.s", "s)")}</span>
-                }
-                  </div>
-                  {canEdit &&
-              <button
-                onClick={() => handleDeleteCapture(cap.id)}
-                className="text-gray-400 hover:text-red-500">
-                
-                      <Trash2 className="w-3.5 h-3.5" />
+            <div className="grid grid-cols-2 gap-2">
+              {note.captures.map((cap) => (
+                <div key={cap.id} className="relative bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
+                  {cap.capture_type === 'photo' ? (
+                    <img
+                      src={`/api/v1/student/captures/${cap.id}/stream${(() => {
+                        const t = localStorage.getItem('auth_token');
+                        return t ? `?token=${encodeURIComponent(t)}` : '';
+                      })()}`}
+                      alt="capture"
+                      className="w-full h-24 object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
+                    />
+                  ) : cap.capture_type === 'video' ? (
+                    <video
+                      src={`/api/v1/student/captures/${cap.id}/stream${(() => {
+                        const t = localStorage.getItem('auth_token');
+                        return t ? `?token=${encodeURIComponent(t)}` : '';
+                      })()}`}
+                      className="w-full h-24 object-cover"
+                      controls={false}
+                      muted
+                    />
+                  ) : cap.capture_type === 'audio' ? (
+                    <div className="flex flex-col items-center justify-center h-16 gap-1">
+                      <Mic className="w-6 h-6 text-blue-500" />
+                      <span className="text-xs text-gray-500">
+                        {cap.duration_seconds ? `${cap.duration_seconds}s` : 'Audio'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-16 gap-1">
+                      <Camera className="w-6 h-6 text-green-500" />
+                      <span className="text-xs text-gray-500 capitalize">{cap.capture_type}</span>
+                    </div>
+                  )}
+                  {canEdit && (
+                    <button
+                      onClick={() => handleDeleteCapture(cap.id)}
+                      className="absolute top-1 right-1 bg-black/40 text-white rounded-full p-0.5 hover:bg-red-500">
+                      <X className="w-3 h-3" />
                     </button>
-              }
+                  )}
                 </div>
-            )}
+              ))}
             </div>
           </div>
         }
+
+        {/* Hint when new note not yet saved */}
+        {!note && canEdit && (
+          <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">{t('components_student_fieldnoteeditor.save_your_note_first_to_attach_photos_au', '💡 Save your note first to attach photos, audio, and video captures.')}</p>
+        )}
+
+        {/* Hidden file inputs */}
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileCapture(file, 'photo');
+            e.target.value = '';
+          }}
+        />
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileCapture(file, 'video');
+            e.target.value = '';
+          }}
+        />
 
         {/* Audio capture */}
         {showAudio && note &&
@@ -277,8 +382,56 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
           contextId={note.id}
           onCaptured={handleAudioCaptured}
           onError={setError} />
-
         }
+
+        {/* ── Capture Toolbar ─────────────────────────────────────────────── */}
+        {note && canEdit && (
+          <div className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('components_student_fieldnoteeditor.capture_evidence', 'Capture Evidence')}</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setShowAudio(!showAudio)}
+                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 text-xs font-medium transition
+                  ${showAudio
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:bg-blue-50'}`}
+              >
+                <Mic className="w-6 h-6" />
+                Audio
+              </button>
+              <button
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingFile}
+                className="flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2
+                           border-gray-200 bg-white text-gray-600 hover:border-green-300
+                           hover:bg-green-50 text-xs font-medium transition disabled:opacity-50"
+              >
+                {uploadingFile ? <Loader2 className="w-6 h-6 animate-spin text-green-500" /> : <Camera className="w-6 h-6" />}
+                Photo
+              </button>
+              <button
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploadingFile}
+                className="flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2
+                           border-gray-200 bg-white text-gray-600 hover:border-purple-300
+                           hover:bg-purple-50 text-xs font-medium transition disabled:opacity-50"
+              >
+                {uploadingFile ? <Loader2 className="w-6 h-6 animate-spin text-purple-500" /> : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M4 8h8a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4a2 2 0 012-2z" />
+                  </svg>
+                )}
+                Video
+              </button>
+            </div>
+            {uploadingFile && (
+              <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
@@ -289,23 +442,7 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
             disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white
                          rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium">
-
-            
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}{t("landing:save", "Save")}
-
-          </button>
-          }
-
-          {/* Add audio (only when note exists and editable) */}
-          {note && canEdit && !showAudio &&
-          <button
-            onClick={() => setShowAudio(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700
-                         rounded-lg hover:bg-gray-200 text-sm">
-
-            
-              <Mic className="w-3.5 h-3.5" />{t("landing:fieldnoteeditor.add_audio", "Add Audio")}
-
           </button>
           }
 
@@ -315,10 +452,7 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
             onClick={handleShare}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700
                          rounded-lg hover:bg-gray-200 text-sm">
-
-            
               <Share2 className="w-3.5 h-3.5" />{t("landing:share_with_teacher", "Share with Teacher")}
-
           </button>
           }
 
@@ -328,13 +462,22 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
             onClick={() => setShowSubmitModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700
                          border border-amber-200 rounded-lg hover:bg-amber-100 text-sm">
-
-            
               <Send className="w-3.5 h-3.5" />{t("landing:submit_for_promotion", "Submit for Promotion")}
-
           </button>
           }
         </div>
+
+        {/* ── Extended Writing ───────────────────────────────────────────────
+             Only shown once the note has been saved (has an id).
+             The panel manages its own save cycle against the description field.   */}
+        {note &&
+          <ExtendedWritingPanel
+            noteId={note.id}
+            description={note.description}
+            noteStatus={note.status}
+            onDescriptionSaved={(newDesc) => setNote({ ...note, description: newDesc })}
+          />
+        }
 
         {/* Promotion submit modal (inline) */}
         {showSubmitModal &&
@@ -439,11 +582,11 @@ export const FieldNoteList: React.FC<FieldNoteListProps> = ({
     }
   };
 
-  useListEffect(() => {fetchNotes();}, [page, statusFilter, selfProjectId]);
+  useListEffect(() => { fetchNotes(); }, [page, statusFilter, selfProjectId]);
 
-  const filtered = search ?
-  notes.filter((n) => n.title.toLowerCase().includes(search.toLowerCase())) :
-  notes;
+  const filtered = search
+    ? notes.filter((n) => n.title.toLowerCase().includes(search.toLowerCase()))
+    : notes;
 
   return (
     <div className="space-y-3">
@@ -456,60 +599,54 @@ export const FieldNoteList: React.FC<FieldNoteListProps> = ({
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("landing:search_notes", "Search notes\u2026")}
             className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-blue-300" />
-
-          
+                       focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-600
-                     focus:outline-none focus:ring-2 focus:ring-blue-300">
-
-          
+                     focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
           <option value="">{t("landing:fieldnoteeditor.all_statuses", "All statuses")}</option>
-          {Object.entries(STATUS_LABELS).map(([v, l]) =>
-          <option key={v} value={v}>{l}</option>
-          )}
+          {Object.entries(STATUS_LABELS).map(([v, l]) => (
+            <option key={v} value={v}>{l}</option>
+          ))}
         </select>
-        {onNew &&
-        <button
-          onClick={onNew}
-          className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white
-                       rounded-lg hover:bg-blue-700 text-sm font-medium">
-
-          
+        {onNew && (
+          <button
+            onClick={onNew}
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white
+                       rounded-lg hover:bg-blue-700 text-sm font-medium"
+          >
             <Plus className="w-3.5 h-3.5" />{t("landing:new", "New")}
-
-        </button>
-        }
+          </button>
+        )}
       </div>
 
       {/* List */}
-      {loading ?
-      <div className="flex justify-center py-8">
+      {loading ? (
+        <div className="flex justify-center py-8">
           <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-        </div> :
-      filtered.length === 0 ?
-      <div className="text-center py-10 text-gray-400">
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-10 text-gray-400">
           <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-40" />
           <p className="text-sm">{t("landing:no_field_notes_yet", "No field notes yet.")}</p>
-          {onNew &&
-        <button onClick={onNew} className="mt-2 text-blue-600 text-sm hover:underline">{t("landing:create_your_first_one", "Create your first one")}
-
-        </button>
-        }
-        </div> :
-
-      <div className="divide-y divide-gray-100">
-          {filtered.map((note) =>
-        <button
-          key={note.id}
-          onClick={() => onSelect?.(note)}
-          className="w-full flex items-start gap-3 py-3 text-left hover:bg-gray-50
-                         transition rounded-lg px-2">
-
-          
+          {onNew && (
+            <button onClick={onNew} className="mt-2 text-blue-600 text-sm hover:underline">
+              {t("landing:create_your_first_one", "Create your first one")}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {filtered.map((note) => (
+            <button
+              key={note.id}
+              onClick={() => onSelect?.(note)}
+              className="w-full flex items-start gap-3 py-3 text-left hover:bg-gray-50 transition rounded-lg px-2"
+            >
               <BookOpen className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
@@ -519,47 +656,47 @@ export const FieldNoteList: React.FC<FieldNoteListProps> = ({
                     {STATUS_LABELS[note.status] || note.status}
                   </span>
                 </div>
-                {note.description &&
-            <p className="text-xs text-gray-400 truncate">{note.description}</p>
-            }
+                {note.description && (
+                  <p className="text-xs text-gray-400 truncate">{note.description}</p>
+                )}
                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
-                  {note.location_name &&
-              <span className="flex items-center gap-0.5">
+                  {note.location_name && (
+                    <span className="flex items-center gap-0.5">
                       <MapPin className="w-2.5 h-2.5" />{note.location_name}
                     </span>
-              }
-                  <span>{note.capture_count}{t("landing:fieldnoteeditor.captures", "captures")}</span>
+                  )}
+                  <span>{note.capture_count} {t("landing:fieldnoteeditor.captures", "captures")}</span>
                   <span>{fmtDate(note.updated_at)}</span>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
             </button>
-        )}
+          ))}
         </div>
-      }
+      )}
 
       {/* Pagination */}
-      {total > 20 &&
-      <div className="flex justify-center gap-2 pt-2">
+      {total > 20 && (
+        <div className="flex justify-center gap-2 pt-2">
           <button
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-          disabled={page === 1}
-          className="px-3 py-1 text-sm border rounded disabled:opacity-40">{t("landing:fieldnoteeditor.previous", "Previous")}
-
-
-        </button>
-          <span className="px-2 py-1 text-sm text-gray-500">{t("landing:page", "Page")}{page}</span>
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 text-sm border rounded disabled:opacity-40"
+          >
+            {t("landing:fieldnoteeditor.previous", "Previous")}
+          </button>
+          <span className="px-2 py-1 text-sm text-gray-500">{t("landing:page", "Page")} {page}</span>
           <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={notes.length < 20}
-          className="px-3 py-1 text-sm border rounded disabled:opacity-40">{t("landing:fieldnoteeditor.next", "Next")}
-
-
-        </button>
+            onClick={() => setPage((p) => p + 1)}
+            disabled={notes.length < 20}
+            className="px-3 py-1 text-sm border rounded disabled:opacity-40"
+          >
+            {t("landing:fieldnoteeditor.next", "Next")}
+          </button>
         </div>
-      }
-    </div>);
-
+      )}
+    </div>
+  );
 };
 
 export default FieldNoteList;

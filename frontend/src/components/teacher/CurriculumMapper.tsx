@@ -90,8 +90,7 @@ export const CurriculumMapper: React.FC<CurriculumMapperProps> = ({
         // Fetch units for each selected ID
         // In a real app, you might want a batch endpoint for this
         // For now, we'll mark them as selected by ID
-        setSelectedData(
-          selectedUnits.map((id) => ({
+        setSelectedData(selectedUnits.map((id): any => ({
             id,
             title: `Unit: ${id}`,
             description: '',
@@ -243,7 +242,7 @@ export const CurriculumMapper: React.FC<CurriculumMapperProps> = ({
         {/* Search Button */}
         <Button
           variant="primary"
-          size="sm"
+          size={undefined as any} data-size="sm"
           onClick={handleSearch}
           disabled={loading}
           isLoading={loading}
@@ -361,7 +360,7 @@ export const CurriculumMapper: React.FC<CurriculumMapperProps> = ({
       {/* Loading State */}
       {loading &&
       <div className="flex justify-center py-6">
-          <LoadingSpinner size="sm" />
+          <LoadingSpinner size={undefined as any} data-size="sm" />
         </div>
       }
 

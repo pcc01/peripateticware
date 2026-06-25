@@ -1,3 +1,4 @@
+import type { Activity, StudentProgress, ChildProgress as _ChildProgress, User } from '../services/types'
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -23,18 +24,8 @@ export interface LoginResponse {
   user: User
 }
 
-export interface User {
-  id: string
-  email: string
-  username?: string
-  full_name?: string
-  first_name?: string
-  last_name?: string
-  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
-  created_at?: string
-  updated_at?: string
-  is_active?: boolean
-}
+// User re-exported from services/types
+
 
 export interface SignupRequest {
   email: string
@@ -66,30 +57,9 @@ export interface PaginationParams {
 /* ACTIVITY TYPES */
 /* ============================================================================ */
 
-export interface Activity {
-  id: string
-  title: string
-  description: string
-  subject: string
-  grade_level?: string
-  location: string
-  status: 'active' | 'completed' | 'pending' | 'draft'
-  due_date: string
-  created_at: string
-  updated_at: string
-  teacher_id: string
-  student_count?: number
-  submissions_count?: number
-  completion_rate?: number
-  phases: {
-    orient: PhaseInfo
-    inquiry: PhaseInfo
-    reflect: PhaseInfo
-  }
-  rubric_ids?: string[]
-  curriculum_links?: string[]
-  standards?: string[]
-}
+// Activity is canonical in services/types.ts — re-exported here for backwards compat
+export type { Activity } from '../services/types'
+// PhaseInfo kept as local definition below
 
 export interface PhaseInfo {
   title?: string
@@ -161,6 +131,8 @@ export interface Project {
 }
 
 export interface ProjectFormData {
+  subject?: string
+  duration_weeks?: number
   title: string
   description: string
   activity_id: string
@@ -275,21 +247,8 @@ export interface EvidenceFilters {
 /* PROGRESS & ASSESSMENT TYPES */
 /* ============================================================================ */
 
-export interface StudentProgress {
-  id: string
-  student_id: string
-  activity_id: string
-  overall_progress: number
-  phase_progress: {
-    orient: number
-    inquiry: number
-    reflect: number
-  }
-  competency_progress: CompetencyProgress[]
-  submissions_count: number
-  evidence_count: number
-  last_updated: string
-}
+// StudentProgress re-exported from services/types below
+
 
 export interface CompetencyProgress {
   competency_id: string
@@ -406,6 +365,7 @@ export interface TeacherSubmission {
 }
 
 export interface TeacherDashboardData {
+  recent_students?: unknown[]
   total_students: number
   total_classes: number
   active_activities: number
@@ -423,7 +383,9 @@ export interface LinkedChild {
   id: string
   email: string
   full_name: string
-  grade_level: string
+  name?: string
+  grade?: string
+  grade_level?: string | number
   verified: boolean
 }
 
@@ -465,6 +427,13 @@ export interface AdminDashboardData {
   sessions_count: number
   analytics: SystemAnalytics
   recent_users: User[]
+  pagination?: { total: number; page: number; per_page: number }
+  total_teachers?: number
+  total_students?: number
+  total_parents?: number
+  system_uptime?: string
+  average_session_attendance?: number
+  database_size?: string
 }
 
 /* ============================================================================ */
@@ -472,6 +441,7 @@ export interface AdminDashboardData {
 /* ============================================================================ */
 
 export interface StudentDashboardData {
+  recent_activities?: unknown[]
   progress: StudentProgress[]
   active_projects: Project[]
   upcoming_sessions: Session[]
@@ -495,3 +465,8 @@ export interface ApiValidationError {
   fields?: Record<string, string[]>
   detail?: string | { msg: string; type: string }[]
 }
+
+// Re-export so stores and api layer see identical objects
+export type { StudentProgress, User, ChildProgress as ServiceChildProgress } from '../services/types'
+
+export type ProjectStatus = 'planning' | 'active' | 'completed' | 'archived'

@@ -258,7 +258,7 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           <div className={styles.studentsList}>
-            {students.slice(0, 5).map((student) =>
+            {students.slice(0, 5).map((student: any) =>
           <div key={student.id} className={styles.studentItem}>
                 <div className={styles.studentInfo}>
                   <h4>{student.full_name || student.username}</h4>

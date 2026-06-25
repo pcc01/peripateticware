@@ -31,6 +31,7 @@ export interface Capture {
 }
 
 export interface StudentCapture {
+  transcript_confidence?: number
   id: string
   type: CaptureType
   data: string
@@ -47,9 +48,16 @@ export interface CaptureFormData {
 
 export interface CaptureFilters {
   type?: CaptureType
+  capture_type?: CaptureType
   status?: string
   search?: string
-  sort?: 'recent' | 'oldest' | 'quality'
+  sort?: 'recent' | 'oldest' 
+  page?: number
+  page_size?: number
+  competency?: string
+  learning_objective?: string
+  date_from?: string
+  date_to?: string| 'quality'
 }
 
 // ============================================================
@@ -114,6 +122,13 @@ export interface EntryFilters {
   status?: string
   search?: string
   sort?: 'recent' | 'oldest'
+  page?: number
+  page_size?: number
+  reflection_type?: string
+  competency?: string
+  learning_objective?: string
+  date_from?: string
+  date_to?: string
 }
 
 // ============================================================
@@ -208,4 +223,67 @@ export interface SessionContext {
   location_latitude?: number
   location_longitude?: number
   sessionId?: string // Backwards compatibility
+}
+// Type aliases so PaginatedCapture/Portfolio references resolve
+export type FieldCapture = StudentCapture
+
+
+// ============================================================
+// MISSING EXPORTS (added 2026-06-03 — Root Cause 3)
+// ============================================================
+
+export type NotebookEntryType = 'text' | 'sketch' | 'photo' | 'audio' | 'video'
+
+export type TranscriptionStatus = 'pending' | 'processing' | 'complete' | 'failed'
+
+export interface AnnotationFormData {
+  capture_id: string
+  text: string
+  tags?: string[]
+  competency_ids?: string[]
+}
+
+export interface PaginatedCaptureResponse {
+  items: FieldCapture[]
+  total: number
+  page: number
+  page_size: number
+  has_next: boolean
+}
+
+export interface PaginatedEntryResponse {
+  items: FieldNote[]
+  total: number
+  page: number
+  page_size: number
+  has_next: boolean
+}
+
+export interface StudentNotebook {
+  student_id: string
+  entries: FieldNote[]
+  captures: FieldCapture[]
+  total_entries: number
+  total_captures: number
+  last_updated: string
+}
+
+export interface Portfolio {
+  student_id: string
+  student_name: string
+  activities: ActivityEngagement[]
+  competencies: CompetencyProgress[]
+  evidence_count: number
+  created_at: string
+  date_range?: { from: string; to: string }
+}
+
+export interface ActivityEngagement {
+  activity_id: string
+  activity_title: string
+  status: 'active' | 'completed' | 'pending'
+  completion_rate: number
+  field_notes_count: number
+  captures_count: number
+  last_active: string
 }

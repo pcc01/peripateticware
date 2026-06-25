@@ -6,13 +6,15 @@
   align-items: center;
   gap: 24px;
   margin: 40px 0;
+  width: fit-content;
 }
 
-/* PHONE MOCKUP */
+/* PHONE MOCKUP — fixed dimensions so every slide is identical size */
 .phone-mockup {
-  aspect-ratio: 9 / 19;
-  width: 100%;
-  max-width: 340px;
+  width: 260px;
+  height: 548px;
+  flex-shrink: 0;
+  overflow: hidden;
   border-radius: 32px;
   padding: 12px;
   box-shadow: 0 28px 60px rgba(30, 26, 20, 0.30), 0 0 0 6px rgba(30, 26, 20, 0.08);

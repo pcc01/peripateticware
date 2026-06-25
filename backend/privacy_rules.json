@@ -1,0 +1,998 @@
+{
+  "metadata": {
+    "schema_version": "1.0",
+    "generated_at": "2026-06-18T23:27:08Z",
+    "next_update_due": "2026-07-01T00:00:00Z",
+    "description": "Privacy Engine rules \u2014 auto-updated monthly from public regulatory sources"
+  },
+  "regulations": [
+    {
+      "regulation_id": "GDPR-2018-EU",
+      "display_name": "General Data Protection Regulation (EU) 2016/679",
+      "framework": "gdpr",
+      "jurisdiction_id": "eu",
+      "country_code": "EU",
+      "subdivision_code": null,
+      "effective_date": "2018-05-25",
+      "sunset_date": null,
+      "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/XML/?uri=CELEX:32016R0679",
+      "source_type": "xml",
+      "source_xpath_or_selector": null,
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "gdpr-consent-explicit-special",
+          "category": "special_categories",
+          "consent_type": "explicit",
+          "description": "Explicit consent required for processing special category data (Art. 9(2)(a))",
+          "article_reference": "Art. 9(2)(a)"
+        },
+        {
+          "rule_id": "gdpr-consent-parental-u16",
+          "category": "children",
+          "consent_type": "parental_verifiable",
+          "age_threshold": 16,
+          "description": "Parental consent required for children under 16 for information society services (Art. 8)",
+          "article_reference": "Art. 8"
+        },
+        {
+          "rule_id": "gdpr-consent-withdrawal",
+          "category": "general",
+          "consent_type": "opt_in",
+          "withdrawal_allowed": true,
+          "description": "Withdrawal of consent must be as easy as giving it (Art. 7(3))",
+          "article_reference": "Art. 7(3)"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "gdpr-processing-minimization",
+          "principle": "data_minimization",
+          "description": "Data collected must be adequate, relevant and limited to what is necessary (Art. 5(1)(c))",
+          "article_reference": "Art. 5(1)(c)"
+        },
+        {
+          "rule_id": "gdpr-processing-purpose-limitation",
+          "principle": "purpose_limitation",
+          "description": "Data collected for specified, explicit and legitimate purposes; not further processed incompatibly (Art. 5(1)(b))",
+          "article_reference": "Art. 5(1)(b)"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "gdpr-transfer-adequacy",
+          "transfer_type": "third_country",
+          "condition": "adequacy_decision_or_safeguards",
+          "description": "Transfers to third countries require adequacy decision or appropriate safeguards (Chapter V)",
+          "article_reference": "Art. 44-49"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1825,
+          "description": "Educational records \u2014 5 years"
+        },
+        "behavioral": {
+          "max_days": 365,
+          "description": "Behavioral/analytics data \u2014 1 year"
+        },
+        "health": {
+          "max_days": 3650,
+          "description": "Health data \u2014 10 years"
+        },
+        "special": {
+          "max_days": 0,
+          "description": "Special category data \u2014 delete immediately after purpose fulfilled"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 30,
+          "description": "Right of access by the data subject (Art. 15)",
+          "article_reference": "Art. 15"
+        },
+        {
+          "right": "erasure",
+          "response_days": 30,
+          "description": "Right to erasure ('right to be forgotten') (Art. 17)",
+          "article_reference": "Art. 17"
+        },
+        {
+          "right": "portability",
+          "response_days": 30,
+          "description": "Right to data portability (Art. 20)",
+          "article_reference": "Art. 20"
+        },
+        {
+          "right": "rectification",
+          "response_days": 30,
+          "description": "Right to rectification (Art. 16)",
+          "article_reference": "Art. 16"
+        },
+        {
+          "right": "object",
+          "response_days": 30,
+          "description": "Right to object to processing (Art. 21)",
+          "article_reference": "Art. 21"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": true,
+      "requires_dpo": true,
+      "incident_reporting_days": 3,
+      "breach_notification_threshold": "likely_harm"
+    },
+    {
+      "regulation_id": "CCPA-2020-US-CA",
+      "display_name": "California Consumer Privacy Act / California Privacy Rights Act (CCPA/CPRA)",
+      "framework": "ccpa",
+      "jurisdiction_id": "us_california",
+      "country_code": "US",
+      "subdivision_code": "CA",
+      "effective_date": "2020-01-01",
+      "sunset_date": null,
+      "source_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=1798.100.",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.codesection",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "ccpa-consent-opt-out",
+          "category": "general",
+          "consent_type": "opt_out",
+          "description": "Consumers have the right to opt-out of sale of personal information (\u00a71798.120)",
+          "article_reference": "Cal. Civ. Code \u00a71798.120"
+        },
+        {
+          "rule_id": "ccpa-consent-u16-opt-in",
+          "category": "children",
+          "consent_type": "opt_in",
+          "age_threshold": 16,
+          "description": "Consumers under 16 must opt-in to sale of personal information; under 13 requires parent opt-in (\u00a71798.120(c))",
+          "article_reference": "Cal. Civ. Code \u00a71798.120(c)"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "ccpa-processing-no-discrimination",
+          "principle": "non_discrimination",
+          "description": "Businesses may not discriminate against consumers for exercising CCPA rights (\u00a71798.125)",
+          "article_reference": "Cal. Civ. Code \u00a71798.125"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "ccpa-transfer-service-providers",
+          "transfer_type": "service_provider",
+          "condition": "contractual_limitations",
+          "description": "Transfers to service providers require contractual prohibition on further use (\u00a71798.140)",
+          "article_reference": "Cal. Civ. Code \u00a71798.140"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1095,
+          "description": "Default retention \u2014 3 years"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "know",
+          "response_days": 45,
+          "description": "Right to know about personal information collected (\u00a71798.110)",
+          "article_reference": "Cal. Civ. Code \u00a71798.110"
+        },
+        {
+          "right": "delete",
+          "response_days": 45,
+          "description": "Right to delete personal information (\u00a71798.105)",
+          "article_reference": "Cal. Civ. Code \u00a71798.105"
+        },
+        {
+          "right": "opt_out",
+          "response_days": 15,
+          "description": "Right to opt-out of sale \u2014 business must comply within 15 days",
+          "article_reference": "Cal. Civ. Code \u00a71798.120"
+        },
+        {
+          "right": "portability",
+          "response_days": 45,
+          "description": "Right to data portability in usable format (\u00a71798.110(d))",
+          "article_reference": "Cal. Civ. Code \u00a71798.110(d)"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 72,
+      "breach_notification_threshold": "likely_harm"
+    },
+    {
+      "regulation_id": "COPPA-2000-US-FEDERAL",
+      "display_name": "Children's Online Privacy Protection Act (COPPA) \u2014 16 CFR Part 312",
+      "framework": "coppa",
+      "jurisdiction_id": "us_federal",
+      "country_code": "US",
+      "subdivision_code": null,
+      "effective_date": "2000-04-21",
+      "sunset_date": null,
+      "source_url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-C/part-312",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.section",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "coppa-consent-parental-verifiable",
+          "category": "children",
+          "consent_type": "parental_verifiable",
+          "age_threshold": 13,
+          "description": "Verifiable parental consent required before collecting personal information from children under 13 (\u00a7312.5)",
+          "article_reference": "16 CFR \u00a7312.5"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "coppa-processing-no-behavioral-targeting",
+          "principle": "prohibition",
+          "description": "Behavioral targeting of children under 13 is prohibited",
+          "article_reference": "16 CFR \u00a7312.2"
+        },
+        {
+          "rule_id": "coppa-processing-no-location-tracking",
+          "principle": "prohibition",
+          "description": "Precise location tracking of children under 13 requires separate parental consent",
+          "article_reference": "16 CFR \u00a7312.2"
+        },
+        {
+          "rule_id": "coppa-processing-no-retargeting",
+          "principle": "prohibition",
+          "description": "Retargeting advertising to children under 13 is prohibited",
+          "article_reference": "16 CFR \u00a7312.2"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "coppa-transfer-third-party",
+          "transfer_type": "third_party",
+          "condition": "prohibited_without_parental_consent",
+          "description": "Disclosure of children's personal information to third parties requires verifiable parental consent",
+          "article_reference": "16 CFR \u00a7312.5"
+        }
+      ],
+      "retention_policies": {
+        "behavioral": {
+          "max_days": 90,
+          "description": "Behavioral data for children under 13 \u2014 90 days maximum"
+        },
+        "location": {
+          "max_days": 30,
+          "description": "Location data for children under 13 \u2014 30 days maximum"
+        },
+        "identity": {
+          "max_days": 365,
+          "description": "Identity/account data \u2014 1 year after account closure or last use"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 30,
+          "description": "Parents have the right to review personal information collected from their child (\u00a7312.6)",
+          "article_reference": "16 CFR \u00a7312.6"
+        },
+        {
+          "right": "deletion",
+          "response_days": 30,
+          "description": "Parents have the right to request deletion of their child's personal information (\u00a7312.6)",
+          "article_reference": "16 CFR \u00a7312.6"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 0,
+      "breach_notification_threshold": "any_breach"
+    },
+    {
+      "regulation_id": "FERPA-1974-US-FEDERAL",
+      "display_name": "Family Educational Rights and Privacy Act (FERPA) \u2014 34 CFR Part 99",
+      "framework": "custom",
+      "jurisdiction_id": "us_federal_ferpa",
+      "country_code": "US",
+      "subdivision_code": null,
+      "effective_date": "1974-08-21",
+      "sunset_date": null,
+      "source_url": "https://www.ecfr.gov/current/title-34/subtitle-A/part-99",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.section",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "ferpa-consent-disclosure",
+          "category": "educational_records",
+          "consent_type": "written_consent",
+          "description": "Written consent required before disclosing education records (\u00a799.30); exceptions include school officials, directory information, emergencies",
+          "article_reference": "34 CFR \u00a799.30"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "ferpa-processing-legitimate-educational-interest",
+          "principle": "purpose_limitation",
+          "description": "Access to education records limited to those with legitimate educational interest (\u00a799.31)",
+          "article_reference": "34 CFR \u00a799.31"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "ferpa-transfer-no-disclosure",
+          "transfer_type": "third_party",
+          "condition": "prohibited_without_consent_except_listed_exceptions",
+          "description": "Education records may not be disclosed to third parties without consent except under \u00a799.31 exceptions",
+          "article_reference": "34 CFR \u00a799.31"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 3650,
+          "description": "Educational records \u2014 10 years"
+        },
+        "identity": {
+          "max_days": 3650,
+          "description": "Access and disclosure audit logs \u2014 10 years (\u00a799.32)"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 45,
+          "response_timeframe": null,
+          "description": "Parents/eligible students have right to inspect education records within 45 days (\u00a799.10)",
+          "article_reference": "34 CFR \u00a799.10"
+        },
+        {
+          "right": "amendment",
+          "response_days": null,
+          "response_timeframe": "reasonable_time",
+          "description": "Right to request amendment of inaccurate or misleading records (\u00a799.20)",
+          "article_reference": "34 CFR \u00a799.20"
+        },
+        {
+          "right": "hearing",
+          "response_days": null,
+          "response_timeframe": "allowed",
+          "description": "Right to a hearing if amendment is denied (\u00a799.21)",
+          "article_reference": "34 CFR \u00a799.21"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 0,
+      "breach_notification_threshold": "any_breach"
+    },
+    {
+      "regulation_id": "PIPEDA-2000-CA",
+      "display_name": "Personal Information Protection and Electronic Documents Act (PIPEDA)",
+      "framework": "pipeda",
+      "jurisdiction_id": "canada",
+      "country_code": "CA",
+      "subdivision_code": null,
+      "effective_date": "2001-01-01",
+      "sunset_date": null,
+      "source_url": "https://laws-lois.justice.gc.ca/eng/acts/P-8.6/FullText.html",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div#wb-cont",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "pipeda-consent-knowledge-consent",
+          "category": "general",
+          "consent_type": "meaningful_consent",
+          "description": "Knowledge and consent of the individual required for collection, use or disclosure (Schedule 1, Principle 3)",
+          "article_reference": "Schedule 1, Principle 3"
+        },
+        {
+          "rule_id": "pipeda-consent-meaningful-standard",
+          "category": "general",
+          "consent_type": "meaningful_consent",
+          "description": "Consent must be meaningful \u2014 individuals must understand what they are consenting to (OPC Guidance)",
+          "article_reference": "Schedule 1, Principle 3 / OPC Guidance"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "pipeda-processing-accountability",
+          "principle": "accountability",
+          "description": "Organization is responsible for personal information under its control (Schedule 1, Principle 1)",
+          "article_reference": "Schedule 1, Principle 1"
+        },
+        {
+          "rule_id": "pipeda-processing-limiting-collection",
+          "principle": "data_minimization",
+          "description": "Collection limited to what is necessary for identified purposes (Schedule 1, Principle 4)",
+          "article_reference": "Schedule 1, Principle 4"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "pipeda-transfer-third-party",
+          "transfer_type": "third_party",
+          "condition": "comparable_protection_required",
+          "description": "Organizations remain accountable for personal information transferred to third parties (Schedule 1, Principle 1)",
+          "article_reference": "Schedule 1, Principle 1"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1825,
+          "description": "Educational records \u2014 5 years"
+        },
+        "behavioral": {
+          "max_days": 365,
+          "description": "Behavioral/analytics data \u2014 1 year"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 30,
+          "response_timeframe": null,
+          "description": "Right to access personal information held by an organization (Schedule 1, Principle 9)",
+          "article_reference": "Schedule 1, Principle 9"
+        },
+        {
+          "right": "accuracy",
+          "response_days": 30,
+          "response_timeframe": null,
+          "description": "Right to challenge accuracy and completeness of personal information (Schedule 1, Principle 9)",
+          "article_reference": "Schedule 1, Principle 9"
+        },
+        {
+          "right": "complaint",
+          "response_days": null,
+          "response_timeframe": "timely",
+          "description": "Right to challenge an organization's compliance with PIPEDA (Schedule 1, Principle 10)",
+          "article_reference": "Schedule 1, Principle 10"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 3,
+      "breach_notification_threshold": "real_risk_of_significant_harm"
+    },
+    {
+      "regulation_id": "LGPD-2018-BR",
+      "display_name": "Lei Geral de Prote\u00e7\u00e3o de Dados Pessoais (LGPD) \u2014 Lei n\u00ba 13.709/2018",
+      "framework": "lgpd",
+      "jurisdiction_id": "brazil",
+      "country_code": "BR",
+      "subdivision_code": null,
+      "effective_date": "2020-09-18",
+      "sunset_date": null,
+      "source_url": "https://www.gov.br/anpd/pt-br/assuntos/legislacao-e-regulamentacao/lgpd",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.documentDescription",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "notes": "Primary source at planalto.gov.br blocks bots; using ANPD page as authoritative fallback.",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "lgpd-consent-explicit-specific",
+          "category": "general",
+          "consent_type": "explicit",
+          "description": "Consent must be explicit, specific as to purpose, and free (Art. 8)",
+          "article_reference": "Art. 8"
+        },
+        {
+          "rule_id": "lgpd-consent-child-parental",
+          "category": "children",
+          "consent_type": "parental_verifiable",
+          "age_threshold": 18,
+          "description": "Processing of children's data requires specific and highlighted consent from at least one parent or guardian (Art. 14)",
+          "article_reference": "Art. 14"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "lgpd-processing-legal-basis",
+          "principle": "lawful_basis",
+          "description": "Processing must have one of ten defined legal bases (Art. 7)",
+          "article_reference": "Art. 7"
+        },
+        {
+          "rule_id": "lgpd-processing-purpose-adequacy",
+          "principle": "purpose_limitation",
+          "description": "Processing limited to purposes disclosed; further processing requires compatibility check (Art. 6)",
+          "article_reference": "Art. 6"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "lgpd-transfer-international",
+          "transfer_type": "international",
+          "condition": "adequacy_or_safeguards",
+          "description": "International transfers require adequate protection level or specific safeguards (Art. 33-36)",
+          "article_reference": "Art. 33-36"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1825,
+          "description": "Educational records \u2014 5 years"
+        },
+        "behavioral": {
+          "max_days": 365,
+          "description": "Behavioral/analytics data \u2014 1 year"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 15,
+          "description": "Right to access personal data (Art. 18, I)",
+          "article_reference": "Art. 18, I"
+        },
+        {
+          "right": "correction",
+          "response_days": 15,
+          "description": "Right to correction of incomplete, inaccurate, or outdated data (Art. 18, III)",
+          "article_reference": "Art. 18, III"
+        },
+        {
+          "right": "deletion",
+          "response_days": 15,
+          "description": "Right to deletion of unnecessary or excessive data (Art. 18, VI)",
+          "article_reference": "Art. 18, VI"
+        },
+        {
+          "right": "portability",
+          "response_days": 15,
+          "description": "Right to data portability to another service provider (Art. 18, V)",
+          "article_reference": "Art. 18, V"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": true,
+      "dpo_title": "Encarregado",
+      "incident_reporting_days": 2,
+      "breach_notification_threshold": "relevant_risk"
+    },
+    {
+      "regulation_id": "PDPA-2012-SG",
+      "display_name": "Personal Data Protection Act 2012 (Singapore) \u2014 PDPA",
+      "framework": "pdpa",
+      "jurisdiction_id": "singapore",
+      "country_code": "SG",
+      "subdivision_code": null,
+      "effective_date": "2014-07-02",
+      "sunset_date": null,
+      "source_url": "https://sso.agc.gov.sg/Act/PDPA2012",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div#legis-body",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "pdpa-consent-deemed",
+          "category": "general",
+          "consent_type": "deemed_consent",
+          "description": "Post-2021 amendment: deemed consent applies where individual voluntarily provides data for an obvious purpose (s15A)",
+          "article_reference": "s15A (Amendment Act 2021)"
+        },
+        {
+          "rule_id": "pdpa-consent-explicit-sensitive",
+          "category": "sensitive",
+          "consent_type": "explicit",
+          "description": "Explicit consent required for sensitive personal data categories",
+          "article_reference": "s13"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "pdpa-processing-purpose-limitation",
+          "principle": "purpose_limitation",
+          "description": "Personal data collected only for purposes a reasonable person would consider appropriate (s18)",
+          "article_reference": "s18"
+        },
+        {
+          "rule_id": "pdpa-processing-protection",
+          "principle": "security",
+          "description": "Reasonable security arrangements to prevent unauthorised access, collection, use, etc. (s24)",
+          "article_reference": "s24"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "pdpa-transfer-overseas",
+          "transfer_type": "overseas",
+          "condition": "comparable_protection",
+          "description": "Transfers overseas require comparable protection to Singapore PDPA (s26)",
+          "article_reference": "s26"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1825,
+          "description": "Educational records \u2014 5 years"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 30,
+          "response_timeframe": null,
+          "description": "Right to request access to personal data (s21)",
+          "article_reference": "s21"
+        },
+        {
+          "right": "correction",
+          "response_days": 30,
+          "response_timeframe": null,
+          "description": "Right to request correction of personal data (s22)",
+          "article_reference": "s22"
+        },
+        {
+          "right": "withdrawal",
+          "response_days": null,
+          "response_timeframe": "reasonable",
+          "description": "Right to withdraw consent at any time with reasonable notice (s16(1))",
+          "article_reference": "s16(1)"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 3,
+      "breach_notification_threshold": "significant_harm"
+    },
+    {
+      "regulation_id": "CPA-2021-US-CO",
+      "display_name": "Colorado Privacy Act (CPA) \u2014 SB21-190",
+      "framework": "custom",
+      "jurisdiction_id": "us_colorado",
+      "country_code": "US",
+      "subdivision_code": "CO",
+      "effective_date": "2023-07-01",
+      "sunset_date": null,
+      "source_url": "https://leg.colorado.gov/bills/sb21-190",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.field-items",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "cpa-consent-opt-out",
+          "category": "general",
+          "consent_type": "opt_out",
+          "description": "Consumers have the right to opt-out of processing for targeted advertising, sale, or profiling (\u00a76-1-1306)",
+          "article_reference": "C.R.S. \u00a76-1-1306"
+        },
+        {
+          "rule_id": "cpa-consent-explicit-sensitive",
+          "category": "sensitive",
+          "consent_type": "explicit",
+          "description": "Explicit opt-in consent required to process sensitive data (\u00a76-1-1308)",
+          "article_reference": "C.R.S. \u00a76-1-1308"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "cpa-processing-data-minimization",
+          "principle": "data_minimization",
+          "description": "Data collection limited to what is adequate, relevant, and reasonably necessary (\u00a76-1-1308(3))",
+          "article_reference": "C.R.S. \u00a76-1-1308(3)"
+        },
+        {
+          "rule_id": "cpa-processing-purpose-limitation",
+          "principle": "purpose_limitation",
+          "description": "Processing limited to specified, explicit and legitimate purposes disclosed at collection",
+          "article_reference": "C.R.S. \u00a76-1-1308(3)"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "cpa-transfer-processor-agreement",
+          "transfer_type": "processor",
+          "condition": "data_processing_agreement_required",
+          "description": "Contracts with processors must include required provisions (\u00a76-1-1305(5))",
+          "article_reference": "C.R.S. \u00a76-1-1305(5)"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1095,
+          "description": "Default retention \u2014 3 years"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 45,
+          "description": "Right to confirm and access personal data (\u00a76-1-1306(1)(a))",
+          "article_reference": "C.R.S. \u00a76-1-1306(1)(a)"
+        },
+        {
+          "right": "correction",
+          "response_days": 45,
+          "description": "Right to correct inaccuracies (\u00a76-1-1306(1)(b))",
+          "article_reference": "C.R.S. \u00a76-1-1306(1)(b)"
+        },
+        {
+          "right": "deletion",
+          "response_days": 45,
+          "description": "Right to delete personal data (\u00a76-1-1306(1)(c))",
+          "article_reference": "C.R.S. \u00a76-1-1306(1)(c)"
+        },
+        {
+          "right": "portability",
+          "response_days": 45,
+          "description": "Right to obtain a portable copy (\u00a76-1-1306(1)(d))",
+          "article_reference": "C.R.S. \u00a76-1-1306(1)(d)"
+        },
+        {
+          "right": "opt_out",
+          "response_days": 15,
+          "description": "Right to opt-out of targeted advertising and profiling (\u00a76-1-1306(1)(e))",
+          "article_reference": "C.R.S. \u00a76-1-1306(1)(e)"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": true,
+      "requires_dpo": false,
+      "incident_reporting_days": 72,
+      "breach_notification_threshold": "likely_harm"
+    },
+    {
+      "regulation_id": "VCDPA-2021-US-VA",
+      "display_name": "Virginia Consumer Data Protection Act (VCDPA) \u2014 Title 59.1, Chapter 53",
+      "framework": "custom",
+      "jurisdiction_id": "us_virginia",
+      "country_code": "US",
+      "subdivision_code": "VA",
+      "effective_date": "2023-01-01",
+      "sunset_date": null,
+      "source_url": "https://law.lis.virginia.gov/vacodefull/tit59.1/ch53/",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div#mainContent",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "vcdpa-consent-opt-out",
+          "category": "general",
+          "consent_type": "opt_out",
+          "description": "Consumers may opt-out of processing for targeted advertising, sale, or profiling (\u00a759.1-578)",
+          "article_reference": "Va. Code \u00a759.1-578"
+        },
+        {
+          "rule_id": "vcdpa-consent-explicit-sensitive",
+          "category": "sensitive",
+          "consent_type": "explicit",
+          "description": "Explicit consent required to process sensitive data categories (\u00a759.1-577(B))",
+          "article_reference": "Va. Code \u00a759.1-577(B)"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "vcdpa-processing-data-minimization",
+          "principle": "data_minimization",
+          "description": "Data collection limited to what is adequate, relevant, and reasonably necessary (\u00a759.1-577(A)(3))",
+          "article_reference": "Va. Code \u00a759.1-577(A)(3)"
+        },
+        {
+          "rule_id": "vcdpa-processing-purpose-limitation",
+          "principle": "purpose_limitation",
+          "description": "Processing limited to disclosed and compatible purposes (\u00a759.1-577(A)(4))",
+          "article_reference": "Va. Code \u00a759.1-577(A)(4)"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "vcdpa-transfer-processor-agreement",
+          "transfer_type": "processor",
+          "condition": "data_processing_agreement_required",
+          "description": "Controllers must execute contracts with processors containing required provisions (\u00a759.1-580)",
+          "article_reference": "Va. Code \u00a759.1-580"
+        }
+      ],
+      "retention_policies": {
+        "educational": {
+          "max_days": 1095,
+          "description": "Default retention \u2014 3 years"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 45,
+          "description": "Right to confirm processing and access personal data (\u00a759.1-578(A)(1))",
+          "article_reference": "Va. Code \u00a759.1-578(A)(1)"
+        },
+        {
+          "right": "correction",
+          "response_days": 45,
+          "description": "Right to correct inaccuracies (\u00a759.1-578(A)(2))",
+          "article_reference": "Va. Code \u00a759.1-578(A)(2)"
+        },
+        {
+          "right": "deletion",
+          "response_days": 45,
+          "description": "Right to delete personal data (\u00a759.1-578(A)(3))",
+          "article_reference": "Va. Code \u00a759.1-578(A)(3)"
+        },
+        {
+          "right": "portability",
+          "response_days": 45,
+          "description": "Right to obtain a portable copy (\u00a759.1-578(A)(4))",
+          "article_reference": "Va. Code \u00a759.1-578(A)(4)"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": true,
+      "requires_dpo": false,
+      "incident_reporting_days": 60,
+      "breach_notification_threshold": "likely_harm"
+    },
+    {
+      "regulation_id": "HIPAA-1996-US-FEDERAL",
+      "display_name": "Health Insurance Portability and Accountability Act (HIPAA) \u2014 45 CFR Part 164",
+      "framework": "custom",
+      "jurisdiction_id": "us_federal_hipaa",
+      "country_code": "US",
+      "subdivision_code": null,
+      "effective_date": "2003-04-14",
+      "sunset_date": null,
+      "source_url": "https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164",
+      "source_type": "html_scrape",
+      "source_xpath_or_selector": "div.section",
+      "last_fetched": null,
+      "version": "1.0.0",
+      "notes": "Applies to Protected Health Information (PHI). Breach notification: if >500 individuals affected, notify HHS immediately (incident_reporting_days=1); otherwise within 60 days of calendar year-end.",
+      "change_log": [],
+      "consent_rules": [
+        {
+          "rule_id": "hipaa-consent-phi-use",
+          "category": "health",
+          "consent_type": "authorization",
+          "description": "Valid authorization required for uses and disclosures of PHI not permitted by the Privacy Rule (\u00a7164.508)",
+          "article_reference": "45 CFR \u00a7164.508"
+        },
+        {
+          "rule_id": "hipaa-consent-exceptions",
+          "category": "health",
+          "consent_type": "none_required",
+          "description": "No authorization required for treatment, payment, or healthcare operations (\u00a7164.506)",
+          "article_reference": "45 CFR \u00a7164.506"
+        }
+      ],
+      "processing_rules": [
+        {
+          "rule_id": "hipaa-processing-minimum-necessary",
+          "principle": "data_minimization",
+          "description": "Uses and disclosures of PHI limited to minimum necessary to accomplish the purpose (\u00a7164.502(b))",
+          "article_reference": "45 CFR \u00a7164.502(b)"
+        },
+        {
+          "rule_id": "hipaa-processing-safeguards",
+          "principle": "security",
+          "description": "Administrative, physical, and technical safeguards required to protect ePHI (Security Rule \u00a7164.300\u2013\u00a7164.318)",
+          "article_reference": "45 CFR \u00a7164.300-318"
+        }
+      ],
+      "transfer_rules": [
+        {
+          "rule_id": "hipaa-transfer-baa",
+          "transfer_type": "business_associate",
+          "condition": "business_associate_agreement_required",
+          "description": "Business Associate Agreement (BAA) required before disclosing PHI to third-party business associates (\u00a7164.504(e))",
+          "article_reference": "45 CFR \u00a7164.504(e)"
+        }
+      ],
+      "retention_policies": {
+        "health": {
+          "max_days": 2190,
+          "description": "PHI \u2014 6 years from date of creation or last effective date (covered entities)"
+        },
+        "special": {
+          "max_days": 3650,
+          "description": "PHI for minors \u2014 retain until minor reaches age of majority plus 3 years, or 10 years minimum"
+        }
+      },
+      "rights_rules": [
+        {
+          "right": "access",
+          "response_days": 30,
+          "description": "Individuals have right to access their PHI (\u00a7164.524); 30-day response, one 30-day extension allowed",
+          "article_reference": "45 CFR \u00a7164.524"
+        },
+        {
+          "right": "amendment",
+          "response_days": 60,
+          "description": "Right to request amendment of PHI (\u00a7164.526); 60-day response, one 30-day extension allowed",
+          "article_reference": "45 CFR \u00a7164.526"
+        },
+        {
+          "right": "accounting_of_disclosures",
+          "response_days": 60,
+          "description": "Right to an accounting of disclosures of PHI (\u00a7164.528); 60-day response",
+          "article_reference": "45 CFR \u00a7164.528"
+        }
+      ],
+      "student_flags": {
+        "data_sharing_allowed": false,
+        "monitoring_allowed": false,
+        "profiling_allowed": false,
+        "targeting_allowed": false
+      },
+      "requires_pia": false,
+      "requires_dpo": false,
+      "incident_reporting_days": 1,
+      "breach_notification_threshold": 1
+    }
+  ],
+  "unknown_regulations": [],
+  "update_log": []
+}

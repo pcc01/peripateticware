@@ -19,7 +19,7 @@ import * as Types from './types'
 // This ensures /api/v1/... hits http://backend:8000/api/v1/... in Docker dev.
 const API_BASE_URL = '/api/v1'
 
-const axiosInstance: AxiosInstance = axios.create({
+export const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
@@ -419,8 +419,8 @@ export const teacherApi = {
     return response.data
   },
 
-  async getSubmissions(): Promise<Types.TeacherSubmission[]> {
-    const response = await axiosInstance.get<Types.TeacherSubmission[]>('/activities/teacher/submissions')
+  async getSubmissions(params?: Types.SubmissionQueryParams): Promise<Types.TeacherSubmission[]> {
+    const response = await axiosInstance.get<Types.TeacherSubmission[]>('/activities/teacher/submissions', { params })
     return response.data
   },
 
@@ -456,8 +456,10 @@ export const studentApi = {
   },
 
   async getActivities(): Promise<Types.Activity[]> {
-    const response = await axiosInstance.get<Types.Activity[]>('/student/activities')
-    return response.data
+    const response = await axiosInstance.get<{ activities?: Types.Activity[] } | Types.Activity[]>('/student/activities')
+    // Backend returns paginated { activities: [...], total, page } — extract the array
+    const data = response.data as any
+    return Array.isArray(data) ? data : (data?.activities ?? [])
   },
 }
 
@@ -630,11 +632,15 @@ export function useTeacher() {
       axiosInstance.put<Types.Activity>(`/teacher/activities/${id}`, data).then((r) => r.data),
     deleteActivity: (id: string) =>
       axiosInstance.delete(`/teacher/activities/${id}`).then(() => undefined),
-    getSubmissions: (_params?: Types.SubmissionQueryParams) => teacherApi.getSubmissions(),
+    getSubmissions: (params?: Types.SubmissionQueryParams) => teacherApi.getSubmissions(params),
     approveSubmission: (id: string, data?: { feedback?: string; score?: number }) =>
       axiosInstance.post(`/teacher/submissions/${id}/approve`, data ?? {}).then((r) => r.data),
-    rejectSubmission: (id: string, reason: string) =>
-      axiosInstance.post(`/teacher/submissions/${id}/reject`, { reason }).then((r) => r.data),
+    rejectSubmission: (id: string, feedback: string) =>
+      axiosInstance.post(`/teacher/submissions/${id}/reject`, { feedback }).then((r) => r.data),
+    getSubmissionDetail: (sessionId: string) =>
+      axiosInstance.get<Types.SubmissionDetail>(`/activities/teacher/submissions/${sessionId}/detail`).then((r) => r.data),
+    reviewFieldPhase: (sessionId: string, data: { feedback: string; approve?: boolean; reject?: boolean }) =>
+      axiosInstance.post(`/activities/teacher/submissions/${sessionId}/review-field`, data).then((r) => r.data),
   }
 }
 
@@ -644,11 +650,51 @@ export function useStudent() {
     getActivities: () => studentApi.getActivities(),
     getActivityDetail: (id: string) =>
       axiosInstance.get<Types.Activity>(`/student/activities/${id}`).then((r) => r.data),
+
+    // Start or resume a session for an activity
+    startSession: (activityId: string, opts?: { latitude?: number; longitude?: number; locationName?: string }) =>
+      axiosInstance.post<{ session_id: string; activity_id: string; status: string; started_at: string }>(
+        `/student/activities/${activityId}/start`,
+        { location_latitude: opts?.latitude, location_longitude: opts?.longitude, location_name: opts?.locationName }
+      ).then((r) => r.data),
+
+    // Upload evidence to a session (multipart/form-data)
+    addEvidence: (sessionId: string, formData: FormData) =>
+      axiosInstance.post(`/student/sessions/${sessionId}/evidence`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }).then((r) => r.data),
+
+    // Add a text reflection to a session
+    addReflection: (sessionId: string, data: { reflection_type?: string; title?: string; content: string; learning_objectives?: string[]; competencies?: string[] }) =>
+      axiosInstance.post(`/student/sessions/${sessionId}/reflection`, data).then((r) => r.data),
+
+    // List evidence for a session
+    getSessionEvidence: (sessionId: string) =>
+      axiosInstance.get<{ captures: Types.EvidenceCapture[]; total: number }>(`/student/sessions/${sessionId}/evidence`).then((r) => r.data),
+
+    // Get session progress snapshot
+    getSessionProgress: (sessionId: string) =>
+      axiosInstance.get(`/student/sessions/${sessionId}/progress`).then((r) => r.data),
+
+    // Submit a completed activity (field_only mode)
+    submitActivity: (activityId: string, sessionId: string) =>
+      axiosInstance.post(`/student/activities/${activityId}/submit`, { session_id: sessionId }).then((r) => r.data),
+
+    // Complete the field phase (for field_and_reflection mode)
+    completeFieldPhase: (sessionId: string) =>
+      axiosInstance.post(`/student/sessions/${sessionId}/complete-field`).then((r) => r.data),
+
+    getProgress: () => studentApi.getProgress(),
+    getPendingReflections: () =>
+      axiosInstance.get<Types.PendingReflectionItem[]>('/student/pending-reflection').then((r) => r.data),
+    saveReflection: (submissionId: string, data: { reflection_content: Record<string, any>; linked_field_note_id?: string; submit?: boolean }) =>
+      axiosInstance.post(`/student/submissions/${submissionId}/save-reflection`, data).then((r) => r.data),
+
+    // Legacy — kept for backward compat
     submitEvidence: (activityId: string, data: FormData | Record<string, any>) =>
       axiosInstance.post(`/student/activities/${activityId}/evidence`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       }).then((r) => r.data),
-    getProgress: () => studentApi.getProgress(),
   }
 }
 

@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface Child { id: string; full_name: string; email: string; grade_level: number; }
 interface Progress { child_id: string; child_name: string; total_sessions: number; completed_sessions: number; overall_progress: number; }
@@ -11,6 +12,7 @@ function authHeader() {
 }
 
 export const HomeschoolProgressPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [children, setChildren] = useState<Child[]>([]);
@@ -35,12 +37,12 @@ export const HomeschoolProgressPage: React.FC = () => {
       .then(setProgress);
   }, [selected]);
 
-  if (loading) return <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Loading…</p>;
+  if (loading) return <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{t('pages_homeschool_homeschoolprogresspage.loading', 'Loading…')}</p>;
 
   if (children.length === 0) return (
     <div style={{ fontFamily: 'var(--font-body)', textAlign: 'center', padding: '48px 0' }}>
       <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📊</div>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>Add children first to track their progress.</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('pages_homeschool_homeschoolprogresspage.add_children_first_to_track_their_progre', 'Add children first to track their progress.')}</p>
       <button onClick={() => navigate('/homeschool/children')}
         style={{ padding: '10px 24px', borderRadius: 8, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
         Add Children
@@ -50,7 +52,7 @@ export const HomeschoolProgressPage: React.FC = () => {
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>
-      <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 24 }}>Progress</h1>
+      <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 24 }}>{t('pages_homeschool_homeschoolprogresspage.progress', 'Progress')}</h1>
 
       {/* Child selector */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 28, flexWrap: 'wrap' }}>

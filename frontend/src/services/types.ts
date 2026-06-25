@@ -25,9 +25,15 @@ export interface LoginResponse {
 export interface User {
   id: string
   email: string
-  username: string
-  full_name: string
-  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN'
+  username?: string
+  full_name?: string
+  first_name?: string
+  last_name?: string
+  name?: string
+  role: 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
+  created_at?: string
+  updated_at?: string
+  is_active?: boolean
 }
 
 /* ============================================================================ */
@@ -55,24 +61,34 @@ export interface Activity {
   title: string
   description: string
   subject: string
+  grade_level?: string
   location: string
-  status: 'active' | 'completed' | 'pending'
+  status: 'active' | 'completed' | 'pending' | 'draft'
   due_date: string
   created_at: string
   updated_at: string
-  student_count: number
-  submissions_count: number
-  progress: number
-  phases: {
+  teacher_id?: string
+  student_count?: number
+  submissions_count?: number
+  progress?: number
+  completion_rate?: number
+  phases?: {
     orient: PhaseStatus
     inquiry: PhaseStatus
     reflect: PhaseStatus
   }
+  rubric_ids?: string[]
+  curriculum_links?: string[]
+  standards?: string[]
+  teacher?: { id: string; name?: string; email?: string }
 }
 
 export interface PhaseStatus {
   status: 'completed' | 'in_progress' | 'pending'
-  due_date: string
+  due_date?: string
+  title?: string
+  instructions?: string
+  description?: string
 }
 
 export interface CreateActivityRequest {
@@ -137,6 +153,79 @@ export interface Evidence {
 export interface ApproveSubmissionRequest {
   feedback: string
   score: number
+}
+
+// ── Completion mode ────────────────────────────────────────────────────────────
+
+export type CompletionMode = 'field_only' | 'field_and_reflection'
+
+export type FieldPhaseStatus =
+  | 'not_applicable' | 'in_progress' | 'submitted'
+  | 'reviewed' | 'approved' | 'rejected'
+
+export type ReflectionStatus =
+  | 'not_applicable' | 'not_started' | 'in_progress' | 'submitted'
+
+export type CompletionPhase = 'field_work' | 'reflection' | 'complete'
+
+/** Full submission detail including both phases */
+export interface SubmissionDetail {
+  session_id:               string
+  student_id:               string
+  student_name:             string
+  activity_id:              string
+  activity_title:           string
+  completion_mode:          CompletionMode
+  require_field_approval:   boolean
+  submission_id:            string | null
+  submission_status:        string
+  completion_phase:         CompletionPhase
+  field_phase_status:       FieldPhaseStatus
+  field_phase_feedback:     string | null
+  field_phase_reviewed_at:  string | null
+  reflection_status:        ReflectionStatus
+  reflection_content:       Record<string, any> | null
+  linked_field_note_id:     string | null
+  teacher_feedback:         string | null
+  grade:                    number | null
+  evidence:                 Evidence[]
+  started_at:               string | null
+  completed_at:             string | null
+}
+
+/** Evidence capture submitted by a student during a session */
+export interface EvidenceCapture {
+  id:                  string
+  session_id:          string
+  student_id:          string
+  activity_id:         string
+  capture_type:        'photo' | 'video' | 'audio' | 'text' | 'sketch' | 'measurement'
+  title:               string | null
+  description:         string | null
+  file_url:            string | null
+  duration_seconds:    number | null
+  transcription:       string | null
+  learning_objectives: string[]
+  competencies:        string[]
+  created_at:          string
+}
+
+/** Item in student's "Pending Reflection" queue */
+export interface PendingReflectionItem {
+  submission_id:          string
+  session_id:             string
+  activity_id:            string
+  activity_title:         string
+  subject:                string
+  grade_level:            number
+  completion_phase:       CompletionPhase
+  field_phase_status:     FieldPhaseStatus
+  field_phase_feedback:   string | null
+  reflection_status:      ReflectionStatus
+  linked_field_note_id:   string | null
+  started_at:             string | null
+  can_reflect:            boolean
+  awaiting_approval:      boolean
 }
 
 export interface TeacherStudent {
@@ -486,3 +575,37 @@ export interface LogQueryParams extends PaginationParams {
   start_date?: string
   end_date?: string
 }
+
+
+// Re-exports from types/index.ts for API layer compatibility
+export type {
+  ActivityFilters,
+  AdminDashboardData,
+  CurriculumFilters,
+  CurriculumStandard,
+  CurriculumUnit,
+  EvidenceFilters,
+  EvidenceFormData,
+  LinkedChild,
+  PaginatedCurriculumResponse,
+  PaginatedEvidenceResponse,
+  PaginatedProjectResponse,
+  PaginatedSessionResponse,
+  ParentDashboardData,
+  Project,
+  ProjectFilters,
+  ProjectFormData,
+  Rubric,
+  RubricScore,
+  Session,
+  SessionFilters,
+  SessionFormData,
+  SignupRequest,
+  StudentDashboardData,
+  SystemAnalytics,
+  TeacherClass,
+  TeacherDashboardData,
+  TeacherSubmission,
+  UpdateActivityRequest,
+} from '../types/index'
+export interface PaginatedActivityResponse extends PaginatedResponse<Activity> {}

@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -245,7 +245,10 @@ class HaystackRAGPipeline:
         curriculum = reasoning_context.get("curriculum", {})
         persona = reasoning_context.get("persona", {})
         
-        prompt = f"""You are an expert Socratic tutor using the following approach:
+        prompt = f"""You are Peri, a learning guide whose purpose is to help students reach real knowledge through inquiry and analysis — not to supply answers, and not to ask unanswerable questions.
+
+Your method: observation → classification → analysis of causes → explanation → application.
+Every response should move the student one step closer to being able to explain the *why*, not just name the *what*.
 
 LEARNING CONTEXT:
 - Location: {site.get('location_name', 'General')}
@@ -262,13 +265,14 @@ STUDENT INQUIRY:
 {query}
 
 INSTRUCTIONS:
-1. Acknowledge the student's inquiry
-2. Ask a guiding question that helps them discover the answer themselves
-3. Reference the curriculum materials if relevant
-4. Adapt to their learning style (visual: use examples; auditory: explain; kinesthetic: suggest action)
-5. Challenge them at the appropriate Bloom level
+1. Acknowledge what is correct or interesting in the student's response
+2. Ask one specific, answerable question that advances their analysis (not a philosophical question — something they can observe, measure, or reason from evidence)
+3. If their answer is vague, ask for a concrete example or measurement
+4. If their answer is correct, ask what it implies or where else it applies
+5. Never give the answer — redirect toward evidence and reasoning
+6. Adapt to their learning style (visual: ask them to sketch or describe; kinesthetic: suggest an action; auditory: ask them to explain aloud)
 
-Provide a single, focused Socratic response (2-3 sentences):"""
+Provide a single, focused response (2-3 sentences):"""
         
         return prompt
 
@@ -318,7 +322,7 @@ class RAGOrchestrator:
             }
             
             # Step 2: Generate response with context
-            socratic_response = await self.rag_pipeline.generate_response(
+            aristotelian_response = await self.rag_pipeline.generate_response(
                 query_text,
                 retrieved_docs,
                 reasoning_context
@@ -329,7 +333,7 @@ class RAGOrchestrator:
                 "session_id": session_id,
                 "triple_join": reasoning_context,
                 "retrieved_documents": retrieved_docs[:3],
-                "socratic_prompt": socratic_response,
+                "aristotelian_prompt": aristotelian_response,
                 "recommended_resources": [
                     doc.get("id") for doc in retrieved_docs[:3]
                 ],

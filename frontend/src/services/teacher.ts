@@ -62,7 +62,7 @@ export const activityApi = {
       status: filters.status,
       subject: filters.subject,
       grade_level: filters.grade_level,
-      difficulty: filters.difficulty,
+      difficulty: (filters as any).difficulty,
       page: filters.page,
       page_size: filters.page_size,
     });

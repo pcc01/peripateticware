@@ -27,19 +27,36 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     
-    # LLM Provider Selection
-    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")  # "ollama" or "claude"
-    
-    # Ollama inference (for backwards compatibility)
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL_TEXT: str = "llama2"
-    OLLAMA_MODEL_VISION: str = "llava"
-    OLLAMA_MODEL_AUDIO: str = "whisper"
-    
-    # Claude inference
-    CLAUDE_API_KEY: str = os.getenv("CLAUDE_API_KEY", "")
-    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
-    CLAUDE_MAX_TOKENS: int = int(os.getenv("CLAUDE_MAX_TOKENS", "2048"))
+    # ── LLM Provider Selection (legacy — per-task routing now via ai_task_config table) ──
+    LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")
+
+    # ── Ollama ────────────────────────────────────────────────────────────────
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+    OLLAMA_MODEL_TEXT: str = os.getenv("OLLAMA_MODEL_TEXT", "llama3.2")
+    OLLAMA_MODEL_VISION: str = os.getenv("OLLAMA_MODEL_VISION", "llava")
+    OLLAMA_MODEL_AUDIO: str = os.getenv("OLLAMA_MODEL_AUDIO", "karanchopda333/whisper:latest")
+
+    # ── Anthropic (Claude Haiku) ──────────────────────────────────────────────
+    # Key can be set in .env OR via Admin UI (stored encrypted in DB — DB takes precedence).
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    CLAUDE_API_KEY: str = os.getenv("CLAUDE_API_KEY", "")          # legacy alias
+    ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")  # legacy alias
+    CLAUDE_MAX_TOKENS: int = int(os.getenv("CLAUDE_MAX_TOKENS", "1024"))
+
+    # ── AI Batch Processing ───────────────────────────────────────────────────
+    AI_BATCH_CRON: str = os.getenv("AI_BATCH_CRON", "0 1 * * *")   # default: 1 AM UTC
+
+    # ── Per-task AI provider defaults (seed values for ai_task_config table) ──
+    # Override via Admin UI at runtime — these only apply on first boot.
+    # Valid values: ollama | anthropic_instant | anthropic_batch (batch: submission_assessment only)
+    AI_DEFAULT_ACTIVITY_SUGGESTIONS:  str = os.getenv("AI_DEFAULT_ACTIVITY_SUGGESTIONS",  "ollama")
+    AI_DEFAULT_STANDARDS_MAPPING:     str = os.getenv("AI_DEFAULT_STANDARDS_MAPPING",     "ollama")
+    AI_DEFAULT_RUBRIC_MAPPING:        str = os.getenv("AI_DEFAULT_RUBRIC_MAPPING",        "ollama")
+    AI_DEFAULT_TAXONOMY_MAPPING:      str = os.getenv("AI_DEFAULT_TAXONOMY_MAPPING",      "ollama")
+    AI_DEFAULT_SUBMISSION_ASSESSMENT: str = os.getenv("AI_DEFAULT_SUBMISSION_ASSESSMENT", "ollama")
     
     # API Configuration
     API_PORT: int = 8010
@@ -109,15 +126,66 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
     SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
     EMAIL_FROM: str = os.getenv("EMAIL_FROM", "noreply@peripateticware.com")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")  # platform admin alert recipient; falls back to EMAIL_FROM if empty
     EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "Peripateticware")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     # Set EMAIL_DRY_RUN=false in production to send real emails
     EMAIL_DRY_RUN: bool = os.getenv("EMAIL_DRY_RUN", "true").lower() == "true"
 
+    # ── Platform Admin Security ──────────────────────────────────────────────────
+    # Static secret required in X-Platform-Secret header on all /platform/* routes.
+    # Separate from JWT auth — provides a second factor that never goes through the
+    # user auth flow.  Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    # Leave blank in development to skip the check.
+    PLATFORM_API_SECRET: str = os.getenv("PLATFORM_API_SECRET", "")
+
+    # ── Paddle Billing ───────────────────────────────────────────────────────────
+    # Get these from your Paddle dashboard → Developer Tools → Authentication
+    PADDLE_API_KEY:         str = os.getenv("PADDLE_API_KEY", "")
+    PADDLE_WEBHOOK_SECRET:  str = os.getenv("PADDLE_WEBHOOK_SECRET", "")
+    # Comma-separated price_id:tier mappings, e.g.:
+    # "pri_starter:starter,pri_school:school,pri_district:district"
+    PADDLE_PRICE_MAP_STR:   str = os.getenv("PADDLE_PRICE_MAP", "")
+    # Paddle environment: "sandbox" or "production"
+    PADDLE_ENV:             str = os.getenv("PADDLE_ENV", "sandbox")
+
+    @property
+    def PADDLE_PRICE_MAP(self) -> dict:
+        """Return dict mapping Paddle price_id → internal license_tier."""
+        result = {}
+        for pair in self.PADDLE_PRICE_MAP_STR.split(","):
+            pair = pair.strip()
+            if ":" in pair:
+                price_id, tier = pair.split(":", 1)
+                result[price_id.strip()] = tier.strip()
+        return result
+
+    @property
+    def PADDLE_API_URL(self) -> str:
+        base = "sandbox-api" if self.PADDLE_ENV == "sandbox" else "api"
+        return f"https://{base}.paddle.com"
+
     # ── Phase 7: Student-Initiated Activities ─────────────────────────────────
     FIELD_NOTES_ENABLED: bool = os.getenv("FIELD_NOTES_ENABLED", "true").lower() == "true"
     PEER_PROJECTS_ENABLED: bool = os.getenv("PEER_PROJECTS_ENABLED", "true").lower() == "true"
     DEFAULT_PEER_PROJECT_APPROVAL_MODE: str = os.getenv("DEFAULT_PEER_PROJECT_APPROVAL_MODE", "teacher_gate")
+
+    # ── Agent Layer ───────────────────────────────────────────────────────────
+    # Per-agent provider overrides. Blank = inherit LLM_PROVIDER. "ollama" | "claude".
+    AGENT_STANDARDS_INGESTION_PROVIDER: str = os.getenv("AGENT_STANDARDS_INGESTION_PROVIDER", "")
+    AGENT_STANDARDS_MAPPING_PROVIDER: str = os.getenv("AGENT_STANDARDS_MAPPING_PROVIDER", "")
+    AGENT_RUBRIC_SCORING_PROVIDER: str = os.getenv("AGENT_RUBRIC_SCORING_PROVIDER", "")
+    AGENT_ACTIVITY_REVIEW_PROVIDER: str = os.getenv("AGENT_ACTIVITY_REVIEW_PROVIDER", "")
+    AGENT_COMPLIANCE_PROVIDER: str = os.getenv("AGENT_COMPLIANCE_PROVIDER", "claude")
+
+    # Per-agent model overrides (blank = use provider default)
+    AGENT_OLLAMA_MODEL: str = os.getenv("AGENT_OLLAMA_MODEL", "")
+    AGENT_CLAUDE_MODEL: str = os.getenv("AGENT_CLAUDE_MODEL", "")
+
+    # Agent run safety limits
+    AGENT_MAX_RETRIES: int = int(os.getenv("AGENT_MAX_RETRIES", "2"))
+    AGENT_TIMEOUT_SECONDS: int = int(os.getenv("AGENT_TIMEOUT_SECONDS", "120"))
+    AGENT_AUDIT_ENABLED: bool = os.getenv("AGENT_AUDIT_ENABLED", "true").lower() == "true"
 
     @property
     def LOCATION_BACKENDS(self) -> list:
@@ -144,3 +212,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+Settings()

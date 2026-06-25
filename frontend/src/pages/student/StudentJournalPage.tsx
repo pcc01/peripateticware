@@ -20,6 +20,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fieldNoteApi } from '../../services/phase7Api'
 import type { FieldNoteListItem } from '../../types/phase7'
+import { useTranslation } from 'react-i18next';
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
   draft:                 { bg: '#f1f5f9', text: '#64748b',  label: 'Draft' },
@@ -48,6 +49,7 @@ function groupByMonth(notes: FieldNoteListItem[]): [string, FieldNoteListItem[]]
 }
 
 const StudentJournalPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const navigate  = useNavigate()
   const [notes, setNotes]     = useState<FieldNoteListItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -72,10 +74,10 @@ const StudentJournalPage: React.FC = () => {
 
   const filtered = filter === 'all'
     ? notes
-    : notes.filter(n => n.status === filter || (filter === 'complete' && n.status === 'complete'))
+    : notes.filter(n => (n.status as string) === filter || (filter === 'complete' && (n.status as string) === 'completed'))
 
   const groups = groupByMonth(filtered)
-  const totalComplete = notes.filter(n => n.status === 'complete').length
+  const totalComplete = notes.filter(n => (n.status as string) === 'completed').length
 
   if (loading) return (
     <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</div>
@@ -87,7 +89,7 @@ const StudentJournalPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>My Journal</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{t('pages_student_studentjournalpage.my_journal', 'My Journal')}</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
             {notes.length} {notes.length === 1 ? 'entry' : 'entries'} · {totalComplete} complete
           </p>
@@ -118,7 +120,7 @@ const StudentJournalPage: React.FC = () => {
               border: `1px solid ${filter === f ? 'var(--primary)' : 'var(--border)'}`,
             }}
           >
-            {f === 'all' ? `All (${notes.length})` : f === 'complete' ? `Complete (${notes.filter(n=>n.status==='complete').length})` : `Draft (${notes.filter(n=>n.status==='draft').length})`}
+            {f === 'all' ? `All (${notes.length})` : f === 'complete' ? `Complete (${notes.filter(n=>(n.status as string)==='complete').length})` : `Draft (${notes.filter(n=>(n.status as string)==='draft').length})`}
           </button>
         ))}
       </div>

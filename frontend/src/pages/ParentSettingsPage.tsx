@@ -2,10 +2,13 @@ import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
+import { LocaleSwitcher } from '@/components/LocaleSwitcher';
+import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import styles from './SettingsPages.module.css';
 
 export const ParentSettingsPage = () => {
   const { t } = useTranslation('landing');
+  const { skin, setSkin, skins } = useSkin();
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
@@ -75,15 +78,12 @@ export const ParentSettingsPage = () => {
         <section className={styles.section}>
           <h2>{t("landing:appearance", "Appearance")}</h2>
           <div className={styles.settingGroup}>
-            <label>{t("landing:color_scheme", "Color Scheme")}</label>
+            <label>{t("landing:color_scheme", "Theme")}</label>
             <select
-              value={settings.colorScheme}
-              onChange={(e) => handleChange('colorScheme', e.target.value)}
+              value={skin}
+              onChange={(e) => setSkin(e.target.value as Skin)}
               className={styles.select}>
-              
-              <option value="field-guide">{t("landing:field_guide_green", "Field Guide (Green)")}</option>
-              <option value="terrain">{t("landing:terrain_orange", "Terrain (Orange)")}</option>
-              <option value="atmosphere">{t("landing:atmosphere_dark", "Atmosphere (Dark)")}</option>
+              {skins.map(s => <option key={s} value={s}>{SKIN_LABELS[s]}</option>)}
             </select>
           </div>
 
@@ -157,17 +157,7 @@ export const ParentSettingsPage = () => {
           <h2>{t("landing:general_preferences", "General Preferences")}</h2>
           <div className={styles.settingGroup}>
             <label>{t("landing:language", "Language")}</label>
-            <select
-              value={settings.language}
-              onChange={(e) => handleChange('language', e.target.value)}
-              className={styles.select}>
-              
-              <option value="en">{t("landing:english", "English")}</option>
-              <option value="es">{t("landing:espaol", "Espa\xF1ol")}</option>
-              <option value="fr">{t("landing:franais", "Fran\xE7ais")}</option>
-              <option value="ja">日本語</option>
-              <option value="ar">العربية</option>
-            </select>
+            <LocaleSwitcher className={styles.select} />
           </div>
 
           <div className={styles.settingGroup}>
@@ -206,12 +196,7 @@ export const ParentSettingsPage = () => {
           </div>
         </section>
 
-        <section className={styles.section} style={{ borderColor: '#dc2626' }}>
-          <h2 style={{ color: '#dc2626' }}>{t("landing:danger_zone", "Danger Zone")}</h2>
-          <button onClick={handleLogout} className={styles.dangerBtn}>{t("landing:parentsettingspage.logout", "\uD83D\uDEAA Logout")}
-
-          </button>
-        </section>
+        {/* Logout removed \u2014 available in the sidebar (DashboardShell). */}
 
         {saveStatus &&
         <div className={styles.statusMessage}>

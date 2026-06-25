@@ -48,6 +48,39 @@ END $$;
 -- Role stored as VARCHAR with uppercase CHECK constraint.
 -- Backend UserRole enum uses UPPERCASE values to match.
 -- ---------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------
+-- organizations (must come before users so FK can reference it)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS organizations (
+    id                    UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    slug                  VARCHAR(100) NOT NULL UNIQUE,
+    name                  VARCHAR(255) NOT NULL,
+    type                  VARCHAR(50)  NOT NULL DEFAULT 'school',
+                              -- 'school' | 'district' | 'homeschool_family' | 'homeschool_coop'
+    license_key           TEXT,
+    license_tier          VARCHAR(30)  NOT NULL DEFAULT 'free',
+    license_status        VARCHAR(20)  NOT NULL DEFAULT 'active',
+    license_valid_until   TIMESTAMP,
+    trial_started_at      TIMESTAMP,
+    max_teachers                INTEGER NOT NULL DEFAULT 3,
+    max_classrooms              INTEGER NOT NULL DEFAULT 1,
+    max_students                INTEGER NOT NULL DEFAULT 30,  -- org-wide total
+    max_students_per_classroom  INTEGER NOT NULL DEFAULT 30,  -- per-classroom cap
+    -- Tier defaults:
+    --   free:     1 classroom, 30/class (30 total)
+    --   starter:  3 classrooms, 35/class (300 total)
+    --   school:  15 classrooms, 40/class (1500 total)
+    --   district: 60 classrooms, 40/class (unlimited total)
+    ollama_base_url       TEXT,
+    anthropic_api_key_enc TEXT,
+    paddle_customer_id    VARCHAR(128),
+    paddle_subscription_id VARCHAR(128),
+    contact_email         VARCHAR(255),
+    created_at            TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_organizations_slug ON organizations(slug);
+
 CREATE TABLE IF NOT EXISTS users (
     id              UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
     email           VARCHAR(255) NOT NULL UNIQUE,
@@ -57,11 +90,14 @@ CREATE TABLE IF NOT EXISTS users (
     full_name       VARCHAR(255),
     hashed_password VARCHAR(255) NOT NULL,
     role            VARCHAR(50)  NOT NULL DEFAULT 'STUDENT'
-                        CHECK (role IN ('STUDENT', 'TEACHER', 'PARENT', 'ADMIN')),
+                        CHECK (role IN ('STUDENT', 'TEACHER', 'PARENT', 'ADMIN', 'HOMESCHOOL')),
     avatar_url      VARCHAR(512),
     is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
     age_group       VARCHAR(20)  NULL,
     requires_parental_consent BOOLEAN NOT NULL DEFAULT FALSE,
+    -- Multi-tenancy
+    org_id          UUID         REFERENCES organizations(id) ON DELETE SET NULL,
+    invite_token_used VARCHAR(128),
     created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP    NOT NULL DEFAULT NOW()
 );
@@ -69,6 +105,69 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_users_email    ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_role     ON users(role);
+CREATE INDEX IF NOT EXISTS ix_users_org_id    ON users(org_id);
+
+-- ---------------------------------------------------------------------------
+-- organization_members
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS organization_members (
+    id        UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    org_id    UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id   UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role      VARCHAR(30)  NOT NULL DEFAULT 'member',
+                               -- 'owner' | 'admin' | 'member'
+    joined_at TIMESTAMP    NOT NULL DEFAULT NOW(),
+    UNIQUE(org_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS ix_org_members_org  ON organization_members(org_id);
+CREATE INDEX IF NOT EXISTS ix_org_members_user ON organization_members(user_id);
+
+-- ---------------------------------------------------------------------------
+-- classrooms
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS classrooms (
+    id          UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    org_id      UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    teacher_id  UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        VARCHAR(255) NOT NULL,
+    grade_level INTEGER,
+    subject     VARCHAR(100),
+    is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_classrooms_org     ON classrooms(org_id);
+CREATE INDEX IF NOT EXISTS ix_classrooms_teacher ON classrooms(teacher_id);
+
+-- ---------------------------------------------------------------------------
+-- classroom_students
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS classroom_students (
+    classroom_id UUID NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+    student_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    enrolled_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (classroom_id, student_id)
+);
+
+-- ---------------------------------------------------------------------------
+-- classroom_invitations
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS classroom_invitations (
+    id           UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    classroom_id UUID         NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+    org_id       UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    created_by   UUID         REFERENCES users(id) ON DELETE SET NULL,
+    email        VARCHAR(255),            -- null = open link (anyone with the token can join)
+    token        VARCHAR(128) NOT NULL UNIQUE,
+    status       VARCHAR(20)  NOT NULL DEFAULT 'pending',
+                                 -- 'pending' | 'accepted' | 'expired' | 'revoked'
+    expires_at   TIMESTAMP    NOT NULL,
+    accepted_by  UUID         REFERENCES users(id) ON DELETE SET NULL,
+    accepted_at  TIMESTAMP,
+    created_at   TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_classroom_invitations_token     ON classroom_invitations(token);
+CREATE INDEX IF NOT EXISTS ix_classroom_invitations_classroom ON classroom_invitations(classroom_id);
+CREATE INDEX IF NOT EXISTS ix_classroom_invitations_email     ON classroom_invitations(email);
 
 -- ---------------------------------------------------------------------------
 -- 2. student_profiles
@@ -165,7 +264,16 @@ CREATE TABLE IF NOT EXISTS activities (
     due_date                   TIMESTAMP,
     -- Student-proposed activity metadata
     is_student_proposed        BOOLEAN      NOT NULL DEFAULT FALSE,
-    proposed_by_student_id     UUID         REFERENCES users(id) ON DELETE SET NULL
+    proposed_by_student_id     UUID         REFERENCES users(id) ON DELETE SET NULL,
+    -- Completion mode
+    -- 'field_only'          — activity is complete when field work is done
+    -- 'field_and_reflection' — requires extended writing/reflection after field work
+    completion_mode            VARCHAR(20)  NOT NULL DEFAULT 'field_only'
+                                   CHECK (completion_mode IN ('field_only','field_and_reflection')),
+    -- When TRUE and completion_mode = 'field_and_reflection', teacher must explicitly
+    -- approve field work before student can begin reflection phase.
+    -- Default FALSE: student can start reflection immediately after field work.
+    require_field_approval     BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);
@@ -402,30 +510,187 @@ CREATE TABLE IF NOT EXISTS activity_submissions (
     submitted_at      TIMESTAMP,
     graded_at         TIMESTAMP,
     created_at        TIMESTAMP   NOT NULL DEFAULT NOW(),
-    updated_at        TIMESTAMP   NOT NULL DEFAULT NOW()
+    updated_at        TIMESTAMP   NOT NULL DEFAULT NOW(),
+
+    -- ── Completion mode tracking ───────────────────────────────────────────
+    -- completion_phase: which phase is this submission currently in
+    --   'field_work'  — student doing/done field work, not yet reflecting
+    --   'reflection'  — field work complete, student writing reflection
+    --   'complete'    — all phases done / field_only activity
+    completion_phase       VARCHAR(20) NOT NULL DEFAULT 'complete',
+
+    -- field_phase_status: mirrors review flow but for the field work phase only
+    --   'not_applicable' — field_only activity
+    --   'in_progress'    — student doing field work
+    --   'submitted'      — field work done; awaiting teacher review (gated) or ready for reflection
+    --   'reviewed'       — teacher left comments, student can proceed (ungated)
+    --   'approved'       — teacher explicitly unlocked reflection (gated)
+    --   'rejected'       — teacher sent back for more field work
+    field_phase_status     VARCHAR(30) NOT NULL DEFAULT 'not_applicable',
+    field_phase_feedback   TEXT,
+    field_phase_reviewed_at TIMESTAMP,
+
+    -- reflection_status: tracks the reflection phase
+    --   'not_applicable' — field_only activity
+    --   'not_started'    — field work done, reflection not begun
+    --   'in_progress'    — student is writing
+    --   'submitted'      — submitted for final teacher review
+    reflection_status      VARCHAR(20) NOT NULL DEFAULT 'not_applicable',
+    reflection_content     JSONB,
+    linked_field_note_id   UUID        -- FK added below after student_field_notes is created
 );
 
 CREATE INDEX IF NOT EXISTS idx_activity_submissions_student_id  ON activity_submissions(student_id);
 CREATE INDEX IF NOT EXISTS idx_activity_submissions_activity_id ON activity_submissions(activity_id);
 CREATE INDEX IF NOT EXISTS idx_activity_submissions_status      ON activity_submissions(submission_status);
 
--- ---------------------------------------------------------------------------
--- Demo seed data
--- Password for all users: SecurePassword123
--- Hash: $2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls. (verified bcrypt)
--- ---------------------------------------------------------------------------
-INSERT INTO users (email, username, first_name, last_name, full_name, hashed_password, role, is_active)
-VALUES
-    ('student@example.com',    'student',    'Alex',     'Johnson', 'Alex Johnson',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE),
-    ('teacher@example.com',    'teacher',    'Jane',     'Smith',   'Jane Smith',            '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'TEACHER',    TRUE),
-    ('parent@example.com',     'parent',     'Margaret', 'Brown',   'Margaret Brown',        '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'PARENT',     TRUE),
-    ('admin@example.com',      'admin',      'Paul',     'Admin',   'Paul Christopher Cerda','$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'ADMIN',      TRUE),
-    ('homeschool@example.com', 'homeschool', 'Sarah',    'Rivera',  'Sarah Rivera',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'HOMESCHOOL', TRUE),
-    ('child1@example.com',     'emma_r',     'Emma',     'Rivera',  'Emma Rivera',           '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE),
-    ('child2@example.com',     'lucas_r',    'Lucas',    'Rivera',  'Lucas Rivera',          '$2b$12$5TniPxM.qx2B6jRaywxNv.Z4C/XFkj9H4RKkhwH53N5rFVRg.Gls.', 'STUDENT',    TRUE)
-ON CONFLICT (email) DO NOTHING;
+-- ===========================================================================
+-- Seed data — org-aware structure
+-- Password for all users: SecurePass123!
+-- Hash: $2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG
+--
+-- ORG 1: Springfield Academy (school)
+--   admin@example.com  — org owner / platform admin
+--   teacher@example.com — teacher, classroom "Science Grade 5"
+--   student@example.com + student2-5@example.com — enrolled students
+--   parent@example.com  — parent linked to student@example.com
+--
+-- ORG 2: Rivera Family (homeschool)
+--   homeschool@example.com — parent / org owner
+--   child1@example.com (Emma, gr 4) — student
+--   child2@example.com (Lucas, gr 7) — student
+--
+-- NOTE: Drop any non-example.com users before re-seeding.
+-- ===========================================================================
 
--- Link homeschool children to their parent
+-- Remove any real (non-test) users left over from development testing.
+-- ON CONFLICT below means example.com users that already exist are kept.
+DELETE FROM users WHERE email NOT LIKE '%@example.com';
+
+-- ── Org 1: Springfield Academy ─────────────────────────────────────────────
+INSERT INTO organizations (id, slug, name, type, license_tier, license_status,
+                           max_teachers, max_classrooms, max_students,
+                           max_students_per_classroom, contact_email)
+VALUES (
+    'a0000000-0000-0000-0000-000000000001',
+    'springfield-academy',
+    'Springfield Academy',
+    'school',
+    'starter',      -- test org gets starter so all features work in dev
+    'active',
+    15, 10, 300, 35,
+    'admin@example.com'
+) ON CONFLICT (slug) DO NOTHING;
+
+-- ── Org 2: Rivera Family Homeschool ────────────────────────────────────────
+INSERT INTO organizations (id, slug, name, type, license_tier, license_status,
+                           max_teachers, max_classrooms, max_students, contact_email)
+VALUES (
+    'b0000000-0000-0000-0000-000000000002',
+    'rivera-family',
+    'Rivera Family',
+    'homeschool_family',
+    'homeschool_family',
+    'active',
+    1, 1, 4,
+    'homeschool@example.com'
+) ON CONFLICT (slug) DO NOTHING;
+
+-- ── Users (org-aware) ──────────────────────────────────────────────────────
+INSERT INTO users (email, username, first_name, last_name, full_name,
+                   hashed_password, role, is_active, org_id)
+VALUES
+    -- Springfield Academy
+    ('admin@example.com',    'admin',    'Paul',   'Admin',   'Paul Christopher Cerda',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'ADMIN',   TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('teacher@example.com',  'teacher',  'Jane',   'Smith',   'Jane Smith',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'TEACHER', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('student@example.com',  'student',  'Alex',   'Johnson', 'Alex Johnson',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('student2@example.com', 'student2', 'Maria',  'Garcia',  'Maria Garcia',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('student3@example.com', 'student3', 'James',  'Wilson',  'James Wilson',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('student4@example.com', 'student4', 'Sofia',  'Martinez','Sofia Martinez',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('student5@example.com', 'student5', 'Noah',   'Brown',   'Noah Brown',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    ('parent@example.com',   'parent',   'Margaret','Brown',  'Margaret Brown',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'PARENT',  TRUE, 'a0000000-0000-0000-0000-000000000001'),
+
+    -- Rivera Family Homeschool
+    ('homeschool@example.com','homeschool','Sarah', 'Rivera',  'Sarah Rivera',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'HOMESCHOOL',TRUE,'b0000000-0000-0000-0000-000000000002'),
+
+    ('child1@example.com',   'emma_r',   'Emma',   'Rivera',  'Emma Rivera',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'b0000000-0000-0000-0000-000000000002'),
+
+    ('child2@example.com',   'lucas_r',  'Lucas',  'Rivera',  'Lucas Rivera',
+     '$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG',
+     'STUDENT', TRUE, 'b0000000-0000-0000-0000-000000000002')
+ON CONFLICT (email) DO UPDATE
+    SET org_id          = EXCLUDED.org_id,
+        role            = EXCLUDED.role,
+        hashed_password = EXCLUDED.hashed_password,  -- always sync canonical dev password
+        is_active       = EXCLUDED.is_active;
+
+-- ── Organization members ───────────────────────────────────────────────────
+INSERT INTO organization_members (org_id, user_id, role)
+SELECT 'a0000000-0000-0000-0000-000000000001', u.id,
+       CASE u.role WHEN 'ADMIN' THEN 'owner' WHEN 'TEACHER' THEN 'admin' ELSE 'member' END
+FROM users u
+WHERE u.email IN ('admin@example.com','teacher@example.com',
+                  'student@example.com','student2@example.com',
+                  'student3@example.com','student4@example.com',
+                  'student5@example.com','parent@example.com')
+ON CONFLICT (org_id, user_id) DO NOTHING;
+
+INSERT INTO organization_members (org_id, user_id, role)
+SELECT 'b0000000-0000-0000-0000-000000000002', u.id,
+       CASE u.role WHEN 'HOMESCHOOL' THEN 'owner' ELSE 'member' END
+FROM users u
+WHERE u.email IN ('homeschool@example.com','child1@example.com','child2@example.com')
+ON CONFLICT (org_id, user_id) DO NOTHING;
+
+-- ── Classroom: Science Grade 5 (Springfield Academy) ──────────────────────
+INSERT INTO classrooms (id, org_id, teacher_id, name, grade_level, subject)
+SELECT
+    'c0000000-0000-0000-0000-000000000001',
+    'a0000000-0000-0000-0000-000000000001',
+    u.id,
+    'Science Grade 5',
+    5,
+    'Science'
+FROM users u WHERE u.email = 'teacher@example.com'
+ON CONFLICT (id) DO NOTHING;
+
+-- Enroll all 5 test students in the classroom
+INSERT INTO classroom_students (classroom_id, student_id)
+SELECT 'c0000000-0000-0000-0000-000000000001', u.id
+FROM users u
+WHERE u.email IN ('student@example.com','student2@example.com',
+                  'student3@example.com','student4@example.com',
+                  'student5@example.com')
+ON CONFLICT (classroom_id, student_id) DO NOTHING;
+
+-- ── Homeschool children link ───────────────────────────────────────────────
 INSERT INTO homeschool_children (id, parent_id, child_id, grade_level, age_band)
 SELECT uuid_generate_v4(), p.id, c.id, grade, band
 FROM (SELECT id FROM users WHERE email = 'homeschool@example.com') p,
@@ -1271,6 +1536,22 @@ CREATE TABLE IF NOT EXISTS student_field_notes (
 );
 CREATE INDEX IF NOT EXISTS idx_field_notes_student ON student_field_notes(student_id);
 
+-- FK deferred from activity_submissions (student_field_notes wasn't created yet)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = 'fk_activity_submissions_field_note'
+          AND table_name      = 'activity_submissions'
+    ) THEN
+        ALTER TABLE activity_submissions
+            ADD CONSTRAINT fk_activity_submissions_field_note
+            FOREIGN KEY (linked_field_note_id)
+            REFERENCES student_field_notes(id)
+            ON DELETE SET NULL;
+    END IF;
+END $$;
+
 -- ---------------------------------------------------------------------------
 -- student_field_note_captures
 -- ---------------------------------------------------------------------------
@@ -1519,6 +1800,67 @@ CREATE TABLE IF NOT EXISTS student_proposals (
 );
 CREATE INDEX IF NOT EXISTS idx_proposals_student ON student_proposals(student_id);
 CREATE INDEX IF NOT EXISTS idx_proposals_status  ON student_proposals(status);
+
+-- ---------------------------------------------------------------------------
+-- ai_task_config  (per-task AI provider settings, hot-reloaded by admin UI)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ai_task_config (
+    task_type   VARCHAR(64)  PRIMARY KEY,
+    provider    VARCHAR(32)  NOT NULL DEFAULT 'ollama',
+    model       VARCHAR(128),
+    enabled     BOOLEAN      NOT NULL DEFAULT TRUE,
+    updated_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_by  VARCHAR(128)
+);
+
+-- ---------------------------------------------------------------------------
+-- ai_api_keys  (encrypted provider API keys stored via Admin UI)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ai_api_keys (
+    provider      VARCHAR(64)  PRIMARY KEY,
+    encrypted_key TEXT         NOT NULL,
+    model         VARCHAR(128),
+    updated_at    TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_by    VARCHAR(128)
+);
+
+-- ---------------------------------------------------------------------------
+-- ai_batch_queue  (items queued for Anthropic Batch API processing)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ai_batch_queue (
+    id                   SERIAL       PRIMARY KEY,
+    task_type            VARCHAR(64)  NOT NULL,
+    entity_type          VARCHAR(64)  NOT NULL,
+    entity_id            VARCHAR(64)  NOT NULL,
+    prompt               TEXT         NOT NULL,
+    status               VARCHAR(32)  NOT NULL DEFAULT 'pending',
+    anthropic_batch_id   VARCHAR(128),
+    anthropic_request_id VARCHAR(128),
+    result               JSONB,
+    error_message        TEXT,
+    fallback_used        BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    submitted_at         TIMESTAMP,
+    processed_at         TIMESTAMP,
+    notified             BOOLEAN      NOT NULL DEFAULT FALSE
+);
+CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_status    ON ai_batch_queue(status);
+CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_entity_id ON ai_batch_queue(entity_id);
+CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_batch_id  ON ai_batch_queue(anthropic_batch_id);
+
+-- ---------------------------------------------------------------------------
+-- teacher_notifications  (in-app notifications, used for batch result alerts)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS teacher_notifications (
+    id         SERIAL       PRIMARY KEY,
+    teacher_id VARCHAR(64)  NOT NULL,
+    type       VARCHAR(64)  NOT NULL,
+    payload    JSONB,
+    is_read    BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_teacher_notif_teacher_unread
+    ON teacher_notifications(teacher_id, is_read);
 
 -- ===========================================================================
 -- Verification

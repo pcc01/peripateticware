@@ -229,18 +229,18 @@ export const audioApi = {
       form.append('location_lng', String(location.lng))
     }
     const response = await apiClient.post<AudioCaptureResult>(
-      '/student/captures/audio',
+      '/student/captures/upload',
       form,
       { headers: { 'Content-Type': 'multipart/form-data' } }
     )
     return response.data
   },
 
-  // Build stream URL using the same base the apiClient uses
+  // Build stream URL — authenticated via cookie or caller must append token as query param
   streamUrl: (captureId: string): string => {
-    const base = '/api/v1'
-      .replace(/\/$/, '')
-    return `${base}/student/captures/${captureId}/stream`
+    const token = localStorage.getItem('auth_token')
+    const qs = token ? `?token=${encodeURIComponent(token)}` : ''
+    return `/api/v1/student/captures/${captureId}/stream${qs}`
   },
 }
 // ============================================================================
@@ -276,4 +276,22 @@ export const proposalApi = {
 
   reject: (id: string, feedback: string) =>
     apiClient.post<{ status: string }>(`/teacher/proposals/${id}/reject`, { feedback }).then(r => r.data),
+}
+
+// ============================================================================
+// PROFESSOR — FIELDWORK LOCATION MAP
+// ============================================================================
+
+import type { FieldworkLocationsResponse } from '../types/phase7'
+
+export const professorApi = {
+  /**
+   * Fetch GPS snapshots (field notes + captures) for a given activity.
+   * Used by CourseFieldworkTracker to render the historical location map.
+   * No live streaming — single fetch on mount.
+   */
+  getFieldworkLocations: (activityId: string): Promise<FieldworkLocationsResponse> =>
+    apiClient
+      .get<FieldworkLocationsResponse>(`/activities/${activityId}/fieldwork-locations`)
+      .then((r) => r.data),
 }

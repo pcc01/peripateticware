@@ -155,20 +155,30 @@ async def _safe_run(coro, name: str) -> int:
 
 
 async def run_retention_cleanup():
-    """Run all retention cleanup tasks in a single DB session."""
+    """Run all retention cleanup tasks, each in its own DB session.
+
+    Isolating sessions ensures a failed/aborted transaction in one task
+    (e.g. a table that hasn't been migrated yet) does not poison subsequent
+    tasks with InFailedSQLTransactionError.
+    """
     logger.info("🗑 Retention cleanup starting…")
     factory = _make_session_factory()
     total = 0
-    try:
-        async with factory() as db:
-            total += await _safe_run(purge_expired_captures(db), "purge_expired_captures")
-            total += await _safe_run(anonymise_expired_sessions(db), "anonymise_expired_sessions")
-            total += await _safe_run(purge_stale_location_history(db), "purge_stale_location_history")
-            total += await _safe_run(purge_expired_consent_records(db), "purge_expired_consent_records")
-            await db.commit()
-        logger.info(f"✅ Retention cleanup complete — {total} records affected")
-    except Exception as e:
-        logger.error(f"❌ Retention cleanup failed: {e}", exc_info=True)
+    tasks = [
+        ("purge_expired_captures",       purge_expired_captures),
+        ("anonymise_expired_sessions",    anonymise_expired_sessions),
+        ("purge_stale_location_history",  purge_stale_location_history),
+        ("purge_expired_consent_records", purge_expired_consent_records),
+    ]
+    for name, fn in tasks:
+        try:
+            async with factory() as db:
+                count = await _safe_run(fn(db), name)
+                await db.commit()
+                total += count
+        except Exception as e:
+            logger.error(f"❌ Retention task '{name}' failed: {e}", exc_info=True)
+    logger.info(f"✅ Retention cleanup complete — {total} records affected")
 
 
 async def run_retention_cleanup_loop(interval_hours: int = 24):

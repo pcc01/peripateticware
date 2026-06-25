@@ -544,7 +544,7 @@ export const PeerProjectBuilder: React.FC<PeerProjectBuilderProps> = ({
 
 import { audioApi } from '../../services/phase7Api';
 import { AudioPlayer } from './AudioCapture';
-import type { PeerProject, PeerProjectResponse as PRType } from '../../types/phase7';
+import type { PeerProject as PeerProjectModel, PeerProjectResponse as PRType } from '../../types/phase7';
 
 interface PeerProjectResponseViewProps {
   project: PeerProject;

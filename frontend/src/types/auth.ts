@@ -2,7 +2,7 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-export type UserRole = 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN'
+export type UserRole = 'TEACHER' | 'STUDENT' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
 
 // ============================================================================
 // USER

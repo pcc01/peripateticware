@@ -11,6 +11,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Question {
   id: number;
@@ -47,6 +48,7 @@ const AristotelianPrompt: React.FC<AristotelianPromptProps> = ({
   bloomLevel,
   onUseQuestion,
 }) => {
+  const { t } = useTranslation('landing');
   const [question, setQuestion] = useState<Question | null>(null);
   const [showFollowUp, setShowFollowUp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -103,7 +105,7 @@ const AristotelianPrompt: React.FC<AristotelianPromptProps> = ({
       </div>
 
       {loading && !question && (
-        <p className="text-sm text-color-text-secondary animate-pulse">Loading prompt…</p>
+        <p className="text-sm text-color-text-secondary animate-pulse">{t('components_student_aristotelianprompt.loading_prompt', 'Loading prompt…')}</p>
       )}
 
       {question && (

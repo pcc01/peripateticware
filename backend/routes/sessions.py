@@ -1,4 +1,4 @@
-﻿# Copyright (c) 2026 Paul Christopher Cerda
+# Copyright (c) 2026 Paul Christopher Cerda
 # This source code is licensed under the Business Source License 1.1
 # found in the LICENSE.md file in the root directory of this source tree.
 
@@ -256,7 +256,7 @@ async def get_inquiry_log(
     session_id: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get Socratic inquiry log (raw artifacts for teachers)"""
+    """Get Aristotelian inquiry log (raw artifacts for teachers)"""
     try:
         query = select(LearningSession).where(
             LearningSession.id == uuid.UUID(session_id)
@@ -353,7 +353,35 @@ async def get_session_events(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Teacher polls this to see live student progress."""
+    """Teacher polls this to see live student progress (teacher-scoped)."""
+    # Role guard — students must not poll other students' events
+    allowed_roles = {"TEACHER", "ADMIN", "HOMESCHOOL", "PROFESSOR"}
+    if current_user.role.upper() not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Teacher access required")
+
+    # Ownership guard — teacher must own the session's activity
+    try:
+        sess_result = await db.execute(
+            select(LearningSession).where(LearningSession.id == uuid.UUID(session_id))
+        )
+        session = sess_result.scalar_one_or_none()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        # Admins bypass ownership check
+        if current_user.role.upper() != "ADMIN" and session.user_id != current_user.id:
+            # Also allow the teacher who owns the activity
+            from models.database import Activity as _Activity
+            act_result = await db.execute(
+                select(_Activity).where(_Activity.id == session.activity_id)
+            )
+            act = act_result.scalar_one_or_none()
+            if not act or act.teacher_id != current_user.id:
+                raise HTTPException(status_code=403, detail="You do not own this session")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Session ownership check error: {e}")
+
     try:
         where = "WHERE session_id = :sid"
         params: dict = {"sid": session_id}
@@ -369,3 +397,77 @@ async def get_session_events(
     except Exception as e:
         logger.error(f"Events fetch error: {e}")
         return {"events": [], "count": 0}
+
+
+# ── GPS Location-update helpers (used by student submission routes) ────────
+
+_CREATE_SESSION_EVENTS_DDL = """
+    CREATE TABLE IF NOT EXISTS session_events (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        session_id  UUID NOT NULL,
+        student_id  UUID,
+        event_type  VARCHAR(50) NOT NULL,
+        phase       VARCHAR(30),
+        metadata    JSONB,
+        created_at  TIMESTAMP DEFAULT NOW()
+    )
+"""
+
+async def _fire_location_event(
+    db: AsyncSession,
+    session_id,
+    student_id,
+    latitude: float,
+    longitude: float,
+) -> None:
+    """Best-effort insert of a location_update event.  Never raises."""
+    import json
+    try:
+        await db.execute(text(_CREATE_SESSION_EVENTS_DDL))
+        await db.execute(
+            text("""
+                INSERT INTO session_events (session_id, student_id, event_type, metadata)
+                VALUES (:sid, :uid, 'location_update', :meta::jsonb)
+            """),
+            {
+                "sid": str(session_id),
+                "uid": str(student_id),
+                "meta": json.dumps({
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "accuracy": None,
+                    "student_id": str(student_id),
+                }),
+            },
+        )
+        await db.commit()
+    except Exception as exc:
+        logger.warning(f"_fire_location_event non-fatal error: {exc}")
+
+
+async def _check_gps_consent(
+    db: AsyncSession,
+    student_id,
+    activity_id,
+) -> bool:
+    """Return True if active GPS-tracking consent exists for this student+activity."""
+    if not activity_id:
+        return False
+    try:
+        result = await db.execute(
+            text("""
+                SELECT consent_given FROM consent_logs
+                WHERE student_id_hash = encode(digest(:sid::text, 'sha256'), 'hex')
+                  AND consent_type    = 'gps_tracking'
+                  AND activity_id     = :aid::uuid
+                  AND consent_given   = TRUE
+                  AND (expires_at IS NULL OR expires_at > NOW())
+                LIMIT 1
+            """),
+            {"sid": str(student_id), "aid": str(activity_id)},
+        )
+        row = result.fetchone()
+        return row is not None
+    except Exception as exc:
+        logger.warning(f"_check_gps_consent non-fatal error: {exc}")
+        return False

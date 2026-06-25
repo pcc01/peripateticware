@@ -13,10 +13,16 @@ export const RubricImportPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSave = async (payload: any) => {
-    const res = await fetch('/api/v1/standards', {
+    const res = await fetch('/api/v1/rubrics', {
       method: 'POST',
       headers: authHeader(),
-      body: JSON.stringify({ ...payload, type: 'rubric' }),
+      body: JSON.stringify({
+        title: payload.name,
+        description: payload.description || '',
+        criteria: payload.criteria,
+        total_points: payload.criteria?.reduce((sum: number, c: any) =>
+          sum + Math.max(...(c.levels || []).map((l: any) => l.score || 0), 0), 0) || 100,
+      }),
     });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));

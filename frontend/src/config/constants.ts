@@ -7,7 +7,7 @@
  */
 
 // User roles (TYPE UNION, not enum - to match backend UPPERCASE)
-export type UserRole = 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN'
+export type UserRole = 'STUDENT' | 'TEACHER' | 'PARENT' | 'ADMIN' | 'HOMESCHOOL'
 
 // Session statuses
 export enum SessionStatus {

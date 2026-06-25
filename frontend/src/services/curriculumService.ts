@@ -34,7 +34,7 @@ export const curriculumService = {
       const response = await apiClient.get<ApiResponse<CurriculumUnit>>(
         `/curriculum/${curriculumId}`
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as any
     } catch (error) {
       console.error(`Failed to get curriculum unit ${curriculumId}:`, error)
       throw error
@@ -50,7 +50,7 @@ export const curriculumService = {
         '/curriculum',
         data
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as any
     } catch (error) {
       console.error('Failed to create curriculum unit:', error)
       throw error
@@ -66,7 +66,7 @@ export const curriculumService = {
         `/curriculum/${curriculumId}`,
         data
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as any
     } catch (error) {
       console.error(`Failed to update curriculum unit ${curriculumId}:`, error)
       throw error
@@ -93,7 +93,7 @@ export const curriculumService = {
       const response = await apiClient.get<ApiResponse<StandardsAlignment>>(
         `/curriculum/${curriculumId}/standards-alignment`
       )
-      return response.data.data || response.data
+      return (response.data.data || response.data) as any
     } catch (error) {
       console.error(`Failed to get standards alignment for ${curriculumId}:`, error)
       throw error

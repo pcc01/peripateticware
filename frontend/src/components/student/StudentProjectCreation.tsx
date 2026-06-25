@@ -1,9 +1,11 @@
+import { useAuthStore } from '@/stores/auth';
 import { useState } from 'react'
 import { useProjectStore } from '@/stores/projectStore'
 
 export function StudentProjectCreation() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const { user: currentUser } = useAuthStore()
   const { addProject } = useProjectStore()
   
   const handleCreate = () => {
@@ -14,7 +16,7 @@ export function StudentProjectCreation() {
       contributors: [],
       status: 'draft',
       visibility: 'private',
-      created_by: currentUser.id, // Get from auth
+      created_by: currentUser?.id ?? 'unknown',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       synced: false,

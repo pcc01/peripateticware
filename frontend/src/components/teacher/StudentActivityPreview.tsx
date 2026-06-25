@@ -139,7 +139,7 @@ const StudentActivityPreview: React.FC = () => {
                 </div>
               )}
 
-              {/* Sample Socratic prompt */}
+              {/* Sample Aristotelian prompt */}
               <div className="mb-4 p-3 rounded-xl border"
                 style={{ borderColor: 'var(--primary)', background: 'var(--primary-muted)' }}>
                 <p className="text-xs font-semibold mb-1" style={{ color: 'var(--primary)' }}>

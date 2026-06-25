@@ -145,12 +145,12 @@ async def _build_data(
         try:
             sess_q = sess_q.where(LearningSession.created_at >= dt.fromisoformat(date_from))
         except ValueError:
-            pass
+            logger.warning("export: invalid date_from ignored")  # NASA Rule 7
     if date_to:
         try:
             sess_q = sess_q.where(LearningSession.created_at <= dt.fromisoformat(date_to))
         except ValueError:
-            pass
+            logger.warning("export: invalid date_to ignored")  # NASA Rule 7
     sess_result = await db.execute(sess_q.order_by(LearningSession.created_at.desc()).limit(500))
     sessions = sess_result.scalars().all()
 

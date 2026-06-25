@@ -1,3 +1,4 @@
+import React from 'react';
 // frontend/src/components/student/AudioRecorder.tsx
 // Phase 7 — Audio Capture (no ASR)
 // Records audio using MediaRecorder API, stores as WebM/Opus or OGG/Opus.
@@ -689,7 +690,7 @@ export const AudioCapture = ({
             knownDurationSeconds={savedCapture.duration_seconds as number}
             showDownload={true}
           />
-          <TranscriptBlock captureId={savedCapture.id} />
+          <TranscriptBlock captureId={savedCapture.id as string} />
         </>
       )}
     </div>
