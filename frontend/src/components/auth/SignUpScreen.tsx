@@ -362,6 +362,23 @@ export default function SignupScreen({
               </div>
             )}
 
+
+            {/* Age confirmation */}
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="age_confirmed"
+                {...register('age_confirmed')}
+                className="mt-0.5 accent-green-600 w-4 h-4 shrink-0"
+              />
+              <label htmlFor="age_confirmed" className="text-sm text-gray-600 leading-tight cursor-pointer">
+                I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account).
+              </label>
+            </div>
+            {errors.age_confirmed && (
+              <p className="text-red-600 text-xs -mt-2">{errors.age_confirmed.message}</p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"

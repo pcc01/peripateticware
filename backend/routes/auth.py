@@ -382,10 +382,21 @@ async def signup(
         from core.config import settings as _cfg
         auto_activate = _cfg.EMAIL_DRY_RUN or (_cfg.ENVIRONMENT.lower() == "development")
 
+        # Build a unique username — email prefix with numeric suffix on collision
+        _username_base = (body.username or body.email.lower().split("@")[0]).lower()
+        _username = _username_base
+        for _n in range(1, 101):
+            _ucheck = await db.execute(
+                select(User).where(User.username == _username)
+            )
+            if not _ucheck.scalar_one_or_none():
+                break
+            _username = f"{_username_base}{_n}"
+
         new_user = User(
             id=new_user_id,
             email=body.email.lower(),
-            username=body.username or body.email.lower().split("@")[0],
+            username=_username,
             hashed_password=SecurityManager.hash_password(body.password),
             first_name=body.first_name,
             last_name=body.last_name,
