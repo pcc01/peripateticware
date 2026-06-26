@@ -64,11 +64,15 @@ const TeacherSessionMonitorPage: React.FC = () => {
           onClick={() => navigate('/teacher/activities')}
           className="text-green-700 hover:text-green-800 font-medium flex items-center gap-2"
         >
-          ← Back to Activities
+          &larr; Back to Activities
         </button>
       </div>
     );
   }
+
+  const fieldworkPath = session.activity_id
+    ? '/teacher/activities/' + session.activity_id + '/fieldwork'
+    : null;
 
   return (
     <div className="container mx-auto py-6 px-4">
@@ -78,7 +82,7 @@ const TeacherSessionMonitorPage: React.FC = () => {
             onClick={() => navigate(-1)}
             className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1 mb-1"
           >
-            ← Back
+            &larr; Back
           </button>
           <h1 className="text-2xl font-bold text-gray-900">
             {t('teacher:monitoring.title', 'Live Session Monitor')}
@@ -87,8 +91,17 @@ const TeacherSessionMonitorPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
-            ● {t('teacher:monitoring.live', 'Live')}
+            &bull; {t('teacher:monitoring.live', 'Live')}
           </span>
+          {fieldworkPath && (
+            <button
+              onClick={() => navigate(fieldworkPath)}
+              className="px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ background: 'var(--primary)', color: 'white' }}
+            >
+              Fieldwork Map
+            </button>
+          )}
         </div>
       </div>
 

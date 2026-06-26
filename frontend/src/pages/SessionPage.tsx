@@ -36,6 +36,9 @@ const SessionPage: React.FC = () => {
   const [tab, setTab] = useState<'inquiry' | 'evidence' | 'history'>('inquiry');
   const [promptedQuestion, setPromptedQuestion] = useState<string>('');
 
+  // GPS consent modal (for 13+ students on GPS-enabled activities)
+  const [gpsConsentPending, setGpsConsentPending] = useState(false);
+
   useEffect(() => {
     loadSessionData();
   }, [sessionId]);
@@ -47,6 +50,21 @@ const SessionPage: React.FC = () => {
       const sessionData = await sessionService.getSession(sessionId);
       setSession(sessionData);
 
+      // Check if activity has GPS enabled -- if so, prompt student for consent
+      if (sessionData.activity_id) {
+        try {
+          const actRes = await fetch(`/api/v1/student/activities/${sessionData.activity_id}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') ?? ''}` },
+          });
+          if (actRes.ok) {
+            const act = await actRes.json();
+            if (act?.discovery_location_gps_capture_enabled) {
+              setGpsConsentPending(true);
+            }
+          }
+        } catch { /* best-effort -- don't block session load */ }
+      }
+
       // Load evidence (privacy-filtered for student)
       const evidenceData = await sessionService.getEvidence(sessionId, user?.role || 'STUDENT');
       setEvidence(evidenceData);
@@ -54,6 +72,22 @@ const SessionPage: React.FC = () => {
       console.error('Failed to load session:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGpsConsent = async (allow: boolean) => {
+    setGpsConsentPending(false);
+    if (allow && session?.activity_id) {
+      try {
+        await fetch('/api/v1/student/consent/gps', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('auth_token') ?? ''}`,
+          },
+          body: JSON.stringify({ activity_id: session.activity_id, consent_given: true }),
+        });
+      } catch { /* best-effort */ }
     }
   };
 
@@ -94,6 +128,37 @@ const SessionPage: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8">
+      {/* GPS consent modal -- shown once at session start for GPS-enabled activities */}
+      {gpsConsentPending && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="max-w-sm w-full mx-4 rounded-2xl p-6 shadow-xl" style={{ background: 'var(--surface, #fff)' }}>
+            <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text, #111)' }}>
+              Location Sharing
+            </h2>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted, #666)' }}>
+              Your teacher wants to see your location during this activity so they can track fieldwork progress.
+              Your location is only shared while the session is active.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleGpsConsent(true)}
+                className="flex-1 py-2 rounded-lg text-white font-medium"
+                style={{ background: 'var(--primary, #2e7d32)' }}
+              >
+                Allow
+              </button>
+              <button
+                onClick={() => handleGpsConsent(false)}
+                className="flex-1 py-2 rounded-lg font-medium border"
+                style={{ color: 'var(--text, #111)', borderColor: 'var(--border, #ddd)' }}
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -213,7 +278,7 @@ const SessionPage: React.FC = () => {
             <ul className="space-y-2">
               {evidence.evidence && parseEvidence(typeof evidence.evidence === "string" ? evidence.evidence : undefined)?.key_concepts?.map((concept, idx) =>
             <li key={idx} className="flex items-start gap-2">
-                  <span className="text-color-primary font-bold">✓</span>
+                  <span className="text-color-primary font-bold">&#10003;</span>
                   <p>{concept}</p>
                 </li>
             )}
@@ -240,7 +305,7 @@ const SessionPage: React.FC = () => {
                       {((evidence.competency_assessment as any)?.standards_evidence || []).map(
                     (standard, idx) =>
                     <li key={idx} className="text-color-text-secondary">
-                            • {standard}
+                            &bull; {standard}
                           </li>
 
                   )}
@@ -253,7 +318,7 @@ const SessionPage: React.FC = () => {
                       {((evidence.competency_assessment as any)?.growth_recommendations || []).map(
                     (rec, idx) =>
                     <li key={idx} className="text-color-text-secondary">
-                            → {rec}
+                            &rarr; {rec}
                           </li>
 
                   )}
@@ -289,7 +354,7 @@ const SessionPage: React.FC = () => {
                   <p className="font-medium mb-2">{inquiry.question}</p>
                   {inquiry.Aristotelian_prompt &&
             <p className="text-sm text-color-primary italic mb-2">
-                      💭 {inquiry.Aristotelian_prompt}
+                      {inquiry.Aristotelian_prompt}
                     </p>
             }
                   {inquiry.confidence &&

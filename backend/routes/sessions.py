@@ -312,18 +312,50 @@ async def log_session_event(
     current_user: User = Depends(get_current_user),
 ):
     """Student fires events during a session — teacher dashboard polls these."""
-    try:
-        await db.execute(text("""
-            CREATE TABLE IF NOT EXISTS session_events (
-                id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                session_id  UUID NOT NULL,
-                student_id  UUID,
-                event_type  VARCHAR(50) NOT NULL,
-                phase       VARCHAR(30),
-                metadata    JSONB,
-                created_at  TIMESTAMP DEFAULT NOW()
+    # GPS consent gate: block location_update for under-13 students without consent
+    if body.event_type == "location_update":
+        try:
+            from models.database import LearningSession as _LS, Activity as _Act
+            sess_q = await db.execute(
+                select(_LS).where(_LS.id == uuid.UUID(session_id))
             )
-        """))
+            sess = sess_q.scalar_one_or_none()
+            if sess and sess.activity_id:
+                act_q = await db.execute(
+                    select(_Act).where(_Act.id == sess.activity_id)
+                )
+                act = act_q.scalar_one_or_none()
+                if act and getattr(act, "discovery_location_gps_capture_enabled", False):
+                    # Determine if consent is required (under-13 or flagged)
+                    needs_consent = True
+                    try:
+                        user_row = await db.execute(
+                            select(User).where(User.id == current_user.id)
+                        )
+                        user = user_row.scalar_one_or_none()
+                        if user:
+                            age_group = getattr(user, "age_group", None)
+                            rpc = getattr(user, "requires_parental_consent", True)
+                            if age_group not in ("under_13", None) and not rpc:
+                                needs_consent = False  # 13+ self-consents separately
+                    except Exception:
+                        pass  # conservative: require consent on error
+                    if needs_consent:
+                        has_consent = await _check_gps_consent(
+                            db, current_user.id, sess.activity_id
+                        )
+                        if not has_consent:
+                            raise HTTPException(
+                                status_code=403,
+                                detail="gps_consent_required",
+                            )
+        except HTTPException:
+            raise
+        except Exception as _ge:
+            logger.warning(f"GPS consent gate non-fatal: {_ge}")
+            # Fail open — don't block the event if the check itself errors
+
+    try:
         result = await db.execute(
             text("""
                 INSERT INTO session_events (session_id, student_id, event_type, phase, metadata)
@@ -421,53 +453,4 @@ async def _fire_location_event(
     longitude: float,
 ) -> None:
     """Best-effort insert of a location_update event.  Never raises."""
-    import json
-    try:
-        await db.execute(text(_CREATE_SESSION_EVENTS_DDL))
-        await db.execute(
-            text("""
-                INSERT INTO session_events (session_id, student_id, event_type, metadata)
-                VALUES (:sid, :uid, 'location_update', :meta::jsonb)
-            """),
-            {
-                "sid": str(session_id),
-                "uid": str(student_id),
-                "meta": json.dumps({
-                    "latitude": latitude,
-                    "longitude": longitude,
-                    "accuracy": None,
-                    "student_id": str(student_id),
-                }),
-            },
-        )
-        await db.commit()
-    except Exception as exc:
-        logger.warning(f"_fire_location_event non-fatal error: {exc}")
-
-
-async def _check_gps_consent(
-    db: AsyncSession,
-    student_id,
-    activity_id,
-) -> bool:
-    """Return True if active GPS-tracking consent exists for this student+activity."""
-    if not activity_id:
-        return False
-    try:
-        result = await db.execute(
-            text("""
-                SELECT consent_given FROM consent_logs
-                WHERE student_id_hash = encode(digest(:sid::text, 'sha256'), 'hex')
-                  AND consent_type    = 'gps_tracking'
-                  AND activity_id     = :aid::uuid
-                  AND consent_given   = TRUE
-                  AND (expires_at IS NULL OR expires_at > NOW())
-                LIMIT 1
-            """),
-            {"sid": str(student_id), "aid": str(activity_id)},
-        )
-        row = result.fetchone()
-        return row is not None
-    except Exception as exc:
-        logger.warning(f"_check_gps_consent non-fatal error: {exc}")
-        return False
+   

@@ -737,19 +737,6 @@ async def record_gps_consent(
     expires_at_expr = "NOW() + INTERVAL '30 days'"
 
     try:
-        await db.execute(text("""
-            CREATE TABLE IF NOT EXISTS consent_logs (
-                id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                student_id_hash  VARCHAR(256) NOT NULL,
-                consent_type     VARCHAR(50)  NOT NULL,
-                consent_given    BOOLEAN      NOT NULL DEFAULT FALSE,
-                consent_method   VARCHAR(50),
-                activity_id      UUID,
-                created_at       TIMESTAMP    DEFAULT NOW(),
-                expires_at       TIMESTAMP
-            )
-        """))
-
         await db.execute(text(f"""
             INSERT INTO consent_logs
                 (student_id_hash, consent_type, consent_given, consent_method, activity_id, expires_at)
@@ -777,3 +764,4 @@ async def record_gps_consent(
         "consent_given": body.consent_given,
         "activity_id": body.activity_id,
     }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

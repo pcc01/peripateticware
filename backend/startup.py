@@ -941,6 +941,10 @@ async def apply_student_phase7_migrations(engine) -> None:
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
+        # GPS map infrastructure (Session 30)
+        "CREATE TABLE IF NOT EXISTS session_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, student_id UUID, event_type VARCHAR(50) NOT NULL, phase VARCHAR(30), metadata JSONB, created_at TIMESTAMP DEFAULT NOW())",
+        "CREATE TABLE IF NOT EXISTS consent_logs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), student_id_hash VARCHAR(256) NOT NULL, consent_type VARCHAR(50) NOT NULL, consent_given BOOLEAN NOT NULL DEFAULT FALSE, consent_method VARCHAR(50), activity_id UUID, created_at TIMESTAMP DEFAULT NOW(), expires_at TIMESTAMP)",
+        "ALTER TABLE consent_logs ADD CONSTRAINT IF NOT EXISTS uq_consent_logs_student_type_activity UNIQUE (student_id_hash, consent_type, activity_id)",
     ]
     for _s in _stmts:
         try:
@@ -1401,64 +1405,82 @@ async def seed_ai_task_config_orm(settings) -> None:
 
 
 async def start_background_tasks(async_session, settings) -> None:
-    """Start retention cleanup loop, AI batch scheduler, and budget monitor jobs."""
-    # Retention cleanup
-    try:
-        from tasks.retention_cleanup import run_retention_cleanup_loop
-        asyncio.create_task(run_retention_cleanup_loop(interval_hours=24))
-        logger.info("✅ Retention cleanup task scheduled (every 24 h)")
-    except Exception as e:
-        logger.warning(f"⊘ Retention cleanup task not started: {e}")
+    """Start retention cleanup, AI batch scheduler, and budget monitor jobs.
 
-    # AI batch scheduler
+    All three job groups share a single AsyncIOScheduler instance so there is
+    only one scheduler running in the process.  Each group gracefully degrades
+    if APScheduler is not installed or the relevant task module is missing.
+    """
+    # ── Build shared scheduler (all job groups reuse this instance) ───────────
     _scheduler = None
     try:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
-        from apscheduler.triggers.cron import CronTrigger
-        from services.batch_processor import run_full_cycle
-
-        _cron_parts = settings.AI_BATCH_CRON.split()
         _scheduler = AsyncIOScheduler()
-        _scheduler.add_job(
-            run_full_cycle,
-            CronTrigger(
-                minute=_cron_parts[0],
-                hour=_cron_parts[1],
-                day=_cron_parts[2],
-                month=_cron_parts[3],
-                day_of_week=_cron_parts[4],
-            ),
-            id="ai_batch_cycle",
-            replace_existing=True,
-        )
-        _scheduler.start()
-        logger.info(f"✅ AI batch scheduler started (cron: {settings.AI_BATCH_CRON})")
     except ImportError:
         logger.warning(
-            "⊘ APScheduler not installed — AI batch scheduler not started. "
-            "Install apscheduler or trigger batches manually via Admin UI."
+            "⊘ APScheduler not installed — scheduled jobs (retention, AI batch, "
+            "budget monitor) will not run.  pip install apscheduler to enable."
         )
-    except Exception as e:
-        logger.warning(f"⊘ AI batch scheduler not started: {e}")
 
-    # Budget monitor jobs
-    try:
-        from apscheduler.schedulers.asyncio import AsyncIOScheduler
-        from tasks.budget_monitor import budget_alert_check, anomaly_detect
+    # ── Retention cleanup — daily at 02:00 UTC ────────────────────────────────
+    if _scheduler is not None:
+        try:
+            from tasks.retention_cleanup import run_retention_cleanup
 
-        async def _budget_alert():
-            async with async_session() as db:
-                await budget_alert_check(db)
+            _scheduler.add_job(
+                run_retention_cleanup,
+                "cron",
+                hour=2,
+                minute=0,
+                id="retention_cleanup",
+                replace_existing=True,
+            )
+            logger.info("✅ Retention cleanup job scheduled (daily at 02:00 UTC)")
+        except Exception as e:
+            logger.warning(f"⊘ Retention cleanup job not added: {e}")
+    else:
+        # Fallback: asyncio loop — works without APScheduler
+        try:
+            from tasks.retention_cleanup import run_retention_cleanup_loop
+            asyncio.create_task(run_retention_cleanup_loop(interval_hours=24))
+            logger.info("✅ Retention cleanup fallback loop started (every 24 h)")
+        except Exception as e:
+            logger.warning(f"⊘ Retention cleanup fallback not started: {e}")
 
-        async def _anomaly():
-            async with async_session() as db:
-                await anomaly_detect(db)
+    # ── AI batch scheduler ────────────────────────────────────────────────────
+    if _scheduler is not None:
+        try:
+            from apscheduler.triggers.cron import CronTrigger
+            from services.batch_processor import run_full_cycle
 
-        _budget_scheduler = _scheduler if _scheduler is not None else AsyncIOScheduler()
-        _budget_scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_alert")
-        _budget_scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect")
-        if not _budget_scheduler.running:
-            _budget_scheduler.start()
-        logger.info("✅ Budget monitor jobs scheduled (hourly alert, 15-min anomaly)")
-    except Exception as e:
-        logger.warning(f"⊘ Budget monitor jobs not started: {e}")
+            _cron_parts = settings.AI_BATCH_CRON.split()
+            _scheduler.add_job(
+                run_full_cycle,
+                CronTrigger(
+                    minute=_cron_parts[0],
+                    hour=_cron_parts[1],
+                    day=_cron_parts[2],
+                    month=_cron_parts[3],
+                    day_of_week=_cron_parts[4],
+                ),
+                id="ai_batch_cycle",
+                replace_existing=True,
+            )
+            logger.info(f"✅ AI batch job added to scheduler (cron: {settings.AI_BATCH_CRON})")
+        except Exception as e:
+            logger.warning(f"⊘ AI batch job not added: {e}")
+
+    # ── Budget monitor jobs ───────────────────────────────────────────────────
+    if _scheduler is not None:
+        try:
+            from tasks.budget_monitor import budget_alert_check, anomaly_detect
+
+            async def _budget_alert():
+                async with async_session() as db:
+                    await budget_alert_check(db)
+
+            async def _anomaly():
+                async with async_session() as db:
+                    await anomaly_detect(db)
+
+            _scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_aler

@@ -1,33 +1,31 @@
-import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
-import { useTranslation } from 'react-i18next';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
 /**
  * Teacher Dashboard - Fully Wired with Zustand Stores & API Services
- * Displays: Activities, Students, Submissions, Classes
+ * Displays: Activities, Students, Submissions, Classes, Summary Stats
  */
 
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTeacherStore } from '@/stores';
 import styles from './TeacherDashboard.module.css';
 import { useAuthStore } from '@/stores/auth';
+import { fmtDate } from '@/utils/date';
 
 export const TeacherDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const {
     dashboardData,
+    activities: storeActivities,
     loading,
     error,
     fetchDashboard,
     fetchActivities,
-    fetchStudents,
-    fetchClasses,
-    fetchSubmissions,
-    clearError
+    clearError,
   } = useTeacherStore();
 
   const { logout } = useAuthStore();
@@ -37,54 +35,53 @@ export const TeacherDashboard: React.FC = () => {
     navigate('/');
   };
 
-  // Extract data safely from dashboardData
-  const activities = dashboardData?.activities || [];
-  const students = dashboardData?.recent_students || [];
-  const teacherClasses = dashboardData?.classes || [];
-  const submissions = dashboardData?.recent_submissions || [];
+  // Extract data safely — prefer dashboardData arrays, fall back to store arrays
+  const activities = (dashboardData?.activities?.length ? dashboardData.activities : storeActivities) ?? [];
+  const teacherClasses = dashboardData?.classes ?? [];
+  const submissions = dashboardData?.recent_submissions ?? [];
+  const students = dashboardData?.recent_students ?? [];
+
+  // Compute "recent activity" stat from activities list
+  const sortedByDate = [...activities].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const mostRecent = sortedByDate[0] ?? null;
+
+  // One-week activity count
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const activitiesThisWeek = activities.filter(
+    (a) => new Date(a.created_at).getTime() >= oneWeekAgo
+  ).length;
 
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([
-        fetchDashboard(),
-        fetchActivities(),
-        fetchStudents(),
-        fetchClasses(),
-        fetchSubmissions()]
-        );
+        await Promise.all([fetchDashboard(), fetchActivities()]);
       } catch (err) {
         console.error('Failed to load dashboard:', err);
       }
     };
-
     loadData();
   }, []);
 
   // Handle refresh
   const handleRefresh = async () => {
     try {
-      await Promise.all([
-      fetchDashboard(),
-      fetchActivities(),
-      fetchStudents(),
-      fetchClasses(),
-      fetchSubmissions()]
-      );
+      await Promise.all([fetchDashboard(), fetchActivities()]);
     } catch (err) {
       console.error('Refresh failed:', err);
     }
   };
 
-  if (loading && !dashboardData) {
+  if (loading && !dashboardData && activities.length === 0) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>
           <p>{t("landing:loading_dashboard", "Loading dashboard...")}</p>
         </div>
-      </div>);
-
+      </div>
+    );
   }
 
   return (
@@ -109,26 +106,49 @@ export const TeacherDashboard: React.FC = () => {
       }
 
       {/* Quick Stats */}
-      {dashboardData &&
       <section className={styles.statsSection}>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>{t("landing:total_students", "Total Students")}</div>
-            <div className={styles.statValue}>{dashboardData.total_students}</div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:total_students", "Total Students")}</div>
+          <div className={styles.statValue}>
+            {loading && !dashboardData ? '—' : (dashboardData?.total_students ?? '—')}
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>{t("landing:teacherdashboard.classes", "Classes")}</div>
-            <div className={styles.statValue}>{dashboardData.total_classes}</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:teacherdashboard.classes", "Classes")}</div>
+          <div className={styles.statValue}>
+            {loading && !dashboardData ? '—' : (dashboardData?.total_classes ?? '—')}
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>{t("landing:active_activities", "Active Activities")}</div>
-            <div className={styles.statValue}>{dashboardData.active_activities}</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:active_activities", "Active Activities")}</div>
+          <div className={styles.statValue}>
+            {loading && !dashboardData ? '—' : (dashboardData?.active_activities ?? activities.filter(a => a.status === 'active').length)}
           </div>
-          <div className={styles.statCard}>
-            <div className={styles.statLabel}>{t("landing:teacherdashboard.pending_submissions", "Pending Submissions")}</div>
-            <div className={styles.statValue}>{dashboardData.pending_submissions}</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:teacherdashboard.pending_submissions", "Pending Submissions")}</div>
+          <div className={styles.statValue}>
+            {loading && !dashboardData ? '—' : (dashboardData?.pending_submissions ?? '—')}
           </div>
-        </section>
-      }
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:teacherdashboard.total_activities", "Total Activities")}</div>
+          <div className={styles.statValue}>
+            {loading && activities.length === 0 ? '—' : activities.length}
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>{t("landing:teacherdashboard.this_week", "This Week")}</div>
+          <div className={styles.statValue}>
+            {loading && activities.length === 0 ? '—' : `${activitiesThisWeek} ${activitiesThisWeek === 1 ? 'activity' : 'activities'}`}
+          </div>
+          {mostRecent && (
+            <div style={{ fontSize: '0.7rem', color: 'inherit', opacity: 0.75, marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Last: {mostRecent.title} · {fmtDate(mostRecent.created_at)}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Activities Section */}
       <section className={styles.section}>

@@ -8,20 +8,19 @@ export type SessionEventType =
   | 'phase_completed'
   | 'capture_added'
   | 'geofence_exit'
-  | 'session_submitted';
+  | 'session_submitted'
+  | 'location_update';
 
-export async function logSessionEvent(
+/** Convenience wrapper — fires a location_update event with GPS coordinates. Best-effort. */
+export async function logLocationEvent(
   sessionId: string,
-  eventType: SessionEventType,
-  phase?: string,
-  metadata?: Record<string, unknown>
+  latitude: number,
+  longitude: number,
+  accuracy?: number
 ): Promise<void> {
   try {
     await apiFetch(`/api/v1/sessions/${sessionId}/events`, {
       method: 'POST',
-      body: JSON.stringify({ event_type: eventType, phase, metadata }),
-    });
-  } catch {
-    // Events are best-effort — never block the student flow
-  }
-}
+      body: JSON.stringify({
+        event_type: 'location_update',
+ 

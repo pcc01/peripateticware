@@ -68,6 +68,7 @@ import { FieldNoteEditor as _FieldNoteEditor } from './components/student/FieldN
 import { SelfProjectView as _SelfProjectView } from './components/student/SelfProjectView'
 import { FieldNoteReview as _FieldNoteReview } from './components/teacher/FieldNoteReview'
 import TeacherSubmissionsPage from './pages/TeacherSubmissionsPage'
+import ProfessorFieldworkPage from './pages/teacher/ProfessorFieldworkPage'
 
 import StudentHowItWorksPage from './pages/student/StudentHowItWorksPage'
 import SessionPage from './pages/SessionPage'
@@ -303,6 +304,7 @@ const App: React.FC = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <div className="min-h-screen" style={{ backgroundColor: DIRECTION_COLORS[direction].background }}>
+        <CookieConsentBanner />
         <Routes>
           {/* PUBLIC */}
           <Route path="/" element={<LandingPage />} />
@@ -369,6 +371,7 @@ const App: React.FC = () => {
           <Route path="/teacher/rubrics/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><RubricBuilder /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/shared-library" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><SharedLibraryPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/:id/student-preview" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><StudentActivityPreview /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/activities/:id/fieldwork" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProfessorFieldworkPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/all-activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/sessions/:id/monitor" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherSessionMonitorPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/students" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherStudentsPage /></TeacherLayout></ProtectedRoute>} />
@@ -418,19 +421,4 @@ const App: React.FC = () => {
           <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminHelpPage /></AdminLayout></ProtectedRoute>} />
 
           {/* STUDENT — Journal */}
-          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />
-
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </div>
-    </I18nextProvider>
-  )
-}
-
-const AppWithRouter: React.FC = () => (
-  <Router>
-    <App />
-  </Router>
-)
-
-export default AppWithRouter
+          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></

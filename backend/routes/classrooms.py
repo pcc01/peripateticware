@@ -45,7 +45,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from core.security import SecurityManager
 from models import User
-from services.email_service import send_classroom_invite_email
+from services.email_service import send_classroom_invite_email, send_parent_consent_email
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/classrooms", tags=["classrooms"])
@@ -146,6 +146,7 @@ class StudentJoinRequest(BaseModel):
     password:         str
     password_confirm: str
     date_of_birth:    Optional[str] = None   # YYYY-MM-DD — used for COPPA age gate
+    parent_email:     Optional[EmailStr] = None  # required when student is under 13
 
 
 # ── Teacher: classroom CRUD ────────────────────────────────────────────────────
@@ -632,10 +633,36 @@ async def accept_invite(
             age = 999  # unparseable DOB → treat as adult
 
         if age < 13:
+            # COPPA: parent email is required for under-13 students
+            if not body.parent_email:
+                raise HTTPException(
+                    status_code=400,
+                    detail="A parent or guardian email address is required for students under 13.",
+                )
+            consent_token = secrets.token_urlsafe(32)
             await db.execute(text("""
-                UPDATE users SET requires_parental_consent = TRUE, is_active = FALSE, age_group = 'under_13'
+                UPDATE users
+                SET requires_parental_consent = TRUE,
+                    is_active = FALSE,
+                    age_group = 'under_13',
+                    consent_token = :consent_token
                 WHERE id = :uid
-            """), {"uid": user_id})
+            """), {"uid": user_id, "consent_token": consent_token})
+            # Commit the user row before sending email so the token is persisted
+            # even if the email send itself fails
+            await db.flush()
+            student_name = f"{body.first_name} {body.last_name}"
+            try:
+                await send_parent_consent_email(
+                    to=str(body.parent_email),
+                    token=consent_token,
+                    student_name=student_name,
+                )
+            except Exception as _email_exc:
+                logger.warning(
+                    "Parental consent email failed for student %s (parent: %s): %s",
+                    user_id, body.parent_email, _email_exc,
+                )
         elif age < 16:
             await db.execute(text(
                 "UPDATE users SET age_group = 'under_16' WHERE id = :uid"

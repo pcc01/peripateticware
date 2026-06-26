@@ -26,13 +26,14 @@ class User(Base):
     role = Column(String(50), default='STUDENT', nullable=False, index=True)
     avatar_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
-    age_group = Column(String(20), nullable=True)  # under_13 | under_16 | under_18 | adult
+    age_group = Column(String(20), nullable=True)
     requires_parental_consent = Column(Boolean, default=False)
-    org_id = Column(UUID(as_uuid=True), nullable=True)              # FK organisations.id (raw column, no FK constraint in ORM)
-    primary_org_id = Column(UUID(as_uuid=True), nullable=True)      # added by 20260607_org_jurisdiction
-    signup_country_code = Column(String(10), nullable=True)          # added by 20260607_org_jurisdiction
-    is_platform_admin = Column(Boolean, default=False, nullable=False)  # added by 20260606_platform_ledger
-    invite_token_used = Column(String(128), nullable=True)              # which invite token created this account
+    consent_token = Column(String(128), nullable=True)
+    org_id = Column(UUID(as_uuid=True), nullable=True)
+    primary_org_id = Column(UUID(as_uuid=True), nullable=True)
+    signup_country_code = Column(String(10), nullable=True)
+    is_platform_admin = Column(Boolean, default=False, nullable=False)
+    invite_token_used = Column(String(128), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

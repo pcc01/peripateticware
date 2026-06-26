@@ -3,7 +3,7 @@
 # found in the LICENSE.md file in the root directory of this source tree.
 
 """
-Privacy API — 8 endpoints
+Privacy API — 10 endpoints
   GET  /api/v1/privacy/status           → compliance status, active rule count
   GET  /api/v1/privacy/jurisdictions    → list active JurisdictionConfigs (admin)
   GET  /api/v1/privacy/rules/{rule_id}  → single rule + version history (admin)
@@ -12,6 +12,8 @@ Privacy API — 8 endpoints
   GET  /api/v1/privacy/audit-log/export → CSV export (admin)
   POST /api/v1/privacy/check            → ad-hoc compliance check (teacher+)
   DELETE /api/v1/privacy/consent/{student_hash} → withdraw all consents (admin)
+  GET  /api/v1/privacy/my-data          → FERPA/GDPR data portability export (any auth)
+  DELETE /api/v1/privacy/my-data        → GDPR right-to-erasure anonymisation (any auth)
 """
 
 from __future__ import annotations
@@ -869,9 +871,301 @@ async def get_consent_status(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DELETE /consent/{student_hash}  — admin only
-# Withdraws all active consents for a student (right to withdraw / erasure).
+# GET /my-data  — any authenticated user (FERPA / GDPR data portability)
 # ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/my-data")
+async def get_my_data(
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    FERPA / GDPR data portability export.
+    Returns all data held for the calling user, scoped by role.
+    Access is logged to rule_audit_log.
+    """
+    from sqlalchemy import text as _text
+    from models.database import (
+        LearningSession, StudentCapture, StudentFieldNote,
+        StudentSelfProject, Activity, Project, Class,
+    )
+
+    role = current_user.role.upper() if current_user.role else "UNKNOWN"
+
+    # ── User profile (no password hash) ──────────────────────────────────────
+    user_data = {
+        "id":         str(current_user.id),
+        "email":      current_user.email,
+        "username":   current_user.username,
+        "first_name": current_user.first_name,
+        "last_name":  current_user.last_name,
+        "full_name":  current_user.full_name,
+        "role":       current_user.role,
+        "is_active":  current_user.is_active,
+        "age_group":  current_user.age_group,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+    }
+
+    payload: Dict[str, Any] = {"user": user_data}
+
+    # ── Student data ──────────────────────────────────────────────────────────
+    if role == "STUDENT":
+        sessions_result = await db.execute(
+            select(LearningSession).where(LearningSession.user_id == current_user.id)
+        )
+        sessions = sessions_result.scalars().all()
+        payload["sessions"] = [
+            {
+                "id":            str(s.id),
+                "title":         s.title,
+                "status":        s.status,
+                "location_name": s.location_name,
+                "created_at":    s.created_at.isoformat() if s.created_at else None,
+                "completed_at":  s.completed_at.isoformat() if s.completed_at else None,
+            }
+            for s in sessions
+        ]
+
+        captures_result = await db.execute(
+            select(StudentCapture).where(StudentCapture.student_id == current_user.id)
+        )
+        captures = captures_result.scalars().all()
+        payload["captures"] = [
+            {
+                "id":           str(c.id),
+                "capture_type": str(c.capture_type),
+                "description":  c.description,
+                "file_path":    c.file_path,
+                "created_at":   c.captured_at.isoformat() if c.captured_at else None,
+            }
+            for c in captures
+        ]
+
+        field_notes_result = await db.execute(
+            select(StudentFieldNote).where(StudentFieldNote.student_id == current_user.id)
+        )
+        field_notes = field_notes_result.scalars().all()
+        payload["field_notes"] = [
+            {
+                "id":          str(fn.id),
+                "title":       fn.title,
+                "description": fn.description,
+                "status":      fn.status,
+                "location_name": fn.location_name,
+                "created_at":  fn.created_at.isoformat() if fn.created_at else None,
+            }
+            for fn in field_notes
+        ]
+
+        projects_result = await db.execute(
+            select(StudentSelfProject).where(StudentSelfProject.student_id == current_user.id)
+        )
+        projects = projects_result.scalars().all()
+        payload["projects"] = [
+            {
+                "id":          str(p.id),
+                "title":       p.title,
+                "description": p.description,
+                "status":      p.status,
+                "created_at":  p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in projects
+        ]
+
+    # ── Teacher data ──────────────────────────────────────────────────────────
+    elif role in ("TEACHER", "HOMESCHOOL"):
+        activities_result = await db.execute(
+            select(Activity).where(Activity.teacher_id == current_user.id)
+        )
+        activities = activities_result.scalars().all()
+        payload["activities"] = [
+            {
+                "id":      str(a.id),
+                "title":   a.title,
+                "subject": a.subject,
+                "status":  a.status,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in activities
+        ]
+
+        classrooms_result = await db.execute(
+            select(Class).where(Class.teacher_id == current_user.id)
+        )
+        classrooms = classrooms_result.scalars().all()
+        payload["classrooms"] = [
+            {
+                "id":          str(cl.id),
+                "name":        cl.name,
+                "grade_level": cl.grade_level,
+                "school_year": cl.school_year,
+                "is_active":   cl.is_active,
+            }
+            for cl in classrooms
+        ]
+
+        projects_result = await db.execute(
+            select(Project).where(Project.teacher_id == current_user.id)
+        )
+        projects = projects_result.scalars().all()
+        payload["projects"] = [
+            {
+                "id":      str(p.id),
+                "title":   p.title,
+                "subject": p.subject,
+                "status":  str(p.status),
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in projects
+        ]
+
+    # ── Parent data ───────────────────────────────────────────────────────────
+    elif role == "PARENT":
+        try:
+            rows = (await db.execute(
+                _text(
+                    "SELECT child_id FROM parent_child_links WHERE parent_id = :pid"
+                ),
+                {"pid": str(current_user.id)},
+            )).mappings().all()
+            payload["linked_children_ids"] = [str(r["child_id"]) for r in rows]
+        except Exception as _exc:
+            logger.warning(f"Could not fetch parent_child_links for user={current_user.id}: {_exc}")
+            payload["linked_children_ids"] = []
+
+    # ── Audit log entry ───────────────────────────────────────────────────────
+    try:
+        audit = RuleAuditLog(
+            action            = "DATA_EXPORT_REQUESTED",
+            data_type         = "user_data_portability",
+            actor_id          = str(current_user.id),
+            actor_role        = role,
+            compliance_status = "COMPLIANT",
+            student_id_hash   = hash_student_id(str(current_user.id)),
+            notes             = f"User {current_user.id} exported their own data via GET /privacy/my-data",
+        )
+        db.add(audit)
+        await db.commit()
+    except Exception as _exc:
+        logger.warning(f"Failed to write audit log for data export, user={current_user.id}: {_exc}")
+
+    logger.info(f"Data export served for user={current_user.id} role={role}")
+    return payload
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DELETE /my-data  — any authenticated user (GDPR right to erasure / FERPA)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.delete("/my-data")
+async def delete_my_data(
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    GDPR / FERPA right-to-erasure: anonymise the calling user's personal data.
+
+    Does NOT hard-delete rows — anonymises them to preserve aggregate statistics.
+    For students:
+      - Scrubs PII from the users row (email, username, name fields, age_group)
+      - Nullifies GPS coordinates on field notes and student captures
+      - Deletes audio/video capture files from disk (file_path stored in DB)
+      - Marks the account inactive (is_active = False)
+    For all roles: logs the deletion request to rule_audit_log.
+    """
+    import os as _os
+    from sqlalchemy import text as _text
+    from sqlalchemy import update as _update
+    from models.database import StudentCapture, StudentFieldNote
+
+    role     = current_user.role.upper() if current_user.role else "UNKNOWN"
+    user_id  = current_user.id
+    now      = datetime.utcnow()
+
+    # ── Anonymise the user record ─────────────────────────────────────────────
+    current_user.email      = f"deleted_{user_id}@deleted.invalid"
+    current_user.username   = f"deleted_{user_id}"
+    current_user.first_name = None
+    current_user.last_name  = None
+    current_user.full_name  = None
+    current_user.age_group  = None
+    current_user.is_active  = False
+
+    files_deleted   = 0
+    files_failed    = 0
+
+    # ── Student-specific cleanup ──────────────────────────────────────────────
+    if role == "STUDENT":
+        # Nullify GPS on field notes
+        try:
+            await db.execute(
+                _update(StudentFieldNote)
+                .where(StudentFieldNote.student_id == user_id)
+                .values(location_latitude=None, location_longitude=None)
+            )
+        except Exception as _exc:
+            logger.warning(f"Could not nullify field note locations for user={user_id}: {_exc}")
+
+        # Nullify GPS on student captures + collect file paths for disk deletion
+        try:
+            captures_result = await db.execute(
+                select(StudentCapture).where(StudentCapture.student_id == user_id)
+            )
+            captures = captures_result.scalars().all()
+            for cap in captures:
+                # Clear location
+                cap.location_latitude  = None
+                cap.location_longitude = None
+                # Delete audio/video files from disk
+                if cap.capture_type in ("audio", "video", "photo") and cap.file_path:
+                    try:
+                        _os.unlink(cap.file_path)
+                        files_deleted += 1
+                        cap.file_path = None
+                    except FileNotFoundError:
+                        files_deleted += 1   # already gone — treat as success
+                        cap.file_path = None
+                    except Exception as _ferr:
+                        logger.warning(
+                            f"Could not delete capture file {cap.file_path} "
+                            f"for user={user_id}: {_ferr}"
+                        )
+                        files_failed += 1
+        except Exception as _exc:
+            logger.warning(f"Could not process captures for user={user_id}: {_exc}")
+
+    # ── Commit all DB changes ─────────────────────────────────────────────────
+    await db.commit()
+
+    # ── Audit log ─────────────────────────────────────────────────────────────
+    try:
+        audit = RuleAuditLog(
+            action            = "DATA_ERASURE_COMPLETED",
+            data_type         = "user_data_deletion",
+            actor_id          = str(user_id),
+            actor_role        = role,
+            compliance_status = "COMPLIANT",
+            student_id_hash   = hash_student_id(str(user_id)),
+            notes             = (
+                f"User {user_id} (role={role}) exercised right to erasure via "
+                f"DELETE /privacy/my-data at {now.isoformat()}. "
+                f"Files deleted: {files_deleted}, failed: {files_failed}."
+            ),
+        )
+        db.add(audit)
+        await db.commit()
+    except Exception as _exc:
+        logger.warning(f"Failed to write erasure audit log for user={user_id}: {_exc}")
+
+    logger.info(
+        f"Data erasure completed for user={user_id} role={role} "
+        f"files_deleted={files_deleted} files_failed={files_failed}"
+    )
+    return {
+        "status":  "scheduled",
+        "message": "Your data deletion request has been received.",
+    }
+
 
 @router.delete("/consent/{student_hash}", status_code=status.HTTP_200_OK)
 async def withdraw_consent(

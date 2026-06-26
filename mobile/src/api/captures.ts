@@ -1,6 +1,7 @@
 // src/api/captures.ts
 
 import { apiFetch, getToken, API_BASE } from './client';
+import { logLocationEvent } from './sessionEvents';
 
 export interface Capture {
   id: string;
@@ -52,7 +53,4 @@ export async function uploadCapture(params: {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.detail ?? `Upload failed (${res.status})`);
-  }
-  return res.json();
-}
+    throw new Error(err?.detail ?? `Upload fail

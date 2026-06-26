@@ -575,32 +575,54 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 14i.1 — Privacy First section */}
+      {/* 14i.1 — Privacy First / Trust Badges section */}
       <section style={{ background: 'var(--primary-muted)', padding: '5rem var(--section-x, 1.5rem)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h2 className="h-section text-center" style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>
-            {t('privacy_first_title', '🔒 Privacy First')}
-          </h2>
-          <p className="text-center" style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 3rem' }}>
-            {t('privacy_first_desc', 'Built for K-12 from day one. Compliant with major privacy frameworks — not as an afterthought.')}
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <span style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
+              Privacy &amp; Compliance
+            </span>
+            <h2 className="h-section" style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>
+              {t('privacy_first_title', 'Built for Privacy from Day One')}
+            </h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '640px', margin: '0 auto', fontSize: '1rem', lineHeight: 1.65 }}>
+              {t('privacy_first_desc', 'Peripateticware meets the highest privacy standards for K–12 education in the US, EU, Canada, and Brazil.')}
+            </p>
+          </div>
+
+          {/* Compliance badge grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
             {[
-              { badge: 'FERPA', title: t('ferpa_title', 'FERPA'), desc: t('ferpa_desc', 'Student education records protected under US federal law.') },
-              { badge: 'COPPA', title: t('coppa_title', 'COPPA'), desc: t('coppa_desc', 'Parental consent flow built in for students under 13.') },
-              { badge: 'GDPR', title: t('gdpr_title', 'GDPR'), desc: t('gdpr_desc', 'Full data portability and right to erasure for EU students.') },
-              { badge: 'CCPA', title: t('ccpa_title', 'CCPA'), desc: t('ccpa_desc', 'California privacy rights — opt-out and data deletion supported.') },
-            ].map(({ badge, title, desc }) => (
-              <div key={badge} style={{ background: 'var(--surface)', borderRadius: '1rem', padding: '1.5rem', border: '1px solid var(--border)' }}>
-                <span style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', borderRadius: '0.5rem', padding: '0.25rem 0.75rem', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                  {badge}
+              { acronym: 'FERPA', name: 'Family Educational Rights and Privacy Act', region: 'United States' },
+              { acronym: 'COPPA', name: 'Children\'s Online Privacy Protection Act', region: 'United States' },
+              { acronym: 'GDPR', name: 'General Data Protection Regulation', region: 'European Union' },
+              { acronym: 'CCPA', name: 'California Consumer Privacy Act', region: 'California, US' },
+              { acronym: 'LGPD', name: 'Lei Geral de Proteção de Dados', region: 'Brazil' },
+              { acronym: 'PIPEDA', name: 'Personal Information Protection and Electronic Documents Act', region: 'Canada' },
+            ].map(({ acronym, name, region }) => (
+              <div key={acronym} style={{
+                background: 'var(--surface)',
+                borderRadius: '0.75rem',
+                padding: '1rem 1.25rem',
+                border: '1px solid var(--border)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.4rem',
+              }}>
+                <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--primary)', letterSpacing: '0.02em' }}>
+                  {acronym}
                 </span>
-                <h3 style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '0.5rem' }}>{title}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{desc}</p>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text)', lineHeight: 1.4 }}>
+                  {name}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                  {region}
+                </span>
               </div>
             ))}
           </div>
-          <p className="text-center text-sm mt-6" style={{ color: 'var(--text-faint)' }}>
+
+          <p style={{ textAlign: 'center', color: 'var(--text-faint)', fontSize: '0.8rem' }}>
             {t('no_ads_no_tracking', 'No ads. No tracking. No selling student data. Ever.')}
           </p>
         </div>
@@ -817,6 +839,9 @@ export const LandingPage: React.FC = () => {
             style={{ background: '#fff', color: 'var(--primary)', border: 'none', borderRadius: '0.6rem', padding: '0.85rem 2rem', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }}>
             {t('cta_btn', 'Get Started Free')} →
           </button>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', marginTop: '1.25rem' }}>
+            {t('cta_privacy_note', 'FERPA and COPPA compliant. Student data is never sold or shared.')}
+          </p>
         </div>
       </section>
 

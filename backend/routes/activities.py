@@ -346,13 +346,19 @@ async def delete_activity(
     logger.info(f"Deleted activity: {activity_id}")
 
 
-@router.post("/{activity_id}/publish", response_model=ActivityResponse)
+@router.post("/{activity_id}/publish")
 async def publish_activity(
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Publish an activity (make it visible to others)."""
+    """Publish an activity (make it visible to others).
+
+    Privacy compliance check runs before saving:
+    - BLOCK (issues returned): returns HTTP 422 — activity not published.
+    - WARNING only: publishes and includes warnings in response body.
+    - Check error / unavailable: fails open — publishes without warnings.
+    """
     result = await db.execute(select(Activity).where(Activity.id == activity_id))
     activity = result.scalar_one_or_none()
 
@@ -374,24 +380,49 @@ async def publish_activity(
             detail="Activity must have a title and description before publishing",
         )
 
-    # Run privacy compliance check (non-blocking — returns warning in response)
-    compliance_warning = None
+    # ── Privacy compliance check ──────────────────────────────────────────────
+    # Determine data categories based on grade level (younger students = more
+    # sensitive data collection flags that trigger stricter compliance rules).
+    compliance_warnings: list = []
     try:
         from services.privacy_engine import get_privacy_checker
         checker = get_privacy_checker()
+        grade = activity.grade_level or 9
         activity_data = {
-            "data_collection": ["location", "audio", "photo"] if activity.grade_level and activity.grade_level <= 8 else ["location"],
+            "data_collection": (
+                ["location", "audio", "photo", "behavioral"]
+                if grade <= 8
+                else ["location"]
+            ),
             "third_parties": [],
             "purpose": "educational",
         }
-        is_compliant, issues, _ = checker.check_activity_compliance(
-            str(activity.id), activity_data, 13, None
+        # student_age proxy: grade + 5 years is a common approximation
+        student_age_proxy = min(grade + 5, 18)
+        is_compliant, issues, warnings = checker.check_activity_compliance(
+            str(activity.id),
+            activity_data,
+            student_age_proxy,
+            None,
         )
-        if not is_compliant:
-            compliance_warning = [i for i in issues]
+        if not is_compliant and issues:
+            # Hard BLOCK — do not publish
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=(
+                    "This activity cannot be published: data collection is "
+                    "restricted in the selected jurisdiction. "
+                    f"Issues: {'; '.join(str(i) for i in issues)}"
+                ),
+            )
+        if warnings:
+            compliance_warnings = [str(w) for w in warnings]
+    except HTTPException:
+        raise  # re-raise the 422 we just built
     except Exception as ce:
-        logger.debug(f"Privacy check skipped: {ce}")
+        logger.warning(f"Privacy compliance check failed (fail-open): {ce}")
 
+    # ── Save published status ─────────────────────────────────────────────────
     activity.status = ActivityStatus.PUBLISHED
     activity.updated_at = datetime.now(timezone.utc)
 
@@ -400,7 +431,11 @@ async def publish_activity(
 
     logger.info(f"Published activity: {activity_id}")
 
-    return activity
+    response = ActivityResponse.from_orm(activity)
+    response_data = response.dict()
+    if compliance_warnings:
+        response_data["warnings"] = compliance_warnings
+    return response_data
 
 
 @router.post("/{activity_id}/archive", response_model=ActivityResponse)
@@ -1389,6 +1424,7 @@ async def get_fieldwork_locations(
     fn_q = (
         select(
             StudentFieldNote.student_id.cast(text("TEXT")).label("student_id"),
+          
             _User.full_name.label("student_name"),
             StudentFieldNote.location_latitude.label("latitude"),
             StudentFieldNote.location_longitude.label("longitude"),

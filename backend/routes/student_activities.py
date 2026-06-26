@@ -26,7 +26,7 @@ Endpoints
 """
 
 from fastapi import (
-    APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, status,
+    APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, File, Form, status,
 )
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -285,6 +285,55 @@ async def get_student_activity(
 # 3.  POST /activities/{activity_id}/start  — start or resume a session
 # ─────────────────────────────────────────────────────────────────────────────
 
+async def _notify_parents_gps_consent(session_id: str, activity_id: str) -> None:
+    """Background task: notify parents of under-13 students that GPS consent is needed."""
+    try:
+        import hashlib
+        from core.database import async_session_factory
+        from sqlalchemy import text as _t
+
+        async with async_session_factory() as db:
+            # Find students in the same classroom as this session's activity
+            rows = await db.execute(_t("""
+                SELECT DISTINCT
+                    u.id          AS student_id,
+                    u.age_group,
+                    u.requires_parental_consent,
+                    pcl.parent_id
+                FROM learning_sessions ls
+                JOIN activities        a   ON a.id  = ls.activity_id
+                JOIN classroom_students cs ON cs.student_id = ls.user_id
+                JOIN parent_child_links pcl ON pcl.child_id = ls.user_id
+                JOIN users              u  ON u.id  = ls.user_id
+                WHERE ls.id = :sid::uuid
+            """), {"sid": session_id})
+            for row in rows.mappings().all():
+                # Only notify for under-13 / requires_parental_consent students
+                if not (row["age_group"] == "under_13" or row["requires_parental_consent"]):
+                    continue
+                student_id = str(row["student_id"])
+                parent_id  = str(row["parent_id"])
+                student_hash = hashlib.sha256(student_id.encode()).hexdigest()
+                consent_url = (
+                    f"/parent-consent/{student_hash}"
+                    f"?consent_type=gps&activity_id={activity_id}&student_id={student_id}"
+                )
+                try:
+                    from services.websocket_service import websocket_service, Notification
+                    notif = Notification(
+                        user_id=parent_id,
+                        type="gps_consent_needed",
+                        title="GPS Consent Required",
+                        message="Your child's teacher started a GPS-enabled activity. Tap to review and consent.",
+                        data={"url": consent_url, "activity_id": activity_id},
+                    )
+                    await websocket_service.send_notification(notif)
+                except Exception as _ne:
+                    logger.debug(f"GPS notify parent {parent_id}: {_ne}")
+    except Exception as e:
+        logger.warning(f"_notify_parents_gps_consent non-fatal: {e}")
+
+
 @router.post(
     "/activities/{activity_id}/start",
     response_model=LearningSessionResponse,
@@ -293,6 +342,7 @@ async def get_student_activity(
 async def start_activity_session(
     activity_id:  UUID,
     body:         StartSessionRequest,
+    background_tasks: BackgroundTasks,
     current_user: User          = Depends(get_current_user),
     db:           AsyncSession  = Depends(get_db),
 ) -> LearningSessionResponse:
@@ -348,6 +398,15 @@ async def start_activity_session(
 
     logger.info("Created session %s for user %s / activity %s",
                 session.id, current_user.id, activity_id)
+
+    # GPS: if activity has GPS capture enabled, notify parents of under-13 students
+    if getattr(activity, "discovery_location_gps_capture_enabled", False):
+        background_tasks.add_task(
+            _notify_parents_gps_consent,
+            str(session.id),
+            str(activity_id),
+        )
+
     return _session_response(session, current_user)
 
 
@@ -1116,155 +1175,70 @@ async def save_reflection(
     )).first()
 
     if not row:
-        raise HTTPException(status_code=404, detail="Submission not found")
-    if row[3] != "field_and_reflection":
-        raise HTTPException(status_code=400, detail="Not a Field + Reflection activity")
-
-    # Check gating
-    if row[4] and row[5] not in ("approved",) and body.submit:
-        raise HTTPException(
-            status_code=403,
-            detail="Your teacher must approve your field work before you can submit the reflection."
-        )
-
-    new_reflection_status = "submitted" if body.submit else "in_progress"
-    new_completion_phase  = "complete"  if body.submit else "reflection"
-    new_sub_status        = "submitted" if body.submit else "draft"
-
-    updates = {
-        "reflection_content":  body.reflection_content,
-        "reflection_status":   new_reflection_status,
-        "completion_phase":    new_completion_phase,
-        "submission_status":   new_sub_status,
-        "sub_id":              submission_id,
-    }
-    if body.linked_field_note_id:
-        await db.execute(
-            _text("""
-                UPDATE activity_submissions
-                SET reflection_content = :reflection_content,
-                    reflection_status  = :reflection_status,
-                    completion_phase   = :completion_phase,
-                    submission_status  = :submission_status,
-                    linked_field_note_id = :note_id,
-                    updated_at         = NOW()
-                WHERE id = :sub_id
-            """),
-            {**updates, "note_id": body.linked_field_note_id},
-        )
-    else:
-        await db.execute(
-            _text("""
-                UPDATE activity_submissions
-                SET reflection_content = :reflection_content,
-                    reflection_status  = :reflection_status,
-                    completion_phase   = :completion_phase,
-                    submission_status  = :submission_status,
-                    updated_at         = NOW()
-                WHERE id = :sub_id
-            """),
-            updates,
-        )
-
-    await db.commit()
-    return {"status": new_reflection_status, "submission_id": submission_id}
-
-
-@router.post("/sessions/{session_id}/complete-field")
-async def complete_field_phase(
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """
-    Student marks field work as done on a Field + Reflection activity.
-    Creates / updates the activity_submission row to move it into the
-    reflection queue.
-    """
-    row = (await db.execute(
-        _text("""
-            SELECT ls.activity_id, a.completion_mode, a.require_field_approval
-            FROM   learning_sessions ls
-            JOIN   activities a ON a.id = ls.activity_id
-            WHERE  ls.id = :sid AND ls.user_id = :uid
-        """),
-        {"sid": session_id, "uid": str(current_user.id)},
-    )).first()
-
-    if not row:
         raise HTTPException(status_code=404, detail="Session not found")
-    if row[1] != "field_and_reflection":
-        raise HTTPException(status_code=400, detail="Activity is Field Activity only — no reflection phase")
 
-    activity_id = str(row[0])
+    activity_id      = str(row[0])
+    completion_mode  = row[1]
+    require_approval = row[2]
 
-    # Upsert submission
-    existing = (await db.execute(
-        _text("SELECT id FROM activity_submissions WHERE session_id = :sid"),
-        {"sid": session_id},
-    )).first()
-
-    if existing:
-        await db.execute(
-            _text("""
-                UPDATE activity_submissions
-                SET completion_phase    = 'field_work',
-                    field_phase_status  = 'submitted',
-                    reflection_status   = 'not_started',
-                    submission_status   = 'draft',
-                    updated_at          = NOW()
-                WHERE id = :sub_id
-            """),
-            {"sub_id": str(existing[0])},
-        )
-    else:
+    try:
         await db.execute(
             _text("""
                 INSERT INTO activity_submissions
-                    (id, student_id, activity_id, session_id,
-                     submission_status, completion_phase,
-                     field_phase_status, reflection_status,
-                     created_at, updated_at)
-                VALUES
-                    (uuid_generate_v4(), :uid, :activity_id, :session_id,
-                     'draft', 'field_work',
-                     'submitted', 'not_started',
-                     NOW(), NOW())
+                    (student_id, session_id, activity_id, field_phase_status)
+                VALUES (:uid, :sid::uuid, :aid::uuid, 'submitted')
+                ON CONFLICT (student_id, activity_id) DO UPDATE
+                    SET field_phase_status = 'submitted',
+                        updated_at = NOW()
             """),
-            {"uid": str(current_user.id), "activity_id": activity_id, "session_id": session_id},
+            {"uid": str(current_user.id), "sid": session_id, "aid": activity_id},
         )
+        await db.commit()
+    except Exception as e:
+        logger.error(f"complete_field_phase error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to complete field phase")
 
-    await db.commit()
-    return {"status": "field_complete", "next_phase": "reflection"}
+    return {"status": "submitted", "require_approval": require_approval}
 
 
-# STUDENT PROJECTS — GET /projects
-# =============================================================================
+# Student GPS self-consent (ages 13+)
 
-@router.get("/projects")
-async def get_student_projects(
-    status: Optional[str] = None,
+class _StudentGPSConsentRequest(_BaseModel):
+    activity_id: str
+    consent_given: bool = True
+
+
+@router.post("/consent/gps", status_code=201)
+async def student_record_gps_consent(
+    body: _StudentGPSConsentRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Student's learning sessions filtered by status (used as 'projects' by frontend).
-    Frontend: useStudentStore.fetchActiveProjects() → GET /api/v1/student/projects?status=active
-    """
-    q = select(LearningSession).where(LearningSession.user_id == current_user.id)
-    if status:
-        q = q.where(LearningSession.status == status)
-    q = q.order_by(LearningSession.updated_at.desc()).limit(20)
-    result = await db.execute(q)
-    sessions = result.scalars().all()
-    return [
-        {
-            "id": str(s.id),
-            "title": s.title or "Untitled Session",
-            "status": s.status,
-            "activity_id": str(s.activity_id) if s.activity_id else None,
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-            "completed_at": s.completed_at.isoformat() if s.completed_at else None,
-        }
-        for s in sessions
-    ]
+    """Student (13+) records their own GPS-tracking consent for an activity."""
+    if current_user.role not in (UserRole.STUDENT, UserRole.HOMESCHOOL):
+        raise HTTPException(status_code=403, detail="Student access only")
+
+    import hashlib
+    student_id_hash = hashlib.sha256(str(current_user.id).encode()).hexdigest()
+
+    try:
+        await db.execute(
+            _text("""
+                INSERT INTO consent_logs
+                    (student_id_hash, consent_type, consent_given, consent_method, activity_id, expires_at)
+                VALUES (:hash, 'gps_tracking', :given, 'student_self', :aid::uuid, NOW() + INTERVAL '1 year')
+                ON CONFLICT (student_id_hash, consent_type, activity_id)
+                DO UPDATE SET
+                    consent_given  = EXCLUDED.consent_given,
+                    consent_method = EXCLUDED.consent_method,
+                    expires_at     = EXCLUDED.expires_at,
+                    created_at     = NOW()
+            """),
+            {"hash": student_id_hash, "given": body.consent_given, "aid": body.activity_id},
+        )
+        await db.commit()
+    except Exception as e:
+        logger.error(f"Student GPS consent error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to record consent")
+
+    return {"recorded": True, "consent_given": body.consent_given}

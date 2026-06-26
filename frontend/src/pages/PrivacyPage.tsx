@@ -12,9 +12,16 @@ export const PrivacyPage: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const [privacyStatus, setPrivacyStatus] = useState<PrivacyStatusResult | null>(null);
+  const [statusLoading, setStatusLoading] = useState(true);
 
   useEffect(() => {
-    getPrivacyStatus().then(status => setPrivacyStatus(status));
+    setStatusLoading(true);
+    getPrivacyStatus()
+      .then(status => setPrivacyStatus(status))
+      .catch(() => {
+        // silently fall back — static content remains visible
+      })
+      .finally(() => setStatusLoading(false));
   }, []);
 
   return (
@@ -30,8 +37,31 @@ export const PrivacyPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Live status banner — shown only when API data is available */}
-      {privacyStatus && privacyStatus.status !== 'unknown' && (
+      {/* Live status banner — loading skeleton or live data */}
+      {statusLoading && (
+        <div style={{
+          background: '#f0f7f4',
+          borderBottom: '1px solid #c8e6d4',
+          padding: '0.6rem 1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '0.88rem',
+        }}>
+          <span style={{
+            display: 'inline-block',
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: '#a8d5b5',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }} />
+          <span style={{ color: '#6b8f79' }}>
+            {t('privacy.loading_status', 'Loading compliance status…')}
+          </span>
+        </div>
+      )}
+      {!statusLoading && privacyStatus && privacyStatus.status !== 'unknown' && (
         <div style={{
           background: '#f0f7f4',
           borderBottom: '1px solid #c8e6d4',

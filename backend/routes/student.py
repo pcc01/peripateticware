@@ -507,6 +507,10 @@ async def get_competencies(
 
 async def _transcribe_audio_background(capture_id: UUID, file_path: str):
     """Transcribe audio via ASR service and write result back to DB."""
+    from core.config import settings
+    if not settings.ASR_ENABLED:
+        logger.debug(f"ASR disabled (ASR_ENABLED=false) — skipping transcription of {capture_id}")
+        return
     try:
         from core.database import async_session_factory
         from services.asr_service import asr_service
@@ -525,7 +529,4 @@ async def _transcribe_audio_background(capture_id: UUID, file_path: str):
                     capture.transcript_language = result.get("language")
                 else:
                     capture.transcript = None
-                await db.commit()
-                logger.info(f"ASR complete for capture {capture_id}")
-    except Exception as e:
-        logger.error(f"Background ASR error for {capture_id}: {e}")
+             

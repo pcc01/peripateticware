@@ -112,6 +112,7 @@ export const ActivityBuilder = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const token = useAuthStore((s) => s.token);
+  const currentUser = useAuthStore((s) => s.user);
 
   const [formData, setFormData] = useState<ActivityData>({
     title: '',
@@ -189,6 +190,8 @@ export const ActivityBuilder = () => {
   }, [token]);
 
   const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
   const [showOllamaSuggestions, setShowOllamaSuggestions] = useState(false);
   const [showWikiInfo, setShowWikiInfo] = useState(false);
   const [showCurriculum, setShowCurriculum] = useState(false);
@@ -452,10 +455,22 @@ export const ActivityBuilder = () => {
     setSaveStatus('saving');
     try {
       const payload = buildPayload('draft');
+      let savedId = id;
       if (id) {
         await apiPut(`/api/v1/activities/${id}`, payload, token);
       } else {
-        await apiPost('/api/v1/activities', payload, token);
+        const created = await apiPost('/api/v1/activities', payload, token) as any;
+        savedId = created?.id ?? created?.activity_id;
+      }
+      // Homeschool self-consent: parent IS the user — record consent immediately on save
+      if (homeschoolGpsConsent && gpsEnabled && savedId && currentUser?.role?.toLowerCase() === 'homeschool') {
+        try {
+          await apiPost('/api/v1/parent/consent/gps', {
+            student_id: currentUser.id,
+            activity_id: savedId,
+            consent_given: true,
+          }, token);
+        } catch { /* best-effort */ }
       }
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 3000);
@@ -799,6 +814,46 @@ export const ActivityBuilder = () => {
               {showLocationPicker ? '▼' : '▶'} Map Picker
             </button>
             {showLocationPicker && <LocationPicker onLocationSelected={handleLocationSelected} />}
+
+            {/* GPS tracking toggle */}
+            <div className={styles.formGroup} style={{ marginTop: 20 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={gpsEnabled}
+                  onChange={(e) => {
+                    setGpsEnabled(e.target.checked);
+                    if (!e.target.checked) setHomeschoolGpsConsent(false);
+                    setFormData((prev) => ({
+                      ...prev,
+                      discovery_location_gps_capture_enabled: e.target.checked,
+                    } as any));
+                  }}
+                  style={{ width: 16, height: 16 }}
+                />
+                <span style={{ fontWeight: 600 }}>📍 Enable live GPS tracking during this activity</span>
+              </label>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4, marginLeft: 26 }}>
+                Students' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.
+              </p>
+            </div>
+
+            {/* Homeschool self-consent (parent IS the user) */}
+            {gpsEnabled && currentUser?.role?.toLowerCase() === 'homeschool' && (
+              <div className={styles.formGroup} style={{ marginLeft: 26, padding: '10px 14px', borderRadius: 8, background: 'var(--surface-raised, #f9f9f9)', border: '1px solid var(--border)' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={homeschoolGpsConsent}
+                    onChange={(e) => setHomeschoolGpsConsent(e.target.checked)}
+                    style={{ width: 16, height: 16 }}
+                  />
+                  <span style={{ fontSize: 14 }}>
+                    I consent to GPS location capture for my child during this activity
+                  </span>
+                </label>
+              </div>
+            )}
 
             {/* Wiki location info (only when coordinates are set) */}
             {formData.location.latitude && formData.location.longitude && (
@@ -1150,74 +1205,4 @@ export const ActivityBuilder = () => {
                   </span>
                 )}
                 {formData.difficulty_level && (
-                  <span style={{ background: '#fff3e0', color: '#e65100', fontSize: 11, padding: '3px 8px', borderRadius: 20, fontWeight: 600 }}>
-                    {'★'.repeat(formData.difficulty_level)}{'☆'.repeat(5 - formData.difficulty_level)} Difficulty
-                  </span>
-                )}
-              </div>
-
-              {/* Publish callout */}
-              <div style={{ background: '#fffde7', border: '1px solid #f9a825', borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: '#5d4037' }}>
-                <strong>📲 Publishing this activity makes it visible on the student mobile app.</strong>
-                {' '}Use <em>Save and Publish</em> below, or save as draft to come back later.
-              </div>
-
-              {/* CTA */}
-              <button style={{
-                width: '100%', padding: '12px 0',
-                background: '#2e7d32', color: 'white', border: 'none',
-                borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer'
-              }}>Start Activity</button>
-            </div>
-          </section>
-        )}
-
-        {/* Curriculum Tab */}
-        {activeTab === 'curriculum' &&
-        <section className={styles.section}>
-            <h2>{t("landing:curriculum_alignment", "🗂️ Curriculum Alignment")}</h2>
-            <CurriculumMapper
-            selectedUnits={formData.curriculum_units || []}
-            onUnitsChange={(units: string[]) => setFormData((p) => ({ ...p, curriculum_units: units }))}
-            subject={formData.subject}
-            gradeLevel={formData.grade_level} />
-          </section>
-        }
-
-        {/* Status Messages */}
-        {saveStatus !== 'idle' &&
-        <div className={`${styles.statusMessage} ${styles[saveStatus]}`}>
-            {saveStatus === 'saving' && 'Saving...'}
-            {saveStatus === 'success' && '✅ Saved successfully!'}
-            {saveStatus === 'error' && '❌ Error saving activity.'}
-          </div>
-        }
-
-        {/* Action Buttons */}
-        <section className={styles.actions}>
-          <button
-            onClick={handleCancel}
-            className={styles.secondaryBtn}
-            disabled={isSaving}>
-            Cancel
-          </button>
-          <button
-            onClick={handleSaveChanges}
-            className={styles.primaryBtn}
-            disabled={isSaving || !formData.title.trim()}>
-            {isSaving ? 'Saving...' : 'Save Draft'}
-          </button>
-          <button
-            onClick={handleSaveAndPublish}
-            className={styles.primaryBtn}
-            disabled={isSaving || !formData.title.trim()}
-            style={{ background: '#1b5e20', borderColor: '#1b5e20' }}>
-            {isSaving ? 'Publishing...' : '📲 Save and Publish to Student App'}
-          </button>
-        </section>
-      </main>
-    </div>
-  );
-};
-
-export default ActivityBuilder;
+                  <span style={{ bac
