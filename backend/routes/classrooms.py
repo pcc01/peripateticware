@@ -173,9 +173,20 @@ async def create_classroom(
     )).scalar()
     # Classroom limit enforced — upgrade to add more
     if count_row is not None and limit_row is not None and count_row >= limit_row:
+        tier_now = (await db.execute(
+            text("SELECT license_tier FROM organizations WHERE id = :oid"),
+            {"oid": org_id},
+        )).scalar() or "free"
         raise HTTPException(
             status_code=402,
-            detail=f"Classroom limit reached ({limit_row}). Upgrade your plan to add more.",
+            detail={
+                "code":          "UPGRADE_REQUIRED",
+                "feature":       "classroom_count",
+                "required_tier": "school",
+                "current_tier":  tier_now,
+                "limit":         limit_row,
+                "current":       count_row,
+            },
         )
 
     classroom_id = str(uuid4())
@@ -851,7 +862,21 @@ async def add_student(
         "SELECT max_students_per_classroom FROM organizations WHERE id = :oid"
     ), {"oid": org_id})).scalar() or 30
     if current_count >= cap:
-        raise HTTPException(status_code=409, detail=f"This classroom is full ({cap} students).")
+        seat_tier = (await db.execute(
+            text("SELECT license_tier FROM organizations WHERE id = :oid"),
+            {"oid": org_id},
+        )).scalar() or "free"
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "code":          "UPGRADE_REQUIRED",
+                "feature":       "student_seats",
+                 "required_tier": "school",
+                "current_tier":  seat_tier,
+                "limit":         cap,
+                "current":       current_count,
+            },
+        )
 
     await db.execute(text("""
         INSERT INTO classroom_students (classroom_id, student_id, enrolled_at)
@@ -865,4 +890,3 @@ async def add_student(
     """), {"mid": str(uuid4()), "oid": org_id, "uid": body.student_id})
     await db.commit()
     return {"success": True, "classroom_id": classroom_id, "student_id": body.student_id}
-

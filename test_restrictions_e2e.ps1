@@ -66,11 +66,11 @@ function Invoke-ApiRaw($Method, $Path, $Body, $Token) {
         $body = $null
         if ($_.Exception.Response) {
             $code = [int]$_.Exception.Response.StatusCode
-            try {
-                $stream = $_.Exception.Response.GetResponseStream()
-                $reader = New-Object System.IO.StreamReader($stream)
-                $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
-            } catch {}
+        }
+        # $_.ErrorDetails.Message is the most reliable way to get the response body
+        # from a failed Invoke-WebRequest across PowerShell 5.1 and 7+
+        if ($_.ErrorDetails.Message) {
+            $body = $_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue
         }
         return @{ Code = $code; Body = $body }
     }

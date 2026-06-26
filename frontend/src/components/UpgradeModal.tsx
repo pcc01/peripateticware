@@ -22,6 +22,14 @@ const FEATURE_CONFIG: Record<string, { name: string; paddlePriceId: string }> = 
     name: 'Portfolio & Report Exports',
     paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
   },
+  classroom_count: {
+    name: 'Additional Classrooms',
+    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_SCHOOL ?? '',
+  },
+  student_seats: {
+    name: 'Additional Student Seats',
+    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_SCHOOL ?? '',
+  },
 }
 
 interface UpgradePayload {
