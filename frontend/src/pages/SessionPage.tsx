@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth'
+import { useSessionSecurity } from '@/hooks/useSessionSecurity'
 import { LearningSession, EvidenceOfLearning, InquiryEntry } from '@/types/session';
 import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
@@ -28,7 +29,8 @@ const SessionPage: React.FC = () => {
   const { t } = useTranslation(['STUDENT', 'common']);
   const { sessionId } = useParams<{sessionId: string;}>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuth()
+  useSessionSecurity();
 
   const [session, setSession] = useState<LearningSession | null>(null);
   const [evidence, setEvidence] = useState<EvidenceOfLearning | null>(null);

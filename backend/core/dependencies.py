@@ -9,7 +9,7 @@ from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from core.database import get_db
-from core.security import SecurityManager
+from core.security import SecurityManager, TOKEN_EXPIRED
 from models.database import User, UserRole
 import logging
 
@@ -19,7 +19,18 @@ security = HTTPBearer()
 
 
 async def get_user_from_token_str(token: str, db: AsyncSession) -> User:
-    """Shared helper — validate a raw JWT string and return the User."""
+    """Shared helper — validate a raw JWT string and return the User.
+
+    Distinguishes token expiry (TOKEN_EXPIRED sentinel) from a bad/tampered
+    token so the frontend receives a clear reason=expired signal.
+    """
+    payload = SecurityManager.verify_token(token)
+    if payload is TOKEN_EXPIRED:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     user_id = SecurityManager.extract_user_id_from_token(token)
     if user_id is None:
         raise HTTPException(
@@ -67,8 +78,14 @@ async def get_current_user(
     """Get authenticated current user"""
     try:
         token = credentials.credentials
+        payload = SecurityManager.verify_token(token)
+        if payload is TOKEN_EXPIRED:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         user_id = SecurityManager.extract_user_id_from_token(token)
-        
         if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

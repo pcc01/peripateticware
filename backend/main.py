@@ -175,49 +175,76 @@ if RATE_LIMIT_ENABLED:
 # MIDDLEWARE
 # ============================================================================
 
-# ============================================================================
-# MIDDLEWARE
-# ============================================================================
-
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
     Adds HTTP security headers to every response.
-    CSP is permissive enough for the SPA (inline scripts via Vite, CDN fonts).
+
+    CSP notes:
+    - style-src  : 'unsafe-inline' required by Vite-injected styles + Google Fonts
+    - script-src : 'unsafe-eval' only in development (Vite HMR); removed in prod
+    - connect-src: ws://localhost:* / wss://localhost:* covers Vite HMR in dev only;
+                   production tightens this to 'self' ws: wss: scoped to same origin
+    - img-src    : data: / blob: needed for canvas exports; https: for external avatars
+    - worker-src : blob: required for PDF.js / audio worklets
+
+    HSTS is suppressed in development (HTTP-only) — browsers ignore it over HTTP
+    anyway, but omitting it keeps dev tooling clean.
     """
     _API_PREFIX = "/api/"
 
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         is_dev = settings.ENVIRONMENT == "development"
+
+        # script-src: allow eval only in dev (Vite needs it for source maps / HMR)
         script_src = (
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
             if is_dev
-            else "script-src 'self' 'unsafe-inline'; "
+            else "script-src 'self' 'unsafe-inline'"
         )
-        upgrade_insecure = "" if is_dev else "upgrade-insecure-requests; "
+
+        # connect-src: Vite HMR uses ws://localhost:* in dev
+        connect_src = (
+            "connect-src 'self' ws://localhost:* wss://localhost:*"
+            if is_dev
+            else "connect-src 'self' ws: wss:"
+        )
+
+        # upgrade-insecure-requests only makes sense over HTTPS (production)
+        upgrade_insecure = "" if is_dev else " upgrade-insecure-requests;"
+
+        csp_parts = [
+            "default-src 'self'",
+            script_src,
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com data:",
+            "img-src 'self' data: blob: https:",
+            connect_src,
+            "media-src 'self' blob:",
+            "worker-src blob:",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ]
         response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            + script_src
-            + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com data:; "
-            "img-src 'self' data: blob: https:; "
-            "connect-src 'self' ws: wss:; "
-            "media-src 'self' blob:; "
-            "worker-src blob:; "
-            + upgrade_insecure
+            "; ".join(csp_parts) + ";" + upgrade_insecure
         )
+
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = (
             "geolocation=(self), microphone=(self), camera=(self), payment=(), usb=()"
         )
-        response.headers["Strict-Transport-Security"] = (
-            "max-age=31536000; includeSubDomains; preload"
-        )
+        # HSTS: only meaningful over HTTPS — skip in development
+        if not is_dev:
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains; preload"
+            )
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
         response.headers["Cross-Origin-Resource-Policy"] = "same-site"
+        # API responses must never be cached by proxies or browsers
         if request.url.path.startswith(self._API_PREFIX):
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"

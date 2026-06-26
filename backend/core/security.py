@@ -9,7 +9,7 @@ Security utilities - JWT token management and password hashing
 
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-from jose import JWTError, jwt
+from jose import JWTError, ExpiredSignatureError, jwt
 import logging
 
 logger = logging.getLogger(__name__)
@@ -152,15 +152,27 @@ def create_access_token(
         raise
 
 
+# Sentinel returned by verify_token() when the JWT signature is valid but the
+# token is past its exp claim. Lets callers emit HTTP 401 "Token expired" rather
+# than the generic "Invalid credentials", so the frontend can trigger a clean
+# logout with reason=expired (matching the useSessionSecurity hook).
+TOKEN_EXPIRED: Dict[str, Any] = {"__token_expired__": True}
+
+
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
     """
-    Verify and decode JWT token
-    
-    Args:
-        token: JWT token string to verify
-        
+    Verify and decode JWT token.
+
     Returns:
-        Decoded token payload as dictionary, or None if invalid
+        - dict payload on success
+        - TOKEN_EXPIRED sentinel when the token is past its ``exp`` claim
+          (python-jose raises ExpiredSignatureError in this case)
+        - None for any other invalid token (bad signature, malformed, etc.)
+
+    Callers that need to distinguish expiry from a bad token can check:
+        payload = verify_token(token)
+        if payload is TOKEN_EXPIRED: raise HTTP 401 "Token expired"
+        if payload is None:          raise HTTP 401 "Invalid credentials"
     """
     try:
         payload = jwt.decode(
@@ -168,14 +180,22 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
             SECRET_KEY,
             algorithms=[ALGORITHM]
         )
-        logger.debug("âœ… Token verified successfully")
+        logger.debug("Token verified successfully")
         return payload
-        
+
+    except ExpiredSignatureError:
+        # Token was well-formed and correctly signed, but exp is in the past.
+        # Return the sentinel so callers can emit "Token expired" rather than
+        # the generic "Invalid credentials" — the frontend useSessionSecurity
+        # hook uses this to trigger a clean logout with reason=expired.
+        logger.info("JWT token has expired")
+        return TOKEN_EXPIRED
+
     except JWTError as e:
-        logger.warning(f"âŒ Token verification failed: {e}")
+        logger.warning(f"Token verification failed (invalid): {e}")
         return None
     except Exception as e:
-        logger.error(f"âŒ Unexpected error during token verification: {e}")
+        logger.error(f"Unexpected error during token verification: {e}")
         return None
 
 
