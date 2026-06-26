@@ -52,10 +52,11 @@ function Invoke-ApiRaw($Method, $Path, $Body, $Token) {
     if ($Token) { $headers["Authorization"] = "Bearer $Token" }
     try {
         $params = @{
-            Method = $Method
-            Uri = "$BASE$Path"
-            Headers = $headers
-            ErrorAction = "Stop"
+            Method           = $Method
+            Uri              = "$BASE$Path"
+            Headers          = $headers
+            UseBasicParsing  = $true
+            ErrorAction      = "Stop"
         }
         if ($Body) { $params["Body"] = ($Body | ConvertTo-Json -Compress) }
         $response = Invoke-WebRequest @params
@@ -164,17 +165,17 @@ if ($hsLogin.Code -eq 200) {
     $hsToken = $hsLogin.Body.access_token
 
     # Add child 1 — should succeed
-    $child1 = Invoke-ApiRaw "POST" "/homeschool/children" @{ first_name = "Child"; last_name = "One"; birth_year = 2015 } $hsToken
+    $child1 = Invoke-ApiRaw "POST" "/homeschool/children" @{ full_name = "Child One"; email = "child1_$ts@example.com"; password = "ChildPass1!" } $hsToken
     Write-Result "First child add succeeds (200/201)" `
         ($child1.Code -in @(200, 201)) "Got $($child1.Code)"
 
     # Add child 2 — may succeed (limit is AT 2, so the 3rd would be blocked)
-    $child2 = Invoke-ApiRaw "POST" "/homeschool/children" @{ first_name = "Child"; last_name = "Two"; birth_year = 2016 } $hsToken
+    $child2 = Invoke-ApiRaw "POST" "/homeschool/children" @{ full_name = "Child Two"; email = "child2_$ts@example.com"; password = "ChildPass2!" } $hsToken
     Write-Result "Second child add succeeds or hits limit (200/201/402)" `
         ($child2.Code -in @(200, 201, 402)) "Got $($child2.Code)"
 
     # Add child 3 — should be 402 if limit is 2
-    $child3 = Invoke-ApiRaw "POST" "/homeschool/children" @{ first_name = "Child"; last_name = "Three"; birth_year = 2017 } $hsToken
+    $child3 = Invoke-ApiRaw "POST" "/homeschool/children" @{ full_name = "Child Three"; email = "child3_$ts@example.com"; password = "ChildPass3!" } $hsToken
     if ($child2.Code -in @(200, 201)) {
         Write-Result "Third child blocked with 402 (free tier limit=2)" `
             ($child3.Code -eq 402) "Got $($child3.Code)"
@@ -197,9 +198,17 @@ Write-Host ""
 # --------------------------------------------------------------------------
 Write-Host "[Test 3] Portfolio/report export gate (homeschool)" -ForegroundColor Cyan
 if ($hsLogin.Code -eq 200) {
-    $export = Invoke-ApiRaw "GET" "/homeschool/portfolio/export" $null $hsToken
+    # Endpoint is POST /homeschool/export/portfolio — requires child_id in body
+    # Use a dummy UUID; tier check fires before child lookup
+    $exportBody = @{ child_id = "00000000-0000-0000-0000-000000000000"; format = "pdf" }
+    $export = Invoke-ApiRaw "POST" "/homeschool/export/portfolio" $exportBody $hsToken
     Write-Result "Portfolio export returns 402 for free-tier homeschool" `
-        ($export.Code -eq 402) "Got $($export.Code) (404 means endpoint path differs -- check routes)"
+        ($export.Code -eq 402) "Got $($export.Code)"
+    if ($export.Code -eq 402) {
+        $d = $export.Body.detail
+        Write-Result "402 detail has code=UPGRADE_REQUIRED" ($d.code -eq "UPGRADE_REQUIRED") "Got '$($d.code)'"
+        Write-Result "402 detail has feature=portfolio_export" ($d.feature -eq "portfolio_export") "Got '$($d.feature)'"
+    }
 } else {
     Write-Host "  [SKIP] No homeschool token" -ForegroundColor Yellow
 }

@@ -736,10 +736,12 @@ async def generate_report(
     if tier_r in ("free", "homeschool_free"):
         raise HTTPException(
             status_code=402,
-            detail=(
-                "Portfolio exports and compliance reports require the Homeschool Family plan ($12/mo). "
-                "Upgrade to generate PDF portfolios and state standards reports."
-            ),
+            detail={
+                "code":          "UPGRADE_REQUIRED",
+                "feature":       "portfolio_export",
+                "required_tier": "homeschool_family",
+                "current_tier":  tier_r,
+            },
         )
 
     try:

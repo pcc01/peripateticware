@@ -18,6 +18,10 @@ const FEATURE_CONFIG: Record<string, { name: string; paddlePriceId: string }> = 
     name: 'Additional Children',
     paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
   },
+  portfolio_export: {
+    name: 'Portfolio & Report Exports',
+    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
+  },
 }
 
 interface UpgradePayload {
