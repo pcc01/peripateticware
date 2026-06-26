@@ -53,4 +53,14 @@ export async function uploadCapture(params: {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.detail ?? `Upload fail
+    throw new Error(err?.detail ?? `Upload failed (${res.status})`);
+  }
+  const capture = (await res.json()) as Capture;
+
+  // Best-effort: fire a location_update session event so teacher map updates live
+  if (params.sessionId && params.latitude != null && params.longitude != null) {
+    logLocationEvent(params.sessionId, params.latitude, params.longitude).catch(() => {});
+  }
+
+  return capture;
+}

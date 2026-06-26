@@ -722,7 +722,7 @@ class GPSConsentRequest(BaseModel):
 async def record_gps_consent(
     body: GPSConsentRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = _get_current_user,
+    current_user: User = Depends(_get_current_user),
 ):
     """
     Parent records GPS-tracking consent for a specific student+activity.
@@ -764,4 +764,3 @@ async def record_gps_consent(
         "consent_given": body.consent_given,
         "activity_id": body.activity_id,
     }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

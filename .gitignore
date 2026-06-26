@@ -94,6 +94,7 @@ BUG_CHECKLIST.md
 Caddyfile
 EXPO_TESTING_GUIDE.md
 TOMORROW_CHECKLIST.md
+NEXT_SESSION_TASKS.md
 # Agent pipeline definitions and all output (never commit these)
 agents/
 

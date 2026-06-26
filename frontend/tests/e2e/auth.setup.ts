@@ -5,7 +5,7 @@
  * Uses direct API calls (not UI login) for reliability.
  * The Vite proxy rewrites /auth/* → /api/v1/auth/* on the backend.
  */
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -20,7 +20,7 @@ const HOMESCHOOL_FILE = path.join(__dirname, '.auth/homeschool.json');
 const PLATFORM_FILE   = path.join(__dirname, '.auth/platform.json');
 
 async function loginAs(
-  page: Parameters<typeof setup>[1],
+  page: Page,
   email: string,
   password: string,
   stateFile: string,
@@ -91,6 +91,10 @@ setup('authenticate as homeschool', async ({ page }) => {
     process.env.TEST_HOMESCHOOL_EMAIL    ?? 'homeschool@example.com',
     process.env.TEST_HOMESCHOOL_PASSWORD ?? 'SecurePass123!',
     HOMESCHOOL_FILE);
+  // Mark onboarding as dismissed so tests land on the dashboard, not the welcome wizard.
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => localStorage.setItem('hs_onboarding_dismissed', '1'));
+  await page.context().storageState({ path: HOMESCHOOL_FILE });
 });
 
 setup('authenticate as platform admin', async ({ page }) => {

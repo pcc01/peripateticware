@@ -23,4 +23,26 @@ export async function logLocationEvent(
       method: 'POST',
       body: JSON.stringify({
         event_type: 'location_update',
- 
+        metadata: { latitude, longitude, accuracy: accuracy ?? null },
+      }),
+    });
+  } catch {
+    // Best-effort — never block the student flow
+  }
+}
+
+export async function logSessionEvent(
+  sessionId: string,
+  eventType: SessionEventType,
+  phase?: string,
+  metadata?: Record<string, unknown>
+): Promise<void> {
+  try {
+    await apiFetch(`/api/v1/sessions/${sessionId}/events`, {
+      method: 'POST',
+      body: JSON.stringify({ event_type: eventType, phase, metadata }),
+    });
+  } catch {
+    // Events are best-effort — never block the student flow
+  }
+}

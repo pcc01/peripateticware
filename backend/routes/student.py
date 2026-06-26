@@ -529,4 +529,7 @@ async def _transcribe_audio_background(capture_id: UUID, file_path: str):
                     capture.transcript_language = result.get("language")
                 else:
                     capture.transcript = None
-             
+                await db.commit()
+                logger.info(f"ASR complete for capture {capture_id}")
+    except Exception as e:
+        logger.error(f"Background ASR error for {capture_id}: {e}")

@@ -2,7 +2,7 @@
  * Parent comprehensive E2E tests — all routes and features.
  * Uses saved auth state from auth.setup.ts.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 test.use({ storageState: path.join(__dirname, '.auth/parent.json') });
 
-function collectConsoleErrors(page: Parameters<typeof test>[1]) {
+function collectConsoleErrors(page: Page) {
   const errors: string[] = [];
   page.on('console', msg => {
     if (msg.type() === 'error') {

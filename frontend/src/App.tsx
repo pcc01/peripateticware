@@ -421,4 +421,19 @@ const App: React.FC = () => {
           <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminHelpPage /></AdminLayout></ProtectedRoute>} />
 
           {/* STUDENT — Journal */}
-          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></
+          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </div>
+    </I18nextProvider>
+  )
+}
+
+const AppWithRouter: React.FC = () => (
+  <Router>
+    <App />
+  </Router>
+)
+
+export default AppWithRouter

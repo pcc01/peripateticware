@@ -453,4 +453,52 @@ async def _fire_location_event(
     longitude: float,
 ) -> None:
     """Best-effort insert of a location_update event.  Never raises."""
-   
+    import json
+    try:
+        await db.execute(
+            text("""
+                INSERT INTO session_events (session_id, student_id, event_type, metadata)
+                VALUES (:sid, :uid, 'location_update', :meta::jsonb)
+            """),
+            {
+                "sid": str(session_id),
+                "uid": str(student_id),
+                "meta": json.dumps({
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "accuracy": None,
+                    "student_id": str(student_id),
+                }),
+            },
+        )
+        await db.commit()
+    except Exception as exc:
+        logger.warning(f"_fire_location_event non-fatal error: {exc}")
+
+
+async def _check_gps_consent(
+    db: AsyncSession,
+    student_id,
+    activity_id,
+) -> bool:
+    """Return True if active GPS-tracking consent exists for this student+activity."""
+    if not activity_id:
+        return False
+    try:
+        result = await db.execute(
+            text("""
+                SELECT consent_given FROM consent_logs
+                WHERE student_id_hash = encode(digest(:sid::text, 'sha256'), 'hex')
+                  AND consent_type    = 'gps_tracking'
+                  AND activity_id     = :aid::uuid
+                  AND consent_given   = TRUE
+                  AND (expires_at IS NULL OR expires_at > NOW())
+                LIMIT 1
+            """),
+            {"sid": str(student_id), "aid": str(activity_id)},
+        )
+        row = result.fetchone()
+        return row is not None
+    except Exception as exc:
+        logger.warning(f"_check_gps_consent non-fatal error: {exc}")
+        return False

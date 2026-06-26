@@ -18,6 +18,7 @@ class ActivityTypeEnum(str, Enum):
     HANDS_ON = "hands_on"
     VIRTUAL = "virtual"
     HYBRID = "hybrid"
+    DISCOVERY = "discovery"
 
 
 # Coercion maps so clients sending text labels / legacy values don't 422.
@@ -33,7 +34,6 @@ _ACTIVITY_TYPE_ALIASES = {
     "hands-on": "hands_on",
     "project": "inquiry",
     "experiment": "inquiry",
-    "discovery": "inquiry",
 }
 
 

@@ -775,6 +775,33 @@ async def submit_activity(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 6b. POST /sessions/{session_id}/complete-field  — mark field phase complete
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/sessions/{session_id}/complete-field")
+async def complete_field_phase(
+    session_id:   UUID,
+    current_user: User         = Depends(get_current_user),
+    db:           AsyncSession = Depends(get_db),
+):
+    """Mark the field / inquiry phase of a session as complete.
+
+    Fail-open: if the session doesn't exist or belongs to another user, returns
+    {"status": "ok"} anyway so the student flow is never blocked by this call.
+    """
+    try:
+        session = await db.get(LearningSession, session_id)
+        if session and str(session.student_id) == str(current_user.id):
+            if session.status not in ("completed", "submitted"):
+                session.status = "field_complete"
+                db.add(session)
+                await db.commit()
+    except Exception as _err:
+        logger.warning("complete-field non-blocking error: %s", _err)
+    return {"status": "ok", "session_id": str(session_id)}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 7.  GET /sessions/{session_id}/progress  — real-time progress summary
 # ─────────────────────────────────────────────────────────────────────────────
 

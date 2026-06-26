@@ -204,7 +204,7 @@ async def list_classrooms(
                COUNT(cs.student_id) AS student_count,
                COALESCE(o.max_students_per_classroom, 30) AS max_students_per_classroom
         FROM   classrooms c
-        JOIN   organizations o ON o.id = c.org_id
+        LEFT JOIN organizations o ON o.id = c.org_id
         LEFT JOIN classroom_students cs ON cs.classroom_id = c.id
         WHERE  c.teacher_id = :tid
         GROUP BY c.id, o.max_students_per_classroom
@@ -222,6 +222,40 @@ async def list_classrooms(
             "max_students_per_classroom": r["max_students_per_classroom"],
             "at_capacity":                r["student_count"] >= r["max_students_per_classroom"],
             "created_at":                 r["created_at"].isoformat() if r["created_at"] else None,
+        }
+        for r in rows
+    ]
+
+
+# ── Student: my classrooms (must be above /{classroom_id} to avoid shadowing) ──
+
+@router.get("/my")
+async def my_classrooms(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = (await db.execute(text("""
+        SELECT c.id, c.name, c.grade_level, c.subject,
+               u.first_name || ' ' || u.last_name AS teacher_name,
+               o.name AS org_name,
+               cs.enrolled_at
+        FROM   classroom_students cs
+        JOIN   classrooms c ON c.id = cs.classroom_id
+        JOIN   users u      ON u.id = c.teacher_id
+        JOIN   organizations o ON o.id = c.org_id
+        WHERE  cs.student_id = :uid AND c.is_active = TRUE
+        ORDER BY cs.enrolled_at DESC
+    """), {"uid": str(current_user.id)})).mappings().all()
+
+    return [
+        {
+            "id":           str(r["id"]),
+            "name":         r["name"],
+            "grade_level":  r["grade_level"],
+            "subject":      r["subject"],
+            "teacher_name": r["teacher_name"],
+            "org_name":     r["org_name"],
+            "enrolled_at":  r["enrolled_at"].isoformat() if r["enrolled_at"] else None,
         }
         for r in rows
     ]
@@ -832,36 +866,3 @@ async def add_student(
     await db.commit()
     return {"success": True, "classroom_id": classroom_id, "student_id": body.student_id}
 
-
-# ── Student: my classrooms ─────────────────────────────────────────────────────
-
-@router.get("/my")
-async def my_classrooms(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    rows = (await db.execute(text("""
-        SELECT c.id, c.name, c.grade_level, c.subject,
-               u.first_name || ' ' || u.last_name AS teacher_name,
-               o.name AS org_name,
-               cs.enrolled_at
-        FROM   classroom_students cs
-        JOIN   classrooms c ON c.id = cs.classroom_id
-        JOIN   users u      ON u.id = c.teacher_id
-        JOIN   organizations o ON o.id = c.org_id
-        WHERE  cs.student_id = :uid AND c.is_active = TRUE
-        ORDER BY cs.enrolled_at DESC
-    """), {"uid": str(current_user.id)})).mappings().all()
-
-    return [
-        {
-            "id":           str(r["id"]),
-            "name":         r["name"],
-            "grade_level":  r["grade_level"],
-            "subject":      r["subject"],
-            "teacher_name": r["teacher_name"],
-            "org_name":     r["org_name"],
-            "enrolled_at":  r["enrolled_at"].isoformat() if r["enrolled_at"] else None,
-        }
-        for r in rows
-    ]

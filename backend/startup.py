@@ -73,6 +73,18 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
             await conn.execute(text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token_used VARCHAR(128)"
             ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES organizations(id)"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS consent_token VARCHAR(128)"
+            ))
             # ── Activities location columns ───────────────────────────────────
             await conn.execute(text(
                 "ALTER TABLE activities ADD COLUMN IF NOT EXISTS enriched_location_id UUID"
@@ -1483,4 +1495,16 @@ async def start_background_tasks(async_session, settings) -> None:
                 async with async_session() as db:
                     await anomaly_detect(db)
 
-            _scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_aler
+            _scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_alert",   replace_existing=True)
+            _scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect", replace_existing=True)
+            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
+        except Exception as e:
+            logger.warning(f"⊘ Budget monitor jobs not added: {e}")
+
+    # ── Start the shared scheduler ────────────────────────────────────────────
+    if _scheduler is not None and not _scheduler.running:
+        try:
+            _scheduler.start()
+            logger.info("✅ APScheduler started")
+        except Exception as e:
+            logger.warning(f"⊘ APScheduler failed to start: {e}")

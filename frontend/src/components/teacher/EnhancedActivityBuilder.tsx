@@ -1205,4 +1205,74 @@ export const ActivityBuilder = () => {
                   </span>
                 )}
                 {formData.difficulty_level && (
-                  <span style={{ bac
+                  <span style={{ background: '#fff3e0', color: '#e65100', fontSize: 11, padding: '3px 8px', borderRadius: 20, fontWeight: 600 }}>
+                    {'★'.repeat(formData.difficulty_level)}{'☆'.repeat(5 - formData.difficulty_level)} Difficulty
+                  </span>
+                )}
+              </div>
+
+              {/* Publish callout */}
+              <div style={{ background: '#fffde7', border: '1px solid #f9a825', borderRadius: 8, padding: '10px 12px', marginBottom: 16, fontSize: 12, color: '#5d4037' }}>
+                <strong>📲 Publishing this activity makes it visible on the student mobile app.</strong>
+                {' '}Use <em>Save and Publish</em> below, or save as draft to come back later.
+              </div>
+
+              {/* CTA */}
+              <button style={{
+                width: '100%', padding: '12px 0',
+                background: '#2e7d32', color: 'white', border: 'none',
+                borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer'
+              }}>Start Activity</button>
+            </div>
+          </section>
+        )}
+
+        {/* Curriculum Tab */}
+        {activeTab === 'curriculum' &&
+        <section className={styles.section}>
+            <h2>{t("landing:curriculum_alignment", "🗂️ Curriculum Alignment")}</h2>
+            <CurriculumMapper
+            selectedUnits={formData.curriculum_units || []}
+            onUnitsChange={(units: string[]) => setFormData((p) => ({ ...p, curriculum_units: units }))}
+            subject={formData.subject}
+            gradeLevel={formData.grade_level} />
+          </section>
+        }
+
+        {/* Status Messages */}
+        {saveStatus !== 'idle' &&
+        <div className={`${styles.statusMessage} ${styles[saveStatus]}`}>
+            {saveStatus === 'saving' && 'Saving...'}
+            {saveStatus === 'success' && '✅ Saved successfully!'}
+            {saveStatus === 'error' && '❌ Error saving activity.'}
+          </div>
+        }
+
+        {/* Action Buttons */}
+        <section className={styles.actions}>
+          <button
+            onClick={handleCancel}
+            className={styles.secondaryBtn}
+            disabled={isSaving}>
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveChanges}
+            className={styles.primaryBtn}
+            disabled={isSaving || !formData.title.trim()}>
+            {isSaving ? 'Saving...' : 'Save Draft'}
+          </button>
+          <button
+            onClick={handleSaveAndPublish}
+            className={styles.primaryBtn}
+            disabled={isSaving || !formData.title.trim()}
+            style={{ background: '#1b5e20', borderColor: '#1b5e20' }}>
+            {isSaving ? 'Publishing...' : '📲 Save and Publish to Student App'}
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default ActivityBuilder;

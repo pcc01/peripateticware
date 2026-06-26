@@ -5,7 +5,7 @@
 import 'leaflet/dist/leaflet.css';
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useActivitiesStore } from '@/stores';
+import { useStudentStore } from '@/stores';
 import { Activity } from '@/types';
 import Map from '@/components/common/Map';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ export const StudentActivitiesPage: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const { activities, loading, error, fetchActivities, clearError } =
-    useActivitiesStore();
+    useStudentStore();
 
   // Refs for card elements so we can scroll to them on marker click
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -56,7 +56,7 @@ export const StudentActivitiesPage: React.FC = () => {
 
   // Fetch published activities on mount
   useEffect(() => {
-    fetchActivities({ status: 'published' } as any);
+    fetchActivities();
   }, []);
 
   const geoActivities = activities as ActivityWithGeo[];
