@@ -409,6 +409,12 @@ frontend/test-results/
 frontend/playwright-report/
 frontend/playwright-report.json
 
+# ── Vite dev-server timestamp cache files ────────────────────
+frontend/vite.config.ts.timestamp-*.mjs
+
+# ── Scripts directory (diagnostics / one-offs) ───────────────
+scripts/
+
 # ── Internal sprint docs in backend/docs ─────────────────────
 backend/docs/SPRINT_TRACK_*.md
 

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import styles from './OllamaLessonSuggestions.module.css';
 
 interface OllamaLessonSuggestionsProps {
@@ -69,6 +69,32 @@ export const OllamaLessonSuggestions = ({
   const [error, setError]                 = useState('');
   const [selected, setSelected]           = useState<Set<string>>(new Set());
   const [generated, setGenerated]         = useState(false);
+
+  // Model selection
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel]     = useState('');
+  const [modelsLoading, setModelsLoading]     = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch('/api/v1/inference/models');
+        if (!r.ok) return;
+        const d = await r.json();
+        if (cancelled) return;
+        const models: string[] = d.models ?? [];
+        setAvailableModels(models);
+        // Auto-select default (or first available)
+        setSelectedModel(d.default ?? models[0] ?? '');
+      } catch {
+        // Ollama unreachable — silently proceed; fetchSuggestions will handle it
+      } finally {
+        if (!cancelled) setModelsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Reset to context form when the parent changes the title
   // (e.g. user types a title after opening the panel empty)
@@ -149,6 +175,7 @@ export const OllamaLessonSuggestions = ({
           location_name: locationInfo || optSubject || 'outdoor setting',
           latitude: latitude ?? 0,
           longitude: longitude ?? 0,
+          ...(selectedModel ? { model: selectedModel } : {}),
         }),
       });
 
@@ -170,7 +197,7 @@ export const OllamaLessonSuggestions = ({
     } finally {
       setIsLoading(false);
     }
-  }, [title, taxonomyType, taxonomyLevel, optSubject, optGrade, optDuration, optSetting, optGroupSize, optFocus, locationInfo, latitude, longitude]);
+  }, [title, taxonomyType, taxonomyLevel, optSubject, optGrade, optDuration, optSetting, optGroupSize, optFocus, locationInfo, latitude, longitude, selectedModel]);
 
   const parseSuggestions = (text: string): Suggestion[] => {
     if (!text?.trim()) return [];
@@ -299,13 +326,43 @@ export const OllamaLessonSuggestions = ({
             </div>
           </div>
 
+          {/* Model picker — shown when Ollama has models */}
+          {!modelsLoading && availableModels.length > 0 && (
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={labelStyle}>
+                {availableModels.length === 1 ? 'AI Model' : 'AI Model'}
+              </label>
+              {availableModels.length === 1 ? (
+                <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: '0.8rem' }}>🤖</span>
+                  <span>{availableModels[0]}</span>
+                </div>
+              ) : (
+                <select
+                  style={inputStyle}
+                  value={selectedModel}
+                  onChange={e => setSelectedModel(e.target.value)}
+                >
+                  {availableModels.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+          {!modelsLoading && availableModels.length === 0 && (
+            <div style={{ marginBottom: '0.75rem', padding: '6px 10px', background: 'var(--surface-alt)', borderRadius: 6, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              ⚠️ No Ollama models found. Run <code>ollama pull &lt;model&gt;</code> to add one.
+            </div>
+          )}
+
           <button
             onClick={fetchSuggestions}
-            disabled={isLoading}
+            disabled={isLoading || (availableModels.length === 0 && !modelsLoading)}
             style={{
               padding: '8px 20px', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem',
               background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer',
-              opacity: isLoading ? 0.6 : 1,
+              opacity: (isLoading || (availableModels.length === 0 && !modelsLoading)) ? 0.6 : 1,
             }}>
             {isLoading ? 'Generating…' : '✨ Generate Suggestions'}
           </button>
@@ -320,14 +377,14 @@ export const OllamaLessonSuggestions = ({
         </div>
       )}
 
-      {/* ── Error banner ──────────────────────────────────────── */}
+      {/* Error banner — model-aware Peri */}
       {error && (
         <div className={styles.errorBanner} style={{ marginBottom: '0.75rem' }}>
           <p style={{ fontWeight: 600 }}>⚠️ {error}</p>
         </div>
       )}
 
-      {/* ── Suggestion cards ──────────────────────────────────── */}
+      {/* Suggestion cards */}
       {generated && suggestions.length > 0 && (
         <>
           <div className={styles.suggestionsList}>

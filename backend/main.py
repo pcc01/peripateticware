@@ -375,7 +375,7 @@ except Exception as e:
 # ── AI / Inference / Agents ───────────────────────────────────────────────────
 try:
     from routes.inference import router as inference_router
-    app.include_router(inference_router, prefix="/api/v1")
+    app.include_router(inference_router, prefix="/api/v1/inference")
 except Exception as e:
     print(f"Warning: could not register inference_router: {e}")
 

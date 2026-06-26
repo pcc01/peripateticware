@@ -117,6 +117,8 @@ class InquiryRequest(BaseModel):
     location: Optional[dict] = None
     curriculum_context: Optional[dict] = None
     persona_context: Optional[dict] = None
+    # Optional model override — if supplied, used instead of OLLAMA_MODEL_TEXT
+    model: Optional[str] = None
 
     def effective_text(self) -> str:
         """Return whichever text field was populated."""
@@ -208,7 +210,7 @@ async def process_inquiry(
         }
 
         # Call LLM for inference — pass raw_text so provider can use it directly
-        response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text)
+        response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text, model=request.model)
 
         # ── Write result to cache ─────────────────────────────────────────────
         try:
@@ -457,6 +459,31 @@ async def generate_text_embedding(text: str):
         )
 
 
+@router.get("/models")
+async def list_models():
+    """Return models available in Ollama (or the configured Claude model)."""
+    if settings.LLM_PROVIDER.lower() != "ollama":
+        return {"provider": settings.LLM_PROVIDER, "models": [settings.CLAUDE_MODEL], "default": settings.CLAUDE_MODEL}
+
+    urls_to_try = [settings.OLLAMA_BASE_URL]
+    if "host.docker.internal" in settings.OLLAMA_BASE_URL:
+        urls_to_try.append(settings.OLLAMA_BASE_URL.replace("host.docker.internal", "localhost"))
+
+    for url in urls_to_try:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(f"{url}/api/tags")
+            if resp.status_code == 200:
+                raw = resp.json().get("models", [])
+                names = [m["name"] for m in raw if m.get("name")]
+                default = settings.OLLAMA_MODEL_TEXT if settings.OLLAMA_MODEL_TEXT in names else (names[0] if names else "")
+                return {"provider": "ollama", "models": names, "default": default}
+        except Exception:
+            continue
+
+    return {"provider": "ollama", "models": [], "default": ""}
+
+
 @router.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
@@ -506,12 +533,13 @@ async def health_check():
 # HELPER FUNCTIONS - FULLY IMPLEMENTED
 # ============================================================================
 
-async def _call_llm_inference(inquiry: dict, explicit_prompt: str = "") -> dict:
+async def _call_llm_inference(inquiry: dict, explicit_prompt: str = "", model: Optional[str] = None) -> dict:
     """Call configured LLM (Ollama or Claude) for text generation.
 
     If ``explicit_prompt`` is supplied (e.g. from OllamaLessonSuggestions) we
     use it verbatim so the caller gets exactly the output they requested.
     Otherwise we fall back to a generic Peri guiding-question prompt.
+    ``model`` overrides the default OLLAMA_MODEL_TEXT when set.
     """
     try:
         if explicit_prompt and explicit_prompt.strip():
@@ -533,7 +561,7 @@ Keep it concise (1-2 sentences).
         if settings.LLM_PROVIDER.lower() == "claude":
             return await _call_claude_inference(prompt)
         else:
-            return await _call_ollama_inference(prompt)
+            return await _call_ollama_inference(prompt, model=model)
     
     except Exception as e:
         logger.error(f"Inference error: {e}")
@@ -568,18 +596,19 @@ async def _call_claude_inference(prompt: str) -> dict:
         return {"question": "", "resources": [], "confidence": 0.0}
 
 
-async def _call_ollama_inference(prompt: str) -> dict:
+async def _call_ollama_inference(prompt: str, model: Optional[str] = None) -> dict:
     """Call Ollama API for inference — delegates HTTP to agents/provider.py."""
     try:
         from agents.provider import call_ollama as _call_ollama
+        resolved_model = model or settings.OLLAMA_MODEL_TEXT
         # Legacy /api/generate used a plain prompt; /api/chat (used by provider.py)
         # accepts a messages list.  Wrap the prompt as a single user message.
         question = await _call_ollama(
             messages=[{"role": "user", "content": prompt}],
-            model=settings.OLLAMA_MODEL_TEXT,
+            model=resolved_model,
             timeout=60,
         )
-        logger.info(f"Ollama inference successful - Model: {settings.OLLAMA_MODEL_TEXT}")
+        logger.info(f"Ollama inference successful - Model: {resolved_model}")
         return {
             "question": question,  # no truncation
             "resources": [
