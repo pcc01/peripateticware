@@ -18,7 +18,7 @@ export const CookiePolicyPage: React.FC = () => {
             onClick={() => navigate('/')}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            ← Back to Home
+            {t('cookiepolicypage.back_to_home', '← Back to Home')}
           </button>
           <h1 className="text-xl font-bold text-gray-900">
             {t('cookiepolicypage.cookie_policy', 'Cookie Policy')}
@@ -38,13 +38,13 @@ export const CookiePolicyPage: React.FC = () => {
         <p>{t('cookiepolicypage.these_cookies_are_essential_for_the_serv', 'These cookies are essential for the Service to function. They cannot be disabled.')}</p>
         <ul>
           <li>
-            <strong>auth_token</strong> — Stores your session JWT. Expires after 24 hours.
+            <strong>auth_token</strong> — {t('cookiepolicypage.auth_token_desc', 'Stores your session JWT. Expires after 24 hours.')}
           </li>
           <li>
-            <strong>auth_user</strong> — Stores your basic user profile (name, role). Cleared on logout.
+            <strong>auth_user</strong> — {t('cookiepolicypage.auth_user_desc', 'Stores your basic user profile (name, role). Cleared on logout.')}
           </li>
           <li>
-            <strong>i18nextLng</strong> — Remembers your chosen language preference.
+            <strong>i18nextLng</strong> — {t('cookiepolicypage.i18nextlng_desc', 'Remembers your chosen language preference.')}
           </li>
         </ul>
 
@@ -62,7 +62,7 @@ export const CookiePolicyPage: React.FC = () => {
 
         <h2>{t('cookiepolicypage.contact', 'Contact')}</h2>
         <p>
-          Questions?{' '}
+          {t('cookiepolicypage.questions', 'Questions?')}{' '}
           <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">
             hello@peripateticware.com
           </a>

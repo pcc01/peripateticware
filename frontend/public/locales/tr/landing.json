@@ -1284,7 +1284,8 @@
   "email_teacherexamplecom": "E-posta: öğretmen@example.com",
   "provide_constructive_feedback": "Yapılan yorumunuz konstruktif olmalıdır...",
   "comingsoonpage": {
-    "this_page_is_coming_soon": "Bu sayfa yaklaşık olarak gelmek üzere."
+    "this_page_is_coming_soon": "Bu sayfa yaklaşık olarak gelmek üzere.",
+    "go_back": "← Go Back"
   },
   "coppa": "ÇOCUK Özel Verilerin Korunması",
   "ferpa": "Özel Öğretim Verilerinin Korunması",
@@ -1343,7 +1344,8 @@
     "cta_section_desc": "Gizlilik belgeleri keşfedin bölümü açıklama",
     "jurisdictions_enforced": "Uygulanan ilçeler",
     "last_updated": "Son güncelleme",
-    "cta_explore_docs": "Gizlilik Belgeleri Keşfedin"
+    "cta_explore_docs": "Gizlilik Belgeleri Keşfedin",
+    "loading_status": "Loading compliance status…"
   },
   "capture_photosvideo": "Resim çek",
   "take_photos_record_videos_and_capture_au": "Yerine bulunma, videorolu kaydet ve sesi kaydeterek yüklenmiş bulunduğunuzz zamanları ve bulgularınızı belgeleyin.",
@@ -1381,7 +1383,12 @@
     "you_can_clear_cookies_at_any_time_throug": "Herhangi bir zaman tarayıcı ayarlarını kullanarak çerezleri temizleyebilirsiniz. Auth çerezlerini temizledikten sonra Hizmetten oturum açmanız için çıkarsınız.",
     "changes_to_this_policy": "Bu Politika'nı Değiştirdiğimiz Yerde",
     "we_may_update_this_policy_as_the_service": "Bu politikayı güncellemeye yetiliriz, hizmetin gelişmesi sürecinde. İzlenecek değişiklikler için uygulama içerisinde bildirim yapılacaktır.",
-    "contact": "İletişim"
+    "contact": "İletişim",
+    "back_to_home": "← Back to Home",
+    "auth_token_desc": "Stores your session JWT. Expires after 24 hours.",
+    "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
+    "i18nextlng_desc": "Remembers your chosen language preference.",
+    "questions": "Questions?"
   },
   "termspage": {
     "terms_of_service": "Hizmet Koşulları",
@@ -1399,7 +1406,12 @@
     "7_limitation_of_liability": "7. Sorumlu Tutulma Sınırları",
     "8_contact": "8. İletişim",
     "by_accessing_or_using_peripateticware_ld": "Peripateticware'ya erişme ve kullanımı yaparak bu Kullanım Koşullarına (Service) uyumak üzere kendinizi söyleyerek bulunuyoruz. Eğer bu koşulları kabul etmiyorsanız Service'i kullanmayın.",
-    "the_service_is_provided_ldquoas_isrdquo_": "Hizmet sadece 'olduğu gibi' sağlanır. Peripateticware sorunsuz bir şekilde hizmetten kullanım sonucunda oluşan tüm geri dönüşüm, yürütme ve sonuçsuzluk zararları karşı tanımlamaz."
+    "the_service_is_provided_ldquoas_isrdquo_": "Hizmet sadece 'olduğu gibi' sağlanır. Peripateticware sorunsuz bir şekilde hizmetten kullanım sonucunda oluşan tüm geri dönüşüm, yürütme ve sonuçsuzluk zararları karşı tanımlamaz.",
+    "back_to_home": "← Back to Home",
+    "privacy_compliance_intro": "Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold or used for advertising. See our",
+    "privacy_policy_link": "Privacy Policy",
+    "privacy_compliance_outro": "for full details.",
+    "questions_about_terms": "Questions about these Terms?"
   },
   "landing": {
     "role_student": "öğrenci rolu",
@@ -1447,5 +1459,73 @@
     "autotranslated": "Tamamı şekillendi (otomatik)",
     "copy_2026_peripateticware_lear": "© 2026 Peripateticware. Dışarıya öğrenme olur.",
     "copy_2026_peripateticware_learning_happe": "['Tutksam 2026 Peripatetik Yazilim. Ogrenme dahiliye yapilir.']"
+  },
+  "pages_originstorypage": {
+    "from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: Peripateticware 2007–2026",
+    "the_insight_aristotle_was_right": "The Insight: Aristotle Was Right",
+    "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn’t fully rolled out, the iPhone was months away from launch, and “app” wasn’t yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student’s pocket — all came true. The products the paper called for did not.",
+    "the_problem_that_remained_unsolved": "The Problem That Remained Unsolved",
+    "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn’t solve:",
+    "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they’re standing near a cathedral or a harbour, how do you assess what they’ve learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
+    "the_document_left_that_question_open_the": "The document left that question open. The school system didn’t solve it either. For nearly two decades, “outdoor learning” remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
+    "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn’t",
+    "the_assessment_problem_turned_out_to_hav": "The assessment problem turned out to have two parts. The first was capturing evidence — what did the student actually observe, and can you prove it? The second was evaluating it — did their thinking deepen, or did they just describe what they saw?",
+    "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn’t just document experience but deepened it.",
+    "thats_where_peri_comes_in_peri_is_peripa": "That’s where Peri comes in. Peri is Peripateticware’s AI guide — named, like the software, after the Aristotelian method. Peri doesn’t answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student’s observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
+    "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom’s taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
+    "choose_your_own_adventure": "Choose Your Own Adventure",
+    "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a “choose your own adventure” model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was “somewhat chaotic” and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
+    "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn’t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
+    "the_reverse_scavenger_hunt_where_student": "The reverse scavenger hunt — where students propose an activity based on something they found — is the closest thing in the platform to that 2007 vision. A student finds a peculiar rock formation. They propose it as an activity. The teacher approves it. Other students go look. Questions emerge that no curriculum document anticipated. Learning moves.",
+    "why_this_took_until_2026": "Why This Took Until 2026",
+    "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn’t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher’s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn’t have known how long the road would be.",
+    "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn’t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
+    "thats_a_harder_sell_schools_are_riskaver": "That’s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. “The world is your classroom” sounds like a marketing line until you’ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
+    "the_white_paper_is_still_online": "The white paper is still online.",
+    "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn’t."
+  },
+  "professorFieldworkPage": {
+    "back": "← Back",
+    "no_activity_selected": "No activity selected."
+  },
+  "pendingReflectionQueue": {
+    "section_title": "Pending Reflection",
+    "see_all": "See all {{count}}",
+    "awaiting_approval": "Awaiting teacher approval",
+    "teacher_commented": "Teacher commented — ready to reflect",
+    "reflection_in_progress": "Reflection in progress",
+    "ready_to_reflect": "Ready to reflect",
+    "teacher_label": "Teacher: ",
+    "field_work_date": "Field work {{date}}"
+  },
+  "audioRecorder": {
+    "almost_full": "Almost full",
+    "record": "Record",
+    "stop": "Stop",
+    "keep": "Keep",
+    "discard": "Discard",
+    "uploading": "Uploading recording…",
+    "recording_saved": "Recording saved",
+    "transcribing": "Transcribing…",
+    "mic_denied": "Microphone access is required to record audio. Please grant permission and try again.",
+    "download": "Download"
+  },
+  "extractionWizard": {
+    "step_upload": "Upload",
+    "step_parse": "Parse",
+    "step_review": "Review",
+    "step_save": "Save"
+  },
+  "curriculumImportPage": {
+    "title": "Import State Academic Standards",
+    "description": "Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache)."
+  },
+  "rubricImportPage": {
+    "title": "Import Rubric",
+    "description": "Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving."
+  },
+  "standardsImportPage": {
+    "title": "Import Learning Standards",
+    "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
   }
 }

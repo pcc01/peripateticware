@@ -18,7 +18,7 @@ export const TermsPage: React.FC = () => {
             onClick={() => navigate('/')}
             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
           >
-            ← Back to Home
+            {t('termspage.back_to_home', '← Back to Home')}
           </button>
           <h1 className="text-xl font-bold text-gray-900">
             {t('termspage.terms_of_service', 'Terms of Service')}
@@ -40,9 +40,9 @@ export const TermsPage: React.FC = () => {
 
         <h2>{t('termspage.4_privacy_amp_child_safety', '4. Privacy &amp; Child Safety')}</h2>
         <p>
-          Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA.
-          Student data is never sold or used for advertising. See our{' '}
-          <a href="/privacy" className="text-blue-600 underline">Privacy Policy</a> for full details.
+          {t('termspage.privacy_compliance_intro', 'Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold or used for advertising. See our')}{' '}
+          <a href="/privacy" className="text-blue-600 underline">{t('termspage.privacy_policy_link', 'Privacy Policy')}</a>{' '}
+          {t('termspage.privacy_compliance_outro', 'for full details.')}
         </p>
 
         <h2>{t('termspage.5_intellectual_property', '5. Intellectual Property')}</h2>
@@ -56,7 +56,7 @@ export const TermsPage: React.FC = () => {
 
         <h2>{t('termspage.8_contact', '8. Contact')}</h2>
         <p>
-          Questions about these Terms?{' '}
+          {t('termspage.questions_about_terms', 'Questions about these Terms?')}{' '}
           <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">
             hello@peripateticware.com
           </a>

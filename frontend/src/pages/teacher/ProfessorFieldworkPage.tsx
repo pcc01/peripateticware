@@ -4,10 +4,12 @@
 
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import CourseFieldworkTracker from '../../components/teacher/CourseFieldworkTracker'
 
 const ProfessorFieldworkPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
+  const { t } = useTranslation('landing')
   const navigate = useNavigate()
 
   return (
@@ -18,13 +20,13 @@ const ProfessorFieldworkPage: React.FC = () => {
           className="mb-4 text-sm flex items-center gap-1 hover:opacity-70 transition-opacity"
           style={{ color: 'var(--primary)' }}
         >
-          ← Back
+          {t('professorFieldworkPage.back', '← Back')}
         </button>
         {id ? (
           <CourseFieldworkTracker activityId={id} />
         ) : (
           <p className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
-            No activity selected.
+            {t('professorFieldworkPage.no_activity_selected', 'No activity selected.')}
           </p>
         )}
       </div>

@@ -40,7 +40,7 @@ const ComingSoonPage: React.FC<ComingSoonPageProps> = ({
           fontSize: '1rem'
         }}
       >
-        ← Go Back
+        {t('comingsoonpage.go_back', '← Go Back')}
       </button>
     </div>
   )

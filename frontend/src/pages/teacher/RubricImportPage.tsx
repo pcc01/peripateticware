@@ -2,6 +2,7 @@
 // Teacher: import a rubric from PDF or CSV
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ExtractionWizard } from '@/components/shared/ExtractionWizard';
 
 function authHeader() {
@@ -11,6 +12,7 @@ function authHeader() {
 
 export const RubricImportPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('landing');
 
   const handleSave = async (payload: any) => {
     const res = await fetch('/api/v1/rubrics', {
@@ -35,8 +37,8 @@ export const RubricImportPage: React.FC = () => {
   return (
     <ExtractionWizard
       setType="rubric"
-      title="Import Rubric"
-      description="Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving."
+      title={t('rubricImportPage.title', 'Import Rubric')}
+      description={t('rubricImportPage.description', 'Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving.')}
       onSave={handleSave}
       onComplete={() => navigate('/teacher/rubrics')}
       onCancel={() => navigate('/teacher/rubrics')}

@@ -2,6 +2,7 @@
 // Admin: import curriculum standards from PDF or CSV
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ExtractionWizard } from '@/components/shared/ExtractionWizard';
 
 function authHeader() {
@@ -11,6 +12,7 @@ function authHeader() {
 
 export const CurriculumImportPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('landing');
 
   const handleSave = async (payload: any) => {
     const res = await fetch('/api/v1/standards', {
@@ -29,8 +31,8 @@ export const CurriculumImportPage: React.FC = () => {
   return (
     <ExtractionWizard
       setType="state_standards"
-      title="Import State Academic Standards"
-      description="Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache)."
+      title={t('curriculumImportPage.title', 'Import State Academic Standards')}
+      description={t('curriculumImportPage.description', 'Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache).')}
       onSave={handleSave}
       onComplete={() => navigate('/admin/standards')}
       onCancel={() => navigate('/admin/standards')}

@@ -14,33 +14,34 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PenLine, Lock, Clock, MessageSquare, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useStudent } from '@/services/api';
 import type { PendingReflectionItem } from '@/services/types';
 
-function phaseLabel(item: PendingReflectionItem): { label: string; color: string; icon: React.ReactNode } {
+function phaseLabel(item: PendingReflectionItem, t: (key: string) => string): { label: string; color: string; icon: React.ReactNode } {
   if (item.awaiting_approval) {
     return {
-      label: 'Awaiting teacher approval',
+      label: t('pendingReflectionQueue.awaiting_approval'),
       color: 'text-amber-700 bg-amber-50 border-amber-200',
       icon: <Lock className="w-3.5 h-3.5" />,
     };
   }
   if (item.field_phase_feedback) {
     return {
-      label: 'Teacher commented — ready to reflect',
+      label: t('pendingReflectionQueue.teacher_commented'),
       color: 'text-green-700 bg-green-50 border-green-200',
       icon: <MessageSquare className="w-3.5 h-3.5" />,
     };
   }
   if (item.reflection_status === 'in_progress') {
     return {
-      label: 'Reflection in progress',
+      label: t('pendingReflectionQueue.reflection_in_progress'),
       color: 'text-blue-700 bg-blue-50 border-blue-200',
       icon: <PenLine className="w-3.5 h-3.5" />,
     };
   }
   return {
-    label: 'Ready to reflect',
+    label: t('pendingReflectionQueue.ready_to_reflect'),
     color: 'text-blue-700 bg-blue-50 border-blue-200',
     icon: <PenLine className="w-3.5 h-3.5" />,
   };
@@ -51,6 +52,7 @@ interface Props {
 }
 
 export const PendingReflectionQueue: React.FC<Props> = ({ compact = false }) => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const { getPendingReflections } = useStudent();
   const [items, setItems] = useState<PendingReflectionItem[]>([]);
@@ -80,7 +82,7 @@ export const PendingReflectionQueue: React.FC<Props> = ({ compact = false }) => 
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-900 flex items-center gap-2">
           <PenLine className="w-4 h-4 text-blue-600" />
-          Pending Reflection
+          {t('pendingReflectionQueue.section_title')}
           <span className="ml-1 px-2 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">
             {items.length}
           </span>
@@ -90,14 +92,14 @@ export const PendingReflectionQueue: React.FC<Props> = ({ compact = false }) => 
             onClick={() => navigate('/student/pending-reflection')}
             className="text-xs text-blue-600 hover:underline"
           >
-            See all {items.length}
+            {t('pendingReflectionQueue.see_all', { count: items.length })}
           </button>
         )}
       </div>
 
       <div className="space-y-2">
         {displayed.map((item) => {
-          const phase = phaseLabel(item);
+          const phase = phaseLabel(item, t);
           return (
             <button
               key={item.submission_id}
@@ -121,14 +123,14 @@ export const PendingReflectionQueue: React.FC<Props> = ({ compact = false }) => 
                   <p className="text-xs text-gray-500 mt-0.5">
                     {item.subject}
                     {item.started_at && (
-                      <span> · Field work {new Date(item.started_at).toLocaleDateString()}</span>
+                      <span> · {t('pendingReflectionQueue.field_work_date', { date: new Date(item.started_at).toLocaleDateString() })}</span>
                     )}
                   </p>
 
                   {/* Field phase feedback preview */}
                   {item.field_phase_feedback && (
                     <div className="mt-2 text-xs text-gray-600 bg-green-50 border border-green-200 rounded-lg p-2 line-clamp-2">
-                      <span className="font-medium text-green-700">Teacher: </span>
+                      <span className="font-medium text-green-700">{t('pendingReflectionQueue.teacher_label')}</span>
                       {item.field_phase_feedback}
                     </div>
                   )}

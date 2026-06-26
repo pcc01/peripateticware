@@ -5,6 +5,7 @@ import React from 'react';
 // Displays a live MM:SS timer and simple amplitude waveform.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface AudioRecorderProps {
   /** Called with (audioBlob, durationSeconds) when user confirms keep */
@@ -22,6 +23,7 @@ export const AudioRecorder = ({
   maxDurationSeconds = 300,
   onDiscard,
 }: AudioRecorderProps) => {
+  const { t } = useTranslation("landing");
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [elapsed, setElapsed] = useState(0);        // seconds
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -144,7 +146,7 @@ export const AudioRecorder = ({
       drawWaveform();
     } catch (err) {
       console.error("Microphone access denied or unavailable:", err);
-      alert("Microphone access is required to record audio. Please grant permission and try again.");
+      alert(t("audioRecorder.mic_denied", "Microphone access is required to record audio. Please grant permission and try again."));
     }
   };
 
@@ -202,7 +204,7 @@ export const AudioRecorder = ({
       {/* Timer */}
       <div style={{ ...styles.timer, color: isWarning ? "#f59e0b" : "#e2e8f0" }}>
         {formatTime(elapsed)} / {formatTime(maxDurationSeconds)}
-        {isWarning && <span style={styles.warningBadge}>Almost full</span>}
+        {isWarning && <span style={styles.warningBadge}>{t("audioRecorder.almost_full", "Almost full")}</span>}
       </div>
 
       {/* Waveform canvas (visible during recording) */}
@@ -219,23 +221,23 @@ export const AudioRecorder = ({
       <div style={styles.controls}>
         {recordingState === "idle" && (
           <button onClick={startRecording} style={styles.recordBtn} aria-label="Start recording">
-            🎙️ Record
+            🎙️ {t("audioRecorder.record", "Record")}
           </button>
         )}
 
         {recordingState === "recording" && (
           <button onClick={stopRecording} style={styles.stopBtn} aria-label="Stop recording">
-            ⏹ Stop
+            ⏹ {t("audioRecorder.stop", "Stop")}
           </button>
         )}
 
         {recordingState === "stopped" && (
           <>
             <button onClick={handleKeep} style={styles.keepBtn} aria-label="Keep recording">
-              ✅ Keep
+              ✅ {t("audioRecorder.keep", "Keep")}
             </button>
             <button onClick={handleDiscard} style={styles.discardBtn} aria-label="Discard recording">
-              🗑 Discard
+              🗑 {t("audioRecorder.discard", "Discard")}
             </button>
           </>
         )}
@@ -518,6 +520,7 @@ const playerStyles: Record<string, React.CSSProperties> = {
 // =============================================================================
 
 function TranscriptBlock({ captureId }: { captureId: string }) {
+  const { t } = useTranslation("landing");
   const [transcript, setTranscript] = React.useState<string | null>(null);
   const [polling, setPolling] = React.useState(true);
 
@@ -561,7 +564,7 @@ function TranscriptBlock({ captureId }: { captureId: string }) {
   if (polling) {
     return (
       <div style={{ marginTop: 8, fontSize: 12, color: "#6b7280", textAlign: "center" }}>
-        ✍️ Transcribing…
+        ✍️ {t("audioRecorder.transcribing", "Transcribing…")}
       </div>
     );
   }
@@ -592,6 +595,7 @@ export const AudioCapture = ({
   onCaptureCreated,
   maxDurationSeconds = 300,
 }: AudioCaptureProps) => {
+  const { t } = useTranslation("landing");
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [savedCapture, setSavedCapture] = useState<Record<string, unknown> | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -669,7 +673,7 @@ export const AudioCapture = ({
 
       {uploadState === "uploading" && (
         <div style={{ textAlign: "center", color: "#60a5fa", fontSize: 14 }}>
-          ⬆️ Uploading recording…
+          ⬆️ {t("audioRecorder.uploading", "Uploading recording…")}
         </div>
       )}
 
@@ -682,7 +686,7 @@ export const AudioCapture = ({
       {uploadState === "done" && savedCapture && (
         <>
           <div style={{ color: "#4ade80", fontSize: 13, textAlign: "center" }}>
-            ✅ Recording saved
+            ✅ {t("audioRecorder.recording_saved", "Recording saved")}
           </div>
           <AudioPlayer
             src={`/api/v1/student/captures/${savedCapture.id}/stream`}

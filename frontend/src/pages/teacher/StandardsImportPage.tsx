@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ExtractionWizard } from '@/components/shared/ExtractionWizard';
 
 function authHeader() {
@@ -14,6 +15,7 @@ function authHeader() {
 
 export const StandardsImportPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('landing');
 
   const handleSave = async (payload: any) => {
     const res = await fetch('/api/v1/standards', {
@@ -22,7 +24,7 @@ export const StandardsImportPage: React.FC = () => {
       body: JSON.stringify({
         ...payload,
         type: 'state_standards',   // canonical taxonomy value (was 'curriculum' -> enum error)
-        is_global: false,   // scoped to this teacher only
+        is_global: false,           // scoped to this teacher only
       }),
     });
     if (!res.ok) {
@@ -36,15 +38,13 @@ export const StandardsImportPage: React.FC = () => {
   return (
     <ExtractionWizard
       setType="state_standards"
-      title="Import Learning Standards"
-      description={
-        'Upload a PDF or CSV of the learning standards for your discipline — ' +
-        'Common Core, NGSS, state standards, or your own custom framework. ' +
-        'Once saved, you can tag activities against these standards and track student coverage.'
-      }
+      title={t('standardsImportPage.title', 'Import Learning Standards')}
+      description={t(
+        'standardsImportPage.description',
+        'Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage.'
+      )}
       onSave={handleSave}
       onComplete={(id) => {
-        // Pass success message to the standards list page via sessionStorage
         sessionStorage.setItem('standards_import_success', 'Standards imported successfully.');
         navigate('/teacher/standards');
       }}
