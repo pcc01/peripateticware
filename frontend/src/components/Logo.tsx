@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 // found in the LICENSE.md file in the root directory of this source tree.
 
 import React from 'react';
+import { PRODUCT_NAME } from '../constants/brand';
 
 interface LogoProps {
   size?: number;
@@ -43,7 +44,7 @@ export const Logo: React.FC<LogoProps> = ({
       {showText &&
       <span
         style={{ fontFamily: 'var(--font-head)', fontWeight: 700 }}
-        className="text-lg">{t("landing:peripateticware", "Peripateticware")}
+        className="text-lg">{PRODUCT_NAME}
 
 
       </span>

@@ -63,7 +63,7 @@
       "sign_in": "Accedi",
       "2026_peripateticware_all_rights_reserved": "Tutti i diritti riservati © 2026 Peripateticware"
     },
-    "peripateticware": "PeripateticoWare",
+    "peripateticware": "Software per pelle",
     "learning_in_motion": "Apprendimento in movimento",
     "loading": "Caricamento...",
     "primary": "Primario",
@@ -91,7 +91,7 @@
     "session": "Sessiona:",
     "select": "-- Seleziona --",
     "footer": {
-      "brand_title": "Peripateticaware",
+      "brand_title": "Software per pelle",
       "product_title": "Prodotto",
       "product_tools": "Strumenti",
       "product_demo": "Prenota una dimostrazione",
@@ -105,7 +105,7 @@
       "resources_guides": "Guide per insegnanti",
       "resources_api": "Riferimento API",
       "resources_support": "Assistenza",
-      "company_name": "Peripateticaware",
+      "company_name": "Software per pelle",
       "brand_desc": "Piattaforma di apprendimento all'aperto e peripatetica costruita per insegnanti, studenti e famiglie.",
       "all_rights": "Tutti i diritti riservati.",
       "legal_title": "Legale",
@@ -897,7 +897,9 @@
       "students": "Alunni",
       "submissions": "Invii",
       "edit": "Modifica",
-      "grade": "Voto:"
+      "grade": "Voto:",
+      "total_activities": "Attività Totali",
+      "this_week": "Questa Settimana"
     },
     "total_students": "Totale alunni",
     "active_activities": "Attività attive",
@@ -1257,7 +1259,8 @@
     "email_teacherexamplecom": "Email: insegnante@example.com",
     "provide_constructive_feedback": "Fornisci feedback costruttivo...",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "Questa pagina verrà presto pubblicata."
+      "this_page_is_coming_soon": "Questa pagina verrà presto pubblicata.",
+      "go_back": "← Go Back"
     },
     "privacy_first": "Privacy prima",
     "eg_understand_photosynthesis_process": "ad esempio, Comprendere il processo della fotosintesi",
@@ -1303,7 +1306,8 @@
       "cta_section_desc": "Descrizione sezione azioni",
       "jurisdictions_enforced": "Jurisdizioni applicate",
       "last_updated": "Ultimo aggiornamento",
-      "cta_explore_docs": "Esplora i documenti sulla privacy"
+      "cta_explore_docs": "Esplora i documenti sulla privacy",
+      "loading_status": "Caricamento dello stato di conformità..."
     },
     "capture_photosvideo": "📸 Cattura foto/video",
     "take_photos_record_videos_and_capture_au": "Prendi foto, registra video e cattura audio per documentare le tue osservazioni e trovare.",
@@ -1341,7 +1345,12 @@
       "you_can_clear_cookies_at_any_time_throug": "Puoi pulire i cookies a qualsiasi momento attraverso le impostazioni del browser. Pulire i cookie di autenticazione ti farà uscire dal Servizio.",
       "changes_to_this_policy": "Modifiche alla Politica",
       "we_may_update_this_policy_as_the_service": "Potremmo aggiornare questa politica mentre il Servizio si sviluppa. Le modifiche significative saranno comunicati tramite notifica in-app.",
-      "contact": "Contatto"
+      "contact": "Contatto",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Salva il tuo JWT di sessione. Scade dopo 24 ore.",
+      "auth_user_desc": "Salva il tuo profilo utente di base (nome, ruolo). Cancellato all'accesso.",
+      "i18nextlng_desc": "Ricorda la tua lingua preferita.",
+      "questions": "Domande?"
     },
     "termspage": {
       "terms_of_service": "Termini di Servizio",
@@ -1359,7 +1368,12 @@
       "7_limitation_of_liability": "7. Limiti della responsabilità",
       "8_contact": "8. Contatto",
       "by_accessing_or_using_peripateticware_ld": "Accedendo o utilizzando Peripateticware (il Servizio), tu concordi di essere vincolato da questi Termini di Servizio. Se non ci sei d'accordo, non usare il Servizio.",
-      "the_service_is_provided_ldquoas_isrdquo_": "Il Servizio è fornito come sta. Peripateticware non sarà responsabile di qualsiasi danno indiretto, incidentale o conseguenziale derivante dall'uso del Servizio."
+      "the_service_is_provided_ldquoas_isrdquo_": "Il Servizio è fornito come sta. Peripateticware non sarà responsabile di qualsiasi danno indiretto, incidentale o conseguenziale derivante dall'uso del Servizio.",
+      "back_to_home": "← Indietro a Home",
+      "privacy_compliance_intro": "Peripateticware è conforme a COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD e PDPA. I dati degli studenti non vengono venduti o utilizzati per la pubblicità. Per maggiori dettagli consultare la",
+      "privacy_policy_link": "Privacy Policy",
+      "privacy_compliance_outro": ".",
+      "questions_about_terms": "Domande su questi termini?"
     },
     "landing": {
       "role_student": "ruolo studente",
@@ -1461,7 +1475,7 @@
     "think_about": "Pensa a...",
     "sketch": "Schizzo",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticaware"
+      "peripateticware": "Peripateticware"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Caricamento...",
@@ -1724,7 +1738,8 @@
     "link_child_explainer": "Dopo aver collegato il tuo account della figlia, potrai vedere il loro progresso nello studio, le sessioni future, i punteggi delle competenze, le prove sottoposte, il feedback del maestro e molto altro tutto in un unico posto.",
     "select_child_prompt": "Scegli un bambino sopra per visualizzare il loro progresso.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "Cosa vedrai dopo aver collegato:"
+      "what_youll_see_after_linking": "Cosa vedrai dopo aver collegato:",
+      "parental_consent_status": "Stato di consenso dei genitori"
     },
     "create_first_note": "Crea la tua prima annotazione",
     "response_in_progress": "Risposta in corso. Aggiungi catture quindi invia.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "Hai già un account?",
       "sign_in": "Accedi",
       "helps_us_apply_the_right_privacy_framewo": "Aiutaci ad applicare i giusti framework sulla privacy (FERPA, COPPA, GDPR, ecc.) per gli studenti.",
-      "this_determines_whether_coppa_applies_": "Determina se la COPPA si applica al tuo account."
+      "this_determines_whether_coppa_applies_": "Determina se la COPPA si applica al tuo account.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "Confermo di avere compiuto 18 anni di età o essere il tutore legale di utenti minori su questo account."
     },
     "cta_btn": "Inizia gratuitamente",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "👁 Anteprima visualizzazione studente",
       "this_is_how_the_activity_appears_to_stud": "Questo è come l'attività appare agli studenti nell'app.",
       "these_three_fields_drive_the_student_exp": "Questi tre campi guidano l'esperienza dello studente. Gli studenti progrediscono attraverso Orient → Inquire → Riflettere sul proprio telefono.",
-      "no_inquiry_instructions_yet_write_them_i": "Nessun'informazione sugli istruzioni di richiesta - scrivile nella scheda Apprendimento."
+      "no_inquiry_instructions_yet_write_them_i": "Nessun'informazione sugli istruzioni di richiesta - scrivile nella scheda Apprendimento.",
+      "students_locations_are_shared_with_you_i": "Posizioni degli studenti condivisi con te in tempo reale sul monitor di sessione. Il consenso dei genitori viene richiesto automaticamente per gli studenti al di sotto dei 13 anni."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Invitare studenti",
@@ -1989,7 +2006,7 @@
       "ferpa_applies_to_all_your_students_regar": "AI & data preferenze",
       "ai_amp_data_preferences": "Queste impostazioni predefinite si applicano al tuo account. Gli studenti e i genitori possono impostare le proprie preferenze, e puoi modificarle in qualsiasi momento nelle Impostazioni.",
       "these_defaults_apply_to_your_account_stu": "Impostazione della privacy",
-      "your_privacy_setup": "",
+      "your_privacy_setup": "Impostazione della privacy",
       "frameworks_now_active_on_your_account": "Framework attualmente attivi sul tuo account:",
       "no_specific_frameworks_are_preselected_b": "Non sono presenti framework specifici pre-selezionati in base alle tue risposte. Puoi abilitarli in qualsiasi momento nelle Impostazioni."
     },
@@ -2001,17 +2018,17 @@
       "openai_api_key": "Chiave API OpenAI",
       "advanced_configuration": "Configurazione avanzata",
       "peri_response_mode_batch_schedule_and_in": "Modalità risposta batch, programmazione e endpoint di elaborazione.",
-      "peri_inquiry_responses": "Peri Inquiry Responses",
+      "peri_inquiry_responses": "Risposte alle richieste di informazioni",
       "batch_assessment_schedule_cron_utc": "Programma di valutazione in batch (cron, UTC)",
       "ollama_base_url": "Ollama URL base",
       "provider_per_task": "Providers per attività",
       "ollama_local_instant_zero_cost_haiku_ins": "Ollama = locale, istantaneo, costo zero. Haiku istantaneo = cloud, istantaneo, ~$0.001/chiamata. Haiku batch = cloud, notturno, il 50% più economico — solo per la presentazione della valutazione.",
       "recent_queue_items_last_100": "Elementi in coda recenti (ultimi 100)",
       "ollama_instance_url": "Ollama Instance URL\\nMust be reachable from the Peripateticware backend server.\\nTask Routing\\nChoose which provider handles each AI task. Greyed-out means the provider is not configured.\\nChanges apply immediately. Org-level BYOK routing overrides these defaults per org.",
-      "must_be_reachable_from_the_peripateticwa": "",
-      "task_routing": "",
-      "choose_which_provider_handles_each_ai_ta": "",
-      "changes_apply_immediately_orglevel_byok_": "",
+      "must_be_reachable_from_the_peripateticwa": "Deve essere raggiungibile dal server di backend di Peripateticware.",
+      "task_routing": "Instradamento delle attività",
+      "choose_which_provider_handles_each_ai_ta": "Scegliere quale provider gestisce ogni attività AI. In ombra indica che il provider non è configurato.",
+      "changes_apply_immediately_orglevel_byok_": "Le modifiche si applicano immediatamente. Il routing a livello di organizzazione sovrascrive questi predefiniti per l'organizzazione.",
       "ai_configuration": "Configurazione AI"
     },
     "pages_adminprivacyconfigpage": {
@@ -2026,7 +2043,7 @@
       "configure_your_organisationaposs_ai_prov": "Configura i provider AI dell'organizzazione e visualizza le assegnazioni di routing delle attività.",
       "anthropic_claude_api_key": "Chiave Anthropic (Claude) API",
       "openai_api_key": "Chiave OpenAI API",
-      "ollama_instance": "Ollama Instance",
+      "ollama_instance": "Esempio Ollama",
       "must_be_reachable_from_the_peripateticwa": "Deve essere raggiungibile dal server di backend Peripateticware.",
       "task_routing": "Instradamento delle attività",
       "which_provider_handles_each_ai_task_for_": "Quali provider gestiscono ogni attività AI per la vostra organizzazione."
@@ -2067,7 +2084,7 @@
       "key_rules_enforced": "Regole chiave applicate",
       "peripateticwares_privacy_engine_enforces": "Il motore di privacy di Peripateticware applica FERPA, COPPA, GDPR e SOC 2 attraverso un sistema di regole configurabile - quindi ogni operazione sui dati è conforme per impostazione predefinita, indipendentemente dalla giurisdizione in cui opera la scuola.",
       "how_it_works": "Come funziona",
-      "six_layers_of_privacy_running_automatica": "Six layers of privacy, running automatically on every request.",
+      "six_layers_of_privacy_running_automatica": "Six layer of privacy, running automatically on every request.",
       "supported_frameworks": "Framework di supporto",
       "click_any_framework_to_see_the_specific_": "Cliccate su qualsiasi framework per vedere le regole specifiche applicate da Peripateticware.",
       "what_institutions_can_configure": "Che istituti possono configurare",
@@ -2120,6 +2137,46 @@
     "gps_expires": "Il consenso scade automaticamente alla fine dell'attività (max 30 giorni)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "Translated Value String:\n\"Aggiorna per sbloccare questa funzionalità e altre ancora.\""
+    },
+    "audioRecorder": {
+      "almost_full": "Quasi pieno",
+      "record": "Registra",
+      "stop": "Fermare",
+      "keep": "Conservare",
+      "discard": "Scartare",
+      "transcribing": "In corso di trascrizione...",
+      "recording_saved": "Registrazione salvata",
+      "mic_denied": "Per registrare un audio è necessario l'accesso al microfono. Confermare il permesso e riprovare.",
+      "uploading": "In corso di caricamento della registrazione..."
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "In attesa di approvazione",
+      "teacher_commented": "Docente ha commentato",
+      "ready_to_reflect": "Pronta per la riflessione",
+      "section_title": "Titolo della sezione",
+      "teacher_label": "Etichetta di insegnante",
+      "reflection_in_progress": "riflessione in corso"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "Condivisione posizione",
+      "your_teacher_wants_to_see_your_location_": "La tua insegnante vuole vedere la tua posizione durante questa attività in modo che possa tracciare i progressi del lavoro sul campo. La tua posizione viene condivisa solo mentre l'attività è attiva."
+    },
+    "professorFieldworkPage": {
+      "back": "← Indietro",
+      "no_activity_selected": "Nessuna attività selezionata."
+    },
+    "rubricImportPage": {
+      "title": "Importa griglia",
+      "description": "Carica un PDF o CSV contenente i criteri della tua rubrica. L'IA estrairà ciascun criterio, che potrai controllare e modificare prima di salvare."
+    },
+    "cta_privacy_note": "Conforme FERPA e COPPA. I dati degli studenti non vengono mai venduti o condivisi.",
+    "curriculumImportPage": {
+      "description": "['Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).', 'Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).', 'Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).']",
+      "title": "Import State Academic Standards"
+    },
+    "standardsImportPage": {
+      "title": "Importa standard di apprendimento",
+      "description": "Carica un PDF o CSV degli standard di apprendimento per la tua disciplina - Common Core, NGSS, standard statali o il tuo proprio framework personalizzato. Una volta salvati, potrai contrassegnare le attività contro questi standard e tenere traccia della copertura degli studenti."
     }
   },
   "STUDENT": {},

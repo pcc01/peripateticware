@@ -163,6 +163,33 @@ async def create_user_and_org(
             "uid": str(new_user_id),
         })
 
+        # Enforce teacher seat limit before inserting org member
+        teacher_count = (await db.execute(
+            text("""
+                SELECT COUNT(*) FROM organization_members
+                WHERE org_id = :oid AND role IN ('owner', 'admin', 'teacher')
+            """),
+            {"oid": org_id},
+        )).scalar() or 0
+        max_teachers_row = (await db.execute(
+            text("SELECT max_teachers, license_tier FROM organizations WHERE id = :oid"),
+            {"oid": org_id},
+        )).first()
+        max_teachers  = (max_teachers_row[0] if max_teachers_row else None) or 3
+        license_tier  = (max_teachers_row[1] if max_teachers_row else None) or "free"
+        if teacher_count >= max_teachers:
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "code":          "UPGRADE_REQUIRED",
+                    "feature":       "teacher_seats",
+                    "required_tier": "starter",
+                    "current_tier":  license_tier,
+                    "limit":         max_teachers,
+                    "current":       teacher_count,
+                },
+            )
+
         # Make owner
         await db.execute(text("""
             INSERT INTO organization_members (id, org_id, user_id, role, joined_at)

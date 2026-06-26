@@ -13,6 +13,7 @@ import { useAuthStore } from '../../stores/auth';
 import { useGeoHint } from '../../hooks/useGeoHint';
 import type { UserRole } from '@/config/constants';
 import { SyntheticEvent } from 'react';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 const signupSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -148,6 +149,10 @@ export default function SignupScreen({
     }
   };
 
+  const onError = (errors: Record<string, unknown>) => {
+    console.error('[SignUpScreen] Form validation errors:', errors);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #6b9e7e 50%, #d4a574 100%)' }}>
       <div className="absolute inset-0" style={{ opacity: 0.12, pointerEvents: 'none' }}>
@@ -166,7 +171,7 @@ export default function SignupScreen({
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{t("landing:join_us", "Join Us")}</h1>
-              <p className="text-gray-600 text-sm">{t("landing:create_your_peripateticware_account", "Create your Peripateticware account")}</p>
+              <p className="text-gray-600 text-sm">{`Create your ${PRODUCT_NAME} account`}</p>
             </div>
           </div>
 
@@ -176,7 +181,13 @@ export default function SignupScreen({
             </div>
           }
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
+              Please fix the highlighted fields below before continuing.
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:first_name", "First Name")}
 
@@ -336,6 +347,8 @@ export default function SignupScreen({
                     <option value="DE">🇩🇪 Germany</option>
                     <option value="FR">🇫🇷 France</option>
                     <option value="NL">🇳🇱 Netherlands</option>
+                    <option value="BR">🇧🇷 Brazil</option>
+                    <option value="SG">🇸🇬 Singapore</option>
                     <option value="OTHER">🌍 Other</option>
                   </select>
                 </div>
@@ -371,9 +384,7 @@ export default function SignupScreen({
                 {...register('age_confirmed')}
                 className="mt-0.5 accent-green-600 w-4 h-4 shrink-0"
               />
-              <label htmlFor="age_confirmed" className="text-sm text-gray-600 leading-tight cursor-pointer">
-                I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account).
-              </label>
+              <label htmlFor="age_confirmed" className="text-sm text-gray-600 leading-tight cursor-pointer">{t('components_auth_signupscreen.i_confirm_that_i_am_18_years_of_age_or_o', 'I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account).')}</label>
             </div>
             {errors.age_confirmed && (
               <p className="text-red-600 text-xs -mt-2">{errors.age_confirmed.message}</p>

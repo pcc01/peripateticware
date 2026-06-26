@@ -63,7 +63,7 @@
       "sign_in": "サインイン",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. 全権利保有"
     },
-    "peripateticware": "ペリパティックウェア",
+    "peripateticware": "パリパティシックウェア",
     "learning_in_motion": "学習中に動き",
     "loading": "読み込み中...",
     "primary": "主な",
@@ -91,7 +91,7 @@
     "session": "セッション:",
     "select": "-- 選択 --",
     "footer": {
-      "brand_title": "ペリパティックウェア",
+      "brand_title": "パリパティシックウェア",
       "product_title": "製品",
       "product_tools": "ツール",
       "product_demo": "デモを予約",
@@ -105,7 +105,7 @@
       "resources_guides": "教師ガイド",
       "resources_api": "API リファレンス",
       "resources_support": "サポート",
-      "company_name": "ペリパティックウェア",
+      "company_name": "パリパティシックウェア",
       "brand_desc": "教師、学生、家族向けの外出型学習プラットフォームです。",
       "all_rights": "全権利保有",
       "legal_title": "法的",
@@ -897,7 +897,9 @@
       "students": "学生",
       "submissions": "提出",
       "edit": "編集",
-      "grade": "評価："
+      "grade": "評価：",
+      "total_activities": "合計活動数",
+      "this_week": "この週"
     },
     "total_students": "合計学生数",
     "active_activities": "アクティブな活動",
@@ -1257,7 +1259,8 @@
     "email_teacherexamplecom": "メール：teacher@example.com",
     "provide_constructive_feedback": "コンストラクティブなフィードバックを...",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "今後開発中です。"
+      "this_page_is_coming_soon": "今後開発中です。",
+      "go_back": "← 元へ"
     },
     "privacy_first": "プライバシーファースト",
     "eg_understand_photosynthesis_process": "例えば、照合素化過程を理解する",
@@ -1303,7 +1306,8 @@
       "cta_section_desc": "プライバシー政策セクション説明",
       "jurisdictions_enforced": "強制的に適用される地域",
       "last_updated": "最終更新日",
-      "cta_explore_docs": "プライバシードキュメントを探索"
+      "cta_explore_docs": "プライバシードキュメントを探索",
+      "loading_status": "ロー딩 컴플라이언스 상태…"
     },
     "capture_photosvideo": "写真/動画を撮る",
     "take_photos_record_videos_and_capture_au": "観察や発見のドキュメントに写真、動画、音声を撮ります。",
@@ -1341,7 +1345,12 @@
       "you_can_clear_cookies_at_any_time_throug": "任意の時点でブラウザー設定からクッキーをクリアすることができます。クリアする auth クッキーはサービスからログアウトします。",
       "changes_to_this_policy": "このポリシーに関する変更",
       "we_may_update_this_policy_as_the_service": "このポリシーはサービスが発展しますと更新される可能性があります。重要な変更はアプリ内通知経由で通知されます。",
-      "contact": "連絡先"
+      "contact": "連絡先",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "保存 JWT セッション ID。24 時間後に失効します。",
+      "auth_user_desc": "保存基本ユーザープロファイル（名、役職）。ログアウトしたらクリアされます。",
+      "i18nextlng_desc": "選択した言語を記憶します。",
+      "questions": "お尋び"
     },
     "termspage": {
       "terms_of_service": "利用規約",
@@ -1359,7 +1368,12 @@
       "7_limitation_of_liability": "7. 責任の限界",
       "8_contact": "8. 連絡",
       "by_accessing_or_using_peripateticware_ld": "Peripateticware（サービス）をアクセスや使用することによって、この利用規約に同意します。同意でない場合は、サービスをご利用ください。",
-      "the_service_is_provided_ldquoas_isrdquo_": "サービスは「ままの状態」で提供されます。Peripateticwareは、サービスの使用による間接的、相続的な損害について責任を持ちません。"
+      "the_service_is_provided_ldquoas_isrdquo_": "サービスは「ままの状態」で提供されます。Peripateticwareは、サービスの使用による間接的、相続的な損害について責任を持ちません。",
+      "back_to_home": "← ホームへ 戻る",
+      "privacy_compliance_intro": "Peripateticware는 COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, PDPA를 준수합니다. 학생 데이터는 광고에 사용하거나 판매하지 않습니다. 자세한 내용은",
+      "privacy_policy_link": "개인정보 보호 정책",
+      "privacy_compliance_outro": ",\n    ",
+      "questions_about_terms": "詳しくは「使用条款」を参照してください。"
     },
     "landing": {
       "role_student": "学生の役割",
@@ -1408,7 +1422,7 @@
     },
     "components_auth_loginscreen": {
       "try_a_demo_account": "🧪 デモアカウントを試してみる",
-      "password_securepass123": "Password: SecurePass123!"
+      "password_securepass123": "パスワード: SecurePass123!"
     },
     "cookie_consent_title": "クッキーの注意事項",
     "learn_more": "詳細を見る",
@@ -1429,8 +1443,8 @@
     "hs_how_title": "動作の説明",
     "hs_cta_signup": "無料でスタート →",
     "hs_cta_login": "ログイン",
-    "gdpr_title": "GDPR",
-    "ccpa_title": "CCPA",
+    "gdpr_title": "General Data Protection Regulation",
+    "ccpa_title": "California Consumer Privacy Act",
     "components_shared_extractionwizard": {
       "set_name": "名前を設定",
       "analysing_document": "ドキュメントの解析中...",
@@ -1461,7 +1475,7 @@
     "think_about": "考える…",
     "sketch": "スケッチ",
     "layouts_dashboardshell": {
-      "peripateticware": "ペリパティックウェア"
+      "peripateticware": "パリパティックウェア"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "読み込み中…",
@@ -1724,7 +1738,8 @@
     "link_child_explainer": "子供のアカウントをリンクすると、学習進捗状況、次回セッション、能力成熟度スコア、提出した証明書、教師フィードバック、それぞれ1つの場所に表示されます。",
     "select_child_prompt": "上で子供のアカウントを選択して、学習進捗状況を確認してください。",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "リンク後に見ることができます："
+      "what_youll_see_after_linking": "リンク後に見ることができます：",
+      "parental_consent_status": "親子関係の許可状況"
     },
     "create_first_note": "初めてのメモを作成してください",
     "response_in_progress": "応答中です。撮影を追加して、提出してください。",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "アカウントを作成しますか?",
       "sign_in": "ログイン",
       "helps_us_apply_the_right_privacy_framewo": "学生を保護するために適切なプライバシー架构（FERPA、COPPA、GDPR等）を適用します。",
-      "this_determines_whether_coppa_applies_": "これは COOPA が対象アカウントであるかのように認定されます。"
+      "this_determines_whether_coppa_applies_": "これは COOPA が対象アカウントであるかのように認定されます。",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "18歳以上(または未成年である使用者の法定监护人)としてこれを確認する。"
     },
     "cta_btn": "無料で始める",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "👁 学生のビュー預視",
       "this_is_how_the_activity_appears_to_stud": "このように、アクティビティがスタッフからの受け取りを通じて学生のスマホに表示されます。",
       "these_three_fields_drive_the_student_exp": "これらの3つの項目は、学生が進行していく過程であります。",
-      "no_inquiry_instructions_yet_write_them_i": "まだお尋ね方法がありません — Learningタブで書きます。"
+      "no_inquiry_instructions_yet_write_them_i": "まだお尋ね方法がありません — Learningタブで書きます。",
+      "students_locations_are_shared_with_you_i": "学生の位置は、セッション モニタにおいてリアルタイムで共有されます。13歳以下の学生の父母の同意が自動的に要求されます。"
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "學生邀請",
@@ -1925,14 +1942,14 @@
       "loading": "ロー딩...",
       "from": "From",
       "reply": "回答",
-      "to": "To",
+      "to": "アイムフロム",
       "write_placeholder": "お題に対しての回答を書きます。",
       "sent": "送信しました.",
       "done": "完了",
       "cancel": "キャンセル",
       "sending": "送信中...",
       "send": "返信を送る",
-      "subtitle": "",
+      "subtitle": "子供の教師からのメッセージです。お知らせに応じてください.",
       "empty": "まだメッセージがありません。教師からの連絡があるときはここに表示されます。"
     },
     "notifications": "通知",
@@ -1969,14 +1986,14 @@
     "components_landingpage": {
       "peripateticware_began_as_a_white_paper_w": "Peripateticware は McGraw-Hill Education 内で書かれた白紙を始めとして、GPS が搭載されたモバイルデバイスが学습を変えることだけでなく、実際に存在する場所を歩き回り、構造化された探究の指針に従って学習することが可能になると主張しました。",
       "guided_inquiry_that_leads_to_real_knowle": "真実を追求する探究を指導",
-      "sample_exchange_creek_study_grade_5": "Sample exchange — Creek Study, Grade 5",
+      "sample_exchange_creek_study_grade_5": "サンプル交換 - Creek Study, Grade 5",
       "peri_never_gives_the_answer_it_asks_the_": "パイリは答えることができません。それは次の正しい質問をすることです。 - クエストは既定された銀行から引き出されます； AIの回答にはオーラマがローカルに実行中にある必要があります、或いはAnthropic API key。",
       "built_from_a_2007_idea_that_took_until_2": "2007年に始めたアイデアで それが可能になったのは2026年",
       "the_paper_named_one_problem_it_couldnt_s": "紙には、解決できない1つの問題があることを記載されています。どうしてそのような場所で発生する学習を評価する方法はありませんか？2026年に人工智能がついに答えを出したものです。",
-      "from_the_original_2007_paper": "From the original 2007 paper",
-      "simple_honest_pricing": "Simple, honest pricing",
-      "free_for_one_classroom_no_credit_card_re": "Free for one classroom. No credit card required to start.",
-      "homeschool_families": "Homeschool families"
+      "from_the_original_2007_paper": "原文 2007年",
+      "simple_honest_pricing": "簡明な、誠実な価格",
+      "free_for_one_classroom_no_credit_card_re": "一つのクラスを対象に無料で提供されます。お支払い方法は必要ありません。",
+      "homeschool_families": "ホームスクール家庭"
     },
     "components_privacysetupwizard": {
       "where_are_you_teaching": "どこで教えていますか？",
@@ -1986,10 +2003,10 @@
       "eu_country_gdpr_applies_your_platform_ad": "🇪🇺 欧盟 - GDPRが適用されます。プラットフォーム管理者によって有効化される必要があります。",
       "tell_us_about_your_students": "学生について教えてください",
       "coppa_childrens_online_privacy_protectio": "COPPA (Children's Online Privacy Protection Act) applies when any student is under 13. ",
-      "ferpa_applies_to_all_your_students_regar": "ℹ️ FERPA applies to all your students regardless of age since you teach at a US school.",
-      "ai_amp_data_preferences": "AI &amp; data preferences",
-      "these_defaults_apply_to_your_account_stu": "These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.",
-      "your_privacy_setup": "Your privacy setup",
+      "ferpa_applies_to_all_your_students_regar": "※ FERPAに関する詳細は、アメリカ合衆国の学校で教師として勤務中である場合に適用されます。",
+      "ai_amp_data_preferences": "AI & データの利用方針",
+      "these_defaults_apply_to_your_account_stu": "これらの既定の設定は、アカウントに関して適用されます。学生や保護者が自分だけでなく、教師もあらためて設定を変更することができます。",
+      "your_privacy_setup": "プライバシーの設定",
       "frameworks_now_active_on_your_account": "フレームワークが現在のアカウントに有効化されている:",
       "no_specific_frameworks_are_preselected_b": "回答に基づいて特定のフレームワークは選択されません。任意のタイミングで設定を変更することができます。"
     },
@@ -1998,7 +2015,7 @@
       "anthropic_api_key": "人工智能 API キー",
       "estimated_cost_per_1000_requests": "1,000 回の要求あたりの予算",
       "estimates_based_on_500_token_input_300_t": "~500 トークン入力 + ~300 トークン出力の案を基にした估算です。実際の費用はプロポンスの長さによって異なります。",
-      "openai_api_key": "OpenAI API Key",
+      "openai_api_key": "オープンエイI APIキー",
       "advanced_configuration": "高度な設定",
       "peri_response_mode_batch_schedule_and_in": "パーリ レスポンスモード、バッチスケジュール、推論エンドポイント.",
       "peri_inquiry_responses": "パーリ クエリ回答",
@@ -2020,7 +2037,7 @@
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "自分の公開キーを使う — アップグレードが必要",
-      "ai_configuration": "AI Configuration",
+      "ai_configuration": "AI構成",
       "set_your_organisations_anthropic_api_key": "アントロピックのAPIキーを設定して、自身のAI使用量を制限するために組織のAI使用量を利用できます。",
       "key_is_encrypted_at_rest_and_never_logge": "API キーは保存中に暗号化されており、API応答には記録されていないため、安全です。",
       "configure_your_organisationaposs_ai_prov": "AIの提供者を設定して、タスク配信を確認できます。",
@@ -2033,11 +2050,11 @@
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "この論文は3Gが完全に導入されていない時期、iPhoneが発表される前の数개월、“アプリ”という言葉自体がまだ一般的ではなかった頃に書かれました。その中での予測—ある紙は、Cell Phoneが1-for-1クラスルームデバイスとなり、モバイルネットワークが偏遠地区に到達することが可能になり、GPSが学生の口のポケットに入れるほど 저렴해진다는 것—全てが事実となった。その紙が提唱した製品は存在하지 않았습니다.",
-      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
-      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
-      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
-      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
-      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
+      "if_students_follow_their_curiosity_throu": "それによって学生たちは、アーチやバーレル、天体観測などを学ぶことができます。 캔터ベリー大聖堂や港の近くにいると、학생たちは実際に서 배우는 것을 평가하고 교과과정의 요구사항을 만족시킬 수 있습니다。 학생たちが実際に理解しているものを表現する方法を考えることです。",
+      "the_document_left_that_question_open_the": "その文書はその問題を残しました。 学校システムもそれを解決していないでしょう。 20年近くにわたって「アウトドアラーニング」はある意味では曖昧な志向だけあるか、またはロジスティクの夜 mareです。 先生たちがクリップボー드を持っている、活動によってアーティファクトを生成しない、体験が室内に戻ってきたときに消える、ということです。",
+      "the_first_part_was_solved_by_smartphones": "その後の部分はスマートフォンによって解決されました。 写真や音響、GPSコーディネイト、タイム스탬프などを学生が堰畔の川岸で10分間にわたって撮影することができます。 それ以外は第2部分だけが残りました：規則化された調査を行うことで、体験を深化することができませんか？",
+      "thats_where_peri_comes_in_peri_is_peripa": "それには Peri가 있습니다. Peri는 Peripateticware의 AI 가이드로, 소프트웨어의 이름과 같이 아리스토텔레스의 방법에서 따온 이름입니다. Peri는 대답하지 않습니다. 그것은 질문을합니다. 아리스토텔레스가 Lyceum에서 사용한 5 단계 조사 시퀀스 (Engage, Observe, Analyze, Explain, Apply)를 인지 과학이 나중에 진정한 이해로 유도하는 길로 확인했습니다. Peri는 학생의 관찰을 따라가고 다음 올바른 질문을합니다. 학생이 옳은 대답을하면 Peri는 그 결과를 기록합니다. 학생이 모호한 경우 Peri는 증거를 요구합니다. ",
+      "the_result_is_an_artifact_a_field_journa": "그 결과는 예술품: 현장 일기에 캡처, 확장된 분석 및 조사 자체의 기록이 포함됩니다. 교사는 학생이 결론을 내린 방법을 보는 것만이 아니라 그들이 어떻게 도착했는지를 볼 수 있습니다. 평가의 레이블을 Bloom의 분류 학과 기준 프레임 워크 (CCSS, NGSS, TEKS, 또는 자신의)로 FERPA 및 COPPA 규정을 준수합니다. 학교 행정부에서 모든 교사와 홈스쿨 학부모가 자신의 활동을 이러한 기준과 일치시킬 수 있습니다. 같은 파일을 재 업로드하면 프로세싱이 건너뛰어집니다 (체크섬 캐시).",
       "the_2007_paper_described_a_choose_your_o": "2007 年の論文には \"選択型アドベンチャー\"と呼ばれる学습法が記述されています。これは、生徒たちが分岐点を跳ね回り、自己に興味のあるものを追うときに、核心的な学科教育概念をサイド ドアではなく正面入口から出会うことができるようにするものです。論文はこれが\"ある程度の混乱を生む\"と認めています。そして、新たなタイプの授業設計や評価ツール、学生によって自己が主導権を持つことができるようにする教師が必要であり、また、本来は授業の形式である課程内容をサイド ドアで出会うことができるようにする新しいタイプの学生活動も必要であると述べています。",
       "peripateticware_doesnt_fully_solve_the_c": "Peripateticwareは2007年のビジョンを完全に実現するわけではありません。それは、教師が心理的な安定感を保つために必要なだけの構造を持っている一方、学生に自由度を与えて実際にどこかへ行くことができるようにするものです。GPSをトリガーにしたコンテンツや、学生が提案した活動、完了フェイズ、承認ワークフローなどの完成段階を設定しているだけです。",
       "the_reverse_scavenger_hunt_where_student": "リバーススカavengerハントは、学生が発見したものに基づいて活動を提案することが可能なプラットフォーム上では、2007年のビジョンに最便で近いものです。学生が奇異な岩石構造物を発見したら、それを活動として提案することが可能であり、それが批准されると、他の学生たちはそれに詳細を調べます。教科書には予想していなかった質問が出現します。学習が進展していきます。",
@@ -2045,7 +2062,7 @@
       "the_longer_answer_is_that_educational_te": "Peripateticwareは、エデュケーションテクノロジーがその間に解決していた問題が正しくないことを認めるようになりました。エデュケーションテクノロジーは、教室を更に有效化するように演進させてきました。LMSが高画質のビデオや、より良いクイズツールとなっていきました。Peripateticwareは教室を置き換えることであるか、少なくとも適時にそれをすることを試みています。",
       "thats_a_harder_sell_schools_are_riskaver": "それは難しい販売だ。学校はリスクを回避する傾向があります。アウトドアでの学習には法的な面があります。\"世界はあなたの教室だ！！（Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you've watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood。）",
       "from_a_white_paper_to_a_working_platform": "白紙から実験的なプラットフォームへ:Peripateticware 2007–2026",
-      "the_insight_aristotle_was_right": "The Insight: Aristotle Was Right",
+      "the_insight_aristotle_was_right": "Insight: Aristotle Was Right",
       "the_problem_that_remained_unsolved": "その未解決の問題",
       "the_2007_document_named_one_obstacle_it_": "2007年にはこれらを解決できないという障壁があるとさえしていました。",
       "the_2026_answer_ai_did_what_spreadsheets": "答えは2026年、人工智能が出来るものはすべて解決したということです。",
@@ -2113,13 +2130,53 @@
       "gps_pins_will_appear_here_once_students_": "ここには GPS ピンポイントが学生が野外調査記録や拍照を提出したら現れるのですが、実時間を示すものではありません。",
       "pins_are_stored_snapshots_from_field_not": "どのような場所共有といえば"
     },
-    "gps_what_we_collect": "",
+    "gps_what_we_collect": "どこにあるのかを知っているのですか?",
     "gps_only_during": "GPS コーディネイトは、現在の実施中のフィールドワークにのみ共有されます。",
     "gps_teacher_only": "教師用のみであり、その他の学生や一般人には公開されていません。",
     "gps_stored": "提出時に保存される場所のスナップショット（連続的な追跡ではありません）",
     "gps_expires": "その活動が終了するときに自動的に有効期限が経過します（最大 30 日間）。",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "['アップグレードしてくればこの機能やその他も使用できます。', '更新版即可以解锁这个功能和其他东西了.', 'アップグレードしていると、このような不足を補えばいけませんか?']"
+    },
+    "audioRecorder": {
+      "almost_full": "ほぼ満ためになっている",
+      "record": "記録",
+      "stop": "止まる",
+      "keep": "保留",
+      "discard": "廃止",
+      "transcribing": "音声を記録中...",
+      "recording_saved": "レコーディングが保存されました",
+      "mic_denied": "録音するためにはマイクロフォンへのアクセスが必要です。許可をおしずさまにください、そして再びおしゃべりくださいね。",
+      "uploading": "録音をアップロード中……"
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "承認をお待ちください",
+      "teacher_commented": "教師のコメントありました。",
+      "ready_to_reflect": "準備ができました。",
+      "section_title": "セクションタイトル",
+      "teacher_label": "教師ラベル",
+      "reflection_in_progress": "反省の中であるんです"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "場所共有",
+      "your_teacher_wants_to_see_your_location_": "担任教师希望在本次活动期间查看学生的位置以便跟踪实地工作进度。只有在活动开始时，才会共享你的位置信息。"
+    },
+    "professorFieldworkPage": {
+      "back": "← バック",
+      "no_activity_selected": "没有选择任何活动。"
+    },
+    "rubricImportPage": {
+      "title": "レビューをイMPORT",
+      "description": "上传一个包含评分标准的 PDF 或 CSV 文件。AI 将提取每项标准，然后你可以查看并编辑这些标准再保存它们。"
+    },
+    "cta_privacy_note": "FERPA 및 COPPA 규정을 준수합니다. 학생 데이터는 결코 판매하거나 공유하지 않습니다.",
+    "curriculumImportPage": {
+      "description": "",
+      "title": "Import State Academic Standards"
+    },
+    "standardsImportPage": {
+      "title": "导入学习标准",
+      "description": "上传一个 PDF 或 CSV 文件来载入您的学科的学习标准——通用教育标准、 Next Generation Science Standards(NGSS)、州级标准，或者自定义框架。一旦保存了这些标准，你就可以将活动标记为符合这些标准，并跟踪学生的覆盖率。"
     }
   },
   "STUDENT": {},

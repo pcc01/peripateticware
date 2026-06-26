@@ -63,7 +63,7 @@
       "sign_in": "Connexion",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Tous droits réservés."
     },
-    "peripateticware": "Peripatétiqueware",
+    "peripateticware": "Logiciel",
     "learning_in_motion": "En apprentissage en mouvement",
     "loading": "Chargement...",
     "primary": "Primaire",
@@ -83,15 +83,15 @@
     },
     "welcome": "Bienvenue",
     "circle": "Cercle",
-    "rectangle": "Rectangle",
+    "rectangle": "Carré",
     "polygon": "Polygone",
-    "navigation": "Navigation",
+    "navigation": "Accueil",
     "reflection_notebook": "Carnet de reflexion",
     "entry_title": "Titre d'entrée",
     "session": "Session :",
     "select": "-- Sélectionner --",
     "footer": {
-      "brand_title": "Peripatétiqueware",
+      "brand_title": "Logiciel de gestion de projets",
       "product_title": "Produit",
       "product_tools": "Outils",
       "product_demo": "Réserver une démonstration",
@@ -105,7 +105,7 @@
       "resources_guides": "Guides pour enseignants",
       "resources_api": "Référence API",
       "resources_support": "Soutien",
-      "company_name": "Peripatétiqueware",
+      "company_name": "Logiciel de gestion de projets",
       "brand_desc": "Plateforme de apprentissage péripététique en plein air conçue pour les enseignants, les étudiants et les familles.",
       "all_rights": "Tous droits réservés.",
       "legal_title": "Droits légaux",
@@ -116,7 +116,7 @@
       "product_features": "Fonctionnalités",
       "product_pricing": "Tarification",
       "privacy_protected": "Votre données sont protégées sous ces cadres juridiques",
-      "company_contact": "Contact",
+      "company_contact": "Contactez-nous",
       "product_privacy_engine": "Moteur de confidentialité",
       "resources_privacy": "Moteur de confidentialité"
     },
@@ -897,7 +897,9 @@
       "students": "Élèves",
       "submissions": "Sous-envois",
       "edit": "Modifier",
-      "grade": "Note :"
+      "grade": "Note :",
+      "total_activities": "Total Activities",
+      "this_week": "This Week"
     },
     "total_students": "Total d'élèves",
     "active_activities": "Activités actives",
@@ -1257,7 +1259,8 @@
     "email_teacherexamplecom": "Email : enseignant@example.com",
     "provide_constructive_feedback": "Fournissez un feedback constructif ...",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "Cette page sera bientôt disponible."
+      "this_page_is_coming_soon": "Cette page sera bientôt disponible.",
+      "go_back": "← Go Back"
     },
     "privacy_first": "Privéci (Privéci premier)",
     "eg_understand_photosynthesis_process": "Par exemple, comprendre le processus de photosynthèse",
@@ -1303,7 +1306,8 @@
       "cta_section_desc": "Description de la section d'appel à l'action",
       "jurisdictions_enforced": "Juridictions appliquées",
       "last_updated": "Dernière mise à jour",
-      "cta_explore_docs": "Explorer les Documents de confidentialité"
+      "cta_explore_docs": "Explorer les Documents de confidentialité",
+      "loading_status": "Chargement de l'état de conformité..."
     },
     "capture_photosvideo": "📸 Capture photos/vidéos",
     "take_photos_record_videos_and_capture_au": "Prenez des photos, enregistrez des vidéos et capturez de l'audio pour documenter vos observations et découvertes.",
@@ -1341,7 +1345,12 @@
       "you_can_clear_cookies_at_any_time_throug": "Vous pouvez effacer les cookies à tout moment grâce aux paramètres de votre navigateur. L'effacement des cookies d'authentification vous déconnectera du Service.",
       "changes_to_this_policy": "Modifications à cette Politique",
       "we_may_update_this_policy_as_the_service": "Nous pouvons mettre à jour cette politique selon que le Service évolue. Les changements importants seront communiqués par notification in-app.",
-      "contact": "Contact"
+      "contact": "Contact",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Stocke votre JWT de session. Expire après 24 heures.",
+      "auth_user_desc": "Stocke votre profil utilisateur de base (nom, rôle). Effacé lors du déconnexion.",
+      "i18nextlng_desc": "Rappelle votre choix de langue.",
+      "questions": "Questions ?"
     },
     "termspage": {
       "terms_of_service": "Conditions d'Utilisation",
@@ -1359,7 +1368,12 @@
       "7_limitation_of_liability": "7. Limitation de responsabilité",
       "8_contact": "8. Contactation",
       "by_accessing_or_using_peripateticware_ld": "En accédant ou en utilisant Peripatéticare (le «Service»), vous acceptez d'être lié par ces Conditions générales de service. Si vous ne vous y tendez pas, veuillez ne pas utiliser le Service.",
-      "the_service_is_provided_ldquoas_isrdquo_": "Le Service est fourni «tel quel». Peripatéticare n'est pas responsable de toute dommage indirect, incidentel ou conséquent résultant de l'utilisation du Service."
+      "the_service_is_provided_ldquoas_isrdquo_": "Le Service est fourni «tel quel». Peripatéticare n'est pas responsable de toute dommage indirect, incidentel ou conséquent résultant de l'utilisation du Service.",
+      "back_to_home": "← Retour à la page d'accueil",
+      "privacy_compliance_intro": "Peripateticware est conforme aux lois COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD et PDPA. Les données des étudiants ne sont jamais vendues ni utilisées à des fins publicitaires. Consultez notre",
+      "privacy_policy_link": "Politique de confidentialité",
+      "privacy_compliance_outro": "Pour plus de détails.",
+      "questions_about_terms": "Questions concernant ces conditions ?"
     },
     "landing": {
       "role_student": "rôle étudiant",
@@ -1461,7 +1475,7 @@
     "think_about": "Penser à…",
     "sketch": "Esquisse",
     "layouts_dashboardshell": {
-      "peripateticware": "Logiciel Peripatétique"
+      "peripateticware": "Logiciel périmé"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Chargement...",
@@ -1724,7 +1738,8 @@
     "link_child_explainer": "Une fois que vous liez le compte de votre enfant, vous verrez leur progrès dans l'apprentissage, les sessions à venir, les scores en compétences, les preuves soumises et les commentaires du professeur — tout cela dans un seul endroit.",
     "select_child_prompt": "Sélectionnez un enfant ci-dessus pour voir leur progrès.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "Ce que vous verrez après le lien :"
+      "what_youll_see_after_linking": "Ce que vous verrez après le lien :",
+      "parental_consent_status": "Statut de consentement parental"
     },
     "create_first_note": "Créez votre première note",
     "response_in_progress": "Réponse en cours. Ajoutez des captures puis soumettez.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "Devez-vous déjà disposer d'un compte ?",
       "sign_in": "Connectez-vous",
       "helps_us_apply_the_right_privacy_framewo": "Cela nous permet d'appliquer les bonnes cadres de protection des données (FERPA, COPPA, GDPR, etc.) pour vos étudiants.",
-      "this_determines_whether_coppa_applies_": "Ceci détermine si la loi COPPA s'applique à votre compte."
+      "this_determines_whether_coppa_applies_": "Ceci détermine si la loi COPPA s'applique à votre compte.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "J'ai plus de 18 ans (ou je suis le tuteur légal des utilisateurs mineurs associés à ce compte)."
     },
     "cta_btn": "Démarrer gratuitement",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "Prévisualisation de la vue étudiant",
       "this_is_how_the_activity_appears_to_stud": "Voici à quoi ressemble l'activité pour les étudiants dans l'application.",
       "these_three_fields_drive_the_student_exp": "Ces trois champs pilotent l'expérience des étudiants. Les étudiants progressent en suivant Orienter à Inquèrer à Reflechir sur leur téléphone.",
-      "no_inquiry_instructions_yet_write_them_i": "Pas d'instructions de demande pour le moment - écrivez-les dans l'onglet Apprentissage."
+      "no_inquiry_instructions_yet_write_them_i": "Pas d'instructions de demande pour le moment - écrivez-les dans l'onglet Apprentissage.",
+      "students_locations_are_shared_with_you_i": "Les lieux des élèves sont partagés avec vous en temps réel sur le moniteur de session. Le consentement parental est demandé automatiquement pour les élèves de moins de 13 ans."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Inviter des étudiants",
@@ -1853,7 +1870,7 @@
       "grade_level": "Niveau scolaire",
       "language": "langue",
       "state_standard": "norme d'état",
-      "discipline": "discipline",
+      "discipline": "Discipline",
       "shared_activity_library": "🌐 Bibliothèque d'activités partagées",
       "activities_marked_as_shareable_by_you_or": "Activités marquées comme étant partageables par vous ou vos collègues. Copiez-en une dans votre propre activité.",
       "browse_activities_shared_by_teachers_acr": "Parcourez les activités partagées par les enseignants de votre organisation et à l'échelle mondiale. Copiez-en une dans votre propre bibliothèque.",
@@ -2120,6 +2137,46 @@
     "gps_expires": "Le consentement expire automatiquement lorsque l'activité se termine (max 30 jours)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "['Mise à niveau pour déverrouiller cette fonctionnalité et plus encore.', 'Mettre à niveau pour déverrouiller cette fonctionnalité et plus encore.']"
+    },
+    "audioRecorder": {
+      "almost_full": "Près de plein",
+      "record": "Enregistrement",
+      "stop": "Arrêt",
+      "keep": "Conserver",
+      "discard": "Supprimer",
+      "transcribing": "En cours d'écriture...",
+      "recording_saved": "Enregistrement enregistré, en attente de validation",
+      "mic_denied": "Un accès au microphone est nécessaire pour enregistrer l'audio. Veuillez autoriser et essayer à nouveau.",
+      "uploading": "Téléchargement en cours..."
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "En attente de commentaires du professeur",
+      "teacher_commented": "Le professeur a commenté",
+      "ready_to_reflect": "prêt à réfléchir",
+      "section_title": "titre de la section",
+      "teacher_label": "étiquette d'enseignant",
+      "reflection_in_progress": "réflexion en cours"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "partage de localisation",
+      "your_teacher_wants_to_see_your_location_": "Votre enseignant veut voir votre localisation pendant cette activité afin qu'il puisse suivre le progrès du travail sur le terrain. Votre localisation est partagée uniquement pendant que l'activité est active."
+    },
+    "professorFieldworkPage": {
+      "back": "← Retour",
+      "no_activity_selected": "Aucune activité sélectionnée."
+    },
+    "rubricImportPage": {
+      "title": "[['Importer le critère de notation']]",
+      "description": "Téléchargez un PDF ou une feuille de calcul contenant vos critères de rubrique. L'IA extraira chaque critère, que vous pourrez réviser et modifier avant de l'enregistrer."
+    },
+    "cta_privacy_note": "Conformes à la FERPA et COPPA. Les données des étudiants ne sont jamais vendues ou partagées.",
+    "curriculumImportPage": {
+      "description": "Téléchargez un fichier PDF ou CSV contenant les normes académiques officielles de l'État (TEKS, NGSS, Common Core, etc.). Ollama extrait chaque norme pour examen. Une fois enregistré en tant que jeu de données global, tous les enseignants et parents d'élèves scolarisés à domicile peuvent associer leurs activités à ces normes. Le téléchargement du même fichier permet de contourner le traitement (cache de somme).",
+      "title": "Import State Academic Standards"
+    },
+    "standardsImportPage": {
+      "title": "Importer des normes d'apprentissage",
+      "description": "Téléchargez un PDF ou une feuille de calcul des normes d'apprentissage pour votre discipline - Common Core, NGSS, normes d'État ou votre propre cadre personnalisé. Une fois enregistrées, vous pouvez marquer les activités à l'aide de ces normes et suivre la couverture étudiante."
     }
   },
   "STUDENT": {},

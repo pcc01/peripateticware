@@ -68,7 +68,7 @@
       "sign_in": "anmelden",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Alle Rechte vorbehalten."
     },
-    "peripateticware": "Peripatetische Ware",
+    "peripateticware": "Wanderschaft",
     "learning_in_motion": "Lernen in Bewegung",
     "loading": "Laden...",
     "splashscreen": {
@@ -100,7 +100,7 @@
     "session": "Sitzung:",
     "select": "-- Wählen --",
     "footer": {
-      "brand_title": "Markentitel",
+      "brand_title": "Wanderschaft",
       "brand_desc": "Markenbez",
       "product_title": "Produkttitel",
       "product_features": "Produktmerkmale",
@@ -122,7 +122,7 @@
       "legal_terms": "Rechtsbegriffe",
       "legal_cookies": "legale Cookies",
       "legal_contact": "Rechtskontakt",
-      "company_name": "Name der Firma",
+      "company_name": "Wanderschaft",
       "all_rights": "Alle Rechte",
       "privacy_protected": "Ihre Daten sind unter diesen Rahmenbedingungen geschützt",
       "company_contact": "Kontakt",
@@ -990,7 +990,8 @@
       "cta_section_desc": "CTA-Abschnitt desc",
       "jurisdictions_enforced": "Gerichtsbarkeiten durchgesetzt",
       "last_updated": "Zuletzt aktualisiert",
-      "cta_explore_docs": "Entdecken Sie Datenschutzdokumente"
+      "cta_explore_docs": "Entdecken Sie Datenschutzdokumente",
+      "loading_status": "Lade den Compliance-Status herunter..."
     },
     "loading_your_projects": "Lade deine Projekte...",
     "retry": "Wiederholen",
@@ -1300,7 +1301,9 @@
       "submissions": "Einsendungen",
       "edit": "Bearbeiten",
       "grade": "Grad:",
-      "students": "Schüler"
+      "students": "Schüler",
+      "total_activities": "Aktivitäten insgesamt",
+      "this_week": "Diese Woche"
     },
     "total_students": "Gesamtzahl der Studierenden",
     "active_activities": "Aktive Aktivitäten",
@@ -1422,7 +1425,7 @@
     "think_about": "Denke über...",
     "sketch": "Skizzieren",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripatetischeware"
+      "peripateticware": "Peripateticware"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Lade...",
@@ -1639,7 +1642,12 @@
       "you_can_clear_cookies_at_any_time_throug": "Sie können jederzeit über die Einstellungen Ihres Browsers Cookies löschen. Das Löschen der Auth-Cookies führt dazu, dass Sie aus dem Dienst ausgeloggt werden.",
       "changes_to_this_policy": "Änderungen an dieser Politik",
       "we_may_update_this_policy_as_the_service": "Wir können diese Politik je nach Entwicklung des Dienstes aktualisieren. Bedeutende Änderungen werden über eine In-App-Benachrichtigung kommuniziert.",
-      "contact": "Kontakt"
+      "contact": "Kontakt",
+      "back_to_home": "← Zurück zu Home",
+      "auth_token_desc": "Speichert Ihr Sitzungs-JWT. Läuft nach 24 Stunden ab.",
+      "auth_user_desc": "Speichert Ihre Benutzerprofile (Name, Rolle). Wird beim Ausloggen gelöscht.",
+      "i18nextlng_desc": "Speichert Ihre gewählte Sprache.",
+      "questions": "Haben Sie Fragen?"
     },
     "termspage": {
       "terms_of_service": "Nutzungsbedingungen",
@@ -1657,7 +1665,12 @@
       "you_may_not_use_the_service_to_upload_ha": "Sie dürfen das Dienst nicht verwenden, um schädliches Inhalt hochzuladen, Sicherheitskontrollen umgehen, studentische Daten unbefugten Dritten zugänglich machen oder irgendeine Aktivität ausführen, die gegen geltendes Recht verstößt.",
       "7_limitation_of_liability": "7. Haftungsbeschränkung",
       "the_service_is_provided_ldquoas_isrdquo_": "Das Dienstleistung wird &ldquo;wie es ist&rdquo; bereitgestellt. Peripateticware übernimmt keine Haftung für irgendeine indirekte, unerwartete oder konsequentielle Schäden, die durch Nutzung des Dienstes entstehen.",
-      "8_contact": "8. Kontakt"
+      "8_contact": "8. Kontakt",
+      "back_to_home": "← Zurück zur Startseite",
+      "privacy_compliance_intro": "Peripateticware ist konform mit COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD und PDPA. Studentendaten werden nicht verkauft oder für Werbung verwendet. Weitere Informationen finden Sie in unserer",
+      "privacy_policy_link": "Datenschutzrichtlinie.",
+      "privacy_compliance_outro": "für vollständige Details.",
+      "questions_about_terms": "Was fragt ihr euch über diese Bedingungen?"
     },
     "privacy_first_title": "🔒 Datenschutz vorrangig",
     "privacy_first_desc": "Für K-12 seit Tag 1 kompatibel mit den wichtigsten Datenschutzrahmen – nicht als Nachrangmaßnahme.",
@@ -1673,7 +1686,8 @@
     "view_audit_log": "Anzeigen der Protokollaufzeichnung",
     "collect_photos": "Bilder und Audioaufnahmen (sicher auf unserem Server gespeichert)",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "Diese Seite wird bald verfügbar."
+      "this_page_is_coming_soon": "Diese Seite wird bald verfügbar.",
+      "go_back": "← Zurück"
     },
     "age_confirmation": "Ich bestätige, dass ich mindestens 13 Jahre alt bin oder dass ich von meinen Eltern die Erlaubnis habe, diesen Account zu erstellen.",
     "cookie_notice": "Diese Seite verwendet Cookies nur für die Authentifizierung — keine Tracking- oder Werbungscookies.",
@@ -1724,7 +1738,8 @@
     "link_child_explainer": "Nach dem Verknüpfen des Kontos Ihres Kindes sehen Sie ihre Fortschrittsdaten, anstehende Sitzungen, Kompetenzwerte, eingereichte Beweise und Lehrer-Feedback — alle in einem Ort.",
     "select_child_prompt": "Wählen Sie ein Kind oben aus, um ihr Fortschritt zu sehen.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "Was Sie nach dem Verknüpfen sehen:"
+      "what_youll_see_after_linking": "Was Sie nach dem Verknüpfen sehen:",
+      "parental_consent_status": "Parental Consent Status"
     },
     "create_first_note": "Ihre erste Notiz erstellen",
     "response_in_progress": "Antwort im Gang. Fügen Sie Abbildungen hinzu und übermitteln Sie sie.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "Ihr Konto bereits vorhanden?",
       "sign_in": "Anmelden",
       "helps_us_apply_the_right_privacy_framewo": "Hilft uns, die richtigen Datenschutzrahmen (FERPA, COPPA, GDPR usw.) für Ihre Schüler anzuwenden.",
-      "this_determines_whether_coppa_applies_": "Dies bestimmt, ob COPPA für Ihr Konto gilt."
+      "this_determines_whether_coppa_applies_": "Dies bestimmt, ob COPPA für Ihr Konto gilt.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account)."
     },
     "cta_btn": "Jetzt kostenlos starten",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "👁️ Student View Preview",
       "this_is_how_the_activity_appears_to_stud": "So sieht die Tätigkeit für die Schüler in der App aus.",
       "these_three_fields_drive_the_student_exp": "Diese drei Felder bestimmen den Lernerfolg. Die Schüler durchlaufen Orient \\u2192 Inquire \\u2192 Reflect auf ihrem Telefon.",
-      "no_inquiry_instructions_yet_write_them_i": "No Anfrage-Anleitung vorhanden - erstellen Sie sie im Lern-Tab."
+      "no_inquiry_instructions_yet_write_them_i": "No Anfrage-Anleitung vorhanden - erstellen Sie sie im Lern-Tab.",
+      "students_locations_are_shared_with_you_i": "Die Standorte der Schüler werden Ihnen in Echtzeit auf dem Sitzungsmonitor angezeigt. Für Schüler unter 13 Jahren wird automatisch die Einwilligung der Eltern eingeholt."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Studenten einladen",
@@ -1802,7 +1819,7 @@
       "group_size": "Personengruppengröße",
       "setting": "Einstellung",
       "peri_is_thinking": "Peri denkt...",
-      "special_focus_optional": ""
+      "special_focus_optional": "Sonderfokus (optional)"
     },
     "pages_joinclassroompage": {
       "invite_not_found": "Einladung nicht gefunden",
@@ -1858,7 +1875,7 @@
       "activities_marked_as_shareable_by_you_or": "Aktivitäten, die von Ihnen oder Ihren Kollegen als gemeinsam markiert wurden. Kopieren Sie beliebige Aktivitäten in Ihre eigene Bibliothek.",
       "browse_activities_shared_by_teachers_acr": "In der Aktivitätsbibliothek von Lehrkräften in Ihrer Organisation und weltweit finden Sie geteilte Aktivitäten. Kopieren Sie beliebige Aktivitäten in Ihre eigene Bibliothek.",
       "no_shared_activities_found": "Keine gemeinsamen Aktivitäten gefunden.",
-      "try_adjusting_your_filters_or_publish_an": "Try adjusting your filters, or publish and share one of your own activities."
+      "try_adjusting_your_filters_or_publish_an": "Versuchen Sie, Ihre Filter anzupassen oder veröffentlichen und teilen Sie eine eigene Aktivität."
     },
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Klassenstufe",
@@ -2015,7 +2032,7 @@
       "ai_configuration": "KI-Konfiguration"
     },
     "pages_adminprivacyconfigpage": {
-      "compliance_frameworks": "Compliance Frameworks",
+      "compliance_frameworks": "Compliance-Frameworks",
       "toggle_which_privacy_frameworks_are_acti": "Aktivieren Sie, welche Datenschutzrahmen aktuell durchgesetzt werden. Vorgegeben bei der ersten Boot-Session - aktivieren Sie diejenigen, die für Ihre Rechtsordnung relevant sind."
     },
     "pages_org_admin_orgaiconfigpage": {
@@ -2024,8 +2041,8 @@
       "set_your_organisations_anthropic_api_key": "Legen Sie den Anthropic API-Schlüssel Ihrer Organisation fest, um Ihr eigenes KI-Nutzungsquota zu verwenden.",
       "key_is_encrypted_at_rest_and_never_logge": "Der Schlüssel wird bei Ruhe gesichert und weder protokolliert noch in Antworten auf API-Anforderungen zurückgegeben.",
       "configure_your_organisationaposs_ai_prov": "Konfigurieren Sie die KI-Anbieter Ihrer Organisation und sehen Sie sich Ihre Aufgabenzuweisungen an.",
-      "anthropic_claude_api_key": "Anthropic (Claude) API Key",
-      "openai_api_key": "OpenAI API Key",
+      "anthropic_claude_api_key": "Anthropic (Claude) API-Schlüssel",
+      "openai_api_key": "OpenAI API-Schlüssel",
       "ollama_instance": "Ollama Instance",
       "must_be_reachable_from_the_peripateticwa": "Muss vom Peripateticware-Backendserver aus erreichbar sein.",
       "task_routing": "Auftragsverteilung",
@@ -2034,7 +2051,7 @@
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "Das Papier entstand zu einer Zeit, in der das 3G-Netzwerk noch nicht flächendeckend ausgebaut war und der iPhone-Launch noch einige Monate auf sich warten ließ. Die Vorhersagen des Dokuments - dass Handys zu einem einzelnen Klassenzimmergerät werden würden, dass mobile Netzwerke abgelegene Regionen erreichen würden und GPS billig genug wird, um in jedem Schüler-Taschen zu sein - sind alle eingetroffen. Die von dem Papier geforderten Produkte wurden nicht hergestellt.",
       "if_students_follow_their_curiosity_throu": "Wenn die Schüler ihren Neugierde durch echte Orte verfolgen und über Brücken, Fässern und Himmelsnavigation lernen, weil sie sich in der Nähe eines Domes oder einer Bucht befinden, wie können Sie beurteilen, was sie gelernt haben, sodass die Schulvorschriften erfüllt sind? Wie können Sie das Tabellenblatt mit Zahlen erstellen, das der Direktor will, während gleichzeitig die Komplexität des von dem Schüler verstandenen Wissens geehrt wird?",
-      "the_document_left_that_question_open_the": "",
+      "the_document_left_that_question_open_the": "Das Dokument ließ diese Frage offen. Auch das Schulsystem konnte sie nicht beantworten. Fast zwei Jahrzehnte lang blieb \"Outdoor Learning\" entweder eine vage Hoffnung oder ein logistischer Albtraum - Lehrer mit Stift und Tafel, Aktivitäten ohne Ergebnis, Erfahrungen, die im Nu verschwanden, sobald die Schüler wieder drinnen waren.",
       "the_first_part_was_solved_by_smartphones": "Das erste Teil wurde von Smartphones gelöst. Foto, Audio, GPS-Koordinaten, Zeitstempel - ein Student an einem Bach kann in zehn Minuten mehr Beweise sammeln als ein Klassenfahrtenblock in einem Tag halten könnte. Was blieb war das zweite Teil: strukturierte Untersuchung, die nicht nur Erfahrungen dokumentiert, sondern sie vertiefte. ",
       "thats_where_peri_comes_in_peri_is_peripa": "Das ist der Ort, an dem Peri hilft. Peri ist Peripateticwares KI-Führer - wie das Software auch genannt wurde, nach der aristotelischen Methode. Peri beantwortet keine Fragen. Es stellt sie. Es folgt der fünfphasigen Untersuchungssequenz - Engage, Observe, Analyze, Explain, Apply - die Aristoteles im Lyceum verwendete und von der kognitiven Wissenschaft seitdem als ein Weg zur echten Verständigung, nicht nur zum Bewahren, bestätigt wurde. Peri nimmt eine Schülerbeobachtung auf und stellt die nächste richtige Frage. Wenn der Schüler sie richtig beantwortet, prüft Peri die Implikation. Wenn der Schüler unklar ist, fragt Peri nach Beweisen. ",
       "the_result_is_an_artifact_a_field_journa": "Das Ergebnis ist ein Artefakt: eine Feldjournal-Einträge mit Erfassungen, erweitertem Analyse und einem Protokoll der Untersuchung selbst. Lehrer können nicht nur sehen, was ein Schüler zu dem Schluss kam, sondern wie sie dorthin kamen. Raster nach Blooms Steuerungsmodell und Standardsrahmen - CCSS, NGSS, TEKS oder Ihre eigenen - machen die Beurteilung lesbar für jeden Curriculumkoordinator. Das Tabellenblatt und das reale Lernen belegen endlich dasselbe Dokument.",
@@ -2120,6 +2137,46 @@
     "gps_expires": "Einwilligung verfällt automatisch, wenn die Aktivität endet (max. 30 Tage)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "Aktualisieren Sie, um diese Funktion und weitere zu entsperren.\"\n\n\"Your account has been successfully upgraded. You can now access all features.\"\n\"Ihr Konto wurde erfolgreich aufgerüstet. Jetzt haben Sie Zugang zu allen Funktionen.\"\n\n\"You will be notified when the product is back in stock.\"\n\"Sie erhalten eine Benachrichtigung, wenn das Produkt wieder vorrätig ist."
+    },
+    "audioRecorder": {
+      "almost_full": "Beinahe voll",
+      "record": "Aufzeichnen",
+      "stop": "Anhalten",
+      "keep": "Behalten",
+      "discard": "Verwerfen",
+      "transcribing": "Transkribieren...",
+      "recording_saved": "Aufnahme gespeichert",
+      "mic_denied": "Mikrofonzugang ist erforderlich, um Audio aufzuzeichnen. Bitte erteilen Sie die Erlaubnis und versuchen Sie es erneut.",
+      "uploading": ""
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "auf Erteilung von Genehmigung wartend",
+      "teacher_commented": "Lehrer kommentiert",
+      "ready_to_reflect": "bereit zum Reflektieren",
+      "section_title": "Abschnittsüberschrift",
+      "teacher_label": "Lehrereinstellung",
+      "reflection_in_progress": "Reflexion im Gange"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "Standortfreigabe",
+      "your_teacher_wants_to_see_your_location_": "Deine Lehrerin möchte während dieser Aktivität deinen Standort sehen, damit sie den Fortschritt beim Feldarbeit überwachen kann. Ihr Standort wird nur während der Sitzung aktiviert."
+    },
+    "professorFieldworkPage": {
+      "back": "← Zurück",
+      "no_activity_selected": "Keine Aktivität ausgewählt."
+    },
+    "rubricImportPage": {
+      "title": "Rubrik importieren",
+      "description": "Laden Sie ein PDF oder CSV-Dokument hoch, das die Kriterien für die Bewertungsrubrik enthält. Die KI extrahiert dann jeden einzelnen Kriterium, den Sie überprüfen und bearbeiten können, bevor Sie es speichern."
+    },
+    "cta_privacy_note": "FERPA- und COPPA-konform. Studentendaten werden nicht verkauft oder weitergegeben.",
+    "curriculumImportPage": {
+      "description": "Laden Sie eine PDF- oder CSV-Datei mit offiziellen akademischen Standards (TEKS, NGSS, Common Core usw.) hoch. Ollama extrahiert jeden Standard für die Überprüfung. Sobald er als globale Einstellung gespeichert wurde, können alle Lehrer und Heimschüler ihre Aktivitäten anhand dieser Standards planen. Das Hochladen der gleichen Datei überspringt die Verarbeitung (Prüfsummen-Cache).",
+      "title": "Importierter Status der akademischen Standards"
+    },
+    "standardsImportPage": {
+      "title": "Import Learning Standards",
+      "description": "Lernstandards hochladen - Sie können ein PDF oder CSV der Lernstandards für Ihre Disziplin (Common Core, NGSS, Landesstandards oder eine eigene benutzerdefinierte Struktur) hochladen. Nach dem Speichern können Sie Aktivitäten gegen diese Standards markieren und den Schülerabdeckung verfolgen."
     }
   },
   "STUDENT": {},

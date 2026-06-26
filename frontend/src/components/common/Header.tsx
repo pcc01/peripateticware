@@ -4,12 +4,13 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 const Header = ({ user }: any) => {
   const { t } = useTranslation('landing');
   return (
     <header>
-      <h1>{t('landing:peripateticware', 'Peripateticware')}</h1>
+      <h1>{PRODUCT_NAME}</h1>
       {user && <p>{t('landing:welcome', 'Welcome')}</p>}
     </header>
   );

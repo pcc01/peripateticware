@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PhoneCarousel, CarouselScreen } from '../components/PhoneCarousel';
 import './ParentFeaturesPage.css';
+import { PRODUCT_NAME, PRODUCT_COPYRIGHT_TAGLINE } from '../constants/brand';
 
 const parentScreens: CarouselScreen[] = [
 {
@@ -41,7 +42,7 @@ export function ParentFeaturesPage(): React.ReactNode {
       <nav className="pfp-nav">
         <div className="pfp-nav-container">
           <h1 className="pfp-logo">
-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
+            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
 
           </h1>
           <button onClick={() => navigate('/')} className="pfp-nav-button">{t("landing:parentfeaturespage.back_to_home", "\u2190 Back to Home")}
@@ -237,7 +238,7 @@ export function ParentFeaturesPage(): React.ReactNode {
       {/* FOOTER */}
       <footer className="pfp-footer">
         <div className="pfp-container">
-          <p>{t('parentfeaturespage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
+          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
         </div>
       </footer>
     </div>);

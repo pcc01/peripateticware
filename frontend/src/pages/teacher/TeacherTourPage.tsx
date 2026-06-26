@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './TeacherTourPage.css';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 export function TeacherTourPage(): React.ReactNode {
   const { t } = useTranslation('landing');
@@ -13,7 +14,7 @@ export function TeacherTourPage(): React.ReactNode {
       <nav className="ttp-nav">
         <div className="ttp-nav-container">
           <h1 className="ttp-logo">
-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
+            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
 
           </h1>
           <button onClick={() => navigate('/')} className="ttp-nav-button">{t("landing:teachertourpage.back_to_home", "\u2190 Back to Home")}
@@ -293,7 +294,7 @@ export function TeacherTourPage(): React.ReactNode {
       {/* FOOTER */}
       <footer className="ttp-footer">
         <div className="ttp-container">
-          <p>{t('teachertourpage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
+          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
         </div>
       </footer>
     </div>);

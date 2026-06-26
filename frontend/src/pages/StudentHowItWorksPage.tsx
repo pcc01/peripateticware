@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PhoneCarousel, CarouselScreen } from '../components/PhoneCarousel';
 import './StudentHowItWorksPage.css';
+import { PRODUCT_NAME } from '../constants/brand';
 
 const studentScreens: CarouselScreen[] = [
 {
@@ -41,7 +42,7 @@ export function StudentHowItWorksPage(): React.ReactNode {
       <nav className="sihw-nav">
         <div className="sihw-nav-container">
           <h1 className="sihw-logo">
-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
+            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
 
           </h1>
           <button onClick={() => navigate('/')} className="sihw-nav-button">{t("landing:studenthowitworkspage.back_to_home", "\u2190 Back to Home")}
@@ -229,7 +230,7 @@ export function StudentHowItWorksPage(): React.ReactNode {
       {/* FOOTER */}
       <footer className="sihw-footer">
         <div className="sihw-container">
-          <p>{t('studenthowitworkspage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
+          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
         </div>
       </footer>
     </div>);

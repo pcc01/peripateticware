@@ -7,13 +7,13 @@
   "effective_date": "2015-01-02",
   "last_updated": "2026-05-06",
   "description": "Singapore's Personal Data Protection Act",
-  
+
   "student_age_categories": {
     "young_child": {"min_age": 0, "max_age": 12},
     "teen": {"min_age": 13, "max_age": 17},
     "adult": {"min_age": 18, "max_age": 150}
   },
-  
+
   "consent_requirements": {
     "young_child": {
       "parental_consent_required": true,
@@ -34,7 +34,7 @@
       "description": "Explicit consent from individual required"
     }
   },
-  
+
   "legal_obligations": [
     "Consent for collection and use of personal data",
     "Notification of collection and purposes",
@@ -47,7 +47,7 @@
     "Correction - reasonable efforts to correct inaccurate data",
     "Complaint handling and remedies"
   ],
-  
+
   "compliance_checks": {
     "consent_documentation": {
       "required": true,
@@ -67,5 +67,59 @@
     "access_mechanism": {
       "required": true,
       "response_days": 30,
-      "severity": "error",\n      \"description\": \"Must provide reasonable access to personal data held\"\n    },\n    \"correction_mechanism\": {\n      \"required\": true,\n      \"severity\": \"error\",\n      \"description\": \"Must provide mechanism to correct inaccurate data\"\n    }\n  },\n  \n  \"data_retention\": {\n    \"personal_data\": {\n      \"retention_months\": 12,\n      \"deletion_method\": \"delete_or_anonymize\",\n      \"archival_allowed\": false\n    },\n    \"learning_activity_data\": {\n      \"retention_months\": 24,\n      \"deletion_method\": \"delete_or_anonymize\",\n      \"archival_allowed\": false\n    }\n  },\n  \n  \"third_party_restrictions\": {\n    \"forbidden\": [],\n    \"requires_explicit_consent\": [\n      \"third_party_sharing\",\n      \"cross_border_transfer\"\n    ],\n    \"allowed_without_consent\": [\n      \"school_staff\",\n      \"authorized_agents\"\n    ]\n  },\n  \n  \"warnings\": [\n    \"PDPA applies to organizations in Singapore processing personal data\",\n    \"Parental consent required for children under 13\",\n    \"Must notify individuals before collecting personal data\",\n    \"Must protect data against loss and unauthorized access\",\n    \"Must not retain data longer than necessary\",\n    \"Must respond to access/correction requests\",\n    \"Penalties can include fines up to SGD 1 million and/or imprisonment\"\n  ],\n  \n  \"requirements\": [\n    \"Obtain explicit parental consent for children under 13\",\n    \"Notify individuals of data collection and purposes\",\n    \"Implement security measures to protect personal data\",\n    \"Do not retain personal data longer than necessary\",\n    \"Ensure accuracy of personal data\",\n    \"Provide access to personal data held\",\n    \"Allow correction of inaccurate personal data\",\n    \"Handle complaints and provide remedies\"\n  ]\n}\nEOF
-cat /mnt/user-data/outputs/pdpa_singapore.json
+      "severity": "error",
+      "description": "Must provide reasonable access to personal data held"
+    },
+    "correction_mechanism": {
+      "required": true,
+      "severity": "error",
+      "description": "Must provide mechanism to correct inaccurate data"
+    }
+  },
+
+  "data_retention": {
+    "personal_data": {
+      "retention_months": 12,
+      "deletion_method": "delete_or_anonymize",
+      "archival_allowed": false
+    },
+    "learning_activity_data": {
+      "retention_months": 24,
+      "deletion_method": "delete_or_anonymize",
+      "archival_allowed": false
+    }
+  },
+
+  "third_party_restrictions": {
+    "forbidden": [],
+    "requires_explicit_consent": [
+      "third_party_sharing",
+      "cross_border_transfer"
+    ],
+    "allowed_without_consent": [
+      "school_staff",
+      "authorized_agents"
+    ]
+  },
+
+  "warnings": [
+    "PDPA applies to organizations in Singapore processing personal data",
+    "Parental consent required for children under 13",
+    "Must notify individuals before collecting personal data",
+    "Must protect data against loss and unauthorized access",
+    "Must not retain data longer than necessary",
+    "Must respond to access/correction requests",
+    "Penalties can include fines up to SGD 1 million and/or imprisonment"
+  ],
+
+  "requirements": [
+    "Obtain explicit parental consent for children under 13",
+    "Notify individuals of data collection and purposes",
+    "Implement security measures to protect personal data",
+    "Do not retain personal data longer than necessary",
+    "Ensure accuracy of personal data",
+    "Provide access to personal data held",
+    "Allow correction of inaccurate personal data",
+    "Handle complaints and provide remedies"
+  ]
+}

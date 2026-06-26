@@ -63,7 +63,7 @@ function ConsentStatusPanel({ linkedChildren }: { linkedChildren: { id: string; 
 
   return (
     <section style={{ marginTop: 24, padding: '16px 20px', background: 'var(--surface-alt, #f9fafb)', border: '1px solid var(--border, #e5e7eb)', borderRadius: 12 }}>
-      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'var(--text, #111)' }}>Parental Consent Status</h3>
+      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'var(--text, #111)' }}>{t('pages_parentdashboard.parental_consent_status', 'Parental Consent Status')}</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {statuses.map(s => (
           <div key={s.childId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'white', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)' }}>

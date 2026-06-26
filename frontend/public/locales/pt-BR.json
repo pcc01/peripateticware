@@ -128,7 +128,7 @@
       "sign_in": "Entrar",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos os direitos reservados."
     },
-    "peripateticware": "Peripatéticoware",
+    "peripateticware": "Software de peripatética",
     "learning_in_motion": "Aprendizado em Movimento",
     "loading": "Carregando...",
     "primary": "Principal",
@@ -156,7 +156,7 @@
     "session": "Sessão:",
     "select": "-- Selecione --",
     "footer": {
-      "brand_title": "título da marca",
+      "brand_title": "Software de peripatética",
       "brand_desc": "descrição da marca",
       "product_title": "título do produto",
       "product_tools": "ferramentas do produto",
@@ -171,7 +171,7 @@
       "resources_guides": "guias de recursos",
       "resources_api": "API de recursos",
       "resources_support": "Recursos de suporte",
-      "company_name": "Nome da empresa",
+      "company_name": "Software de peripatética",
       "all_rights": "Todos os direitos",
       "product_features": "Características do produto",
       "product_pricing": "Preços do produto",
@@ -195,7 +195,7 @@
     "why": "Porque",
     "team_1_name": "Paulo Cerda",
     "team_1_role": "Fundador & Produto",
-    "team_1_initial": "P",
+    "team_1_initial": "Software de peripatético",
     "team_2_name": "Sófia Navarro",
     "team_2_role": "Design de Currículos",
     "team_2_initial": "0",
@@ -476,7 +476,7 @@
     "confirm_location": "Confirmar Localização",
     "example_locations": "Locais de Exemplo",
     "seattle_wa": "Seattle, WA",
-    "san_francisco_ca": "San Francisco, CA",
+    "san_francisco_ca": "São Francisco, CA",
     "new_york_ny": "Nova Iorque, NY",
     "portland_or": "Portland, OR",
     "tip": "Dica:",
@@ -855,7 +855,7 @@
     "edit_project": "Editar Projeto",
     "projectdetailpage": {
       "activities": "Atividades",
-      "status": "Status",
+      "status": "Estado",
       "project_activities": "Atividades do Projeto",
       "activity": "Atividade",
       "back": "Voltar"
@@ -915,7 +915,9 @@
       "students": "Alunos",
       "submissions": "Submissões",
       "edit": "Editar",
-      "grade": "Nota:"
+      "grade": "Nota:",
+      "total_activities": "Atividades Totais",
+      "this_week": "Esta Semana"
     },
     "total_students": "Total de Alunos",
     "active_activities": "Atividades Ativas",
@@ -927,7 +929,7 @@
     "blooms_taxonomy": "Imposto de Bloom",
     "marzano": "Marzano",
     "depth_of_knowledge": "Nível de Conhecimento",
-    "solo": "SOLO",
+    "solo": "SÓ",
     "teachersettingspage": {
       "logout": "🚪 Sair"
     },
@@ -996,7 +998,7 @@
     "think_about": "Pense sobre...",
     "sketch": "Desenhar",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripatéticaware"
+      "peripateticware": "Software de viagem"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Carregando...",
@@ -1116,7 +1118,7 @@
       "theme": "Tema",
       "language": "Idioma",
       "privacy_amp_data": "Privacidade & Dados",
-      "field_guide_green_warm_beige_terrain_ora": "",
+      "field_guide_green_warm_beige_terrain_ora": "Guia de Campo (verde + bege quente) · Terreno (laranja + bege claro) · Atmosfera (roxo + rosa escuro)",
       "as_a_homeschool_teacher_you_operate_outs": "Como um professor particular você opera fora dos requisitos institucionais do FERPA, mas a COPPA ainda se aplica a qualquer criança com menos de 13 anos."
     },
     "request_sent": "Pedido Enviado!",
@@ -1324,7 +1326,8 @@
     "password_last_changed_30_days_ago": "A senha foi alterada recentemente: 30 dias atrás",
     "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "Esta página estará disponível em breve."
+      "this_page_is_coming_soon": "Esta página estará disponível em breve.",
+      "go_back": "← Voltar"
     },
     "oops_the_page_youre_looking_for_doesnt_e": "Oops! A página que você está procurando não existe ou foi movida.",
     "stay_connected_with_your_childs_outdoor_": "Fique atento ao percurso de aprendizado da sua criança no ar",
@@ -1565,7 +1568,8 @@
     "link_child_explainer": "Quando você ligar a conta do seu filho, verá o progresso da atividade, as sessões futuras, pontuações de competência, evidências submetidas e feedback do professor — tudo em um único lugar.",
     "select_child_prompt": "Selecione um filho acima para visualizar seu progresso.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "O que você verá após ligar:"
+      "what_youll_see_after_linking": "O que você verá após ligar:",
+      "parental_consent_status": "Status do consentimento dos pais"
     },
     "create_first_note": "Crie sua primeira nota",
     "response_in_progress": "Resposta em andamento. Adicione capturas e entregue.",
@@ -1656,7 +1660,12 @@
       "you_can_clear_cookies_at_any_time_throug": "Você pode limpar cookies em qualquer momento através das configurações do seu navegador. Limpar cookies de autenticação fará com que você seja desconectado do Serviço.",
       "changes_to_this_policy": "Alterações na Política",
       "we_may_update_this_policy_as_the_service": "Pode ser atualizada esta política conforme o Serviço evoluir. Alterações significativas serão notificadas por meio de uma notificação no aplicativo.",
-      "contact": "Contato"
+      "contact": "Contato",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Guarda o seu JWT de sessão. Expira após 24 horas.",
+      "auth_user_desc": "Guarda a sua conta básica (nome, função). É apagado ao efetuar o logout.",
+      "i18nextlng_desc": "Recordamos a sua preferência linguística.",
+      "questions": "Perguntas?"
     },
     "view_photos_videos_and_notes_from_your_c": "Visualize fotos, vídeos e anotações das atividades de aprendizagem ao ar livre e trabalhos de campo de seu filho.",
     "photos_videos_captured": "✓ Fotos & vídeos capturados",
@@ -1696,7 +1705,8 @@
       "consent_framework_desc": "descrição do quadro de framework de consentimento",
       "cta_section_title": "seção de chamada título",
       "cta_section_subtitle": "seção de chamada subtítulo",
-      "cta_section_desc": "Seção de chamada de ação descrição"
+      "cta_section_desc": "Seção de chamada de ação descrição",
+      "loading_status": "Carregando o status de conformidade..."
     },
     "capture_photosvideo": "📸 Capturar fotos/vídeo",
     "take_photos_record_videos_and_capture_au": "Capture fotos, registre vídeos e capture áudio para documentar suas observações e achados.",
@@ -1723,7 +1733,12 @@
       "you_may_not_use_the_service_to_upload_ha": "Você não pode usar o Serviço para carregar conteúdo prejudicial, circundir controles de segurança, compartilhar dados de alunos com partes não autorizadas ou participar de qualquer atividade que viola a lei aplicável.",
       "7_limitation_of_liability": "7. Limitação de Responsabilidade",
       "the_service_is_provided_ldquoas_isrdquo_": "O Serviço é fornecido &ldquo;como está&rdquo;. A Peripateticware não será responsável por quaisquer danos indiretos, incidentais ou consequenciais decorrentes do uso do Serviço.",
-      "8_contact": "8. Contato"
+      "8_contact": "8. Contato",
+      "back_to_home": "← Voltar para a Home",
+      "privacy_compliance_intro": "O Peripateticware cumpre as leis COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD e PDPA. Os dados dos alunos nunca são vendidos ou usados para publicidade. Consulte nossa",
+      "privacy_policy_link": "Política de Privacidade",
+      "privacy_compliance_outro": "para obter todos os detalhes.",
+      "questions_about_terms": "Perguntas sobre estes Termos?"
     },
     "privacy_first_title": "🔒 Primeiro a Privacidade",
     "privacy_first_desc": "Construído para K-12 desde o início. Compatível com os principais quadros de privacidade — não como um afterthought.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "Já tem uma conta?",
       "sign_in": "Entrar",
       "helps_us_apply_the_right_privacy_framewo": "Ajudamos a aplicar os frameworks de privacidade adequados (FERPA, COPPA, GDPR, etc.) para seus alunos. ",
-      "this_determines_whether_coppa_applies_": "Isto determina se o COPPA aplica-se à sua conta."
+      "this_determines_whether_coppa_applies_": "Isto determina se o COPPA aplica-se à sua conta.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "Eu confirmo que tenho 18 anos ou mais (ou sou o responsável legal por usuários menores nesta conta)."
     },
     "cta_btn": "Começar Grátis",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "Visualização Prévia do Aluno",
       "this_is_how_the_activity_appears_to_stud": "É assim que a atividade aparece para os alunos na aplicação.",
       "these_three_fields_drive_the_student_exp": "Estes três campos orientam a experiência dos alunos. Os alunos progridem através de Orient \\u2192 Inquire \\u2192 Reflect no seu telemóvel.",
-      "no_inquiry_instructions_yet_write_them_i": "Ainda não há instruções de inquérito — escreva-as na guia Aprendizagem."
+      "no_inquiry_instructions_yet_write_them_i": "Ainda não há instruções de inquérito — escreva-as na guia Aprendizagem.",
+      "students_locations_are_shared_with_you_i": "As localizações dos alunos são partilhadas consigo em tempo real no monitor da sessão. O consentimento dos pais é solicitado automaticamente para os estudantes com menos de 13 anos."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Convidar Alunos",
@@ -1984,8 +2001,8 @@
       "california_schools_may_be_subject_to_ccp": "📋 California schools may be subject to CCPA in addition to FERPA &amp; COPPA., Country, 🇪🇺 EU country — GDPR applies. Your platform administrator will need to enable it.",
       "country": "Tell us about your students",
       "eu_country_gdpr_applies_your_platform_ad": "COPPA (Children's Online Privacy Protection Act) applies when any student is under 13.",
-      "tell_us_about_your_students": "",
-      "coppa_childrens_online_privacy_protectio": "",
+      "tell_us_about_your_students": "Diga-nos sobre os seus alunos",
+      "coppa_childrens_online_privacy_protectio": "A COPPA (Lei de Proteção à Privacidade Online para Crianças) aplica-se quando qualquer aluno tiver menos de 13 anos.",
       "ferpa_applies_to_all_your_students_regar": "ℹ️ FERPA aplica-se a todos os seus alunos independentemente da idade, uma vez que você ensina numa escola dos E.U.A.",
       "ai_amp_data_preferences": "IA &amp; preferências de dados",
       "these_defaults_apply_to_your_account_stu": "Estas definições aplicam-se à sua conta. Os alunos e os pais podem definir as suas próprias preferências, e você pode alterar as suas a qualquer momento nas Definições.",
@@ -2008,8 +2025,8 @@
       "ollama_local_instant_zero_cost_haiku_ins": "Ollama = local, instantâneo, sem custos. Haiku instantâneo = nuvem, instantâneo, ~$0,001/chamada. Haiku lote = nuvem, durante a noite, 50% mais barato - apenas para avaliação de submissão.",
       "recent_queue_items_last_100": "Itens da fila recentes (últimos 100)",
       "ollama_instance_url": "URL da instância Ollama",
-      "must_be_reachable_from_the_peripateticwa": "Must be reachable from the Peripateticware backend server.",
-      "task_routing": "Task Routing",
+      "must_be_reachable_from_the_peripateticwa": "Tem de ser acessível a partir do servidor backend do Peripateticware.",
+      "task_routing": "Tarefa de encaminhamento",
       "choose_which_provider_handles_each_ai_ta": "Escolha qual provedor irá lidar com cada tarefa de IA. Ocorre que está em destaque significa que o provedor não está configurado.",
       "changes_apply_immediately_orglevel_byok_": "As alterações são aplicadas imediatamente. A rotação do nível da organização (Org) sobrepõe estas definições por organização.",
       "ai_configuration": "Configuração de IA"
@@ -2033,7 +2050,7 @@
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "O artigo foi escrito num momento em que a 3G ainda não tinha sido totalmente implementada, o iPhone estava a meses do lançamento e \\\"app\\\" ainda não era uma palavra comum. As suas previsões - que os telemóveis se tornariam dispositivos de classe 1-para-1 na sala de aula, que as redes móveis chegariam a regiões remotas e que o GPS se tornaria barato o suficiente para colocar no bolso de cada aluno - todas se concretizaram. Os produtos que o artigo previa não existem ainda.",
-      "if_students_follow_their_curiosity_throu": "",
+      "if_students_follow_their_curiosity_throu": "Se os alunos seguirem sua curiosidade através de lugares reais, aprendendo sobre arcos, barris e navegação celeste porque estão perto de uma catedral ou um porto, como você avalia o que eles aprenderam de maneira que satisfaça os requisitos do currículo? Como você produz a planilha de números que o diretor quer enquanto também honra a complexidade do que o aluno realmente entendeu?",
       "the_document_left_that_question_open_the": "(Translated to English. Translation not available yet.) Note: This field c\u001b[1D\u001b[K\ncan contain HTML code. The output will be rendered as HTML. If you want to \u001b[K\ninclude any HTML elements in your translation, make sure they are properly \u001b[K\nclosed or escaped and their attributes are correctly formatted. <p>The docu\u001b[4D\u001b[K\ndocument left that question open. The school system didn't solve it either.\u001b[7D\u001b[K\neither. For nearly two decades, \"outdoor learning\" remained either a vague \u001b[K\naspiration or a logistical nightmare — teachers with clipboards, activities\u001b[10D\u001b[K\nactivities that produced no artifact, experiences that disappeared the mome\u001b[4D\u001b[K\nmoment students came back inside.</p> (Translated to Portuguese. Translatio\u001b[10D\u001b[K\nTranslation not available yet.) <p><em>The document left that question open\u001b[4D\u001b[K\nopen. The school system didn't solve it either. For nearly two decades, \"ou\u001b[3D\u001b[K\n\"outdoor learning\" remained either a vague aspiration or a logistical night\u001b[5D\u001b[K\nnightmare — teachers with clipboards, activities that produced no artifact,\u001b[9D\u001b[K\nartifact, experiences that disappeared the moment students came back inside\u001b[6D\u001b[K\ninside.</em></p> (Translated to Portuguese (Brazil). Translation not availa\u001b[6D\u001b[K\navailable yet.) <p><em>O documento deixou essa questão em aberto. O sistema\u001b[7D\u001b[K\nsistema escolar também não a resolvera. Por quase duas décadas, \"aprendizad\u001b[11D\u001b[K\n\"aprendizado ao ar livre\" permaneceu ou uma vaga aspiração ou um pesadelo l\u001b[1D\u001b[K\nlogístico — professores com cartões de visita, atividades que não produzira\u001b[9D\u001b[K\nproduziram artefato, experiências que desapareceram no momento em que os al\u001b[2D\u001b[K\nalunos voltaram para dentro</em></p> (Translated to Portuguese (Brazil). Tr\u001b[2D\u001b[K\nTranslation not available yet.)",
       "the_first_part_was_solved_by_smartphones": "(Approximately 139 words.)\" -- This is a sample text, but all translated s\u001b[1D\u001b[K\nstrings must adhere to the Style Guide and Translation Rules.",
       "thats_where_peri_comes_in_peri_is_peripa": "É aí que entra o Peri. O Peri é um guia de IA do Peripateticware — nomeado assim como o software, em homenagem ao método aristotélico. O Peri não responde perguntas. Ele as faz. Ele segue a sequência de cinco fases da investigação — Envolver-se, Observar, Analisar, Explicar e Aplicar — que Aristóteles usou no Liceu e que a ciência cognitiva desde então validou como um caminho para uma compreensão genuína, não apenas de retenção. O Peri toma a observação de um aluno e faz a próxima pergunta certa. Quando o aluno acerta, o Peri testa a implicação. Quando o aluno é vago, o Peri pede evidências.\"\n\"É aí que entra o Peri. O Peri é um guia de IA do Peripateticware — nomeado assim como o software, em homenagem ao método aristotélico. O Peri não responde perguntas. Ele as faz. Ele segue a sequência de cinco fases da investigação — Envolver-se, Observar, Analisar, Explicar e Aplicar — que Aristóteles usou no Liceu e que a ciência cognitiva desde então validou como um caminho para uma compreensão genuína, não apenas de retenção. O Peri toma a observação de um aluno e faz a próxima pergunta certa. Quando o aluno acerta, o Peri testa a implicação. Quando o aluno é vago, o Peri pede evidências.",
@@ -2042,8 +2059,8 @@
       "peripateticware_doesnt_fully_solve_the_c": "O software Peripateticware não resolve totalmente o caos - essa tensão é real e provavelmente permanente. O que ele faz é dar aos professores estrutura suficiente para se manterem sãos (atividades planejadas, metas de aprendizado, fases de conclusão, fluxo de aprovação do professor) enquanto dá aos alunos liberdade suficiente para realmente ir a algum lugar (conteúdo ativado por GPS, atividades propostas pelos alunos, anotações de campo autodirigidas, projetos entre pares).",
       "the_reverse_scavenger_hunt_where_student": "A caça ao tesouro reversa - onde os alunos propõem uma atividade com base em algo que encontraram - é a coisa mais próxima na plataforma dessa visão de 2007. Um aluno encontra uma formação rochosa peculiar. Eles a propõem como uma atividade. O professor aprova. Outros alunos vão olhar. Perguntas surgem que nenhum documento do currículo antecipou. O aprendizado se move.",
       "the_short_answer_is_that_most_of_the_ena": "A resposta curta é que a maioria da tecnologia habilitadora não estava pronta em 2007. GPS em todos os bolsos veio primeiro (2010-2015). Em seguida, câmeras móveis de alta qualidade. Depois, APIs na nuvem baratas o suficiente para as escolas. Então, modelos locais de IA (Ollama, llama.cpp) que podem ser executados no servidor da escola sem uma conta de cobrança de inferência de US $ 10.000 / mês. O artigo de 2007 estava certo sobre o destino; ele não poderia ter sabido quanto tempo a estrada seria.",
-      "the_longer_answer_is_that_educational_te": "",
-      "thats_a_harder_sell_schools_are_riskaver": "",
+      "the_longer_answer_is_that_educational_te": "A resposta mais longa é que a tecnologia educacional passou esses anos resolvendo o problema errado. EdTech iterou na sala de aula - melhor LMS, melhor vídeo, melhor ferramenta de teste. Ele tornou o modelo existente mais eficiente. Peripatético não tenta tornar a sala de aula mais eficiente. Tenta substituir a sala de aula, pelo menos ocasionalmente, com o mundo.",
+      "thats_a_harder_sell_schools_are_riskaver": "Isso é mais difícil de vender. As escolas são cautelosas. O aprendizado ao ar livre tem uma ótica de responsabilidade. \"O mundo é sua sala de aula\" soa como uma linha de marketing até que você tenha assistido a um aluno de dez anos explicar o transporte de sedimentos a um guia AI em forma de corvo, enquanto está em um leito de rio e depois leu o diário de campo que escreveram naquele dia, e entendeu que eles entenderam.",
       "from_a_white_paper_to_a_working_platform": "De um White Paper a uma plataforma operacional: Peripateticware 2007–2026",
       "the_insight_aristotle_was_right": "A visão: Aristóteles estava certo",
       "the_problem_that_remained_unsolved": "O problema que permaneceu sem solução",
@@ -2068,7 +2085,7 @@
       "peripateticwares_privacy_engine_enforces": "O motor de privacidade da Peripateticware aplica a FERPA, COPPA, GDPR e SOC 2 através de um sistema de regras configurável - por isso, todas as operações de dados são compatíveis por defeito, independentemente da jurisdição em que a sua escola opera.",
       "how_it_works": "Como funciona",
       "six_layers_of_privacy_running_automatica": "Sete camadas de privacidade, executando automaticamente em cada solicitação.",
-      "supported_frameworks": "",
+      "supported_frameworks": "Frameworks suportados",
       "click_any_framework_to_see_the_specific_": "Clique em qualquer framework para ver as regras específicas que o Peripateticware aplica.",
       "what_institutions_can_configure": "Que instituições podem ser configuradas",
       "within_the_bounds_of_the_applicable_law_": "Dentro dos limites da lei aplicável, os administradores de instituições têm controle sobre:",
@@ -2090,7 +2107,7 @@
     "pages_teachersettingspage": {
       "these_settings_apply_to_your_account_and": "Estas definições aplicam-se à sua conta e às atividades que cria. Os controlos de conformidade com o FERPA e COPPA são executados automaticamente quando publica uma atividade."
     },
-    "activity_schedule": "Activity schedule for your children",
+    "activity_schedule": "Calendário de atividades para os seus filhos",
     "pages_parentcalendarpage": {
       "link_a_child_from_the_dashboard_to_see_t": "Vincule um filho do Painel para ver o seu calendário.",
       "no_activities_found_for_this_child": "Não foram encontradas atividades para este filho.",
@@ -2114,13 +2131,53 @@
       "pins_are_stored_snapshots_from_field_not": "O que significa compartilhamento de localização"
     },
     "gps_what_we_collect": "As coordenadas GPS somente serão compartilhadas durante a sessão ativa do trabalho de campo.",
-    "gps_only_during": "",
+    "gps_only_during": "Coordenadas GPS partilhadas apenas durante a sessão de trabalho no campo ativa.",
     "gps_teacher_only": "Visível apenas para o professor da classe - não outros alunos ou o público",
     "gps_stored": "Snapshots de localização armazenados por submissão (não rastreamento contínuo)",
     "gps_expires": "O consentimento expira automaticamente quando a atividade termina (max 30 dias)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "['Atualize para desbloquear esse recurso e mais.', 'Atenção! Este conteúdo está em fase de testes. Por favor, informe qualquer problema ou sugestão nos comentários abaixo.']"
-    }
+    },
+    "audioRecorder": {
+      "almost_full": "Quase cheio",
+      "record": "Gravar",
+      "stop": "Pare",
+      "keep": "Guardar",
+      "discard": "Descartar",
+      "transcribing": "Transcribiendo...",
+      "recording_saved": "Grabación guardada",
+      "mic_denied": "O acesso ao microfone é necessário para gravar áudio. Por favor, conceda permissão e tente novamente.",
+      "uploading": "Carregando a gravação..."
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "En espera de aprobación",
+      "teacher_commented": "professor comentou",
+      "ready_to_reflect": "pronto para refletir",
+      "section_title": "título da seção",
+      "teacher_label": "rótulo do professor",
+      "reflection_in_progress": "reflexão em andamento"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "Compartilhamento de localização",
+      "your_teacher_wants_to_see_your_location_": "Seu professor quer ver sua localização durante esta atividade para que possam rastrear o progresso do trabalho de campo. Sua localização só será compartilhada enquanto a sessão estiver ativa."
+    },
+    "professorFieldworkPage": {
+      "back": "← Back",
+      "no_activity_selected": "Nenhuma atividade selecionada."
+    },
+    "rubricImportPage": {
+      "title": "Importar Critérios",
+      "description": "Carregue um PDF ou CSV contendo seus critérios de avaliação. A IA extrairá cada critério, que você poderá revisar e editar antes de salvar."
+    },
+    "curriculumImportPage": {
+      "title": "Import State Academic Standards",
+      "description": "Carregue um PDF ou CSV de padrões académicos oficiais do estado (TEKS, NGSS, Common Core, etc.). Ollama extrai cada padrão para revisão. Uma vez salvo como um conjunto global, todos os professores e pais que ensinam em casa podem mapear as suas atividades contra estes padrões. Re-carregando o mesmo arquivo ignora o processamento (cache de checksum)."
+    },
+    "standardsImportPage": {
+      "title": "Importar Padrões de Aprendizado",
+      "description": "Carregue um PDF ou CSV dos padrões de aprendizado para sua disciplina - Common Core, NGSS, padrões estaduais ou seu próprio framework personalizado. Depois que salvo, você poderá marcar atividades contra esses padrões e acompanhar a cobertura do aluno."
+    },
+    "cta_privacy_note": "FERPA e COPPA compatíveis. Os dados dos alunos nunca são vendidos ou compartilhados."
   },
   "STUDENT": {},
   "TEACHER": {},

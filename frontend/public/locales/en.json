@@ -118,7 +118,7 @@
     "session": "Session:",
     "select": "-- Select --",
     "footer": {
-      "brand_title": "brand title",
+      "brand_title": "Peripateticware",
       "brand_desc": "brand desc",
       "product_title": "product title",
       "product_features": "product features",
@@ -140,7 +140,7 @@
       "legal_terms": "legal terms",
       "legal_cookies": "legal cookies",
       "legal_contact": "legal contact",
-      "company_name": "company name",
+      "company_name": "Peripateticware",
       "all_rights": "all rights",
       "privacy_protected": "Your data is protected under these frameworks",
       "product_privacy_engine": "Privacy Engine",
@@ -787,7 +787,8 @@
     "reset_to_defaults": "Reset to Defaults",
     "save_settings": "Save Settings",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "This page is coming soon."
+      "this_page_is_coming_soon": "This page is coming soon.",
+      "go_back": "← Go Back"
     },
     "cookiepolicypage": {
       "cookie_policy": "Cookie Policy",
@@ -805,7 +806,12 @@
       "you_can_clear_cookies_at_any_time_throug": "You can clear cookies at any time through your browser settings. Clearing auth cookies will log you out of the Service.",
       "changes_to_this_policy": "Changes to This Policy",
       "we_may_update_this_policy_as_the_service": "We may update this policy as the Service evolves. Significant changes will be communicated via in-app notification.",
-      "contact": "Contact"
+      "contact": "Contact",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Stores your session JWT. Expires after 24 hours.",
+      "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
+      "i18nextlng_desc": "Remembers your chosen language preference.",
+      "questions": "Questions?"
     },
     "page_not_found": "Page Not Found",
     "oops_the_page_youre_looking_for_doesnt_e": "Oops! The page you're looking for doesn't exist or has been moved.",
@@ -1041,7 +1047,8 @@
       "consent_framework_desc": "consent framework desc",
       "cta_section_title": "cta section title",
       "cta_section_subtitle": "cta section subtitle",
-      "cta_section_desc": "cta section desc"
+      "cta_section_desc": "cta section desc",
+      "loading_status": "Loading compliance status…"
     },
     "student_submits_evidence": "Student submits evidence",
     "system_identifies_jurisdiction": "System identifies jurisdiction",
@@ -1355,7 +1362,9 @@
       "students": "Students",
       "submissions": "Submissions",
       "edit": "Edit",
-      "grade": "Grade:"
+      "grade": "Grade:",
+      "total_activities": "Total Activities",
+      "this_week": "This Week"
     },
     "total_students": "Total Students",
     "active_activities": "Active Activities",
@@ -1404,7 +1413,12 @@
       "you_may_not_use_the_service_to_upload_ha": "You may not use the Service to upload harmful content, circumvent safety controls, share student data with unauthorised parties, or engage in any activity that violates applicable law.",
       "7_limitation_of_liability": "7. Limitation of Liability",
       "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided &ldquo;as is.&rdquo; Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
-      "8_contact": "8. Contact"
+      "8_contact": "8. Contact",
+      "back_to_home": "← Back to Home",
+      "privacy_compliance_intro": "Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold or used for advertising. See our",
+      "privacy_policy_link": "Privacy Policy",
+      "privacy_compliance_outro": "for full details.",
+      "questions_about_terms": "Questions about these Terms?"
     },
     "components_auth_loginscreen": {
       "try_a_demo_account": "🧪 TRY A DEMO ACCOUNT",
@@ -1665,7 +1679,8 @@
     "grade": "Grade",
     "select_child_prompt": "Select a child above to view their progress.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "What you'll see after linking:"
+      "what_youll_see_after_linking": "What you'll see after linking:",
+      "parental_consent_status": "Parental Consent Status"
     },
     "field_notes": "Field Notes",
     "new_field_note": "New Field Note",
@@ -1750,7 +1765,8 @@
       "creating_account": "Creating account...",
       "create_account": "Create account",
       "already_have_an_account": "Already have an account?",
-      "sign_in": "Sign in"
+      "sign_in": "Sign in",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account)."
     },
     "choose_peripateticware": "Choose Peripateticware",
     "cta_title": "Ready to take learning outside?",
@@ -1816,7 +1832,8 @@
       "student_view_preview": "👁 Student View Preview",
       "this_is_how_the_activity_appears_to_stud": "This is how the activity appears to students in the app.",
       "these_three_fields_drive_the_student_exp": "These three fields drive the student experience. Students progress through Orient \\u2192 Inquire \\u2192 Reflect on their phone.",
-      "no_inquiry_instructions_yet_write_them_i": "No inquiry instructions yet — write them in the Learning tab."
+      "no_inquiry_instructions_yet_write_them_i": "No inquiry instructions yet — write them in the Learning tab.",
+      "students_locations_are_shared_with_you_i": "Students' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Invite Students",
@@ -2120,6 +2137,46 @@
       "loading_activities": "Loading activities...",
       "no_activities_available": "No activities available",
       "there_are_no_published_activities_yet_ch": "There are no published activities yet. Check back soon — your teacher may be preparing something!"
+    },
+    "cta_privacy_note": "FERPA and COPPA compliant. Student data is never sold or shared.",
+    "audioRecorder": {
+      "mic_denied": "Microphone access is required to record audio. Please grant permission and try again.",
+      "almost_full": "Almost full",
+      "record": "Record",
+      "stop": "Stop",
+      "keep": "Keep",
+      "discard": "Discard",
+      "transcribing": "Transcribing…",
+      "uploading": "Uploading recording…",
+      "recording_saved": "Recording saved"
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "awaiting approval",
+      "teacher_commented": "teacher commented",
+      "reflection_in_progress": "reflection in progress",
+      "ready_to_reflect": "ready to reflect",
+      "section_title": "section title",
+      "teacher_label": "teacher label"
+    },
+    "curriculumImportPage": {
+      "title": "Import State Academic Standards",
+      "description": "Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache)."
+    },
+    "pages_sessionpage": {
+      "location_sharing": "Location Sharing",
+      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active."
+    },
+    "professorFieldworkPage": {
+      "back": "← Back",
+      "no_activity_selected": "No activity selected."
+    },
+    "rubricImportPage": {
+      "title": "Import Rubric",
+      "description": "Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving."
+    },
+    "standardsImportPage": {
+      "title": "Import Learning Standards",
+      "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
     }
   },
   "STUDENT": {},

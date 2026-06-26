@@ -128,7 +128,7 @@
       "sign_in": "登录",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware，保留所有权利。"
     },
-    "peripateticware": "流动软件",
+    "peripateticware": "五千个",
     "learning_in_motion": "在动学习",
     "loading": "加载中...",
     "primary": "主要",
@@ -156,7 +156,7 @@
     "session": "会话：",
     "select": "-- 选择 --",
     "footer": {
-      "brand_title": "品牌标题",
+      "brand_title": "五千个",
       "brand_desc": "品牌描述",
       "product_title": "产品标题",
       "product_tools": "产品工具",
@@ -171,7 +171,7 @@
       "resources_guides": "资源指南",
       "resources_api": "资源 API",
       "resources_support": "资源支持",
-      "company_name": "公司名称",
+      "company_name": "五千个",
       "all_rights": "所有权利",
       "product_features": "产品特点",
       "product_pricing": "产品定价",
@@ -181,7 +181,7 @@
       "legal_cookies": "法律Cookie",
       "legal_contact": "法律联系方式",
       "privacy_protected": "您的数据在这些框架下受到保护",
-      "company_contact": "",
+      "company_contact": "联系",
       "product_privacy_engine": "隐私引擎",
       "resources_privacy": "隐私引擎"
     },
@@ -915,7 +915,9 @@
       "students": "学生",
       "submissions": "提交",
       "edit": "编辑",
-      "grade": "成绩："
+      "grade": "成绩：",
+      "total_activities": "活动总数",
+      "this_week": "本周"
     },
     "total_students": "总学生数",
     "active_activities": "活动中的活动",
@@ -927,7 +929,7 @@
     "blooms_taxonomy": "布隆的税金法",
     "marzano": "马尔杰诺",
     "depth_of_knowledge": "知识深度",
-    "solo": "SOLO",
+    "solo": "S O L O",
     "teachersettingspage": {
       "logout": "🚪 退出登录"
     },
@@ -996,7 +998,7 @@
     "think_about": "想想…",
     "sketch": "画图",
     "layouts_dashboardshell": {
-      "peripateticware": "translations"
+      "peripateticware": "Peripateticware"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "流动软件",
@@ -1324,7 +1326,8 @@
     "password_last_changed_30_days_ago": "密码最后更改：30天前",
     "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "这个页面很快就会到来。"
+      "this_page_is_coming_soon": "这个页面很快就会到来。",
+      "go_back": "← Go Back"
     },
     "oops_the_page_youre_looking_for_doesnt_e": "抱歉！您所查找的页面不存在或已被移动。",
     "stay_connected_with_your_childs_outdoor_": "与孩子的野外学习旅程保持联系",
@@ -1565,7 +1568,8 @@
     "link_child_explainer": "一旦您链接孩子账户，您就可以查看他们的活动进展、即将开始的会话、竞争力分数、提交证据和老师反馈 — 所有这些都在一个地方。",
     "select_child_prompt": "选择上方的孩子以查看他们的进展。",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "链接后您将看到以下内容："
+      "what_youll_see_after_linking": "链接后您将看到以下内容：",
+      "parental_consent_status": "Parental Consent Status"
     },
     "create_first_note": "创建您的第一条笔记",
     "response_in_progress": "正在处理响应。添加捕获然后提交。",
@@ -1656,7 +1660,12 @@
       "you_can_clear_cookies_at_any_time_throug": "您可以通过浏览器设置任何时候清除Cookie。清除auth Cookie将你从服务中登出。",
       "changes_to_this_policy": "政策更新",
       "we_may_update_this_policy_as_the_service": "我们可能会根据服务的发展更新此政策。重要更改将通过内部应用通知进行通知。",
-      "contact": "联系方式"
+      "contact": "联系方式",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "保存您的会话 JWT,过期后24小时。 ",
+      "auth_user_desc": "保存您的基本用户配置(名称、角色)，在注销后清除。 ",
+      "i18nextlng_desc": "记住您选择的语言偏好。 ",
+      "questions": "问题?"
     },
     "view_photos_videos_and_notes_from_your_c": "查看您孩子的野外学习活动和野外工作中的照片、视频和笔记。",
     "photos_videos_captured": "✓ 捕获的照片与视频",
@@ -1696,7 +1705,8 @@
       "consent_framework_desc": "同意框架描述",
       "cta_section_title": "调用区段标题",
       "cta_section_subtitle": "调用区段副标题",
-      "cta_section_desc": "translations"
+      "cta_section_desc": "translations",
+      "loading_status": "加载合规状态…”,\n    “← 回到主页”,\n    "
     },
     "capture_photosvideo": "CTA 部分描述",
     "take_photos_record_videos_and_capture_au": "📸 捕捉照片/视频",
@@ -1723,7 +1733,12 @@
       "you_may_not_use_the_service_to_upload_ha": "您不能使用服务上传危害性内容、绕过安全控制、向未经授权的第三方分享学生数据或参与任何违反适用法律的活动。",
       "7_limitation_of_liability": "7. 责任限制",
       "the_service_is_provided_ldquoas_isrdquo_": "服务以“按原样提供”。Peripateticware不承担因使用服务而产生的任何间接、偶发或后果性损失。",
-      "8_contact": "8. 联系方式"
+      "8_contact": "8. 联系方式",
+      "back_to_home": "",
+      "privacy_compliance_intro": "",
+      "privacy_policy_link": "",
+      "privacy_compliance_outro": "",
+      "questions_about_terms": "问题关于这些条款吗？"
     },
     "privacy_first_title": "🔒 保护先鹤",
     "privacy_first_desc": "从一开始就为K-12构建。符合主要隐私框架 — 不是一个后备计划。",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "已经有账号了吗？",
       "sign_in": "登录",
       "helps_us_apply_the_right_privacy_framewo": "帮助我们为您的学生应用合适的隐私框架（FERPA、COPPA、GDPR 等）。",
-      "this_determines_whether_coppa_applies_": "This determines whether COPPA applies to your account."
+      "this_determines_whether_coppa_applies_": "此项确定是否 COPPA 适用于您的账户。",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "我确认自己年满18岁或是本账户未成年用户的法定监护人。"
     },
     "cta_btn": "免费使用",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "👁️‍🗨️学生视图预览",
       "this_is_how_the_activity_appears_to_stud": "这是在 app 中显示给学生的活动。",
       "these_three_fields_drive_the_student_exp": "这三个字段支持学生体验。在手机上，学生会从 Orient 进入 Inquire 并反思。",
-      "no_inquiry_instructions_yet_write_them_i": "还没有垂询说明——在学习选项卡中写下它们。"
+      "no_inquiry_instructions_yet_write_them_i": "还没有垂询说明——在学习选项卡中写下它们。",
+      "students_locations_are_shared_with_you_i": "学生的位置实时显示在会话监控中。对于未满 13 岁的学生，系统将自动请求家长同意。"
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "邀请学生",
@@ -1973,13 +1990,13 @@
       "peri_never_gives_the_answer_it_asks_the_": "佩里永远不会给出答案。它会提出下一个合适的问题。— 问题来自经过精心挑选的数据库;人工智能对话需要 Ollama 本地运行或 Anthropic API 密钥。",
       "built_from_a_2007_idea_that_took_until_2": "2007 年有个想法，直到 2026 年这个想法才变得可能。",
       "the_paper_named_one_problem_it_couldnt_s": "纸上写的一个问题是它无法解决的:评估。如何评价发生在小溪边、大教堂拱门或城市公园中的学习？2026 年，人工智能终于给了我们答案。",
-      "from_the_original_2007_paper": "From the original 2007 paper",
+      "from_the_original_2007_paper": "['自 2007 年原始文献中的']",
       "simple_honest_pricing": "简单、诚实的定价方式",
       "free_for_one_classroom_no_credit_card_re": "为一个课堂免费。开始不需要信用卡。",
       "homeschool_families": "家长教育家庭"
     },
     "components_privacysetupwizard": {
-      "where_are_you_teaching": "Where are you teaching?",
+      "where_are_you_teaching": "在哪里教学?",
       "state": "州",
       "california_schools_may_be_subject_to_ccp": "加利福尼亚州的学校可能会遵守 CCPA,而不是 FERPA &amp; COPPA。 ",
       "country": "国家",
@@ -1998,20 +2015,20 @@
       "anthropic_api_key": "人类智能 API 密钥",
       "estimated_cost_per_1000_requests": "每1000个请求的预计成本",
       "estimates_based_on_500_token_input_300_t": "估算数据为 ~500 个词作为输入 + ~300 个词作为每次建议请求的输出。实际成本因提示长度而异。",
-      "openai_api_key": "OpenAI API Key",
+      "openai_api_key": "API Key\"\n\"API Token\"\n\"API Token\"\n\"API Credentials\"\n\"API Credentials\"\n\"API Access Key\"\n\"API Access Key\"\n\"API Access Token\"\n\"API Access Token\"\n\"API Access Credential\"\n\"API Access Credential\"\n\"API Access Code\"\n\"API Access Code\"\n\"API Access Key\"\n\"API Access Key\"\n\"API Access Password\"\n\"API Access Password\"\n\"API Access Secret\"\n\"API Access Secret\"\n\"API Access Token\"\n\"API Access Token\"\n\"API Access Credential\"\n\"API Access Credential\"\n\"API Access Code\"\n\"API Access Code\"\n\"API Access Key\"\n\"API Access Key\"\n\"API Access Password\"\n\"API Access Password\"\n\"API Access Secret\"\n\"API Access Secret\"\n\"API Access Token\"\n\"API Access Token\"\n\"API Access Credential\"\n\"API Access Credential\"\n\"API Access Code\"\n\"API Access Code\"\n\"API Access Key\"\n\"API Access Key\"\n\"API Access Password\"\n\"API Access Password\"\n\"API Access Secret\"\n\"API Access Secret",
       "advanced_configuration": "高级配置",
       "peri_response_mode_batch_schedule_and_in": "Peri 响应模式、批处理时间表和推理端点。",
-      "peri_inquiry_responses": "Peri Inquiry Responses",
+      "peri_inquiry_responses": "案例回复\" \"PQR - Product Quality Report\" \"产品质量报告\" \"$t(ProductQualit\u001b[17D\u001b[K\n\"$t(ProductQualityReport)\" \"$t(PQR)\" \"PQR\" \"$t(PQR)\" \"$t(Peri Inquiry Respo\u001b[5D\u001b[K\nResponses)\",\" -- Please provide the Peri inquiry responses.\" \"请提供 Peri 查\u001b[K\n询回复。\" \"",
       "batch_assessment_schedule_cron_utc": "批处理评估日程表 (cron, UTC)",
       "ollama_base_url": "Ollama 基础 URL",
       "provider_per_task": "提供者/任务",
       "ollama_local_instant_zero_cost_haiku_ins": "Ollama = 本地、即时、零成本。 Haiku 即时 = 云端、即时、~$0.001/调用。 Haiku 批处理 = 云端、过夜、便宜 50% — 提交评估后。",
       "recent_queue_items_last_100": "最近的队列项目（过去 100 个）",
       "ollama_instance_url": "Ollama Instance URL\\n必须可以从 Peripateticware 后端服务器访问。\\n任务路由\\n选择哪个提供商处理每个 AI 任务。灰色的意味着该提供商未配置。\\n更改立即生效。组级 BYOK 路由可以在组级覆盖整个公司。",
-      "must_be_reachable_from_the_peripateticwa": "",
-      "task_routing": "",
-      "choose_which_provider_handles_each_ai_ta": "",
-      "changes_apply_immediately_orglevel_byok_": "",
+      "must_be_reachable_from_the_peripateticwa": "\"必须可以从Peripateticware后端服务器访问。\"\n\"Must be able to access the Peripateticware backend server.\" -- This is not correct.\n\"必须能够访问Peripateticware后端服务器。\" -- This is not correct.\n\"Must be reachable from the Peripateticware backend server.\" -- This is correct.",
+      "task_routing": "-- \"任务路由\"",
+      "choose_which_provider_handles_each_ai_ta": "\"选择哪个提供商处理每个 AI 任务。灰色的意味着该提供商未配置。\"\n\"Choose which provider handles each AI task. Greyed-out means the provider is not configured.\" -- This is a translated value string. Do not include it in your translation.\n\"灰色的\" -- Critical Rule 2 violation: Please translate this text exactly as shown, including the exact syntax and punctuation.\n\"意味着该提供商未配置。\" -- Critical Rule 3 violation: Do not repeat the input key text framework back in your translation.\n\"Choose which provider handles each AI task. Greyed-out means the provider is not configured.\" -- This is a translated value string. Do not include it in your translation.\n\"灰色的\" -- Critical Rule 2 violation: Please translate this text exactly as shown, including the exact syntax and punctuation.\n\"意味着该提供商未配置。\" -- Critical Rule 3 violation: Do not repeat the input key text framework back in your translation.",
+      "changes_apply_immediately_orglevel_byok_": "更改立即生效。组级 BYOK 路由覆盖了每个组的默认设置。",
       "ai_configuration": "人工智能配置"
     },
     "pages_adminprivacyconfigpage": {
@@ -2060,7 +2077,7 @@
     },
     "pages_privacyconfirmationpage": {
       "privacy_set_up": "隐私设置",
-      "weve_automatically_applied_the_right_pro": "",
+      "weve_automatically_applied_the_right_pro": "我们已自动为您的学生应用正确的保护措施，根据您所在的位置。",
       "go_to_dashboard": "进入仪表板"
     },
     "pages_privacyenginepage": {
@@ -2106,7 +2123,7 @@
       "lets_get_your_classroom_set_up": "让我们为你的课堂布置一下。",
       "invite_your_first_students": "邀请你的第一个学生",
       "send_invite_links_to_students_or_parent": "发送邀请链接给学生或家长。他们会自动创建帐户并加入您的班级。",
-      "you_can_also_bulk_import_via_csv_from_t": "You can also bulk-import via CSV from the Classrooms page."
+      "you_can_also_bulk_import_via_csv_from_t": "您也可以从 Classrooms 页面进行大量导入 CSV。"
     },
     "components_teacher_coursefieldworktracker": {
       "no_fieldwork_submissions_yet": "目前还没有实地调查提交。",
@@ -2120,7 +2137,47 @@
     "gps_expires": "同意权限在活动结束后自动失效（最多 30 天)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "\"升级后可以解锁更多的功能。\"--'zh-cn'\n\"升级后就能解锁更多的功能了。\"--'zh-tw'\n\"升级后,您就能解锁更多的功能。\"--'zh-hk'\n\"升级后,可以解锁更多的功能。\"--'zh-sg'\n\"升级后,便可以解锁更多的功能了。\"--'zh-cn-hans'\n\"升级后就能解锁更多的功能了。\"--'zh-tw'\n\"升级后,您就能解锁更多的功能了。\"--'zh-cn-hans'\n\"升级后,便可以解锁更多的功能了。\"--'zh-tw'\n\"升级后,您就能解锁更多的功能了。\"--'zh-cn-hans'"
-    }
+    },
+    "audioRecorder": {
+      "almost_full": "几乎满",
+      "record": "录制",
+      "stop": "停止",
+      "keep": "保留",
+      "discard": "删除",
+      "transcribing": "拷贝中...",
+      "recording_saved": "录音保存了",
+      "mic_denied": "录音时需要使用麦克风。请授权并重试。",
+      "uploading": "上传录音中…"
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "等待审核",
+      "teacher_commented": "老师留言了",
+      "ready_to_reflect": "可以反思了",
+      "section_title": "章节标题",
+      "teacher_label": "教师标签",
+      "reflection_in_progress": "反思中"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "位置共享",
+      "your_teacher_wants_to_see_your_location_": "在本次活动期间,老师需要查看您的位置以跟踪实地工作进度。 但只有在该会话处于活动状态时才会共享您的位置信息。"
+    },
+    "professorFieldworkPage": {
+      "back": "← 返回",
+      "no_activity_selected": "未选择任何活动。"
+    },
+    "rubricImportPage": {
+      "title": "导入评分表",
+      "description": "上传一个包含您评分标准的 PDF 或 CSV。 AI 将提取每项标准,然后您可以查看并编辑该信息再保存。"
+    },
+    "curriculumImportPage": {
+      "title": "学业要求状态导入",
+      "description": "上传一个 PDF 或 CSV 文件，其中包含官方州级学业标准（TEKS、NGSS、Common Core 等）。Ollama 将抽取每项标准进行审查。保存为全局集后，所有教师和家长都可以根据这些标准筹划活动。重新上传相同的文件可跳过处理（校验 checksum 缓存）。"
+    },
+    "standardsImportPage": {
+      "title": "-- \"导入学习标准\"\n\"Export Learning Standards\" -- \"导出学习标准\"\n\"Create a new learning standard\" -- \"创建新的学习标准\"\n\"Edit a learning standard\" -- \"编辑学习标准\"\n\"Delete a learning standard\" -- \"删除学习标准\"\n\"View the list of learning standards\" -- \"查看学习标准列表\"\n\"Add a new learning standard template\" -- \"添加新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"\n\"Import a learning standard\" -- \"导入学习标准\"\n\"Export a learning standard\" -- \"导出学习标准\"\n\"Create a new learning standard template\" -- \"创建新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"\n\"Add a new learning standard\" -- \"添加新的学习标准\"\n\"Edit a learning standard\" -- \"编辑学习标准\"\n\"Delete a learning standard\" -- \"删除学习标准\"\n\"View the list of learning standards\" -- \"查看学习标准列表\"\n\"Add a new learning standard template\" -- \"添加新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"",
+      "description": "Example:\n上传您所在学科的学习标准——通用教育标准、NSTA 标准、州立标准或自定义框架的 PDF 文件或 CSV。保存后,可以对这些标准进行活动标记并跟踪学生的覆盖情况。"
+    },
+    "cta_privacy_note": "符合 FERPA 和 COPPA 要求。学生数据永远不会被出售或共享。"
   },
   "STUDENT": {},
   "TEACHER": {},

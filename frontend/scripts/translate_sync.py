@@ -5,12 +5,18 @@ from datetime import datetime, timezone
 import json
 import os
 import re
+import sys
 import time
 import subprocess
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 import requests
+
+# Ensure the scripts directory is on the path so sync_locales is importable
+# regardless of the working directory the pipeline is launched from.
+sys.path.insert(0, str(Path(__file__).parent))
+from sync_locales import run as _sync_namespaces
 
 # Microsoft Translator Endpoint Configuration
 MS_TRANSLATOR_REGION = os.getenv("MS_TRANSLATOR_REGION", "global")
@@ -825,6 +831,15 @@ def sync_pipeline():
         print(f"  \u2022 {loc_name.ljust(15)} : {loc_count:,} characters out to translation network")
     print("=" * 60)
     print("\n\U0001f3c1 Translation and provenance synchronization complete.")
+
+    # Auto-chain: distribute root flat translations into i18next namespace subdirectories.
+    # Only keys that differ from English are written (override pattern — no duplication).
+    print("\n\U0001f504 Running namespace sync...")
+    try:
+        _sync_namespaces(locales_dir=LOCALES_DIR)
+    except Exception as e:
+        print(f"  WARNING: Namespace sync failed: {e}")
+        print("  Run manually: python3 scripts/sync_locales.py")
 
 if __name__ == "__main__":
     sync_pipeline()

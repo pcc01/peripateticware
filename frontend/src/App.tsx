@@ -12,6 +12,7 @@ import { useAuthStore } from './stores/auth'
 import './design-system.css'
 import { useSkin } from './hooks/useSkin'
 import CookieConsentBanner from './components/CookieConsentBanner'
+import UpgradeModal from './components/UpgradeModal'
 import ParentConsentPage from './pages/ParentConsentPage'
 import './styles/globals.css'
 import './styles/landing.css'
@@ -305,6 +306,7 @@ const App: React.FC = () => {
     <I18nextProvider i18n={i18n}>
       <div className="min-h-screen" style={{ backgroundColor: DIRECTION_COLORS[direction].background }}>
         <CookieConsentBanner />
+        <UpgradeModal />
         <Routes>
           {/* PUBLIC */}
           <Route path="/" element={<LandingPage />} />

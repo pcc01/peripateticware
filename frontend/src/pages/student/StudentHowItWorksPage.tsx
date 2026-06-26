@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 const StudentHowItWorksPage: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -16,7 +17,7 @@ const StudentHowItWorksPage: React.FC = () => {
       <div className="container py-5xl">
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-5xl)' }}>
-          <h1 className="h1 mb-md">{t("landing:how_peripateticware_works", "How Peripateticware Works")}</h1>
+          <h1 className="h1 mb-md">{`How ${PRODUCT_NAME} Works`}</h1>
           <p className="text-xl text-muted">{t("landing:discover_how_to_participate_in_outdoor_l", "Discover how to participate in outdoor learning activities")}
 
           </p>

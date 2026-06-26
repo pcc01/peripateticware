@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { PRODUCT_NAME, PRODUCT_COPYRIGHT } from '../../constants/brand';
 // Copyright (c) 2026 Paul Christopher Cerda
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
@@ -38,7 +39,7 @@ export const SplashScreen: React.FC = () => {
         </div>
 
         {/* App Name */}
-        <h1 className="text-5xl font-bold text-white mb-2">{t("landing:peripateticware", "Peripateticware")}</h1>
+        <h1 className="text-5xl font-bold text-white mb-2">{PRODUCT_NAME}</h1>
         <p className="text-xl text-blue-100 mb-12">{t("landing:learning_in_motion", "Learning in Motion")}</p>
 
         {/* Loading Animation */}
@@ -54,7 +55,7 @@ export const SplashScreen: React.FC = () => {
 
       {/* Footer */}
       <div className="absolute bottom-8 text-center">
-        <p className="text-white text-xs opacity-60">{t('splashscreen.2026_peripateticware_all_rights_reserved', '© 2026 Peripateticware. All rights reserved.')}</p>
+        <p className="text-white text-xs opacity-60">{PRODUCT_COPYRIGHT()}</p>
       </div>
     </div>);
 

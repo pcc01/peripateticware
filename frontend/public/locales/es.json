@@ -67,7 +67,7 @@
       "sign_in": "Iniciar sesión",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos los derechos reservados."
     },
-    "peripateticware": "Artículos peripatéticos",
+    "peripateticware": "Herramienta peripatética",
     "learning_in_motion": "Aprendizaje en movimiento",
     "loading": "Cargando...",
     "splashscreen": {
@@ -95,7 +95,7 @@
     "session": "Sesión:",
     "select": "-- Seleccionar --",
     "footer": {
-      "brand_title": "título de la marca",
+      "brand_title": "Herramienta peripatética",
       "brand_desc": "descripción de la marca",
       "product_title": "título del producto",
       "product_features": "características del producto",
@@ -117,7 +117,7 @@
       "legal_terms": "términos legales",
       "legal_cookies": "cookies legales",
       "legal_contact": "contacto legal",
-      "company_name": "nombre de empresa",
+      "company_name": "Herramienta peripatética",
       "all_rights": "todos los derechos",
       "privacy_protected": "Su información está protegida bajo estos marcos",
       "company_contact": "- \"Contacto\" - \"C\" - \"Client\" - \"Cliente\" - \"%s\" - \"%s\" - \"%s\" - \"$t{Custo\u001b[9D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" -\u001b[1D\u001b[K\n- \"$t{FaxNumber}\" - \"%s\" - \"$t{CompanyName}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"\u001b[1D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{PhoneNumber}\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{Em\u001b[6D\u001b[K\n\"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"$t{PhoneNumber}\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\u001b[3D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"%s\" - \"%s\"- \"%s\" - \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{F\u001b[5D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\"- \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\"- \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{FaxNumber}\u001b[14D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \u001b[K\n\"I\" - \"%s\"- \"$t{FaxNumber}\" - \"C\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"\u001b[4D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\"- \"$t{FaxNumber}\" - \"A\"- \"%s\"-\u001b[5D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \"I\"- \"%s\"- \"$t{FaxNumber}\" - \"\u001b[1D\u001b[K\n\"C\"",
@@ -945,7 +945,8 @@
       "cta_section_desc": "descripción de la sección cta",
       "jurisdictions_enforced": "jurisdicciones aplicadas",
       "last_updated": "Última actualización",
-      "cta_explore_docs": "Explorar documentos de privacidad"
+      "cta_explore_docs": "Explorar documentos de privacidad",
+      "loading_status": "Cargando el estado de cumplimiento..."
     },
     "loading_your_projects": "Cargando tus proyectos...",
     "retry": "Rever",
@@ -1248,7 +1249,9 @@
       "students": "Estudiantes",
       "submissions": "Envíos",
       "edit": "Editar",
-      "grade": "Calificación:"
+      "grade": "Calificación:",
+      "total_activities": "Actividades totales",
+      "this_week": "Esta semana"
     },
     "total_students": "Total de estudiantes",
     "active_activities": "Actividades activas",
@@ -1390,8 +1393,8 @@
     "hs_how_title": "Cómo funciona",
     "hs_cta_signup": "Comenzar Gratis →",
     "hs_cta_login": "Iniciar Sesión",
-    "gdpr_title": "GDPR",
-    "ccpa_title": "CCPA",
+    "gdpr_title": "RGPD",
+    "ccpa_title": "CPPA",
     "components_shared_extractionwizard": {
       "set_name": "Establecer nombre",
       "analysing_document": "Analizando documento...",
@@ -1422,7 +1425,7 @@
     "think_about": "Pensando en...",
     "sketch": "Dibujar",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripatéticaware"
+      "peripateticware": "Software itinerante"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Cargando...",
@@ -1639,7 +1642,12 @@
       "you_can_clear_cookies_at_any_time_throug": "Puedes limpiar cookies a cualquier momento a través de los ajustes de configuración de tu navegador. Limpiar cookies de autenticación te desconectará del Servicio.",
       "changes_to_this_policy": "Cambios en esta política",
       "we_may_update_this_policy_as_the_service": "Podemos actualizar esta política según evolucione el Servicio. Las modificaciones importantes se comunicarán a través de una notificación en la aplicación.",
-      "contact": "Contacto"
+      "contact": "Contacto",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Guarda tu JWT de sesión. Expira después de 24 horas.",
+      "auth_user_desc": "Guarda tu perfil básico de usuario (nombre, rol). Se borra al salir.",
+      "i18nextlng_desc": "Recuerda tu preferencia de idioma.",
+      "questions": "¿Preguntas?"
     },
     "termspage": {
       "terms_of_service": "Términos de Servicio",
@@ -1657,7 +1665,12 @@
       "you_may_not_use_the_service_to_upload_ha": "No puedes utilizar el Servicio para subir contenido dañino, evadir controles de seguridad, compartir datos de estudiantes con partes no autorizadas o participar en cualquier actividad que viole la ley aplicable.",
       "7_limitation_of_liability": "7. Límite de Responsabilidad",
       "the_service_is_provided_ldquoas_isrdquo_": "El Servicio se proporciona &ldquo;como está&rdquo;. Peripateticware no será responsable por cualquier daño indirecto, incidental o consecuencial derivado del uso del Servicio.",
-      "8_contact": "8. Contacto"
+      "8_contact": "8. Contacto",
+      "back_to_home": "← Volver a Inicio",
+      "privacy_compliance_intro": "Peripateticware cumple con COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD y PDPA. Los datos del estudiante nunca se venden ni se utilizan para publicidad. Consulte nuestra",
+      "privacy_policy_link": "Política de privacidad",
+      "privacy_compliance_outro": "para obtener más información.",
+      "questions_about_terms": "¿Preguntas sobre estos Términos?"
     },
     "privacy_first_title": "🔒 Primacía de la privacidad",
     "privacy_first_desc": "Construido para K-12 desde el principio. Compliant con los marcos de privacidad principales — no como un afterthought.",
@@ -1673,7 +1686,8 @@
     "view_audit_log": "Ver registro de auditoría",
     "collect_photos": "Fotos y grabaciones de audio (almacenadas seguramente en nuestro servidor)",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "Esta página se encuentra próximamente."
+      "this_page_is_coming_soon": "Esta página se encuentra próximamente.",
+      "go_back": "← Volver atrás"
     },
     "age_confirmation": "Confirmo que tengo 13 años o más, o que tengo el consentimiento de mi padre para crear esta cuenta.",
     "cookie_notice": "Este sitio utiliza solo cookies para autenticación — no hay cookies de rastreo ni publicidad.",
@@ -1724,7 +1738,8 @@
     "link_child_explainer": "Una vez que enlaces la cuenta de tu hijo verás su progreso en actividades, sesiones por venir, puntajes de competencias, evidencia presentada y comentarios del maestro — todo en un solo lugar.",
     "select_child_prompt": "Selecciona a un hijo para ver su progreso.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "Lo que verás después de enlazar:"
+      "what_youll_see_after_linking": "Lo que verás después de enlazar:",
+      "parental_consent_status": "Estado de consentimiento parental"
     },
     "create_first_note": "Crea tu primera nota",
     "response_in_progress": "Respuesta en curso. Agrega capturas y envíala.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "Ya tienes una cuenta?",
       "sign_in": "Iniciar sesión",
       "helps_us_apply_the_right_privacy_framewo": "Nos ayuda a aplicar los marcos adecuados de privacidad (FERPA, COPPA, GDPR, etc.) para tus estudiantes.",
-      "this_determines_whether_coppa_applies_": "Este determina si la ley COPPA se aplica a su cuenta."
+      "this_determines_whether_coppa_applies_": "Este determina si la ley COPPA se aplica a su cuenta.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "Confirmo que tengo 18 años o más (o soy el/la tutelar/a de usuarios menores en esta cuenta)."
     },
     "cta_btn": "Comenzar gratis",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "👁 Previsualización del punto de vista del estudiante",
       "this_is_how_the_activity_appears_to_stud": "Esta es la forma en que aparece la actividad para los estudiantes en la aplicación.",
       "these_three_fields_drive_the_student_exp": "Estos tres campos controlan la experiencia del estudiante. Los estudiantes avanzan por Orientarâ¿InquiráReflexion en su teléfono.",
-      "no_inquiry_instructions_yet_write_them_i": "Aún no hay instrucciones de solicitud - escribíalas en la pestaña Aprendizaje."
+      "no_inquiry_instructions_yet_write_them_i": "Aún no hay instrucciones de solicitud - escribíalas en la pestaña Aprendizaje.",
+      "students_locations_are_shared_with_you_i": "Las ubicaciones de los estudiantes se comparten en tiempo real con usted en el monitor de sesión. Se solicita automáticamente el consentimiento de los padres para estudiantes menores de 13."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Invitar a los estudiantes",
@@ -1802,7 +1819,7 @@
       "group_size": "Tamaño del grupo",
       "setting": "Configurar",
       "peri_is_thinking": "Peri está pensando...",
-      "special_focus_optional": ""
+      "special_focus_optional": "Enfoque especial (opcional)"
     },
     "pages_joinclassroompage": {
       "invite_not_found": "No se encontró invitación",
@@ -2120,6 +2137,46 @@
     "gps_expires": "El consentimiento expira automáticamente cuando finaliza la actividad (máximo 30 días)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "[['Actualiza para desbloquear esta característica y más. (es-ES)']]"
+    },
+    "audioRecorder": {
+      "almost_full": "Casi completo",
+      "record": "Registro",
+      "stop": "Detener",
+      "keep": "Guardar",
+      "discard": "Descartar",
+      "transcribing": "Transcribiendo...",
+      "recording_saved": "Grabación guardada",
+      "mic_denied": "Se requiere acceso al micrófono para grabar audio. Por favor, otorgue permiso y vuelva a intentarlo.",
+      "uploading": "Cargando la grabación…"
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "En espera de aprobación",
+      "teacher_commented": "Profesor comentó",
+      "ready_to_reflect": "Listo para reflexionar",
+      "section_title": "Título de sección",
+      "teacher_label": "Etiqueta del profesor",
+      "reflection_in_progress": "reflexión en progreso"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "Compartir ubicación",
+      "your_teacher_wants_to_see_your_location_": "Su profesor quiere ver su ubicación durante esta actividad para poder rastrear el progreso del trabajo en campo. Su ubicación solo se comparte mientras la sesión esté activa."
+    },
+    "professorFieldworkPage": {
+      "back": "← Atras",
+      "no_activity_selected": "No hay actividad seleccionada."
+    },
+    "rubricImportPage": {
+      "title": "Importar Evaluación",
+      "description": "Cargue un PDF o CSV que contenga sus criterios de evaluación. El IA extraerá cada criterio, que podrá revisar y editar antes de guardarlo."
+    },
+    "cta_privacy_note": "Cumplimos con FERPA y COPPA. Los datos de los estudiantes nunca se venden ni compartimos.",
+    "curriculumImportPage": {
+      "description": "Cargue un PDF o CSV de los estándares académicos oficiales del estado (TEKS, NGSS, Common Core, etc.). Ollama extrae cada estándar para revisión. Una vez guardado como conjunto global, todos los maestros y padres que enseñan en casa pueden hacer un mapeo de sus actividades con estos estándares. Al re-cargar el mismo archivo se saltará el procesamiento (cache de suma de comprobación).",
+      "title": "Estados de importación de estándares académicos"
+    },
+    "standardsImportPage": {
+      "title": "Importar estándares de aprendizaje",
+      "description": "Cargue un archivo PDF o CSV de los estándares de aprendizaje para su disciplina: Common Core, NGSS, estándares estatales o su propio marco personalizado. Una vez guardado, puede etiquetar las actividades con estos estándares y rastrear la cobertura del alumno."
     }
   },
   "STUDENT": {},

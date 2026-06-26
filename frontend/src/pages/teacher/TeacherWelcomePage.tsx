@@ -17,6 +17,7 @@ import { CheckCircle, ChevronLeft, X } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
 import PrivacySetupWizard, { PrivacyResult } from '../../components/PrivacySetupWizard';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 const API = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -91,7 +92,7 @@ export default function TeacherWelcomePage() {
             <X size={18} />
           </button>
           <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
-            {t('pages_teacher_teacherwelcomepage.welcome_to_peripateticware', 'Welcome to Peripateticware 🌿')}
+            {`Welcome to ${PRODUCT_NAME} 🌿`}
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.4rem 0 0', fontSize: '0.9rem' }}>
             {t('pages_teacher_teacherwelcomepage.lets_get_your_classroom_set_up', "Let's get your classroom set up.")}

@@ -12,6 +12,7 @@ import { LocaleSwitcher } from './LocaleSwitcher';
 import './PhoneCarousel.css';
 import '../styles/landing.css';
 import '../styles/globals.css';
+import { PRODUCT_NAME } from '../constants/brand';
 
 type HeroTab = 'student' | 'teacher' | 'parent' | 'homeschool';
 
@@ -335,7 +336,7 @@ export const LandingPage: React.FC = () => {
       <nav className="sticky top-0 z-50" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 var(--section-x)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🧭</span>{t("landing:peripateticware", "Peripateticware")}
+            <span>🧭</span>{PRODUCT_NAME}
 
           </h1>
 
@@ -504,7 +505,7 @@ export const LandingPage: React.FC = () => {
           <h2 className="h-section text-center">
             {activeTab === 'homeschool'
               ? t('homeschool.features_title', 'Everything a Homeschool Family Needs')
-              : `${t("landing:why", "Why")} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s ${t("landing:choose_peripateticware", "Choose Peripateticware")}`}
+              : `${t("landing:why", "Why")} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s ${`Choose ${PRODUCT_NAME}`}`}
           </h2>
 
           <div className="features-grid">

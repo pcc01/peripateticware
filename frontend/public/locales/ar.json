@@ -86,7 +86,7 @@
       "sign_in": " تسجيل الدخول",
       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. كل الحقوق محفوظة."
     },
-    "peripateticware": " Peripateticware",
+    "peripateticware": "المجانية",
     "learning_in_motion": " التعلم في الحركة",
     "loading": " Loading...",
     "splashscreen": {
@@ -118,7 +118,7 @@
     "session": "جلسة:",
     "select": "-- اختيار --",
     "footer": {
-      "brand_title": "عنوان الشعبة",
+      "brand_title": "المجانية",
       "brand_desc": "وصف الشعبة",
       "product_title": "عنوان المنتج",
       "product_features": "أمكانيات المنتج",
@@ -140,7 +140,7 @@
       "legal_terms": "الشروط القانونية",
       "legal_cookies": "البiscuit القانوني",
       "legal_contact": "الاتصال القانوني",
-      "company_name": "اسم الشركة",
+      "company_name": "المجانية",
       "all_rights": "كل الحقوق",
       "privacy_protected": "تمام البيانات حفظة على مدار الزمن خلال هذه القوائم",
       "company_contact": "تواصل",
@@ -787,7 +787,8 @@
     "reset_to_defaults": "إعادة تعيين الافتراضي",
     "save_settings": "حفظ الإعدادات",
     "comingsoonpage": {
-      "this_page_is_coming_soon": "هذا الصفحة ستتمر قريبًا."
+      "this_page_is_coming_soon": "هذا الصفحة ستتمر قريبًا.",
+      "go_back": "← الغاء الرجوع"
     },
     "cookiepolicypage": {
       "cookie_policy": "سياسة البُكوك",
@@ -805,7 +806,12 @@
       "you_can_clear_cookies_at_any_time_throug": "يمكنك تحذف البصمات على وقت لا تسبب أي مشكلة من خلال إعدادات التطبيق المهليكة للبراуزر.",
       "changes_to_this_policy": "تغييرات في هذا السياسة",
       "we_may_update_this_policy_as_the_service": "نحن قد نحدث هذا السياسة خلال التطور المستمر للخدمة. التغييرات الكبيرة ستتم إعلانها من خلال إشعارات في التطبيق.",
-      "contact": "اتصل"
+      "contact": "اتصل",
+      "back_to_home": "← رück zu Home",
+      "auth_token_desc": "يحفظ علاوية جواز التسجيل (JWT) لمعالمك. نهائية 24 ساعة.",
+      "auth_user_desc": "يحفظ ملف بيانات المرأة الأساسية (اسم، دور). إزالة عن تسجيل الخضوع. ",
+      "i18nextlng_desc": "يذكر اختصار الغة المفضلة لك.",
+      "questions": "أسئلت؟"
     },
     "page_not_found": "صفحة مفقودة",
     "oops_the_page_youre_looking_for_doesnt_e": "أعدّ التحقق! الصفحة التي تبحث عنها غير موجودة أو تمت إزالتها.",
@@ -1041,7 +1047,8 @@
       "consent_framework_desc": "من حقل الوصف الرابط للإذن",
       "cta_section_title": "عنوان قسم الأمراض",
       "cta_section_subtitle": "القسم التحديثي عنوان",
-      "cta_section_desc": "وصف قسم الأمر"
+      "cta_section_desc": "وصف قسم الأمر",
+      "loading_status": "تحميل الوضع المرصد في..."
     },
     "student_submits_evidence": "الطالب يقدم الأحجية",
     "system_identifies_jurisdiction": "تحديد المحافظة",
@@ -1355,7 +1362,9 @@
       "students": "الطلاب",
       "submissions": "تسجيلات المشاركة",
       "edit": "تعديل",
-      "grade": "التقييم:"
+      "grade": "التقييم:",
+      "total_activities": "المنشورات الكلية",
+      "this_week": "هذا الأسبوع"
     },
     "total_students": "الطلاب المجموع",
     "active_activities": "النشاطات النشطة",
@@ -1404,7 +1413,12 @@
       "you_may_not_use_the_service_to_upload_ha": "لا يمكنك استخدام الخدمة لرفع محتوى ضرري، تجهز التحكمات الأمنية، بشركة غير مصرحة للبيانات الطالبية، أو إنجاز أي عملية تقاضي القانون المطلوب.",
       "7_limitation_of_liability": "7. الحدود المحدودة للمسؤولية",
       "the_service_is_provided_ldquoas_isrdquo_": "الخدمة مقدمة &ldquo;كما هي&rdquo;. لن تكون Peripateticware مسؤولة عن أي ضرائب فرعية، أو ضرائب تصادمية أو ثابتة تتعلق باستخدام الخدمة.",
-      "8_contact": "8. التواصل"
+      "8_contact": "8. التواصل",
+      "back_to_home": "← إلى الخليج",
+      "privacy_compliance_intro": "Peripateticware تؤطي بالمرافقة، GDPR، FERPA، CCPA، PIPEDA، LGPD و PDPA. بعض البيانات الأكثر خطيرة لدى الطلبة من جانب إيجار أو استخدامها لإعادة تصميم إعلاماً، والتي تشمل كل مزيد من التفاصيل في نطاق خاص في حقوق الخصوصية. رأى المرأة.",
+      "privacy_policy_link": "خصائص خصوصية",
+      "privacy_compliance_outro": "",
+      "questions_about_terms": "سؤالات حول هذه الأمانة؟"
     },
     "components_auth_loginscreen": {
       "try_a_demo_account": "إختبار حساب مدمج",
@@ -1461,7 +1475,7 @@
     "think_about": "اعتبر...",
     "sketch": "خرافة",
     "layouts_dashboardshell": {
-      "peripateticware": "بيريباتيكووار"
+      "peripateticware": "الخطاب الثاني"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "تحميل...",
@@ -1711,7 +1725,8 @@
     "link_child_explainer": "بعد رابطة حساب الأطفال الخاص بك، يظهر لك تقدم المشاركة التدريبية، الجلسات القادمة، نتائج العمليات التحدياتية، الأبواب المقدمة، والتعليقات المعلنة من المعلم — كل ذلك في واحد.",
     "select_child_prompt": "اختر الطفل أعلى لمشاهدة معدلاته.",
     "pages_parentdashboard": {
-      "what_youll_see_after_linking": "ما ستراعيه بعد ربطك:"
+      "what_youll_see_after_linking": "ما ستراعيه بعد ربطك:",
+      "parental_consent_status": "الإذاعة الأولمبية"
     },
     "create_first_note": "إنشاء الملحق الأول",
     "response_in_progress": "الإجابة في عملية. إضافة الصور ثم التسليم.",
@@ -1750,7 +1765,8 @@
       "already_have_an_account": "هل تم تسجيل الدخول؟",
       "sign_in": "تسجيل الدخول",
       "helps_us_apply_the_right_privacy_framewo": "يسمح ذلك بتطبيق الأفضل من القائمة الإدارية (FERPA، COPPA، GDPR وغيرها) على أطفالك. ",
-      "this_determines_whether_coppa_applies_": "يحتوي ذلك على تحديد عملية التطبيق COPPA على حسابك."
+      "this_determines_whether_coppa_applies_": "يحتوي ذلك على تحديد عملية التطبيق COPPA على حسابك.",
+      "i_confirm_that_i_am_18_years_of_age_or_o": "أنا 18 سنة أو أكثر (أو هو والدي للمستخدمين الأطفال على هذا الحساب)، إعلانتُ."
     },
     "cta_btn": "بدء فري",
     "components_student_extendedwritingpanel": {
@@ -1786,7 +1802,8 @@
       "student_view_preview": "-- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.\n\"👁 Student View Preview\" -- This is a preview of what your student will see when they access their course. You can use this to test the layout and content before making it available to students.\n\"📖 Course Content\" -- Here you can add any additional information about the course, such as learning objectives or prerequisites.",
       "this_is_how_the_activity_appears_to_stud": "(General Balanced Content)...",
       "these_three_fields_drive_the_student_exp": "Translated Output:\nهذه الأربعة تحديداً خصائص التطوير المجاني. وتتمكن الطلبة من تطوير خلال Orient \\u2192 Inquire \\u2192 Reflect عبر الهاتف.\n\"Orient\" -- إستثمار\n\"Inquire\" -- سؤال\n\"Reflect\" -- نقل على أيديكم\n\"\\u2192\" -- بالفصلية\n\n\" \" -- في الواجهة\n\"\" -- في الواجهة\n\".\" -- في الواجهة\n\"هاتف\" -- في الواجهة",
-      "no_inquiry_instructions_yet_write_them_i": "Translated Output String:\nلم يتم الإرسال بعض الاستثمارات، فيداك الآن وأنشئها في خصائق التعلم."
+      "no_inquiry_instructions_yet_write_them_i": "Translated Output String:\nلم يتم الإرسال بعض الاستثمارات، فيداك الآن وأنشئها في خصائق التعلم.",
+      "students_locations_are_shared_with_you_i": "موقع الطلبة يتم استشاره الآن في المراقب خلال زمن حقيقي، ويستأدي إذا كان الطلبة 13 سنة أو أي عام أقصى. يستضف إذا كان الطلبة 13 سنة أو أي عام أقصى."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "دعوة الأخصائيين",
@@ -1826,7 +1843,7 @@
       "platform_api_keys": "مفاتيح البرومتينات الخليجية",
       "these_keys_are_used_for_all_saas_orgs_th": "الأمر الذي يستخدمه جميع فئات SaaS، والأمر الذي يستخدمه فئة BYOK.",
       "saas_orgs_using_platform_key": "أفواك SaaS (بإستخدام بيانات المؤقى)",
-      "byok_orgs_own_api_key": ""
+      "byok_orgs_own_api_key": "بالإضافة الخاصة (أي كلية خاصة)، BYOK"
     },
     "pages_platform_platformorgdetailpage": {
       "this_months_usage": "ستعمل هذه الأسبوع",
@@ -1857,7 +1874,7 @@
       "shared_activity_library": "مكتبة الأنشطة المشتركة",
       "activities_marked_as_shareable_by_you_or": "الأنشطة المشتركة بينكم وأصدقائك. إنتاع لمسحها.",
       "browse_activities_shared_by_teachers_acr": "تجربة في مكتبة الأنشطة المشتركة العالمية، وإنتاع لمسحها.",
-      "no_shared_activities_found": "",
+      "no_shared_activities_found": "لم يجد أي تشغيلات مشتركة.",
       "try_adjusting_your_filters_or_publish_an": "تحديد الفلفلات، أو نشر ومشاركة إجراءات خاصة بك. "
     },
     "pages_teacher_teacherclassroompage": {
@@ -1873,7 +1890,7 @@
       "reason_required_for_audit_log": "سبب (هو مطلوب للجاردة التقرير)",
       "spend_by_tier_this_month": "أسعار الدفع (هذا الشهر)",
       "no_spend_recorded_yet": "لم يحدد أي مبالغ الدفع حتى الآن.",
-      "top_tasks_this_month": "",
+      "top_tasks_this_month": "أهم الأطراف (هذا الشهر",
       "no_historical_data_yet": "لم يتم الجمع السنوي لها. \n كل أقطاب هو آلام منزلية. تسجيل مصرف BYOK لإدخالها إلى التحليل، وتفاصيل المصرف أقلمًا للمؤسسة أنثربيك. \n أهلاً بالمعدل في Peripateticware 🌿 \n ستكون مجانيًا إضافة المعدل بعد 3 خطوة سريعة. \n أين تتعلم؟",
       "all_figures_are_product_signals_byok_spe": "لم يعثر على أي خصائص تقويم في المعالجات التحليلية. تسجيل BYOK للمصرف بشكل خاص. تطلب إدخالها إلى التحليل، وتقبيلها عن طريق المؤسسة أنثربيك. \n أهلاً بالمعدل في Peripateticware 🌿 \n ستكون مجانيًا إضافة المعدل بعد 3 خطوة سريعة. \n أين تتعلم؟"
     },
@@ -1928,7 +1945,7 @@
       "to": "إلى",
       "write_placeholder": "نشرح ردك...",
       "sent": "تم الرد.",
-      "done": "",
+      "done": "اقل",
       "cancel": "إزالة",
       "sending": "ترحيباً...",
       "send": "إرسل جواب",
@@ -1971,7 +1988,7 @@
       "guided_inquiry_that_leads_to_real_knowle": "تقييم مُصدر الخبر الحقيقي، التي تغلق عدد من الأفكار.",
       "sample_exchange_creek_study_grade_5": "مثال عمل — تحقيق واقعة في سطح خلف جبهة القرية، فئة 5",
       "peri_never_gives_the_answer_it_asks_the_": "وفي كثير من الأحيان، لا تتضمن جاء على الأساطير. إن الجاء يقول: \\\"الآن\\\"، وهو يسمح لفهم الآن.",
-      "built_from_a_2007_idea_that_took_until_2": "",
+      "built_from_a_2007_idea_that_took_until_2": "['بنية من خواصة 2007، التي أطلقت عليها في 2026 حالتها الممكنة']",
       "the_paper_named_one_problem_it_couldnt_s": "الوقاية بالمجلد الذي تعرفه بـ",
       "from_the_original_2007_paper": ", كيفية تقييم التعلم الذي ينطلق من محور ضيف، أو من خواص مزدوجة، أو من محطة شارك،؟ في 2026، ستوضع إي آي أي البريدة لنا الجواب. ",
       "simple_honest_pricing": "المنشور الأصلي من 2007",
@@ -1984,8 +2001,8 @@
       "california_schools_may_be_subject_to_ccp": "وجود في 📋 المدارس الكاليفورنية من خطاب لقاء CCPA بالإضافة إلى FERPA &amp; COPPA. ",
       "country": "عين",
       "eu_country_gdpr_applies_your_platform_ad": "وجود في 🇪🇺 المنطقة الأوروبية — تتيح GDPR. سيكون يحتاج الإدارة للمثلة على إفعالها.",
-      "tell_us_about_your_students": "",
-      "coppa_childrens_online_privacy_protectio": "",
+      "tell_us_about_your_students": "يعرفنا عن طالبيكم",
+      "coppa_childrens_online_privacy_protectio": "تطبق COPPA (Children's Online Privacy Protection Act) إذا كان طالب أصغر من 13 سنة.",
       "ferpa_applies_to_all_your_students_regar": "Translated Output:\nفي حالة التعلم في مدرسة أمريكية، وجوهة الطلبة تشملها كلها، بما في ذلك ℹ️ FERPA.\n\"FERPA applies to all your students regardless of age since you teach at a US school.\"",
       "ai_amp_data_preferences": "\"AI والاختصار المعنية بالبيانات\"\n\"AI and data preferences\" -- This is a translated value string.\n\"AI والاختصار المعنية بالبيانات\" -- This is the translated value string.\n\"AI and data preferences\" -- This is a translated value string.",
       "these_defaults_apply_to_your_account_stu": "الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.\"\n\"الاتفاق يتطابق على الحساب. وجه الطلب والأولئك يمكنهم إضافة خارج المؤشرات، ويمكنك تغيير خارج المؤشرات في أي وقت بالإضافة إلى إعدادات المؤشرات.\"\n\"These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.",
@@ -2040,11 +2057,11 @@
       "the_result_is_an_artifact_a_field_journa": " ",
       "the_2007_paper_described_a_choose_your_o": "Translated Output:\nالمقال الذي نشره في 2007 وجد به مثال \"اختيارك للأسبوع المغامرة\"، وهو يحدث في مجال التعلم ، ويقوم طالب الإنتاج بالخيارات الذين يستغرقون المزيد من المهام الأساسية ويكشفون عن معلومات المهام الأساسية بالخيارات الثانية الذين يقومون بها بالغاء، ولا يكونون بالمدخلين عبر الأسفل ولا بالخارج. والمقال تحذير بأنه يكون هذا \"بعضًا غير متوازن\" ويحتوي على الأساس للتدريس جديد والإثراء التقييزية الجديدة، والمعلمين الذين يرغب في تحديد بعض السياسات التعليمية.\n\"\n\nTranslated Output:\nالمقال الذي نشره في 2007 وجد به مثال \"اختيارك للأسبوع المغامرة\"، وهو يحدث في مجال التعلم ، ويقوم طالب الإنتاج بالخيارات الذين يستغرقون المزيد من المهام الأساسية ويكشفون عن معلومات المهام الأساسية بالخيارات الثانية الذين يقومون بها بالغاء، ولا يكونون بالمدخلين عبر الأسفل ولا بالخارج. والمقال تحذير بأنه يكون هذا \"بعضًا غير متوازن\" ويحتوي على الأساس للتدريس جديد والإثراء التقييزية الجديدة، والمعلمين الذين يرغب في تحديد بعض السياسات التعليمية.\n\"",
       "peripateticware_doesnt_fully_solve_the_c": "Translated Output:\nالمجرب لا يعتمد الحكومة — هذا الإثناء حقيقي ومثالي. وما يفعل هو أن يُعطي المعلمين بسياسة جديدة كاملة (مهارات التدريس، هدايات التعلم، فصول الإنتاق، مؤشر تحقيق الأثار) بالإضافة إلى كثير من الحرية للدخول (محتوى GPS، مهارات التعلم المسؤولة من قبل الطالب، مذكرات منظمة من خلال الطالب، مشاريع مشتركة).\n\"\n\"Peripateticware doesn't fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).\"\n\"المجرب لا يعتمد الحكومة — هذا الإثناء حقيقي ومثالي. وما يفعل هو أن يُعطي المعلمين بسياسة جديدة كاملة (مهارات التدريس، هدايات التعلم، فصول الإنتاق، مؤشر تحقيق الأثار) بالإضافة إلى كثير من الحرية للدخول (محتوى GPS، مهارات التعلم المسؤولة من قبل الطالب، مذكرات منظمة من خلال الطالب، مشاريع مشتركة).\"",
-      "the_reverse_scavenger_hunt_where_student": "",
-      "the_short_answer_is_that_most_of_the_ena": "",
+      "the_reverse_scavenger_hunt_where_student": "الحرف الخاص به في هذه المجتمعات التي يقوم طلبها بإنشاء أفضل من المهام التعليمية، هو الحرف الخاص بالتجسّد المعموق عن مجال تعليم. طالب يكشف عن مجال تعليم غير معموق على أي مؤسسة التعليم والتي تخصها، ثم يدعوه. طلبون ذكرونه. سؤالات تظهر في مجال تعليم التي لم تتم الإختصار عليها في أي مؤسسة التعليم. التعلم تنشوء.",
+      "the_short_answer_is_that_most_of_the_ena": "القصير بحث عن جانب في هذه المجتمعات التي يقوم طلبها بإنشاء أفضل من المهام التعليمية، هو القصير بحث عن جانب بالإضافة إلى مجال تعليم. طالب يكشف عن مجال تعليم غير معموق على أي مؤسسة التعليم والتي تخصها، ثم يدعوه. طلبون ذكرونه. سؤالات تظهر في مجال تعليم التي لم تتم الإختصار عليها في أي مؤسسة التعليم. التعليم تنشوء.",
       "the_longer_answer_is_that_educational_te": "الجواب الطويل هو أن التكنولوجيا التعليمية تمثل هذه السنوات في حل مشاكل غير صالح. تعدّلت التكنولوجيا التعليمية مجال التدريب في السكن — خدمات LMS أفضل، فيديو أفضل، إدارة استباق أفضل. تم تحديث المجال ال existent لتطبيقه بشكل أفضل. وعندما يتم تحديث الخاصة، تسعى التكنولوجيا التعليمية إلى إزالة المركز التعليمي بعدًا أو فقط بعضًا، بالعالم. \"\n\"The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn't try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
       "thats_a_harder_sell_schools_are_riskaver": "هذا المجرد تبيع. أهلاً وسهلاً، فإن مدارسهم قد كانوا خاصة بالخطر. تعلم الأطلال يزعج أمنها. \\\"العالم هو مكتبك\\\" يصدر كحدث تسوق حتى ترد في خيار تعليم الطفل عشر أعمال تنظيم تنقيد في حي العصير، وثقافة جميع معلوماته بالخلفية، وكان أنت يفهم الآن أنك تفهم.، \\\"حساب شرطي",
-      "from_a_white_paper_to_a_working_platform": "",
+      "from_a_white_paper_to_a_working_platform": "من دروس وثيقة إلى مجتمع عمل: Peripateticware 2007–2026",
       "the_insight_aristotle_was_right": "النهاية المعلق: كان الأرثوذوس يغطي الحداقة",
       "the_problem_that_remained_unsolved": "مشكلة تم إجراءها بعد",
       "the_2007_document_named_one_obstacle_it_": "في مسؤولة 2007، نمر أخذت منها مشكلة التقييم التي لم تتمكن من حلها:",
@@ -2060,14 +2077,14 @@
     },
     "pages_privacyconfirmationpage": {
       "privacy_set_up": "نقل المعلومات كان يجب أن يكون بحسب موقعك.",
-      "weve_automatically_applied_the_right_pro": "",
+      "weve_automatically_applied_the_right_pro": "نقل الحماية الصحيحة بالإضافة إلى خطوات التعليم لدى أبنائكم بالرغم عن مكانتكم. ",
       "go_to_dashboard": "تم النقل إلى العربية (الكود: 'ar')"
     },
     "pages_privacyenginepage": {
       "key_rules_enforced": "الأمان في سيرفرات هو مجازي للخطوط الثابتة، ويقوم بتنفيذ القائمة الرئيسية للأمان المعمادية (FERPA)، والأمان الجغرافية (COPPA)، وGDPR، وSOC 2 باستخدام نظام القائمة المؤثر على الحكم الذي يشمل كل عملية المعالجة بالبيانات، وهو مُستخدم إلى الأغراض بشكل فقط، بعد أن تتم تحديثها.",
       "peripateticwares_privacy_engine_enforces": "كيفية عمل",
       "how_it_works": "تحتوي سيرفرات على 6 سطح الأمان، ويتشكل إجراءها بالأساس على طول كل دالة.",
-      "six_layers_of_privacy_running_automatica": "",
+      "six_layers_of_privacy_running_automatica": "ستقاء 6 شبكة حماية، ترجع إلى الطلب فوريًا.",
       "supported_frameworks": "مؤسسات الدعم المقرونة",
       "click_any_framework_to_see_the_specific_": "يمكنك الزخرفة على أي إنجماء للبحث في القائمة المحددة Peripateticware.",
       "what_institutions_can_configure": "ما هي مؤسسات التطوير المقرونة",
@@ -2104,14 +2121,14 @@
     "pages_teacher_teacherwelcomepage": {
       "welcome_to_peripateticware": "أهلًا إلى Peripateticware 🌿",
       "lets_get_your_classroom_set_up": "بالصخبة، سجّل عملك التدريبي.",
-      "invite_your_first_students": "Invite your first students",
+      "invite_your_first_students": "وصديقكم الأولين بالتحدث",
       "send_invite_links_to_students_or_parent": "بريد الاستخدام للطلبة أو الأعضاء. سيتم إنشاء حسابهم في القصر بالفعل.",
       "you_can_also_bulk_import_via_csv_from_t": "كما يمكنك التخزين مجموعة كبيرة من الملفات باستخدام CSV من الأقلاء التعليمية."
     },
     "components_teacher_coursefieldworktracker": {
       "no_fieldwork_submissions_yet": "لم يتم إطلاع على أي ملف من المراجعة حول المكان بالغ.",
-      "gps_pins_will_appear_here_once_students_": "",
-      "pins_are_stored_snapshots_from_field_not": ""
+      "gps_pins_will_appear_here_once_students_": "ستظهر عناقر الخطوط GPS هنا عند تسجيل ملاحظات المسؤولين أو تحضير البيانات.",
+      "pins_are_stored_snapshots_from_field_not": "العناقر هي صورة مخزنة من ملاحظات المسؤولين والتحضير أولاً - غير مراقبة في الساعة."
     },
     "gps_what_we_collect": "معنى التواصل بالمركز",
     "gps_only_during": "يقدم الخطوط GPS فقط أثناء حضور المهارات الجامعة، ويظيف إلى السادة ولا إلى الآخرين",
@@ -2120,7 +2137,47 @@
     "gps_expires": "تخدم الإذاعة تفاهمًا سيتبارغ عنها بعد أن تنتهي الحالة (حد 30 يوم)",
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "Translated Output:\nتم تحديث إلى النشاط الرئيسي والآخر والكثير منها."
-    }
+    },
+    "audioRecorder": {
+      "almost_full": "جاء كثير",
+      "record": "",
+      "stop": "اتمنى الخضوع",
+      "keep": "الحفظ",
+      "discard": "الرصيد",
+      "transcribing": "تم إستجابة المكاشف...",
+      "recording_saved": "تم اعلان النقل",
+      "mic_denied": "هناك حاجة إلى دخول منصوص ميكروفون.",
+      "uploading": "تحميل النصوص..."
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "انتظر الموافقة",
+      "teacher_commented": "المعلم يعتمر",
+      "ready_to_reflect": "سأكن يعتمر",
+      "section_title": "عنواء البحث",
+      "teacher_label": "علمية",
+      "reflection_in_progress": "تفاعل في التراسل في التشغيل"
+    },
+    "pages_sessionpage": {
+      "location_sharing": "تسجيل المشاركة الثقافية",
+      "your_teacher_wants_to_see_your_location_": "تحقق أنك في موقع صحيح، بعد ذلك سيتم تجميع مع أهالك، وسيتم التراخيص لديك."
+    },
+    "professorFieldworkPage": {
+      "back": "← أين",
+      "no_activity_selected": "لم ينشر أي فعل."
+    },
+    "rubricImportPage": {
+      "title": "الصدمة",
+      "description": "تحميل البريد PDF أو CSV مع خاصية النظام الإصلاحي، ويمكنك طالبها وتعقيبها قبل الحفظ. "
+    },
+    "curriculumImportPage": {
+      "title": "الإطار الأكاديمية للإطار الدولي للإطار الدولي للإطار الدولي للإطار الدولي",
+      "description": ""
+    },
+    "standardsImportPage": {
+      "title": "تحميل المعلمات التعليمية",
+      "description": "تحميل PDF أو CSV مع الخاصيات التعليمية لديك، عموق كومون كور، NGSS، خاصيات الإقليم، أو مقالة خاصة. وتم حفظها، ثم يمكنك تعقيب أجزاء المعلمات ضد هذه الخاصيات وتتبع التواصل المستوحشر. "
+    },
+    "cta_privacy_note": "تُؤتمن حمايةها والتقليد الخاص والشغف الأمثل."
   },
   "STUDENT": {},
   "TEACHER": {},

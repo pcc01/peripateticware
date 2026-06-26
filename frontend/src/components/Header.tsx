@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { CrowByAgeBand } from '@/components/CrowByAgeBand';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
+import { PRODUCT_NAME } from '../constants/brand';
 
 interface HeaderProps {
   ageBand?: 'k-6' | '7-12' | 'college';
@@ -34,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
             <CrowByAgeBand ageBand={ageBand} size={40} />
             <div>
-              <h1 className="text-xl font-bold text-slate-900">{t("landing:peripateticware", "Peripateticware")}</h1>
+              <h1 className="text-xl font-bold text-slate-900">{PRODUCT_NAME}</h1>
             </div>
           </div>
         }

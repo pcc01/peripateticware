@@ -7,6 +7,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { useTranslation } from 'react-i18next';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
+import { PRODUCT_NAME } from '../constants/brand';
 
 export interface NavGroup {
   label: string;
@@ -58,7 +59,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
           {!collapsed && (
             <div className="min-w-0">
               <h1 style={{ fontFamily: 'var(--font-head, serif)', fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.2 }}>
-                {t('layouts_dashboardshell.peripateticware', 'Peripateticware')}
+                {PRODUCT_NAME}
               </h1>
               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>{roleLabel}</p>
             </div>

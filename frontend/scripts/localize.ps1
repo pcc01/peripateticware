@@ -47,7 +47,14 @@ node scripts/ast_tagger.cjs
 npm run i18n:extract
 
 # 3. Translate and build W3C PROV XLIFF documents
+#    (translate_sync.py also runs the namespace sync internally as its final step)
 python scripts/translate_sync.py
+
+# 4. Distribute root flat locale files into i18next namespace subdirectories.
+#    Runs here explicitly as a safety net in case translate_sync.py exited early.
+#    Only writes keys that differ from English (override pattern — no duplication).
+Write-Host "`nRunning namespace sync..." -ForegroundColor Cyan
+python scripts/sync_locales.py
 
 Pop-Location
 

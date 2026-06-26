@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 export function Footer() {
   const { t } = useTranslation('landing');
@@ -28,7 +29,7 @@ export function Footer() {
       <div className="footer-inner">
         {/* Column 1: Brand */}
         <div className="footer-column">
-          <h3 className="footer-title">{t('footer.brand_title')}</h3>
+          <h3 className="footer-title">{PRODUCT_NAME}</h3>
           <p className="footer-desc">{t('footer.brand_desc')}</p>
           <div className="footer-badges">
             {privacyBadges.map(badge => (
@@ -85,7 +86,7 @@ export function Footer() {
       {/* Copyright */}
       <div className="footer-bottom">
         <p className="footer-copyright">
-          © {currentYear} {t('footer.company_name')}. {t('footer.all_rights')}
+          © {currentYear} {PRODUCT_NAME}. {t('footer.all_rights')}
         </p>
       </div>
     </footer>

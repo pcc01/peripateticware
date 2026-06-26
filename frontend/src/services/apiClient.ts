@@ -77,6 +77,20 @@ export class ApiClient {
   /* ─────────────────────────────────────────────────────────────────────── */
 
   private handleError(error: AxiosError<ApiError>) {
+    // Handle 402 Payment Required - fire upgrade-required event
+    if (error.response?.status === 402) {
+      const body = error.response.data as any
+      if (body?.code === 'UPGRADE_REQUIRED') {
+        window.dispatchEvent(new CustomEvent('upgrade-required', { detail: body }))
+      }
+      const apiError = new ApiClientError(
+        'Upgrade required',
+        402,
+        error
+      )
+      throw apiError
+    }
+
     // Handle 401 Unauthorized - clear auth and redirect
     if (error.response?.status === 401) {
       localStorage.removeItem('auth_token')

@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getPrivacyStatus, type PrivacyStatusResult } from '../utils/privacy';
+import { PRODUCT_NAME } from '../constants/brand';
 
 export const PrivacyPage: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -32,7 +33,7 @@ export const PrivacyPage: React.FC = () => {
           <button className="back-button" onClick={() => navigate('/')}>{t("landing:privacypage.back_to_home", "\u2190 Back to Home")}
 
           </button>
-          <h1 className="privacy-title">{t("landing:peripateticware_privacy_engine", "Peripateticware Privacy Engine")}</h1>
+          <h1 className="privacy-title">{`${PRODUCT_NAME} Privacy Engine`}</h1>
           <p className="privacy-subtitle">{t('privacy.tagline')}</p>
         </div>
       </header>

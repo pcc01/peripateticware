@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
+import { PRODUCT_NAME } from '../../constants/brand';
 
 const API = import.meta.env.VITE_API_URL || '/api/v1';
 
@@ -89,7 +90,13 @@ const HomeschoolWelcomePage: React.FC = () => {
         };
         try {
           await apiClient.post(`${API}/homeschool/children`, payload);
-        } catch {
+        } catch (err: any) {
+          if (err?.statusCode === 402 || err?.response?.status === 402) {
+            const body = err?.originalError?.response?.data ?? err?.response?.data ?? {};
+            if (body?.code === 'UPGRADE_REQUIRED') {
+              window.dispatchEvent(new CustomEvent('upgrade-required', { detail: body }));
+            }
+          }
           anyFailed = true;
         }
       }
@@ -142,7 +149,7 @@ const HomeschoolWelcomePage: React.FC = () => {
           >
             <X size={18} />
           </button>
-          <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>{t('pages_homeschool_homeschoolwelcomepage.welcome_to_peripateticware', 'Welcome to Peripateticware 🌿')}</h1>
+          <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>{`Welcome to ${PRODUCT_NAME} 🌿`}</h1>
           <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.4rem 0 0', fontSize: '0.9rem' }}>{t('pages_homeschool_homeschoolwelcomepage.lets_get_you_set_up_in_3_quick_steps', 'Let\'s get you set up in 3 quick steps.')}</p>
         </div>
 

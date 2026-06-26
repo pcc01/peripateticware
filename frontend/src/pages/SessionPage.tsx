@@ -134,13 +134,8 @@ const SessionPage: React.FC = () => {
       {gpsConsentPending && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="max-w-sm w-full mx-4 rounded-2xl p-6 shadow-xl" style={{ background: 'var(--surface, #fff)' }}>
-            <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text, #111)' }}>
-              Location Sharing
-            </h2>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-muted, #666)' }}>
-              Your teacher wants to see your location during this activity so they can track fieldwork progress.
-              Your location is only shared while the session is active.
-            </p>
+            <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text, #111)' }}>{t('pages_sessionpage.location_sharing', 'Location Sharing')}</h2>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-muted, #666)' }}>{t('pages_sessionpage.your_teacher_wants_to_see_your_location_', 'Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.')}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => handleGpsConsent(true)}

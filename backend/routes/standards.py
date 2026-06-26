@@ -61,6 +61,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from models.database import StandardsSet, ActivityStandardsMap, LearningSession
 from models.user import User
+from services.license_validator import TIER_ORDER, tier_rank
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/standards", tags=["standards"])
@@ -474,6 +475,40 @@ async def get_coverage(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # ── Tier gate: role-aware minimum tier check ──────────────────────────────
+    user_role = (current_user.role or "").upper()
+    org_id    = str(current_user.org_id) if current_user.org_id else None
+
+    # Determine required tier based on org role
+    if user_role == "HOMESCHOOL":
+        required_tier = "homeschool_family"
+    elif user_role in ("TEACHER", "ADMIN"):
+        required_tier = "school"
+    else:
+        required_tier = "starter"
+
+    # Fetch org's current tier
+    current_tier: Optional[str] = None
+    if org_id:
+        row = (await db.execute(
+            text("SELECT license_tier FROM organizations WHERE id = :oid"),
+            {"oid": org_id},
+        )).first()
+        current_tier = row[0] if row else None
+
+    current_tier_norm = current_tier or "free"
+    if tier_rank(current_tier_norm) < tier_rank(required_tier):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "code":          "UPGRADE_REQUIRED",
+                "feature":       "standards_coverage",
+                "required_tier": required_tier,
+                "current_tier":  current_tier_norm,
+            },
+        )
+    # ─────────────────────────────────────────────────────────────────────────
+
     s      = await _get_set(set_id, current_user, db)
     target = UUID(student_id) if student_id else current_user.id
 

@@ -1,0 +1,1633 @@
+From 0dbe0d04c180aa67d1a47cdb0cd52021198f2f49 Mon Sep 17 00:00:00 2001
+From: Paul Cerda <admin@thewordinbits.com>
+Date: Fri, 26 Jun 2026 16:47:37 +0000
+Subject: [PATCH] fix(i18n): protect product name from localization across all
+ locales and source files
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+## Problem
+'Peripateticware' was being passed through t() as a standalone translatable
+key, and every non-English locale file had translated (or mistranslated) it:
+- de: 'Peripatetische Ware'
+- es: 'Artículos peripatéticos'
+- fr: 'Peripatétiqueware' / 'Logiciel Peripatétique'
+- ar: 'بيريباتيكووار' (transliteration)
+- ja: 'ペリパティックウェア'
+- zh: '流动软件'
+- it: 'PeripateticoWare' / 'Peripateticaware'
+- he: 'פריפטיקוואר'
+- tr: 'Peripatetikware'
+
+Also: footer.brand_title and footer.company_name (used in the copyright line
+and brand column) were being localized with generic translations like
+'Markentitel', 'título de la marca', 'Nome da empresa', '品牌标题', etc.
+
+## Fix — source code (18 files)
+- Add frontend/src/constants/brand.ts with PRODUCT_NAME, PRODUCT_TAGLINE,
+  PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_TAGLINE constants
+- Replace all standalone t('landing:peripateticware', 'Peripateticware') and
+  equivalent calls with {PRODUCT_NAME} imported from constants/brand
+- Replace copyright footer t() calls with PRODUCT_COPYRIGHT_TAGLINE()
+- Fix Footer.tsx: brand column heading and copyright line now use PRODUCT_NAME
+  directly instead of t('footer.brand_title') / t('footer.company_name')
+- Fix dynamic strings: 'Choose Peripateticware' -> `Choose ${PRODUCT_NAME}`
+
+Affected components: SplashScreen, SignUpScreen, Header (x2), Logo,
+LandingPage, Footer, dashboards/index (4 occurrences), DashboardShell,
+ParentFeaturesPage, PrivacyPage, StudentHowItWorksPage (x2),
+TeacherTourPage (x2), TeacherWelcomePage, HomeschoolWelcomePage
+
+## Fix — locale files (21 files)
+- Lock 'peripateticware' key to 'Peripateticware' in all 11 locales
+  (ar, de, es, fr, he, it, ja, pt-BR, tr, tu, zh) — both root *.json
+  and per-locale landing.json files
+- Lock footer.brand_title and footer.company_name to 'Peripateticware'
+  in all locales (including en where they were placeholder 'brand title')
+- Fix ar.json leading-space artifact: ' Peripateticware' -> 'Peripateticware'
+- Total: 27 wrong values corrected across 18 locale files in first pass,
+  plus 42 footer key corrections across 21 files
+
+## New file
+- frontend/src/constants/i18n-do-not-translate.md — documents every category
+  of content that must not be translated: product name, legal acronyms
+  (FERPA COPPA GDPR CCPA PIPEDA LGPD PDPA SOC2 APP), email addresses,
+  external brand names, technical proper nouns. Includes translator
+  instructions for Lokalise, DeepL Glossary, and AI pipelines.
+---
+ frontend/public/locales/ar.json               |  10 +-
+ frontend/public/locales/ar/landing.json       |   6 +-
+ frontend/public/locales/de.json               |  10 +-
+ frontend/public/locales/de/landing.json       |   8 +-
+ frontend/public/locales/en.json               |   6 +-
+ frontend/public/locales/en/landing.json       |   6 +-
+ frontend/public/locales/es.json               |  10 +-
+ frontend/public/locales/es/landing.json       |   8 +-
+ frontend/public/locales/fr.json               |  10 +-
+ frontend/public/locales/fr/landing.json       |   8 +-
+ frontend/public/locales/he.json               |  10 +-
+ frontend/public/locales/he/landing.json       |   8 +-
+ frontend/public/locales/it.json               |  10 +-
+ frontend/public/locales/it/landing.json       |   8 +-
+ frontend/public/locales/ja.json               |  10 +-
+ frontend/public/locales/ja/landing.json       |   8 +-
+ frontend/public/locales/pt-BR.json            |  10 +-
+ frontend/public/locales/tr.json               |  10 +-
+ frontend/public/locales/tr/landing.json       |   8 +-
+ frontend/public/locales/tu/landing.json       |   8 +-
+ frontend/public/locales/zh.json               |  10 +-
+ frontend/src/components/Header.tsx            |   3 +-
+ frontend/src/components/LandingPage.tsx       |   5 +-
+ frontend/src/components/Logo.tsx              |   3 +-
+ frontend/src/components/auth/SignUpScreen.tsx |  17 +-
+ frontend/src/components/auth/SplashScreen.tsx |   5 +-
+ frontend/src/components/common/Header.tsx     |   3 +-
+ frontend/src/components/landing/Footer.tsx    |   5 +-
+ frontend/src/constants/brand.ts               |  10 +
+ .../src/constants/i18n-do-not-translate.md    | 171 ++++++++++++++++++
+ frontend/src/dashboards/index.tsx             |   9 +-
+ frontend/src/layouts/DashboardShell.tsx       |   3 +-
+ frontend/src/pages/ParentFeaturesPage.tsx     |   5 +-
+ frontend/src/pages/PrivacyPage.tsx            |   3 +-
+ frontend/src/pages/StudentHowItWorksPage.tsx  |   5 +-
+ frontend/src/pages/TeacherTourPage.tsx        |   5 +-
+ .../homeschool/HomeschoolWelcomePage.tsx      |   3 +-
+ .../pages/student/StudentHowItWorksPage.tsx   |   3 +-
+ .../src/pages/teacher/TeacherTourPage.tsx     |   5 +-
+ .../src/pages/teacher/TeacherWelcomePage.tsx  |   3 +-
+ 40 files changed, 329 insertions(+), 119 deletions(-)
+ create mode 100755 frontend/src/constants/brand.ts
+ create mode 100755 frontend/src/constants/i18n-do-not-translate.md
+
+diff --git a/frontend/public/locales/ar.json b/frontend/public/locales/ar.json
+index 77f698e..4ebc53b 100644
+--- a/frontend/public/locales/ar.json
++++ b/frontend/public/locales/ar.json
+@@ -86,7 +86,7 @@
+       "sign_in": " تسجيل الدخول",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. كل الحقوق محفوظة."
+     },
+-    "peripateticware": " Peripateticware",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": " التعلم في الحركة",
+     "loading": " Loading...",
+     "splashscreen": {
+@@ -118,7 +118,7 @@
+     "session": "جلسة:",
+     "select": "-- اختيار --",
+     "footer": {
+-      "brand_title": "عنوان الشعبة",
++      "brand_title": "Peripateticware",
+       "brand_desc": "وصف الشعبة",
+       "product_title": "عنوان المنتج",
+       "product_features": "أمكانيات المنتج",
+@@ -140,7 +140,7 @@
+       "legal_terms": "الشروط القانونية",
+       "legal_cookies": "البiscuit القانوني",
+       "legal_contact": "الاتصال القانوني",
+-      "company_name": "اسم الشركة",
++      "company_name": "Peripateticware",
+       "all_rights": "كل الحقوق",
+       "privacy_protected": "تمام البيانات حفظة على مدار الزمن خلال هذه القوائم",
+       "company_contact": "تواصل",
+@@ -1461,7 +1461,7 @@
+     "think_about": "اعتبر...",
+     "sketch": "خرافة",
+     "layouts_dashboardshell": {
+-      "peripateticware": "بيريباتيكووار"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "تحميل...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/ar/landing.json b/frontend/public/locales/ar/landing.json
+index 4a4167c..7aacdf3 100644
+--- a/frontend/public/locales/ar/landing.json
++++ b/frontend/public/locales/ar/landing.json
+@@ -117,7 +117,7 @@
+   "session": "Session:",
+   "select": "-- Select --",
+   "footer": {
+-    "brand_title": "brand title",
++    "brand_title": "Peripateticware",
+     "brand_desc": "brand desc",
+     "product_title": "product title",
+     "product_features": "product features",
+@@ -139,7 +139,7 @@
+     "legal_terms": "legal terms",
+     "legal_cookies": "legal cookies",
+     "legal_contact": "legal contact",
+-    "company_name": "company name",
++    "company_name": "Peripateticware",
+     "all_rights": "all rights"
+   },
+   "johndoe": "johndoe",
+@@ -1488,4 +1488,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/de.json b/frontend/public/locales/de.json
+index f754f39..8ed3cc4 100644
+--- a/frontend/public/locales/de.json
++++ b/frontend/public/locales/de.json
+@@ -68,7 +68,7 @@
+       "sign_in": "anmelden",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Alle Rechte vorbehalten."
+     },
+-    "peripateticware": "Peripatetische Ware",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "Lernen in Bewegung",
+     "loading": "Laden...",
+     "splashscreen": {
+@@ -100,7 +100,7 @@
+     "session": "Sitzung:",
+     "select": "-- Wählen --",
+     "footer": {
+-      "brand_title": "Markentitel",
++      "brand_title": "Peripateticware",
+       "brand_desc": "Markenbez",
+       "product_title": "Produkttitel",
+       "product_features": "Produktmerkmale",
+@@ -122,7 +122,7 @@
+       "legal_terms": "Rechtsbegriffe",
+       "legal_cookies": "legale Cookies",
+       "legal_contact": "Rechtskontakt",
+-      "company_name": "Name der Firma",
++      "company_name": "Peripateticware",
+       "all_rights": "Alle Rechte",
+       "privacy_protected": "Ihre Daten sind unter diesen Rahmenbedingungen geschützt",
+       "company_contact": "Kontakt",
+@@ -1422,7 +1422,7 @@
+     "think_about": "Denke über...",
+     "sketch": "Skizzieren",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Peripatetischeware"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Lade...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/de/landing.json b/frontend/public/locales/de/landing.json
+index 3e4ed22..292908d 100644
+--- a/frontend/public/locales/de/landing.json
++++ b/frontend/public/locales/de/landing.json
+@@ -89,7 +89,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripatetic Wear.Alle Rechte vorbehalten.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Alle Rechte vorbehalten."
+   },
+-  "peripateticware": "Peripatetische Ware",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "Lernen in Bewegung",
+   "loading": "Laden...",
+   "splashscreen": {
+@@ -126,7 +126,7 @@
+   "ferpa": "FERPA",
+   "gdpr": "DSGVO",
+   "footer": {
+-    "brand_title": "Markentitel",
++    "brand_title": "Peripateticware",
+     "brand_desc": "Markenbez",
+     "product_title": "Produkttitel",
+     "product_features": "Produktmerkmale",
+@@ -148,7 +148,7 @@
+     "legal_terms": "Rechtsbegriffe",
+     "legal_cookies": "legale Cookies",
+     "legal_contact": "Rechtskontakt",
+-    "company_name": "Name der Firma",
++    "company_name": "Peripateticware",
+     "all_rights": "Alle Rechte"
+   },
+   "johndoe": "Johndoe",
+@@ -1500,4 +1500,4 @@
+     "i18nextlng_desc": "Remembers your chosen language preference.",
+     "questions": "Questions?"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/en.json b/frontend/public/locales/en.json
+index e08291b..26ad58e 100644
+--- a/frontend/public/locales/en.json
++++ b/frontend/public/locales/en.json
+@@ -118,7 +118,7 @@
+     "session": "Session:",
+     "select": "-- Select --",
+     "footer": {
+-      "brand_title": "brand title",
++      "brand_title": "Peripateticware",
+       "brand_desc": "brand desc",
+       "product_title": "product title",
+       "product_features": "product features",
+@@ -140,7 +140,7 @@
+       "legal_terms": "legal terms",
+       "legal_cookies": "legal cookies",
+       "legal_contact": "legal contact",
+-      "company_name": "company name",
++      "company_name": "Peripateticware",
+       "all_rights": "all rights",
+       "privacy_protected": "Your data is protected under these frameworks",
+       "product_privacy_engine": "Privacy Engine",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/en/landing.json b/frontend/public/locales/en/landing.json
+index 5d562e3..6975102 100644
+--- a/frontend/public/locales/en/landing.json
++++ b/frontend/public/locales/en/landing.json
+@@ -551,11 +551,11 @@
+   "footer": {
+     "all_rights": "all rights",
+     "brand_desc": "brand desc",
+-    "brand_title": "brand title",
++    "brand_title": "Peripateticware",
+     "company_about": "company about",
+     "company_blog": "company blog",
+     "company_careers": "company careers",
+-    "company_name": "company name",
++    "company_name": "Peripateticware",
+     "company_team": "company team",
+     "company_title": "company title",
+     "legal_contact": "legal contact",
+@@ -1521,4 +1521,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/es.json b/frontend/public/locales/es.json
+index 54489f3..3221411 100644
+--- a/frontend/public/locales/es.json
++++ b/frontend/public/locales/es.json
+@@ -67,7 +67,7 @@
+       "sign_in": "Iniciar sesión",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos los derechos reservados."
+     },
+-    "peripateticware": "Artículos peripatéticos",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "Aprendizaje en movimiento",
+     "loading": "Cargando...",
+     "splashscreen": {
+@@ -95,7 +95,7 @@
+     "session": "Sesión:",
+     "select": "-- Seleccionar --",
+     "footer": {
+-      "brand_title": "título de la marca",
++      "brand_title": "Peripateticware",
+       "brand_desc": "descripción de la marca",
+       "product_title": "título del producto",
+       "product_features": "características del producto",
+@@ -117,7 +117,7 @@
+       "legal_terms": "términos legales",
+       "legal_cookies": "cookies legales",
+       "legal_contact": "contacto legal",
+-      "company_name": "nombre de empresa",
++      "company_name": "Peripateticware",
+       "all_rights": "todos los derechos",
+       "privacy_protected": "Su información está protegida bajo estos marcos",
+       "company_contact": "- \"Contacto\" - \"C\" - \"Client\" - \"Cliente\" - \"%s\" - \"%s\" - \"%s\" - \"$t{Custo\u001b[9D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" -\u001b[1D\u001b[K\n- \"$t{FaxNumber}\" - \"%s\" - \"$t{CompanyName}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"\u001b[1D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{PhoneNumber}\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{Em\u001b[6D\u001b[K\n\"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"$t{PhoneNumber}\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\u001b[3D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"%s\" - \"%s\"- \"%s\" - \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{F\u001b[5D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\"- \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\"- \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{FaxNumber}\u001b[14D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \u001b[K\n\"I\" - \"%s\"- \"$t{FaxNumber}\" - \"C\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"\u001b[4D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\"- \"$t{FaxNumber}\" - \"A\"- \"%s\"-\u001b[5D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \"I\"- \"%s\"- \"$t{FaxNumber}\" - \"\u001b[1D\u001b[K\n\"C\"",
+@@ -1422,7 +1422,7 @@
+     "think_about": "Pensando en...",
+     "sketch": "Dibujar",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Peripatéticaware"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Cargando...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/es/landing.json b/frontend/public/locales/es/landing.json
+index ee3b838..364e02c 100644
+--- a/frontend/public/locales/es/landing.json
++++ b/frontend/public/locales/es/landing.json
+@@ -88,7 +88,7 @@
+     "2026_peripateticware_all_right": "© 2026 Desgaste peripatético.Reservados todos los derechos.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos los derechos reservados."
+   },
+-  "peripateticware": "Artículos peripatéticos",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "Aprendizaje en movimiento",
+   "loading": "Cargando...",
+   "splashscreen": {
+@@ -121,7 +121,7 @@
+   "ferpa": "FERPA",
+   "gdpr": "RGPD",
+   "footer": {
+-    "brand_title": "título de la marca",
++    "brand_title": "Peripateticware",
+     "brand_desc": "descripción de la marca",
+     "product_title": "título del producto",
+     "product_features": "características del producto",
+@@ -143,7 +143,7 @@
+     "legal_terms": "términos legales",
+     "legal_cookies": "cookies legales",
+     "legal_contact": "contacto legal",
+-    "company_name": "nombre de empresa",
++    "company_name": "Peripateticware",
+     "all_rights": "todos los derechos"
+   },
+   "johndoe": "juandoe",
+@@ -1500,4 +1500,4 @@
+     "i18nextlng_desc": "Remembers your chosen language preference.",
+     "questions": "Questions?"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/fr.json b/frontend/public/locales/fr.json
+index f28fe8d..a3383c6 100644
+--- a/frontend/public/locales/fr.json
++++ b/frontend/public/locales/fr.json
+@@ -63,7 +63,7 @@
+       "sign_in": "Connexion",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Tous droits réservés."
+     },
+-    "peripateticware": "Peripatétiqueware",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "En apprentissage en mouvement",
+     "loading": "Chargement...",
+     "primary": "Primaire",
+@@ -91,7 +91,7 @@
+     "session": "Session :",
+     "select": "-- Sélectionner --",
+     "footer": {
+-      "brand_title": "Peripatétiqueware",
++      "brand_title": "Peripateticware",
+       "product_title": "Produit",
+       "product_tools": "Outils",
+       "product_demo": "Réserver une démonstration",
+@@ -105,7 +105,7 @@
+       "resources_guides": "Guides pour enseignants",
+       "resources_api": "Référence API",
+       "resources_support": "Soutien",
+-      "company_name": "Peripatétiqueware",
++      "company_name": "Peripateticware",
+       "brand_desc": "Plateforme de apprentissage péripététique en plein air conçue pour les enseignants, les étudiants et les familles.",
+       "all_rights": "Tous droits réservés.",
+       "legal_title": "Droits légaux",
+@@ -1461,7 +1461,7 @@
+     "think_about": "Penser à…",
+     "sketch": "Esquisse",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Logiciel Peripatétique"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Chargement...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/fr/landing.json b/frontend/public/locales/fr/landing.json
+index 89400a4..93ba0e5 100644
+--- a/frontend/public/locales/fr/landing.json
++++ b/frontend/public/locales/fr/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripateticware. Tous droits réservés.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Tous droits réservés."
+   },
+-  "peripateticware": "Peripatétiqueware",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "En apprentissage en mouvement",
+   "loading": "Chargement...",
+   "primary": "Primaire",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2 Compliance",
+   "gdpr": "RGPD",
+   "footer": {
+-    "brand_title": "Peripatétiqueware",
++    "brand_title": "Peripateticware",
+     "product_title": "Produit",
+     "product_tools": "Outils",
+     "product_demo": "Réserver une démonstration",
+@@ -127,7 +127,7 @@
+     "resources_guides": "Guides pour enseignants",
+     "resources_api": "Référence API",
+     "resources_support": "Soutien",
+-    "company_name": "Peripatétiqueware",
++    "company_name": "Peripateticware",
+     "brand_desc": "Plateforme de apprentissage péripététique en plein air conçue pour les enseignants, les étudiants et les familles.",
+     "all_rights": "Tous droits réservés.",
+     "legal_title": "Droits légaux",
+@@ -1528,4 +1528,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/he.json b/frontend/public/locales/he.json
+index 0f8ac9a..b2c27b1 100644
+--- a/frontend/public/locales/he.json
++++ b/frontend/public/locales/he.json
+@@ -81,7 +81,7 @@
+       "sign_in": "כניסה",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. כל הזכויות מוגדרות."
+     },
+-    "peripateticware": "פריפטיקוואר",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "לימוד בעזרת המשקע",
+     "loading": "טוען...",
+     "primary": "ראשי",
+@@ -109,7 +109,7 @@
+     "session": "שיעור:",
+     "select": "בחירה - עזרה",
+     "footer": {
+-      "brand_title": "שם המסד הברנד",
++      "brand_title": "Peripateticware",
+       "brand_desc": "תיאור המסד הברנד",
+       "product_title": "שם המוצר",
+       "product_tools": "כלי המוצר",
+@@ -124,7 +124,7 @@
+       "resources_guides": "מסד נתונים אגדות",
+       "resources_api": "מסד נתונים API",
+       "resources_support": "מסד נתונים תמחום",
+-      "company_name": "שם החברה",
++      "company_name": "Peripateticware",
+       "all_rights": "כל הזכויות",
+       "product_features": "מייצגים המוצר",
+       "product_pricing": "מחשב מענה",
+@@ -992,7 +992,7 @@
+     "think_about": "שוכח על...",
+     "sketch": "צרף",
+     "layouts_dashboardshell": {
+-      "peripateticware": "פריפטיקוואר"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "טוען...",
+@@ -2122,4 +2122,4 @@
+       "upgrade_to_unlock_this_feature_and_more": "['לעדכן את הכפרים וביטויים מיוחזגים אותך.', 'לפקוד את הכפרים ואת הביטויים המיוחזגים אותך.']"
+     }
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/he/landing.json b/frontend/public/locales/he/landing.json
+index 74778bd..da019f8 100644
+--- a/frontend/public/locales/he/landing.json
++++ b/frontend/public/locales/he/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripateticware. כל הזכויות מוגדרות.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. כל הזכויות מוגדרות."
+   },
+-  "peripateticware": "פריפטיקוואר",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "לימוד במotion",
+   "loading": "טוען...",
+   "primary": "רישוני",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2",
+   "gdpr": "GDPR",
+   "footer": {
+-    "brand_title": "פריפטאטוואר",
++    "brand_title": "Peripateticware",
+     "product_title": "מוצר",
+     "product_tools": "כלים",
+     "product_demo": "הזכיר דמו",
+@@ -127,7 +127,7 @@
+     "resources_guides": "מדריך למורים",
+     "resources_api": "מראה API",
+     "resources_support": "עזרה",
+-    "company_name": "פריפטיקוואר",
++    "company_name": "Peripateticware",
+     "brand_desc": "פלatform למסע חוצה וללמדה שונה, מוצג למושגים, לתלמידים ולמשפחות.",
+     "all_rights": "כל הזכויות מוגדרות.",
+     "legal_title": "כניסת חוקית",
+@@ -1528,4 +1528,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/it.json b/frontend/public/locales/it.json
+index 9703d7a..16b56fd 100644
+--- a/frontend/public/locales/it.json
++++ b/frontend/public/locales/it.json
+@@ -63,7 +63,7 @@
+       "sign_in": "Accedi",
+       "2026_peripateticware_all_rights_reserved": "Tutti i diritti riservati © 2026 Peripateticware"
+     },
+-    "peripateticware": "PeripateticoWare",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "Apprendimento in movimento",
+     "loading": "Caricamento...",
+     "primary": "Primario",
+@@ -91,7 +91,7 @@
+     "session": "Sessiona:",
+     "select": "-- Seleziona --",
+     "footer": {
+-      "brand_title": "Peripateticaware",
++      "brand_title": "Peripateticware",
+       "product_title": "Prodotto",
+       "product_tools": "Strumenti",
+       "product_demo": "Prenota una dimostrazione",
+@@ -105,7 +105,7 @@
+       "resources_guides": "Guide per insegnanti",
+       "resources_api": "Riferimento API",
+       "resources_support": "Assistenza",
+-      "company_name": "Peripateticaware",
++      "company_name": "Peripateticware",
+       "brand_desc": "Piattaforma di apprendimento all'aperto e peripatetica costruita per insegnanti, studenti e famiglie.",
+       "all_rights": "Tutti i diritti riservati.",
+       "legal_title": "Legale",
+@@ -1461,7 +1461,7 @@
+     "think_about": "Pensa a...",
+     "sketch": "Schizzo",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Peripateticaware"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Caricamento...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/it/landing.json b/frontend/public/locales/it/landing.json
+index c1b126a..848086d 100644
+--- a/frontend/public/locales/it/landing.json
++++ b/frontend/public/locales/it/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "Tutti i diritti riservati © 2026 Peripateticware",
+     "2026_peripateticware_all_rights_reserved": "Tutti i diritti riservati © 2026 Peripateticware"
+   },
+-  "peripateticware": "PeripateticoWare",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "Apprendimento in movimento",
+   "loading": "Caricamento...",
+   "primary": "Primario",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2",
+   "gdpr": "GDPR",
+   "footer": {
+-    "brand_title": "Peripateticaware",
++    "brand_title": "Peripateticware",
+     "product_title": "Prodotto",
+     "product_tools": "Strumenti",
+     "product_demo": "Prenota una dimostrazione",
+@@ -127,7 +127,7 @@
+     "resources_guides": "Guide per insegnanti",
+     "resources_api": "Riferimento API",
+     "resources_support": "Assistenza",
+-    "company_name": "Peripateticaware",
++    "company_name": "Peripateticware",
+     "brand_desc": "Piattaforma di apprendimento all'aperto e peripatetica costruita per insegnanti, studenti e famiglie.",
+     "all_rights": "Tutti i diritti riservati.",
+     "legal_title": "Legale",
+@@ -1528,4 +1528,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/ja.json b/frontend/public/locales/ja.json
+index 30ccd4b..b7b67a8 100644
+--- a/frontend/public/locales/ja.json
++++ b/frontend/public/locales/ja.json
+@@ -63,7 +63,7 @@
+       "sign_in": "サインイン",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. 全権利保有"
+     },
+-    "peripateticware": "ペリパティックウェア",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "学習中に動き",
+     "loading": "読み込み中...",
+     "primary": "主な",
+@@ -91,7 +91,7 @@
+     "session": "セッション:",
+     "select": "-- 選択 --",
+     "footer": {
+-      "brand_title": "ペリパティックウェア",
++      "brand_title": "Peripateticware",
+       "product_title": "製品",
+       "product_tools": "ツール",
+       "product_demo": "デモを予約",
+@@ -105,7 +105,7 @@
+       "resources_guides": "教師ガイド",
+       "resources_api": "API リファレンス",
+       "resources_support": "サポート",
+-      "company_name": "ペリパティックウェア",
++      "company_name": "Peripateticware",
+       "brand_desc": "教師、学生、家族向けの外出型学習プラットフォームです。",
+       "all_rights": "全権利保有",
+       "legal_title": "法的",
+@@ -1461,7 +1461,7 @@
+     "think_about": "考える…",
+     "sketch": "スケッチ",
+     "layouts_dashboardshell": {
+-      "peripateticware": "ペリパティックウェア"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "読み込み中…",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/ja/landing.json b/frontend/public/locales/ja/landing.json
+index 5fd3fa2..7f87f19 100644
+--- a/frontend/public/locales/ja/landing.json
++++ b/frontend/public/locales/ja/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripateticware. 全権利保有",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. 全権利保有"
+   },
+-  "peripateticware": "ペリパティックウェア",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "学習中に動き",
+   "loading": "読み込み中...",
+   "primary": "主な",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2（サービスOrganizational Control 2）",
+   "gdpr": "GDPR（General Data Protection Regulation）",
+   "footer": {
+-    "brand_title": "ペリパティックウェア",
++    "brand_title": "Peripateticware",
+     "product_title": "製品",
+     "product_tools": "ツール",
+     "product_demo": "デモを予約",
+@@ -127,7 +127,7 @@
+     "resources_guides": "教師ガイド",
+     "resources_api": "API リファレンス",
+     "resources_support": "サポート",
+-    "company_name": "ペリパティックウェア",
++    "company_name": "Peripateticware",
+     "brand_desc": "教師、学生、家族向けの外出型学習プラットフォームです。",
+     "all_rights": "全権利保有",
+     "legal_title": "法的",
+@@ -1528,4 +1528,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/pt-BR.json b/frontend/public/locales/pt-BR.json
+index 5b54ac2..4b5f9f0 100644
+--- a/frontend/public/locales/pt-BR.json
++++ b/frontend/public/locales/pt-BR.json
+@@ -128,7 +128,7 @@
+       "sign_in": "Entrar",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos os direitos reservados."
+     },
+-    "peripateticware": "Peripatéticoware",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "Aprendizado em Movimento",
+     "loading": "Carregando...",
+     "primary": "Principal",
+@@ -156,7 +156,7 @@
+     "session": "Sessão:",
+     "select": "-- Selecione --",
+     "footer": {
+-      "brand_title": "título da marca",
++      "brand_title": "Peripateticware",
+       "brand_desc": "descrição da marca",
+       "product_title": "título do produto",
+       "product_tools": "ferramentas do produto",
+@@ -171,7 +171,7 @@
+       "resources_guides": "guias de recursos",
+       "resources_api": "API de recursos",
+       "resources_support": "Recursos de suporte",
+-      "company_name": "Nome da empresa",
++      "company_name": "Peripateticware",
+       "all_rights": "Todos os direitos",
+       "product_features": "Características do produto",
+       "product_pricing": "Preços do produto",
+@@ -996,7 +996,7 @@
+     "think_about": "Pense sobre...",
+     "sketch": "Desenhar",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Peripatéticaware"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Carregando...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/tr.json b/frontend/public/locales/tr.json
+index 1b30741..0ee1a94 100644
+--- a/frontend/public/locales/tr.json
++++ b/frontend/public/locales/tr.json
+@@ -63,7 +63,7 @@
+       "sign_in": "Giriş Yap",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware Tüm hakları saklıdır."
+     },
+-    "peripateticware": "Peripatetikware",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "Dönüşümde Oğreniyorum",
+     "loading": "Yükleniyor...",
+     "primary": "Ana",
+@@ -91,7 +91,7 @@
+     "session": "Sesion:",
+     "select": "-- Seçim Yap --",
+     "footer": {
+-      "brand_title": "Peripatetikware",
++      "brand_title": "Peripateticware",
+       "product_title": "Ürün",
+       "product_tools": "Araçlar",
+       "product_demo": "Tarih Seç ve Önlem Al",
+@@ -105,7 +105,7 @@
+       "resources_guides": "Öğretmen Kılavuzları",
+       "resources_api": "API Başvurusu",
+       "resources_support": "Destek",
+-      "company_name": "Peripatetikware",
++      "company_name": "Peripateticware",
+       "brand_desc": "Açık hava ve peripatetik öğretim platformu, öğretmenler, öğrenciler ve aileler için yapılmıştır.",
+       "all_rights": "Tüm hakları saklıdır.",
+       "legal_title": "Hukuki",
+@@ -1481,7 +1481,7 @@
+     "think_about": "Seni seçtiğiniz konu hakkında düşünül...",
+     "sketch": "Resim Çizgi",
+     "layouts_dashboardshell": {
+-      "peripateticware": "Peripatetikware"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "Yükleniyor...",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/tr/landing.json b/frontend/public/locales/tr/landing.json
+index b5bee64..1bfdd6e 100644
+--- a/frontend/public/locales/tr/landing.json
++++ b/frontend/public/locales/tr/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripateticware Tüm hakları saklıdır.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware Tüm hakları saklıdır."
+   },
+-  "peripateticware": "Peripatetikware",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "Dönüşümde Oğreniyorum",
+   "loading": "Yükleniyor...",
+   "primary": "Ana",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2",
+   "gdpr": "GDPR",
+   "footer": {
+-    "brand_title": "Peripatetikware",
++    "brand_title": "Peripateticware",
+     "product_title": "Ürün",
+     "product_tools": "Araçlar",
+     "product_demo": "Tarih Seç ve Önlem Al",
+@@ -127,7 +127,7 @@
+     "resources_guides": "Öğretmen Kılavuzları",
+     "resources_api": "API Başvurusu",
+     "resources_support": "Destek",
+-    "company_name": "Peripatetikware",
++    "company_name": "Peripateticware",
+     "brand_desc": "Açık hava ve peripatetik öğretim platformu, öğretmenler, öğrenciler ve aileler için yapılmıştır.",
+     "all_rights": "Tüm hakları saklıdır.",
+     "legal_title": "Hukuki",
+@@ -1528,4 +1528,4 @@
+     "title": "Import Learning Standards",
+     "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/tu/landing.json b/frontend/public/locales/tu/landing.json
+index ec6e7fa..ca9ad15 100644
+--- a/frontend/public/locales/tu/landing.json
++++ b/frontend/public/locales/tu/landing.json
+@@ -83,7 +83,7 @@
+     "2026_peripateticware_all_right": "© 2026 Peripateticware Tüm hakları saklıdır.",
+     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware Tüm hakları saklıdır."
+   },
+-  "peripateticware": "Peripatetikware",
++  "peripateticware": "Peripateticware",
+   "learning_in_motion": "Dönüşümde Oğreniyorum",
+   "loading": "Yükleniyor...",
+   "primary": "Ana",
+@@ -113,7 +113,7 @@
+   "soc_2": "SOC 2",
+   "gdpr": "GDPR",
+   "footer": {
+-    "brand_title": "Peripatetikware",
++    "brand_title": "Peripateticware",
+     "product_title": "Ürün",
+     "product_tools": "Araçlar",
+     "product_demo": "Tarih Seç ve Önlem Al",
+@@ -127,7 +127,7 @@
+     "resources_guides": "Öğretmen Kılavuzları",
+     "resources_api": "API Başvurusu",
+     "resources_support": "Destek",
+-    "company_name": "Peripatetikware",
++    "company_name": "Peripateticware",
+     "brand_desc": "Açık hava ve peripatetik öğretim platformu, öğretmenler, öğrenciler ve aileler için yapılmıştır.",
+     "all_rights": "Tüm hakları saklıdır.",
+     "legal_title": "Hukuki",
+@@ -1448,4 +1448,4 @@
+     "copy_2026_peripateticware_lear": "© 2026 Peripateticware. Dışarıya öğrenme olur.",
+     "copy_2026_peripateticware_learning_happe": "['Tutksam 2026 Peripatetik Yazilim. Ogrenme dahiliye yapilir.']"
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/public/locales/zh.json b/frontend/public/locales/zh.json
+index bce911a..b34e8ea 100644
+--- a/frontend/public/locales/zh.json
++++ b/frontend/public/locales/zh.json
+@@ -128,7 +128,7 @@
+       "sign_in": "登录",
+       "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware，保留所有权利。"
+     },
+-    "peripateticware": "流动软件",
++    "peripateticware": "Peripateticware",
+     "learning_in_motion": "在动学习",
+     "loading": "加载中...",
+     "primary": "主要",
+@@ -156,7 +156,7 @@
+     "session": "会话：",
+     "select": "-- 选择 --",
+     "footer": {
+-      "brand_title": "品牌标题",
++      "brand_title": "Peripateticware",
+       "brand_desc": "品牌描述",
+       "product_title": "产品标题",
+       "product_tools": "产品工具",
+@@ -171,7 +171,7 @@
+       "resources_guides": "资源指南",
+       "resources_api": "资源 API",
+       "resources_support": "资源支持",
+-      "company_name": "公司名称",
++      "company_name": "Peripateticware",
+       "all_rights": "所有权利",
+       "product_features": "产品特点",
+       "product_pricing": "产品定价",
+@@ -996,7 +996,7 @@
+     "think_about": "想想…",
+     "sketch": "画图",
+     "layouts_dashboardshell": {
+-      "peripateticware": "translations"
++      "peripateticware": "Peripateticware"
+     },
+     "pages_admin_adminanalyticspage": {
+       "loading": "流动软件",
+@@ -2126,4 +2126,4 @@
+   "TEACHER": {},
+   "common": {},
+   "curriculum": {}
+-}
+\ No newline at end of file
++}
+diff --git a/frontend/src/components/Header.tsx b/frontend/src/components/Header.tsx
+index 3ca55e7..49bfa90 100644
+--- a/frontend/src/components/Header.tsx
++++ b/frontend/src/components/Header.tsx
+@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
+ import React from 'react';
+ import { CrowByAgeBand } from '@/components/CrowByAgeBand';
+ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ interface HeaderProps {
+   ageBand?: 'k-6' | '7-12' | 'college';
+@@ -34,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
+         <div className="flex items-center gap-3">
+             <CrowByAgeBand ageBand={ageBand} size={40} />
+             <div>
+-              <h1 className="text-xl font-bold text-slate-900">{t("landing:peripateticware", "Peripateticware")}</h1>
++              <h1 className="text-xl font-bold text-slate-900">{PRODUCT_NAME}</h1>
+             </div>
+           </div>
+         }
+diff --git a/frontend/src/components/LandingPage.tsx b/frontend/src/components/LandingPage.tsx
+index aed0385..90ce36c 100644
+--- a/frontend/src/components/LandingPage.tsx
++++ b/frontend/src/components/LandingPage.tsx
+@@ -12,6 +12,7 @@ import { LocaleSwitcher } from './LocaleSwitcher';
+ import './PhoneCarousel.css';
+ import '../styles/landing.css';
+ import '../styles/globals.css';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ type HeroTab = 'student' | 'teacher' | 'parent' | 'homeschool';
+ 
+@@ -335,7 +336,7 @@ export const LandingPage: React.FC = () => {
+       <nav className="sticky top-0 z-50" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 var(--section-x)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+           <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+-            <span>🧭</span>{t("landing:peripateticware", "Peripateticware")}
++            <span>🧭</span>{PRODUCT_NAME}
+ 
+           </h1>
+ 
+@@ -504,7 +505,7 @@ export const LandingPage: React.FC = () => {
+           <h2 className="h-section text-center">
+             {activeTab === 'homeschool'
+               ? t('homeschool.features_title', 'Everything a Homeschool Family Needs')
+-              : `${t("landing:why", "Why")} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s ${t("landing:choose_peripateticware", "Choose Peripateticware")}`}
++              : `${t("landing:why", "Why")} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s ${`Choose ${PRODUCT_NAME}`}`}
+           </h2>
+ 
+           <div className="features-grid">
+diff --git a/frontend/src/components/Logo.tsx b/frontend/src/components/Logo.tsx
+index 6feac88..76e6178 100644
+--- a/frontend/src/components/Logo.tsx
++++ b/frontend/src/components/Logo.tsx
+@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
+ // found in the LICENSE.md file in the root directory of this source tree.
+ 
+ import React from 'react';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ interface LogoProps {
+   size?: number;
+@@ -43,7 +44,7 @@ export const Logo: React.FC<LogoProps> = ({
+       {showText &&
+       <span
+         style={{ fontFamily: 'var(--font-head)', fontWeight: 700 }}
+-        className="text-lg">{t("landing:peripateticware", "Peripateticware")}
++        className="text-lg">{PRODUCT_NAME}
+ 
+ 
+       </span>
+diff --git a/frontend/src/components/auth/SignUpScreen.tsx b/frontend/src/components/auth/SignUpScreen.tsx
+index 050c422..e3a04ae 100644
+--- a/frontend/src/components/auth/SignUpScreen.tsx
++++ b/frontend/src/components/auth/SignUpScreen.tsx
+@@ -13,6 +13,7 @@ import { useAuthStore } from '../../stores/auth';
+ import { useGeoHint } from '../../hooks/useGeoHint';
+ import type { UserRole } from '@/config/constants';
+ import { SyntheticEvent } from 'react';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ const signupSchema = z.object({
+   first_name: z.string().min(1, 'First name is required'),
+@@ -148,6 +149,10 @@ export default function SignupScreen({
+     }
+   };
+ 
++  const onError = (errors: Record<string, unknown>) => {
++    console.error('[SignUpScreen] Form validation errors:', errors);
++  };
++
+   return (
+     <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #6b9e7e 50%, #d4a574 100%)' }}>
+       <div className="absolute inset-0" style={{ opacity: 0.12, pointerEvents: 'none' }}>
+@@ -166,7 +171,7 @@ export default function SignupScreen({
+             </Link>
+             <div>
+               <h1 className="text-3xl font-bold text-gray-900">{t("landing:join_us", "Join Us")}</h1>
+-              <p className="text-gray-600 text-sm">{t("landing:create_your_peripateticware_account", "Create your Peripateticware account")}</p>
++              <p className="text-gray-600 text-sm">{`Create your ${PRODUCT_NAME} account`}</p>
+             </div>
+           </div>
+ 
+@@ -176,7 +181,13 @@ export default function SignupScreen({
+             </div>
+           }
+ 
+-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
++          {Object.keys(errors).length > 0 && (
++            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
++              Please fix the highlighted fields below before continuing.
++            </div>
++          )}
++
++          <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+             <div>
+               <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:first_name", "First Name")}
+ 
+@@ -336,6 +347,8 @@ export default function SignupScreen({
+                     <option value="DE">🇩🇪 Germany</option>
+                     <option value="FR">🇫🇷 France</option>
+                     <option value="NL">🇳🇱 Netherlands</option>
++                    <option value="BR">🇧🇷 Brazil</option>
++                    <option value="SG">🇸🇬 Singapore</option>
+                     <option value="OTHER">🌍 Other</option>
+                   </select>
+                 </div>
+diff --git a/frontend/src/components/auth/SplashScreen.tsx b/frontend/src/components/auth/SplashScreen.tsx
+index b8e4bb2..571de13 100644
+--- a/frontend/src/components/auth/SplashScreen.tsx
++++ b/frontend/src/components/auth/SplashScreen.tsx
+@@ -1,4 +1,5 @@
+ import { useTranslation } from 'react-i18next';
++import { PRODUCT_NAME, PRODUCT_COPYRIGHT } from '../../constants/brand';
+ // Copyright (c) 2026 Paul Christopher Cerda
+ // This source code is licensed under the Business Source License 1.1
+ // found in the LICENSE.md file in the root directory of this source tree.
+@@ -38,7 +39,7 @@ export const SplashScreen: React.FC = () => {
+         </div>
+ 
+         {/* App Name */}
+-        <h1 className="text-5xl font-bold text-white mb-2">{t("landing:peripateticware", "Peripateticware")}</h1>
++        <h1 className="text-5xl font-bold text-white mb-2">{PRODUCT_NAME}</h1>
+         <p className="text-xl text-blue-100 mb-12">{t("landing:learning_in_motion", "Learning in Motion")}</p>
+ 
+         {/* Loading Animation */}
+@@ -54,7 +55,7 @@ export const SplashScreen: React.FC = () => {
+ 
+       {/* Footer */}
+       <div className="absolute bottom-8 text-center">
+-        <p className="text-white text-xs opacity-60">{t('splashscreen.2026_peripateticware_all_rights_reserved', '© 2026 Peripateticware. All rights reserved.')}</p>
++        <p className="text-white text-xs opacity-60">{PRODUCT_COPYRIGHT()}</p>
+       </div>
+     </div>);
+ 
+diff --git a/frontend/src/components/common/Header.tsx b/frontend/src/components/common/Header.tsx
+index b6feaf0..e72e012 100644
+--- a/frontend/src/components/common/Header.tsx
++++ b/frontend/src/components/common/Header.tsx
+@@ -4,12 +4,13 @@
+ 
+ import React from 'react';
+ import { useTranslation } from 'react-i18next';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ const Header = ({ user }: any) => {
+   const { t } = useTranslation('landing');
+   return (
+     <header>
+-      <h1>{t('landing:peripateticware', 'Peripateticware')}</h1>
++      <h1>{PRODUCT_NAME}</h1>
+       {user && <p>{t('landing:welcome', 'Welcome')}</p>}
+     </header>
+   );
+diff --git a/frontend/src/components/landing/Footer.tsx b/frontend/src/components/landing/Footer.tsx
+index 4278e17..2b465d2 100644
+--- a/frontend/src/components/landing/Footer.tsx
++++ b/frontend/src/components/landing/Footer.tsx
+@@ -5,6 +5,7 @@
+ import React, { useEffect, useState } from 'react';
+ import { Link } from 'react-router-dom';
+ import { useTranslation } from 'react-i18next';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ export function Footer() {
+   const { t } = useTranslation('landing');
+@@ -28,7 +29,7 @@ export function Footer() {
+       <div className="footer-inner">
+         {/* Column 1: Brand */}
+         <div className="footer-column">
+-          <h3 className="footer-title">{t('footer.brand_title')}</h3>
++          <h3 className="footer-title">{PRODUCT_NAME}</h3>
+           <p className="footer-desc">{t('footer.brand_desc')}</p>
+           <div className="footer-badges">
+             {privacyBadges.map(badge => (
+@@ -85,7 +86,7 @@ export function Footer() {
+       {/* Copyright */}
+       <div className="footer-bottom">
+         <p className="footer-copyright">
+-          © {currentYear} {t('footer.company_name')}. {t('footer.all_rights')}
++          © {currentYear} {PRODUCT_NAME}. {t('footer.all_rights')}
+         </p>
+       </div>
+     </footer>
+diff --git a/frontend/src/constants/brand.ts b/frontend/src/constants/brand.ts
+new file mode 100755
+index 0000000..162713d
+--- /dev/null
++++ b/frontend/src/constants/brand.ts
+@@ -0,0 +1,10 @@
++/**
++ * Brand constants — NEVER pass these through t() or any i18n pipeline.
++ * "Peripateticware" is a proper noun / registered product name.
++ * It must appear identically in every language.
++ */
++
++export const PRODUCT_NAME = 'Peripateticware';
++export const PRODUCT_TAGLINE = 'Learning happens outside.';
++export const PRODUCT_COPYRIGHT = (year: number = 2026) => `© ${year} ${PRODUCT_NAME}. All rights reserved.`;
++export const PRODUCT_COPYRIGHT_TAGLINE = (year: number = 2026) => `© ${year} ${PRODUCT_NAME}. ${PRODUCT_TAGLINE}`;
+diff --git a/frontend/src/constants/i18n-do-not-translate.md b/frontend/src/constants/i18n-do-not-translate.md
+new file mode 100755
+index 0000000..b819543
+--- /dev/null
++++ b/frontend/src/constants/i18n-do-not-translate.md
+@@ -0,0 +1,171 @@
++# i18n Do-Not-Translate Reference
++
++This document lists every category of content in the Peripateticware codebase that must
++**never be translated** by a localization pipeline, AI translator, or human translator.
++
++---
++
++## 1. Product Name
++
++**"Peripateticware"** is a registered product name / proper noun.
++It must appear identically in every language, in every locale file.
++
++### Source of truth
++```ts
++// frontend/src/constants/brand.ts
++export const PRODUCT_NAME = 'Peripateticware';
++```
++
++### Rule for source code
++Never pass the product name through `t()` as a standalone render:
++
++```tsx
++// WRONG — translator will corrupt it
++{t('landing:peripateticware', 'Peripateticware')}
++
++// CORRECT
++import { PRODUCT_NAME } from '../constants/brand';
++{PRODUCT_NAME}
++```
++
++When the name appears inside a translatable sentence (e.g. "Welcome to Peripateticware"),
++keep the `t()` wrapper for the sentence, but ensure translators know the name is fixed
++(see Translator Instructions below).
++
++### Rule for locale JSON files
++The key `"peripateticware"` in any locale file must always have the value `"Peripateticware"`.
++The keys `footer.brand_title` and `footer.company_name` must also always be `"Peripateticware"`.
++
++These are enforced at the JSON level — the value is the same string in en, ar, de, es, fr,
++he, it, ja, pt-BR, tr, and zh.
++
++**Previously broken (now fixed):** German had "Peripatetische Ware", Spanish had
++"Artículos peripatéticos", French had "Peripatétiqueware", Arabic had "بيريباتيكووار",
++Japanese had "ペリパティックウェア", Chinese had "流动软件", Italian had "PeripateticoWare",
++Hebrew had "פריפטיקוואר", Turkish had "Peripatetikware".
++
++---
++
++## 2. Legal / Regulatory Acronyms
++
++These acronyms are proper nouns defined by law and must appear in English in all locales.
++Translating or expanding them (e.g. GDPR → "RGPD" in French) is incorrect for display
++in compliance badges, card titles, and legal notices.
++
++| Acronym | Full name (for translator context only — do not render) |
++|---------|--------------------------------------------------------|
++| FERPA   | Family Educational Rights and Privacy Act (US) |
++| COPPA   | Children's Online Privacy Protection Act (US) |
++| GDPR    | General Data Protection Regulation (EU) |
++| CCPA    | California Consumer Privacy Act (US) |
++| PIPEDA  | Personal Information Protection and Electronic Documents Act (Canada) |
++| LGPD    | Lei Geral de Proteção de Dados (Brazil) |
++| PDPA    | Personal Data Protection Act (varies by jurisdiction) |
++| SOC 2   | Service Organization Control 2 (AICPA audit framework) |
++| APP     | Australian Privacy Principles |
++
++**Locale keys where these must remain English:**
++- `privacy_engine.ferpa_card_title` → always `"FERPA"`
++- `privacy_engine.coppa_card_title` → always `"COPPA"`
++- `privacy_engine.gdpr_card_title` → always `"GDPR"`
++- `privacy_engine.ccpa_card_title` → always `"CCPA"`
++- `coppa_gdpr_ccpa_compliant` → acronyms within the string must remain as-is
++- `privacy_engine.tagline` → acronyms must not be localized
++- `privacy_engine.summary_desc` → all acronyms fixed
++
++Note: French locale currently renders `coppa_gdpr_ccpa_compliant` as
++"COPPA, GDPR, CCPA conforme" (acronyms preserved — correct) but also expands
++`ferpa` to "FERPA (Family Educational Rights and Privacy Act)" and `coppa` to
++"COPPA (Protection des enfants en ligne)" in some keys — those expansions are
++acceptable in descriptive text but not in badge labels or card titles.
++
++---
++
++## 3. Email Addresses and Domains
++
++These must never be translated, paraphrased, or altered:
++
++- `hello@peripateticware.com` — primary contact / support address
++- `peripateticware.com` — product domain
++- Demo/placeholder emails used in UI: `admin@example.com`, `teacher@example.com`,
++  `student@example.com`, `parent@example.com`, `you@example.com`
++
++Example locale keys that contain these and must not modify them:
++- `footer.company_contact` — renders a mailto link to `hello@peripateticware.com`
++- `login.demo_teacher`, `login.demo_student`, etc. — demo credentials
++
++---
++
++## 4. External Brand Names
++
++These third-party proper nouns must appear in their canonical English form in all locales:
++
++- **Google** (as in "Sign in with Google", if applicable)
++- **Apple** (as in "Sign in with Apple", if applicable)
++- **McGraw-Hill Education** (appears in origin story text)
++- **Apache 2.0 / Business Source License 1.1** — license names, not translated
++- **Peri** — the AI guide's name (short for Peripatetic); treat as a proper noun
++
++---
++
++## 5. Technical Terms That Are Proper Nouns in Context
++
++These are acronyms or technical identifiers that must not be translated:
++
++- **API** — do not render as "interfaz de programación de aplicaciones" etc.
++- **GPS** — do not translate
++- **UUID** — do not translate
++- **JSON** — do not translate
++- **HTTP / HTTPS** — do not translate
++- **LMS** — Learning Management System, used as an acronym in origin story
++- **EdTech** — used as a proper noun in origin story text
++- **SOC 2** — (see Legal Acronyms above)
++- **Apache 2.0** — license identifier, not translated
++- **BSL 1.1** — Business Source License identifier
++
++---
++
++## 6. Translator Instructions (i18next / Lokalise / any pipeline)
++
++### For human translators
++When translating any string that contains "Peripateticware", preserve that word exactly.
++Do not translate, transliterate, or phonetically adapt it.
++
++Example:
++- Source (en): `"Peripateticware is built for homeschool families."`
++- Target (de): `"Peripateticware ist für Homeschool-Familien konzipiert."`
++- WRONG (de):  `"Peripatetische Ware ist für Homeschool-Familien konzipiert."`
++
++### For AI translation pipelines
++Add "Peripateticware" to the glossary / term base as a DO NOT TRANSLATE term.
++In Lokalise: mark as "Term" with "Do not translate" flag.
++In DeepL Glossary: map "Peripateticware" → "Peripateticware" for every language pair.
++In ChatGPT/Claude prompts: prepend "Do not translate the product name Peripateticware."
++
++### For i18next-scanner
++If using i18next-scanner or similar extraction tools, the `"peripateticware"` key
++in locale files should be treated as a locked string. Consider adding a custom
++validator that asserts `locales[lang].landing.peripateticware === 'Peripateticware'`
++for all non-English locales.
++
++---
++
++## 7. Keys Where English Value Must Be Identical Across All Locales
++
++These specific JSON keys must have the same English value in every locale file:
++
++| Key path | Required value |
++|----------|---------------|
++| `landing.peripateticware` | `"Peripateticware"` |
++| `landing.layouts_dashboardshell.peripateticware` | `"Peripateticware"` |
++| `landing.homeschool.layouts_dashboardshell.peripateticware` | `"Peripateticware"` |
++| `footer.brand_title` | `"Peripateticware"` |
++| `footer.company_name` | `"Peripateticware"` |
++| `privacy_engine.ferpa_card_title` | `"FERPA"` |
++| `privacy_engine.coppa_card_title` | `"COPPA"` |
++| `privacy_engine.gdpr_card_title` | `"GDPR"` |
++| `privacy_engine.ccpa_card_title` | `"CCPA"` |
++
++---
++
++*Last updated: 2026-06-26. Maintained alongside `brand.ts`.*
+diff --git a/frontend/src/dashboards/index.tsx b/frontend/src/dashboards/index.tsx
+index 49d1e9e..9b0a5f9 100644
+--- a/frontend/src/dashboards/index.tsx
++++ b/frontend/src/dashboards/index.tsx
+@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
+ import React, { useState } from 'react';
+ import type { Tokens } from '../design/tokens';
+ import {
++import { PRODUCT_NAME } from '../constants/brand';
+   Button,
+   Card,
+   StatTile,
+@@ -58,7 +59,7 @@ export const StudentDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
+             🌿
+           </div>
+           <div>
+-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
++            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
+ 
+           </div>
+             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.student", "Student")}</div>
+@@ -293,7 +294,7 @@ export const TeacherDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
+             🧭
+           </div>
+           <div>
+-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
++            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
+ 
+           </div>
+             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.teacher", "Teacher")}</div>
+@@ -528,7 +529,7 @@ export const ParentDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
+             🪶
+           </div>
+           <div>
+-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
++            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
+ 
+           </div>
+             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.parent", "Parent")}</div>
+@@ -792,7 +793,7 @@ export const AdminDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
+             ⌂
+           </div>
+           <div>
+-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
++            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
+ 
+           </div>
+             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:admin", "Admin")}</div>
+diff --git a/frontend/src/layouts/DashboardShell.tsx b/frontend/src/layouts/DashboardShell.tsx
+index 9b4048b..4879eb3 100644
+--- a/frontend/src/layouts/DashboardShell.tsx
++++ b/frontend/src/layouts/DashboardShell.tsx
+@@ -7,6 +7,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
+ import { useAuthStore } from '@/stores/auth';
+ import { useTranslation } from 'react-i18next';
+ import { useSessionSecurity } from '@/hooks/useSessionSecurity';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ export interface NavGroup {
+   label: string;
+@@ -58,7 +59,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
+           {!collapsed && (
+             <div className="min-w-0">
+               <h1 style={{ fontFamily: 'var(--font-head, serif)', fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.2 }}>
+-                {t('layouts_dashboardshell.peripateticware', 'Peripateticware')}
++                {PRODUCT_NAME}
+               </h1>
+               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>{roleLabel}</p>
+             </div>
+diff --git a/frontend/src/pages/ParentFeaturesPage.tsx b/frontend/src/pages/ParentFeaturesPage.tsx
+index 18254a0..e9b2c66 100644
+--- a/frontend/src/pages/ParentFeaturesPage.tsx
++++ b/frontend/src/pages/ParentFeaturesPage.tsx
+@@ -3,6 +3,7 @@ import React from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import { PhoneCarousel, CarouselScreen } from '../components/PhoneCarousel';
+ import './ParentFeaturesPage.css';
++import { PRODUCT_NAME, PRODUCT_COPYRIGHT_TAGLINE } from '../constants/brand';
+ 
+ const parentScreens: CarouselScreen[] = [
+ {
+@@ -41,7 +42,7 @@ export function ParentFeaturesPage(): React.ReactNode {
+       <nav className="pfp-nav">
+         <div className="pfp-nav-container">
+           <h1 className="pfp-logo">
+-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
++            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
+ 
+           </h1>
+           <button onClick={() => navigate('/')} className="pfp-nav-button">{t("landing:parentfeaturespage.back_to_home", "\u2190 Back to Home")}
+@@ -237,7 +238,7 @@ export function ParentFeaturesPage(): React.ReactNode {
+       {/* FOOTER */}
+       <footer className="pfp-footer">
+         <div className="pfp-container">
+-          <p>{t('parentfeaturespage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
++          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
+         </div>
+       </footer>
+     </div>);
+diff --git a/frontend/src/pages/PrivacyPage.tsx b/frontend/src/pages/PrivacyPage.tsx
+index 14f44bb..cb0d4f6 100644
+--- a/frontend/src/pages/PrivacyPage.tsx
++++ b/frontend/src/pages/PrivacyPage.tsx
+@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
+ import { useTranslation } from 'react-i18next';
+ import { useNavigate } from 'react-router-dom';
+ import { getPrivacyStatus, type PrivacyStatusResult } from '../utils/privacy';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ export const PrivacyPage: React.FC = () => {
+   const { t } = useTranslation('landing');
+@@ -32,7 +33,7 @@ export const PrivacyPage: React.FC = () => {
+           <button className="back-button" onClick={() => navigate('/')}>{t("landing:privacypage.back_to_home", "\u2190 Back to Home")}
+ 
+           </button>
+-          <h1 className="privacy-title">{t("landing:peripateticware_privacy_engine", "Peripateticware Privacy Engine")}</h1>
++          <h1 className="privacy-title">{`${PRODUCT_NAME} Privacy Engine`}</h1>
+           <p className="privacy-subtitle">{t('privacy.tagline')}</p>
+         </div>
+       </header>
+diff --git a/frontend/src/pages/StudentHowItWorksPage.tsx b/frontend/src/pages/StudentHowItWorksPage.tsx
+index fe8599b..1614707 100644
+--- a/frontend/src/pages/StudentHowItWorksPage.tsx
++++ b/frontend/src/pages/StudentHowItWorksPage.tsx
+@@ -3,6 +3,7 @@ import React from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import { PhoneCarousel, CarouselScreen } from '../components/PhoneCarousel';
+ import './StudentHowItWorksPage.css';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ const studentScreens: CarouselScreen[] = [
+ {
+@@ -41,7 +42,7 @@ export function StudentHowItWorksPage(): React.ReactNode {
+       <nav className="sihw-nav">
+         <div className="sihw-nav-container">
+           <h1 className="sihw-logo">
+-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
++            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
+ 
+           </h1>
+           <button onClick={() => navigate('/')} className="sihw-nav-button">{t("landing:studenthowitworkspage.back_to_home", "\u2190 Back to Home")}
+@@ -229,7 +230,7 @@ export function StudentHowItWorksPage(): React.ReactNode {
+       {/* FOOTER */}
+       <footer className="sihw-footer">
+         <div className="sihw-container">
+-          <p>{t('studenthowitworkspage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
++          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
+         </div>
+       </footer>
+     </div>);
+diff --git a/frontend/src/pages/TeacherTourPage.tsx b/frontend/src/pages/TeacherTourPage.tsx
+index 03b1f44..a407608 100644
+--- a/frontend/src/pages/TeacherTourPage.tsx
++++ b/frontend/src/pages/TeacherTourPage.tsx
+@@ -3,6 +3,7 @@ import React from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import { PhoneCarousel, CarouselScreen } from '../components/PhoneCarousel';
+ import './TeacherTourPage.css';
++import { PRODUCT_NAME } from '../constants/brand';
+ 
+ const teacherScreens: CarouselScreen[] = [
+ {
+@@ -41,7 +42,7 @@ export function TeacherTourPage(): React.ReactNode {
+       <nav className="ttp-nav">
+         <div className="ttp-nav-container">
+           <h1 className="ttp-logo">
+-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
++            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
+ 
+           </h1>
+           <button onClick={() => navigate('/')} className="ttp-nav-button">{t("landing:teachertourpage.back_to_home", "\u2190 Back to Home")}
+@@ -325,7 +326,7 @@ export function TeacherTourPage(): React.ReactNode {
+       {/* FOOTER */}
+       <footer className="ttp-footer">
+         <div className="ttp-container">
+-          <p>{t('teachertourpage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
++          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
+         </div>
+       </footer>
+     </div>);
+diff --git a/frontend/src/pages/homeschool/HomeschoolWelcomePage.tsx b/frontend/src/pages/homeschool/HomeschoolWelcomePage.tsx
+index a3c0d3b..9c24d6c 100644
+--- a/frontend/src/pages/homeschool/HomeschoolWelcomePage.tsx
++++ b/frontend/src/pages/homeschool/HomeschoolWelcomePage.tsx
+@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
+ import { CheckCircle, ChevronRight, ChevronLeft, X } from 'lucide-react';
+ import apiClient from '@/config/api';
+ import { useTranslation } from 'react-i18next';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ const API = import.meta.env.VITE_API_URL || '/api/v1';
+ 
+@@ -142,7 +143,7 @@ const HomeschoolWelcomePage: React.FC = () => {
+           >
+             <X size={18} />
+           </button>
+-          <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>{t('pages_homeschool_homeschoolwelcomepage.welcome_to_peripateticware', 'Welcome to Peripateticware 🌿')}</h1>
++          <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>{`Welcome to ${PRODUCT_NAME} 🌿`}</h1>
+           <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.4rem 0 0', fontSize: '0.9rem' }}>{t('pages_homeschool_homeschoolwelcomepage.lets_get_you_set_up_in_3_quick_steps', 'Let\'s get you set up in 3 quick steps.')}</p>
+         </div>
+ 
+diff --git a/frontend/src/pages/student/StudentHowItWorksPage.tsx b/frontend/src/pages/student/StudentHowItWorksPage.tsx
+index 820446c..9ea4d35 100644
+--- a/frontend/src/pages/student/StudentHowItWorksPage.tsx
++++ b/frontend/src/pages/student/StudentHowItWorksPage.tsx
+@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
+ 
+ import React from 'react';
+ import { useNavigate } from 'react-router-dom';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ const StudentHowItWorksPage: React.FC = () => {
+   const { t } = useTranslation('landing');
+@@ -16,7 +17,7 @@ const StudentHowItWorksPage: React.FC = () => {
+       <div className="container py-5xl">
+         {/* Header */}
+         <div style={{ textAlign: 'center', marginBottom: 'var(--space-5xl)' }}>
+-          <h1 className="h1 mb-md">{t("landing:how_peripateticware_works", "How Peripateticware Works")}</h1>
++          <h1 className="h1 mb-md">{`How ${PRODUCT_NAME} Works`}</h1>
+           <p className="text-xl text-muted">{t("landing:discover_how_to_participate_in_outdoor_l", "Discover how to participate in outdoor learning activities")}
+ 
+           </p>
+diff --git a/frontend/src/pages/teacher/TeacherTourPage.tsx b/frontend/src/pages/teacher/TeacherTourPage.tsx
+index df95cbe..e523abc 100644
+--- a/frontend/src/pages/teacher/TeacherTourPage.tsx
++++ b/frontend/src/pages/teacher/TeacherTourPage.tsx
+@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
+ import React from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import './TeacherTourPage.css';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ export function TeacherTourPage(): React.ReactNode {
+   const { t } = useTranslation('landing');
+@@ -13,7 +14,7 @@ export function TeacherTourPage(): React.ReactNode {
+       <nav className="ttp-nav">
+         <div className="ttp-nav-container">
+           <h1 className="ttp-logo">
+-            <span style={{ marginRight: '8px' }}>📍</span>{t("landing:peripateticware", "Peripateticware")}
++            <span style={{ marginRight: '8px' }}>📍</span>{PRODUCT_NAME}
+ 
+           </h1>
+           <button onClick={() => navigate('/')} className="ttp-nav-button">{t("landing:teachertourpage.back_to_home", "\u2190 Back to Home")}
+@@ -293,7 +294,7 @@ export function TeacherTourPage(): React.ReactNode {
+       {/* FOOTER */}
+       <footer className="ttp-footer">
+         <div className="ttp-container">
+-          <p>{t('teachertourpage.copy_2026_peripateticware_learning_happe', '&copy; 2026 Peripateticware. Learning happens outside.')}</p>
++          <p>{`© 2026 ${PRODUCT_NAME}. Learning happens outside.`}</p>
+         </div>
+       </footer>
+     </div>);
+diff --git a/frontend/src/pages/teacher/TeacherWelcomePage.tsx b/frontend/src/pages/teacher/TeacherWelcomePage.tsx
+index 325798d..a1f6f5a 100644
+--- a/frontend/src/pages/teacher/TeacherWelcomePage.tsx
++++ b/frontend/src/pages/teacher/TeacherWelcomePage.tsx
+@@ -17,6 +17,7 @@ import { CheckCircle, ChevronLeft, X } from 'lucide-react';
+ import apiClient from '@/config/api';
+ import { useTranslation } from 'react-i18next';
+ import PrivacySetupWizard, { PrivacyResult } from '../../components/PrivacySetupWizard';
++import { PRODUCT_NAME } from '../../constants/brand';
+ 
+ const API = import.meta.env.VITE_API_URL || '/api/v1';
+ 
+@@ -91,7 +92,7 @@ export default function TeacherWelcomePage() {
+             <X size={18} />
+           </button>
+           <h1 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>
+-            {t('pages_teacher_teacherwelcomepage.welcome_to_peripateticware', 'Welcome to Peripateticware 🌿')}
++            {`Welcome to ${PRODUCT_NAME} 🌿`}
+           </h1>
+           <p style={{ color: 'rgba(255,255,255,0.85)', margin: '0.4rem 0 0', fontSize: '0.9rem' }}>
+             {t('pages_teacher_teacherwelcomepage.lets_get_your_classroom_set_up', "Let's get your classroom set up.")}
+-- 
+2.34.1
+

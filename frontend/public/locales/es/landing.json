@@ -88,7 +88,7 @@
     "2026_peripateticware_all_right": "© 2026 Desgaste peripatético.Reservados todos los derechos.",
     "2026_peripateticware_all_rights_reserved": "© 2026 Peripateticware. Todos los derechos reservados."
   },
-  "peripateticware": "Artículos peripatéticos",
+  "peripateticware": "Peripateticware",
   "learning_in_motion": "Aprendizaje en movimiento",
   "loading": "Cargando...",
   "splashscreen": {
@@ -121,7 +121,7 @@
   "ferpa": "FERPA",
   "gdpr": "RGPD",
   "footer": {
-    "brand_title": "título de la marca",
+    "brand_title": "Peripateticware",
     "brand_desc": "descripción de la marca",
     "product_title": "título del producto",
     "product_features": "características del producto",
@@ -143,7 +143,7 @@
     "legal_terms": "términos legales",
     "legal_cookies": "cookies legales",
     "legal_contact": "contacto legal",
-    "company_name": "nombre de empresa",
+    "company_name": "Peripateticware",
     "all_rights": "todos los derechos"
   },
   "johndoe": "juandoe",

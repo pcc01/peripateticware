@@ -40,7 +40,14 @@ export const HomeschoolChildrenPage: React.FC = () => {
     setError(null);
     try {
       const r = await fetch('/api/v1/homeschool/children', { method: 'POST', headers: authHeader(), body: JSON.stringify(form) });
-      if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.detail || 'Failed to create child'); }
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        if (r.status === 402 && d?.code === 'UPGRADE_REQUIRED') {
+          window.dispatchEvent(new CustomEvent('upgrade-required', { detail: d }));
+          return;
+        }
+        throw new Error(d.detail || 'Failed to create child');
+      }
       setShowAdd(false);
       setForm({ full_name: '', email: '', password: '', grade_level: 1, age_band: 'k6' });
       load();

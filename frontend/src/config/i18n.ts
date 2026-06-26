@@ -15,6 +15,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
   { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'pt-BR', name: 'Português (Brasil)', flag: '🇧🇷' },
 ]
 
 // ============================================================================
@@ -33,7 +34,17 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en',
+    fallbackLng: {
+      'pt-BR': ['pt', 'en'],
+      'pt-PT': ['pt', 'en'],
+      'zh-CN': ['zh', 'en'],
+      'zh-TW': ['zh', 'en'],
+      'en-GB': ['en'],
+      'en-AU': ['en-GB', 'en'],
+      'en-CA': ['en-GB', 'en'],
+      default:  ['en'],
+    },
+    nonExplicitSupportedLngs: true,
     lng: 'en',
     defaultNS: 'landing',
     ns: ['landing', 'STUDENT', 'TEACHER', 'common', 'curriculum'],

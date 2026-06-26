@@ -165,11 +165,14 @@ async def create_child(
         if child_count >= 2:
             raise HTTPException(
                 status_code=402,
-                detail=(
-                    "The free plan supports up to 2 children. "
-                    "Upgrade to Homeschool Family ($12/mo) to add more children "
-                    "and unlock portfolio exports and state standards reports."
-                ),
+                detail={
+                    "code":          "UPGRADE_REQUIRED",
+                    "feature":       "homeschool_children",
+                    "required_tier": "homeschool_family",
+                    "current_tier":  tier,
+                    "limit":         2,
+                    "current":       child_count,
+                },
             )
 
     # Check email not already taken

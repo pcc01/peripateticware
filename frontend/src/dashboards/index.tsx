@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
 import type { Tokens } from '../design/tokens';
 import {
+import { PRODUCT_NAME } from '../constants/brand';
   Button,
   Card,
   StatTile,
@@ -58,7 +59,7 @@ export const StudentDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
             🌿
           </div>
           <div>
-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
+            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
 
           </div>
             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.student", "Student")}</div>
@@ -293,7 +294,7 @@ export const TeacherDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
             🧭
           </div>
           <div>
-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
+            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
 
           </div>
             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.teacher", "Teacher")}</div>
@@ -528,7 +529,7 @@ export const ParentDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
             🪶
           </div>
           <div>
-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
+            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
 
           </div>
             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:index.parent", "Parent")}</div>
@@ -792,7 +793,7 @@ export const AdminDashboard: React.FC<{d: Tokens;}> = ({ d }) => {
             ⌂
           </div>
           <div>
-            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{t("landing:peripateticware", "Peripateticware")}
+            <div style={{ fontWeight: 700, color: d.text, fontSize: d.textSm }}>{PRODUCT_NAME}
 
           </div>
             <div style={{ fontSize: d.textXs, color: d.textMuted }}>{t("landing:admin", "Admin")}</div>

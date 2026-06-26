@@ -833,9 +833,7 @@ export const ActivityBuilder = () => {
                 />
                 <span style={{ fontWeight: 600 }}>📍 Enable live GPS tracking during this activity</span>
               </label>
-              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4, marginLeft: 26 }}>
-                Students' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.
-              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4, marginLeft: 26 }}>{t('components_teacher_enhancedactivitybuilder.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
             </div>
 
             {/* Homeschool self-consent (parent IS the user) */}

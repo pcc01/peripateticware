@@ -170,6 +170,9 @@ def _derive_jurisdiction_ids(
     elif cc == 'BR':
         ids.append('lgpd_brazil')
 
+    elif cc == 'AU':
+        ids.append('privacy_act_au')
+
     elif cc == 'SG':
         ids.append('pdpa_singapore')
 
