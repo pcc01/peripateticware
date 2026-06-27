@@ -61,6 +61,7 @@ class CurriculumUnit(Base):
     raw_content = Column(JSONB)
 
     is_active = Column(Boolean, default=True)
+    created_by = Column(UUID(as_uuid=True), nullable=True)  # teacher who created this unit
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -328,6 +329,12 @@ class Activity(Base):
     language = Column(String(50), nullable=True)         # content language e.g. 'English'
     state_standard = Column(String(100), nullable=True)  # US state curriculum standard e.g. 'CA'
     discipline = Column(String(100), nullable=True)      # academic discipline e.g. 'STEM'
+
+    # =========================================================================
+    # MEDIA ATTACHMENTS (teacher-uploaded content)
+    # =========================================================================
+    hero_image_url = Column(String(512), nullable=True)   # primary activity image
+    attachments = Column(JSONB, default=list)              # list of {url, filename, size_bytes, content_type}
 
     # =========================================================================
     # TIMESTAMPS

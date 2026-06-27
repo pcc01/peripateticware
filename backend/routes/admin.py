@@ -5,7 +5,7 @@
 """
 Admin Routes - Environment management, auth, and LLM testing
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, Body
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import os
@@ -20,11 +20,63 @@ from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, text
 from core.database import get_db
 from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+
+
+# ============================================================================
+# AUDIT LOG HELPER
+# ============================================================================
+
+async def log_admin_action(
+    db: AsyncSession,
+    admin_id: Optional[str],
+    action: str,
+    resource: Optional[str] = None,
+    details: Optional[dict] = None,
+    success: bool = True,
+    request: Optional[Request] = None,
+) -> None:
+    """
+    Insert a row into admin_audit_logs. Non-blocking — errors are logged but never raised.
+
+    Args:
+        admin_id:  UUID string from verify_admin_token_db(); None for unauthenticated attempts
+        action:    short verb+noun, e.g. "create_user", "delete_user", "update_env", "login", "logout"
+        resource:  the affected resource identifier, e.g. user_id, env key name, class id
+        details:   arbitrary JSON dict with before/after values or other context
+        success:   False for failed attempts (wrong credentials, 404s, etc.)
+        request:   FastAPI Request object for IP + user-agent extraction
+    """
+    try:
+        ip_address = None
+        user_agent = None
+        if request:
+            ip_address = (
+                request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+                or (request.client.host if request.client else None)
+            )
+            user_agent = request.headers.get("user-agent")
+
+        from models.database import AdminAuditLog
+        entry = AdminAuditLog(
+            admin_id=admin_id,
+            action=action,
+            resource=resource,
+            details=details,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            success=success,
+        )
+        db.add(entry)
+        await db.commit()
+    except Exception as exc:
+        import logging as _log
+        _log.getLogger(__name__).warning(f"[audit] Failed to log admin action '{action}': {exc}")
+
 
 # ============================================================================
 # MODELS
@@ -175,7 +227,11 @@ async def verify_admin_token_db(token: str, db: AsyncSession) -> str:
 # ============================================================================
 
 @router.post("/auth/login", response_model=Dict[str, Any])
-async def admin_login(credentials: AdminLogin, db: AsyncSession = Depends(get_db)):
+async def admin_login(
+    credentials: AdminLogin,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
     """Login to admin panel — creates a DB-persisted session."""
     from models.database import AdminUserModel, AdminSession
 
@@ -187,16 +243,20 @@ async def admin_login(credentials: AdminLogin, db: AsyncSession = Depends(get_db
 
     if db_admin:
         if not verify_password(credentials.password, db_admin.password_hash):
+            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
             raise HTTPException(status_code=401, detail="Invalid credentials")
         if not db_admin.is_active:
+            await log_admin_action(db, str(db_admin.id), "login_failed", details={"username": credentials.username, "reason": "inactive"}, success=False, request=request)
             raise HTTPException(status_code=401, detail="Account inactive")
         admin_id = str(db_admin.id)
         db_admin.last_login = datetime.now()
     else:
         # Fall back to in-code DEMO_ADMIN (first boot before migrations run)
         if credentials.username != DEMO_ADMIN["username"]:
+            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
             raise HTTPException(status_code=401, detail="Invalid credentials")
         if not verify_password(credentials.password, DEMO_ADMIN["password_hash"]):
+            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
             raise HTTPException(status_code=401, detail="Invalid credentials")
         admin_id = DEMO_ADMIN["id"]
 
@@ -219,6 +279,8 @@ async def admin_login(credentials: AdminLogin, db: AsyncSession = Depends(get_db
         # Graceful fallback if admin_sessions table doesn't exist yet
         await db.rollback()
 
+    await log_admin_action(db, admin_id, "login", success=True, request=request)
+
     return {
         "token": token,
         "user": {
@@ -231,16 +293,27 @@ async def admin_login(credentials: AdminLogin, db: AsyncSession = Depends(get_db
 
 
 @router.post("/auth/logout")
-async def admin_logout(token: str = None, db: AsyncSession = Depends(get_db)):
+async def admin_logout(
+    token: str = None,
+    request: Request = None,
+    db: AsyncSession = Depends(get_db),
+):
     """Logout from admin panel — deletes DB session."""
+    admin_id = None
     if token:
         from models.database import AdminSession
         token_hash = hash_token(token)
+        # Resolve admin_id before deleting the session
+        try:
+            admin_id = await verify_admin_token_db(token, db)
+        except Exception:
+            pass
         await db.execute(delete(AdminSession).where(AdminSession.token_hash == token_hash))
         try:
             await db.commit()
         except Exception:
             await db.rollback()
+    await log_admin_action(db, admin_id, "logout", request=request)
     return {"message": "Logged out"}
 
 
@@ -299,9 +372,10 @@ async def update_env_variable(
     body: Dict[str, str] = Body(...),
     token: str = None,
     db: AsyncSession = Depends(get_db),
+    request: Request = None,
 ):
     """Update an environment variable (with confirmation)"""
-    await verify_admin_token_db(token, db)
+    admin_id = await verify_admin_token_db(token, db)
 
     new_value = body.get("value", "")
 
@@ -333,6 +407,8 @@ async def update_env_variable(
         # Create .env if it doesn't exist
         with open(".env", "a") as f:
             f.write(f"\n{key}={new_value}")
+
+    await log_admin_action(db, admin_id, "update_env", resource=key, details={"key": key}, request=request)
 
     return {
         "message": f"Updated {key}",
@@ -572,6 +648,7 @@ async def create_admin_user(
     body: Dict[str, Any] = Body(...),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    request: Request = None,
 ):
     """Create a user (admin action)."""
     from models.database import User
@@ -592,6 +669,10 @@ async def create_admin_user(
     db.add(user)
     await db.commit()
     await db.refresh(user)
+    await log_admin_action(
+        db, str(current_user.id), "create_user", resource=str(user.id),
+        details={"email": user.email, "role": user.role}, request=request,
+    )
     return {"id": str(user.id), "email": user.email, "role": user.role}
 
 
@@ -601,6 +682,7 @@ async def update_admin_user(
     body: Dict[str, Any] = Body(...),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    request: Request = None,
 ):
     """Update a user (admin action)."""
     from models.database import User
@@ -610,11 +692,15 @@ async def update_admin_user(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    for field in ("full_name", "role", "is_active"):
-        if field in body:
-            setattr(user, field, body[field])
+    update_data = {f: body[f] for f in ("full_name", "role", "is_active") if f in body}
+    for field, value in update_data.items():
+        setattr(user, field, value)
     user.updated_at = datetime.now()
     await db.commit()
+    await log_admin_action(
+        db, str(current_user.id), "update_user", resource=user_id,
+        details={"fields_changed": list(update_data.keys())}, request=request,
+    )
     return {"id": str(user.id), "email": user.email, "role": user.role, "is_active": user.is_active}
 
 
@@ -623,6 +709,7 @@ async def delete_admin_user(
     user_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    request: Request = None,
 ):
     """Delete a user (admin action)."""
     from models.database import User
@@ -634,6 +721,7 @@ async def delete_admin_user(
         raise HTTPException(status_code=404, detail="User not found")
     await db.delete(user)
     await db.commit()
+    await log_admin_action(db, str(current_user.id), "delete_user", resource=user_id, request=request)
 
 
 @router.get("/classes")
@@ -699,4 +787,92 @@ async def admin_analytics(
         "completed_sessions": completed_sessions,
         "storage_used_mb": 0,
         "api_requests_today": 0,
+    }
+
+
+# ============================================================================
+# AUDIT LOG ENDPOINTS
+# ============================================================================
+
+@router.get("/audit-logs")
+async def get_audit_logs(
+    token: str = None,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    action: Optional[str] = Query(None),
+    admin_id: Optional[str] = Query(None),
+    success: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    request: Request = None,
+):
+    """
+    List admin audit log entries. Requires admin auth token.
+    Supports filtering by action, admin_id, and success flag.
+    """
+    await verify_admin_token_db(token, db)
+
+    from models.database import AdminAuditLog
+    from sqlalchemy import select as _sel, desc
+
+    q = _sel(AdminAuditLog)
+    if action:
+        q = q.where(AdminAuditLog.action == action)
+    if admin_id:
+        q = q.where(AdminAuditLog.admin_id == admin_id)
+    if success is not None:
+        q = q.where(AdminAuditLog.success == success)
+    q = q.order_by(desc(AdminAuditLog.created_at)).limit(limit).offset(offset)
+
+    rows = (await db.execute(q)).scalars().all()
+
+    return {
+        "total": len(rows),
+        "offset": offset,
+        "limit": limit,
+        "entries": [
+            {
+                "id":         str(r.id),
+                "admin_id":   str(r.admin_id) if r.admin_id else None,
+                "action":     r.action,
+                "resource":   r.resource,
+                "details":    r.details,
+                "ip_address": r.ip_address,
+                "user_agent": r.user_agent,
+                "success":    r.success,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in rows
+        ],
+    }
+
+
+@router.get("/audit-logs/summary")
+async def audit_log_summary(
+    token: str = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Summary of recent admin actions grouped by action type."""
+    await verify_admin_token_db(token, db)
+
+    rows = (await db.execute(text("""
+        SELECT action, COUNT(*) AS count,
+               MAX(created_at) AS last_seen,
+               SUM(CASE WHEN success = false THEN 1 ELSE 0 END) AS failures
+        FROM admin_audit_logs
+        WHERE created_at > NOW() - INTERVAL '30 days'
+        GROUP BY action
+        ORDER BY count DESC
+    """))).mappings().all()
+
+    return {
+        "period": "last_30_days",
+        "actions": [
+            {
+                "action":    r["action"],
+                "count":     r["count"],
+                "failures":  r["failures"],
+                "last_seen": r["last_seen"].isoformat() if r["last_seen"] else None,
+            }
+            for r in rows
+        ],
     }

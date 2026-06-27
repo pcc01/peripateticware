@@ -5,7 +5,7 @@
 """Activity management endpoints - MERGED (Existing + Phase 5 + ActivityBuilder)"""
 
 from pydantic import BaseModel as _BaseModel
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
 from uuid import UUID
@@ -15,7 +15,7 @@ import logging
 
 from core.database import get_db
 from core.config import settings
-from core.dependencies import get_current_user
+from core.dependencies import get_current_user, get_current_teacher
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.assessment import TAXONOMY_DESCRIPTIONS
 from schemas.activities import (
@@ -1204,6 +1204,157 @@ async def check_activity_compliance_quick(
     except Exception as e:
         logger.debug(f"Compliance check error (non-fatal): {e}")
         return {"status": "unknown", "issues": [], "warnings": []}
+
+
+# ============================================================================
+# ACTIVITY MEDIA UPLOAD
+# ============================================================================
+
+async def _save_activity_file(upload: UploadFile, activity_id: UUID) -> tuple[str, int]:
+    """
+    Upload an activity media file to Cloudflare R2 (or local fallback in dev).
+    Returns (public_url, file_size_bytes).
+    """
+    import re, asyncio, os
+    safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", upload.filename or "file")[:200]
+    file_bytes = await upload.read()
+    file_size = len(file_bytes)
+
+    if not settings.CF_R2_ACCOUNT_ID:
+        upload_dir = f"/app/uploads/activities/{activity_id}"
+        os.makedirs(upload_dir, exist_ok=True)
+        dest = f"{upload_dir}/{safe_name}"
+        with open(dest, "wb") as fh:
+            fh.write(file_bytes)
+        return f"/uploads/activities/{activity_id}/{safe_name}", file_size
+
+    import boto3
+    from botocore.exceptions import BotoCoreError, ClientError
+    endpoint_url = f"https://{settings.CF_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+    key = f"activities/{activity_id}/{safe_name}"
+
+    def _upload():
+        client = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=settings.CF_R2_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.CF_R2_SECRET_ACCESS_KEY,
+            region_name="auto",
+        )
+        client.put_object(
+            Bucket=settings.CF_R2_BUCKET_NAME,
+            Key=key,
+            Body=file_bytes,
+            ContentType=upload.content_type or "application/octet-stream",
+        )
+
+    try:
+        import asyncio as _asyncio
+        await _asyncio.to_thread(_upload)
+    except (BotoCoreError, ClientError) as exc:
+        logger.error(f"R2 activity upload failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"File upload failed: {exc}")
+
+    if settings.CF_R2_PUBLIC_URL:
+        public_url = f"{settings.CF_R2_PUBLIC_URL.rstrip('/')}/{key}"
+    else:
+        public_url = f"r2://{settings.CF_R2_BUCKET_NAME}/{key}"
+
+    return public_url, file_size
+
+
+@router.post("/{activity_id}/media", status_code=201)
+async def upload_activity_media(
+    activity_id: UUID,
+    media_type: str = Form("attachment"),  # "hero" | "attachment"
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Upload a hero image or file attachment to an activity.
+    media_type=hero       → sets activity.hero_image_url (replaces any existing)
+    media_type=attachment → appends to activity.attachments list (max 10)
+
+    Only the owning teacher can upload. Uses Cloudflare R2 in production,
+    local /app/uploads/ fallback in development.
+    """
+    # 1. Verify activity ownership
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied: you don't own this activity")
+
+    # 2. Validate file
+    MAX_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB
+    ALLOWED_TYPES = {
+        "image/jpeg", "image/png", "image/webp", "image/gif",
+        "application/pdf", "video/mp4", "video/webm",
+        "audio/mpeg", "audio/ogg", "audio/webm",
+    }
+    if file.content_type and file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Unsupported media type: {file.content_type}. Allowed: images, PDF, video, audio."
+        )
+    if media_type not in ("hero", "attachment"):
+        raise HTTPException(status_code=400, detail="media_type must be 'hero' or 'attachment'")
+
+    # 3. Check attachment cap
+    existing_attachments = activity.attachments or []
+    if media_type == "attachment" and len(existing_attachments) >= 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 attachments per activity")
+
+    # 4. Upload to R2 (or local fallback)
+    file_url, file_size = await _save_activity_file(file, activity_id)
+
+    if file_size > MAX_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 50 MB)")
+
+    # 5. Persist URL on activity
+    if media_type == "hero":
+        activity.hero_image_url = file_url
+    else:
+        new_attachment = {
+            "url": file_url,
+            "filename": file.filename or "file",
+            "size_bytes": file_size,
+            "content_type": file.content_type or "application/octet-stream",
+        }
+        # SQLAlchemy JSONB mutation tracking requires reassignment
+        activity.attachments = existing_attachments + [new_attachment]
+
+    activity.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    return {
+        "success": True,
+        "media_type": media_type,
+        "url": file_url,
+        "filename": file.filename,
+        "size_bytes": file_size,
+        "activity_id": str(activity_id),
+    }
+
+
+@router.delete("/{activity_id}/media/hero", status_code=204)
+async def delete_activity_hero_image(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """Clear the hero image from an activity."""
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    activity.hero_image_url = None
+    activity.updated_at = datetime.now(timezone.utc)
+    await db.commit()
 
 
 # ============================================================================
