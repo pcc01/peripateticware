@@ -21,6 +21,9 @@ JURISDICTION_MAP covers:
   CA (Canada)                     → pipeda_canada
   BR                              → lgpd_brazil
   SG                              → pdpa_singapore
+  ZA                              → popia_za
+  MX                              → lpdc_mx
+  AR                              → aepd_ar
   Elsewhere + has_under_13        → coppa_us (conservative fallback for child safety)
 
 A jurisdiction_id is only included if the corresponding config file exists under
@@ -175,6 +178,15 @@ def _derive_jurisdiction_ids(
 
     elif cc == 'SG':
         ids.append('pdpa_singapore')
+
+    elif cc == 'ZA':
+        ids.append('popia_za')
+
+    elif cc == 'MX':
+        ids.append('lpdc_mx')
+
+    elif cc == 'AR':
+        ids.append('aepd_ar')
 
     elif cc in EU_COUNTRIES:
         ids.append('gdpr_eu')

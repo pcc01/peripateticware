@@ -50,6 +50,13 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg)', fontFamily: 'var(--font-body, sans-serif)' }}>
+      {/* Skip navigation — WCAG 2.4.1 */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-blue-700 focus:rounded focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       <aside
         className={`flex flex-col border-r transition-all duration-200 flex-shrink-0 ${collapsed ? 'w-14' : 'w-56'}`}
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
@@ -67,10 +74,11 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
           <button
             onClick={() => setCollapsed(c => !c)}
             className="text-white/80 hover:text-white p-1 rounded transition ml-auto flex-shrink-0"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-expanded={!collapsed}
             style={{ fontSize: '0.75rem' }}
           >
-            {collapsed ? '>' : '<'}
+            <span aria-hidden="true">{collapsed ? '>' : '<'}</span>
           </button>
         </div>
 
@@ -92,27 +100,27 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
               </div>
               <button
                 onClick={handleLogout}
-                title="Sign out"
+                aria-label="Sign out"
                 className="p-1.5 rounded hover:text-red-600 hover:bg-red-50 transition flex-shrink-0 border border-transparent hover:border-red-200"
                 style={{ color: 'var(--text-muted)' }}
               >
-                <LogOut size={15} />
+                <LogOut size={15} aria-hidden="true" />
               </button>
             </div>
           ) : (
             <button
               onClick={handleLogout}
               className="w-full flex justify-center items-center py-1 rounded hover:text-red-600 hover:bg-red-50 transition"
-              title="Sign out"
+              aria-label="Sign out"
               style={{ color: 'var(--text-muted)' }}
             >
-              <LogOut size={15} />
+              <LogOut size={15} aria-hidden="true" />
             </button>
           )}
         </div>
 
         {/* Nav groups */}
-        <nav className="flex-1 overflow-y-auto py-2 px-1.5 space-y-3">
+        <nav aria-label="Main navigation" className="flex-1 overflow-y-auto py-2 px-1.5 space-y-3">
           {navGroups.map(group => (
             <div key={group.label}>
               {!collapsed && (
@@ -127,11 +135,13 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
                       to={item.path}
                       end={item.end}
                       className="flex items-center gap-2 px-2 py-1.5 rounded-md transition"
+                      aria-current={undefined}
                       style={({ isActive }: { isActive: boolean }) => ({
                         fontSize: '0.8rem', fontWeight: 500,
                         background: isActive ? 'var(--surface-alt)' : 'transparent',
                         color: isActive ? 'var(--primary)' : 'var(--text-muted)',
                       })}
+                      aria-label={collapsed ? item.label : undefined}
                       title={collapsed ? item.label : undefined}
                     >
                       <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{item.icon}</span>
@@ -158,7 +168,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto" style={{ background: 'var(--bg, #f9f6f1)' }}>
+      <main id="main-content" className="flex-1 overflow-auto" style={{ background: 'var(--bg, #f9f6f1)' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 32px', fontFamily: 'var(--font-body, sans-serif)' }}>
           {children}
         </div>

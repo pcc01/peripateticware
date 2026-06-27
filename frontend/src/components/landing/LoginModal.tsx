@@ -135,45 +135,50 @@ export function LoginModal({ isOpen, onClose, initialRole = 'student' }: LoginMo
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Authentication">
         {/* Close button */}
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button className="modal-close" onClick={onClose} aria-label="Close dialog">×</button>
 
         {/* Tabs */}
         <div className="modal-tabs">
           <button
+            role="tab"
+            aria-selected={activeTab === 'login'}
             className={`modal-tab ${activeTab === 'login' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('login');
               setMessage(null);
             }}>
-            
             {t('auth.login_tab') || 'Login'}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'signup'}
             className={`modal-tab ${activeTab === 'signup' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('signup');
               setMessage(null);
             }}>
-            
             {t('auth.signup_tab') || 'Sign Up'}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'forgot'}
             className={`modal-tab ${activeTab === 'forgot' ? 'active' : ''}`}
             onClick={() => {
               setActiveTab('forgot');
               setMessage(null);
             }}>
-            
             {t('auth.forgot_tab') || 'Forgot Password'}
           </button>
         </div>
 
         {/* Message */}
         {message &&
-        <div className={`modal-message modal-message--${message.type}`}>
+        <div
+          role={message.type === 'error' ? 'alert' : 'status'}
+          className={`modal-message modal-message--${message.type}`}>
             {message.text}
           </div>
         }

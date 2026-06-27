@@ -71,21 +71,29 @@ export const HomeschoolChildrenPage: React.FC = () => {
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.full_name', 'Full name *')}</label>
               <input required value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))}
+                id="child-full-name"
+                aria-label="Child's full name"
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.email', 'Email *')}</label>
               <input required type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+                id="child-email"
+                aria-label="Child's email address"
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.password', 'Password *')}</label>
               <input required type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                id="child-password"
+                aria-label="Child's password"
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.grade_level', 'Grade level')}</label>
               <input type="number" min={0} max={12} value={form.grade_level} onChange={e => setForm(p => ({ ...p, grade_level: parseInt(e.target.value) }))}
+                id="child-grade"
+                aria-label="Child's grade level (0-12)"
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
@@ -98,7 +106,7 @@ export const HomeschoolChildrenPage: React.FC = () => {
               </select>
             </div>
           </div>
-          {error && <p style={{ color: '#be123c', marginBottom: 10, fontSize: '0.85rem' }}>{error}</p>}
+          {error && <p role="alert" style={{ color: '#be123c', marginBottom: 10, fontSize: '0.85rem' }}>{error}</p>}
           <button type="submit" disabled={saving} style={{ padding: '10px 28px', borderRadius: 8, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
             {saving ? 'Creating…' : 'Create Child Account'}
           </button>
@@ -116,7 +124,12 @@ export const HomeschoolChildrenPage: React.FC = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {children.map(c => (
-          <div key={c.id} onClick={() => navigate(`/homeschool/progress?child=${c.id}`)}
+          <div key={c.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`View progress for ${c.full_name}`}
+            onClick={() => navigate(`/homeschool/progress?child=${c.id}`)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/homeschool/progress?child=${c.id}`); } }}
             style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, cursor: 'pointer' }}
             onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)')}
             onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>

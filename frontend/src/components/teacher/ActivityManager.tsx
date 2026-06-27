@@ -609,13 +609,13 @@ const ActivityManager = () => {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
-              <input type="number" step="0.0001" value={formData.location_latitude}
+              <input type="number" step="0.0001" aria-label="Location latitude" value={formData.location_latitude}
                 onChange={(e) => { const lat = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_latitude:lat})); handleLatLngChange(lat,formData.location_longitude); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="47.6839" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
-              <input type="number" step="0.0001" value={formData.location_longitude}
+              <input type="number" step="0.0001" aria-label="Location longitude" value={formData.location_longitude}
                 onChange={(e) => { const lng = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_longitude:lng})); handleLatLngChange(formData.location_latitude,lng); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>

@@ -49,6 +49,9 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
+          aria-required={required || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
           className={clsx(
             // Base styles
             'px-4 py-2 border rounded-[var(--radius-lg)]',
@@ -82,12 +85,12 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         </select>
 
         {error &&
-        <span className="text-sm text-[var(--color-error-500)]">
+        <span id={`${selectId}-error`} role="alert" className="text-sm text-[var(--color-error-500)]">
             {error}
           </span>
         }
         {hint && !error &&
-        <span className="text-sm text-[var(--color-gray-500)]">
+        <span id={`${selectId}-hint`} className="text-sm text-[var(--color-gray-500)]">
             {hint}
           </span>
         }

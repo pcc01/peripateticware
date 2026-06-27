@@ -793,10 +793,38 @@ The following features are **planned** for future releases and are **not current
 ### Single Sign-On (SSO)
 - OIDC (OpenID Connect) provider support
 - SAML 2.0 (for district identity providers)
+- Estimated implementation: approximately 3 weeks once prioritized
 
 ### Roster Sync
 - Clever integration for automated roster management
+- Canvas roster sync
 - CSV roster import/export (manual workaround available today)
+
+### Grade Sync (LTI)
+- Grade passback to Canvas, Schoology, Infinite Campus, and Google Classroom grade books via LTI
+- Requires an LTI 1.3 integration layer not yet built
+
+### Pre-Loaded Curriculum Standards
+- Bundled CCSS (Common Core), NGSS, and TEKS standards sets
+- Currently, teachers must upload their own standards PDFs; the AI extraction pipeline then parses them
+- Adding pre-loaded bundles is a 2–3 week effort
+
+### OpenAI GPT Support
+- GPT-4o and GPT-4o-mini as an alternative LLM provider alongside Ollama and Claude
+- Medium complexity; the provider abstraction layer is already in place
+
+### Parent Push Notifications
+- Push alerts to parent mobile devices (FCM for Android, APNs for iOS)
+- Requires a native mobile app or PWA push integration; high complexity
+
+### Field-Level Encryption
+- Encryption of sensitive database columns (student names, contact details, assessment notes) at rest
+- Extra-large effort: requires key management infrastructure and migration of existing data
+- Necessary for full GDPR compliance in high-sensitivity deployments
+
+### Breach Notification System (GDPR Art. 33)
+- Automated 72-hour notification workflow to the relevant Data Protection Authority and affected users on detection of a data breach
+- High complexity; requires incident classification logic and DPA contact registry
 
 ### Native Mobile Apps
 - iOS and Android student apps (Phase 6 target: 2026–2027)

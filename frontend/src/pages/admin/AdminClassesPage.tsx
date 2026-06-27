@@ -90,7 +90,7 @@ export const AdminClassesPage: React.FC = () => {
         </button>
       </div>
 
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search classes…"
+      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search classes…" aria-label="Search classes"
         style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', marginBottom: 24, boxSizing: 'border-box' }} />
 
       {error && <p style={{ color: 'var(--error, #c0392b)' }}>{error}</p>}

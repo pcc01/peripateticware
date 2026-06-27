@@ -186,12 +186,12 @@ export default function AdminAuditLogPage() {
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           From
-          <input type="date" value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
+          <input type="date" aria-label="Filter from date" value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
         </label>
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           To
-          <input type="date" value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
+          <input type="date" aria-label="Filter to date" value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
         </label>
 
         <button

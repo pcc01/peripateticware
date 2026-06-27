@@ -14,10 +14,16 @@ function authHeader() {
 const StatCard: React.FC<{ icon: string; label: string; value: number; to: string; cta?: string }> = ({ icon, label, value, to, cta }) => {
   const navigate = useNavigate();
   return (
-    <div onClick={() => navigate(to)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '24px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`${label}: ${value}${cta && value === 0 ? '. ' + cta : ''}`}
+      onClick={() => navigate(to)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(to); } }}
+      style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '24px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>
-      <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>{icon}</div>
+      <div style={{ fontSize: '1.8rem', marginBottom: 8 }} aria-hidden="true">{icon}</div>
       <div style={{ fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>{value}</div>
       <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>{label}</div>
       {value === 0 && cta && <div style={{ marginTop: 10, fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>{cta} →</div>}

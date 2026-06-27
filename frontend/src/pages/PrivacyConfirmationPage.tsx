@@ -164,9 +164,9 @@ export default function PrivacyConfirmationPage() {
           {/* Fine print */}
           <p className="text-xs text-gray-400 text-center mb-6">
             You can review and adjust privacy settings at any time in{' '}
-            <span className="underline cursor-pointer" onClick={() => navigate('/admin/privacy')}>
+            <button type="button" onClick={() => navigate('/admin/privacy')} className="underline cursor-pointer" style={{ background: 'none', border: 'none', padding: 0, font: 'inherit', color: 'inherit', display: 'inline' }}>
               Admin → Privacy
-            </span>.
+            </button>.
           </p>
 
           {/* CTA */}

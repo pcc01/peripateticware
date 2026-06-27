@@ -114,7 +114,7 @@ export const AdminSystemPage: React.FC = () => {
                       {item.description && <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 2 }}>{item.description}</div>}
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                      <input value={val} onChange={e => setEdits(p => ({ ...p, [item.key]: e.target.value }))}
+                      <input value={val} onChange={e => setEdits(p => ({ ...p, [item.key]: e.target.value }))} aria-label={`Value for ${item.key}`}
                         style={{ width: 220, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.82rem' }} />
                       <button onClick={() => handleSave(item.key)} disabled={!(item.key in edits) || saving === item.key}
                         style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: isSaved ? '#16a34a' : 'var(--primary)', color: 'white', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, opacity: !(item.key in edits) ? 0.4 : 1 }}>
@@ -135,12 +135,12 @@ export const AdminSystemPage: React.FC = () => {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 16 }}>{t('pages_admin_adminsystempage.add_a_new_environment_key_stored_in_the_', 'Add a new environment key. Stored in the database and overrides .env on next request. A backend restart applies most settings.')}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="KEY_NAME"
+              <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="KEY_NAME" aria-label="Configuration key name"
                 style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.85rem' }} />
-              <input value={newVal} onChange={e => setNewVal(e.target.value)} placeholder="value"
+              <input value={newVal} onChange={e => setNewVal(e.target.value)} placeholder="value" aria-label="Configuration value"
                 style={{ flex: 2, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.85rem' }} />
             </div>
-            <input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Description (optional)"
+            <input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Description (optional)" aria-label="Configuration description"
               style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.82rem' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button onClick={handleAddKey} disabled={!newKey.trim() || addingKey}

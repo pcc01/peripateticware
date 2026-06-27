@@ -130,9 +130,9 @@ export const AdminUsersPage: React.FC = () => {
 
       {showCreate && (
         <form onSubmit={handleCreate} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <input required placeholder="Email" type="email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
-          <input required placeholder="Full name" value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
-          <input required placeholder="Password" type="password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder="Email" type="email" aria-label="New user email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder="Full name" aria-label="New user full name" value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder="Password" type="password" aria-label="New user password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
           <select value={newUser.role} onChange={e => setNewUser(p => ({ ...p, role: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
             {['STUDENT','TEACHER','PARENT','ADMIN'].map(r => <option key={r}>{r}</option>)}
           </select>
@@ -143,7 +143,7 @@ export const AdminUsersPage: React.FC = () => {
       )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" aria-label="Search users by name or email" style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
           <option value="">All roles</option>
           {['STUDENT','TEACHER','PARENT','ADMIN'].map(r => <option key={r}>{r}</option>)}
@@ -178,7 +178,7 @@ export const AdminUsersPage: React.FC = () => {
           onClick={() => setAssignUser(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 440, maxWidth: '92vw' }}>
+          <div role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 440, maxWidth: '92vw' }}>
             <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--font-head)' }}>{t('pages_admin_adminuserspage.add_to_class', 'Add to Class')}</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 0, marginBottom: 16 }}>{assignUser.full_name || assignUser.email}</p>
 

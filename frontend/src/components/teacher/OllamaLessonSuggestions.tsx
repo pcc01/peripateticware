@@ -298,19 +298,19 @@ export const OllamaLessonSuggestions = ({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '0.75rem' }}>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.subject', 'Subject')}</label>
-              <input style={inputStyle} value={optSubject} onChange={e => setOptSubject(e.target.value)} placeholder="e.g. Science, History…" />
+              <input style={inputStyle} value={optSubject} onChange={e => setOptSubject(e.target.value)} placeholder="e.g. Science, History…" aria-label="Subject" />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.grade_level', 'Grade level')}</label>
-              <input style={inputStyle} type="number" min={3} max={12} value={optGrade} onChange={e => setOptGrade(e.target.value)} placeholder="e.g. 5" />
+              <input style={inputStyle} type="number" min={3} max={12} value={optGrade} onChange={e => setOptGrade(e.target.value)} placeholder="e.g. 5" aria-label="Grade level" />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.duration_minutes', 'Duration (minutes)')}</label>
-              <input style={inputStyle} type="number" min={10} max={300} value={optDuration} onChange={e => setOptDuration(e.target.value)} placeholder="e.g. 45" />
+              <input style={inputStyle} type="number" min={10} max={300} value={optDuration} onChange={e => setOptDuration(e.target.value)} placeholder="e.g. 45" aria-label="Duration in minutes" />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.group_size', 'Group size')}</label>
-              <input style={inputStyle} value={optGroupSize} onChange={e => setOptGroupSize(e.target.value)} placeholder="e.g. 24 students, pairs…" />
+              <input style={inputStyle} value={optGroupSize} onChange={e => setOptGroupSize(e.target.value)} placeholder="e.g. 24 students, pairs…" aria-label="Group size" />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.setting', 'Setting')}</label>
@@ -322,7 +322,7 @@ export const OllamaLessonSuggestions = ({
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.special_focus_optional', 'Special focus (optional)')}</label>
-              <input style={inputStyle} value={optFocus} onChange={e => setOptFocus(e.target.value)} placeholder="e.g. ELL students, STEM…" />
+              <input style={inputStyle} value={optFocus} onChange={e => setOptFocus(e.target.value)} placeholder="e.g. ELL students, STEM…" aria-label="Special focus or differentiation" />
             </div>
           </div>
 

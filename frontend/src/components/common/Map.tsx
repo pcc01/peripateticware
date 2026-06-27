@@ -138,18 +138,19 @@ const Map: React.FC<MapProps> = ({
       <div className="bg-color-bg-secondary px-4 py-3 border-b border-color-border flex gap-2 flex-wrap">
           <button
           onClick={handleDrawZone}
+          aria-pressed={isDrawingZone}
           className={`px-3 py-1 rounded text-sm font-medium ${
           isDrawingZone ?
           'bg-color-primary text-white' :
           'bg-color-bg-primary border border-color-border'}`
           }>
-          
             {isDrawingZone ? 'Stop Drawing' : 'Draw Zone'}
           </button>
 
           <select
           value={currentZoneShape}
           onChange={(e) => setCurrentZoneShape(e.target.value as ZoneShape)}
+          aria-label="Zone shape"
           className="px-3 py-1 rounded text-sm border border-color-border">
           
             <option value={ZoneShape.CIRCLE}>{t("landing:circle", "Circle")}</option>

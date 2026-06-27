@@ -156,7 +156,7 @@ const AdminStandardsPage: React.FC = () => {
           style={{ flex: 1, minWidth: 200, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem', background: 'var(--surface)', color: 'var(--text)' }}
         />
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
-          <input type="checkbox" checked={showExpired} onChange={e => setShowExpired(e.target.checked)} />
+          <input type="checkbox" id="show-expired" checked={showExpired} onChange={e => setShowExpired(e.target.checked)} aria-label="Show expired standards" />
           Show expired
         </label>
         <button

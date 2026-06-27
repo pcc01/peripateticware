@@ -165,9 +165,10 @@ export default function SignupScreen({
           <div className="flex items-center mb-8">
             <Link
               to="/login"
+              aria-label="Back to login"
               className="text-gray-600 hover:text-gray-900 mr-4">
               
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{t("landing:join_us", "Join Us")}</h1>
@@ -189,92 +190,107 @@ export default function SignupScreen({
 
           <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:first_name", "First Name")}
+              <label htmlFor="signup-first-name" className="block text-sm font-medium text-gray-700 mb-2">{t("landing:first_name", "First Name")}
 
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
                   {...register('first_name')}
+                  id="signup-first-name"
                   type="text"
                   placeholder={t("landing:john", "John")}
+                  aria-describedby={errors.first_name ? "signup-first-name-error" : undefined}
+                  aria-invalid={!!errors.first_name}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 
               </div>
               {errors.first_name &&
-              <p className="text-red-600 text-xs mt-1">{errors.first_name.message}</p>
+              <p id="signup-first-name-error" role="alert" className="text-red-600 text-xs mt-1">{errors.first_name.message}</p>
               }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:last_name", "Last Name")}
+              <label htmlFor="signup-last-name" className="block text-sm font-medium text-gray-700 mb-2">{t("landing:last_name", "Last Name")}
 
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
                   {...register('last_name')}
+                  id="signup-last-name"
                   type="text"
                   placeholder={t("landing:doe", "Doe")}
+                  aria-describedby={errors.last_name ? "signup-last-name-error" : undefined}
+                  aria-invalid={!!errors.last_name}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 
               </div>
               {errors.last_name &&
-              <p className="text-red-600 text-xs mt-1">{errors.last_name.message}</p>
+              <p id="signup-last-name-error" role="alert" className="text-red-600 text-xs mt-1">{errors.last_name.message}</p>
               }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:email_address", "Email Address")}
+              <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-2">{t("landing:email_address", "Email Address")}
 
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
                   {...register('email')}
+                  id="signup-email"
                   type="email"
                   placeholder={t("landing:youexamplecom", "you@example.com")}
+                  aria-describedby={errors.email ? "signup-email-error" : undefined}
+                  aria-invalid={!!errors.email}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 
               </div>
               {errors.email &&
-              <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>
+              <p id="signup-email-error" role="alert" className="text-red-600 text-xs mt-1">{errors.email.message}</p>
               }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:password", "Password")}
+              <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-2">{t("landing:password", "Password")}
 
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
                   {...register('password')}
+                  id="signup-password"
                   type="password"
                   placeholder={t("landing:", "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022")}
+                  aria-describedby={errors.password ? "signup-password-error" : undefined}
+                  aria-invalid={!!errors.password}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 
               </div>
               {errors.password &&
-              <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>
+              <p id="signup-password-error" role="alert" className="text-red-600 text-xs mt-1">{errors.password.message}</p>
               }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t("landing:confirm_password", "Confirm Password")}
+              <label htmlFor="signup-password-confirm" className="block text-sm font-medium text-gray-700 mb-2">{t("landing:confirm_password", "Confirm Password")}
 
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
                   {...register('password_confirm')}
+                  id="signup-password-confirm"
                   type="password"
                   placeholder={t("landing:", "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022")}
+                  aria-describedby={errors.password_confirm ? "signup-password-confirm-error" : undefined}
+                  aria-invalid={!!errors.password_confirm}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 
               </div>
               {errors.password_confirm &&
-              <p className="text-red-600 text-xs mt-1">{errors.password_confirm.message}</p>
+              <p id="signup-password-confirm-error" role="alert" className="text-red-600 text-xs mt-1">{errors.password_confirm.message}</p>
               }
             </div>
 
@@ -287,6 +303,7 @@ export default function SignupScreen({
                 <button
                   key={option.value}
                   type="button"
+                  aria-pressed={role === option.value}
                   onClick={() => handleRoleSelect(option.value)}
                   className={`py-2 px-3 border-2 rounded-lg text-center font-medium transition text-sm ${
                   role === option.value
@@ -298,7 +315,7 @@ export default function SignupScreen({
                 )}
               </div>
               {errors.role &&
-              <p className="text-red-600 text-xs mt-1">{errors.role.message}</p>
+              <p id="signup-role-error" role="alert" className="text-red-600 text-xs mt-1">{errors.role.message}</p>
               }
             </div>
 
@@ -387,7 +404,7 @@ export default function SignupScreen({
               <label htmlFor="age_confirmed" className="text-sm text-gray-600 leading-tight cursor-pointer">{t('components_auth_signupscreen.i_confirm_that_i_am_18_years_of_age_or_o', 'I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account).')}</label>
             </div>
             {errors.age_confirmed && (
-              <p className="text-red-600 text-xs -mt-2">{errors.age_confirmed.message}</p>
+              <p id="signup-age-error" role="alert" className="text-red-600 text-xs -mt-2">{errors.age_confirmed.message}</p>
             )}
 
             {/* Submit */}

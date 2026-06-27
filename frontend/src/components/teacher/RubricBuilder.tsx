@@ -151,17 +151,20 @@ const RubricBuilder: React.FC = () => {
                 <div key={lIdx} className="flex items-center gap-2">
                   <input type="number" min={0} max={100}
                     className="w-14 px-2 py-1 rounded border text-sm text-center"
+                    aria-label={`Score for level ${lIdx + 1} of criterion ${cIdx + 1}`}
                     style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
                     value={level.score}
                     onChange={e => updateLevel(cIdx, lIdx, { score: parseInt(e.target.value) || 0 })}
                   />
                   <input className="w-28 px-2 py-1 rounded border text-sm"
+                    aria-label={`Label for level ${lIdx + 1} of criterion ${cIdx + 1}`}
                     style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
                     value={level.label}
                     onChange={e => updateLevel(cIdx, lIdx, { label: e.target.value })}
                     placeholder={t('level_label', 'Label')}
                   />
                   <input className="flex-1 px-2 py-1 rounded border text-sm"
+                    aria-label={`Description for level ${lIdx + 1} of criterion ${cIdx + 1}`}
                     style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--surface-alt)' }}
                     value={level.description}
                     onChange={e => updateLevel(cIdx, lIdx, { description: e.target.value })}

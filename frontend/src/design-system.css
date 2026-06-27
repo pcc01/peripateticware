@@ -1005,3 +1005,58 @@ textarea {
 .animate-slideIn {
   animation: slideIn var(--duration-base) var(--ease-in-out);
 }
+
+/* ============================================================================
+   WCAG 2.1 AA — ACCESSIBILITY
+   Added 2026-06-27 per audit
+   ============================================================================ */
+
+/* 2.4.7 — Visible focus indicator for keyboard users */
+:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Override the blanket outline:none on form elements — only suppress for mouse */
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 2.4.1 — Screen-reader-only utility (used by skip-nav link) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reveal .sr-only when focused (skip-nav pattern) */
+.sr-only.focus\:not-sr-only:focus,
+.sr-only:focus-visible {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 9999;
+  width: auto;
+  height: auto;
+  padding: 8px 16px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: white;
+  color: #1d4ed8;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #2563eb;
+}

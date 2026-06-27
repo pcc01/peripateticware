@@ -429,7 +429,7 @@ export const PeerProjectBuilder: React.FC<PeerProjectBuilderProps> = ({
         {/* Title */}
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">{t("landing:selfprojectview.project_title", "Project Title *")}</label>
-          <input value={title} onChange={(e) => setTitle(e.target.value)}
+          <input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Project title"
           placeholder={t("landing:what_challenge_will_classmates_explore", "What challenge will classmates explore?")}
           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm
                             focus:outline-none focus:ring-2 focus:ring-blue-300" />
@@ -453,7 +453,7 @@ export const PeerProjectBuilder: React.FC<PeerProjectBuilderProps> = ({
             <button onClick={addObjective} className="text-xs text-blue-600 hover:underline">{t("landing:selfprojectview.add", "+ Add")}</button>
           </div>
           {objectives.map((obj, i) =>
-          <input key={i} value={obj.text}
+          <input key={i} value={obj.text} aria-label={`Objective ${i + 1}`}
           onChange={(e) => updateObjective(i, e.target.value)}
           placeholder={`Objective ${i + 1}`}
           className="w-full border border-gray-100 rounded-lg px-3 py-1.5 text-sm mb-1.5
@@ -470,7 +470,7 @@ export const PeerProjectBuilder: React.FC<PeerProjectBuilderProps> = ({
           </div>
           {prompts.map((p, i) =>
           <div key={i} className="flex gap-1.5 mb-1.5">
-              <input value={p.prompt}
+              <input value={p.prompt} aria-label="Prompt text"
             onChange={(e) => updatePrompt(i, e.target.value)}
             placeholder={`Question ${i + 1} — e.g. "What do you notice about…?"`}
             className="flex-1 border border-gray-100 rounded-lg px-3 py-1.5 text-sm

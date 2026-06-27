@@ -41,6 +41,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
+          aria-required={required || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
           className={clsx(
             // Base styles
             'px-4 py-2 border rounded-lg',
@@ -69,12 +72,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         />
 
         {error && (
-          <span className="text-sm text-[var(--color-error-500)]">
+          <span id={`${inputId}-error`} role="alert" className="text-sm text-[var(--color-error-500)]">
             {error}
           </span>
         )}
         {hint && !error && (
-          <span className="text-sm text-[var(--color-gray-500)]">
+          <span id={`${inputId}-hint`} className="text-sm text-[var(--color-gray-500)]">
             {hint}
           </span>
         )}

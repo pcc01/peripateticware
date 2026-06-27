@@ -316,7 +316,7 @@ export default function AdminAIConfigPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <input type="text" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)}
+          <input type="text" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)} aria-label="Ollama server URL"
             placeholder="http://localhost:11434"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500" />
           <button onClick={() => saveProvider('ollama', ollamaUrl)} disabled={saving || !ollamaUrl.trim()}
@@ -418,7 +418,7 @@ function ProviderCard({ icon, title, accentClass, saveClass, current, placeholde
       </div>
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <input type={show ? 'text' : 'password'} value={value} onChange={e => onChange(e.target.value)}
+          <input type={show ? 'text' : 'password'} value={value} onChange={e => onChange(e.target.value)} aria-label="API key value"
             placeholder={current ? '...... (enter new key to replace)' : placeholder}
             className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 pr-10 ${accentClass}`}
             autoComplete="off" />

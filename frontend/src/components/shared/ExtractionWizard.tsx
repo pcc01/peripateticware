@@ -223,12 +223,13 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
               </>
             )}
           </div>
-          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx" aria-label="Upload file (PDF, CSV, or Excel)" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
           {file && (
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.set_name', 'Set name')}</label>
               <input value={setName} onChange={e => setSetName(e.target.value)}
+              aria-label="Criteria set name"
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }} />
             </div>
           )}
@@ -268,6 +269,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Set name <span style={{ color: 'var(--error, red)' }}>*</span></label>
             <input value={setName} onChange={e => setSetName(e.target.value)}
+              aria-label="Criteria set name"
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box', marginBottom: 12 }} />
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.description', 'Description')}</label>
             <textarea value={setDesc} onChange={e => setSetDesc(e.target.value)} rows={2}
@@ -290,12 +292,12 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('components_shared_extractionwizard.name', 'Name')}</label>
-                    <input value={c.name} onChange={e => updateCriterion(i, 'name', e.target.value)}
+                    <input value={c.name} onChange={e => updateCriterion(i, 'name', e.target.value)} aria-label={`Criterion ${i + 1} name`}
                       style={{ display: 'block', width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.88rem', boxSizing: 'border-box', marginTop: 3 }} />
                   </div>
                   <div>
                     <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('components_shared_extractionwizard.category', 'Category')}</label>
-                    <input value={c.category} onChange={e => updateCriterion(i, 'category', e.target.value)}
+                    <input value={c.category} onChange={e => updateCriterion(i, 'category', e.target.value)} aria-label={`Criterion ${i + 1} category`}
                       style={{ display: 'block', width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.88rem', boxSizing: 'border-box', marginTop: 3 }} />
                   </div>
                 </div>
@@ -306,12 +308,12 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={c.required} onChange={e => updateCriterion(i, 'required', e.target.checked)} />
+                    <input type="checkbox" checked={c.required} onChange={e => updateCriterion(i, 'required', e.target.checked)} aria-label={`Criterion ${i + 1} is required`} />
                     Required
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem' }}>
                     Weight:
-                    <input type="number" value={c.weight} min={0.1} max={10} step={0.1} onChange={e => updateCriterion(i, 'weight', parseFloat(e.target.value))}
+                    <input type="number" value={c.weight} min={0.1} max={10} step={0.1} onChange={e => updateCriterion(i, 'weight', parseFloat(e.target.value))} aria-label={`Criterion ${i + 1} weight`}
                       style={{ width: 60, padding: '4px 6px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.82rem' }} />
                   </label>
                   <button onClick={() => removeCriterion(i)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#be123c', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
