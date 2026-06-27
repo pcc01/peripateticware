@@ -409,6 +409,9 @@ frontend/test-results/
 frontend/playwright-report/
 frontend/playwright-report.json
 
+# ── Root-level test scripts (PowerShell e2e / smoke tests) ──
+test_*.ps1
+
 # ── Vite dev-server timestamp cache files ────────────────────
 frontend/vite.config.ts.timestamp-*.mjs
 

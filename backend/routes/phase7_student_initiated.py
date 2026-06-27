@@ -266,6 +266,7 @@ async def create_field_note(
     return _serialize_field_note(note)
 
 
+# P1-4 VERIFIED: wired to student_field_notes table, confirmed working
 @router.get("/student/field-notes")
 async def list_field_notes(
     note_status: Optional[str] = None,

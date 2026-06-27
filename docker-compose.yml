@@ -169,11 +169,21 @@ services:
       DEFAULT_PEER_PROJECT_APPROVAL_MODE: "teacher_gate"
       DEFAULT_MAX_ACTIVE_SELF_PROJECTS: "2"
 
+      # ── Cloudflare R2 Object Storage ─────────────────────────────────────
+      # Leave blank in development to use local /app/uploads/ volume fallback
+      CF_R2_ACCOUNT_ID: ${CF_R2_ACCOUNT_ID:-}
+      CF_R2_ACCESS_KEY_ID: ${CF_R2_ACCESS_KEY_ID:-}
+      CF_R2_SECRET_ACCESS_KEY: ${CF_R2_SECRET_ACCESS_KEY:-}
+      CF_R2_BUCKET_NAME: ${CF_R2_BUCKET_NAME:-peripateticware-uploads}
+      CF_R2_PUBLIC_URL: ${CF_R2_PUBLIC_URL:-}
+
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - media_files:/app/media
+      # Dev-only fallback: stores uploads locally when CF_R2_ACCOUNT_ID is unset
+      - uploads_dev:/app/uploads
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -235,3 +245,4 @@ volumes:
   postgres_data:
   redis_data:
   media_files:
+  uploads_dev:  # Dev-only: local fallback when R2 is not configured

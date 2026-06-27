@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     
+
+    # ── Cloudflare R2 Object Storage ──────────────────────────────────────────
+    CF_R2_ACCOUNT_ID: str = os.getenv("CF_R2_ACCOUNT_ID", "")
+    CF_R2_ACCESS_KEY_ID: str = os.getenv("CF_R2_ACCESS_KEY_ID", "")
+    CF_R2_SECRET_ACCESS_KEY: str = os.getenv("CF_R2_SECRET_ACCESS_KEY", "")
+    CF_R2_BUCKET_NAME: str = os.getenv("CF_R2_BUCKET_NAME", "peripateticware-uploads")
+    CF_R2_PUBLIC_URL: str = os.getenv("CF_R2_PUBLIC_URL", "")  # e.g. https://pub-xxx.r2.dev
     # ── LLM Provider Selection (legacy — per-task routing now via ai_task_config table) ──
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")
 

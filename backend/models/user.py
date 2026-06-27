@@ -32,6 +32,7 @@ class User(Base):
     org_id = Column(UUID(as_uuid=True), nullable=True)
     primary_org_id = Column(UUID(as_uuid=True), nullable=True)
     signup_country_code = Column(String(10), nullable=True)
+    state_code = Column(String(10), nullable=True)  # P1-5: homeschool state reporting
     is_platform_admin = Column(Boolean, default=False, nullable=False)
     invite_token_used = Column(String(128), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

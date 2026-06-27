@@ -232,6 +232,17 @@ async def _build_data(
     subjects = list({a.subject for a in activities if a.subject})
     days_logged = len({s.created_at.date() for s in completed if s.created_at})
 
+    # P1-6: query student_competencies for achieved/mastered count
+    from sqlalchemy import text as _text
+    _comp_result = await db.execute(
+        _text(
+            "SELECT COUNT(*) FROM student_competencies "
+            "WHERE student_id = :uid AND status IN ('achieved', 'mastered')"
+        ),
+        {"uid": str(target_id)},
+    )
+    competencies_count = _comp_result.scalar() or 0
+
     return {
         "report_title": {
             "activity_log": "Activity Log",
@@ -243,13 +254,13 @@ async def _build_data(
         "student_name": user.full_name or user.email,
         "child_name": user.full_name or user.email,
         "year": dt.utcnow().year,
-        "state_code": None,  # Set by homeschool user profile when built
+        "state_code": getattr(user, "state_code", None) or "",  # P1-5: read from users.state_code
         "activities": act_dicts,
         "sessions": sess_dicts,
         "recent_sessions": sess_dicts[:10],
         "sessions_completed": len(completed),
         "activities_count": len(activities),
-        "competencies_count": 0,  # TODO: wire to competencies table
+        "competencies_count": competencies_count,
         "days_logged": days_logged,
         "days_required": 180,
         "subjects": subjects,

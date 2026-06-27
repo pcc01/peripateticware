@@ -9,9 +9,10 @@ Endpoints for parent authentication, child progress tracking, messages, and repo
 
 from __future__ import annotations
 
+import calendar
 from datetime import datetime, timedelta
 from typing import List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID as _UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr, Field
@@ -238,7 +239,7 @@ async def get_parent_profile(
             "children": [],
             "created_at": parent.created_at.isoformat(),
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -255,28 +256,28 @@ async def update_parent_profile(
     """Update parent profile"""
     try:
         from sqlalchemy import select
-        
+
         result = await db.execute(
             select(User).where(User.id == parent_id, User.role == UserRole.PARENT)
         )
         parent = result.scalar()
-        
+
         if not parent:
             raise HTTPException(status_code=404, detail="Parent not found")
-        
+
         if name:
             parent.full_name = name
         # Add phone field to User model if needed
-        
+
         await db.commit()
-        
+
         return {
             "id": str(parent.id),
             "email": parent.email,
             "name": parent.full_name,
             "created_at": parent.created_at.isoformat(),
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -442,12 +443,48 @@ async def get_child_activities(
 ):
     """Get activity history for a child (paginated)"""
     try:
-        from uuid import UUID as _UUID
-        _UUID(child_id)  # validate UUID format before any DB use
-        # Child activity history — stub returning empty list until child linking is built
-        return []
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid child_id format")
+        try:
+            _UUID(child_id)
+        except ValueError:
+            raise HTTPException(400, "Invalid child_id format")
+
+        # Verify authorization via parent_child_links
+        link = (await db.execute(text(
+            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+        ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
+        if not link:
+            raise HTTPException(403, "Not authorized to view this child's activities")
+
+        rows = (await db.execute(text("""
+            SELECT ls.id AS session_id, a.id AS activity_id,
+                   a.title, COALESCE(a.subject, 'General') AS subject,
+                   a.description, ls.updated_at AS completed_at,
+                   COALESCE(a.estimated_duration_minutes, 60) AS duration
+            FROM learning_sessions ls
+            JOIN activities a ON a.id = ls.activity_id
+            WHERE ls.user_id = :cid::uuid AND ls.status = 'completed'
+            ORDER BY ls.updated_at DESC
+            LIMIT :lim OFFSET :off
+        """), {"cid": child_id, "lim": limit, "off": offset})).mappings().all()
+
+        return [
+            ActivityResponse(
+                id=str(r["activity_id"]),
+                session_id=str(r["session_id"]),
+                title=r["title"] or "Activity",
+                subject=r["subject"],
+                description=r["description"],
+                completed_at=r["completed_at"].isoformat() if r["completed_at"] else datetime.utcnow().isoformat(),
+                duration=int(r["duration"] or 60),
+                location=None,
+                evidence_count=0,
+                teacher_name="Teacher",
+            )
+            for r in rows
+        ]
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -458,66 +495,102 @@ async def get_child_activities(
 
 @router.get("/children/{child_id}/reports/weekly", response_model=WeeklyReportResponse)
 async def get_weekly_report(
-    parent_id: str = Query(...),
-    child_id: str = None,
+    child_id: str,
     week_start: Optional[str] = Query(None),  # ISO format date
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get weekly progress report for child"""
     try:
-        # Calculate week starting date
+        # Verify child link
+        link = (await db.execute(text(
+            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+        ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
+        if not link:
+            raise HTTPException(403, "Not authorized")
+
+        # Calculate week date range
         if not week_start:
             today = datetime.utcnow()
             week_start_date = today - timedelta(days=today.weekday())
         else:
             week_start_date = datetime.fromisoformat(week_start)
-        
+
         week_end_date = week_start_date + timedelta(days=6)
-        
-        # Query activities for the week
+
+        # Query real activity count for the week
+        count_row = (await db.execute(text("""
+            SELECT COUNT(*) FROM learning_sessions
+            WHERE user_id = :cid::uuid AND status = 'completed'
+              AND updated_at >= :ws AND updated_at < :we
+        """), {"cid": child_id, "ws": week_start_date, "we": week_end_date})).fetchone()
+        activities_completed = int(count_row[0]) if count_row else 0
+
         return {
             "child_id": child_id,
             "week_starting": week_start_date.isoformat(),
             "week_ending": week_end_date.isoformat(),
-            "activities_completed": 0,
-            "total_hours": 0.0,
+            "activities_completed": activities_completed,
+            "total_hours": round(activities_completed * 1.0, 1),
             "new_competencies": [],
             "highlights": [],
             "concerns": [],
             "average_engagement": 85,
             "class_average": 78,
         }
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/children/{child_id}/reports/monthly", response_model=MonthlyReportResponse)
 async def get_monthly_report(
-    parent_id: str = Query(...),
-    child_id: str = None,
+    child_id: str,
     month: int = Query(None, ge=1, le=12),
     year: int = Query(None),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get monthly progress report for child"""
     try:
+        # Verify child link
+        link = (await db.execute(text(
+            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+        ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
+        if not link:
+            raise HTTPException(403, "Not authorized")
+
         if not month or not year:
             today = datetime.utcnow()
             month = today.month
             year = today.year
-        
+
+        _, last_day = calendar.monthrange(year, month)
+        month_start = datetime(year, month, 1)
+        month_end = datetime(year, month, last_day, 23, 59, 59)
+
+        count_row = (await db.execute(text("""
+            SELECT COUNT(*) FROM learning_sessions
+            WHERE user_id = :cid::uuid AND status = 'completed'
+              AND updated_at >= :ms AND updated_at <= :me
+        """), {"cid": child_id, "ms": month_start, "me": month_end})).fetchone()
+        activities_completed = int(count_row[0]) if count_row else 0
+
         return {
             "child_id": child_id,
-            "month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month-1],
+            "month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month - 1],
             "year": year,
-            "activities_completed": 0,
-            "total_hours": 0.0,
+            "activities_completed": activities_completed,
+            "total_hours": round(activities_completed * 1.0, 1),
             "competencies_achieved": [],
             "growth_areas": [],
             "recommendations": [],
         }
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -528,41 +601,69 @@ async def get_monthly_report(
 
 @router.get("/messages", response_model=List[MessageResponse])
 async def get_messages(
-    parent_id: Optional[str] = Query(None),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get messages from teachers (paginated)"""
     try:
-        # Query messages where to_parent_id = parent_id
-        return []
-    
+        rows = (await db.execute(text("""
+            SELECT m.id, m.from_user_id, m.to_user_id, m.subject, m.body,
+                   m.conversation_id, m.read_at, m.created_at,
+                   u.full_name AS from_name
+            FROM parent_messages m
+            JOIN users u ON u.id = m.from_user_id
+            WHERE m.to_user_id = :uid
+            ORDER BY m.created_at DESC
+            LIMIT :lim OFFSET :off
+        """), {"uid": str(current_user.id), "lim": limit, "off": offset})).mappings().all()
+        return [
+            MessageResponse(
+                id=str(r["id"]),
+                from_teacher_id=str(r["from_user_id"]),
+                from_teacher_name=r["from_name"] or "Teacher",
+                to_parent_id=str(r["to_user_id"]),
+                subject=r["subject"],
+                body=r["body"],
+                read_at=r["read_at"].isoformat() if r["read_at"] else None,
+                created_at=r["created_at"].isoformat(),
+                conversation_id=str(r["conversation_id"]),
+            )
+            for r in rows
+        ]
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/messages/{message_id}/reply")
 async def reply_to_message(
-    parent_id: Optional[str] = Query(None),
-    message_id: str = None,
-    request: MessageReplyRequest = None,
+    message_id: str,
+    request: MessageReplyRequest,
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Reply to a teacher message"""
     try:
-        return {
-            "success": True,
-            "message": "Reply sent successfully",
-            "reply": {
-                "id": str(uuid4()),
-                "message_id": message_id,
-                "from_parent_id": parent_id,
-                "body": request.body,
-                "created_at": datetime.utcnow().isoformat(),
-            }
-        }
-    
+        orig = (await db.execute(text(
+            "SELECT conversation_id, from_user_id FROM parent_messages WHERE id = :mid::uuid"
+        ), {"mid": message_id})).fetchone()
+        if not orig:
+            raise HTTPException(status_code=404, detail="Message not found")
+        new_id = str(uuid4())
+        await db.execute(text("""
+            INSERT INTO parent_messages (id, from_user_id, to_user_id, subject, body, conversation_id)
+            VALUES (:id::uuid, :from_uid::uuid, :to_uid::uuid, 'Re: reply', :body, :conv_id::uuid)
+        """), {
+            "id": new_id, "from_uid": str(current_user.id),
+            "to_uid": str(orig[1]), "body": request.body, "conv_id": str(orig[0])
+        })
+        await db.commit()
+        return {"success": True, "reply_id": new_id, "created_at": datetime.utcnow().isoformat()}
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -573,33 +674,61 @@ async def reply_to_message(
 
 @router.get("/notifications", response_model=List[NotificationResponse])
 async def get_notifications(
-    parent_id: Optional[str] = Query(None),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     unread_only: bool = Query(False),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get notifications (paginated, optionally unread only)"""
     try:
-        return []
-    
+        base_q = """
+            SELECT id, user_id, title, message, is_read,
+                   COALESCE(type, 'info') AS type,
+                   related_child_id, action_url, created_at
+            FROM notifications
+            WHERE user_id = :uid
+        """
+        params = {"uid": str(current_user.id), "lim": limit, "off": offset}
+        if unread_only:
+            base_q += " AND is_read = false"
+        base_q += " ORDER BY created_at DESC LIMIT :lim OFFSET :off"
+        rows = (await db.execute(text(base_q), params)).mappings().all()
+        return [
+            NotificationResponse(
+                id=str(r["id"]),
+                parent_id=str(r["user_id"]),
+                type=r["type"] or "info",
+                title=r["title"] or "",
+                body=r["message"] or "",
+                related_child_id=str(r["related_child_id"]) if r["related_child_id"] else "",
+                action_url=r["action_url"],
+                read_at=r["created_at"].isoformat() if r["is_read"] else None,
+                created_at=r["created_at"].isoformat(),
+            )
+            for r in rows
+        ]
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/notifications/{notification_id}/read")
 async def mark_notification_as_read(
-    parent_id: Optional[str] = Query(None),
-    notification_id: str = None,
+    notification_id: str,
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark notification as read"""
     try:
-        return {
-            "success": True,
-            "message": "Notification marked as read",
-        }
-    
+        await db.execute(text("""
+            UPDATE notifications SET is_read = true, updated_at = NOW()
+            WHERE id = :nid::uuid AND user_id = :uid::uuid
+        """), {"nid": notification_id, "uid": str(current_user.id)})
+
+        await db.commit()
+        return {"success": True, "message": "Notification marked as read"}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -610,41 +739,66 @@ async def mark_notification_as_read(
 
 @router.get("/settings", response_model=SettingsResponse)
 async def get_settings(
-    parent_id: str = Query(...),
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get parent settings"""
     try:
-        return {
-            "parent_id": parent_id,
-            "dark_mode": False,
-            "language": "en",
-            "email_frequency": "weekly",
-            "notifications_enabled": True,
-            "push_notifications_enabled": True,
-        }
-    
+        row = (await db.execute(text(
+            "SELECT * FROM parent_settings WHERE parent_id = :pid::uuid"
+        ), {"pid": str(current_user.id)})).mappings().fetchone()
+        if not row:
+            return SettingsResponse(parent_id=str(current_user.id))
+        return SettingsResponse(
+            parent_id=str(current_user.id),
+            dark_mode=row["dark_mode"],
+            language=row["language"],
+            email_frequency=row["email_frequency"],
+            notifications_enabled=row["notifications_enabled"],
+            push_notifications_enabled=row["push_notifications_enabled"],
+        )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/settings", response_model=SettingsResponse)
 async def update_settings(
-    parent_id: str = Query(...),
-    request: SettingsRequest = None,
+    request: SettingsRequest,
+    current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Update parent settings"""
     try:
-        return {
-            "parent_id": parent_id,
-            "dark_mode": request.dark_mode or False,
-            "language": request.language or "en",
-            "email_frequency": request.email_frequency or "weekly",
-            "notifications_enabled": request.notifications_enabled or True,
-            "push_notifications_enabled": request.push_notifications_enabled or True,
-        }
-    
+        await db.execute(text("""
+            INSERT INTO parent_settings
+                (parent_id, dark_mode, language, email_frequency, notifications_enabled, push_notifications_enabled)
+            VALUES (:pid::uuid, :dm, :lang, :freq, :notif, :push)
+            ON CONFLICT (parent_id) DO UPDATE SET
+                dark_mode = EXCLUDED.dark_mode,
+                language = EXCLUDED.language,
+                email_frequency = EXCLUDED.email_frequency,
+                notifications_enabled = EXCLUDED.notifications_enabled,
+                push_notifications_enabled = EXCLUDED.push_notifications_enabled,
+                updated_at = NOW()
+        """), {
+            "pid": str(current_user.id),
+            "dm": request.dark_mode or False,
+            "lang": request.language or "en",
+            "freq": request.email_frequency or "weekly",
+            "notif": request.notifications_enabled if request.notifications_enabled is not None else True,
+            "push": request.push_notifications_enabled if request.push_notifications_enabled is not None else True,
+        })
+        await db.commit()
+        return SettingsResponse(
+            parent_id=str(current_user.id),
+            dark_mode=request.dark_mode or False,
+            language=request.language or "en",
+            email_frequency=request.email_frequency or "weekly",
+            notifications_enabled=request.notifications_enabled if request.notifications_enabled is not None else True,
+            push_notifications_enabled=request.push_notifications_enabled if request.push_notifications_enabled is not None else True,
+        )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -667,10 +821,9 @@ async def export_report(
             "message": "Report exported successfully",
             "download_url": f"/api/v1/downloads/{report_id}.{format}",
         }
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 # =============================================================================
@@ -686,14 +839,10 @@ async def get_parent_dashboard(
 ):
     """
     Parent dashboard: linked children with basic progress summary.
-    Frontend: useParentStore.fetchDashboard() → GET /api/v1/parent/dashboard
+    Frontend: useParentStore.fetchDashboard() -> GET /api/v1/parent/dashboard
     """
-    # Get linked children (users with STUDENT role linked to this parent)
-    # For now, return all students the parent has access to via email domain or direct link
-    # This uses the child-linking model if present, otherwise returns empty list with helpful structure
     try:
         from models.database import Activity
-        # Count published activities for context
         activity_count_result = await db.execute(
             _select(_func.count()).where(Activity.status == "published", Activity.is_active == True)
         )
@@ -704,13 +853,13 @@ async def get_parent_dashboard(
     return {
         "parent_id": str(current_user.id),
         "parent_name": current_user.full_name or current_user.email,
-        "children": [],  # Populated via /parent/children after linking
+        "children": [],
         "total_available_activities": total_activities,
         "message": "Link children via POST /api/v1/parent/children/link to see their progress here.",
     }
 
 
-# ── GPS Tracking Consent (COPPA) ────────────────────────────────────────────
+# -- GPS Tracking Consent (COPPA) --------------------------------------------
 
 class GPSConsentRequest(BaseModel):
     activity_id: str
@@ -728,9 +877,9 @@ async def record_gps_consent(
     Parent records GPS-tracking consent for a specific student+activity.
     Stores a row in consent_logs with consent_type='gps_tracking'.
     Set consent_given=false to explicitly revoke.
-    Idempotent — upserts on (student_id_hash, consent_type, activity_id).
+    Idempotent -- upserts on (student_id_hash, consent_type, activity_id).
     """
-    import hashlib, json
+    import hashlib
     from datetime import timezone
 
     student_id_hash = hashlib.sha256(body.student_id.encode()).hexdigest()

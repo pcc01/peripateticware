@@ -567,25 +567,64 @@ async def add_evidence_capture(
 
 async def _save_file(upload: UploadFile, session_id: UUID) -> tuple[str, int]:
     """
-    Persist an uploaded file to the local uploads volume.
-    Returns (relative_url, size_bytes).
-
-    Replace this function body with S3 logic for production.
+    Persist an uploaded file to Cloudflare R2 (S3-compatible).
+    Falls back to local /app/uploads/ if CF_R2_ACCOUNT_ID is not configured (dev mode).
     """
-    import os, aiofiles
+    import re
+    import asyncio
+    import functools
 
-    upload_dir = f"/app/uploads/sessions/{session_id}"
-    os.makedirs(upload_dir, exist_ok=True)
+    # Sanitise filename
+    safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", upload.filename or "file")
+    safe_name = safe_name[:200]
 
-    safe_name = f"{uuid.uuid4()}_{upload.filename}"
-    dest      = os.path.join(upload_dir, safe_name)
+    file_bytes = await upload.read()
+    file_size = len(file_bytes)
 
-    contents = await upload.read()
-    async with aiofiles.open(dest, "wb") as f:
-        await f.write(contents)
+    if not settings.CF_R2_ACCOUNT_ID:
+        # Dev fallback: write to local volume
+        import os
+        upload_dir = f"/app/uploads/sessions/{session_id}"
+        os.makedirs(upload_dir, exist_ok=True)
+        dest = f"{upload_dir}/{safe_name}"
+        with open(dest, "wb") as fh:
+            fh.write(file_bytes)
+        return f"/uploads/sessions/{session_id}/{safe_name}", file_size
 
-    relative_url = f"/uploads/sessions/{session_id}/{safe_name}"
-    return relative_url, len(contents)
+    # Production: upload to Cloudflare R2
+    import boto3
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    endpoint_url = f"https://{settings.CF_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+    key = f"sessions/{session_id}/{safe_name}"
+
+    def _upload():
+        client = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=settings.CF_R2_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.CF_R2_SECRET_ACCESS_KEY,
+            region_name="auto",
+        )
+        client.put_object(
+            Bucket=settings.CF_R2_BUCKET_NAME,
+            Key=key,
+            Body=file_bytes,
+            ContentType=upload.content_type or "application/octet-stream",
+        )
+
+    try:
+        await asyncio.to_thread(_upload)
+    except (BotoCoreError, ClientError) as exc:
+        logger.error(f"R2 upload failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"File upload failed: {exc}")
+
+    if settings.CF_R2_PUBLIC_URL:
+        public_url = f"{settings.CF_R2_PUBLIC_URL.rstrip('/')}/{key}"
+    else:
+        public_url = f"r2://{settings.CF_R2_BUCKET_NAME}/{key}"
+
+    return public_url, file_size
 
 
 # ─────────────────────────────────────────────────────────────────────────────

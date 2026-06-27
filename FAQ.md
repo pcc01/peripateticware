@@ -37,8 +37,8 @@ This is a "source-available" license, which means:
 
 Contact Paul Christopher Cerda for pricing based on your organization's size and needs.
 
-**Email:** [your email]  
-**Website:** [your website]
+**Email:** admin@thewordinbits.com  
+**Website:** peripateticware.com
 
 ### **What if I'm a large school district?**
 
@@ -545,11 +545,13 @@ You just can't resell it as a service.
 
 ### **Can I integrate with other systems?**
 
-The backend provides a REST API for:
-- Grade book systems (Canvas, Schoology, Infinite Campus)
+The backend provides a REST API that third-party tools can call.
+Current integrations are **custom/consulting only** — no turnkey connectors are shipped yet.
+
+Planned integrations (see Roadmap section below):
+- Grade book / LMS sync (Canvas, Schoology, Infinite Campus, Google Classroom)
 - SSO (Single Sign-On) via OIDC/SAML
-- Learning Management Systems (Canvas, Blackboard, Google Classroom)
-- Roster sync systems
+- Roster sync (Clever and similar)
 - Analytics platforms
 
 Contact Paul Christopher Cerda for integration consulting.
@@ -741,13 +743,13 @@ Peripateticware is unique because:
 
 ### **What if my school already uses a learning platform?**
 
-Peripateticware integrates with existing systems:
-- Rosters sync with Canvas, Clever, etc.
-- Grades can sync back to grade book
+Peripateticware is designed to run alongside your existing LMS rather than replace it.
+The following integration features are **on the roadmap** (not yet available):
+- Roster sync with Canvas, Clever, etc.
+- Grade passback to your grade book
 - Single sign-on via OIDC/SAML
-- Runs alongside existing tools
 
-It's designed to complement, not replace, your LMS.
+Today it runs standalone; data can be exported manually for use in other systems.
 
 ### **How does this relate to Artificial Intelligence?**
 
@@ -778,9 +780,36 @@ You can be teaching location-based lessons within a week.
 
 ---
 
+---
+
+## 🗺️ Roadmap (Planned — Not Yet Available)
+
+The following features are **planned** for future releases and are **not currently implemented**:
+
+### LMS & Grade Book Integrations
+- Canvas, Schoology, Infinite Campus, Google Classroom grade sync
+- Blackboard and other LMS connectors
+
+### Single Sign-On (SSO)
+- OIDC (OpenID Connect) provider support
+- SAML 2.0 (for district identity providers)
+
+### Roster Sync
+- Clever integration for automated roster management
+- CSV roster import/export (manual workaround available today)
+
+### Native Mobile Apps
+- iOS and Android student apps (Phase 6 target: 2026–2027)
+
+### Community & Collaboration
+- Community forum / GitHub Discussions
+- Student collaboration features (peer projects)
+
+---
+
 **For more questions, contact Paul Christopher Cerda**
 
-**Email:** [your email]  
-**Website:** [your website]
+**Email:** admin@thewordinbits.com  
+**Website:** peripateticware.com
 
 **Happy teaching! 📚🌍**

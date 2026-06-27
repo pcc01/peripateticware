@@ -125,6 +125,11 @@ geoip2==4.8.0          # MaxMind GeoLite2 IP geolocation (country lookup for geo
 # Rate limiting
 slowapi==0.1.9
 
+# ============================================================================
+# CLOUD STORAGE (Cloudflare R2 via S3-compatible API)
+# ============================================================================
+boto3>=1.34.0
+
 # AI batch scheduler
 apscheduler==3.10.4
 
