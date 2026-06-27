@@ -227,3 +227,72 @@ class PrivacyNotice(Base):
         return "<PrivacyNotice {} {} {} current={}>".format(
             self.jurisdiction, self.notice_type, self.version, self.is_current
         )
+
+
+# ---------------------------------------------------------------------------
+# Breach Incident — GDPR Art. 33/34
+# ---------------------------------------------------------------------------
+
+import enum as _enum   # avoid shadowing anything already imported
+
+
+class BreachSeverity(str, _enum.Enum):
+    LOW      = "low"        # no likely harm to individuals
+    MEDIUM   = "medium"     # possible harm; requires DPA notification
+    HIGH     = "high"       # likely high risk; requires user notification
+    CRITICAL = "critical"   # immediate action required
+
+
+class BreachStatus(str, _enum.Enum):
+    DISCOVERED    = "discovered"    # just logged, clock running
+    INVESTIGATING = "investigating" # root cause being determined
+    CONTAINED     = "contained"     # breach stopped, notifying
+    CLOSED        = "closed"        # all notifications done, post-mortem complete
+
+
+class BreachIncident(Base):
+    """
+    GDPR Art. 33/34 breach incident log.
+
+    Lifecycle:
+      DISCOVERED → INVESTIGATING → CONTAINED → CLOSED
+      DPA must be notified within 72h of discovery (dpa_deadline).
+      Users must be notified if severity >= HIGH.
+    """
+    __tablename__ = "breach_incidents"
+
+    id                    = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # Discovery
+    discovered_at         = Column(DateTime, nullable=False, default=datetime.utcnow)
+    reported_by           = Column(String(256), nullable=False)   # admin email or user ID
+    description           = Column(Text, nullable=False)
+    root_cause            = Column(Text, nullable=True)
+
+    # Scope
+    severity              = Column(String(20), nullable=False, default=BreachSeverity.MEDIUM)
+    status                = Column(String(20), nullable=False, default=BreachStatus.DISCOVERED)
+    affected_user_count   = Column(Integer, nullable=True)
+    data_categories       = Column(JSONB, nullable=False, default=list)  # ["email","location",...]
+    jurisdictions         = Column(JSONB, nullable=False, default=list)  # ["gdpr_eu","ccpa",...]
+
+    # GDPR Art. 33: DPA notification
+    dpa_notification_required  = Column(Boolean, nullable=False, default=True)
+    dpa_deadline               = Column(DateTime, nullable=True)   # discovered_at + 72h
+    dpa_notified_at            = Column(DateTime, nullable=True)
+    dpa_reference_number       = Column(String(100), nullable=True)  # assigned by DPA
+
+    # GDPR Art. 34: User notification
+    user_notification_required = Column(Boolean, nullable=False, default=False)
+    users_notified_at          = Column(DateTime, nullable=True)
+    users_notified_count       = Column(Integer, nullable=True)
+
+    # Audit
+    containment_actions   = Column(Text, nullable=True)
+    internal_notes        = Column(Text, nullable=True)
+    created_at            = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at            = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    closed_at             = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<BreachIncident {self.id} severity={self.severity} status={self.status}>"

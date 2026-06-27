@@ -15,6 +15,7 @@ from typing import List, Optional
 from uuid import uuid4, UUID as _UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from core.encryption import blind_index as _blind_index
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -309,7 +310,7 @@ async def link_child(
     try:
         # Find the child user
         result = await db.execute(
-            _sel(User).where(User.email == body.child_email)
+            _sel(User).where(User.email_index == _blind_index(body.child_email))
         )
         child = result.scalar_one_or_none()
         if not child:

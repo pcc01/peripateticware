@@ -6,6 +6,7 @@ from datetime import datetime
 import uuid
 import enum
 from core.database import Base
+from core.encryption import EncryptedString
 
 class UserRole(str, enum.Enum):
     STUDENT = "STUDENT"
@@ -17,12 +18,13 @@ class UserRole(str, enum.Enum):
 class User(Base):
     __tablename__ = 'users'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String(255), unique=True, nullable=False, index=True)
+    email = Column(EncryptedString(600), unique=True, nullable=False, index=True)
+    email_index = Column(String(64), nullable=True, index=True, unique=True)
     username = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
-    full_name = Column(String(255), nullable=True)
+    full_name = Column(EncryptedString(600), nullable=True)
     role = Column(String(50), default='STUDENT', nullable=False, index=True)
     avatar_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)

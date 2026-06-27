@@ -16,6 +16,7 @@ from typing import Optional
 
 from core.database import get_db
 from models.user import User
+from core.encryption import blind_index as _blind_index
 from services.signed_url import SignedURL, SignedURLError, SignedURLExpired
 from services.email_service import send_password_reset_email
 
@@ -81,7 +82,7 @@ async def forgot_password(
     db: AsyncSession = Depends(get_db),
 ) -> ForgotPasswordResponse:
     """Initiate password reset. Always returns success to prevent user enumeration."""
-    result = await db.execute(select(User).where(User.email == request.email))
+    result = await db.execute(select(User).where(User.email_index == _blind_index(request.email)))
     user = result.scalar_one_or_none()
 
     if user:

@@ -17,6 +17,7 @@ import enum
 # All other models in this file reference User via string "User" in relationships
 # so there is no circular import issue.
 from models.user import User, UserRole  # noqa: F401
+from core.encryption import EncryptedString  # noqa: F401
 
 
 class StudentProfile(Base):
@@ -447,7 +448,7 @@ class Notification(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     title = Column(String(255))
-    message = Column(Text)
+    message = Column(EncryptedString(4000), nullable=True)
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -499,6 +500,8 @@ class StudentCapture(Base):
     captured_at        = Column(DateTime, default=datetime.utcnow, index=True)
     location_latitude  = Column(Float, nullable=True)
     location_longitude = Column(Float, nullable=True)
+    location_lat_enc   = Column(EncryptedString(200), nullable=True)  # encrypted GPS lat
+    location_lon_enc   = Column(EncryptedString(200), nullable=True)  # encrypted GPS lon
 
     transcript            = Column(Text, nullable=True)
     transcript_confidence = Column(Float, nullable=True)

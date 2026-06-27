@@ -474,3 +474,10 @@ try:
     app.include_router(onboarding_router, prefix="/api/v1")       # router prefix="/onboarding"
 except Exception as e:
     print(f"Warning: could not register onboarding_router: {e}")
+
+# ── Breach Notification (GDPR Art. 33/34) ────────────────────────────────────
+try:
+    from routes.breach import router as breach_router
+    app.include_router(breach_router, prefix="/api/v1")           # router prefix="/breach"
+except Exception as e:
+    print(f"Warning: could not register breach_router: {e}")

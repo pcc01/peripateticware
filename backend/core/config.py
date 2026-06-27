@@ -79,6 +79,14 @@ class Settings(BaseSettings):
     # SHA-256(student_id + AUDIT_HASH_SALT) is stored in rule_audit_log.student_id_hash
     # MUST be set to a cryptographically random value in production
     AUDIT_HASH_SALT: str = os.getenv("AUDIT_HASH_SALT", "dev-audit-salt-change-in-production")
+
+    # ── Field-Level Encryption ────────────────────────────────────────────────
+    # Fernet key for encrypting PII columns (email, full_name, GPS coords, messages).
+    # Generate: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Leave blank in development — encryption is disabled and plaintext is stored.
+    # MUST be set before first production deployment. Rotating requires re-running
+    # backend/scripts/encrypt_existing_data.py with the new key.
+    FIELD_ENCRYPTION_KEY: str = os.getenv("FIELD_ENCRYPTION_KEY", "")
     
     # CORS - Store as string, parse as needed
     CORS_ORIGINS_STR: str = os.getenv("CORS_ORIGINS", '["*"]')

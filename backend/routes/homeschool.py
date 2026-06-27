@@ -32,6 +32,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from core.security import SecurityManager
 from models.user import User
+from core.encryption import blind_index as _blind_index
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/homeschool", tags=["homeschool"])
@@ -176,7 +177,7 @@ async def create_child(
             )
 
     # Check email not already taken
-    existing = (await db.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
+    existing = (await db.execute(select(User).where(User.email_index == _blind_index(body.email)))).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=409, detail="Email already in use")
 
@@ -184,6 +185,7 @@ async def create_child(
     child = User(
         id=child_id,
         email=body.email,
+        email_index=_blind_index(body.email),
         username=body.email.split("@")[0] + "_" + str(child_id)[:8],
         hashed_password=SecurityManager.hash_password(body.password),
         full_name=body.full_name,

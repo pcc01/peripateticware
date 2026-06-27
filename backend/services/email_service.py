@@ -256,3 +256,87 @@ async def send_progress_digest(
     subject = (f"Weekly Progress: {child_name}" if period == "weekly"
                else f"Monthly Report: {child_name}")
     return await _send(to, subject, html)
+
+
+# ---------------------------------------------------------------------------
+# Breach notification emails — GDPR Art. 33 (DPA) & Art. 34 (users)
+# ---------------------------------------------------------------------------
+
+async def send_dpa_breach_notification(
+    dpa_email: str,
+    incident_id: str,
+    discovered_at: str,
+    severity: str,
+    description: str,
+    data_categories: list,
+    affected_count: "int | None",
+    jurisdictions: list,
+    controller_name: str = "Peripateticware",
+    controller_contact: str = "privacy@peripateticware.com",
+) -> bool:
+    """GDPR Art. 33: Notify the Data Protection Authority of a personal data breach."""
+    body = f"""
+    <h2>Personal Data Breach Notification &mdash; GDPR Article 33</h2>
+    <p><strong>Incident ID:</strong> {incident_id}</p>
+    <p><strong>Data Controller:</strong> {controller_name} ({controller_contact})</p>
+    <p><strong>Date/Time Discovered:</strong> {discovered_at} UTC</p>
+    <p><strong>Severity:</strong> {severity.upper()}</p>
+    <p><strong>Jurisdictions Affected:</strong> {', '.join(jurisdictions)}</p>
+    <h3>Nature of the Breach</h3>
+    <p>{description}</p>
+    <h3>Categories of Personal Data Involved</h3>
+    <p>{', '.join(data_categories)}</p>
+    <h3>Approximate Number of Individuals Affected</h3>
+    <p>{affected_count if affected_count is not None else 'Under investigation'}</p>
+    <h3>Likely Consequences</h3>
+    <p>Under investigation. Full impact assessment in progress.</p>
+    <h3>Measures Taken</h3>
+    <p>Containment measures have been initiated. Full report to follow within 30 days per GDPR Art. 33(4).</p>
+    <hr>
+    <p><small>This notification is submitted pursuant to GDPR Article 33.
+    Reference: {incident_id}. Controller DPO contact: {controller_contact}</small></p>
+    """
+    return await send_notification(
+        dpa_email,
+        f"[BREACH NOTIFICATION] {controller_name} — Incident {incident_id[:8]}",
+        body,
+    )
+
+
+async def send_user_breach_notification(
+    to: str,
+    incident_id: str,
+    data_categories: list,
+    description_for_users: str,
+    recommended_actions: "list | None" = None,
+    controller_contact: str = "privacy@peripateticware.com",
+) -> bool:
+    """GDPR Art. 34: Notify affected users of a high-risk breach."""
+    actions_html = ""
+    if recommended_actions:
+        items = "".join(f"<li>{a}</li>" for a in recommended_actions)
+        actions_html = f"<h3>Recommended Actions</h3><ul>{items}</ul>"
+
+    body = f"""
+    <h2>Important Security Notice</h2>
+    <p>We are contacting you because a security incident may have affected personal data
+    associated with your Peripateticware account.</p>
+    <h3>What Happened</h3>
+    <p>{description_for_users}</p>
+    <h3>What Information Was Involved</h3>
+    <p>The following categories of information may have been affected:
+    {', '.join(data_categories)}.</p>
+    {actions_html}
+    <h3>What We Are Doing</h3>
+    <p>We have taken immediate steps to contain the incident and have notified the relevant
+    Data Protection Authority as required by law. A full investigation is underway.</p>
+    <h3>Contact Us</h3>
+    <p>If you have questions, contact our privacy team at
+    <a href="mailto:{controller_contact}">{controller_contact}</a>.</p>
+    <p>Reference: {incident_id[:8]}</p>
+    """
+    return await send_notification(
+        to,
+        "Important Security Notice — Peripateticware",
+        body,
+    )

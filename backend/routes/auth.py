@@ -39,6 +39,7 @@ try:
     from core.database import get_db
     from core.security import SecurityManager, create_access_token
     from models.user import User
+    from core.encryption import blind_index as _blind_index
     logger.info("âœ… Auth routes: All imports successful")
 except ImportError as e:
     logger.error(f"âŒ Auth routes: Import failed: {e}")
@@ -227,7 +228,7 @@ async def login(
         # Try email first (if provided)
         if body.email:
             result = await db.execute(
-                select(User).where(User.email == body.email.lower())
+                select(User).where(User.email_index == _blind_index(body.email.lower()))
             )
             user = result.scalar_one_or_none()
         
@@ -349,7 +350,7 @@ async def signup(
         
         # Check if email already exists
         result = await db.execute(
-            select(User).where(User.email == body.email.lower())
+            select(User).where(User.email_index == _blind_index(body.email.lower()))
         )
         existing_user = result.scalar_one_or_none()
         
@@ -396,6 +397,7 @@ async def signup(
         new_user = User(
             id=new_user_id,
             email=body.email.lower(),
+            email_index=_blind_index(body.email.lower()),
             username=_username,
             hashed_password=SecurityManager.hash_password(body.password),
             first_name=body.first_name,
@@ -646,6 +648,21 @@ async def resend_verification(
     Always returns success to prevent enumeration.
     Rate limiting handled by slowapi on the router.
     """
+    from services.signed_url import SignedURL
     email = body.get("email", "").lower().strip()
     if email:
-        result = await db.execu
+        result = await db.execute(
+            select(User).where(User.email_index == _blind_index(email))
+        )
+        user = result.scalar_one_or_none()
+        if user and not user.is_active:
+            try:
+                ver_token = SignedURL.generate(
+                    purpose="email_verification",
+                    payload={"user_id": str(user.id), "email": user.email},
+                )
+                from services.email_service import send_verification_email
+                await send_verification_email(user.email, ver_token)
+            except Exception as _e:
+                logger.warning("Resend verification email failed: %s", _e)
+    return {"success": True, "message": "If an account with that email exists and is unverified, a new link has been sent."}

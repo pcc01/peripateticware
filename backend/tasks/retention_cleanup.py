@@ -219,6 +219,54 @@ async def _safe_run(coro, name: str) -> int:
         raise
 
 
+
+
+async def check_overdue_dpa_notifications(db: AsyncSession) -> int:
+    """
+    Alert admin if any breach incident has passed its 72-hour DPA deadline
+    without a notification being sent. Runs hourly via the retention scheduler.
+    """
+    from services.email_service import send_notification
+    from core.config import settings
+
+    now = datetime.utcnow()
+    overdue = (await db.execute(text("""
+        SELECT id, discovered_at, dpa_deadline, severity, description
+        FROM breach_incidents
+        WHERE dpa_notification_required = true
+          AND dpa_notified_at IS NULL
+          AND dpa_deadline < :now
+    """), {"now": now})).fetchall()
+
+    if not overdue:
+        return 0
+
+    for row in overdue:
+        incident_id, discovered_at, deadline, severity, description = row
+        hours_overdue = (now - deadline).total_seconds() / 3600
+        logger.critical(
+            f"BREACH INCIDENT OVERDUE: {incident_id} — "
+            f"DPA notification {hours_overdue:.1f}h past 72h deadline"
+        )
+        try:
+            await send_notification(
+                to=settings.ADMIN_EMAIL,
+                subject=f"[URGENT] Breach DPA notification overdue — {incident_id}",
+                body_html=f"""
+                <h2>Breach Notification Overdue</h2>
+                <p>Incident <strong>{incident_id}</strong> has passed its 72-hour DPA notification
+                deadline by <strong>{hours_overdue:.1f} hours</strong>.</p>
+                <p><strong>Discovered:</strong> {discovered_at}</p>
+                <p><strong>Severity:</strong> {severity}</p>
+                <p><strong>Description:</strong> {description}</p>
+                <p>Log in to the admin panel and send the DPA notification immediately.</p>
+                """,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send overdue alert for {incident_id}: {e}")
+
+    return len(overdue)
+
 async def run_retention_cleanup():
     """Run all retention cleanup tasks, each in its own DB session.
 
@@ -235,6 +283,7 @@ async def run_retention_cleanup():
         ("purge_stale_location_history",   purge_stale_location_history),
         ("purge_expired_consent_records",  purge_expired_consent_records),
         ("hard_delete_soft_deleted_users", hard_delete_soft_deleted_users),  # P3-6
+        ("check_overdue_dpa_notifications",  check_overdue_dpa_notifications),  # P4
     ]
     for name, fn in tasks:
         try:
