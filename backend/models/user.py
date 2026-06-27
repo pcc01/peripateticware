@@ -26,6 +26,7 @@ class User(Base):
     role = Column(String(50), default='STUDENT', nullable=False, index=True)
     avatar_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    deleted_at = Column(DateTime, nullable=True, index=True)  # soft-delete timestamp (P3-6)
     age_group = Column(String(20), nullable=True)
     requires_parental_consent = Column(Boolean, default=False)
     consent_token = Column(String(128), nullable=True)

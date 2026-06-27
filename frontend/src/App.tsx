@@ -27,6 +27,7 @@ import LandingPage from './components/LandingPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import CookiePolicyPage from './pages/CookiePolicyPage'
+import DoNotSellPage from './pages/DoNotSellPage'
 import LoginScreen from './components/auth/LoginScreen'
 import SignUpScreen from './components/auth/SignUpScreen'
 
@@ -315,6 +316,7 @@ const App: React.FC = () => {
           <Route path="/about/origin" element={<OriginStoryPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
+          <Route path="/do-not-sell" element={<DoNotSellPage />} />
           <Route path="/parent-consent/:token" element={<ParentConsentPage />} />
           <Route path="/login" element={<LoginScreenWrapper />} />
           <Route path="/signup" element={<SignUpScreenWrapper />} />

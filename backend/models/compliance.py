@@ -200,3 +200,30 @@ class UserRegulationAssignment(Base):
 
     def __repr__(self) -> str:
         return "<UserRegulationAssignment user={} catalog={}>".format(self.user_id, self.catalog_id)
+
+
+class PrivacyNotice(Base):
+    """Versioned privacy notices — the text users consent to."""
+
+    __tablename__ = "privacy_notices"
+    __table_args__ = (
+        UniqueConstraint('version', 'jurisdiction', 'notice_type', name='uq_notice_version_jurisdiction_type'),
+    )
+
+    id             = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    version        = Column(String(20),  nullable=False)           # e.g. "1.0", "1.1"
+    jurisdiction   = Column(String(50),  nullable=False, index=True)  # "gdpr_eu", "ccpa", "ferpa", "global"
+    notice_type    = Column(String(50),  nullable=False)           # "privacy_policy" | "cookie_policy" | "data_processing"
+    title          = Column(String(255), nullable=False)
+    content        = Column(Text,        nullable=False)
+    summary        = Column(Text,        nullable=True)            # plain-language summary
+    effective_date = Column(DateTime,    nullable=False, default=datetime.utcnow)
+    superseded_by  = Column(UUID(as_uuid=True), nullable=True)    # FK to newer version
+    is_current     = Column(Boolean,     nullable=False, default=True)
+    created_at     = Column(DateTime,    default=datetime.utcnow, nullable=False)
+    created_by     = Column(String(100), nullable=True)
+
+    def __repr__(self) -> str:
+        return "<PrivacyNotice {} {} {} current={}>".format(
+            self.jurisdiction, self.notice_type, self.version, self.is_current
+        )

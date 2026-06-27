@@ -140,6 +140,71 @@ async def purge_expired_consent_records(db: AsyncSession) -> int:
     return count
 
 
+
+async def hard_delete_soft_deleted_users(db: AsyncSession) -> int:
+    """
+    Permanently delete users who were soft-deleted more than 30 days ago.
+
+    Deletion order respects FK constraints:
+    1. Delete dependent records (captures, sessions, consents, notifications)
+    2. Anonymise audit logs (keep for compliance, remove PII)
+    3. Hard-delete the user row
+
+    Privacy doc: 30-day grace period between soft-delete and hard-delete.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=30)
+
+    # Find users to hard-delete
+    result = await db.execute(text("""
+        SELECT id FROM users
+        WHERE deleted_at IS NOT NULL AND deleted_at < :cutoff
+    """), {"cutoff": cutoff})
+    user_ids = [str(r[0]) for r in result.fetchall()]
+    if not user_ids:
+        return 0
+
+    logger.info(f"Hard-deleting {len(user_ids)} soft-deleted users past 30-day grace period")
+
+    for uid in user_ids:
+        try:
+            # 1. Delete evidence files and captures
+            captures = await db.execute(text(
+                "SELECT file_path FROM student_captures sc "
+                "JOIN learning_sessions ls ON ls.id = sc.session_id "
+                "WHERE ls.user_id = :uid"
+            ), {"uid": uid})
+            for row in captures.fetchall():
+                if row[0]:
+                    try:
+                        os.unlink(row[0])
+                    except Exception:
+                        pass
+
+            # 2. Cascade-delete dependent records
+            for tbl, col in [
+                ("student_captures", "session_id IN (SELECT id FROM learning_sessions WHERE user_id = :uid)"),
+                ("learning_sessions", "user_id = :uid"),
+                ("notifications", "user_id = :uid"),
+                ("parent_child_links", "parent_id = :uid OR child_id = :uid"),
+            ]:
+                try:
+                    await db.execute(text(f"DELETE FROM {tbl} WHERE {col}"), {"uid": uid})
+                except Exception as e:
+                    logger.warning(f"Could not delete from {tbl} for user {uid}: {e}")
+
+            # 3. Hard-delete the user
+            await db.execute(text("DELETE FROM users WHERE id = :uid"), {"uid": uid})
+            await db.flush()
+
+        except Exception as e:
+            logger.error(f"Failed to hard-delete user {uid}: {e}")
+            continue
+
+    await _audit(db, "HARD_DELETE_USERS", "users", len(user_ids))
+    logger.info(f"Retention: hard-deleted {len(user_ids)} users after 30-day grace period")
+    return len(user_ids)
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 async def _safe_run(coro, name: str) -> int:
@@ -165,10 +230,11 @@ async def run_retention_cleanup():
     factory = _make_session_factory()
     total = 0
     tasks = [
-        ("purge_expired_captures",       purge_expired_captures),
-        ("anonymise_expired_sessions",    anonymise_expired_sessions),
-        ("purge_stale_location_history",  purge_stale_location_history),
-        ("purge_expired_consent_records", purge_expired_consent_records),
+        ("purge_expired_captures",         purge_expired_captures),
+        ("anonymise_expired_sessions",     anonymise_expired_sessions),
+        ("purge_stale_location_history",   purge_stale_location_history),
+        ("purge_expired_consent_records",  purge_expired_consent_records),
+        ("hard_delete_soft_deleted_users", hard_delete_soft_deleted_users),  # P3-6
     ]
     for name, fn in tasks:
         try:

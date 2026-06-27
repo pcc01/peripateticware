@@ -79,6 +79,11 @@ export function Footer() {
             <li><Link to="/terms">{t('footer.legal_terms')}</Link></li>
             <li><Link to="/cookies">{t('footer.legal_cookies')}</Link></li>
             <li><a href="mailto:hello@peripateticware.com">{t('footer.legal_contact')}</a></li>
+            <li>
+              <Link to="/do-not-sell" className="footer-link-ccpa">
+                {t('footer.legal_do_not_sell', 'Do Not Sell or Share My Info')}
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

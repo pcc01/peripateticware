@@ -1200,3 +1200,67 @@ async def withdraw_consent(
         "records_affected": len(records),
         "withdrawn_at":     now.isoformat(),
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /consent/status  — authenticated user's own active consent records (P3-3)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/consent/status")
+async def get_my_consent_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the caller's active and historical consent records."""
+    from services.consent_manager import ConsentManager
+    mgr = ConsentManager(db)
+    history = await mgr.get_consent_history(str(current_user.id))
+    return {
+        "user_id": str(current_user.id),
+        "consents": [
+            {
+                "id": str(r.id),
+                "consent_type": r.consent_type,
+                "jurisdiction": r.jurisdiction,
+                "is_active": r.is_active,
+                "granted_at": r.granted_at.isoformat() if r.granted_at else None,
+                "withdrawn_at": r.withdrawn_at.isoformat() if r.withdrawn_at else None,
+                "consent_version": r.consent_version,
+                "data_categories": r.data_categories,
+            }
+            for r in history
+        ],
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /notices/current  — public, returns active privacy notices (P3-3)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/notices/current")
+async def get_current_notices(
+    jurisdiction: str = Query("global"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the current active privacy notices for a jurisdiction."""
+    from models.compliance import PrivacyNotice
+    rows = (await db.execute(
+        select(PrivacyNotice).where(
+            PrivacyNotice.jurisdiction == jurisdiction,
+            PrivacyNotice.is_current == True,
+        ).order_by(PrivacyNotice.notice_type)
+    )).scalars().all()
+    return {
+        "jurisdiction": jurisdiction,
+        "notices": [
+            {
+                "id": str(r.id),
+                "version": r.version,
+                "notice_type": r.notice_type,
+                "title": r.title,
+                "summary": r.summary,
+                "effective_date": r.effective_date.isoformat(),
+            }
+            for r in rows
+        ],
+    }

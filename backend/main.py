@@ -399,6 +399,12 @@ try:
 except Exception as e:
     logger.info(f"privacy_catalog router not available: {e}")
 
+try:
+    from routes.dsr import router as dsr_router
+    app.include_router(dsr_router, prefix="/api/v1")                # prefix="/dsr" in router
+except Exception as e:
+    logger.info(f"dsr router not available: {e}")
+
 # ── AI / Inference / Agents ───────────────────────────────────────────────────
 try:
     from routes.inference import router as inference_router
