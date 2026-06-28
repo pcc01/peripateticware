@@ -14,6 +14,7 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Table2, Download, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import UpgradeCTA from '../../components/UpgradeCTA';
 
 interface Child { id: string; full_name: string; grade?: number; }
 
@@ -56,6 +57,7 @@ export const HomeschoolExportPage: React.FC = () => {
   const [customTo,      setCustomTo]      = useState(ymd(new Date()));
   const [loading,       setLoading]       = useState(false);
   const [error,         setError]         = useState('');
+  const [upgradeDetail, setUpgradeDetail] = useState<{ current_tier: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/v1/homeschool/children', { headers: authHeader() })
@@ -80,7 +82,13 @@ export const HomeschoolExportPage: React.FC = () => {
       const resp = await fetch(url, { headers: authHeader() });
       if (!resp.ok) {
         const d = await resp.json().catch(() => ({}));
-        throw new Error(d.detail ?? `Server error ${resp.status}`);
+        const detail = d.detail ?? d;
+        if (resp.status === 402 && detail?.code === 'UPGRADE_REQUIRED') {
+          setUpgradeDetail({ current_tier: detail.current_tier ?? 'free' });
+          window.dispatchEvent(new CustomEvent('upgrade-required', { detail }));
+          return;
+        }
+        throw new Error(typeof detail === 'string' ? detail : `Server error ${resp.status}`);
       }
       const blob   = await resp.blob();
       const objUrl = URL.createObjectURL(blob);
@@ -123,9 +131,19 @@ export const HomeschoolExportPage: React.FC = () => {
       <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 8 }}>
         {t('pages_homeschool_homeschoolexportpage.export_portfolio', 'Export Portfolio')}
       </h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
         {t('pages_homeschool_homeschoolexportpage.generate_a_pdf_portfolio_or_csv_activity', 'Generate a PDF portfolio or CSV activity log for any date range.')}
       </p>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        background: '#fefce8', border: '1px solid #fde68a', borderRadius: 8,
+        padding: '10px 14px', marginBottom: 24,
+      }}>
+        <span style={{ fontSize: '1rem' }}>⭐</span>
+        <p style={{ margin: 0, fontSize: '0.875rem', color: '#92400e', fontWeight: 500 }}>
+          <strong>Paid feature:</strong> Portfolio Export requires the Homeschool Family plan. Download will prompt you to upgrade if you're on a free account.
+        </p>
+      </div>
 
       {/* Child */}
       <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('pages_homeschool_homeschoolexportpage.child', 'Child')}</label>
@@ -174,34 +192,4 @@ export const HomeschoolExportPage: React.FC = () => {
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 4 }}>{t('pages_homeschool_homeschoolexportpage.to', 'To')}</label>
-            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={inputStyle} />
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c',
-                      borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.9rem' }}>
-          {error}
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={handleDownload}
-        disabled={!isValid || loading}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          padding: '12px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: '1rem',
-          background: 'var(--primary)', color: '#fff',
-          cursor: !isValid || loading ? 'not-allowed' : 'pointer',
-          opacity: !isValid || loading ? 0.6 : 1,
-        }}
-      >
-        <Download size={18} /> {loading ? 'Generating…' : `Download ${format.toUpperCase()}`}
-      </button>
-    </div>
-  );
-}
-
-export default HomeschoolExportPage;
+            <input type="date" value={customTo} onChange={e => setCustomTo(e

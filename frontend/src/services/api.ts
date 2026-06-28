@@ -151,7 +151,7 @@ export const activitiesApi = {
 
 export const projectsApi = {
   async create(data: Types.ProjectFormData): Promise<Types.Project> {
-    const response = await axiosInstance.post<Types.Project>('/projects', data)
+    const response = await axiosInstance.post<Types.Project>('/teacher/projects', data)
     return response.data
   },
 
@@ -167,27 +167,27 @@ export const projectsApi = {
     if (filters?.page_size !== undefined) params.append('page_size', String(filters.page_size))
 
     const response = await axiosInstance.get<Types.PaginatedProjectResponse>(
-      `/projects?${params.toString()}`
+      `/teacher/projects?${params.toString()}`
     )
     return response.data
   },
 
   async get(id: string): Promise<Types.Project> {
-    const response = await axiosInstance.get<Types.Project>(`/projects/${id}`)
+    const response = await axiosInstance.get<Types.Project>(`/teacher/projects/${id}`)
     return response.data
   },
 
   async update(id: string, data: Partial<Types.ProjectFormData>): Promise<Types.Project> {
-    const response = await axiosInstance.put<Types.Project>(`/projects/${id}`, data)
+    const response = await axiosInstance.put<Types.Project>(`/teacher/projects/${id}`, data)
     return response.data
   },
 
   async delete(id: string): Promise<void> {
-    await axiosInstance.delete(`/projects/${id}`)
+    await axiosInstance.delete(`/teacher/projects/${id}`)
   },
 
   async getByStudent(studentId: string): Promise<Types.Project[]> {
-    const response = await axiosInstance.get<Types.Project[]>(`/projects?student_id=${studentId}`)
+    const response = await axiosInstance.get<Types.Project[]>(`/teacher/projects?student_id=${studentId}`)
     return response.data
   },
 }
@@ -335,27 +335,27 @@ export const progressApi = {
 
 export const assessmentApi = {
   async createRubric(data: Partial<Types.Rubric>): Promise<Types.Rubric> {
-    const response = await axiosInstance.post<Types.Rubric>('/assessment/rubrics', data)
+    const response = await axiosInstance.post<Types.Rubric>('/rubrics', data)
     return response.data
   },
 
   async listRubrics(): Promise<Types.Rubric[]> {
-    const response = await axiosInstance.get<Types.Rubric[]>('/assessment/rubrics')
+    const response = await axiosInstance.get<Types.Rubric[]>('/rubrics')
     return response.data
   },
 
   async getRubric(id: string): Promise<Types.Rubric> {
-    const response = await axiosInstance.get<Types.Rubric>(`/assessment/rubrics/${id}`)
+    const response = await axiosInstance.get<Types.Rubric>(`/rubrics/${id}`)
     return response.data
   },
 
   async updateRubric(id: string, data: Partial<Types.Rubric>): Promise<Types.Rubric> {
-    const response = await axiosInstance.put<Types.Rubric>(`/assessment/rubrics/${id}`, data)
+    const response = await axiosInstance.put<Types.Rubric>(`/rubrics/${id}`, data)
     return response.data
   },
 
   async deleteRubric(id: string): Promise<void> {
-    await axiosInstance.delete(`/assessment/rubrics/${id}`)
+    await axiosInstance.delete(`/rubrics/${id}`)
   },
 
   async scoreAssignment(data: Partial<Types.RubricScore>): Promise<Types.RubricScore> {
@@ -451,7 +451,7 @@ export const studentApi = {
   },
 
   async getActiveProjects(): Promise<Types.Project[]> {
-    const response = await axiosInstance.get<Types.Project[]>('/student/projects?status=active')
+    const response = await axiosInstance.get<Types.Project[]>('/student/self-projects')
     return response.data
   },
 
@@ -633,9 +633,9 @@ export function useTeacher() {
       axiosInstance.delete(`/teacher/activities/${id}`).then(() => undefined),
     getSubmissions: (params?: Types.SubmissionQueryParams) => teacherApi.getSubmissions(params),
     approveSubmission: (id: string, data?: { feedback?: string; score?: number }) =>
-      axiosInstance.post(`/teacher/submissions/${id}/approve`, data ?? {}).then((r) => r.data),
+      axiosInstance.post(`/activities/teacher/submissions/${id}/approve`, data ?? {}).then((r) => r.data),
     rejectSubmission: (id: string, feedback: string) =>
-      axiosInstance.post(`/teacher/submissions/${id}/reject`, { feedback }).then((r) => r.data),
+      axiosInstance.post(`/activities/teacher/submissions/${id}/reject`, { feedback }).then((r) => r.data),
     getSubmissionDetail: (sessionId: string) =>
       axiosInstance.get<Types.SubmissionDetail>(`/activities/teacher/submissions/${sessionId}/detail`).then((r) => r.data),
     reviewFieldPhase: (sessionId: string, data: { feedback: string; approve?: boolean; reject?: boolean }) =>
@@ -705,5 +705,3 @@ export function useParent() {
       axiosInstance.get(`/parent/children/${childId}/digest`).then((r) => r.data),
     getChildCompetencies: (childId: string) =>
       axiosInstance.get(`/parent/children/${childId}/competencies`).then((r) => r.data),
-  }
-}

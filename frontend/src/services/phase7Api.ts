@@ -46,7 +46,8 @@ export const classApi = {
 
 export const selfProjectApi = {
   list: () =>
-    apiClient.get<SelfProject[]>('/student/self-projects').then(r => r.data),
+    apiClient.get<{ items: SelfProject[] } | SelfProject[]>('/student/self-projects')
+      .then(r => Array.isArray(r.data) ? r.data : (r.data as any).items ?? []),
 
   get: (id: string) =>
     apiClient.get<SelfProject>(`/student/self-projects/${id}`).then(r => r.data),
@@ -292,6 +293,4 @@ export const professorApi = {
    */
   getFieldworkLocations: (activityId: string): Promise<FieldworkLocationsResponse> =>
     apiClient
-      .get<FieldworkLocationsResponse>(`/activities/${activityId}/fieldwork-locations`)
-      .then((r) => r.data),
-}
+      .get<FieldworkLocationsR

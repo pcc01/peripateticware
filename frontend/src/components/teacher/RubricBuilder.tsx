@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 // Block 13d — RubricBuilder component
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 interface Level { score: number; label: string; description: string }
@@ -41,6 +41,8 @@ const RubricBuilder: React.FC = () => {
   const isNew = !id || id === 'new'
   const { t } = useTranslation('landing')
   const navigate = useNavigate()
+  const location = useLocation()
+  const rubricsBase = location.pathname.startsWith('/homeschool') ? '/homeschool/rubrics' : '/teacher/rubrics'
 
   const [form, setForm] = useState<RubricForm>({
     title: '', description: '', criteria: [newCriterion()],
@@ -79,7 +81,7 @@ const RubricBuilder: React.FC = () => {
       } else {
         await apiFetch(`/rubrics/${id}`, { method: 'PUT', body: JSON.stringify(body) })
       }
-      navigate('/teacher/rubrics')
+      navigate(rubricsBase)
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -190,11 +192,3 @@ const RubricBuilder: React.FC = () => {
         disabled={saving || !form.title.trim()}
         className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50"
         style={{ background: 'var(--primary)' }}
-      >
-        {saving ? t('saving', 'Saving…') : t('save_rubric', 'Save Rubric')}
-      </button>
-    </div>
-  )
-}
-
-export default RubricBuilder

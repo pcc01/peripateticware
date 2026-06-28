@@ -17,6 +17,7 @@ import { ArrowLeft, Users, Edit2, Check, X, AlertTriangle, Trash2 } from 'lucide
 import InviteStudentsPanel from '@/components/teacher/InviteStudentsPanel';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
+import UpgradeCTA from '@/components/UpgradeCTA';
 
 interface Student {
   id:          string;
@@ -226,11 +227,16 @@ export default function TeacherClassroomPage() {
             />
           </div>
           {atCapacity && (
-            <p className="text-xs text-red-600 mt-2">
-              This classroom is full.{' '}
-              <strong>Starter</strong> raises the limit to 35 students <em>and</em> unlocks 3 classrooms —
-              so a teacher with 32 students across two classes solves both problems with one upgrade.
-            </p>
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-2">
+                Larger classrooms are a paid feature. Upgrade to enroll more students.
+              </p>
+              <UpgradeCTA
+                featureName="Larger classrooms"
+                requiredTier="starter"
+                compact={false}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -308,8 +314,4 @@ export default function TeacherClassroomPage() {
         </div>
       )}
 
-      {/* Invite panel */}
-      <InviteStudentsPanel classroomId={classroom.id} onDone={load} />
-    </div>
-  );
-}
+      {/* In

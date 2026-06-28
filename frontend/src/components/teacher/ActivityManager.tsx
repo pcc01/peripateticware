@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useTeacherStore } from '@/stores/teacher';
 import { useAuthStore } from '@/stores/auth';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions } from './OllamaLessonSuggestions';
@@ -74,6 +74,10 @@ const ActivityManager = () => {
   const { t } = useTranslation('landing');
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const activitiesBase = location.pathname.startsWith('/homeschool')
+    ? '/homeschool/activities'
+    : '/teacher/activities';
   const currentUser = useAuthStore(state => state.user);
   const isOrgTeacher = !!(currentUser?.org_id);
 
@@ -384,7 +388,7 @@ const ActivityManager = () => {
         }
       }
 
-      navigate('/teacher/activities');
+      navigate(activitiesBase);
     } catch (error: any) {
       setSubmitError(error.message || 'An error occurred while saving');
       setIsSubmitting(false);
@@ -1023,7 +1027,7 @@ const ActivityManager = () => {
           {isEditing && id && (
             <button
               type="button"
-              onClick={() => navigate(`/teacher/activities/${id}/student-preview`)}
+              onClick={() => navigate(`${activitiesBase}/${id}/student-preview`)}
               className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
               style={{ background: '#2e7d32', color: 'white', minWidth: 160 }}>
               📱 {t("landing:preview_as_student", "Preview as Student")}
@@ -1170,15 +1174,4 @@ const ActivityManager = () => {
                     color: 'var(--primary)', fontSize: 13, textDecoration: 'underline',
                   }}
                 >
-                  Open full phone preview →
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>);
-
-};
-
-export default ActivityManager;
+                  Open full phon

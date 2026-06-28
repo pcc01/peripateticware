@@ -85,6 +85,20 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
             await conn.execute(text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS consent_token VARCHAR(128)"
             ))
+            # ── Session 33 encryption + soft-delete columns ───────────────────
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_index VARCHAR(64)"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS state_code VARCHAR(10)"
+            ))
+            # Backfill email_index with plain email for users where encryption is off
+            await conn.execute(text(
+                "UPDATE users SET email_index = LOWER(email) WHERE email_index IS NULL"
+            ))
             # ── Activities location columns ───────────────────────────────────
             await conn.execute(text(
                 "ALTER TABLE activities ADD COLUMN IF NOT EXISTS enriched_location_id UUID"
@@ -422,6 +436,12 @@ async def apply_core_schema_migrations(engine) -> None:
             # ── Publishing / stats columns ────────────────────────────────────
             await conn.execute(text(
                 "ALTER TABLE activities ADD COLUMN IF NOT EXISTS is_shareable BOOLEAN DEFAULT FALSE"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS hero_image_url VARCHAR(512)"
+            ))
+            await conn.execute(text(
+                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'"
             ))
             await conn.execute(text(
                 "ALTER TABLE activities ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0"
@@ -775,6 +795,10 @@ async def apply_core_schema_migrations(engine) -> None:
                     updated_at TIMESTAMP DEFAULT NOW()
                 )
             """))
+            # ── student_proposals column drift ─────────────────────────────────
+            await conn.execute(text(
+                "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS note_to_teacher TEXT"
+            ))
             # ── Align student tables with their ORM models (ADD COLUMN drift fixes) ──
             for _alter in [
                 "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",
@@ -1526,34 +1550,4 @@ async def start_background_tasks(async_session, settings) -> None:
                 ),
                 id="ai_batch_cycle",
                 replace_existing=True,
-            )
-            logger.info(f"\u2705 AI batch job added to scheduler (cron: {settings.AI_BATCH_CRON})")
-        except Exception as e:
-            logger.warning(f"\u2298 AI batch job not added: {e}")
-
-    # Budget monitor jobs
-    if _scheduler is not None:
-        try:
-            from tasks.budget_monitor import budget_alert_check, anomaly_detect
-
-            async def _budget_alert():
-                async with async_session() as db:
-                    await budget_alert_check(db)
-
-            async def _anomaly():
-                async with async_session() as db:
-                    await anomaly_detect(db)
-
-            _scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_alert",   replace_existing=True)
-            _scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect", replace_existing=True)
-            logger.info("\u2705 Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
-        except Exception as e:
-            logger.warning(f"\u2298 Budget monitor jobs not added: {e}")
-
-    # Start the shared scheduler
-    if _scheduler is not None and not _scheduler.running:
-        try:
-            _scheduler.start()
-            logger.info("\u2705 APScheduler started")
-        except Exception as e:
-            logger.warning(f"\u2298 APScheduler failed to start: {e}")
+            

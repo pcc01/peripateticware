@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 // Teacher: import a rubric from PDF or CSV
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ExtractionWizard } from '@/components/shared/ExtractionWizard';
 
@@ -12,6 +12,8 @@ function authHeader() {
 
 export const RubricImportPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const rubricsBase = location.pathname.startsWith('/homeschool') ? '/homeschool/rubrics' : '/teacher/rubrics';
   const { t } = useTranslation('landing');
 
   const handleSave = async (payload: any) => {
@@ -39,11 +41,4 @@ export const RubricImportPage: React.FC = () => {
       setType="rubric"
       title={t('rubricImportPage.title', 'Import Rubric')}
       description={t('rubricImportPage.description', 'Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving.')}
-      onSave={handleSave}
-      onComplete={() => navigate('/teacher/rubrics')}
-      onCancel={() => navigate('/teacher/rubrics')}
-    />
-  );
-};
-
-export default RubricImportPage;
+      onSave={handleSa

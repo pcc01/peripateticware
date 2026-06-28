@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 interface Rubric {
@@ -30,6 +30,8 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 const RubricsPage: React.FC = () => {
   const { t } = useTranslation('landing')
   const navigate = useNavigate()
+  const location = useLocation()
+  const rubricsBase = location.pathname.startsWith('/homeschool') ? '/homeschool/rubrics' : '/teacher/rubrics'
   const [rubrics, setRubrics] = useState<Rubric[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -62,14 +64,14 @@ const RubricsPage: React.FC = () => {
         </h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <Link
-            to="/teacher/rubrics/import"
+            to={`${rubricsBase}/import`}
             className="px-4 py-2 rounded-lg font-medium"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
           >
             📄 {t('import_rubric', 'Import PDF/CSV')}
           </Link>
           <Link
-            to="/teacher/rubrics/new"
+            to={`${rubricsBase}/new`}
             className="px-4 py-2 rounded-lg text-white font-medium"
             style={{ background: 'var(--primary)' }}
           >
@@ -85,7 +87,7 @@ const RubricsPage: React.FC = () => {
       ) : rubrics.length === 0 ? (
         <div className="text-center py-16" style={{ color: 'var(--text-muted)' }}>
           <p className="mb-4">{t('no_rubrics', 'No rubrics yet.')}</p>
-          <Link to="/teacher/rubrics/new" className="px-6 py-2 rounded-lg text-white" style={{ background: 'var(--primary)' }}>
+          <Link to={`${rubricsBase}/new`} className="px-6 py-2 rounded-lg text-white" style={{ background: 'var(--primary)' }}>
             {t('create_first_rubric', 'Create your first rubric')}
           </Link>
         </div>
@@ -101,7 +103,7 @@ const RubricsPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Link to={`/teacher/rubrics/${r.id}`}
+                <Link to={`${rubricsBase}/${r.id}`}
                   className="px-3 py-1 rounded text-sm border"
                   style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
                   {t('edit', 'Edit')}
@@ -109,15 +111,4 @@ const RubricsPage: React.FC = () => {
                 <button onClick={() => handleDelete(r.id)}
                   className="px-3 py-1 rounded text-sm border"
                   style={{ borderColor: 'var(--error)', color: 'var(--error)' }}>
-                  {t('delete', 'Delete')}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
-}
-
-export default RubricsPage;
+                  {t('delete', 'Del

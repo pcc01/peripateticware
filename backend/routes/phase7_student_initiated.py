@@ -17,6 +17,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status as http_status
 from pydantic import BaseModel
 from sqlalchemy import select, and_, or_, func
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
@@ -51,7 +52,13 @@ def _require_role(user: User, *roles: str, detail: str = "Forbidden") -> None:
         raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=detail)
 
 async def _get_field_note_or_404(db: AsyncSession, field_note_id: UUID, owner_id: UUID = None) -> StudentFieldNote:
-    q = select(StudentFieldNote).where(StudentFieldNote.id == field_note_id)
+    q = (
+        select(StudentFieldNote)
+        .where(StudentFieldNote.id == field_note_id)
+        .options(
+            selectinload(StudentFieldNote.captures).selectinload(StudentFieldNoteCapture.capture)
+        )
+    )
     if owner_id:
         q = q.where(StudentFieldNote.student_id == owner_id)
     result = await db.execute(q)
@@ -106,6 +113,21 @@ async def _create_notification(db: AsyncSession, user_id: UUID, title: str, mess
         pass  # Notifications are non-critical — don't fail the main operation
 
 def _serialize_field_note(note: StudentFieldNote) -> dict:
+    captures = []
+    for fnc in (note.captures if note.captures is not None else []):
+        cap = fnc.capture
+        if cap:
+            captures.append({
+                "id": str(cap.id),
+                "capture_type": cap.capture_type.value if hasattr(cap.capture_type, "value") else str(cap.capture_type),
+                "file_path": cap.file_path,
+                "description": cap.description,
+                "captured_at": cap.captured_at.isoformat() if cap.captured_at else None,
+                "duration_seconds": cap.duration_seconds,
+                "location_latitude": cap.location_latitude,
+                "location_longitude": cap.location_longitude,
+                "transcript": None,
+            })
     return {
         "id": str(note.id),
         "student_id": str(note.student_id),
@@ -116,6 +138,13 @@ def _serialize_field_note(note: StudentFieldNote) -> dict:
         "location_latitude": note.location_latitude,
         "location_longitude": note.location_longitude,
         "location_name": note.location_name,
+        "self_tagged_objective_ids": [str(x) for x in (note.self_tagged_objective_ids or [])],
+        "submitted_for_promotion_at": note.submitted_for_promotion_at.isoformat() if note.submitted_for_promotion_at else None,
+        "submitted_with_message": note.submitted_with_message,
+        "teacher_feedback": note.teacher_feedback,
+        "promoted_activity_id": str(note.promoted_activity_id) if note.promoted_activity_id else None,
+        "promoted_at": note.promoted_at.isoformat() if note.promoted_at else None,
+        "captures": captures,
         "created_at": note.created_at.isoformat() if note.created_at else None,
         "updated_at": note.updated_at.isoformat() if note.updated_at else None,
     }
@@ -262,8 +291,10 @@ async def create_field_note(
     )
     db.add(note)
     await db.commit()
-    await db.refresh(note)
-    return _serialize_field_note(note)
+    # Re-fetch with captures loaded so serializer has a complete object
+    return _serialize_field_note(
+        await _get_field_note_or_404(db, note.id, owner_id=current_user.id)
+    )
 
 
 # P1-4 VERIFIED: wired to student_field_notes table, confirmed working
@@ -276,7 +307,11 @@ async def list_field_notes(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    q = select(StudentFieldNote).where(StudentFieldNote.student_id == current_user.id)
+    q = (
+        select(StudentFieldNote)
+        .where(StudentFieldNote.student_id == current_user.id)
+        .options(selectinload(StudentFieldNote.captures).selectinload(StudentFieldNoteCapture.capture))
+    )
     if note_status:
         q = q.where(StudentFieldNote.status == note_status)
     if self_project_id:
@@ -1022,41 +1057,4 @@ async def update_peer_project_teacher_settings(
 # =============================================================================
 
 @router.get("/teacher/classes/{class_id}/settings")
-async def get_class_settings(
-    class_id: UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    _require_role(current_user, "TEACHER", "ADMIN")
-    settings = await _get_or_create_class_settings(db, class_id)
-    await db.commit()
-    return {
-        "class_id": str(settings.class_id),
-        "peer_project_approval_mode": settings.peer_project_approval_mode,
-        "peer_project_author_sees_individual_responses": settings.peer_project_author_sees_individual_responses,
-        "students_can_create_peer_projects": settings.students_can_create_peer_projects,
-        "students_can_create_field_notes": settings.students_can_create_field_notes,
-        "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
-    }
-
-
-@router.put("/teacher/classes/{class_id}/settings")
-async def update_class_settings(
-    class_id: UUID,
-    body: ClassSettingsUpdate,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    _require_role(current_user, "TEACHER", "ADMIN")
-    settings = await _get_or_create_class_settings(db, class_id)
-    for field, val in body.dict(exclude_unset=True).items():
-        setattr(settings, field, val)
-    settings.updated_at = _now()
-    await db.commit()
-    return {
-        "class_id": str(settings.class_id),
-        "peer_project_approval_mode": settings.peer_project_approval_mode,
-        "peer_project_author_sees_individual_responses": settings.peer_project_author_sees_individual_responses,
-        "students_can_create_peer_projects": settings.students_can_create_peer_projects,
-        "students_can_create_field_notes": settings.students_can_create_field_notes,
-    }
+asyn

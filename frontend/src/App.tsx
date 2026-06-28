@@ -406,6 +406,9 @@ const App: React.FC = () => {
           <Route path="/homeschool/export" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolExportPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/rubrics" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricsPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/rubrics/import" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricImportPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/rubrics/new" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricBuilder /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/rubrics/:id" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricBuilder /></HomeschoolLayout></ProtectedRoute>} />
 
           {/* ADMIN */}
           <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
@@ -422,22 +425,4 @@ const App: React.FC = () => {
           <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminHelpPage /></AdminLayout></ProtectedRoute>} />
-
-          {/* STUDENT — Journal */}
-          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />
-
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </div>
-    </I18nextProvider>
-  )
-}
-
-const AppWithRouter: React.FC = () => (
-  <Router>
-    <App />
-  </Router>
-)
-
-export default AppWithRouter
+          <Route path="/admin/help" element={

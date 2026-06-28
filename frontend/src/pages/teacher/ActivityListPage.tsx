@@ -6,7 +6,7 @@
  * BSL-1.1 License
  */
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +31,10 @@ function getAuthHeader(): Record<string, string> {
 const ActivityListPage: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate()
+  const location = useLocation()
+  const activitiesBase = location.pathname.startsWith('/homeschool')
+    ? '/homeschool/activities'
+    : '/teacher/activities'
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -103,7 +107,7 @@ const ActivityListPage: React.FC = () => {
             <p style={{ color: '#6b7280', marginTop: '6px' }}>{t('activitylistpage.create_and_manage_outdoor_learning_activ', 'Create and manage outdoor learning activities')}</p>
           </div>
           <button
-            onClick={() => navigate('/teacher/activities/new')}
+            onClick={() => navigate(`${activitiesBase}/new`)}
             style={{
               background: '#4a7c59',
               color: '#fff',
@@ -177,7 +181,7 @@ const ActivityListPage: React.FC = () => {
           {filtered.map(activity => (
             <div
               key={activity.id}
-              onClick={() => navigate(`/teacher/activities/${activity.id}`)}
+              onClick={() => navigate(`${activitiesBase}/${activity.id}`)}
               style={{
                 background: '#fff',
                 border: '1px solid #e5e7eb',
@@ -214,7 +218,7 @@ const ActivityListPage: React.FC = () => {
                 <button
                   onClick={e => {
                     e.stopPropagation()
-                    navigate(`/teacher/activities/${activity.id}/student-preview`)
+                    navigate(`${activitiesBase}/${activity.id}/student-preview`)
                   }}
                   title="Preview as Student"
                   style={{
@@ -228,15 +232,4 @@ const ActivityListPage: React.FC = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  👁 Student View
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export default ActivityListPage
+                  👁 Stu

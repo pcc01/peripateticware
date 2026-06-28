@@ -4,7 +4,7 @@
 
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useTeacherStore } from '@/stores';
 import { useAuthStore } from '@/stores/auth';
 import { LocationPicker } from './LocationPicker';
@@ -111,6 +111,8 @@ export const ActivityBuilder = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
+  const rubricsBase = location.pathname.startsWith('/homeschool') ? '/homeschool/rubrics' : '/teacher/rubrics';
   const token = useAuthStore((s) => s.token);
   const currentUser = useAuthStore((s) => s.user);
 
@@ -1013,7 +1015,7 @@ export const ActivityBuilder = () => {
                   ))}
                 </select>
                 {rubrics.length === 0 && (
-                  <small style={{color:'#888'}}>No rubrics yet. <a href="/teacher/rubrics/new">Create one</a>.</small>
+                  <small style={{color:'#888'}}>No rubrics yet. <Link to={`${rubricsBase}/new`}>Create one</Link>.</small>
                 )}
               </div>
             </div>
@@ -1265,12 +1267,4 @@ export const ActivityBuilder = () => {
             className={styles.primaryBtn}
             disabled={isSaving || !formData.title.trim()}
             style={{ background: '#1b5e20', borderColor: '#1b5e20' }}>
-            {isSaving ? 'Publishing...' : '📲 Save and Publish to Student App'}
-          </button>
-        </section>
-      </main>
-    </div>
-  );
-};
-
-export default ActivityBuilder;
+            {isSav

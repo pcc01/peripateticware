@@ -77,18 +77,20 @@ class ProposalUpdate(BaseModel):
 # ── Helpers ───────────────────────────────────────────────────────────────
 
 def _serialize(r: dict) -> dict:
+    # DB columns: description, location_name, note_to_teacher
+    # Frontend expects: challenge_description, location_hint, note_to_teacher
     return {
         "id": str(r["id"]),
         "title": r["title"],
-        "challenge_description": r.get("challenge_description", ""),
-        "location_hint": r["location_hint"] or "",
-        "subject": r["subject"] or "General",
-        "note_to_teacher": r["note_to_teacher"] or "",
+        "challenge_description": r.get("description") or r.get("challenge_description") or "",
+        "location_hint": r.get("location_name") or r.get("location_hint") or "",
+        "subject": r.get("subject") or "General",
+        "note_to_teacher": r.get("note_to_teacher") or "",
         "status": r["status"],
-        "teacher_feedback": r["teacher_feedback"] or "",
+        "teacher_feedback": r.get("teacher_feedback") or "",
         "student_id": str(r["student_id"]),
         "student_name": r.get("student_name") or "",
-        "approved_activity_id": str(r["approved_activity_id"]) if r["approved_activity_id"] else None,
+        "approved_activity_id": str(r["approved_activity_id"]) if r.get("approved_activity_id") else None,
         "created_at": r["created_at"].isoformat() if r["created_at"] else None,
         "updated_at": r["updated_at"].isoformat() if r["updated_at"] else None,
     }
@@ -107,7 +109,7 @@ async def create_proposal(
     proposal_id = uuid.uuid4()
     await db.execute(text("""
         INSERT INTO student_proposals
-          (id, student_id, title, challenge_description, location_hint,
+          (id, student_id, title, description, location_name,
            subject, note_to_teacher, status, created_at, updated_at)
         VALUES
           (:id, :sid, :title, :desc, :loc, :subj, :note, 'draft', NOW(), NOW())
@@ -169,7 +171,13 @@ async def update_proposal(
     if dict(row)["status"] not in ("draft", "rejected"):
         raise HTTPException(status_code=400, detail="Can only edit draft or rejected proposals")
 
-    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    # Map frontend field names to DB column names
+    _field_map = {
+        "challenge_description": "description",
+        "location_hint": "location_name",
+    }
+    raw = {k: v for k, v in body.model_dump().items() if v is not None}
+    updates = {_field_map.get(k, k): v for k, v in raw.items()}
     if not updates:
         return {"ok": True}
     set_clause = ", ".join(f"{k} = :{k}" for k in updates)
@@ -310,14 +318,4 @@ async def reject_proposal(
     _require_teacher(current_user)
     row = (await db.execute(text(
         "SELECT id FROM student_proposals WHERE id = :id AND status = 'pending'"
-    ), {"id": proposal_id})).mappings().first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Proposal not found or not pending")
-
-    await db.execute(text("""
-        UPDATE student_proposals
-        SET status = 'rejected', teacher_feedback = :feedback, updated_at = NOW()
-        WHERE id = :id
-    """), {"id": proposal_id, "feedback": feedback})
-    await db.commit()
-    return {"status": "rejected"}
+    

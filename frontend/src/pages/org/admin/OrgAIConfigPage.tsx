@@ -18,6 +18,7 @@
 import React, { useState, useEffect } from 'react';
 import { Key, Server, CheckCircle, Trash2, AlertCircle, Lock, ExternalLink, Eye, EyeOff, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import UpgradeCTA from '../../../components/UpgradeCTA';
 
 const API = '/api/v1/org';
 
@@ -176,22 +177,14 @@ export default function OrgAIConfigPage() {
 
   if (forbidden) {
     return (
-      <div className="max-w-xl mx-auto mt-12 p-6 bg-white rounded-2xl shadow border border-gray-100">
-        <div className="flex gap-3 items-start">
-          <Lock className="w-6 h-6 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('pages_org_admin_orgaiconfigpage.bring_your_own_key_upgrade_required', 'Bring Your Own Key — Upgrade Required')}</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Custom AI provider configuration is available on <strong>School BYOK</strong>,{' '}
-              <strong>District BYOK</strong>, and <strong>Enterprise</strong> plans.
-            </p>
-            <a href="/#pricing"
-              onClick={(e) => { e.preventDefault(); window.location.href = '/#pricing'; }}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-green-700 hover:text-green-800">
-              Plans &amp; Pricing <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
+      <div className="max-w-xl mx-auto mt-12">
+        <p className="text-sm text-gray-500 mb-4">
+          {t('pages_org_admin_orgaiconfigpage.byok_paid_note', 'Bring Your Own Key is a paid feature. Upgrade to configure custom AI providers for your school or district.')}
+        </p>
+        <UpgradeCTA
+          featureName="Bring Your Own Key (AI Config)"
+          requiredTier="school_byok"
+        />
       </div>
     );
   }
@@ -381,3 +374,4 @@ export default function OrgAIConfigPage() {
     </div>
   );
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

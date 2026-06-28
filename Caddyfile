@@ -1,0 +1,102 @@
+# Peripateticware — Caddyfile
+# Supports two deployment modes:
+#   1. Local dev with Caddy (replace localhost with your LAN IP or hostname)
+#   2. Production with automatic HTTPS (replace the domain block below)
+#
+# To use locally:   caddy run --config Caddyfile
+# To use in prod:   replace :3000 / :8000 with your real domain
+
+# ── Local / LAN mode ─────────────────────────────────────────────────────────
+# Caddy proxies to the Vite dev server and FastAPI directly.
+# Useful for testing on local network devices (mobile, tablet).
+
+:80 {
+    # API — proxy to FastAPI backend
+    handle /api/* {
+        reverse_proxy localhost:8000
+    }
+
+    # WebSocket — for HMR and real-time features
+    handle /ws* {
+        reverse_proxy localhost:8000 {
+            header_up Upgrade {http.upgrade}
+            header_up Connection {http.connection}
+        }
+    }
+
+    # Health endpoint
+    handle /health {
+        reverse_proxy localhost:8000
+    }
+
+    # Auth (Vite proxy rewrites /auth → /api/v1/auth)
+    handle /auth/* {
+        reverse_proxy localhost:8000 {
+            rewrite * /api/v1{path}
+        }
+    }
+
+    # Everything else → Vite frontend
+    handle {
+        reverse_proxy localhost:3000 {
+            header_up Upgrade {http.upgrade}
+            header_up Connection {http.connection}
+        }
+    }
+
+    # Security headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Upload size limit (captures — photos/audio)
+    request_body {
+        max_size 50MB
+    }
+
+    encode gzip
+}
+
+# ── Production mode (automatic HTTPS) ────────────────────────────────────────
+# Uncomment and set your domain. Caddy handles TLS certificates automatically.
+# Assumes backend runs on :8000 and frontend is built and served statically,
+# OR that docker-compose exposes them on the ports below.
+#
+# your-domain.com {
+#     handle /api/* {
+#         reverse_proxy localhost:8000
+#     }
+#
+#     handle /ws* {
+#         reverse_proxy localhost:8000 {
+#             header_up Upgrade {http.upgrade}
+#             header_up Connection {http.connection}
+#         }
+#     }
+#
+#     handle /health {
+#         reverse_proxy localhost:8000
+#     }
+#
+#     # Serve built frontend (run: docker compose build frontend first)
+#     handle {
+#         reverse_proxy localhost:3000
+#     }
+#
+#     header {
+#         X-Content-Type-Options "nosniff"
+#         X-Frame-Options "SAMEORIGIN"
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#         X-XSS-Protection "1; mode=block"
+#         Referrer-Policy "strict-origin-when-cross-origin"
+#     }
+#
+#     request_body {
+#         max_size 50MB
+#     }
+#
+#     encode gzip
+# }
