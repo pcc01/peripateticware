@@ -611,8 +611,7 @@ export function useApiData<T>(
       }))
   }, [])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { run() }, deps)
+  useEffect(() => { run() }, deps) // eslint-disable-line -- deps intentionally dynamic
 
   return { ...state, refetch: run }
 }

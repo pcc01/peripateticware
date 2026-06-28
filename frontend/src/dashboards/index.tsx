@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 
 import React, { useState } from 'react';
 import type { Tokens } from '../design/tokens';
-import {
 import { PRODUCT_NAME } from '../constants/brand';
+import {
   Button,
   Card,
   StatTile,
