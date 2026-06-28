@@ -30,6 +30,7 @@ interface Props {
 }
 
 export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
+  const { t } = useTranslation();
   const [tab, setTab]             = useState<'link' | 'email' | 'csv'>('link');
   const [emails, setEmails]       = useState('');
   const [loading, setLoading]     = useState(false);

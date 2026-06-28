@@ -15,17 +15,36 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string
   hint?: string
   required?: boolean
+  multiline?: boolean
+  rows?: number
 }
 
+const sharedClasses = (error: string | undefined, className: string | undefined) =>
+  clsx(
+    'px-4 py-2 border rounded-lg',
+    'bg-white text-[var(--color-gray-900)]',
+    'border-[var(--color-gray-300)]',
+    'focus:outline-2 focus:outline-offset-0',
+    'focus:outline-[var(--color-primary-500)]',
+    'focus:border-[var(--color-primary-500)]',
+    'disabled:bg-[var(--color-gray-100)]',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+    'disabled:text-[var(--color-gray-500)]',
+    error && clsx('border-[var(--color-error-500)]', 'focus:outline-[var(--color-error-500)]'),
+    'placeholder:text-[var(--color-gray-400)]',
+    'transition-colors duration-[var(--transition-fast)]',
+    className
+  )
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, required, className, id, ...props }, ref) => {
+  ({ label, error, hint, required, multiline, rows, className, id, ...props }, ref) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
 
     return (
       <div className="flex flex-col gap-2">
         {label && (
-          <label 
-            htmlFor={inputId} 
+          <label
+            htmlFor={inputId}
             className={clsx(
               'text-sm font-medium',
               'text-[var(--color-gray-900)]'
@@ -38,38 +57,31 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
 
-        <input
-          ref={ref}
-          id={inputId}
-          aria-required={required || undefined}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-          className={clsx(
-            // Base styles
-            'px-4 py-2 border rounded-lg',
-            'bg-white text-[var(--color-gray-900)]',
-            'border-[var(--color-gray-300)]',
-            // Focus styles using new design system
-            'focus:outline-2 focus:outline-offset-0',
-            'focus:outline-[var(--color-primary-500)]',
-            'focus:border-[var(--color-primary-500)]',
-            // Disabled styles
-            'disabled:bg-[var(--color-gray-100)]',
-            'disabled:cursor-not-allowed disabled:opacity-50',
-            'disabled:text-[var(--color-gray-500)]',
-            // Error styles
-            error && clsx(
-              'border-[var(--color-error-500)]',
-              'focus:outline-[var(--color-error-500)]'
-            ),
-            // Placeholder
-            'placeholder:text-[var(--color-gray-400)]',
-            // Transition
-            'transition-colors duration-[var(--transition-fast)]',
-            className
-          )}
-          {...props}
-        />
+        {multiline ? (
+          <textarea
+            id={inputId}
+            rows={rows ?? 3}
+            aria-required={required || undefined}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+            className={clsx(sharedClasses(error, className), 'resize-y')}
+            value={props.value as string | undefined}
+            onChange={props.onChange as unknown as React.ChangeEventHandler<HTMLTextAreaElement> | undefined}
+            placeholder={props.placeholder}
+            disabled={props.disabled}
+            name={props.name}
+          />
+        ) : (
+          <input
+            ref={ref}
+            id={inputId}
+            aria-required={required || undefined}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+            className={sharedClasses(error, className)}
+            {...props}
+          />
+        )}
 
         {error && (
           <span id={`${inputId}-error`} role="alert" className="text-sm text-[var(--color-error-500)]">

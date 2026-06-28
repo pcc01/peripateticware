@@ -360,7 +360,7 @@ export const CurriculumMapper: React.FC<CurriculumMapperProps> = ({
       {/* Loading State */}
       {loading &&
       <div className="flex justify-center py-6">
-          <LoadingSpinner size={undefined as any} data-size="sm" />
+          <LoadingSpinner />
         </div>
       }
 

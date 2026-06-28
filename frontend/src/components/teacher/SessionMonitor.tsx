@@ -46,7 +46,7 @@ const SessionMonitor: React.FC<SessionMonitorProps> = ({ session }) => {
             {
               id: 'session-zone',
               name: 'Activity Zone',
-              location: session.location,
+              center: session.location,
               shape: 'circle',
               radius: 500 // 500m zone
             }]

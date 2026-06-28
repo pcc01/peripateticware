@@ -18,7 +18,7 @@ import sessionService from '@/services/sessionService'
 import { Privacy } from '@utils/privacy'
 
 // Helper: evidence field may be a JSON string with sub-fields
-function parseEvidence(ev: string | undefined): Record<string, unknown> {
+function parseEvidence(ev: string | undefined): Record<string, any> {
   if (!ev) return {}
   try { return typeof ev === 'string' ? JSON.parse(ev) : (ev as Record<string, unknown>) }
   catch { return { raw: ev } }

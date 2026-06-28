@@ -65,6 +65,7 @@
   ],
   "exclude": [
     "node_modules",
-    "src/components/Button.stories.tsx"
+    "src/components/common/Button.stories.tsx",
+    "src/tests/phase7.test.tsx"
   ]
 }

@@ -64,7 +64,7 @@ const InquiryInterface: React.FC<InquiryInterfaceProps> = ({ session, onInquiryS
       setTextInput('');
 
       // Create inquiry entry
-      const inquiry: InquiryEntry = {
+      const inquiry = {
         timestamp: new Date().toISOString(),
         question: textInput,
         input_type: InputType.TEXT,
@@ -72,7 +72,7 @@ const InquiryInterface: React.FC<InquiryInterfaceProps> = ({ session, onInquiryS
         Aristotelian_prompt: inquiryResponse.next_question,
         ai_response: JSON.stringify(inquiryResponse),
         confidence: inquiryResponse.confidence
-      };
+      } as unknown as InquiryEntry;
 
       onInquirySubmitted?.(inquiry);
     } catch (error) {

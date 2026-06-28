@@ -78,7 +78,7 @@ export const useActivitiesStore = create<ActivitiesState>((set, get) => ({
   async createActivity(data: Types.CreateActivityRequest) {
     set({ loading: true, error: null })
     try {
-      const activity = await apiServices.activities.create(data)
+      const activity = await apiServices.activities.create(data as any)
       set((state) => ({
         activities: [activity, ...state.activities],
       }))

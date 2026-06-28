@@ -79,7 +79,7 @@ const PeerProjectDetailPage: React.FC = () => {
             <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text)' }}>{t('guiding_prompts', 'Guiding Prompts')}</h3>
             <ul className="space-y-1">
               {project.guiding_prompts.map((p, i) => (
-                <li key={i} className="text-sm" style={{ color: 'var(--text-muted)' }}>• {p.text}</li>
+                <li key={i} className="text-sm" style={{ color: 'var(--text-muted)' }}>• {p.prompt}</li>
               ))}
             </ul>
           </div>
@@ -125,4 +125,4 @@ const PeerProjectDetailPage: React.FC = () => {
   )
 }
 
-export default PeerProjectDetailPage
+export default PeerProjectDetailPage;

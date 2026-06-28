@@ -3,6 +3,7 @@
 // found in the LICENSE.md file in the root directory of this source tree.
 
 // Phase 6: Student Capture, Notebook, Portfolio, Progress Types
+import { FieldNote } from './phase7';
 
 // ============================================================
 // CAPTURE TYPES

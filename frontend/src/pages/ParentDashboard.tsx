@@ -49,6 +49,7 @@ async function fetchConsentForChild(childId: string, childName: string): Promise
 }
 
 function ConsentStatusPanel({ linkedChildren }: { linkedChildren: { id: string; full_name: string }[] }) {
+  const { t } = useTranslation('landing');
   const [statuses, setStatuses] = useState<ConsentStatus[]>([]);
 
   useEffect(() => {

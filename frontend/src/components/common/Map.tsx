@@ -114,7 +114,7 @@ const Map: React.FC<MapProps> = ({
           fillOpacity: 0.2
         });
       } else if (zone.shape === ZoneShape.POLYGON && zone.coordinates && zone.coordinates.length >= 3) {
-        const latlngs = zone.coordinates.map((c) => [c.latitude, c.longitude]);
+        const latlngs = zone.coordinates.map((c) => [c.latitude, c.longitude]) as L.LatLngExpression[];
         layer = L.polygon(latlngs, {
           color: '#0066cc',
           fillOpacity: 0.2

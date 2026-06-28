@@ -80,6 +80,7 @@ export interface ProjectFormData {
   start_date?: string
   end_date?: string
   grade_level?: number
+  duration_weeks?: number
 }
 
 export interface ActivityFilters {
@@ -161,7 +162,7 @@ export interface ProjectListResponse {
   created_at?: string
 }
 
-export type ProjectStatus = 'planning' | 'draft' | 'active' | 'completed'
+export type ProjectStatus = 'planning' | 'draft' | 'active' | 'completed' | 'archived'
 
 export interface CreateActivityInput {
   title: string

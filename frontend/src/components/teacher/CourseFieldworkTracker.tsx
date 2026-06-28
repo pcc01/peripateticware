@@ -17,7 +17,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import Map from '@/components/common/Map'
+import FieldMap from '@/components/common/Map'
 import Card from '@/components/common/Card'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import { professorApi } from '@/services/phase7Api'
@@ -132,7 +132,7 @@ const CourseFieldworkTracker: React.FC<Props> = ({ activityId }) => {
       {/* Map — spans 2 cols */}
       <div className="lg:col-span-2">
         <Card title="Fieldwork Locations">
-          <Map
+          <FieldMap
             center={center}
             zoom={12}
             height="480px"
@@ -196,4 +196,4 @@ const CourseFieldworkTracker: React.FC<Props> = ({ activityId }) => {
   )
 }
 
-export default CourseFieldworkTracker
+export default CourseFieldworkTracker;

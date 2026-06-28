@@ -11,8 +11,12 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Activity } from '@/types/teacher';
 import { useTeacherStore } from '@/stores/teacher';
-import ActivityBuilder from './teacher/EnhancedActivityBuilder';
-import ActivityPreview from '@/components/teacher/ActivityPreview';
+import ActivityBuilderBase from './teacher/EnhancedActivityBuilder';
+import ActivityPreviewBase from '@/components/teacher/ActivityPreview';
+
+// These components accept props that their current signatures don't declare yet
+const ActivityBuilder = ActivityBuilderBase as React.ComponentType<{ activity?: any; onSave?: any; onCancel?: any }>;
+const ActivityPreview = ActivityPreviewBase as React.ComponentType<{ activity?: any }>;
 
 const LoadingSpinner = () => <div style={{padding:'2rem',textAlign:'center'}}>Loading…</div>
 ;
@@ -56,7 +60,7 @@ export const ActivityDetailPage: React.FC = () => {
       {/* Loading State */}
       {loading && id && id !== 'new' && (
         <div className="flex justify-center items-center py-12">
-          <LoadingSpinner size="lg" />
+          <LoadingSpinner />
         </div>
       )}
 

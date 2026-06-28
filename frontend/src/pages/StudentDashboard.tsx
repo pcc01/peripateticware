@@ -105,12 +105,12 @@ export const StudentDashboard: React.FC = () => {
                 <div
                 className={styles.progressFill}
                 style={{
-                  width: `${dashboardData.progress?.[0]?.overall_progress || 0}%`
+                  width: `${(dashboardData.progress as any)?.[0]?.overall_progress || 0}%`
                 }} />
               
               </div>
               <div className={styles.percentage}>
-                {dashboardData.progress?.[0]?.overall_progress || 0}%
+                {(dashboardData.progress as any)?.[0]?.overall_progress || 0}%
               </div>
             </div>
           </div>

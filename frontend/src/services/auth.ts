@@ -158,6 +158,11 @@ export function removeToken(): void {
   localStorage.removeItem('auth_token');
 }
 
+/** Alias for removeToken — clears the stored JWT and any session state. */
+export function logout(): void {
+  removeToken();
+}
+
 export function isAuthenticated(): boolean {
   return !!getToken();
 }

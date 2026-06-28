@@ -107,6 +107,7 @@ const HOW_IT_WORKS = [
 ];
 
 function FrameworkCard({ fw }: { fw: Framework }) {
+  const { t } = useTranslation('landing');
   const [open, setOpen] = useState(false);
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -257,8 +258,8 @@ export default function PrivacyEnginePage() {
           </div>
         </div>
       </div>
+
     </div>
 
   );
 }
-

@@ -47,7 +47,7 @@ export const AdminDashboard: React.FC = () => {
   };
   // Extract data safely from dashboardData
   const users = dashboardData?.recent_users || [];
-  const analytics = dashboardData?.analytics || {};
+  const analytics = (dashboardData?.analytics || {}) as Record<string, any>;
   const pagination = dashboardData?.pagination || { total: 0, limit: 20, offset: 0 };
 
   // Load data on mount

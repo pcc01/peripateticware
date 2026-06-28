@@ -35,6 +35,7 @@ interface ProjectCardProps {
 
 const STATUS_COLORS: Record<ProjectStatus, string> = {
   planning: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  draft: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   archived: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
@@ -42,6 +43,7 @@ const STATUS_COLORS: Record<ProjectStatus, string> = {
 
 const STATUS_ICONS: Record<ProjectStatus, string> = {
   planning: '📋',
+  draft: '📝',
   active: '▶️',
   completed: '✓',
   archived: '📦'

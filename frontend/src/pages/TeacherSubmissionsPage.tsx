@@ -233,7 +233,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
             }
 
             {/* Pagination */}
-            {submissionsData && (submissionsData?.total ?? submissions.length) > 10 &&
+            {submissionsData && ((submissionsData as any)?.total ?? submissions.length) > 10 &&
             <div className="flex justify-center items-center gap-4 mt-8">
                 <button
                 onClick={() => setPage(Math.max(0, page - 1))}
@@ -243,11 +243,11 @@ export const TeacherSubmissionsPage: React.FC = () => {
 
               </button>
                 <span className="text-gray-600">{t("landing:page", "Page")}
-                {page + 1}{t("landing:of", "of")}{Math.ceil((submissionsData?.total ?? submissions.length) / 10)}
+                {page + 1}{t("landing:of", "of")}{Math.ceil(((submissionsData as any)?.total ?? submissions.length) / 10)}
                 </span>
                 <button
                 onClick={() => setPage(page + 1)}
-                disabled={(page + 1) * 10 >= (submissionsData?.total ?? submissions.length)}
+                disabled={(page + 1) * 10 >= ((submissionsData as any)?.total ?? submissions.length)}
                 className="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-50">{t("landing:teachersubmissionspage.next", "Next")}
 
 

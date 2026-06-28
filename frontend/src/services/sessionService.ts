@@ -20,7 +20,7 @@ export const sessionService = {
   async createSession(data: LearningSessionCreateRequest): Promise<LearningSession> {
     try {
       const response = await apiClient.post<ApiResponse<LearningSession>>('/sessions', data)
-      return (response.data.data || response.data) as LearningSession
+      return (response.data.data || response.data) as unknown as LearningSession
     } catch (error) {
       console.error('Failed to create session:', error)
       throw error
@@ -35,7 +35,7 @@ export const sessionService = {
       const response = await apiClient.get<ApiResponse<LearningSession>>(
         `/sessions/${sessionId}`
       )
-      return (response.data.data || response.data) as LearningSession
+      return (response.data.data || response.data) as unknown as LearningSession
     } catch (error) {
       console.error(`Failed to get session ${sessionId}:`, error)
       throw error
@@ -64,7 +64,7 @@ export const sessionService = {
         `/sessions/${sessionId}`,
         data
       )
-      return (response.data.data || response.data) as LearningSession
+      return (response.data.data || response.data) as unknown as LearningSession
     } catch (error) {
       console.error(`Failed to update session ${sessionId}:`, error)
       throw error
@@ -141,7 +141,7 @@ export const sessionService = {
         `/sessions/${sessionId}/inquiry`,
         inquiry
       )
-      return (response.data.data || response.data) as LearningSession
+      return (response.data.data || response.data) as unknown as InquiryEntry
     } catch (error) {
       console.error(`Failed to submit inquiry for session ${sessionId}:`, error)
       throw error
