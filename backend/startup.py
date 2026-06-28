@@ -921,6 +921,55 @@ async def apply_billing_column_migrations(engine) -> None:
             logger.debug(f"Billing column migration skipped (likely exists): {_col[:60]}")
 
 
+async def apply_rag_documents_table(engine) -> None:
+    """Create rag_documents table and pgvector HNSW index for semantic retrieval."""
+    try:
+        async with engine.begin() as conn:
+            # Ensure pgvector extension is enabled
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+
+            await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS rag_documents (
+                    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    source_type VARCHAR(50)  NOT NULL,
+                    source_id   VARCHAR(255),
+                    source_name VARCHAR(512),
+                    chunk_index INTEGER NOT NULL DEFAULT 0,
+                    content     TEXT    NOT NULL,
+                    metadata    JSONB   DEFAULT '{}',
+                    embedding   vector(384),
+                    owner_id    UUID REFERENCES users(id) ON DELETE SET NULL,
+                    created_at  TIMESTAMP DEFAULT now(),
+                    updated_at  TIMESTAMP DEFAULT now()
+                )
+            """))
+
+            # HNSW index for fast approximate nearest-neighbour search
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS rag_documents_embedding_hnsw
+                ON rag_documents
+                USING hnsw (embedding vector_cosine_ops)
+            """))
+
+            # B-tree indices for filtered searches
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS rag_documents_source_type_idx
+                ON rag_documents (source_type)
+            """))
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS rag_documents_source_id_idx
+                ON rag_documents (source_id)
+            """))
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS rag_documents_owner_idx
+                ON rag_documents (owner_id)
+            """))
+
+        logger.info("✅ rag_documents table + HNSW index ready")
+    except Exception as e:
+        logger.warning(f"⊘ rag_documents migration warning: {e}")
+
+
 async def apply_student_phase7_migrations(engine) -> None:
     """Block 7: Extended student field_notes / peer_projects column migrations."""
     _stmts = [
@@ -1478,11 +1527,11 @@ async def start_background_tasks(async_session, settings) -> None:
                 id="ai_batch_cycle",
                 replace_existing=True,
             )
-            logger.info(f"✅ AI batch job added to scheduler (cron: {settings.AI_BATCH_CRON})")
+            logger.info(f"\u2705 AI batch job added to scheduler (cron: {settings.AI_BATCH_CRON})")
         except Exception as e:
-            logger.warning(f"⊘ AI batch job not added: {e}")
+            logger.warning(f"\u2298 AI batch job not added: {e}")
 
-    # ── Budget monitor jobs ───────────────────────────────────────────────────
+    # Budget monitor jobs
     if _scheduler is not None:
         try:
             from tasks.budget_monitor import budget_alert_check, anomaly_detect
@@ -1497,14 +1546,14 @@ async def start_background_tasks(async_session, settings) -> None:
 
             _scheduler.add_job(_budget_alert, "interval", hours=1,    id="budget_alert",   replace_existing=True)
             _scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect", replace_existing=True)
-            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
+            logger.info("\u2705 Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
         except Exception as e:
-            logger.warning(f"⊘ Budget monitor jobs not added: {e}")
+            logger.warning(f"\u2298 Budget monitor jobs not added: {e}")
 
-    # ── Start the shared scheduler ────────────────────────────────────────────
+    # Start the shared scheduler
     if _scheduler is not None and not _scheduler.running:
         try:
             _scheduler.start()
-            logger.info("✅ APScheduler started")
+            logger.info("\u2705 APScheduler started")
         except Exception as e:
-            logger.warning(f"⊘ APScheduler failed to start: {e}")
+            logger.warning(f"\u2298 APScheduler failed to start: {e}")

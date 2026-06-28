@@ -1323,3 +1323,31 @@ class ActivityStandardsMap(Base):
             name="uq_activity_standards_criterion"
         ),
     )
+
+
+class RagDocument(Base):
+    """
+    Chunked, embedded text for semantic retrieval (RAG).
+
+    Source types:
+      - 'standards'    → from StandardsSet criteria (rubric / curriculum / state_reporting)
+      - 'curriculum'   → from CurriculumUnit raw_content
+      - 'homeschool'   → from homeschool state requirement uploads
+      - 'custom'       → manually ingested via /api/v1/inference/ingest
+
+    One row per text chunk.  Large documents are split into ≤512-token chunks
+    before embedding.  Multiple chunks share the same source_id.
+    """
+    __tablename__ = "rag_documents"
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source_type = Column(String(50),  nullable=False, index=True)   # standards|curriculum|homeschool|custom
+    source_id   = Column(String(255), nullable=True,  index=True)   # UUID of parent record (or filename)
+    source_name = Column(String(512), nullable=True)                 # human-readable name of parent record
+    chunk_index = Column(Integer,     nullable=False, default=0)     # 0-based position within source
+    content     = Column(Text,        nullable=False)                # raw text of this chunk
+    metadata_   = Column("metadata", JSONB, default=dict)            # {grade_level, subject, state_code, …}
+    embedding   = Column(Vector(384), nullable=True)                 # 384-dim nomic-embed / all-MiniLM
+    owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

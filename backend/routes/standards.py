@@ -45,7 +45,9 @@ Endpoints
   GET  /api/v1/standards/{id}/coverage    Coverage report for a student
 """
 
+import asyncio
 import hashlib
+import json as _json
 import logging
 import uuid
 from datetime import date, datetime
@@ -67,6 +69,98 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/standards", tags=["standards"])
 
 VALID_TYPES = {"state_standards", "state_reporting", "rubric", "custom"}
+
+
+async def _index_standards_set_criteria(
+    standards_set: "StandardsSet",
+    owner_id: "uuid.UUID",
+    db: "AsyncSession",
+) -> None:
+    """
+    Background task: chunk + embed all criteria from a StandardsSet and
+    upsert them into rag_documents so /rag-retrieve can find them.
+
+    Runs as a fire-and-forget asyncio.Task after create/update — never blocks
+    the HTTP response.  Uses a fresh DB session to avoid using a closed one.
+    """
+    from core.database import async_session
+    from services.embedding_service import embed_text as _embed
+
+    set_id   = str(standards_set.id)
+    set_name = standards_set.name
+    src_type = standards_set.type  # rubric | state_standards | state_reporting | custom
+
+    # Map StandardsSet type → rag_documents source_type vocabulary
+    source_type_map = {
+        "state_standards":  "standards",
+        "state_reporting":  "homeschool",
+        "rubric":           "standards",
+        "custom":           "custom",
+    }
+    rag_source_type = source_type_map.get(src_type, "standards")
+
+    criteria = standards_set.criteria or []
+    if not criteria:
+        return
+
+    try:
+        async with async_session() as session:
+            # Remove stale chunks for this source so we don't accumulate duplicates
+            await session.execute(text(
+                "DELETE FROM rag_documents WHERE source_id = :sid AND source_type = :stype"
+            ), {"sid": set_id, "stype": rag_source_type})
+
+            inserted = 0
+            for idx, criterion in enumerate(criteria):
+                # Build a rich text representation of the criterion
+                parts = []
+                if criterion.get("name"):
+                    parts.append(criterion["name"])
+                if criterion.get("description"):
+                    parts.append(criterion["description"])
+                if criterion.get("category"):
+                    parts.append(f"Category: {criterion['category']}")
+                chunk_text = " — ".join(parts).strip()
+                if not chunk_text:
+                    continue
+
+                emb_result = await _embed(chunk_text)
+                embedding  = emb_result.get("embedding")
+                if not embedding:
+                    continue
+
+                await session.execute(text("""
+                    INSERT INTO rag_documents
+                        (source_type, source_id, source_name, chunk_index,
+                         content, metadata, embedding, owner_id)
+                    VALUES
+                        (:stype, :sid, :sname, :cidx,
+                         :content, :meta::jsonb, :emb::vector, :owner)
+                """), {
+                    "stype":   rag_source_type,
+                    "sid":     set_id,
+                    "sname":   set_name,
+                    "cidx":    idx,
+                    "content": chunk_text,
+                    "meta":    _json.dumps({
+                        "criterion_id":  criterion.get("id") or criterion.get("code", ""),
+                        "state_code":    standards_set.state_code,
+                        "set_type":      src_type,
+                        "weight":        criterion.get("weight"),
+                        "required":      criterion.get("required"),
+                    }),
+                    "emb":     "[" + ",".join(str(v) for v in embedding) + "]",
+                    "owner":   str(owner_id),
+                })
+                inserted += 1
+
+            await session.commit()
+            logger.info(
+                f"RAG: indexed {inserted}/{len(criteria)} criteria "
+                f"from StandardsSet '{set_name}' ({set_id[:8]})"
+            )
+    except Exception as e:
+        logger.warning(f"RAG: background indexing failed for set {set_id}: {e}")
 MAX_FILE_BYTES = 10 * 1024 * 1024
 
 # Map legacy / alias set_type values (sent by some frontend import pages) onto the
@@ -270,6 +364,12 @@ async def create_standards_set(
     db.add(new_set)
     await db.commit()
     await db.refresh(new_set)
+
+    # ── Auto-index criteria into RAG store (fire-and-forget, non-blocking) ──
+    asyncio.create_task(
+        _index_standards_set_criteria(new_set, current_user.id, db)
+    )
+
     return {**_serialize(new_set, include_criteria=True), "cache_hit": False}
 
 
@@ -399,6 +499,8 @@ async def refresh_standards_set(
         s.valid_until       = _default_valid_until(s.type)
         s.updated_at        = datetime.utcnow()
         await db.commit()
+        # Re-index updated criteria in RAG store
+        asyncio.create_task(_index_standards_set_criteria(s, current_user.id, db))
         return {
             **_serialize(s, include_criteria=True),
             "cache_hit": False,

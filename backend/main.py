@@ -92,6 +92,7 @@ async def lifespan(app: FastAPI):
         apply_core_schema_migrations,
         apply_billing_column_migrations,
         apply_student_phase7_migrations,
+        apply_rag_documents_table,
         seed_sample_activities,
         seed_demo_users,
         seed_test_accounts,
@@ -116,6 +117,7 @@ async def lifespan(app: FastAPI):
     await apply_core_schema_migrations(engine)
     await apply_billing_column_migrations(engine)
     await apply_student_phase7_migrations(engine)
+    await apply_rag_documents_table(engine)
 
     # Seed data
     await seed_sample_activities(engine)

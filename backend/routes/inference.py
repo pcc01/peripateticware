@@ -363,69 +363,204 @@ async def process_multimodal_input(
         )
 
 
+class IngestRequest(BaseModel):
+    """Manual document ingestion request."""
+    content: str
+    source_type: str = "custom"   # standards | curriculum | homeschool | custom
+    source_id: Optional[str] = None
+    source_name: Optional[str] = None
+    metadata: Optional[dict] = None
+
+
+@router.post("/ingest", status_code=201)
+async def ingest_document(
+    request: IngestRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Ingest a text document into the RAG store.
+
+    Splits content into overlapping ≤512-character chunks, embeds each chunk,
+    and inserts rows into rag_documents for future semantic retrieval.
+
+    Useful for: state homeschool requirement text, custom rubric descriptions,
+    supplemental curriculum notes, state standards documents.
+    """
+    import time as _time
+    from sqlalchemy import text as _t
+
+    if not request.content or not request.content.strip():
+        raise HTTPException(status_code=400, detail="content cannot be empty")
+
+    CHUNK_SIZE = 512
+    CHUNK_OVERLAP = 64
+
+    raw = request.content.strip()
+    chunks: list[str] = []
+    start = 0
+    while start < len(raw):
+        end = start + CHUNK_SIZE
+        chunks.append(raw[start:end])
+        start = end - CHUNK_OVERLAP
+        if start >= len(raw):
+            break
+
+    inserted = 0
+    t0 = _time.monotonic()
+    for idx, chunk in enumerate(chunks):
+        emb_result = await embed_text(chunk)
+        embedding = emb_result.get("embedding")
+        if embedding:
+            await db.execute(_t("""
+                INSERT INTO rag_documents
+                    (source_type, source_id, source_name, chunk_index,
+                     content, metadata, embedding, owner_id)
+                VALUES
+                    (:stype, :sid, :sname, :cidx,
+                     :content, :meta::jsonb, :emb::vector, :owner)
+            """), {
+                "stype":   request.source_type,
+                "sid":     request.source_id,
+                "sname":   request.source_name,
+                "cidx":    idx,
+                "content": chunk,
+                "meta":    _json.dumps(request.metadata or {}),
+                "emb":     "[" + ",".join(str(v) for v in embedding) + "]",
+                "owner":   str(current_user.id),
+            })
+            inserted += 1
+
+    await db.commit()
+    elapsed_ms = int((_time.monotonic() - t0) * 1000)
+    logger.info(
+        f"Ingested {inserted}/{len(chunks)} chunks for "
+        f"source_type={request.source_type} in {elapsed_ms}ms"
+    )
+    return {
+        "source_type":  request.source_type,
+        "source_id":    request.source_id,
+        "chunks_total": len(chunks),
+        "chunks_saved": inserted,
+        "elapsed_ms":   elapsed_ms,
+        "success":      True,
+    }
+
+
 @router.get("/rag-retrieve")
 async def rag_retrieve(
     query: str,
     top_k: int = 5,
-    db: AsyncSession = Depends(get_db)
+    source_type: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
-    Retrieve relevant curriculum documents using RAG.
-    Queries pgvector for semantic similarity.
-    
-    In production: queries pgvector database
-    For testing: returns mock results based on query
+    Retrieve semantically relevant documents from the RAG store using pgvector.
+
+    Primary:  rag_documents table (standards, rubrics, homeschool reqs, custom)
+    Fallback: curriculum_units (pre-embedded — used when RAG store is empty)
+
+    Optional ?source_type= filter: standards | curriculum | homeschool | custom
     """
-    try:
-        if not query or not query.strip():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Query cannot be empty"
-            )
-        
-        # Generate embedding for query
-        query_embedding = await embed_text(query)
-        
-        # In production: Use pgvector to find similar documents
-        # For now: Return mock results with high relevance to demo functionality
-        
-        # Mock retrieval (in production, use real vector search)
-        # This simulates what a real RAG system would return
-        retrieved_docs = [
-            {
-                "id": f"doc-{i}",
-                "title": f"Curriculum Unit: {['Biodiversity', 'Ecology', 'Ecosystems', 'Species Adaptation', 'Food Chains'][i]}",
-                "content": _generate_mock_content(query, i),
-                "relevance_score": 0.95 - (i * 0.05),
-                "embedding_distance": i * 0.05,  # Lower = more similar
-                "source": "curriculum_database",
-                "grade_level": 3 + i
-            }
-            for i in range(min(top_k, 5))
-        ]
-        
-        logger.info(
-            f"Retrieved {len(retrieved_docs)} documents for query: {query[:50]}"
-        )
-        
-        return {
-            "query": query,
-            "query_embedding_dimension": query_embedding.get("dimension"),
-            "top_k": top_k,
-            "documents": retrieved_docs,
-            "retrieval_time_ms": 87,
-            "total_retrieved": len(retrieved_docs),
-            "success": True
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error retrieving documents: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve documents"
-        )
+    import time as _time
+    from sqlalchemy import text as _t
+
+    if not query or not query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
+
+    t0 = _time.monotonic()
+
+    emb_result = await embed_text(query)
+    query_embedding: list = emb_result.get("embedding", [])
+    emb_dim: int = emb_result.get("dimension", len(query_embedding))
+
+    retrieved_docs: list[dict] = []
+    source = "rag_documents"
+
+    if query_embedding:
+        vec_literal = "[" + ",".join(str(v) for v in query_embedding) + "]"
+        type_clause = "AND source_type = :stype" if source_type else ""
+
+        try:
+            rows = (await db.execute(_t(f"""
+                SELECT
+                    id::text,
+                    source_type,
+                    source_id,
+                    source_name,
+                    chunk_index,
+                    content,
+                    metadata,
+                    1 - (embedding <=> :emb::vector) AS relevance_score
+                FROM rag_documents
+                WHERE embedding IS NOT NULL
+                {type_clause}
+                ORDER BY embedding <=> :emb::vector
+                LIMIT :k
+            """), {"emb": vec_literal, "k": top_k, "stype": source_type})).fetchall()
+
+            for row in rows:
+                retrieved_docs.append({
+                    "id":              row[0],
+                    "source_type":     row[1],
+                    "source_id":       row[2],
+                    "source_name":     row[3],
+                    "chunk_index":     row[4],
+                    "content":         row[5],
+                    "metadata":        row[6] or {},
+                    "relevance_score": float(row[7]) if row[7] is not None else 0.0,
+                })
+        except Exception as e:
+            logger.warning(f"rag_documents query failed (table may not exist yet): {e}")
+
+        # Fallback: curriculum_units have pre-built embeddings from initial seed
+        if not retrieved_docs:
+            source = "curriculum_units"
+            try:
+                cu_rows = (await db.execute(_t("""
+                    SELECT
+                        id::text,
+                        title,
+                        subject,
+                        grade_level,
+                        raw_content,
+                        1 - (content_embedding <=> :emb::vector) AS relevance_score
+                    FROM curriculum_units
+                    WHERE content_embedding IS NOT NULL
+                      AND is_active = TRUE
+                    ORDER BY content_embedding <=> :emb::vector
+                    LIMIT :k
+                """), {"emb": vec_literal, "k": top_k})).fetchall()
+
+                for row in cu_rows:
+                    raw = row[4] or {}
+                    retrieved_docs.append({
+                        "id":              row[0],
+                        "source_type":     "curriculum",
+                        "source_name":     row[1],
+                        "content":         raw.get("content", row[1] or ""),
+                        "metadata":        {"subject": row[2], "grade_level": row[3]},
+                        "relevance_score": float(row[5]) if row[5] is not None else 0.0,
+                    })
+            except Exception as e:
+                logger.warning(f"curriculum_units fallback failed: {e}")
+
+    elapsed_ms = int((_time.monotonic() - t0) * 1000)
+    logger.info(
+        f"RAG retrieved {len(retrieved_docs)} docs for '{query[:50]}' "
+        f"from {source} in {elapsed_ms}ms"
+    )
+    return {
+        "query":                     query,
+        "query_embedding_dimension": emb_dim,
+        "top_k":                     top_k,
+        "source":                    source,
+        "documents":                 retrieved_docs,
+        "retrieval_time_ms":         elapsed_ms,
+        "total_retrieved":           len(retrieved_docs),
+        "success":                   True,
+    }
 
 
 @router.post("/text-embedding")
@@ -617,8 +752,6 @@ async def _call_ollama_inference(prompt: str, model: Optional[str] = None) -> di
     try:
         from agents.provider import call_ollama as _call_ollama
         resolved_model = model or settings.OLLAMA_MODEL_TEXT
-        # Legacy /api/generate used a plain prompt; /api/chat (used by provider.py)
-        # accepts a messages list.  Wrap the prompt as a single user message.
         question = await _call_ollama(
             messages=[{"role": "user", "content": prompt}],
             model=resolved_model,
@@ -626,7 +759,7 @@ async def _call_ollama_inference(prompt: str, model: Optional[str] = None) -> di
         )
         logger.info(f"Ollama inference successful - Model: {resolved_model}")
         return {
-            "question": question,  # no truncation
+            "question": question,
             "resources": [
                 "https://example.com/resource1",
                 "https://example.com/resource2"
@@ -643,14 +776,11 @@ async def _inference_with_vision(input_data: dict) -> dict:
     try:
         image_bytes = input_data.get("data")
         image_format = input_data.get("format", "jpg")
-        
-        # Use vision service
         analysis_result = await analyze_image(
             image_bytes,
             image_format,
             analysis_prompt="Analyze this outdoor learning image. What do you observe?"
         )
-        
         return {
             "text": analysis_result.get("text", ""),
             "objects": analysis_result.get("objects", []),
@@ -659,16 +789,9 @@ async def _inference_with_vision(input_data: dict) -> dict:
             "provider": analysis_result.get("provider"),
             "success": "error" not in analysis_result
         }
-    
     except Exception as e:
         logger.error(f"Vision inference error: {e}")
-        return {
-            "text": "",
-            "objects": [],
-            "confidence": 0.0,
-            "error": str(e),
-            "success": False
-        }
+        return {"text": "", "objects": [], "confidence": 0.0, "error": str(e), "success": False}
 
 
 async def _inference_with_audio(input_data: dict) -> dict:
@@ -676,13 +799,7 @@ async def _inference_with_audio(input_data: dict) -> dict:
     try:
         audio_bytes = input_data.get("data")
         audio_format = input_data.get("format", "wav")
-        
-        # Use audio transcription service
-        transcription_result = await transcribe_audio(
-            audio_bytes,
-            audio_format
-        )
-        
+        transcription_result = await transcribe_audio(audio_bytes, audio_format)
         return {
             "text": transcription_result.get("text", ""),
             "confidence": transcription_result.get("confidence", 0.0),
@@ -690,59 +807,16 @@ async def _inference_with_audio(input_data: dict) -> dict:
             "provider": transcription_result.get("provider"),
             "success": "error" not in transcription_result
         }
-    
     except Exception as e:
         logger.error(f"Audio inference error: {e}")
-        return {
-            "text": "",
-            "confidence": 0.0,
-            "error": str(e),
-            "success": False
-        }
+        return {"text": "", "confidence": 0.0, "error": str(e), "success": False}
 
 
 async def _inference_with_text(input_data: dict) -> dict:
     """Text inference and understanding"""
     try:
         text = input_data.get("data", "")
-        input_type = input_data.get("type", "text")
-        
-        # For text, we simply return the normalized text
-        # (actual inference happens in the main pipeline with LLM)
-        return {
-            "text": text,
-            "intent": "inquiry",
-            "confidence": 0.9,
-            "success": True
-        }
-    
+        return {"text": text, "intent": "inquiry", "confidence": 0.9, "success": True}
     except Exception as e:
         logger.error(f"Text inference error: {e}")
-        return {
-            "text": "",
-            "intent": "unknown",
-            "confidence": 0.0,
-            "error": str(e),
-            "success": False
-        }
-
-
-def _generate_mock_content(query: str, index: int) -> str:
-    """Generate mock curriculum content for RAG demo"""
-    topics = {
-        "biodiversity": "Biodiversity refers to the variety of all living organisms in an area. It includes genetic diversity, species diversity, and ecosystem diversity. Our local ecosystem supports numerous species of plants, animals, and microorganisms.",
-        "ecology": "Ecology is the study of organisms and how they interact with each other and their environment. Ecologists examine food webs, energy flow, and nutrient cycles.",
-        "adaptation": "Adaptation is the process by which organisms become suited to their environment. Structural adaptations include physical features, while behavioral adaptations are actions organisms take.",
-        "ecosystem": "An ecosystem includes all the organisms in an area plus their physical environment. Ecosystems exchange matter and energy with the larger environment.",
-        "habitat": "A habitat is the specific place where an organism or community of organisms lives. Habitats provide food, water, shelter, and space."
-    }
-    
-    # Select relevant topic based on query
-    default_content = topics.get(
-        next((k for k in topics.keys() if k in query.lower()), "ecosystem"),
-        topics["ecosystem"]
-    )
-    
-    return default_content
-
-
+        return {"text": "", "intent": "unknown", "confidence": 0.0, "error": str(e), "success": False}
