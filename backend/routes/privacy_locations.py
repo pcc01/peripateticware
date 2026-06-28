@@ -467,14 +467,34 @@ async def get_pending_regulations(db: AsyncSession = Depends(get_db)):
     Shows regulations discovered by crawler
     """
     try:
-        # TODO: Query pending regulations from file system
-        # config/jurisdictions/pending/ directory
-        
+        import json as _json
+        from pathlib import Path
+        pending_dir = Path(__file__).parent.parent / "config" / "jurisdictions" / "pending"
+        pending_dir.mkdir(parents=True, exist_ok=True)
+
+        regulations = []
+        for json_file in sorted(pending_dir.glob("*.json")):
+            try:
+                data = _json.loads(json_file.read_text())
+                regulations.append({
+                    "filename": json_file.name,
+                    "jurisdiction_code": data.get("jurisdiction_code", json_file.stem),
+                    "name": data.get("name", json_file.stem),
+                    "full_name": data.get("full_name", ""),
+                    "regulator": data.get("regulator", ""),
+                    "framework": data.get("framework", ""),
+                    "effective_date": data.get("effective_date", ""),
+                    "added_at": json_file.stat().st_mtime,
+                })
+            except Exception as e:
+                logger.warning(f"Could not read pending regulation {json_file.name}: {e}")
+
         return {
-            "pending_regulations": [],
-            "message": "Pending regulations endpoint - implement file system reading"
+            "pending_regulations": regulations,
+            "count": len(regulations),
+            "pending_dir": str(pending_dir),
         }
-    
+
     except Exception as e:
         logger.error(f"Error getting pending regulations: {e}")
         raise HTTPException(
@@ -492,18 +512,88 @@ async def approve_regulation(
     Admin approves a pending regulation for loading
     """
     try:
-        # TODO: Move regulation from pending to active
-        # TODO: Load into privacy engine
-        # TODO: Notify admin of success
-        
+        import json as _json
+        import shutil
+        from pathlib import Path
+
+        pending_dir = Path(__file__).parent.parent / "config" / "jurisdictions" / "pending"
+        active_dir  = Path(__file__).parent.parent / "config" / "jurisdictions"
+
+        # Find the pending file — try exact name or jurisdiction_code match
+        pending_file = pending_dir / f"{jurisdiction_id}.json"
+        if not pending_file.exists():
+            # Try scanning all pending files for a matching jurisdiction_code
+            for f in pending_dir.glob("*.json"):
+                try:
+                    data = _json.loads(f.read_text())
+                    if data.get("jurisdiction_code") == jurisdiction_id:
+                        pending_file = f
+                        break
+                except Exception:
+                    continue
+
+        if not pending_file.exists():
+            raise HTTPException(
+                status_code=404,
+                detail=f"No pending regulation found for jurisdiction_id '{jurisdiction_id}'"
+            )
+
+        # Load and validate the JSON
+        try:
+            reg_data = _json.loads(pending_file.read_text())
+        except _json.JSONDecodeError as e:
+            raise HTTPException(status_code=422, detail=f"Invalid JSON in pending regulation: {e}")
+
+        jurisdiction_code = reg_data.get("jurisdiction_code", pending_file.stem)
+        target_file = active_dir / f"{jurisdiction_code}.json"
+
+        # Move to active directory
+        shutil.move(str(pending_file), str(target_file))
+        logger.info(f"Moved {pending_file.name} → {target_file}")
+
+        # Attempt to reload via privacy config loader
+        try:
+            loader = PrivacyConfigurationLoader(str(active_dir))
+            configs = loader.load_all_jurisdictions()
+            checker = get_privacy_checker()
+            for jid, config in configs.items():
+                checker.register_jurisdiction(config)
+            logger.info(f"Reloaded jurisdiction {jurisdiction_code} into privacy engine")
+        except Exception as e:
+            logger.warning(f"Privacy engine reload skipped (non-fatal): {e}")
+
+        # Log to audit trail
+        try:
+            from sqlalchemy import text as _text
+            await db.execute(_text("""
+                INSERT INTO rule_audit_log
+                    (id, action, data_type, compliance_status, jurisdiction_ids, notes)
+                VALUES
+                    (gen_random_uuid(),
+                     'REGULATION_APPROVED',
+                     'jurisdiction',
+                     'COMPLIANT',
+                     :jurisdictions::jsonb,
+                     :notes)
+            """), {
+                "jurisdictions": f'["{jurisdiction_code}"]',
+                "notes": f"Approved {jurisdiction_code} from pending; moved to active config",
+            })
+            await db.commit()
+        except Exception as e:
+            logger.warning(f"Audit log for regulation approval failed (non-fatal): {e}")
+
         return {
             "success": True,
-            "jurisdiction_id": jurisdiction_id,
-            "message": "Regulation approved and loaded"
+            "jurisdiction_id": jurisdiction_code,
+            "filename": target_file.name,
+            "message": f"Regulation '{jurisdiction_code}' approved and loaded into active config.",
         }
-    
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error approving regulation: {e}")
+        logger.error(f"Error approving regulation {jurisdiction_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
@@ -522,11 +612,31 @@ async def _log_compliance_check(
     issues: List[str],
     warnings: List[str]
 ):
-    """Log compliance check to database"""
+    """Log compliance check to rule_audit_log table."""
     try:
-        # TODO: Insert into compliance_checks table
+        from sqlalchemy import text as _text
+        await db.execute(_text("""
+            INSERT INTO rule_audit_log
+                (id, action, data_type, compliance_status, jurisdiction_ids, notes)
+            VALUES
+                (gen_random_uuid(),
+                 'COMPLIANCE_CHECK',
+                 'activity',
+                 :status,
+                 :jurisdictions::jsonb,
+                 :notes)
+        """), {
+            "status": "COMPLIANT" if is_compliant else "VIOLATION",
+            "jurisdictions": f'["{jurisdiction_id}"]',
+            "notes": (
+                f"activity={activity_id}; "
+                f"issues={issues}; "
+                f"warnings={warnings}"
+            ),
+        })
         logger.info(
             f"Logged compliance check: activity={activity_id}, "
+            f"jurisdiction={jurisdiction_id}, "
             f"compliant={is_compliant}, issues={len(issues)}"
         )
     except Exception as e:

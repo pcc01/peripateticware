@@ -38,6 +38,7 @@ import uuid
 import logging
 import math
 
+
 from core.database import get_db
 from core.dependencies import get_current_user
 from models.database import (
@@ -570,12 +571,18 @@ async def _save_file(upload: UploadFile, session_id: UUID) -> tuple[str, int]:
     Persist an uploaded file to Cloudflare R2 (S3-compatible).
     Falls back to local /app/uploads/ if CF_R2_ACCOUNT_ID is not configured (dev mode).
     """
+    import core.config as _cfg
+    settings = _cfg.settings
     import re
     import asyncio
     import functools
 
     # Sanitise filename
     safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", upload.filename or "file")
+    # Strip leading dots to block path-traversal sequences (e.g. "../../etc")
+    safe_name = safe_name.lstrip(".")
+    safe_name = re.sub(r"\.\.", "_", safe_name)  # collapse any remaining ".." pairs
+    safe_name = safe_name or "file"
     safe_name = safe_name[:200]
 
     file_bytes = await upload.read()

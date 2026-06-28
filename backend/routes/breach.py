@@ -46,7 +46,7 @@ DPA_CONTACTS = {
 
 
 def _require_admin(current_user: User):
-    if current_user.role not in (UserRole.ADMIN, UserRole.SUPER_ADMIN):
+    if current_user.role != UserRole.ADMIN:
         raise HTTPException(403, "Admin access required")
 
 

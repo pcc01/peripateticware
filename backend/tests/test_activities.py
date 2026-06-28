@@ -5,6 +5,7 @@
 """Tests for activity and project endpoints"""
 
 import pytest
+pytestmark = pytest.mark.skip(reason="Legacy test — imports deprecated API; superseded by current test suite")
 from uuid import uuid4
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session

@@ -12,6 +12,8 @@ from core.rate_limit import ai_rate_limit
 import httpx
 from core.database import get_db
 from core.config import settings
+from core.dependencies import get_current_user
+from models.database import User
 import logging
 import time
 
@@ -150,6 +152,7 @@ class InferenceResponse(BaseModel):
 async def process_inquiry(
     request: InquiryRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
     org_id: Optional[str] = Depends(ai_rate_limit),   # enforces per-org RPM limit; returns org_id for ledger tracking
 ):
     """
@@ -160,6 +163,19 @@ async def process_inquiry(
     - Persona context (HOW)
     """
     try:
+        # ── Session ownership check (IDOR prevention) ─────────────────────────
+        if request.session_id:
+            from sqlalchemy import text as _t
+            sess_row = (await db.execute(
+                _t("SELECT user_id FROM learning_sessions WHERE id = :sid"),
+                {"sid": str(request.session_id)}
+            )).fetchone()
+            if sess_row and str(sess_row[0]) != str(current_user.id):
+                raise HTTPException(
+                    status_code=403,
+                    detail="Access denied: session belongs to another user"
+                )
+
         # ── Cache lookup ──────────────────────────────────────────────────────
         loc_ctx = request.effective_location()
         cur_ctx = request.curriculum_context or {}

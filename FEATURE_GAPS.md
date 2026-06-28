@@ -2,7 +2,7 @@
 # Business Source License 1.1
 
 # Peripateticware — Feature Gap Register
-> Audit date: 2026-06-26 | Source: codebase audit vs. README/FAQ claims
+> Audit date: 2026-06-27 (updated Session 33) | Source: codebase audit vs. README/FAQ claims
 
 ---
 
@@ -77,20 +77,22 @@ The privacy handoff document specifies 10 jurisdictions. Current state:
 
 | Jurisdiction | Config JSON | Engine active | Data subject rights | Consent records | Field encryption |
 |---|---|---|---|---|---|
-| FERPA | ✅ | ✅ | ✅ | ✅ | ❌ |
-| COPPA | ✅ | ✅ | ✅ | ✅ | ❌ |
-| GDPR | ✅ | ✅ | ✅ | ✅ | ❌ |
-| CCPA | ✅ | ✅ | ✅ | ✅ | ❌ |
-| LGPD | ✅ | ✅ | ✅ | Partial | ❌ |
-| PIPEDA | ✅ | ✅ | ✅ | Partial | ❌ |
-| PDPA (SG) | ✅ | ✅ | ✅ | Partial | ❌ |
-| POPIA (ZA) | 🔄 | 🔄 | ✅ | Partial | ❌ |
-| LPDC (MX) | 🔄 | 🔄 | ✅ | Partial | ❌ |
-| AEPD (AR) | 🔄 | 🔄 | ✅ | Partial | ❌ |
+| FERPA | ✅ | ✅ | ✅ | ✅ | ❌† |
+| COPPA | ✅ | ✅ | ✅ | ✅ | ❌† |
+| GDPR | ✅ | ✅ | ✅ | ✅ | ❌† |
+| CCPA | ✅ | ✅ | ✅ | ✅ | ❌† |
+| LGPD | ✅ | ✅ | ✅ | Partial | ❌† |
+| PIPEDA | ✅ | ✅ | ✅ | Partial | ❌† |
+| PDPA (SG) | ✅ | ✅ | ✅ | Partial | ❌† |
+| POPIA (ZA) | ✅ | ✅* | ✅ | Partial | ❌† |
+| LPDC (MX) | ✅ | ✅* | ✅ | Partial | ❌† |
+| AEPD (AR) | ✅ | ✅* | ✅ | Partial | ❌† |
 
-**Minimum viable compliance for launch (US + EU market):** FERPA ✅, COPPA ✅, GDPR data subject rights ✅ (P3-4 complete), CCPA "Do Not Sell" link ✅ (P3-5 complete), consent records ✅ (P3-3 complete).
+**Minimum viable compliance for launch (US + EU market):** FERPA ✅, COPPA ✅, GDPR data subject rights ✅ (P3-4 complete), CCPA "Do Not Sell" link ✅ (P3-5 complete), consent records ✅ (P3-3 complete), breach notification ✅ (Session 33).
 
-> 🔄 = config JSON being added in the 2026-06-27 session by a parallel agent (Dev-J).
+> † = Field encryption engine exists (`backend/core/encryption.py`, Session 33). Setting `FIELD_ENCRYPTION_KEY` env var activates it. Covered fields: `users.email`, `users.full_name`, GPS coordinates, notification payloads. **Not yet covered:** `student_captures.file_path`, `MultimodalInput.raw_data`, `consent_records.granted_by`.
+
+> * = Config JSON added Session 33 (Dev-J). Engine activates automatically when the privacy seeder runs for an org with country code ZA/MX/AR on first registration.
 
 ## Session Changelog — 2026-06-27
 
@@ -114,4 +116,6 @@ The privacy handoff document specifies 10 jurisdictions. Current state:
 | P3-1 WCAG 2.1 AA audit | ✅ Complete | Dev-H |
 | P3-2 White-labeling guide | ✅ Complete | Dev-I |
 | P4 Roadmap docs | ✅ Complete | Dev-I |
-| Privacy: POPIA/LPDC/AEPD configs | 🔄 In progress | Dev-J |
+| Privacy: POPIA/LPDC/AEPD configs | ✅ Complete | Dev-J |
+| Field-level encryption (Fernet + HMAC blind index) | ✅ Complete | Dev-K |
+| Breach notification (GDPR Art. 33/34) | ✅ Complete | Dev-K |

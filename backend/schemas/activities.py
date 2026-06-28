@@ -198,7 +198,10 @@ class ActivityResponse(ActivityBase):
     created_at: datetime
     updated_at: datetime
     published_at: Optional[datetime]
-    
+    # Media fields (teacher-uploaded)
+    hero_image_url: Optional[str] = None
+    attachments: List[dict] = []
+
     class Config:
         from_attributes = True
 

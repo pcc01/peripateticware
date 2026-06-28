@@ -204,3 +204,50 @@ async def get_current_platform_admin(
 
 # Alias — some routes import this name
 require_platform_admin = get_current_platform_admin
+
+
+# ── Resource ownership helpers ────────────────────────────────────────────────
+
+def require_owns_resource(
+    resource_owner_id,
+    current_user: User,
+    *,
+    allow_admin: bool = True,
+    resource_name: str = "resource",
+) -> None:
+    """
+    Raise HTTP 403 if current_user doesn't own the resource.
+    Pass allow_admin=False to enforce ownership even for admins.
+    Usage:
+        require_owns_resource(activity.teacher_id, current_user)
+    """
+    if allow_admin and current_user.role == UserRole.ADMIN:
+        return
+    if str(resource_owner_id) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied: you don't own this {resource_name}",
+        )
+
+
+def require_same_org(
+    resource_org_id,
+    current_user: User,
+    *,
+    allow_admin: bool = True,
+) -> None:
+    """
+    Raise HTTP 403 if resource belongs to a different org than the current user.
+    No-op if either org_id is None (personal resources, ungrouped users).
+    Usage:
+        require_same_org(classroom.org_id, current_user)
+    """
+    if allow_admin and current_user.role == UserRole.ADMIN:
+        return
+    if resource_org_id is None or current_user.org_id is None:
+        return
+    if str(resource_org_id) != str(current_user.org_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: resource belongs to a different organization",
+        )

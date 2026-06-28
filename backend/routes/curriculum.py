@@ -15,7 +15,7 @@ import logging
 
 from core.database import get_db
 from core.config import settings
-from core.dependencies import get_current_user
+from core.dependencies import get_current_user, get_current_teacher
 from models.database import User, CurriculumUnit
 from services.wikimedia_service import get_location_context_for_activity
 from services.activity_generation_service import ActivityGenerationService
@@ -147,6 +147,7 @@ class ActivityGenerationResponse(BaseModel):
 @router.post("/", response_model=CurriculumResponse)
 async def create_curriculum_unit(
     request: CreateCurriculumRequest,
+    current_user: User = Depends(get_current_teacher),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new curriculum unit"""
@@ -159,7 +160,8 @@ async def create_curriculum_unit(
             bloom_level=request.bloom_level,
             marzano_level=request.marzano_level,
             raw_content=request.content,
-            content_embedding=[0.0] * 384  # Placeholder
+            content_embedding=[0.0] * 384,  # Placeholder
+            created_by=current_user.id
         )
         
         db.add(unit)
@@ -189,6 +191,7 @@ async def create_curriculum_unit(
 @router.get("/{curriculum_id}", response_model=CurriculumResponse)
 async def get_curriculum_unit(
     curriculum_id: str,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get curriculum unit details"""
@@ -230,6 +233,7 @@ def list_curriculum_units_paginated(
     grade_level: Optional[int] = None,
     page: int = 1,
     page_size: int = 50,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """List curriculum units with pagination (for activity mapping)"""
@@ -277,6 +281,7 @@ def list_curriculum_units_paginated(
 async def list_curriculum_units(
     subject: Optional[str] = None,
     grade_level: Optional[int] = None,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """List curriculum units with optional filters"""
@@ -317,6 +322,7 @@ async def list_curriculum_units(
 @router.get("/{curriculum_id}/standards-alignment")
 async def get_standards_alignment(
     curriculum_id: str,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get standards alignment matrix (Bloom's & Marzano's)
@@ -384,6 +390,7 @@ async def get_standards_alignment(
 @router.post("/location/context", response_model=LocationContextResponse)
 async def get_location_context(
     request: LocationContextRequest,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
