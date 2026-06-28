@@ -44,39 +44,45 @@ In 2007, one problem remained unsolved:
 
 ---
 
-## ✨ What's Built (May 2026)
+## ✨ What's Built (June 2026)
 
-This is a full-stack, production-grade application with a web frontend, REST API backend, and React Native mobile app. It is currently in active stabilization and field testing.
+This is a full-stack, production-grade application with a web frontend, REST API backend, and React Native mobile app.
 
 ### Backend — FastAPI + PostgreSQL
 - **Authentication:** JWT-based login/signup, email verification, password reset, role-based access
-- **Roles:** Teacher, Student, Parent, Admin, Homeschool
+- **Roles:** Teacher, Student, Parent, Admin, Homeschool, Platform (super-admin)
 - **Activity Engine:** Full CRUD for location-based learning activities with Bloom's taxonomy levels
-- **Phase 7 Student Features:** Field notes, self-initiated projects, peer projects, reverse scavenger hunt proposals
+- **Student Features:** Field notes, self-initiated projects, peer projects, reverse scavenger hunt proposals
 - **AI Integration:** Ollama (local) for inference, Whisper for audio transcription (ASR), standards parsing
-- **Privacy & Compliance Engine:** FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA rule enforcement
+- **RAG Pipeline:** pgvector semantic search over uploaded standards, rubrics, and homeschool state requirements; `nomic-embed-text` embeddings; auto-indexed on upload; manual ingest endpoint
+- **Privacy & Compliance Engine:** FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA, POPIA, LPDC, AEPD rule enforcement; DSR portal (access, download, deletion, correction, opt-out); consent management; soft-delete with scheduled purge
+- **Field-Level Encryption:** Fernet symmetric encryption + HMAC blind index on student PII (email, full name, GPS coordinates, notification payloads); backfill script included
+- **Breach Notification:** GDPR Art. 33/34 workflow — `BreachIncident` model, 7 admin endpoints, DPA notification, hourly overdue-incident checker
 - **Email Service:** SMTP-backed transactional email (verification, password reset, parent consent)
-- **Standards & Rubrics:** Upload PDFs/CSVs of curriculum standards; AI extracts criteria; coverage reporting
-- **Export Service:** Portfolio PDF and activity log CSV generation
-- **Admin Panel:** User management, audit logs, env editor, privacy config
-- **Homeschool Persona:** Multi-child management, state reporting standards, coverage dashboards
+- **Standards & Rubrics:** Upload PDFs/CSVs; AI extracts criteria; coverage reporting; semantic search via RAG
+- **Export Service:** Portfolio PDF and activity log CSV generation; Cloudflare R2 storage with local fallback
+- **Subscription Tiers:** Starter, School, Homeschool Family tiers enforced via 402 gates; Paddle billing integration; `UpgradeCTA` modal wired globally
+- **Admin Panel:** User management, fine-grained RBAC, audit logs, env editor, privacy config, AI rate-limit enforcement
+- **Homeschool Persona:** Multi-child management, state reporting standards, coverage dashboards, ExtractionWizard for requirements
 
 ### Frontend — React + TypeScript + Vite
 - **Five Role Dashboards:** Teacher, Student, Parent, Admin, Homeschool — each with sidebar nav, stat cards, and role-specific tools
-- **Activity Manager:** Full create/edit/publish flow with map-based location picker
+- **Platform Admin (Commercial License Only):** Multi-tenant org management, per-org AI config, usage dashboards, audit log, AI settings — gated behind the Platform role; only available to licensed operators
+- **Activity Manager:** Full create/edit/publish flow with map-based location picker; hero image and attachment upload via R2
 - **Field Notes & Projects:** Student-initiated field note editor, self-project view, peer project collaboration
 - **Proposals (Reverse Scavenger Hunt):** Students propose activities; teachers review and approve
 - **Standards Library:** Upload, review, and map curriculum standards (CCSS, NGSS, TEKS, state reporting)
 - **Homeschool Tools:** Child management, requirements setup via ExtractionWizard, coverage dashboard, portfolio export
 - **Student Journal:** Chronological timeline of field notes grouped by month
-- **Parent Dashboard:** Child progress, link-child flow, coming-soon sections for messages and calendar
-- **Auth Flows:** Signup → email verification → login; forgot/reset password; cookie consent banner
+- **Parent Dashboard:** Child progress, link-child flow, messages, notifications, weekly/monthly reports, calendar
+- **Privacy Pages:** Cookie consent banner, Do Not Sell page, DSR portal, privacy confirmation flow
+- **Auth Flows:** Signup → email verification → login; forgot/reset password
 - **Internationalization:** 11 locales (en, es, fr, de, it, pt-br, zh, ja, ar, he, tu) with RTL support
-- **Design System:** Three visual themes (Field Guide, Terrain, Atmosphere); WCAG AAA accessible
+- **Design System:** Three visual themes (Field Guide, Terrain, Atmosphere); WCAG 2.1 AA accessible
 
 ### Mobile — React Native (Expo SDK 54)
-- Located in `mobile/` subdirectory
-- **Full Activity Flow:** Discovery map → Brief → Orient → Inquiry → Reflect
+- Located in `mobile/` — built and field-tested
+- **Full Activity Flow:** Discovery map → Brief → Orient → Inquiry → Reflect (Expo Router file-based screens)
 - **Capture Tools:** Photo (expo-image-picker), audio (expo-av) with ASR transcript polling, text note
 - **Peri AI Chat:** Socratic inquiry chat with the crow mascot, wired to `/api/v1/inference/chat`
 - **Offline-First:** SQLite local cache for questions and activities; capture/note queue; auto-sync on reconnect
@@ -214,27 +220,32 @@ eas build --platform ios --profile preview        # requires Apple Developer acc
 ```
 peripateticware/
 ├── backend/                 # FastAPI application
-│   ├── main.py              # App entry point, router registration
+│   ├── main.py              # App entry point, router registration, lifespan
+│   ├── startup.py           # DB init, RAG table creation, APScheduler setup
 │   ├── routes/              # All API route modules
-│   ├── models/              # SQLAlchemy ORM models
-│   ├── services/            # Business logic (email, ASR, export, etc.)
-│   ├── core/                # Auth, database, security, dependencies
+│   ├── models/              # SQLAlchemy ORM models (30+ tables, RagDocument, BreachIncident, etc.)
+│   ├── services/            # Business logic (email, ASR, export, encryption, consent, etc.)
+│   ├── core/                # Auth, database, security, dependencies, rate limiting, RBAC
+│   ├── scripts/             # encrypt_existing_data.py and other ops scripts
 │   └── templates/email/     # HTML email templates
 ├── frontend/                # React + TypeScript + Vite
 │   └── src/
-│       ├── pages/           # Route-level pages by role
+│       ├── pages/           # Route-level pages by role (teacher, student, parent, admin, homeschool, platform)
 │       ├── components/      # Shared and role-specific components
 │       ├── layouts/         # DashboardShell + role layouts
 │       ├── stores/          # Zustand state stores
 │       ├── services/        # API service modules
 │       └── types/           # TypeScript interfaces
-├── mobile/                  # React Native (Expo SDK 54)
-│   └── src/
-│       ├── app/             # Expo Router screens
-│       ├── components/      # CaptureSheet, PeriChatSheet, CrowAvatar, etc.
-│       ├── api/             # API client and service modules
-│       ├── db/              # SQLite offline cache
-│       └── bands/           # Age-band adaptive copy (copy.ts) and tokens
+├── mobile/                  # React Native (Expo SDK 54) — built and field-tested
+│   ├── app/                 # Expo Router file-based screens (tabs, onboarding, activity, login)
+│   ├── src/
+│   │   ├── components/      # CaptureSheet, PeriChatSheet, CrowAvatar, MapIllustration, etc.
+│   │   ├── api/             # API client and service modules
+│   │   ├── db/              # SQLite offline cache
+│   │   ├── bands/           # Age-band adaptive copy (copy.ts) and tokens
+│   │   ├── stores/          # State stores
+│   │   └── theme/           # Visual theme tokens
+│   └── e2e/                 # End-to-end tests
 ├── database/
 │   └── init.sql             # Full schema (30+ tables) + seed data
 ├── backend/alembic/         # Database migrations
@@ -244,10 +255,12 @@ peripateticware/
 ### Tech stack
 | Layer | Technology |
 |-------|-----------|
-| Backend | FastAPI, SQLAlchemy (async), PostgreSQL + pgvector, Redis, Alembic |
+| Backend | FastAPI, SQLAlchemy (async), PostgreSQL + pgvector, Redis, Alembic, APScheduler |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, Zustand, react-router-dom v6 |
 | Mobile | React Native, Expo SDK 54, Expo Router, SQLite, expo-av, expo-location |
-| AI | Ollama (local LLM + Whisper ASR), optional Claude API fallback |
+| AI | Ollama (local LLM + Whisper ASR + nomic-embed-text), optional Claude API fallback |
+| Storage | Cloudflare R2 (boto3 S3-compatible); local `/app/uploads` fallback |
+| Payments | Paddle billing; tiered subscription enforcement via structured 402 responses |
 | Infrastructure | Docker Compose, Nginx, pgbouncer (config ready) |
 
 ---
@@ -259,6 +272,7 @@ peripateticware/
 # On host machine
 ollama pull mistral                          # text inference
 ollama pull karanchopda333/whisper:latest   # audio transcription
+ollama pull nomic-embed-text                 # embeddings for RAG pipeline
 ollama serve
 ```
 
@@ -269,6 +283,7 @@ OLLAMA_BASE_URL=http://host.docker.internal:11434
 OLLAMA_MODEL_TEXT=mistral
 ASR_ENABLED=true
 OLLAMA_MODEL_AUDIO=karanchopda333/whisper:latest
+OLLAMA_MODEL_EMBED=nomic-embed-text
 ```
 
 ### Claude API (cloud fallback)
@@ -306,15 +321,32 @@ FRONTEND_URL=http://localhost:3000
 
 ---
 
+## ☁️ Cloudflare R2 Storage (optional)
+
+Student captures (photos, audio, attachments) and exported portfolios are stored in Cloudflare R2. The backend falls back to local `/app/uploads` when R2 env vars are absent.
+
+```env
+R2_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your-key-id
+R2_SECRET_ACCESS_KEY=your-secret
+R2_BUCKET_NAME=peripateticware-uploads
+R2_PUBLIC_BASE_URL=https://your-public-r2-domain.com
+```
+
+---
+
 ## 🔐 Security Notes (Pre-Deploy Checklist)
 
 Before any non-local deployment:
 
 - [ ] Rotate `SECRET_KEY` and `AUDIT_HASH_SALT` from dev defaults in `.env`
+- [ ] Generate and set `FIELD_ENCRYPTION_KEY` (`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`)
+- [ ] Run `python scripts/encrypt_existing_data.py` to backfill PII encryption on any existing rows
 - [ ] Set `EMAIL_DRY_RUN=false` and configure real SMTP
 - [ ] Set `DEBUG=False` and `ENVIRONMENT=production`
 - [ ] Review `nginx.conf` for production routing and SSL
 - [ ] Enable HTTPS (Let's Encrypt or institutional cert)
+- [ ] Replace placeholder DPA contact addresses in `backend/routes/breach.py` with real DPA emails
 - [ ] Run `docker compose down -v && docker compose up -d` on a fresh volume for production DB
 
 ---
@@ -378,8 +410,8 @@ Peripateticware launches. Teachers create location-based activities. Students ex
 
 ---
 
-**Build Date:** May 2026
-**Status:** Active stabilization — core flows working, mobile testing in progress
+**Build Date:** June 2026
+**Status:** Production-ready core — web app stable, mobile built and field-tested, RAG pipeline live
 **License:** Business Source License 1.1 → Apache 2.0 (May 2030)
 
 **Welcome to the future of location-based learning. 🌍📚**

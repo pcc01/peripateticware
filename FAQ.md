@@ -407,26 +407,24 @@ The system adapts lesson complexity based on selected grade level.
 
 ### **Does it work on mobile devices?**
 
-**Teacher Interface (Phase 4):** Responsive design, works on tablets and phones (though desktop recommended for authoring)
+**Teacher Interface:** Responsive design, works on tablets and phones (though desktop recommended for authoring)
 
-**Student Interface (Phase 5):** Optimized for mobile
-
-**Phase 6 (Planned):** Native iOS/Android apps
+**Student App:** A native React Native app (Expo SDK 54) is built and field-tested. It covers the full activity flow (Discovery → Brief → Orient → Inquiry → Reflect), offline-first SQLite caching, photo/audio capture with ASR transcription, Peri AI chat, geofence proximity guard, and three visual themes. Build instructions are in the Mobile Development section of the README.
 
 ### **What about accessibility?**
 
-All code meets **WCAG AAA** standards:
+The frontend meets **WCAG 2.1 AA** standards (audited June 2026):
 - ✅ Full keyboard navigation
+- ✅ ARIA attributes throughout (skip-nav, focus-visible outlines)
 - ✅ Screen reader compatible
 - ✅ High contrast support
-- ✅ Captions for videos
 - ✅ Readable fonts and spacing
+
+A full accessibility audit report is in `docs/accessibility/wcag-aa-audit.md`. Manual color contrast and screen reader testing (NVDA/VoiceOver) is recommended before each production deployment.
 
 ### **Does it support different languages?**
 
-Currently: English, Spanish, French, Arabic, and Japanese.
-
-Internationalization (i18n) framework is in place.
+Yes — 11 locales are implemented: English, Spanish, French, German, Italian, Brazilian Portuguese, Simplified Chinese, Japanese, Arabic, Hebrew, and Turkish. Arabic and Hebrew include full RTL layout support.
 
 ### **How does it handle locations?**
 
@@ -624,12 +622,9 @@ Create an issue in the repository with:
 
 ### **How often are updates released?**
 
-Roadmap includes:
-- **Phase 5 (May 2026):** AI lesson generation
-- **Phase 6 (2026):** Student app, collaboration, analytics
-- **Phase 7 (2027):** Mobile apps, parent portal, advanced features
+The core platform (web, API, mobile) is feature-complete as of June 2026. Upcoming work focuses on LMS integrations (Canvas, Clever, SSO), OpenAI GPT provider support, pre-loaded curriculum standards bundles, and push notifications.
 
-Regular security and bug fix updates as needed.
+Regular security and bug fix updates are released as needed.
 
 ### **How long will the software be supported?**
 
@@ -665,12 +660,18 @@ Features considered for roadmap based on demand and alignment with vision.
 - Non-commercial projects
 - Personal use
 
-**Commercial Licensing:**
-- Schools (5+ classrooms)
-- Districts
+**Subscription Tiers (Paddle billing):**
+- **Starter** — small teams and early adopters
+- **School** — full school deployments (5+ classrooms)
+- **Homeschool Family** — multi-child homeschool management
+
+**Commercial Licensing (contact for pricing):**
+- School districts and charter management organizations
 - Educational publishers
 - EdTech companies
 - Training organizations
+
+**Platform Admin** (multi-tenant org management, per-org AI config, usage dashboards) is available exclusively to licensed operators under a commercial agreement.
 
 Pricing based on organization size and feature needs.
 
@@ -761,13 +762,13 @@ Teachers remain in control. AI increases their effectiveness.
 
 ### **Is Peripateticware ready for production?**
 
-**Phase 4 (Teacher Authoring):** Yes ✅ Ready now
+**Web app (teacher, student, parent, admin, homeschool):** Yes ✅ Production-ready
 
-**Phase 5 (AI Lesson Generation):** Ready June 2026
+**AI features (Ollama inference, Whisper ASR, RAG pipeline):** Yes ✅ Built and tested
 
-**Phase 6 (Student App):** Ready 2026-2027
+**Native mobile app (React Native / Expo):** Yes ✅ Built and field-tested
 
-Start with Phase 4 (teacher authoring) in production, plan Phase 5 rollout.
+**Pre-deploy steps required:** Set `FIELD_ENCRYPTION_KEY`, run the PII backfill script, replace placeholder DPA contacts in the breach notification config, and complete manual WCAG color contrast checks. See the Security Notes section in the README.
 
 ### **How do I get started?**
 
@@ -782,56 +783,58 @@ You can be teaching location-based lessons within a week.
 
 ---
 
-## 🗺️ Roadmap (Planned — Not Yet Available)
+## 🗺️ Roadmap
 
-The following features are **planned** for future releases and are **not currently implemented**:
+### Recently Completed ✅
+The following items were previously listed as planned and are now built:
 
-### LMS & Grade Book Integrations
+- **Native mobile app** — React Native (Expo SDK 54), built and field-tested
+- **Field-level encryption** — Fernet + HMAC blind index on student PII; backfill script included
+- **Breach notification (GDPR Art. 33/34)** — `BreachIncident` model, DPA notification, hourly overdue checker
+- **DSR portal** — Data subject access, download, deletion, correction, and opt-out endpoints
+- **Consent management** — `PrivacyNotice` model, `ConsentManager` service, consent status endpoint
+- **Parent portal** — Messages, notifications, reports, calendar, and child activity views all wired to real data
+- **Cloudflare R2 storage** — File uploads and portfolio exports stored in R2 with local fallback
+- **RAG semantic search** — pgvector embeddings for standards, rubrics, and homeschool state requirements
+- **Admin audit log** — Full write-operation audit trail with paginated admin endpoint
+- **Fine-grained RBAC** — Resource ownership checks (`require_owns_resource`, `require_same_org`); IDOR risks resolved
+- **Subscription tiers** — Starter, School, Homeschool Family tiers with Paddle billing and 402 gates
+
+### Planned — Not Yet Available
+
+#### LMS & Grade Book Integrations
 - Canvas, Schoology, Infinite Campus, Google Classroom grade sync
 - Blackboard and other LMS connectors
 
-### Single Sign-On (SSO)
+#### Single Sign-On (SSO)
 - OIDC (OpenID Connect) provider support
 - SAML 2.0 (for district identity providers)
-- Estimated implementation: approximately 3 weeks once prioritized
+- Estimated: approximately 3 weeks once prioritized
 
-### Roster Sync
+#### Roster Sync
 - Clever integration for automated roster management
 - Canvas roster sync
 - CSV roster import/export (manual workaround available today)
 
-### Grade Sync (LTI)
-- Grade passback to Canvas, Schoology, Infinite Campus, and Google Classroom grade books via LTI
-- Requires an LTI 1.3 integration layer not yet built
+#### Grade Sync (LTI)
+- Grade passback via LTI 1.3 to Canvas, Schoology, Infinite Campus, Google Classroom
 
-### Pre-Loaded Curriculum Standards
+#### Pre-Loaded Curriculum Standards
 - Bundled CCSS (Common Core), NGSS, and TEKS standards sets
-- Currently, teachers must upload their own standards PDFs; the AI extraction pipeline then parses them
+- Currently teachers upload their own standards PDFs; the AI extraction + RAG pipeline handles them automatically
 - Adding pre-loaded bundles is a 2–3 week effort
 
-### OpenAI GPT Support
-- GPT-4o and GPT-4o-mini as an alternative LLM provider alongside Ollama and Claude
-- Medium complexity; the provider abstraction layer is already in place
+#### OpenAI GPT Support
+- GPT-4o and GPT-4o-mini as an alternative LLM provider
+- Provider abstraction layer is already in place
 
-### Parent Push Notifications
+#### Parent Push Notifications
 - Push alerts to parent mobile devices (FCM for Android, APNs for iOS)
-- Requires a native mobile app or PWA push integration; high complexity
+- High complexity; requires FCM/APNs integration
 
-### Field-Level Encryption
-- Encryption of sensitive database columns (student names, contact details, assessment notes) at rest
-- Extra-large effort: requires key management infrastructure and migration of existing data
-- Necessary for full GDPR compliance in high-sensitivity deployments
-
-### Breach Notification System (GDPR Art. 33)
-- Automated 72-hour notification workflow to the relevant Data Protection Authority and affected users on detection of a data breach
-- High complexity; requires incident classification logic and DPA contact registry
-
-### Native Mobile Apps
-- iOS and Android student apps (Phase 6 target: 2026–2027)
-
-### Community & Collaboration
+#### Community & Collaboration
 - Community forum / GitHub Discussions
-- Student collaboration features (peer projects)
+- Deeper student-to-student collaboration features
 
 ---
 
