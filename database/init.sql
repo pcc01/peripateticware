@@ -1849,27 +1849,20 @@ CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_entity_id ON ai_batch_queue(entity_
 CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_batch_id  ON ai_batch_queue(anthropic_batch_id);
 
 -- ---------------------------------------------------------------------------
--- teacher_notifications  (in-app notifications, used for batch result alerts)
+-- platform_ai_budgets  (per-org monthly AI spend cap, used for monitoring only
+-- — this is an internal alert threshold, not a customer billing/invoicing
+-- record; see backend/services/ai_router.py::_budget_check and
+-- backend/tasks/budget_monitor.py)
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS teacher_notifications (
-    id         SERIAL       PRIMARY KEY,
-    teacher_id VARCHAR(64)  NOT NULL,
-    type       VARCHAR(64)  NOT NULL,
-    payload    JSONB,
-    is_read    BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS platform_ai_budgets (
+    org_id               UUID         PRIMARY KEY REFERENCES organizations(id) ON DELETE CASCADE,
+    monthly_dollar_cap   NUMERIC(10,4) NOT NULL DEFAULT 5.00,
+    alert_threshold_pct  INTEGER      NOT NULL DEFAULT 80,
+    created_at           TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMP    NOT NULL DEFAULT NOW()
 );
-CREATE INDEX IF NOT EXISTS ix_teacher_notif_teacher_unread
-    ON teacher_notifications(teacher_id, is_read);
 
--- ===========================================================================
--- Verification
--- ===========================================================================
-SELECT '✅ Database initialization complete!' AS status;
-
-SELECT tablename
-FROM   pg_tables
-WHERE  schemaname = 'public'
-ORDER  BY tablename;
-
-SELECT email, role, is_active FROM users WHERE email LIKE '%example.com' ORDER BY role;
+-- ---------------------------------------------------------------------------
+-- platform_ai_ledger  (one row per AI call — token usage + internal cost
+-- estimate for monitoring/alerting; org_id/user_id nullable for
+-- platform/system c

@@ -1601,19 +1601,18 @@ async def start_background_tasks(async_session, settings) -> None:
     # 15-min anomaly job) and tasks/budget_monitor.py's two exported functions.
     if _scheduler is not None:
         try:
-            from tasks.budget_monitor import budget_alert_check, anomaly_detect
+            from tasks.budget_monitor import budget_alert_check, anomaly_detect, monthly_summary
 
-            async def _budget_alert():
-                async with async_session() as db:
-                    await budget_alert_check(db)
-
-            async def _anomaly():
-                async with async_session() as db:
-                    await anomaly_detect(db)
-
-            _scheduler.add_job(_budget_alert, "interval", hours=1,     id="budget_alert",   replace_existing=True)
-            _scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect", replace_existing=True)
-            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
+            # budget_alert_check() and anomaly_detect() now open and close
+            # their own DB session internally (see tasks/budget_monitor.py —
+            # this lets them be scanned via Redis without holding a session
+            # the whole time, and lets tests call them with zero args), so
+            # they're registered directly as job targets instead of being
+            # wrapped in a closure over async_session().
+            _scheduler.add_job(budget_alert_check, "interval", hours=1,     id="budget_alert",    replace_existing=True)
+            _scheduler.add_job(anomaly_detect,     "interval", minutes=15, id="anomaly_detect",   replace_existing=True)
+            _scheduler.add_job(monthly_summary,    "cron", day=1, hour=6,   id="monthly_summary",  replace_existing=True)
+            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly, monthly summary)")
         except Exception as e:
             logger.warning(f"⊘ Budget monitor jobs not added: {e}")
 

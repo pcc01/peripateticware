@@ -49,10 +49,19 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
+from core.database import get_session_factory
+from core.rate_limit import _get_redis
 from models.ai_batch import AiBatchQueue, AiTaskConfig, AiApiKey, TaskType, AIProvider, BatchStatus
 from services import anthropic_client as _anthropic
 
 logger = logging.getLogger(__name__)
+
+# NOTE: get_session_factory and _get_redis are imported at module level
+# (rather than locally inside the functions that use them) specifically so
+# that tests can patch "services.ai_router.get_session_factory" /
+# "services.ai_router._get_redis" — a local `from ... import ...` inside a
+# function body creates a fresh binding on every call and can't be patched
+# this way.
 
 # ── Token cost rates (USD per million tokens) ─────────────────────────────────
 # Update these when Anthropic pricing changes.
@@ -184,36 +193,98 @@ async def _call_ollama(prompt: str, model: str) -> str:
 # ── Ledger writer (fire-and-forget, Task 1B) ──────────────────────────────────
 
 async def _write_ledger(
-    org_id: Optional[str],
-    task_type: str,
-    provider: str,
-    tokens_in: int,
-    tokens_out: int,
-    cost_usd: float,
+    org_id: Optional[str] = None,
+    task_type: Optional[str] = None,
+    provider: Optional[str] = None,
+    tokens_in: Optional[int] = None,
+    tokens_out: Optional[int] = None,
+    cost_usd: Optional[float] = None,
+    *,
+    db: Optional[AsyncSession] = None,
+    user_id: Optional[str] = None,
+    model: Optional[str] = None,
+    prompt_tokens: Optional[int] = None,
+    completion_tokens: Optional[int] = None,
+    feature: Optional[str] = None,
 ) -> None:
     """
-    Insert one row into platform_ai_ledger using its own DB session.
-    Never raises — a ledger failure must never affect the AI call result.
-    Called via asyncio.create_task() so it never blocks the response path.
+    Insert one row into platform_ai_ledger recording token usage (and an
+    internal cost estimate used only for monitoring/alerting — never for
+    customer billing). Never raises — a ledger failure must never affect the
+    AI call result.
+
+    Two calling conventions:
+      - Positional (org_id, task_type, provider, tokens_in, tokens_out,
+        cost_usd) — used by AIRouter.complete() via asyncio.create_task(),
+        so this convention opens its own DB session via get_session_factory()
+        and never blocks the response path. org_id=None is written as-is
+        (platform/system calls still get a ledger row).
+      - Keyword, with an explicit db= session (org_id=, user_id=, provider=,
+        model=, prompt_tokens=, completion_tokens=, feature=) — used by
+        request-path callers that already have an open session. org_id=None
+        is a deliberate no-op here (nothing to monitor for an anonymous /
+        system call in this path).
     """
     from sqlalchemy import text as _text
-    from core.database import get_session_factory
+
+    # Normalize the keyword-convention aliases onto the shared fields.
+    if prompt_tokens is not None:
+        tokens_in = prompt_tokens
+    if completion_tokens is not None:
+        tokens_out = completion_tokens
+    if feature is not None:
+        task_type = feature
+    tokens_in = tokens_in or 0
+    tokens_out = tokens_out or 0
+
+    if db is not None:
+        if org_id is None:
+            return
+        try:
+            await db.execute(_text("""
+                INSERT INTO platform_ai_ledger
+                    (org_id, user_id, task_type, provider, model, tokens_in, tokens_out, cost_usd)
+                VALUES
+                    (:org_id, :user_id, :task_type, :provider, :model, :tokens_in, :tokens_out, :cost)
+            """), {
+                "org_id":     org_id,
+                "user_id":    user_id,
+                "task_type":  task_type,
+                "provider":   provider,
+                "model":      model,
+                "tokens_in":  tokens_in,
+                "tokens_out": tokens_out,
+                "cost":       cost_usd or 0.0,
+            })
+            if hasattr(db, "commit"):
+                await db.commit()
+        except Exception as exc:
+            logger.warning(f"[ai_router] Ledger write failed (non-fatal): {exc}")
+        return
+
+    # Fire-and-forget convention: opens its own session so it never depends
+    # on (or blocks) the caller's session lifecycle.
+    cost_usd = cost_usd or 0.0
     try:
         factory = get_session_factory()
         async with factory() as session:
-            await session.execute(_text("""
-                INSERT INTO platform_ai_ledger
-                    (org_id, task_type, provider, tokens_in, tokens_out, cost_usd)
-                VALUES
-                    (:org_id, :task_type, :provider, :tokens_in, :tokens_out, :cost_usd)
-            """), {
-                "org_id":     org_id,
-                "task_type":  task_type,
-                "provider":   provider,
-                "tokens_in":  tokens_in,
-                "tokens_out": tokens_out,
-                "cost_usd":   cost_usd,
-            })
+            try:
+                await session.execute(_text("""
+                    INSERT INTO platform_ai_ledger
+                        (org_id, task_type, provider, tokens_in, tokens_out, cost_usd)
+                    VALUES
+                        (:org_id, :task_type, :provider, :tokens_in, :tokens_out, :cost_usd)
+                """), {
+                    "org_id":     org_id,
+                    "task_type":  task_type,
+                    "provider":   provider,
+                    "tokens_in":  tokens_in,
+                    "tokens_out": tokens_out,
+                    "cost_usd":   cost_usd,
+                })
+            except Exception as exc:
+                logger.warning(f"[ai_router] Ledger write failed (non-fatal): {exc}")
+                return
             await session.commit()
     except Exception as exc:
         logger.warning(f"[ai_router] Ledger write failed (non-fatal): {exc}")
@@ -263,7 +334,6 @@ async def _budget_check_async(db: AsyncSession, org_id: Optional[str]) -> None:
     Opens its own session so the caller's session can close independently.
     Swallows all exceptions — monitoring must never affect request path.
     """
-    from core.database import get_session_factory
     try:
         factory = get_session_factory()
         async with factory() as own_db:
@@ -296,7 +366,6 @@ async def _budget_check(
 
     import datetime
     from sqlalchemy import text as _text
-    from core.rate_limit import _get_redis
 
     redis = await _get_redis()
     now   = datetime.datetime.now(datetime.timezone.utc)
@@ -342,13 +411,17 @@ async def _budget_check(
             {"oid": org_id},
         )).fetchone()
 
+        # Tier is needed below regardless of whether a budget row already
+        # existed (for the BYOK check and the return value), so it's always
+        # fetched here rather than only on first-creation.
+        tier_row = (await db.execute(
+            _text("SELECT license_tier FROM organizations WHERE id = :oid"),
+            {"oid": org_id},
+        )).scalar()
+        tier = tier_row or "free"
+
         if budget_row is None:
-            tier_row = (await db.execute(
-                _text("SELECT license_tier FROM organizations WHERE id = :oid"),
-                {"oid": org_id},
-            )).scalar()
-            tier = tier_row or "free"
-            cap  = TIER_BUDGET_DEFAULTS.get(tier, 5.00)
+            cap = TIER_BUDGET_DEFAULTS.get(tier, 5.00)
             await db.execute(
                 _text("""
                     INSERT INTO platform_ai_budgets (org_id, monthly_dollar_cap, alert_threshold_pct)
