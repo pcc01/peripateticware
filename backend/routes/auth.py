@@ -361,7 +361,7 @@ async def signup(
                 detail="Email already registered",
             )
         
-        role_upper = (body.role or "STUDENT").upper()
+        role_upper = (body.role or "TEACHER").upper()
 
         # ── Student guard: students must use an invite link, not free signup ──
         if role_upper == "STUDENT":
@@ -371,6 +371,21 @@ async def signup(
                     "Students must join via a classroom invite link from their teacher. "
                     "Ask your teacher to send you an invite."
                 ),
+            )
+
+        # ── SECURITY: public self-signup may only grant these roles. ──────────
+        # ADMIN (org admin) and any other value must never be settable by the
+        # client — org admin is granted separately (e.g. by an existing admin
+        # via PUT /admin/users/{id}), and platform admin only via the
+        # is_platform_admin DB flag (backend/scripts/set_platform_admin.py).
+        # Without this allowlist, POST /auth/signup {"role":"ADMIN"} would
+        # grant full org-admin access, including bypassing org-scoping checks
+        # in require_owns_resource()/require_same_org().
+        _SELF_SIGNUP_ROLES = {"TEACHER", "PARENT", "HOMESCHOOL"}
+        if role_upper not in _SELF_SIGNUP_ROLES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid role. Must be one of: teacher, parent, homeschool.",
             )
 
         # Create new user with uuid

@@ -133,10 +133,18 @@ async def lifespan(app: FastAPI):
     check_config_warnings(settings)
     logger.info("Application ready")
 
-    await seed_demo_users(engine)
-    await seed_test_accounts(engine)
-    await seed_homeschool_demo(engine)
-    await seed_demo_classroom(engine)
+    # SECURITY: demo/test seed accounts use published, well-known passwords
+    # (SecurePass123!, Test1234!, Demo@1234!) and include ADMIN-role accounts.
+    # These must NEVER be created outside development - gate strictly on
+    # ENVIRONMENT so a misconfigured prod box can't silently grow a backdoor
+    # admin account on every restart.
+    if settings.ENVIRONMENT.lower() == "development":
+        await seed_demo_users(engine)
+        await seed_test_accounts(engine)
+        await seed_homeschool_demo(engine)
+        await seed_demo_classroom(engine)
+    else:
+        logger.info("Skipping demo/test account seeding (ENVIRONMENT=%s)", settings.ENVIRONMENT)
     await seed_compliance_frameworks(engine)
 
     try:

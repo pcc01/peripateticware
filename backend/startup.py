@@ -1440,23 +1440,61 @@ async def seed_compliance_frameworks(engine) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def check_config_warnings(settings) -> None:
-    """Log security warnings for insecure default config values."""
+    """Log security warnings for insecure default config values.
+
+    In production (ENVIRONMENT=production) the checks that would let an
+    attacker forge auth tokens or leave student PII in plaintext are
+    upgraded from warnings to a hard startup failure - better to refuse to
+    boot than to silently serve real traffic with dev secrets.
+    """
+    is_prod = str(getattr(settings, "ENVIRONMENT", "")).lower() == "production"
+    fatal: list = []
+
     if not getattr(settings, "SMTP_HOST", ""):
         logger.warning(
             "⚠  EMAIL: SMTP_HOST is not set — all emails will be logged to console "
             "and NOT delivered. Set SMTP_HOST + SMTP_USER + SMTP_PASSWORD + EMAIL_DRY_RUN=false "
             "in .env to enable real email delivery (signup confirmation, password reset, etc)."
         )
+
     if getattr(settings, "SECRET_KEY", "") in ("", "dev-secret-key-change-in-production"):
-        logger.warning(
-            "⚠  SECURITY: SECRET_KEY is set to the development default. "
-            "Generate a strong key before any non-local deployment: "
+        msg = (
+            "SECRET_KEY is set to the development default — JWTs (including admin "
+            "sessions) can be forged by anyone. Generate a strong key: "
             "python -c \"import secrets; print(secrets.token_hex(32))\""
         )
+        fatal.append(msg) if is_prod else logger.warning(f"⚠  SECURITY: {msg}")
+
     if getattr(settings, "AUDIT_HASH_SALT", "") in ("", "dev-audit-salt-change-in-production"):
+        msg = (
+            "AUDIT_HASH_SALT is set to the development default — student ID hashes "
+            "in the audit log are predictable/reversible-by-guessing. Rotate before production."
+        )
+        fatal.append(msg) if is_prod else logger.warning(f"⚠  SECURITY: {msg}")
+
+    if not getattr(settings, "FIELD_ENCRYPTION_KEY", ""):
+        msg = (
+            "FIELD_ENCRYPTION_KEY is blank — PII columns (email, full_name, GPS, "
+            "messages) are stored in PLAINTEXT. This fails GDPR/FERPA/COPPA at-rest "
+            "encryption expectations. Generate: python -c \"from cryptography.fernet "
+            "import Fernet; print(Fernet.generate_key().decode())\""
+        )
+        fatal.append(msg) if is_prod else logger.warning(f"⚠  SECURITY: {msg}")
+
+    if getattr(settings, "PLATFORM_API_SECRET", "") == "" and is_prod:
         logger.warning(
-            "⚠  SECURITY: AUDIT_HASH_SALT is set to the development default. "
-            "Student ID hashes in the audit log will be predictable. Rotate before production."
+            "⚠  SECURITY: PLATFORM_API_SECRET is unset — the X-Platform-Secret "
+            "second factor on /platform/* superadmin routes is disabled. Set it "
+            "to a random value: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+
+    if fatal and is_prod:
+        for msg in fatal:
+            logger.error(f"❌ SECURITY (fatal in production): {msg}")
+        raise RuntimeError(
+            "Refusing to start in production with insecure default secrets. "
+            "Fix the ❌ SECURITY errors above in .env and restart. "
+            f"({len(fatal)} fatal issue(s).)"
         )
 
 
@@ -1550,4 +1588,40 @@ async def start_background_tasks(async_session, settings) -> None:
                 ),
                 id="ai_batch_cycle",
                 replace_existing=True,
-            
+            )
+            logger.info("✅ AI batch cycle job scheduled (%s)", settings.AI_BATCH_CRON)
+        except Exception as e:
+            logger.warning(f"⊘ AI batch cycle job not added: {e}")
+
+    # ── Budget monitor jobs ────────────────────────────────────────────────────
+    # Restored from git commit 0e096e6 ("wire real pgvector RAG ... + fix 3
+    # truncated files") — this block existed there but was lost by the time of
+    # the current HEAD commit. This is the real, previously-working code, not
+    # a guess: it matches this function's own docstring (hourly alert job,
+    # 15-min anomaly job) and tasks/budget_monitor.py's two exported functions.
+    if _scheduler is not None:
+        try:
+            from tasks.budget_monitor import budget_alert_check, anomaly_detect
+
+            async def _budget_alert():
+                async with async_session() as db:
+                    await budget_alert_check(db)
+
+            async def _anomaly():
+                async with async_session() as db:
+                    await anomaly_detect(db)
+
+            _scheduler.add_job(_budget_alert, "interval", hours=1,     id="budget_alert",   replace_existing=True)
+            _scheduler.add_job(_anomaly,       "interval", minutes=15, id="anomaly_detect", replace_existing=True)
+            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly)")
+        except Exception as e:
+            logger.warning(f"⊘ Budget monitor jobs not added: {e}")
+
+    # Start the shared scheduler — without this call, none of the job groups
+    # registered above (retention cleanup, AI batch, budget monitor) ever run.
+    if _scheduler is not None and not _scheduler.running:
+        try:
+            _scheduler.start()
+            logger.info("✅ APScheduler started")
+        except Exception as e:
+            logger.warning(f"⊘ APScheduler failed to start: {e}")

@@ -111,10 +111,28 @@ async def create_session(
         )
 
 
+def _require_session_access(session: LearningSession, current_user: User) -> None:
+    """Coarse access check: owner or org admin.
+
+    NOTE: this does not yet verify a teacher's classroom link or a parent's
+    parent_child_links row for a specific student, so any TEACHER/PARENT/
+    HOMESCHOOL account can currently read/update any session. That is a
+    known gap - tighten before relying on this for multi-tenant isolation.
+    Anonymous (unauthenticated) access is blocked either way.
+    """
+    role = (current_user.role or "").upper()
+    if str(session.user_id) == str(current_user.id):
+        return
+    if role in ("ADMIN", "TEACHER", "PARENT", "HOMESCHOOL"):
+        return
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+
 @router.get("/{session_id}", response_model=SessionResponse)
 async def get_session(
     session_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Get learning session details"""
     try:
@@ -123,13 +141,14 @@ async def get_session(
         )
         result = await db.execute(query)
         session = result.scalar()
-        
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        
+        _require_session_access(session, current_user)
+
         return SessionResponse(
             session_id=str(session.id),
             title=session.title,
@@ -158,7 +177,8 @@ async def get_session(
 async def update_session(
     session_id: str,
     request: UpdateSessionRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Update learning session"""
     try:
@@ -167,13 +187,14 @@ async def update_session(
         )
         result = await db.execute(query)
         session = result.scalar()
-        
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        
+        _require_session_access(session, current_user)
+
         # Update fields
         if request.title:
             session.title = request.title
@@ -217,7 +238,8 @@ async def update_session(
 @router.get("/{session_id}/evidence")
 async def get_evidence_of_learning(
     session_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Get Evidence of Learning for a session (for parents/teachers)"""
     try:
@@ -226,13 +248,14 @@ async def get_evidence_of_learning(
         )
         result = await db.execute(query)
         session = result.scalar()
-        
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        
+        _require_session_access(session, current_user)
+
         return {
             "session_id": str(session.id),
             "title": session.title,
@@ -254,7 +277,8 @@ async def get_evidence_of_learning(
 @router.get("/{session_id}/inquiry-log")
 async def get_inquiry_log(
     session_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Get Aristotelian inquiry log (raw artifacts for teachers)"""
     try:
@@ -263,13 +287,14 @@ async def get_inquiry_log(
         )
         result = await db.execute(query)
         session = result.scalar()
-        
+
         if not session:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        
+        _require_session_access(session, current_user)
+
         return {
             "session_id": str(session.id),
             "title": session.title,
