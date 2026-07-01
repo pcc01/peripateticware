@@ -865,4 +865,14 @@ async def export_portfolio(
             "state_code":     s["state_code"] or "",
             "created_at":     s["created_at"].isoformat() if s["created_at"] else None,
             "total_criteria": total_criteria,
- 
+            "met":            met_count,
+            "partial":        partial_count,
+            "not_met":        total_criteria - met_count - partial_count,
+            "criteria":       criteria_summary,
+        })
+
+    return {
+        "standards_sets":     result_sets,
+        "total_sessions":     total_sessions,
+        "completed_sessions": completed_sessions,
+    }

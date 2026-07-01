@@ -318,4 +318,14 @@ async def reject_proposal(
     _require_teacher(current_user)
     row = (await db.execute(text(
         "SELECT id FROM student_proposals WHERE id = :id AND status = 'pending'"
-    
+    ), {"id": proposal_id})).mappings().first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Proposal not found or not pending")
+
+    await db.execute(text("""
+        UPDATE student_proposals
+        SET status = 'rejected', teacher_feedback = :feedback, updated_at = NOW()
+        WHERE id = :id
+    """), {"id": proposal_id, "feedback": feedback})
+    await db.commit()
+    return {"status": "rejected"}
