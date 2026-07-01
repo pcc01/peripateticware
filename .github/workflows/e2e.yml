@@ -19,6 +19,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # docker-compose.yml's backend service has `env_file: - .env` — Compose
+      # hard-fails immediately (in ~5s, before any pull/build) if that file
+      # doesn't exist, and .env is gitignored so a fresh checkout has none.
+      # Every variable docker-compose.yml actually needs already has a
+      # `${VAR:-default}` fallback baked into its `environment:` block, so an
+      # empty file is enough to satisfy env_file and let those defaults apply
+      # — this is not a secrets file, just presence to unblock Compose.
+      - name: Create .env for docker compose
+        run: touch .env
+
       # Previously this job used a `services:` block pointing at
       # ghcr.io/${{ github.repository }}/backend:latest. No workflow in this
       # repo ever builds or publishes that image — deploy.yml builds it
