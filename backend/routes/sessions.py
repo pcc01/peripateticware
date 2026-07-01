@@ -53,21 +53,18 @@ class SessionResponse(BaseModel):
 @router.post("/", response_model=SessionResponse)
 async def create_session(
     request: CreateSessionRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Create a new learning session"""
     try:
-        # Get current user (simplified)
-        query = select(User).limit(1)
-        result = await db.execute(query)
-        user = result.scalar()
-        
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated"
-            )
-        
+        # SECURITY: previously fetched an arbitrary user via
+        # `select(User).limit(1)` instead of requiring auth — any
+        # unauthenticated caller could create sessions owned by whatever
+        # user happened to be first in the table. Use the authenticated
+        # caller instead.
+        user = current_user
+
         # Create session
         session = LearningSession(
             user_id=user.id,
@@ -111,20 +108,60 @@ async def create_session(
         )
 
 
-def _require_session_access(session: LearningSession, current_user: User) -> None:
-    """Coarse access check: owner or org admin.
+async def _require_session_access(
+    session: LearningSession, current_user: User, db: AsyncSession
+) -> None:
+    """Real ownership check, scoped to the specific student:
 
-    NOTE: this does not yet verify a teacher's classroom link or a parent's
-    parent_child_links row for a specific student, so any TEACHER/PARENT/
-    HOMESCHOOL account can currently read/update any session. That is a
-    known gap - tighten before relying on this for multi-tenant isolation.
-    Anonymous (unauthenticated) access is blocked either way.
+    - the student who owns the session
+    - an org admin (role=ADMIN) — consistent with require_owns_resource()/
+      require_same_org() elsewhere in the codebase
+    - a teacher who authored the session's activity, OR who teaches a
+      classroom this student is enrolled in (classroom_students join —
+      same pattern as routes/activities.py teacher_students())
+    - a parent/homeschool guardian linked to this specific student via
+      parent_child_links (same pattern as routes/parent.py get_child_activities())
+
+    Anonymous (unauthenticated) access is blocked by the route dependency.
     """
     role = (current_user.role or "").upper()
+
     if str(session.user_id) == str(current_user.id):
         return
-    if role in ("ADMIN", "TEACHER", "PARENT", "HOMESCHOOL"):
+    if role == "ADMIN":
         return
+
+    if role == "TEACHER":
+        result = await db.execute(
+            text("""
+                SELECT 1 WHERE EXISTS (
+                    SELECT 1 FROM activities a
+                    WHERE a.id = :activity_id AND a.teacher_id = :tid
+                ) OR EXISTS (
+                    SELECT 1 FROM classroom_students cs
+                    JOIN classrooms c ON c.id = cs.classroom_id
+                    WHERE cs.student_id = :student_id AND c.teacher_id = :tid
+                )
+            """),
+            {
+                "activity_id": session.activity_id,
+                "tid": current_user.id,
+                "student_id": session.user_id,
+            },
+        )
+        if result.fetchone():
+            return
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+    if role in ("PARENT", "HOMESCHOOL"):
+        result = await db.execute(
+            text("SELECT 1 FROM parent_child_links WHERE parent_id = :pid AND child_id = :cid"),
+            {"pid": current_user.id, "cid": session.user_id},
+        )
+        if result.fetchone():
+            return
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
 
@@ -147,7 +184,7 @@ async def get_session(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        _require_session_access(session, current_user)
+        await _require_session_access(session, current_user, db)
 
         return SessionResponse(
             session_id=str(session.id),
@@ -193,7 +230,7 @@ async def update_session(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        _require_session_access(session, current_user)
+        await _require_session_access(session, current_user, db)
 
         # Update fields
         if request.title:
@@ -254,7 +291,7 @@ async def get_evidence_of_learning(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        _require_session_access(session, current_user)
+        await _require_session_access(session, current_user, db)
 
         return {
             "session_id": str(session.id),
@@ -293,7 +330,7 @@ async def get_inquiry_log(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found"
             )
-        _require_session_access(session, current_user)
+        await _require_session_access(session, current_user, db)
 
         return {
             "session_id": str(session.id),

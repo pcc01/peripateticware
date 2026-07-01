@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 from jose import JWTError, ExpiredSignatureError, jwt
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +138,11 @@ def create_access_token(
             )
         
         to_encode.update({"exp": expire})
+        # Unique per-token ID so a specific token (not just "all tokens for
+        # this user") can be revoked on logout or superseded on refresh —
+        # see core/cache.py revoke_token()/is_token_revoked() and their use
+        # in core/dependencies.py + routes/auth.py /logout and /refresh.
+        to_encode.setdefault("jti", uuid.uuid4().hex)
         
         encoded_jwt = jwt.encode(
             to_encode,

@@ -388,6 +388,15 @@ async def get_child_progress(
         from uuid import UUID as _UUID
         child_uuid = _UUID(child_id)  # validates format, prevents injection
 
+        # Verify authorization via parent_child_links — same pattern as
+        # get_child_activities()/get_weekly_report() below. Without this any
+        # logged-in parent could read any other family's child's progress.
+        link = (await db.execute(text(
+            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+        ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
+        if not link:
+            raise HTTPException(status_code=403, detail="Not authorized to view this child's progress")
+
         # Parameterised query — no f-string SQL
         from sqlalchemy import select as _sel, func as _fn
         from models.database import LearningSession as _LS
@@ -648,10 +657,18 @@ async def reply_to_message(
     """Reply to a teacher message"""
     try:
         orig = (await db.execute(text(
-            "SELECT conversation_id, from_user_id FROM parent_messages WHERE id = :mid::uuid"
+            "SELECT conversation_id, from_user_id, to_user_id FROM parent_messages WHERE id = :mid::uuid"
         ), {"mid": message_id})).fetchone()
         if not orig:
             raise HTTPException(status_code=404, detail="Message not found")
+
+        # Verify current_user is a participant in this conversation — without
+        # this, any authenticated user could reply to any message_id and
+        # inject a message into another family's teacher conversation.
+        _participant_ids = {str(orig[1]), str(orig[2])}
+        if str(current_user.id) not in _participant_ids:
+            raise HTTPException(status_code=403, detail="Not authorized to reply to this conversation")
+
         new_id = str(uuid4())
         await db.execute(text("""
             INSERT INTO parent_messages (id, from_user_id, to_user_id, subject, body, conversation_id)

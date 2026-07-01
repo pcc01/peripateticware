@@ -34,6 +34,7 @@ import hmac
 import json
 import time
 import os
+import uuid
 from typing import Any, Dict, Optional
 
 # ---------------------------------------------------------------------------
@@ -120,6 +121,9 @@ class SignedURL:
         full_payload = {
             "purpose": purpose,
             "exp": int(time.time()) + ttl,
+            # Unique per-token ID so a specific token (not the whole class of
+            # tokens) can be marked "already used" — see validate(consume=True).
+            "tid": uuid.uuid4().hex,
             **(payload or {}),
         }
         encoded = cls._b64_encode(json.dumps(full_payload, separators=(",", ":")).encode())
@@ -127,7 +131,7 @@ class SignedURL:
         return f"{encoded}.{sig}"
 
     @classmethod
-    def validate(cls, token: str, purpose: str) -> Dict[str, Any]:
+    async def validate(cls, token: str, purpose: str, consume: bool = False) -> Dict[str, Any]:
         """
         Validate a signed token and return its payload.
 
@@ -137,6 +141,17 @@ class SignedURL:
             Token string produced by generate().
         purpose : str
             Expected purpose — prevents tokens from one flow being used in another.
+        consume : bool
+            If True, atomically mark this specific token as used (via a Redis
+            denylist keyed on its "tid", TTL'd to its remaining lifetime) and
+            reject it if it was already consumed. Use consume=True for the
+            action that actually spends the token (resetting the password,
+            activating the account) and consume=False (default) for
+            non-destructive checks (e.g. "is this link still valid?" before
+            showing a form) that must not burn the token themselves.
+
+            Without this, a leaked reset/verification link stays usable
+            repeatedly until it naturally expires.
 
         Returns
         -------
@@ -148,7 +163,8 @@ class SignedURL:
         SignedURLExpired
             Token signature is valid but the expiry time has passed.
         SignedURLError
-            Token is malformed, signature mismatch, or wrong purpose.
+            Token is malformed, signature mismatch, wrong purpose, or (when
+            consume=True) has already been used once.
         """
         try:
             parts = token.split(".")
@@ -175,8 +191,28 @@ class SignedURL:
         if int(time.time()) > data.get("exp", 0):
             raise SignedURLExpired("Token has expired")
 
+        if consume:
+            from core.cache import get_cache, set_cache
+
+            tid = data.get("tid")
+            if tid:
+                cache_key = f"used_signed_url:{tid}"
+                try:
+                    already_used = (await get_cache(cache_key)) is not None
+                    if already_used:
+                        raise SignedURLError("Token has already been used")
+                    ttl = max(1, int(data.get("exp", 0) - time.time()))
+                    await set_cache(cache_key, True, ttl=ttl)
+                except SignedURLError:
+                    raise
+                except Exception:
+                    # Fail open on cache errors — same convention as the rest
+                    # of core/cache.py — a brief Redis outage shouldn't lock
+                    # a legitimate user out of resetting their password.
+                    pass
+
         # Return payload without internal fields
-        return {k: v for k, v in data.items() if k not in ("purpose", "exp")}
+        return {k: v for k, v in data.items() if k not in ("purpose", "exp", "tid")}
 
     @classmethod
     def expires_in_minutes(cls, token: str) -> Optional[int]:

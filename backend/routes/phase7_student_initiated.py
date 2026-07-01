@@ -883,14 +883,49 @@ async def add_capture_to_response(
 
     # Store the capture file
     import os, aiofiles
+
+    # SECURITY: never trust the client-supplied filename in a filesystem
+    # path (traversal via "../" segments) or its claimed extension. Derive
+    # both the extension and an upload cap from an allowlisted content-type,
+    # and stream the body instead of loading it unbounded into memory.
+    _ALLOWED_CAPTURE_MIME_TYPES = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp",
+        "image/heic": ".heic",
+        "image/gif": ".gif",
+    }
+    _MAX_CAPTURE_BYTES = 15 * 1024 * 1024  # 15MB — generous for a phone photo
+
+    ext = _ALLOWED_CAPTURE_MIME_TYPES.get((file.content_type or "").lower())
+    if not ext:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Allowed: JPEG, PNG, WEBP, HEIC, GIF.",
+        )
+
     upload_dir = "/app/uploads/peer_project_responses"
     os.makedirs(upload_dir, exist_ok=True)
-    filename = f"{uuid4()}_{file.filename}"
+    filename = f"{uuid4()}{ext}"  # server-generated name only
     filepath = os.path.join(upload_dir, filename)
+
+    total_bytes = 0
     try:
         async with aiofiles.open(filepath, "wb") as f:
-            content = await file.read()
-            await f.write(content)
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                total_bytes += len(chunk)
+                if total_bytes > _MAX_CAPTURE_BYTES:
+                    raise HTTPException(status_code=413, detail="File too large (max 15MB).")
+                await f.write(chunk)
+    except HTTPException:
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
+        raise
     except Exception:
         # Fall back to in-memory path if aiofiles not available
         filepath = f"uploads/peer_project_responses/{filename}"
@@ -1057,4 +1092,42 @@ async def update_peer_project_teacher_settings(
 # =============================================================================
 
 @router.get("/teacher/classes/{class_id}/settings")
-asyn
+@router.get("/teacher/classes/{class_id}/settings")
+async def get_class_settings(
+    class_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    _require_role(current_user, "TEACHER", "ADMIN")
+    settings = await _get_or_create_class_settings(db, class_id)
+    await db.commit()
+    return {
+        "class_id": str(settings.class_id),
+        "peer_project_approval_mode": settings.peer_project_approval_mode,
+        "peer_project_author_sees_individual_responses": settings.peer_project_author_sees_individual_responses,
+        "students_can_create_peer_projects": settings.students_can_create_peer_projects,
+        "students_can_create_field_notes": settings.students_can_create_field_notes,
+        "updated_at": settings.updated_at.isoformat() if settings.updated_at else None,
+    }
+
+
+@router.put("/teacher/classes/{class_id}/settings")
+async def update_class_settings(
+    class_id: UUID,
+    body: ClassSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    _require_role(current_user, "TEACHER", "ADMIN")
+    settings = await _get_or_create_class_settings(db, class_id)
+    for field, val in body.dict(exclude_unset=True).items():
+        setattr(settings, field, val)
+    settings.updated_at = _now()
+    await db.commit()
+    return {
+        "class_id": str(settings.class_id),
+        "peer_project_approval_mode": settings.peer_project_approval_mode,
+        "peer_project_author_sees_individual_responses": settings.peer_project_author_sees_individual_responses,
+        "students_can_create_peer_projects": settings.students_can_create_peer_projects,
+        "students_can_create_field_notes": settings.students_can_create_field_notes,
+    }

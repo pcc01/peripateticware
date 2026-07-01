@@ -71,3 +71,39 @@ async def clear_cache_prefix(prefix: str) -> int:
         return 0
 
 
+# ============================================================================
+# TOKEN REVOCATION (JWT jti denylist)
+# ============================================================================
+# JWTs are stateless by design, so revoking one before its natural `exp`
+# needs an external record. We track revoked token IDs (jti claim) here with
+# a TTL equal to the token's own remaining lifetime — entries evict
+# themselves the moment the token would have expired anyway, so this never
+# grows unbounded. Used by /auth/logout (revoke on logout) and /auth/refresh
+# (revoke the old token when a new one is minted, so a refreshed-away token
+# can't keep being used — see routes/auth.py).
+#
+# Fails open on Redis errors (same convention as get_cache/set_cache above):
+# a brief Redis outage degrades to "can't revoke early", not "nobody can log
+# in", consistent with how the rest of this module already behaves.
+
+_REVOKED_JTI_PREFIX = "revoked_jti"
+
+
+async def revoke_token(jti: Optional[str], ttl_seconds: int) -> bool:
+    """Mark a token's jti as revoked for (up to) the rest of its natural life."""
+    if not jti or ttl_seconds <= 0:
+        return False
+    return await set_cache(f"{_REVOKED_JTI_PREFIX}:{jti}", True, ttl=ttl_seconds)
+
+
+async def is_token_revoked(jti: Optional[str]) -> bool:
+    """True if this jti was explicitly revoked (logout / superseded by refresh)."""
+    if not jti:
+        return False
+    try:
+        return (await get_cache(f"{_REVOKED_JTI_PREFIX}:{jti}")) is not None
+    except Exception as e:
+        logger.error(f"Token revocation check error: {e}")
+        return False
+
+

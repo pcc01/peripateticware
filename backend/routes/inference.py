@@ -265,7 +265,8 @@ async def process_multimodal_input(
     input_type: str,
     file: Optional[UploadFile] = File(None),
     text: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Process multimodal input (image, audio, text).

@@ -18,6 +18,8 @@ from typing import Optional
 import logging
 import uuid
 from datetime import timedelta
+import time as _time
+from core.cache import revoke_token
 from services.signed_url import SignedURL
 from services.email_service import send_verification_email, send_welcome_email
 
@@ -37,7 +39,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 try:
     from core.database import get_db
-    from core.security import SecurityManager, create_access_token
+    from core.security import SecurityManager, create_access_token, TOKEN_EXPIRED
     from models.user import User
     from core.encryption import blind_index as _blind_index
     logger.info("âœ… Auth routes: All imports successful")
@@ -521,12 +523,26 @@ async def get_current_user(
 # ============================================================================
 
 @router.post("/logout", response_model=LogoutResponse)
-async def logout():
+async def logout(authorization: Optional[str] = Header(None)):
     """
-    Logout endpoint (token invalidation handled by frontend)
-    
-    Frontend should delete JWT token from localStorage
+    Logout endpoint.
+
+    Previously this only told the frontend to delete its local copy of the
+    token — the JWT itself stayed valid server-side until it naturally
+    expired (up to 24h later), so a stolen/leaked token kept working after
+    the legitimate user "logged out". Now the presented token's jti is
+    added to the revocation denylist for the rest of its natural life, so
+    it stops working immediately everywhere.
     """
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ", 1)[1]
+        payload = SecurityManager.verify_token(token)
+        if payload and payload is not TOKEN_EXPIRED:
+            jti = payload.get("jti")
+            exp = payload.get("exp")
+            if jti and exp:
+                ttl = int(exp - _time.time())
+                await revoke_token(jti, ttl)
     logger.info("ðŸ‘‹ User logged out")
     return LogoutResponse(message="Logged out successfully")
 
@@ -581,6 +597,15 @@ async def refresh_token(
         new_token = create_access_token(
             data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False))}
         )
+
+        # Rotation: revoke the OLD token now that a new one exists, so a
+        # refreshed-away token can't keep being replayed/refreshed again —
+        # closes the "stolen token refreshed indefinitely" gap.
+        old_jti = payload.get("jti")
+        old_exp = payload.get("exp")
+        if old_jti and old_exp:
+            old_ttl = int(old_exp - _time.time())
+            await revoke_token(old_jti, old_ttl)
         
         logger.info(f"âœ… Token refreshed for user {user.email}")
         
@@ -619,7 +644,7 @@ async def verify_email(
     from core.config import settings as _settings
 
     try:
-        data = SignedURL.validate(token, purpose="email_verification")
+        data = await SignedURL.validate(token, purpose="email_verification", consume=True)
     except SignedURLExpired:
         return RedirectResponse(f"{_settings.FRONTEND_URL}/login?error=link_expired")
     except SignedURLError:

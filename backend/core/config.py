@@ -89,7 +89,11 @@ class Settings(BaseSettings):
     FIELD_ENCRYPTION_KEY: str = os.getenv("FIELD_ENCRYPTION_KEY", "")
     
     # CORS - Store as string, parse as needed
-    CORS_ORIGINS_STR: str = os.getenv("CORS_ORIGINS", '["*"]')
+    # SECURITY: fail closed. Combined with allow_credentials=True in main.py,
+    # a wildcard default here would let any site read authenticated API
+    # responses via cross-origin XHR. CORS_ORIGINS must be explicitly set;
+    # an unset/missing value now allows nothing rather than everything.
+    CORS_ORIGINS_STR: str = os.getenv("CORS_ORIGINS", '[]')
     
     # Vector DB
     VECTOR_DIMENSION: int = 384  # For sentence-transformers/all-MiniLM-L6-v2

@@ -15,23 +15,49 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    services:
-      # Spin up the backend so the frontend can hit real API endpoints
-      backend:
-        image: ghcr.io/${{ github.repository }}/backend:latest
-        ports: ['8000:8000']
-        env:
-          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-          SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
-        options: >-
-          --health-cmd "curl -f http://localhost:8000/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Previously this job used a `services:` block pointing at
+      # ghcr.io/${{ github.repository }}/backend:latest. No workflow in this
+      # repo ever builds or publishes that image — deploy.yml builds it
+      # locally as `peripateticware-backend:latest` and its "push to
+      # registry" step is a stub that only echoes a message — so every run
+      # failed within ~15s at "Docker pull failed with exit code 1" before a
+      # single test ever executed. Building the stack from the checked-out
+      # source instead removes the registry dependency entirely and matches
+      # how the repo already documents running locally (docker-compose.yml).
+      - name: Build and start the stack
+        run: docker compose up -d --build postgres redis backend frontend
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8000/health > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/60)"
+            sleep 2
+          done
+          echo "Backend did not become healthy in time"
+          docker compose logs backend
+          exit 1
+
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:3000 > /dev/null; then
+              echo "Frontend is up"
+              exit 0
+            fi
+            echo "Waiting for frontend... ($i/60)"
+            sleep 2
+          done
+          echo "Frontend did not come up in time"
+          docker compose logs frontend
+          exit 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -55,7 +81,17 @@ jobs:
       - name: Run E2E tests
         working-directory: frontend
         env:
-          BASE_URL: http://localhost:5173
+          # docker-compose's frontend service serves on :3000 (see
+          # docker-compose.yml + frontend/Dockerfile) — the previous value of
+          # :5173 never matched anything actually running in this setup, so
+          # even a successful backend pull would have failed here next.
+          BASE_URL: http://localhost:3000
+          # auth.setup.ts falls back to the seeded dev accounts
+          # (teacher@example.com / SecurePass123! etc, created by
+          # seed_demo_users() when ENVIRONMENT=development — the default in
+          # docker-compose.yml) when these secrets aren't configured, so the
+          # suite runs zero-config; set these secrets to point at different
+          # accounts/environment if needed.
           TEST_TEACHER_EMAIL: ${{ secrets.TEST_TEACHER_EMAIL }}
           TEST_TEACHER_PASSWORD: ${{ secrets.TEST_TEACHER_PASSWORD }}
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
@@ -64,6 +100,10 @@ jobs:
           TEST_PARENT_PASSWORD: ${{ secrets.TEST_PARENT_PASSWORD }}
         run: npx playwright test
 
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: always()
@@ -71,6 +111,10 @@ jobs:
           name: playwright-report-${{ github.run_id }}
           path: frontend/playwright-report/
           retention-days: 14
+
+      - name: Tear down the stack
+        if: always()
+        run: docker compose down -v
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && always()

@@ -104,7 +104,7 @@ async def forgot_password(
 async def validate_reset_token(token: str) -> ResetTokenValidation:
     """Validate a reset token before showing the new-password form."""
     try:
-        data = SignedURL.validate(token, purpose="password_reset")
+        data = await SignedURL.validate(token, purpose="password_reset")  # preview only — do not consume
         return ResetTokenValidation(
             token=token,
             valid=True,
@@ -124,7 +124,7 @@ async def reset_password(
 ) -> ResetPasswordResponse:
     """Reset password using a valid signed token."""
     try:
-        data = SignedURL.validate(request.token, purpose="password_reset")
+        data = await SignedURL.validate(request.token, purpose="password_reset", consume=True)
     except SignedURLExpired:
         raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
     except SignedURLError:

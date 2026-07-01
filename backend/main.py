@@ -107,6 +107,18 @@ async def lifespan(app: FastAPI):
     # ── STARTUP ──────────────────────────────────────────────────────────────
     logger.info("Starting Peripateticware...")
 
+    # Redis cache connection — was previously never called anywhere, so
+    # redis_client stayed None forever and every cache/revocation check
+    # silently no-op'd (fail-open by design, but that means it was never
+    # actually enforcing anything). Non-fatal: cache/token-revocation
+    # degrade gracefully without Redis, but should be connected when
+    # available so they actually do something.
+    try:
+        from core.cache import initialize_cache
+        await initialize_cache()
+    except Exception as e:
+        logger.warning(f"⊘ Redis cache unavailable at startup (non-fatal, fail-open): {e}")
+
     db_ready = await init_db()
 
     # Schema migrations (inline SQL patches — TODO: convert to Alembic migrations)

@@ -126,7 +126,7 @@ services:
       # ✅ FIXED: Ensure these JWT secrets are set from .env
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
-      CORS_ORIGINS: '["http://localhost:3000", "http://localhost:19000", "http://localhost:19006", "http://localhost", "http://localhost:80", "*"]'
+      CORS_ORIGINS: '["http://localhost:3000", "http://localhost:19000", "http://localhost:19006", "http://localhost", "http://localhost:80"]'
       ALLOWED_HOSTS: '["*"]'
 
       # ── Application Configuration ────────────────────────────────────────
