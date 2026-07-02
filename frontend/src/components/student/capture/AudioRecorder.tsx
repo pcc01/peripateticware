@@ -6,6 +6,7 @@ import React from 'react';
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSignedCaptureUrl } from "../../../hooks/useSignedCaptureUrl";
 
 interface AudioRecorderProps {
   /** Called with (audioBlob, durationSeconds) when user confirms keep */
@@ -337,8 +338,10 @@ const styles: Record<string, React.CSSProperties> = {
 // =============================================================================
 
 interface AudioPlayerProps {
-  /** URL to the audio resource (blob URL or server URL) */
-  src: string;
+  /** URL to the audio resource (blob URL). Prefer `captureId` for server audio. */
+  src?: string;
+  /** Server capture id — resolves a short-lived signed stream URL (no JWT in URL). */
+  captureId?: string;
   /** Display label, e.g. "Field Note Recording — May 7, 2026" */
   label?: string;
   /** Duration in seconds (shown before audio loads metadata) */
@@ -349,10 +352,13 @@ interface AudioPlayerProps {
 
 export const AudioPlayer = ({
   src,
+  captureId,
   label,
   knownDurationSeconds,
   showDownload = false,
 }: AudioPlayerProps) => {
+  const signedUrl = useSignedCaptureUrl(captureId);
+  const effectiveSrc = captureId ? signedUrl : src;
   const audioRef           = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying]     = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -407,7 +413,7 @@ export const AudioPlayer = ({
       {/* Hidden HTML5 audio element */}
       <audio
         ref={audioRef}
-        src={src}
+        src={effectiveSrc}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
@@ -442,8 +448,8 @@ export const AudioPlayer = ({
           {speed}×
         </button>
 
-        {showDownload && (
-          <a href={src} download="recording" style={playerStyles.downloadLink} aria-label="Download recording">
+        {showDownload && effectiveSrc && (
+          <a href={effectiveSrc} download="recording" style={playerStyles.downloadLink} aria-label="Download recording">
             ⬇ Download
           </a>
         )}
@@ -689,7 +695,7 @@ export const AudioCapture = ({
             ✅ {t("audioRecorder.recording_saved", "Recording saved")}
           </div>
           <AudioPlayer
-            src={`/api/v1/student/captures/${savedCapture.id}/stream`}
+            captureId={savedCapture.id as string}
             label={`Recorded ${new Date().toLocaleDateString()}`}
             knownDurationSeconds={savedCapture.duration_seconds as number}
             showDownload={true}

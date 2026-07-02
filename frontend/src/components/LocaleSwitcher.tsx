@@ -7,6 +7,9 @@ import { useTranslation } from 'react-i18next'
 
 interface LocaleSwitcherProps {
   className?: string
+  /** Called after the language changes — lets a parent (e.g. a settings page)
+   *  mark itself dirty so its Save button activates. */
+  onChanged?: (code: string) => void
 }
 
 /**
@@ -28,7 +31,7 @@ const LOCALES = [
   { code: 'zh',    label: '中文' },
 ]
 
-export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '' }) => {
+export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '', onChanged }) => {
   const { i18n } = useTranslation()
 
   // Prefer exact match, then language-prefix match, then fall back to 'en'
@@ -39,6 +42,7 @@ export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '' }
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     i18n.changeLanguage(e.target.value)
+    onChanged?.(e.target.value)
   }
 
   return (

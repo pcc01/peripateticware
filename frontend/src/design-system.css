@@ -36,7 +36,9 @@
   --border-light: #f0ede5;
   
   --text: #1e1a14;
-  --text-muted: #7a6f5e;
+  /* WCAG 1.4.3 AA: darkened from #7a6f5e (4.34:1 on --surface-alt, failed) to
+     #6b6150 which is >=4.5:1 on white, --bg, --surface-alt AND --surface-deep. */
+  --text-muted: #6b6150;
   --text-faint: #a89d8a;
   
   /* Primary accent - changes by direction */

@@ -232,4 +232,15 @@ const ActivityListPage: React.FC = () => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  👁 Stu
+                  👁 Student View
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ActivityListPage

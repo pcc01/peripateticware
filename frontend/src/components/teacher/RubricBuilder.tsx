@@ -192,3 +192,11 @@ const RubricBuilder: React.FC = () => {
         disabled={saving || !form.title.trim()}
         className="w-full py-3 rounded-lg text-white font-medium disabled:opacity-50"
         style={{ background: 'var(--primary)' }}
+      >
+        {saving ? t('saving', 'Saving…') : t('save_rubric', 'Save Rubric')}
+      </button>
+    </div>
+  )
+}
+
+export default RubricBuilder

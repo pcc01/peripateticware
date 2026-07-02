@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function DoNotSellPage() {
+  const { t } = useTranslation('landing');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -31,35 +33,27 @@ export default function DoNotSellPage() {
 
   return (
     <div style={{ maxWidth: 640, margin: '60px auto', padding: '0 24px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
-        Do Not Sell or Share My Personal Information
-      </h1>
-      <p style={{ color: '#555', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-        Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA),
-        California residents have the right to opt out of the sale or sharing of their personal information.
-        Peripateticware does not sell personal data, but you may submit this request to formally record
-        your preference.
-      </p>
+      <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>{t('pages_donotsellpage.do_not_sell_or_share_my_personal_informa', 'Do Not Sell or Share My Personal Information')}</h1>
+      <p style={{ color: '#555', marginBottom: '1.5rem', lineHeight: 1.6 }}>{t('pages_donotsellpage.under_the_california_consumer_privacy_ac', 'Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt out of the sale or sharing of their personal information. Peripateticware does not sell personal data, but you may submit this request to formally record your preference.')}</p>
 
       {submitted ? (
         <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '1.5rem' }}>
-          <h2 style={{ color: '#166534', marginBottom: '0.5rem' }}>✓ Preference Recorded</h2>
-          <p style={{ color: '#166534' }}>
-            Your opt-out preference has been recorded. We will not sell or share your personal information.
-          </p>
+          <h2 style={{ color: '#166534', marginBottom: '0.5rem' }}>{t('pages_donotsellpage.preference_recorded', '✓ Preference Recorded')}</h2>
+          <p style={{ color: '#166534' }}>{t('pages_donotsellpage.your_optout_preference_has_been_recorded', 'Your opt-out preference has been recorded. We will not sell or share your personal information.')}</p>
           <Link to="/" style={{ color: '#166534', fontWeight: 600 }}>← Back to home</Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
-            Email address
-          </label>
+          <label htmlFor="dns-email" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>{t('pages_donotsellpage.email_address', 'Email address')}</label>
           <input
+            id="dns-email"
             type="email"
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="you@example.com"
+            aria-describedby={error ? 'dns-error' : undefined}
+            aria-invalid={error ? true : undefined}
             style={{
               display: 'block', width: '100%', padding: '0.625rem 0.75rem',
               border: '1px solid #d1d5db', borderRadius: 6, fontSize: '1rem',
@@ -67,7 +61,7 @@ export default function DoNotSellPage() {
             }}
           />
           {error && (
-            <p style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</p>
+            <p id="dns-error" role="alert" style={{ color: '#dc2626', marginBottom: '1rem' }}>{error}</p>
           )}
           <button
             type="submit"

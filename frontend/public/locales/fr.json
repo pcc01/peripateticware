@@ -118,7 +118,8 @@
       "privacy_protected": "Votre données sont protégées sous ces cadres juridiques",
       "company_contact": "Contactez-nous",
       "product_privacy_engine": "Moteur de confidentialité",
-      "resources_privacy": "Moteur de confidentialité"
+      "resources_privacy": "Moteur de confidentialité",
+      "legal_do_not_sell": "Ne vendrez ou ne partagez mon info"
     },
     "johndoe": "John Doe",
     "digital_journal": "Journal numérique",
@@ -804,7 +805,7 @@
     "meet_peri": "Rencontre Peri",
     "available_247": "Disponible 24/7",
     "journal": "Carnet",
-    "badges": "Badges",
+    "badges": "Étiquettes",
     "open_the_app": "Ouvrez l'application",
     "student_settings": "Paramètres étudiants",
     "preferences": "Préférences",
@@ -898,8 +899,8 @@
       "submissions": "Sous-envois",
       "edit": "Modifier",
       "grade": "Note :",
-      "total_activities": "Total Activities",
-      "this_week": "This Week"
+      "total_activities": "Total des activités",
+      "this_week": "Cette semaine"
     },
     "total_students": "Total d'élèves",
     "active_activities": "Activités actives",
@@ -1260,7 +1261,7 @@
     "provide_constructive_feedback": "Fournissez un feedback constructif ...",
     "comingsoonpage": {
       "this_page_is_coming_soon": "Cette page sera bientôt disponible.",
-      "go_back": "← Go Back"
+      "go_back": "Retour en arrière"
     },
     "privacy_first": "Privéci (Privéci premier)",
     "eg_understand_photosynthesis_process": "Par exemple, comprendre le processus de photosynthèse",
@@ -1307,7 +1308,9 @@
       "jurisdictions_enforced": "Juridictions appliquées",
       "last_updated": "Dernière mise à jour",
       "cta_explore_docs": "Explorer les Documents de confidentialité",
-      "loading_status": "Chargement de l'état de conformité..."
+      "loading_status": "Chargement de l'état de conformité...",
+      "coppa_family_title": "Pour les familles d'enfants de moins de 13 ans",
+      "do_not_sell_link": "Ne vendrez ou ne partagez mon informations personnelles"
     },
     "capture_photosvideo": "📸 Capture photos/vidéos",
     "take_photos_record_videos_and_capture_au": "Prenez des photos, enregistrez des vidéos et capturez de l'audio pour documenter vos observations et découvertes.",
@@ -1345,8 +1348,8 @@
       "you_can_clear_cookies_at_any_time_throug": "Vous pouvez effacer les cookies à tout moment grâce aux paramètres de votre navigateur. L'effacement des cookies d'authentification vous déconnectera du Service.",
       "changes_to_this_policy": "Modifications à cette Politique",
       "we_may_update_this_policy_as_the_service": "Nous pouvons mettre à jour cette politique selon que le Service évolue. Les changements importants seront communiqués par notification in-app.",
-      "contact": "Contact",
-      "back_to_home": "← Back to Home",
+      "contact": "['Contact']",
+      "back_to_home": "← Retour à l'accueil",
       "auth_token_desc": "Stocke votre JWT de session. Expire après 24 heures.",
       "auth_user_desc": "Stocke votre profil utilisateur de base (nom, rôle). Effacé lors du déconnexion.",
       "i18nextlng_desc": "Rappelle votre choix de langue.",
@@ -1449,7 +1452,7 @@
       "set_name": "Nommer ce jeu",
       "analysing_document": "Analyse du document en cours...",
       "the_ai_is_extracting_criteria_from_your_": "L'IA extrait les critères de votre fichier. Cela peut prendre 10 à 30 secondes.",
-      "description": "Description",
+      "description": "Déscription",
       "name": "Nom",
       "category": "Catégorie",
       "saving_your_criteria_set": "Enregistrement de votre ensemble de critères..."
@@ -1463,7 +1466,7 @@
     "total_pts": "points totaux",
     "title": "Titre",
     "rubric_title_placeholder": "par exemple : Échelle d'observation de champ",
-    "description": "Description",
+    "description": "Déscription",
     "criterion_name": "Nom du critère...",
     "level_label": "Étiquette",
     "add_criterion": "Ajouter un critère",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "niveau scolaire",
       "subject": "Sujet",
-      "enrolled_students": "Étudiants inscrits"
+      "enrolled_students": "Étudiants inscrits",
+      "larger_classrooms_are_a_paid_feature_upg": "[]"
     },
     "pages_admin_platformadminpage": {
       "tier": "Niveau",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Cadres de conformité",
-      "toggle_which_privacy_frameworks_are_acti": "Basculer les cadres de confidentialité qui sont activement appliqués. Pré-réglages au démarrage - activez ceux applicables à votre juridiction."
+      "toggle_which_privacy_frameworks_are_acti": "Basculer les cadres de confidentialité qui sont activement appliqués. Pré-réglages au démarrage - activez ceux applicables à votre juridiction.",
+      "no_active_jurisdictions_found_use_the_fr": "Aucune juridiction active trouvée. Utilisez les réglages de cadre ci-dessus pour activer FERPA, COPPA, GDPR ou CCPA – des règles par défaut seront créées automatiquement."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Apportez votre propre clé - mise à niveau requise",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "Instance Ollama",
       "must_be_reachable_from_the_peripateticwa": "Doit être accessible depuis le serveur backend de Peripateticware.",
       "task_routing": "Routage des tâches",
-      "which_provider_handles_each_ai_task_for_": "Quel fournisseur gère chaque tâche d'IA pour votre organisation ?"
+      "which_provider_handles_each_ai_task_for_": "Quel fournisseur gère chaque tâche d'IA pour votre organisation ?",
+      "byok_paid_note": "Bring Your Own Key est une fonctionnalité payante. Mettez à niveau pour configurer des fournisseurs d'IA personnalisés pour votre école ou district."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "L'article a été écrit à un moment où la 3G n'était pas encore complètement déployée, l'iPhone était loin de sortir et le mot « app » n'était pas encore courant. Ses prédictions - que les téléphones portables deviendraient des appareils uniques pour la salle de classe, que les réseaux mobiles atteindraient les régions éloignées et que le GPS deviendrait suffisamment bon marché pour être placé dans le portefeuille de chaque élève - se sont toutes avérées. Les produits que l'article a appelés existent bel et bien.",
@@ -2172,11 +2178,18 @@
     "cta_privacy_note": "Conformes à la FERPA et COPPA. Les données des étudiants ne sont jamais vendues ou partagées.",
     "curriculumImportPage": {
       "description": "Téléchargez un fichier PDF ou CSV contenant les normes académiques officielles de l'État (TEKS, NGSS, Common Core, etc.). Ollama extrait chaque norme pour examen. Une fois enregistré en tant que jeu de données global, tous les enseignants et parents d'élèves scolarisés à domicile peuvent associer leurs activités à ces normes. Le téléchargement du même fichier permet de contourner le traitement (cache de somme).",
-      "title": "Import State Academic Standards"
+      "title": "Importation des normes académiques de l'État"
     },
     "standardsImportPage": {
       "title": "Importer des normes d'apprentissage",
       "description": "Téléchargez un PDF ou une feuille de calcul des normes d'apprentissage pour votre discipline - Common Core, NGSS, normes d'État ou votre propre cadre personnalisé. Une fois enregistrées, vous pouvez marquer les activités à l'aide de ces normes et suivre la couverture étudiante."
+    },
+    "pages_donotsellpage": {
+      "email_address": "Adresse email",
+      "under_the_california_consumer_privacy_ac": "Sous la loi sur la protection de la vie privée du consommateur en Californie (CCPA) et la loi sur les droits de la vie privée en Californie (CPRA), les résidents de Californie ont le droit d'opt out de la vente ou partage de leurs informations personnelles. Peripateticware ne vend pas des données personnelles, mais vous pouvez soumettre cette demande pour enregistrer officiellement votre préférence.",
+      "do_not_sell_or_share_my_personal_informa": "Ne vendrez ou ne partagez pas mon informations personnelles",
+      "preference_recorded": "✓ Enregistrement préférence enregistrée",
+      "your_optout_preference_has_been_recorded": "Votre préférence d'opt-out a été enregistrée. Nous ne vendrons ni ne partagerons vos informations personnelles."
     }
   },
   "STUDENT": {},

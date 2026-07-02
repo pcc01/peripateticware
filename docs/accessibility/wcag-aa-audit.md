@@ -1,5 +1,10 @@
 # WCAG 2.1 AA Audit Report
 
+> **Round 2 addendum — 2026-07-02.** See the "Round 2" section at the bottom for
+> what changed since the original audit (color-contrast fix, a broken-media
+> regression fix, new-page label fixes, and the axe CI spec that was previously
+> only recommended). The original 2026-06-27 report follows unchanged.
+
 **Date:** 2026-06-27  
 **Auditor:** Static analysis (automated grep + manual review)  
 **Scope:** Peripateticware SPA — all `.tsx` files under `frontend/src/`  
@@ -239,3 +244,52 @@ for (const { url, name } of PAGES_TO_CHECK) {
 | `src/pages/ParentMessagesPage.tsx` | role="dialog", aria-modal |
 | `src/pages/PrivacyConfirmationPage.tsx` | Replaced `<span onClick>` with `<button>` |
 | `src/design-system.css` | :focus-visible rule, .sr-only utility class |
+
+---
+
+## Round 2 — 2026-07-02
+
+### Fixed
+
+**1.4.3 Contrast (AA) — the one real contrast failure.** `--text-muted` was
+`#7a6f5e`, which is 4.34:1 on `--surface-alt` (#f5f0e6) — below the 4.5:1 needed
+for normal text. Contrast ratios were computed for every muted/brand/error/focus
+pair; all others pass. Changed `--text-muted` to **`#6b6150`**, which is ≥4.5:1 on
+white, `--bg`, `--surface-alt`, and `--surface-deep` (worst case 4.86:1).
+*(src/design-system.css)*
+
+**Regression fix (also a11y).** The signed-media-token security change made the
+capture stream endpoint reject the old `?token=<JWT>` URLs. Two components still
+used that pattern and would have shown broken media:
+- `FieldNoteEditor.tsx` — photo/video thumbnails. Replaced with a `CaptureThumb`
+  component that fetches a short-lived signed URL and carries descriptive `alt` /
+  `aria-label` (previously `alt="capture"`).
+- `capture/AudioRecorder.tsx` — saved-recording playback. Its `AudioPlayer` now
+  accepts a `captureId` and resolves a signed URL.
+- New shared hook `hooks/useSignedCaptureUrl.ts`.
+
+**1.3.1 / 3.3.1 — new page inputs.** `DoNotSellPage.tsx` (CCPA) email field got
+`id`+`htmlFor`, `aria-describedby`/`aria-invalid`, and the error `<p>` got
+`id`+`role="alert"`.
+
+### Added
+- **axe CI spec** — `tests/e2e/accessibility.spec.ts` runs axe-core against the
+  public pages (landing, login, signup, privacy, terms, do-not-sell, privacy-engine)
+  with the wcag2a/2aa/21a/21aa tag set. Requires
+  `npm install --save-dev @axe-core/playwright axe-core`, then
+  `npx playwright test tests/e2e/accessibility.spec.ts`. This closes the
+  "CI integration" item the original audit only recommended.
+
+### Still needs a human / browser (unchanged from original)
+- Screen-reader pass (NVDA/VoiceOver) on the student session + recording flows.
+- Focus-order verification on login/signup.
+- `--text-faint` (#a89d8a) is ~2.4:1 on white — acceptable only because it's used
+  for non-essential/decorative text; do NOT use it for body copy or controls.
+- Touch-target sizes (2.5.5) on the collapsed mobile sidebar.
+- Run the axe spec in CI and triage anything it surfaces on the authenticated
+  dashboards (not covered by the public-page spec).
+
+### Standards note
+WCAG 2.1 AA is the operative bar for both **Section 508** (US school procurement)
+and the **European Accessibility Act** (EU consumer SaaS, in force since June 2025),
+so this audit + the axe gate cover both — pending the manual screen-reader pass.

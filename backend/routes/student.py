@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, UploadFile, File, Form
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -258,18 +258,82 @@ async def list_captures(
     return result.scalars().all()
 
 
-@router.get("/captures/{capture_id}/stream")
-async def stream_capture(
+@router.post("/captures/{capture_id}/media-token")
+async def mint_capture_media_token(
     capture_id: UUID,
-    current_user: User = Depends(get_current_user_flexible),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Stream the raw file for an audio/video capture (e.g. for <audio> src)."""
-    from fastapi.responses import FileResponse
+    """
+    Mint a short-lived (5 min), single-purpose token for streaming ONE capture.
+
+    The frontend calls this with its Authorization header, then puts the
+    returned token in the <audio>/<img> src as ?mt=<token>. This replaces
+    putting the raw JWT in the query string — a media token can't be replayed
+    as a session, expires in minutes, and is scoped to one capture + one user.
+    """
+    from services.signed_url import SignedURL
+
     result = await db.execute(
         select(StudentCapture).where(
             StudentCapture.id == capture_id,
             StudentCapture.student_id == current_user.id,
+        )
+    )
+    if result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Capture not found")
+
+    token = SignedURL.generate(
+        purpose="media_access",
+        payload={"capture_id": str(capture_id), "user_id": str(current_user.id)},
+    )
+    return {"media_token": token, "stream_url": f"/api/v1/student/captures/{capture_id}/stream?mt={token}"}
+
+
+@router.get("/captures/{capture_id}/stream")
+async def stream_capture(
+    capture_id: UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    mt: Optional[str] = Query(default=None, description="Short-lived signed media token"),
+):
+    """
+    Stream the raw file for an audio/video capture (e.g. for <audio> src).
+
+    Auth (no raw JWT in the query string):
+      1. ?mt=<signed media token> — preferred for browser <audio>/<img> tags
+         (mint one via POST /captures/{id}/media-token).
+      2. Authorization: Bearer <jwt> — for direct/API access.
+    """
+    from fastapi.responses import FileResponse
+    from services.signed_url import SignedURL, SignedURLError
+
+    user_id = None
+
+    # 1. Signed media token
+    if mt:
+        try:
+            data = await SignedURL.validate(mt, purpose="media_access")
+            if data.get("capture_id") != str(capture_id):
+                raise HTTPException(status_code=403, detail="Token not valid for this capture")
+            user_id = data.get("user_id")
+        except SignedURLError:
+            raise HTTPException(status_code=401, detail="Invalid or expired media token")
+    else:
+        # 2. Authorization: Bearer <jwt>
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            from core.dependencies import get_user_from_token_str
+            user = await get_user_from_token_str(auth_header.split(" ", 1)[1], db)
+            user_id = str(user.id)
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    result = await db.execute(
+        select(StudentCapture).where(
+            StudentCapture.id == capture_id,
+            StudentCapture.student_id == user_id,
         )
     )
     capture = result.scalar_one_or_none()

@@ -25,7 +25,31 @@ try:
     from slowapi import Limiter, _rate_limit_exceeded_handler
     from slowapi.util import get_remote_address
     from slowapi.errors import RateLimitExceeded
-    limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
+
+    def _client_ip(request):
+        """Rate-limit key that works behind Cloudflare Tunnel / reverse proxies.
+
+        Behind cloudflared every request reaches uvicorn from the tunnel's
+        local IP, so keying on get_remote_address alone puts ALL users in one
+        shared bucket (one noisy user rate-limits everyone) and makes
+        per-attacker throttling of /auth/login impossible.
+
+        Preference order:
+          1. CF-Connecting-IP — set by Cloudflare, not spoofable through CF
+          2. X-Forwarded-For (first hop) — for other reverse proxies
+          3. socket peer address — direct connections / dev
+        NOTE: only trust these headers when the app is actually behind the
+        proxy that sets them (it is, per the Cloudflare Tunnel deployment).
+        """
+        cf_ip = request.headers.get("CF-Connecting-IP")
+        if cf_ip:
+            return cf_ip.strip()
+        xff = request.headers.get("X-Forwarded-For")
+        if xff:
+            return xff.split(",")[0].strip()
+        return get_remote_address(request)
+
+    limiter = Limiter(key_func=_client_ip, default_limits=["200/minute"])
     RATE_LIMIT_ENABLED = True
 except ImportError:
     limiter = None
@@ -410,6 +434,12 @@ except Exception as e:
     print(f"Warning: could not register privacy_router: {e}")
 
 try:
+    from routes.dpia import router as dpia_router
+    app.include_router(dpia_router, prefix="/api/v1")             # router prefix="/privacy/dpia"
+except Exception as e:
+    print(f"Warning: could not register dpia_router: {e}")
+
+try:
     from routes.privacy_locations import router as privacy_locations_router
     app.include_router(privacy_locations_router, prefix="/api/v1")
 except Exception as e:
@@ -471,11 +501,11 @@ try:
 except Exception as e:
     print(f"Warning: could not register paddle_webhook_router: {e}")
 
-try:
-    from routes.webhooks import router as webhooks_router
-    app.include_router(webhooks_router)                           # router prefix="/webhooks"
-except Exception as e:
-    print(f"Warning: could not register webhooks_router: {e}")
+# NOTE: routes/webhooks.py also defined POST /webhooks/paddle but was DEAD —
+# paddle_webhook.py registers the same path first and wins. The duplicate has
+# been removed to avoid a maintenance footgun (fixing the dead handler and not
+# the live one). If you re-add webhook routes, ensure they don't collide with
+# paddle_webhook.py's paths.
 
 # ── Export & Geo ──────────────────────────────────────────────────────────────
 try:

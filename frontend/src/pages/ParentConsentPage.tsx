@@ -36,18 +36,21 @@ const ParentConsentPage: React.FC = () => {
           }),
         })
       } else if (consent) {
-        await fetch('/api/v1/privacy/consent', {
+        // The :token URL param is the single-use signed consent token emailed
+        // to the parent. Server validates + consumes it and derives the hash.
+        const res = await fetch('/api/v1/privacy/consent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            student_id_hash: token,
-            consent_type: 'parental',
+            consent_token: token,
             consent_version: '1.0',
             jurisdiction: 'COPPA',
           }),
         })
+        if (!res.ok) { setStatus('error'); return }
       } else {
-        await fetch(`/api/v1/privacy/consent/${token}`, { method: 'DELETE' })
+        // Decline: no destructive call. The account simply stays inactive
+        // (requires_parental_consent = TRUE) until a parent consents.
       }
       setStatus(consent ? 'consented' : 'declined')
     } catch {

@@ -122,7 +122,8 @@
       "privacy_protected": "Su información está protegida bajo estos marcos",
       "company_contact": "- \"Contacto\" - \"C\" - \"Client\" - \"Cliente\" - \"%s\" - \"%s\" - \"%s\" - \"$t{Custo\u001b[9D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" -\u001b[1D\u001b[K\n- \"$t{FaxNumber}\" - \"%s\" - \"$t{CompanyName}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"\u001b[1D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{PhoneNumber}\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\" - \"$t{Em\u001b[6D\u001b[K\n\"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"B\" - \"%s\" - \"$t{PhoneNumber}\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \"$t{FaxNumber}\" - \"A\" - \"%s\u001b[3D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" \u001b[K\n- \"%s\" - \"%s\" - \"%s\" - \"%s\"- \"%s\" - \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{F\u001b[5D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\" - \"$t{PhoneNumber}\"- \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%\u001b[2D\u001b[K\n\"%s\" - \"%s\" - \"%s\" - \"%s\"- \"$t{EmailAddress}\" - \"I\" - \"%s\" - \"$t{FaxNumber}\u001b[14D\u001b[K\n\"$t{FaxNumber}\" - \"C\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"%s\" - \"$\u001b[2D\u001b[K\n\"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\" - \u001b[K\n\"$t{FaxNumber}\" - \"A\" - \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \u001b[K\n\"I\" - \"%s\"- \"$t{FaxNumber}\" - \"C\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"\u001b[4D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{CustomerName}\" - \"%s\"- \"$t{PhoneNum\u001b[12D\u001b[K\n\"$t{PhoneNumber}\" - \"$t{EmailAddress}\" - \"%s\"- \"$t{FaxNumber}\" - \"A\"- \"%s\"-\u001b[5D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\"- \"%s\u001b[3D\u001b[K\n\"%s\"- \"%s\"- \"%s\"- \"%s\"- \"$t{EmailAddress}\" - \"I\"- \"%s\"- \"$t{FaxNumber}\" - \"\u001b[1D\u001b[K\n\"C\"",
       "product_privacy_engine": "Ingeniería de Privacidad",
-      "resources_privacy": "Ingeniería de Privacidad"
+      "resources_privacy": "Ingeniería de Privacidad",
+      "legal_do_not_sell": "No venda o comparta mi información personalizada (DNI)"
     },
     "johndoe": "juandoe",
     "landing": {
@@ -946,7 +947,9 @@
       "jurisdictions_enforced": "jurisdicciones aplicadas",
       "last_updated": "Última actualización",
       "cta_explore_docs": "Explorar documentos de privacidad",
-      "loading_status": "Cargando el estado de cumplimiento..."
+      "loading_status": "Cargando el estado de cumplimiento...",
+      "coppa_family_title": "Para las familias de niños menores de 13 años",
+      "do_not_sell_link": "No venda o comparta mi información personalizada (PI)"
     },
     "loading_your_projects": "Cargando tus proyectos...",
     "retry": "Rever",
@@ -1263,7 +1266,7 @@
     "teaching_preferences": "Preferencias de enseñanza",
     "default_assessment_rubric": "Rúbrica de evaluación predeterminada",
     "blooms_taxonomy": "Taxonomía de Bloom",
-    "marzano": "Marzano",
+    "marzano": "['Marzameto']",
     "depth_of_knowledge": "Profundidad del conocimiento",
     "solo": "SÓLO",
     "autosave_activity_drafts": "Guardar automáticamente borradores de actividades",
@@ -1643,7 +1646,7 @@
       "changes_to_this_policy": "Cambios en esta política",
       "we_may_update_this_policy_as_the_service": "Podemos actualizar esta política según evolucione el Servicio. Las modificaciones importantes se comunicarán a través de una notificación en la aplicación.",
       "contact": "Contacto",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "Volver a la casa ←",
       "auth_token_desc": "Guarda tu JWT de sesión. Expira después de 24 horas.",
       "auth_user_desc": "Guarda tu perfil básico de usuario (nombre, rol). Se borra al salir.",
       "i18nextlng_desc": "Recuerda tu preferencia de idioma.",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Nivel de educación",
       "subject": "Asignatura",
-      "enrolled_students": "Alumnos matriculados"
+      "enrolled_students": "Alumnos matriculados",
+      "larger_classrooms_are_a_paid_feature_upg": "['Los aulas más grandes son una característica a pagar. Actualiza para matricular a más estudiantes.']"
     },
     "pages_admin_platformadminpage": {
       "tier": "Nivel",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Marcos de cumplimiento",
-      "toggle_which_privacy_frameworks_are_acti": "Activar y desactivar los marcos legales de privacidad aplicables a su jurisdicción. Pre-configurado en la primera sesión - active los que sean necesarios."
+      "toggle_which_privacy_frameworks_are_acti": "Activar y desactivar los marcos legales de privacidad aplicables a su jurisdicción. Pre-configurado en la primera sesión - active los que sean necesarios.",
+      "no_active_jurisdictions_found_use_the_fr": "No se encontraron jurisdicciones activas. Utilice los interruptores del marco superior para activar FERPA, COPPA, GDPR o CCPA — las reglas predeterminadas se crearán automáticamente."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Importar su propia clave - actualización requerida",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "Instancia Ollama",
       "must_be_reachable_from_the_peripateticwa": "Debe estar disponible desde el servidor backend de Peripateticware.",
       "task_routing": "Tarea de encaminamiento",
-      "which_provider_handles_each_ai_task_for_": "¿Qué proveedor se ocupa de cada tarea de IA para su organización?"
+      "which_provider_handles_each_ai_task_for_": "¿Qué proveedor se ocupa de cada tarea de IA para su organización?",
+      "byok_paid_note": "Trae tu propia clave es una característica pagada. Actualiza para configurar proveedores de inteligencia artificial personalizados para tu escuela o distrito."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "El documento fue escrito en un momento en el que aún no había llegado la tecnología 3G, el iPhone estaba a meses de lanzarse y \"app\" todavía no era una palabra común. Sus predicciones -que los teléfonos celulares se convertirían en dispositivos de clase única para el aula, que las redes móviles llegarían a regiones remotas y que el GPS sería lo suficientemente barato como para ponerlo en la bolsa de todos los estudiantes- se cumplieron. Los productos que el documento solicitaba no existieron.",
@@ -2177,6 +2183,13 @@
     "standardsImportPage": {
       "title": "Importar estándares de aprendizaje",
       "description": "Cargue un archivo PDF o CSV de los estándares de aprendizaje para su disciplina: Common Core, NGSS, estándares estatales o su propio marco personalizado. Una vez guardado, puede etiquetar las actividades con estos estándares y rastrear la cobertura del alumno."
+    },
+    "pages_donotsellpage": {
+      "under_the_california_consumer_privacy_ac": "Según la Ley Californiana de Protección de la Privacidad del Consumidor (CCPA) y la Ley Californiana de Derechos de Privacidad (CPRA), los residentes de California tienen derecho a optar por el veto de la venta o compartición de su información personal. Peripateticware no vende datos personales, pero puedes presentar esta solicitud para formalizar tu preferencia.",
+      "email_address": "Dirección de correo electrónico",
+      "do_not_sell_or_share_my_personal_informa": "No venda ni comparta mi información personal",
+      "preference_recorded": "✓ Preferencia grabada",
+      "your_optout_preference_has_been_recorded": "Hemos registrado tu preferencia de opt-out. No vendemos ni compartimos tus datos personales."
     }
   },
   "STUDENT": {},

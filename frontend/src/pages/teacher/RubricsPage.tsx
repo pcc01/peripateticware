@@ -111,4 +111,15 @@ const RubricsPage: React.FC = () => {
                 <button onClick={() => handleDelete(r.id)}
                   className="px-3 py-1 rounded text-sm border"
                   style={{ borderColor: 'var(--error)', color: 'var(--error)' }}>
-                  {t('delete', 'Del
+                  {t('delete', 'Delete')}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+export default RubricsPage;

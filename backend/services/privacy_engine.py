@@ -263,31 +263,68 @@ async def _load_rules_from_db(db: AsyncSession) -> Dict[str, JurisdictionConfig]
 
 
 def _deserialise_jurisdiction(jurisdiction: str, rule_def: Dict[str, Any]) -> JurisdictionConfig:
-    """Convert a rule_definition JSONB dict to a JurisdictionConfig dataclass."""
-    framework_str = rule_def.get("framework", "custom").lower()
-    try:
-        framework = PrivacyFramework(framework_str)
-    except ValueError:
-        framework = PrivacyFramework.CUSTOM
+    """Convert a rule_definition JSONB dict to a JurisdictionConfig dataclass.
 
-    return JurisdictionConfig(
-        jurisdiction_id=jurisdiction,
-        jurisdiction_name=rule_def.get("jurisdiction_name", jurisdiction),
-        framework=framework,
-        country_code=rule_def.get("country_code", "XX"),
-        subdivision_code=rule_def.get("subdivision_code"),
-        max_retention_days=rule_def.get("max_retention_days", 365),
-        encryption_required=rule_def.get("encryption_required", False),
-        encryption_algorithm=rule_def.get("encryption_algorithm", "AES-256"),
-        student_data_sharing_allowed=rule_def.get("student_data_sharing_allowed", False),
-        student_monitoring_allowed=rule_def.get("student_monitoring_allowed", False),
-        student_profiling_allowed=rule_def.get("student_profiling_allowed", False),
-        student_targeting_allowed=rule_def.get("student_targeting_allowed", False),
-        requires_privacy_impact_assessment=rule_def.get("requires_privacy_impact_assessment", False),
-        requires_data_protection_officer=rule_def.get("requires_data_protection_officer", False),
-        version=rule_def.get("version", "1.0"),
-        metadata=rule_def.get("metadata", {}),
-    )
+    Runs the dict through the canonical PrivacyRule schema first, so both the
+    rich file format and the sparse DB-seed format are normalised the same way
+    (case-insensitive framework, retention derived from data_retention when
+    present, defaults filled). Falls back to raw .get() if the schema import
+    isn't available for any reason — never crash a rule load.
+    """
+    try:
+        from schemas.privacy_rule import PrivacyRule
+        rd = dict(rule_def)
+        rd.setdefault("jurisdiction_id", jurisdiction)
+        rd.setdefault("jurisdiction_name", rule_def.get("jurisdiction_name", jurisdiction))
+        rd.setdefault("country_code", rule_def.get("country_code", "XX"))
+        rule = PrivacyRule.model_validate(rd)
+        try:
+            framework = PrivacyFramework(rule.framework)
+        except ValueError:
+            framework = PrivacyFramework.CUSTOM
+        return JurisdictionConfig(
+            jurisdiction_id=jurisdiction,
+            jurisdiction_name=rule.jurisdiction_name,
+            framework=framework,
+            country_code=rule.country_code,
+            subdivision_code=rule.subdivision_code,
+            max_retention_days=rule.effective_max_retention_days(),
+            encryption_required=rule.encryption_required,
+            encryption_algorithm=rule.encryption_algorithm,
+            student_data_sharing_allowed=rule.student_data_sharing_allowed,
+            student_monitoring_allowed=rule.student_monitoring_allowed,
+            student_profiling_allowed=rule.student_profiling_allowed,
+            student_targeting_allowed=rule.student_targeting_allowed,
+            requires_privacy_impact_assessment=rule.requires_privacy_impact_assessment,
+            requires_data_protection_officer=rule.requires_data_protection_officer,
+            version=rule.version,
+            metadata={**rule.metadata, "_rule_definition": rule_def},
+        )
+    except Exception as exc:
+        logger.warning(f"Canonical-schema parse failed for {jurisdiction}; using raw fallback: {exc}")
+        framework_str = str(rule_def.get("framework", "custom")).lower()
+        try:
+            framework = PrivacyFramework(framework_str)
+        except ValueError:
+            framework = PrivacyFramework.CUSTOM
+        return JurisdictionConfig(
+            jurisdiction_id=jurisdiction,
+            jurisdiction_name=rule_def.get("jurisdiction_name", jurisdiction),
+            framework=framework,
+            country_code=rule_def.get("country_code", "XX"),
+            subdivision_code=rule_def.get("subdivision_code"),
+            max_retention_days=rule_def.get("max_retention_days", 365),
+            encryption_required=rule_def.get("encryption_required", False),
+            encryption_algorithm=rule_def.get("encryption_algorithm", "AES-256"),
+            student_data_sharing_allowed=rule_def.get("student_data_sharing_allowed", False),
+            student_monitoring_allowed=rule_def.get("student_monitoring_allowed", False),
+            student_profiling_allowed=rule_def.get("student_profiling_allowed", False),
+            student_targeting_allowed=rule_def.get("student_targeting_allowed", False),
+            requires_privacy_impact_assessment=rule_def.get("requires_privacy_impact_assessment", False),
+            requires_data_protection_officer=rule_def.get("requires_data_protection_officer", False),
+            version=rule_def.get("version", "1.0"),
+            metadata=rule_def.get("metadata", {}),
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -341,6 +378,41 @@ async def invalidate_rules_cache() -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Jurisdiction ID aliasing
+# ─────────────────────────────────────────────────────────────────────────────
+# Three ID namespaces exist historically and MUST resolve to the same rules:
+#   1. compliance_rules.jurisdiction seed keys:  "US", "US-COPPA", "US-CA", "EU"
+#   2. config-file / privacy_seeder org IDs:     "ferpa_us", "coppa_us",
+#      "ccpa_california", "gdpr_eu", "pipeda_canada", ...
+#   3. legacy engine IDs:                        "US_FEDERAL", "US_FEDERAL_COPPA"
+# When adding a new jurisdiction, use ONE id everywhere (recommended: the
+# config-file style, e.g. "pdpa_singapore") — but if an alternate spelling
+# already exists in data, add it here so lookups never silently miss.
+JURISDICTION_ALIASES: Dict[str, str] = {
+    "ferpa_us":          "US",
+    "US_FEDERAL":        "US",
+    "coppa_us":          "US-COPPA",
+    "US_FEDERAL_COPPA":  "US-COPPA",
+    "ccpa_california":   "US-CA",
+    "gdpr_eu":           "EU",
+}
+
+
+def resolve_jurisdiction_id(jid: str, configs: Dict[str, JurisdictionConfig]) -> Optional[str]:
+    """Return the key under which `jid` exists in `configs`, honouring aliases."""
+    if jid in configs:
+        return jid
+    alias = JURISDICTION_ALIASES.get(jid)
+    if alias and alias in configs:
+        return alias
+    # Reverse direction: caller passed a canonical key, configs use the alias
+    for k, v in JURISDICTION_ALIASES.items():
+        if v == jid and k in configs:
+            return k
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Core service functions
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -352,25 +424,44 @@ async def identify_jurisdiction(
     """
     Determine which jurisdiction(s) apply to a student.
 
-    Strategy (simple, expandable):
-      1. Always include US_FEDERAL_FERPA (all US educational institutions).
-      2. Add US_FEDERAL_COPPA if student's age < 13 (age stored on user record).
-      3. Look up school's district_config.jurisdiction_ids from DB if available.
-      4. Default to [US_FEDERAL_FERPA] when no further info.
-
-    Returns a list of jurisdiction IDs matching keys in compliance_rules.jurisdiction.
+    Strategy:
+      1. Use the student's organization's privacy_jurisdiction_ids (seeded at
+         signup by privacy_seeder from country/subdivision/under-13 answers).
+      2. Add coppa_us if the student's age < 13 and it isn't already present.
+      3. Fall back to ["US_FEDERAL"] (FERPA baseline) only when no org data
+         exists — previously this fallback was ALL the function did, so a
+         GDPR-territory org still got US-only rules.
     """
     from models.user import User  # local import
 
-    applicable: List[str] = ["US_FEDERAL"]  # FERPA is always baseline
+    applicable: List[str] = []
+    user = None
 
     try:
         result = await db.execute(select(User).where(User.id == student_id))
         user = result.scalar_one_or_none()
-        if user and hasattr(user, "age") and user.age is not None and user.age < 13:
-            applicable.append("US_FEDERAL_COPPA")
+
+        if user is not None and getattr(user, "org_id", None):
+            from sqlalchemy import text as _text
+            row = (await db.execute(
+                _text("SELECT privacy_jurisdiction_ids FROM organizations WHERE id = :oid"),
+                {"oid": str(user.org_id)},
+            )).scalar_one_or_none()
+            if row:
+                ids = row if isinstance(row, list) else json.loads(row)
+                applicable = [str(j) for j in ids if j]
     except Exception as exc:
-        logger.warning(f"identify_jurisdiction: could not fetch user age: {exc}")
+        logger.warning(f"identify_jurisdiction: org jurisdiction lookup failed: {exc}")
+
+    if not applicable:
+        applicable = ["US_FEDERAL"]  # conservative FERPA baseline
+
+    try:
+        if user is not None and getattr(user, "age", None) is not None and user.age < 13:
+            if not any(j in ("coppa_us", "US_FEDERAL_COPPA", "US-COPPA") for j in applicable):
+                applicable.append("coppa_us")
+    except Exception as exc:
+        logger.warning(f"identify_jurisdiction: could not evaluate user age: {exc}")
 
     return applicable
 
@@ -389,7 +480,8 @@ async def merge_jurisdictions(
     """
     configs = await _get_cached_rules(db)
 
-    relevant = [configs[jid] for jid in jurisdiction_ids if jid in configs]
+    resolved = [resolve_jurisdiction_id(jid, configs) for jid in jurisdiction_ids]
+    relevant = [configs[r] for r in resolved if r is not None]
 
     if not relevant:
         # Fall back to a safe default
@@ -432,37 +524,72 @@ async def enforce_on_submission(
     """
     Main enforcement gate called before student evidence is written.
 
-    Phase 2 decision: LOG-ONLY mode. Always returns ALLOWED so no submissions
-    are blocked. Enforcement signals are recorded for audit purposes.
-    Upgrade to blocking by changing the final return to BLOCKED when result.status
-    would have been BLOCKED.
+    Behaviour is controlled by settings.ENFORCEMENT_MODE:
+      "log"   — evaluate rules, record signals, ALWAYS return ALLOWED (default)
+      "warn"  — return status="WARNING" with reasons, but still allow the write
+      "block" — return status="BLOCKED" with blocking_reason; caller MUST refuse
+
+    If jurisdiction_id is not supplied, the applicable jurisdictions are derived
+    from the student's org via identify_jurisdiction() + strictest-wins merge —
+    so callers no longer have to know the jurisdiction to get enforcement.
     """
+    mode = str(getattr(settings, "ENFORCEMENT_MODE", "log")).lower()
+
     rules_applied: List[Dict[str, str]] = []
     warnings: List[str] = []
+    blocking_reasons: List[str] = []
     encryption_algo = "AES-256"
     retention_days = 365
+    consent_required = False
 
-    if db and jurisdiction_id:
+    config: Optional[JurisdictionConfig] = None
+    if db:
         try:
-            configs = await _get_cached_rules(db)
-            config = configs.get(jurisdiction_id)
-            if config:
-                encryption_algo = config.encryption_algorithm
-                retention_days = config.max_retention_days
-                rules_applied.append({"jurisdiction": jurisdiction_id, "version": config.version})
-
-                if not config.student_data_sharing_allowed and data_type in ("student_evidence", "learning_session"):
-                    warnings.append(f"Jurisdiction {jurisdiction_id} restricts student data sharing")
+            if jurisdiction_id:
+                configs = await _get_cached_rules(db)
+                _rk = resolve_jurisdiction_id(jurisdiction_id, configs)
+                config = configs.get(_rk) if _rk else None
+                if config:
+                    rules_applied.append({"jurisdiction": jurisdiction_id, "version": config.version})
+            else:
+                # Derive from the student's org and merge strictest-wins.
+                jids = await identify_jurisdiction(student_id, None, db)
+                config = await merge_jurisdictions(jids, db)
+                rules_applied.append({"jurisdiction": ",".join(jids), "version": config.version})
         except Exception as exc:
             logger.warning(f"enforce_on_submission: rule lookup failed: {exc}")
 
-    # Always ALLOWED in log-only mode (Phase 2 intent)
+    if config:
+        encryption_algo = config.encryption_algorithm
+        retention_days = config.max_retention_days
+        if not config.student_data_sharing_allowed and data_type in ("student_evidence", "learning_session"):
+            warnings.append(f"Jurisdiction restricts student data sharing for {data_type}")
+        # Under strict frameworks, location/biometric evidence needs consent.
+        sensitive = {"gps", "location", "audio", "video", "photo", "biometric"}
+        if evidence_types and any(e.lower() in sensitive for e in evidence_types):
+            if not config.student_monitoring_allowed:
+                consent_required = True
+                blocking_reasons.append(
+                    "Sensitive evidence (location/audio/video/biometric) requires "
+                    "consent under the applicable jurisdiction"
+                )
+
+    # Decide status by mode.
+    if mode == "block" and blocking_reasons:
+        status_val = "BLOCKED"
+    elif blocking_reasons or warnings:
+        status_val = "WARNING" if mode in ("warn", "block") else "ALLOWED"
+    else:
+        status_val = "ALLOWED"
+
     return EnforcementResult(
-        status="ALLOWED",
+        status=status_val,
         encryption_algo=encryption_algo,
         retention_days=retention_days,
+        consent_required=consent_required,
+        blocking_reason="; ".join(blocking_reasons) if blocking_reasons else None,
         rules_applied=rules_applied,
-        warnings=warnings,
+        warnings=warnings + blocking_reasons,
     )
 
 
@@ -695,16 +822,52 @@ class PrivacyComplianceChecker:
         issues: List[str] = []
         warnings: List[str] = []
 
-        # Age-based flags
-        if student_age < 13 and config.framework == PrivacyFramework.COPPA:
-            collected = activity_data.get("data_collection", [])
-            if any(c.upper() in ("BEHAVIORAL", "LOCATION") for c in collected):
-                issues.append("COPPA: Cannot collect behavioral/location data from under-13 students")
+        collected_raw = activity_data.get("data_collection", []) or []
+        collected = {str(c).lower() for c in collected_raw}
 
-        if student_age < 16 and config.framework == PrivacyFramework.GDPR:
-            collected = activity_data.get("data_collection", [])
-            if "SPECIAL" in [c.upper() for c in collected]:
-                issues.append("GDPR: Parental consent required for special-category data under 16")
+        # ── DATA-DRIVEN checks (rules are DATA, not code) ─────────────────────
+        # The original hardcoded COPPA/GDPR branches are replaced by reading the
+        # rule_definition stashed in config.metadata["_rule_definition"] by
+        # _deserialise_jurisdiction. If the rich definition isn't present we fall
+        # back to the two legacy checks so behaviour never regresses.
+        rule_def = (config.metadata or {}).get("_rule_definition")
+        if rule_def:
+            # 1. prohibited_data_collection is keyed by age-category name; find
+            #    the category matching this student's age and flag any overlap.
+            age_cats = rule_def.get("student_age_categories", {}) or {}
+            prohibited = rule_def.get("prohibited_data_collection", {}) or {}
+            for cat_name, bounds in age_cats.items():
+                try:
+                    lo, hi = int(bounds.get("min_age", 0)), int(bounds.get("max_age", 150))
+                except (AttributeError, TypeError, ValueError):
+                    continue
+                if lo <= student_age <= hi:
+                    banned = {str(x).lower() for x in prohibited.get(cat_name, [])}
+                    # Match loosely: any collected category that is a substring of,
+                    # or contains, a banned token (e.g. "location" vs "exact_location_continuous").
+                    for c in collected:
+                        if any(c in b or b in c for b in banned):
+                            sev = "error"
+                            checks = rule_def.get("compliance_checks", {}) or {}
+                            msg = f"{config.framework.value.upper()}: '{c}' not permitted for age {student_age} ({cat_name})"
+                            (issues if sev == "error" else warnings).append(msg)
+            # 2. special_restrictions with allowed=False → warn/deny.
+            for name, spec in (rule_def.get("special_restrictions", {}) or {}).items():
+                if isinstance(spec, dict) and spec.get("allowed") is False:
+                    key = name.lower().replace("_", "")
+                    if any(key in c.replace("_", "") or c.replace("_", "") in key for c in collected):
+                        issues.append(
+                            f"{config.framework.value.upper()}: {name.replace('_',' ')} restricted "
+                            f"({spec.get('exception') or 'no exception'})"
+                        )
+        else:
+            # Legacy fallback (no rich definition available).
+            if student_age < 13 and config.framework == PrivacyFramework.COPPA:
+                if collected & {"behavioral", "location"}:
+                    issues.append("COPPA: Cannot collect behavioral/location data from under-13 students")
+            if student_age < 16 and config.framework == PrivacyFramework.GDPR:
+                if "special" in collected:
+                    issues.append("GDPR: Parental consent required for special-category data under 16")
 
         return len(issues) == 0, issues, warnings
 

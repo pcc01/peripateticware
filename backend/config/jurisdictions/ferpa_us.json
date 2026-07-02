@@ -1,5 +1,6 @@
 {
   "jurisdiction_id": "ferpa_us",
+  "jurisdiction_name": "United States - Family Educational Rights and Privacy Act (FERPA)",
   "name": "FERPA",
   "full_name": "Family Educational Rights and Privacy Act",
   "country_code": "US",
@@ -9,6 +10,9 @@
     "district"
   ],
   "framework": "ferpa",
+  "max_retention_days": 365,
+  "encryption_required": true,
+  "student_data_sharing_allowed": false,
   "description": "FERPA protects the privacy of student education records at institutions receiving federal funding. Grants parents/eligible students the right to access and correct records.",
   "key_requirements": [
     "Annual notification of FERPA rights",

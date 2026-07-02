@@ -637,7 +637,7 @@ export const PeerProjectResponseView: React.FC<PeerProjectResponseViewProps> = (
             {project.example_captures.map((ex) =>
           <div key={ex.id} className="bg-gray-50 rounded-lg p-2 text-sm text-gray-600">
                 {ex.capture?.capture_type === 'audio' && ex.capture.id ?
-            <AudioPlayer src={audioApi.streamUrl(ex.capture.id)}
+            <AudioPlayer captureId={ex.capture.id}
             durationSeconds={ex.capture.duration_seconds}
             label={ex.caption || 'Example audio'} /> :
 
@@ -676,7 +676,7 @@ export const PeerProjectResponseView: React.FC<PeerProjectResponseViewProps> = (
               {response.captures.map((cap) =>
           <div key={cap.id} className="bg-gray-50 rounded-lg p-2 text-sm text-gray-600">
                   {cap.capture_type === 'audio' ?
-            <AudioPlayer src={audioApi.streamUrl(cap.id)}
+            <AudioPlayer captureId={cap.id}
             durationSeconds={cap.duration_seconds}
             label="Your audio" /> :
 

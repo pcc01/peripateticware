@@ -10,7 +10,6 @@ Wraps the raw consent_records table with business logic:
   - Withdraw consent (soft-delete via is_active=False)
   - Get consent history for a user
 """
-import hashlib
 import logging
 from datetime import datetime
 from typing import List, Optional
@@ -19,13 +18,23 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.compliance import ConsentRecord
+from services.privacy_engine import hash_student_id
 
 logger = logging.getLogger(__name__)
 
 
-def _hash_id(raw_id: str, salt: str = "") -> str:
-    """One-way hash of a user/student ID for privacy-safe storage."""
-    return hashlib.sha256(f"{salt}{raw_id}".encode()).hexdigest()
+def _hash_id(raw_id: str) -> str:
+    """One-way hash of a user/student ID for privacy-safe storage.
+
+    Delegates to privacy_engine.hash_student_id (SHA-256 + AUDIT_HASH_SALT) so
+    every code path (ConsentManager, routes/privacy.py, routes/dsr.py) produces
+    the SAME hash for the same user. Previously this was an UNSALTED hash,
+    which (a) meant consent records written here were invisible to
+    routes/privacy.py lookups and vice versa, and (b) let anyone who knew a
+    student's UUID derive the hash and query the public
+    GET /privacy/consent/{student_hash} endpoint.
+    """
+    return hash_student_id(raw_id)
 
 
 class ConsentManager:

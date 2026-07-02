@@ -705,3 +705,5 @@ export function useParent() {
       axiosInstance.get(`/parent/children/${childId}/digest`).then((r) => r.data),
     getChildCompetencies: (childId: string) =>
       axiosInstance.get(`/parent/children/${childId}/competencies`).then((r) => r.data),
+  }
+}

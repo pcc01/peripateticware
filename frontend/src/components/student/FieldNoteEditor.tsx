@@ -13,7 +13,38 @@ import { Camera, FileText, Loader2, MapPin, Mic, Send, Share2, X } from 'lucide-
 import { fieldNoteApi } from '../../services/phase7Api';
 import { apiClient } from '../../config/api';
 import { AudioCapture } from './AudioCapture';
+import { useSignedCaptureUrl } from '../../hooks/useSignedCaptureUrl';
 import type { FieldNote, FieldNoteCreate, AudioCaptureResult } from '../../types/phase7';
+
+/**
+ * Renders a capture thumbnail (photo/video) using a short-lived signed media
+ * URL instead of a JWT-in-query-string. Includes descriptive alt text (WCAG 1.1.1).
+ */
+const CaptureThumb: React.FC<{ captureId: string; kind: 'photo' | 'video' }> = ({ captureId, kind }) => {
+  const src = useSignedCaptureUrl(captureId);
+  if (!src) {
+    return <div className="w-full h-24 bg-gray-100 animate-pulse" aria-hidden="true" />;
+  }
+  if (kind === 'photo') {
+    return (
+      <img
+        src={src}
+        alt="Field note photo capture"
+        className="w-full h-24 object-cover"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+    );
+  }
+  return (
+    <video
+      src={src}
+      className="w-full h-24 object-cover"
+      controls={false}
+      muted
+      aria-label="Field note video capture"
+    />
+  );
+};
 
 interface FieldNoteEditorProps {
   noteId?: string; // Existing note; undefined = creating new
@@ -301,25 +332,9 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
               {note.captures.map((cap) => (
                 <div key={cap.id} className="relative bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
                   {cap.capture_type === 'photo' ? (
-                    <img
-                      src={`/api/v1/student/captures/${cap.id}/stream${(() => {
-                        const t = localStorage.getItem('auth_token');
-                        return t ? `?token=${encodeURIComponent(t)}` : '';
-                      })()}`}
-                      alt="capture"
-                      className="w-full h-24 object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
-                    />
+                    <CaptureThumb captureId={cap.id} kind="photo" />
                   ) : cap.capture_type === 'video' ? (
-                    <video
-                      src={`/api/v1/student/captures/${cap.id}/stream${(() => {
-                        const t = localStorage.getItem('auth_token');
-                        return t ? `?token=${encodeURIComponent(t)}` : '';
-                      })()}`}
-                      className="w-full h-24 object-cover"
-                      controls={false}
-                      muted
-                    />
+                    <CaptureThumb captureId={cap.id} kind="video" />
                   ) : cap.capture_type === 'audio' ? (
                     <div className="flex flex-col items-center justify-center h-16 gap-1">
                       <Mic className="w-6 h-6 text-blue-500" />

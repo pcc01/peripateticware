@@ -183,7 +183,8 @@
       "privacy_protected": "您的数据在这些框架下受到保护",
       "company_contact": "联系",
       "product_privacy_engine": "隐私引擎",
-      "resources_privacy": "隐私引擎"
+      "resources_privacy": "隐私引擎",
+      "legal_do_not_sell": "不卖或共享我的信息"
     },
     "johndoe": "约翰·道尔",
     "digital_journal": "数字日记",
@@ -303,7 +304,7 @@
       "objectives": "目标：",
       "edit": "编辑"
     },
-    "m": "m",
+    "m": "米",
     "materials": "材料：",
     "view": "查看",
     "delete": "删除",
@@ -998,7 +999,7 @@
     "think_about": "想想…",
     "sketch": "画图",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticware"
+      "peripateticware": "漫游软件"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "流动软件",
@@ -1324,10 +1325,10 @@
     "enable_sound_effects": "启用音效",
     "email_adminexamplecom": "电子邮件：admin@example.com",
     "password_last_changed_30_days_ago": "密码最后更改：30天前",
-    "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
+    "postgresql_16_pgvector": "PostgreSQL 16 加 pgvector",
     "comingsoonpage": {
       "this_page_is_coming_soon": "这个页面很快就会到来。",
-      "go_back": "← Go Back"
+      "go_back": "← 返回"
     },
     "oops_the_page_youre_looking_for_doesnt_e": "抱歉！您所查找的页面不存在或已被移动。",
     "stay_connected_with_your_childs_outdoor_": "与孩子的野外学习旅程保持联系",
@@ -1569,7 +1570,7 @@
     "select_child_prompt": "选择上方的孩子以查看他们的进展。",
     "pages_parentdashboard": {
       "what_youll_see_after_linking": "链接后您将看到以下内容：",
-      "parental_consent_status": "Parental Consent Status"
+      "parental_consent_status": "父母同意状态"
     },
     "create_first_note": "创建您的第一条笔记",
     "response_in_progress": "正在处理响应。添加捕获然后提交。",
@@ -1661,7 +1662,7 @@
       "changes_to_this_policy": "政策更新",
       "we_may_update_this_policy_as_the_service": "我们可能会根据服务的发展更新此政策。重要更改将通过内部应用通知进行通知。",
       "contact": "联系方式",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "← 返回主页",
       "auth_token_desc": "保存您的会话 JWT,过期后24小时。 ",
       "auth_user_desc": "保存您的基本用户配置(名称、角色)，在注销后清除。 ",
       "i18nextlng_desc": "记住您选择的语言偏好。 ",
@@ -1706,7 +1707,9 @@
       "cta_section_title": "调用区段标题",
       "cta_section_subtitle": "调用区段副标题",
       "cta_section_desc": "translations",
-      "loading_status": "加载合规状态…”,\n    “← 回到主页”,\n    "
+      "loading_status": "加载合规状态…”,\n    “← 回到主页”,\n    ",
+      "coppa_family_title": "为儿童13岁以下家庭成员",
+      "do_not_sell_link": "不卖或共享我的个人信息"
     },
     "capture_photosvideo": "CTA 部分描述",
     "take_photos_record_videos_and_capture_au": "📸 捕捉照片/视频",
@@ -1734,17 +1737,17 @@
       "7_limitation_of_liability": "7. 责任限制",
       "the_service_is_provided_ldquoas_isrdquo_": "服务以“按原样提供”。Peripateticware不承担因使用服务而产生的任何间接、偶发或后果性损失。",
       "8_contact": "8. 联系方式",
-      "back_to_home": "",
-      "privacy_compliance_intro": "",
-      "privacy_policy_link": "",
-      "privacy_compliance_outro": "",
+      "back_to_home": "← 返回主页",
+      "privacy_compliance_intro": "Peripateticware 遵循 COPPA、GDPR、FERPA、CCPA、PIPEDA、LGPD 和 PDPA。学生数据永不出售或用于广告。请参阅",
+      "privacy_policy_link": "隐私政策",
+      "privacy_compliance_outro": "获取完整信息。",
       "questions_about_terms": "问题关于这些条款吗？"
     },
     "privacy_first_title": "🔒 保护先鹤",
     "privacy_first_desc": "从一开始就为K-12构建。符合主要隐私框架 — 不是一个后备计划。",
-    "ferpa_title": "FERPA",
+    "ferpa_title": "美国教育权利保护法（Family Educational Rights and Privacy Act）",
     "ferpa_desc": "美国法律保护的学生教育记录",
-    "coppa_title": "COPPA",
+    "coppa_title": "",
     "coppa_desc": "学生年龄为13岁以下的用户内置了父母同意流程。",
     "privacy_compliant": "隐私合规",
     "privacy_review_needed": "隐私审查需要",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "年级",
       "subject": "课程",
-      "enrolled_students": "注册学生"
+      "enrolled_students": "注册学生",
+      "larger_classrooms_are_a_paid_feature_upg": "['大型课堂是一个付费特色。升级以注册更多学生。']"
     },
     "pages_admin_platformadminpage": {
       "tier": "等级",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "合规框架",
-      "toggle_which_privacy_frameworks_are_acti": "切换哪些隐私框架正在被积极实施。首次启动时预设 — 根据您所在的法域启用适用的那些。"
+      "toggle_which_privacy_frameworks_are_acti": "切换哪些隐私框架正在被积极实施。首次启动时预设 — 根据您所在的法域启用适用的那些。",
+      "no_active_jurisdictions_found_use_the_fr": "未找到活动的法律领地。 请在上方框架切换中激活 FERPA、COPPA、GDPR 或 CCPA，默认规则将自动创建。"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "自带密钥 — 升级后可用",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "=> \"Ollama 实例\"",
       "must_be_reachable_from_the_peripateticwa": "必须能够访问Peripateticware后端服务器。\"\n\"Must be able to access the Peripateticware back-end server.\"\n\"必须能够访问Peripateticware后端服务器。\"\n\"Must be reachable from the Peripateticware backend server.",
       "task_routing": "-- \"任务路由\"\n\"Task Status\" -- \"任务状态\"\n\"Task Type\" -- \"任务类型\"\n\"Task Name\" -- \"任务名称\"\n\"Task Description\" -- \"任务描述\"\n\"Task Priority\" -- \"任务优先级\"\n\"Task Owner\" -- \"任务所有者\"\n\"Task Assignee\" -- \"任务分配人员\"\n\"Task Due Date\" -- \"任务到期日期\"\n\"Task Completion Status\" -- \"任务完成状态\"\n\"Task Comments\" -- \"任务评论\"\n\"Task Tags\" -- \"任务标签\"\n\"Task Group\" -- \"任务组\"\n\"Task Category\" -- \"任务类别\"\n\"Task Subcategory\" -- \"任务子类别\"\n\"Task Type Code\" -- \"任务类型代码\"\n\"Task Status Code\" -- \"任务状态代码\"\n\"Task Priority Code\" -- \"任务优先级代码\"\n\"Task Owner Name\" -- \"任务所有者名称\"\n\"Task Assignee Name\" -- \"任务分配人员名称\"\n\"Task Due Date (UTC)\" -- \"任务到期日期(UTC)\"\n\"Task Completion Status Code\" -- \"任务完成状态代码\"\n\"Task Comments Count\" -- \"任务评论数量\"\n\"Task Tags Count\" -- \"任务标签数量\"\n\"Task Group Name\" -- \"任务组名称\"\n\"Task Category Code\" -- \"任务类别代码\"\n\"Task Subcategory Code\" -- \"任务子类别代码\"\n\"Task Type Code (Legal)\" -- \"任务类型代码(法律文件)\"\n\"Task Status Code (Legal)\" -- \"任务状态代码(法律文件)\"\n\"Task Priority Code (Legal)\" -- \"任务优先级代码(法律文件)\"\n\"Task Owner Name (Legal)\" -- \"任务所有者名称(法律文件)\"\n\"Task Assignee Name (Legal)\" -- \"任务分配人员名称(法律文件)\"\n\"Task Due Date (UTC) (Legal)\" -- \"任务到期日期(UTC)(法律文件)\"\n\"Task Completion Status Code (Legal)\" -- \"任务完成状态代码(法律文件)\"\n\"Task Comments Count (Legal)\" -- \"任务评论数量(法律文件)\"\n\"Task Tags Count (Legal)\" -- \"任务标签数量(法律文件)\"\n\"Task Group Name (Legal)\" -- \"任务组名称(法律文件)\"\n\"Task Category Code (Legal)\" -- \"任务类别代码(法律文件)\"\n\"Task Subcategory Code (Legal)\" -- \"任务子类别代码(法律文件)\"",
-      "which_provider_handles_each_ai_task_for_": "哪个提供商负责您组织的每项人工智能任务。\"\n\"Which provider handles each AI task for your organization.\"\n\"哪个提供商负责您组织的每项人工智能任务。\"\n\"Which provider handles each AI task for your organisation.\"\n\"哪个提供商负责您组织的每项人工智能任务。"
+      "which_provider_handles_each_ai_task_for_": "哪个提供商负责您组织的每项人工智能任务。\"\n\"Which provider handles each AI task for your organization.\"\n\"哪个提供商负责您组织的每项人工智能任务。\"\n\"Which provider handles each AI task for your organisation.\"\n\"哪个提供商负责您组织的每项人工智能任务。",
+      "byok_paid_note": "带有自己的密钥是一个付费功能。 升级以配置您的学校或区域的自定义 AI 提供商。"
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "这篇论文写于3G尚未全面推出、iPhone还有半年就要上市的时候，而且‘应用程序’这个词还没有被广泛使用。其中预测——手机将会成为1-for-1的教室设备、移动网络将能够覆盖到偏远地区、GPS将变得便宜到可以放进每个学生口袋里——都成为了现实。这篇文章所要求的产品已经出现了。\"\n\"这篇论文写于3G尚未全面推出、iPhone还有半年就要上市的时候，而且‘应用程序’这个词还没有被广泛使用。其中预测——手机将会成为1-for-1的教室设备、移动网络将能够覆盖到偏远地区、GPS将变得便宜到可以放进每个学生口袋里——都成为了现实。这篇文章所要求的产品已经出现了。",
@@ -2177,7 +2183,14 @@
       "title": "-- \"导入学习标准\"\n\"Export Learning Standards\" -- \"导出学习标准\"\n\"Create a new learning standard\" -- \"创建新的学习标准\"\n\"Edit a learning standard\" -- \"编辑学习标准\"\n\"Delete a learning standard\" -- \"删除学习标准\"\n\"View the list of learning standards\" -- \"查看学习标准列表\"\n\"Add a new learning standard template\" -- \"添加新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"\n\"Import a learning standard\" -- \"导入学习标准\"\n\"Export a learning standard\" -- \"导出学习标准\"\n\"Create a new learning standard template\" -- \"创建新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"\n\"Add a new learning standard\" -- \"添加新的学习标准\"\n\"Edit a learning standard\" -- \"编辑学习标准\"\n\"Delete a learning standard\" -- \"删除学习标准\"\n\"View the list of learning standards\" -- \"查看学习标准列表\"\n\"Add a new learning standard template\" -- \"添加新的学习标准模板\"\n\"Edit a learning standard template\" -- \"编辑学习标准模板\"\n\"Delete a learning standard template\" -- \"删除学习标准模板\"\n\"View the list of learning standard templates\" -- \"查看学习标准模板列表\"",
       "description": "Example:\n上传您所在学科的学习标准——通用教育标准、NSTA 标准、州立标准或自定义框架的 PDF 文件或 CSV。保存后,可以对这些标准进行活动标记并跟踪学生的覆盖情况。"
     },
-    "cta_privacy_note": "符合 FERPA 和 COPPA 要求。学生数据永远不会被出售或共享。"
+    "cta_privacy_note": "符合 FERPA 和 COPPA 要求。学生数据永远不会被出售或共享。",
+    "pages_donotsellpage": {
+      "email_address": "电子邮箱地址",
+      "under_the_california_consumer_privacy_ac": "根据加州消费者隐私法（CCPA）和加州隐私权保护法（CPRA），加州居民有权拒绝出售或共享他们的个人信息。 Peripateticware 不出售个人数据，但您可以提交此请求，以正式记录您的偏好。",
+      "do_not_sell_or_share_my_personal_informa": "请勿出售或共享我的个人信息",
+      "preference_recorded": "✓ 偏好记录",
+      "your_optout_preference_has_been_recorded": "您的拒绝销售和分享个人信息偏好已记录。我们将不会出售或共享您的个人信息."
+    }
   },
   "STUDENT": {},
   "TEACHER": {},

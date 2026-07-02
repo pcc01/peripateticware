@@ -427,7 +427,50 @@ async def activate_framework(
         await db.commit()
         return {"activated": len(rules), "framework": framework_id}
     else:
-        return {"activated": 0, "framework": framework_id, "note": "No rules found for this framework — seed via startup"}
+        # No rows yet — create a default rule for this framework on the fly
+        import uuid as _uuid, json as _json
+        _FRAMEWORK_DEFAULTS = {
+            "ferpa": {"framework": "ferpa", "jurisdiction_name": "United States", "country_code": "US",
+                      "max_retention_days": 365, "encryption_required": True, "encryption_algorithm": "AES-256",
+                      "student_data_sharing_allowed": False, "student_monitoring_allowed": True,
+                      "student_profiling_allowed": False, "student_targeting_allowed": False},
+            "coppa": {"framework": "coppa", "jurisdiction_name": "United States (Children)", "country_code": "US",
+                      "max_retention_days": 180, "encryption_required": True, "encryption_algorithm": "AES-256",
+                      "student_data_sharing_allowed": False, "student_monitoring_allowed": False,
+                      "student_profiling_allowed": False, "student_targeting_allowed": False,
+                      "behavioral_advertising_allowed": False},
+            "ccpa": {"framework": "ccpa", "jurisdiction_name": "California", "country_code": "US",
+                     "state_code": "CA", "max_retention_days": 365, "encryption_required": True,
+                     "encryption_algorithm": "AES-256", "student_data_sharing_allowed": False,
+                     "opt_out_right": True, "data_deletion_right": True},
+            "gdpr": {"framework": "gdpr", "jurisdiction_name": "European Union", "country_code": "EU",
+                     "max_retention_days": 730, "encryption_required": True, "encryption_algorithm": "AES-256",
+                     "lawful_basis_required": True, "right_to_erasure": True, "data_portability_right": True,
+                     "breach_notification_hours": 72},
+        }
+        fid = framework_id.lower()
+        if fid not in _FRAMEWORK_DEFAULTS:
+            return {"activated": 0, "framework": framework_id, "note": "Unknown framework"}
+        _JURS = {"ferpa": "US", "coppa": "US-COPPA", "ccpa": "US-CA", "gdpr": "EU"}
+        _REGS = {"ferpa": "FERPA", "coppa": "COPPA", "ccpa": "CCPA", "gdpr": "GDPR"}
+        _TYPES = {"ferpa": "privacy", "coppa": "privacy", "ccpa": "data_protection", "gdpr": "data_protection"}
+        rule_id = str(_uuid.uuid5(_uuid.NAMESPACE_URL, f"{fid}_v1"))
+        from models.compliance import ComplianceRule as _CR
+        from datetime import datetime as _dt
+        new_rule = _CR(
+            rule_id=rule_id,
+            regulation_id=_REGS[fid],
+            version="1.0",
+            jurisdiction=_JURS[fid],
+            effective_date=_dt.utcnow(),
+            rule_definition=_FRAMEWORK_DEFAULTS[fid],
+            created_by=str(current_user.id),
+            is_active=True,
+            regulation_type=_TYPES[fid],
+        )
+        db.add(new_rule)
+        await db.commit()
+        return {"activated": 1, "framework": framework_id, "note": "Default rule created and activated"}
 
 
 @router.patch("/rules/framework/{framework_id}/deactivate")
@@ -514,6 +557,23 @@ async def upsert_rule(
     current_user:     User         = Depends(get_current_user),
 ):
     _require_admin(current_user)
+
+    # ── Validate the rule definition against the canonical schema ─────────────
+    # An admin adding/editing a jurisdiction gets a clear 422 with field errors
+    # instead of the rule being silently stored and then ingested scalar-only.
+    from schemas.privacy_rule import validate_rule_definition
+    from pydantic import ValidationError as _PydValidationError
+    rd = dict(body.rule_definition or {})
+    rd.setdefault("jurisdiction_id", body.jurisdiction)
+    rd.setdefault("jurisdiction_name", rd.get("jurisdiction_name", body.jurisdiction))
+    rd.setdefault("country_code", rd.get("country_code", "XX"))
+    try:
+        validate_rule_definition(rd)
+    except _PydValidationError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"message": "Invalid rule_definition", "errors": ve.errors()},
+        )
 
     # Compute audit hash over the rule definition JSON
     rule_json = json.dumps(body.rule_definition, sort_keys=True)
@@ -763,8 +823,12 @@ async def check_compliance(
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ConsentRequest(BaseModel):
-    student_id_hash:  str                        # SHA-256 hash of student ID (never raw)
-    consent_type:     str = "parental"           # parental | student_assent | opt_out
+    # SECURITY: consent is bound to a single-use, HMAC-signed token that was
+    # emailed to the parent (purpose="parent_consent"). The token embeds the
+    # real student_id and the server derives the hash. This replaces the old
+    # design where the client sent a bare student_id_hash — anyone who knew (or
+    # could derive) a student's UUID hash could self-approve their own account.
+    consent_token:    str                        # signed token from the emailed link
     consent_version:  str = "1.0"
     jurisdiction:     str = "COPPA"
     data_categories:  List[str] = ["educational"]
@@ -776,23 +840,35 @@ async def record_consent(
     db:   AsyncSession = Depends(get_db),
 ):
     """
-    Record parental or student consent.
-    Called from ParentConsentPage (public — no auth, token is in URL path).
-    The student_id_hash must be a SHA-256 hex digest — never a raw student ID.
-    """
-    import hashlib, re
-    # Basic validation: must look like a hex digest
-    if not re.fullmatch(r"[0-9a-f]{64}", body.student_id_hash):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="student_id_hash must be a 64-character SHA-256 hex digest"
-        )
+    Record parental consent from the emailed consent link.
 
-    # Deactivate any existing active consent of the same type for this student
+    Public (no JWT) — authenticity comes from the signed, single-use token, not
+    from a session. The token is CONSUMED on success so a leaked/forwarded link
+    cannot be replayed to re-activate an account after consent is withdrawn.
+    """
+    from services.signed_url import SignedURL, SignedURLError, SignedURLExpired
+    from models.user import User as _User
+
+    # 1. Validate + consume the signed token (consume=True burns its tid).
+    try:
+        data = await SignedURL.validate(body.consent_token, purpose="parent_consent", consume=True)
+    except SignedURLExpired:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="consent_link_expired")
+    except SignedURLError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid_consent_link")
+
+    student_id = data.get("student_id")
+    if not student_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid_consent_link")
+
+    # 2. Server derives the hash — the client never supplies it.
+    student_hash = hash_student_id(str(student_id))
+
+    # 3. Deactivate any existing active parental consent for this student.
     existing = (await db.execute(
         select(ConsentRecord).where(
-            ConsentRecord.student_id_hash == body.student_id_hash,
-            ConsentRecord.consent_type    == body.consent_type,
+            ConsentRecord.student_id_hash == student_hash,
+            ConsentRecord.consent_type    == "parental",
             ConsentRecord.is_active       == True,
         )
     )).scalars().all()
@@ -801,9 +877,9 @@ async def record_consent(
         rec.withdrawn_at = datetime.utcnow()
 
     new_consent = ConsentRecord(
-        student_id_hash = body.student_id_hash,
+        student_id_hash = student_hash,
         jurisdiction    = body.jurisdiction,
-        consent_type    = body.consent_type,
+        consent_type    = "parental",
         data_categories = body.data_categories,
         consent_version = body.consent_version,
         is_active       = True,
@@ -811,28 +887,17 @@ async def record_consent(
     )
     db.add(new_consent)
 
-    # If this is a parental consent, activate the corresponding student account
-    if body.consent_type == "parental" and body.student_id_hash:
-        try:
-            from models.user import User as _User
-            pending_users = (await db.execute(
-                select(_User).where(
-                    _User.requires_parental_consent == True,
-                    _User.is_active == False,
-                )
-            )).scalars().all()
-            for u in pending_users:
-                if hash_student_id(str(u.id)) == body.student_id_hash:
-                    u.is_active = True
-                    u.requires_parental_consent = False
-                    logger.info(f"Student {u.id} activated after parental consent granted")
-                    break
-        except Exception as e:
-            logger.warning(f"Could not activate student after consent: {e}")
+    # 4. Activate exactly the student named in the token (no scan/guess).
+    result = await db.execute(select(_User).where(_User.id == student_id))
+    student = result.scalar_one_or_none()
+    if student and getattr(student, "requires_parental_consent", False):
+        student.is_active = True
+        student.requires_parental_consent = False
+        logger.info(f"Student {student.id} activated after parental consent granted")
 
     await db.commit()
-    logger.info(f"Consent recorded: type={body.consent_type} jurisdiction={body.jurisdiction}")
-    return {"status": "recorded", "consent_type": body.consent_type}
+    logger.info(f"Consent recorded: type=parental jurisdiction={body.jurisdiction}")
+    return {"status": "recorded", "consent_type": "parental"}
 
 
 # ─────────────────────────────────────────────────────────────────────────────

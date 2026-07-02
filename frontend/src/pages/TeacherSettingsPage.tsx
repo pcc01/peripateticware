@@ -137,7 +137,7 @@ export const TeacherSettingsPage = () => {
           <h2>{t('landing:appearance', 'Appearance')}</h2>
           <div className={styles.settingGroup}>
             <label>{t('landing:color_scheme', 'Color Scheme')}</label>
-            <select value={skin} onChange={e => setSkin(e.target.value as Skin)} className={styles.select}>
+            <select value={skin} onChange={e => { setSkin(e.target.value as Skin); handleChange('theme', e.target.value); }} className={styles.select}>
               {skins.map(s => <option key={s} value={s}>{SKIN_LABELS[s]}</option>)}
             </select>
           </div>
@@ -176,7 +176,7 @@ export const TeacherSettingsPage = () => {
           <h2>{t('landing:general_preferences', 'General Preferences')}</h2>
           <div className={styles.settingGroup}>
             <label>{t('landing:language', 'Language')}</label>
-            <LocaleSwitcher className={styles.select} />
+            <LocaleSwitcher className={styles.select} onChanged={() => handleChange('language', 'changed')} />
           </div>
           <div className={styles.settingGroup}>
             <label className={styles.checkboxLabel}>

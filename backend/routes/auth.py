@@ -22,6 +22,14 @@ import time as _time
 from core.cache import revoke_token
 from services.signed_url import SignedURL
 from services.email_service import send_verification_email, send_welcome_email
+from core.config import settings as _settings
+
+# Token lifetime in seconds, derived from the single source of truth in config.
+_EXPIRES_IN_SECONDS = _settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+# Fixed bcrypt hash of a random string, used ONLY to burn ~constant CPU time on
+# a "user not found" login so response timing doesn't reveal which emails exist.
+_DUMMY_BCRYPT_HASH = "$2b$12$kbGP3qW.EsCoUuJCsTgdC.dt/hUWrpdn3aTSULvWhppa3LMuCyJrK"
 
 # Rate limiting handled by the global app-level limiter (registered in main.py).
 # Per-route limiters are disabled here to avoid the standalone Limiter instance
@@ -147,7 +155,7 @@ class TokenResponse(BaseModel):
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "email": "student@example.com",
                 "role": "STUDENT",
-                "expires_in": 86400
+                "expires_in": 3600
             }
         }
 
@@ -249,6 +257,10 @@ async def login(
         # User not found
         if not user:
             logger.warning(f"âŒ Login failed: User not found: {identifier}")
+            # Timing-attack defense: verify against a dummy hash so
+            # "user not found" costs ~the same as "wrong password" (prevents
+            # user enumeration via response latency).
+            SecurityManager.verify_password(body.password, _DUMMY_BCRYPT_HASH)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email/id or password",
@@ -292,7 +304,7 @@ async def login(
             email=user.email,
             role=user.role,
             org_id=str(user.org_id) if user.org_id else None,
-            expires_in=86400  # 24 hours in seconds
+            expires_in=_EXPIRES_IN_SECONDS
         )
         
     except HTTPException:
@@ -466,7 +478,7 @@ async def signup(
             email=new_user.email,
             role=new_user.role,
             org_id=str(new_user.org_id) if new_user.org_id else None,
-            expires_in=86400,  # 24 hours in seconds
+            expires_in=_EXPIRES_IN_SECONDS,
             is_active=new_user.is_active,
         )
         
@@ -573,24 +585,42 @@ async def refresh_token(
         
         # Verify current token and extract user_id
         payload = SecurityManager.verify_token(token)
-        if not payload:
+        if not payload or payload is TOKEN_EXPIRED:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired token"
             )
-        
+
+        # SECURITY: a revoked token (logout / already-rotated) must NOT be
+        # exchangeable for a fresh one — otherwise logout is meaningless:
+        # a stolen token could be "refreshed" back to life after the victim
+        # logs out.
+        from core.cache import is_token_revoked
+        if await is_token_revoked(payload.get("jti")):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked"
+            )
+
         user_id = payload.get("sub")
-        
+
         # Get user from database
         result = await db.execute(
             select(User).where(User.id == user_id)
         )
         user = result.scalar_one_or_none()
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found"
+            )
+
+        # SECURITY: deactivated/soft-deleted accounts must not mint new tokens.
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is inactive"
             )
         
         # Create new token - FIXED: use data= parameter
@@ -615,9 +645,9 @@ async def refresh_token(
             user_id=str(user.id),
             email=user.email,
             role=user.role,
-            expires_in=86400
+            expires_in=_EXPIRES_IN_SECONDS
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:

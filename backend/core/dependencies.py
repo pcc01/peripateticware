@@ -182,15 +182,28 @@ async def optional_user(
         token = credentials.credentials if credentials else None
         if not token:
             return None
-        
-        user_id = SecurityManager.extract_user_id_from_token(token)
+
+        # Same validation path as get_current_user (expiry, revocation,
+        # is_active) — just returns None instead of raising. Previously this
+        # skipped the revocation and is_active checks, so a logged-out or
+        # deactivated user still counted as authenticated on any endpoint
+        # using optional_user.
+        payload = SecurityManager.verify_token(token)
+        if payload is None or payload is TOKEN_EXPIRED:
+            return None
+        if await is_token_revoked(payload.get("jti")):
+            return None
+
+        user_id = payload.get("sub")
         if user_id is None:
             return None
-        
+
         query = select(User).where(User.id == user_id)
         result = await db.execute(query)
         user = result.scalar()
-        
+
+        if user is not None and not user.is_active:
+            return None
         return user
     except Exception as e:
         logger.debug(f"Optional user auth failed: {e}")
@@ -246,6 +259,10 @@ def require_owns_resource(
     Usage:
         require_owns_resource(activity.teacher_id, current_user)
     """
+    # NOTE: org-admin bypass here is NOT org-scoped — require_owns_resource has
+    # no org context. Callers that need "admin of the SAME org may act" must use
+    # require_same_org() (which IS org-scoped) in addition to this. For strict
+    # per-user ownership, pass allow_admin=False.
     if allow_admin and current_user.role == UserRole.ADMIN:
         return
     if str(resource_owner_id) != str(current_user.id):
@@ -267,8 +284,20 @@ def require_same_org(
     Usage:
         require_same_org(classroom.org_id, current_user)
     """
+    # SECURITY: admin bypass is now ORG-SCOPED. An ADMIN may only bypass for
+    # resources in their OWN org — previously any ADMIN passed unconditionally,
+    # so an admin of Org A who learned resource IDs in Org B was let through.
     if allow_admin and current_user.role == UserRole.ADMIN:
-        return
+        if (
+            resource_org_id is None
+            or current_user.org_id is None
+            or str(resource_org_id) == str(current_user.org_id)
+        ):
+            return
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: resource belongs to a different organization",
+        )
     if resource_org_id is None or current_user.org_id is None:
         return
     if str(resource_org_id) != str(current_user.org_id):

@@ -81,15 +81,29 @@ class PrivacyConfigurationLoader:
         with open(path, "r", encoding="utf-8") as fh:
             data: Dict[str, Any] = json.load(fh)
 
-        # Resolve framework enum (default to GDPR if unknown)
-        raw_framework = data.get("framework", "GDPR")
+        # Validate against the canonical schema. This catches malformed files
+        # (bad severity, out-of-range ages, missing identity fields) at load
+        # time and normalises the framework. We log and continue on failure so
+        # one bad file never kills the whole load (matches load_all_jurisdictions).
+        try:
+            from schemas.privacy_rule import validate_rule_definition
+            validate_rule_definition(data)
+        except Exception as _ve:
+            logger.warning(f"Privacy config {path.name} failed canonical validation: {_ve}")
+
+        # Resolve framework enum. Enum values are lowercase ("gdpr", "ferpa"),
+        # so normalise case first — previously PrivacyFramework("GDPR") raised
+        # ValueError and EVERY file with an uppercase framework silently became
+        # GDPR (e.g. a FERPA config would be treated as GDPR).
+        raw_framework = str(data.get("framework", "custom")).lower()
         try:
             framework = PrivacyFramework(raw_framework)
         except ValueError:
             logger.warning(
-                f"Unknown framework '{raw_framework}' in {path.name}; defaulting to GDPR."
+                f"Unknown framework '{raw_framework}' in {path.name}; using CUSTOM. "
+                f"Valid values: {[f.value for f in PrivacyFramework]}"
             )
-            framework = PrivacyFramework.GDPR
+            framework = PrivacyFramework.CUSTOM
 
         # Parse optional datetime fields
         def _parse_dt(val: Any):
@@ -134,4 +148,8 @@ class PrivacyConfigurationLoader:
             max_retention_days=data.get("max_retention_days", 365),
             encryption_required=data.get("encryption_required", False),
             encryption_algorithm=data.get("encryption_algorithm", "AES-256"),
+            # Stash the raw definition so PrivacyComplianceChecker's data-driven
+            # checks (prohibited_data_collection, special_restrictions) work for
+            # file-loaded configs exactly as they do for DB-loaded ones.
+            metadata={"_rule_definition": data},
         )

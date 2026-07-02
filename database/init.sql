@@ -1865,4 +1865,47 @@ CREATE TABLE IF NOT EXISTS platform_ai_budgets (
 -- ---------------------------------------------------------------------------
 -- platform_ai_ledger  (one row per AI call — token usage + internal cost
 -- estimate for monitoring/alerting; org_id/user_id nullable for
--- platform/system c
+-- platform/system calls)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS platform_ai_ledger (
+    id          BIGSERIAL    PRIMARY KEY,
+    org_id      UUID         REFERENCES organizations(id) ON DELETE SET NULL,
+    user_id     UUID         REFERENCES users(id) ON DELETE SET NULL,
+    task_type   VARCHAR(64),
+    provider    VARCHAR(32),
+    model       VARCHAR(128),
+    tokens_in   INTEGER      NOT NULL DEFAULT 0,
+    tokens_out  INTEGER      NOT NULL DEFAULT 0,
+    cost_usd    NUMERIC(12,6) NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_platform_ai_ledger_org_created
+    ON platform_ai_ledger(org_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_platform_ai_ledger_created
+    ON platform_ai_ledger(created_at);
+
+-- ---------------------------------------------------------------------------
+-- teacher_notifications  (in-app notifications, used for batch result alerts)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS teacher_notifications (
+    id         SERIAL       PRIMARY KEY,
+    teacher_id VARCHAR(64)  NOT NULL,
+    type       VARCHAR(64)  NOT NULL,
+    payload    JSONB,
+    is_read    BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_teacher_notif_teacher_unread
+    ON teacher_notifications(teacher_id, is_read);
+
+-- ===========================================================================
+-- Verification
+-- ===========================================================================
+SELECT '✅ Database initialization complete!' AS status;
+
+SELECT tablename
+FROM   pg_tables
+WHERE  schemaname = 'public'
+ORDER  BY tablename;
+
+SELECT email, role, is_active FROM users WHERE email LIKE '%example.com' ORDER BY role;

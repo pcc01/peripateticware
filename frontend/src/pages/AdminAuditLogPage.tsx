@@ -208,7 +208,9 @@ export default function AdminAuditLogPage() {
         {error   && <div style={{ padding: '1rem 1.5rem', color: '#c0392b' }}>{error}</div>}
 
         {!loading && !error && rows.length === 0 && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>No audit records match your filters.</div>
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
+            No audit records found. Compliance events are logged here automatically as users interact with privacy-gated features.
+          </div>
         )}
 
         {!loading && rows.length > 0 && (

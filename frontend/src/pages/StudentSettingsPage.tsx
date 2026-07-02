@@ -114,7 +114,7 @@ export const StudentSettingsPage = () => {
           <h2>{t("landing:preferences", "Preferences")}</h2>
           <div className={styles.settingGroup}>
             <label>{t("landing:language", "Language")}</label>
-            <LocaleSwitcher className={styles.select} />
+            <LocaleSwitcher className={styles.select} onChanged={() => handleChange('language', 'changed')} />
           </div>
 
           <div className={styles.settingGroup}>

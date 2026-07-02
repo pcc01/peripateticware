@@ -30,7 +30,7 @@ except ImportError as e:
     import os
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
     ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))  # 1 hour
 
 # ============================================================================
 # PASSWORD HASHING - Try passlib first, fallback to bcrypt
@@ -124,7 +124,7 @@ def create_access_token(
     Raises:
         Exception: If token creation fails
     """
-    if not SECRET_KEY or SECRET_KEY == "dev-secret-key":
+    if not SECRET_KEY or SECRET_KEY in ("dev-secret-key", "dev-secret-key-change-in-production"):
         logger.warning("âš ï¸  WARNING: Using default SECRET_KEY - change for production!")
     
     try:

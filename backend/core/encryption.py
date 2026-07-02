@@ -36,6 +36,18 @@ _fernet: Optional[Fernet] = None
 _hmac_key: Optional[bytes] = None
 _encryption_enabled: bool = False
 
+# Counts decrypt() calls that fell back to returning the raw value (i.e. the
+# stored value was not a valid Fernet token). After the one-time migration
+# (backend/scripts/encrypt_existing_data.py) this should stay at ZERO — any
+# increase means a wrong/rotated key or genuinely corrupt data, NOT plaintext.
+# Scrape this via /metrics or log-alert on it.
+decrypt_fallback_count: int = 0
+
+# When True, decrypt() raises instead of returning ciphertext on failure.
+# Set PII_DECRYPT_STRICT=true AFTER the migration completes so a wrong key
+# surfaces loudly instead of silently serving ciphertext as if it were data.
+_DECRYPT_STRICT: bool = os.getenv("PII_DECRYPT_STRICT", "false").lower() == "true"
+
 
 def _init_encryption() -> None:
     """Initialise Fernet and HMAC key from FIELD_ENCRYPTION_KEY env var."""
@@ -78,14 +90,28 @@ def encrypt(plaintext: str) -> str:
 
 
 def decrypt(token: str) -> str:
-    """Decrypt a Fernet token. Falls back to returning the value as-is if it's plaintext
-    (for migration compatibility — plaintext rows from before encryption was enabled)."""
+    """Decrypt a Fernet token.
+
+    On failure the value is treated as pre-migration plaintext and returned
+    as-is, BUT the fallback is now counted/logged (decrypt_fallback_count) so a
+    wrong key doesn't silently serve ciphertext forever. Once the migration is
+    done, set PII_DECRYPT_STRICT=true so failures raise instead of masquerading
+    as data.
+    """
+    global decrypt_fallback_count
     if not _encryption_enabled or _fernet is None:
         return token
     try:
         return _fernet.decrypt(token.encode()).decode()
-    except (InvalidToken, Exception):
-        # Value is likely pre-migration plaintext — return as-is
+    except (InvalidToken, Exception) as exc:
+        decrypt_fallback_count += 1
+        logger.warning(
+            "decrypt() fallback #%d — value is not a valid Fernet token "
+            "(pre-migration plaintext, or WRONG/ROTATED KEY): %s",
+            decrypt_fallback_count, type(exc).__name__,
+        )
+        if _DECRYPT_STRICT:
+            raise
         return token
 
 

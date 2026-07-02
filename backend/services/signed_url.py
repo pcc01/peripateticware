@@ -58,6 +58,7 @@ DEFAULT_TTL: Dict[str, int] = {
     "email_verification":   24 * 60 * 60,   # 24 hours
     "parent_consent":       72 * 60 * 60,   # 72 hours
     "export_download":       1 * 60 * 60,   # 1 hour
+    "media_access":              5 * 60,    # 5 minutes — short-lived <audio>/<img> src token
 }
 
 # ---------------------------------------------------------------------------

@@ -1174,4 +1174,15 @@ const ActivityManager = () => {
                     color: 'var(--primary)', fontSize: 13, textDecoration: 'underline',
                   }}
                 >
-                  Open full phon
+                  Open full phone preview →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>);
+
+};
+
+export default ActivityManager;

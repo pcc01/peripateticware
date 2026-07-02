@@ -1267,4 +1267,12 @@ export const ActivityBuilder = () => {
             className={styles.primaryBtn}
             disabled={isSaving || !formData.title.trim()}
             style={{ background: '#1b5e20', borderColor: '#1b5e20' }}>
-            {isSav
+            {isSaving ? 'Publishing...' : '📲 Save and Publish to Student App'}
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default ActivityBuilder;

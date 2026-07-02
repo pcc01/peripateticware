@@ -118,7 +118,8 @@
       "privacy_protected": "Veri senaryolarınız korunuyor bu kaynaklarda",
       "product_privacy_engine": "Özellik Engine",
       "resources_privacy": "Özellik Engine",
-      "company_contact": "İştemek"
+      "company_contact": "İştemek",
+      "legal_do_not_sell": "Satış veya Paylaşma Hakkımızı Kesinlikle Kullanma"
     },
     "johndoe": "John Doe",
     "digital_journal": "Dijital gazete",
@@ -909,7 +910,7 @@
     "view_profile": "Profili Görüntüle",
     "teacher_settings": "Öğretmen Ayarları",
     "blooms_taxonomy": "Bloom's Taksimi",
-    "marzano": "Marzano",
+    "marzano": "['Marzan']",
     "depth_of_knowledge": "Bilgi Ölçeği",
     "solo": "YALI",
     "teachersettingspage": {
@@ -1307,7 +1308,9 @@
       "jurisdictions_enforced": "Uygulanan ilçeler",
       "last_updated": "Son güncelleme",
       "cta_explore_docs": "Gizlilik Belgeleri Keşfedin",
-      "loading_status": "Yüklenme durumu oluşturuluyor..."
+      "loading_status": "Yüklenme durumu oluşturuluyor...",
+      "coppa_family_title": "Çocuklar altındaki aileler için",
+      "do_not_sell_link": "Satış veya Paylaşma Kimliğimizini Kesinlikle Kullanma"
     },
     "capture_photosvideo": "Resim çek",
     "take_photos_record_videos_and_capture_au": "Yerine bulunma, videorolu kaydet ve sesi kaydeterek yüklenmiş bulunduğunuzz zamanları ve bulgularınızı belgeleyin.",
@@ -1346,7 +1349,7 @@
       "changes_to_this_policy": "Bu Politika'nı Değiştirdiğimiz Yerde",
       "we_may_update_this_policy_as_the_service": "Bu politikayı güncellemeye yetiliriz, hizmetin gelişmesi sürecinde. İzlenecek değişiklikler için uygulama içerisinde bildirim yapılacaktır.",
       "contact": "İletişim",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "← Ana Sayfaya Geri Dön",
       "auth_token_desc": "Kaydediğiniz JWT'nı alanında bulunur. 24 saat sonra zatiyor.",
       "auth_user_desc": "Kaydediğiniz kullanıcı ayarları (isim, rol) alanında bulunur. İsteyenler için kaldırılabilir.",
       "i18nextlng_desc": "Önce seçtiğiniz dilini kaydetmek için yaptığınız önemli bir şeyler var mü?",
@@ -1495,7 +1498,7 @@
     "think_about": "Seni seçtiğiniz konu hakkında düşünül...",
     "sketch": "Resim Çizgi",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticware"
+      "peripateticware": "Peripatetik Yazılım"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Yükleniyor...",
@@ -1796,10 +1799,10 @@
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "Lütfen sunucu seçin. Değişiklikler geçerli olmadan önce yapılmalıdır - yeniden başlatmanız zorunludir.",
-      "anthropic_api_key": "Anthropic API Key",
+      "anthropic_api_key": "Anthropic API Anahtarı",
       "estimated_cost_per_1000_requests": "Orijinallı tahminler",
       "estimates_based_on_500_token_input_300_t": "Teknik ve ekonomik olarak, tahminler 500 kutuğa ait giriş + 300 kutuğa ait çıkış per bilgisense gösterge isteği için yapılabilir. Teknik ve ekonomik olarak, gerçek tahminler değiştiriyor olabilir.",
-      "openai_api_key": "OpenAI API Key",
+      "openai_api_key": "OpenAI API Anahtarı",
       "advanced_configuration": "Gelişmiş Konfigurasyon",
       "peri_response_mode_batch_schedule_and_in": "Peri gözden geçirme modu, paket programlandırma ve değerlendirme uygulamasının arani uygulama konumunu.",
       "peri_inquiry_responses": "Peri İşlem Alanı Aranan Yanıtlar",
@@ -1817,7 +1820,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Konformite Çerçevesi",
-      "toggle_which_privacy_frameworks_are_acti": "Translated Output:\n\"Devre dönüştürinizsiniz önceki başlatıldığında - geçerli olduğu şartlar için izinleri ayarlayınız. Yönetim alanınızdaki şartlara göre devre dönüştürinizsiniz.\""
+      "toggle_which_privacy_frameworks_are_acti": "Translated Output:\n\"Devre dönüştürinizsiniz önceki başlatıldığında - geçerli olduğu şartlar için izinleri ayarlayınız. Yönetim alanınızdaki şartlara göre devre dönüştürinizsiniz.\"",
+      "no_active_jurisdictions_found_use_the_fr": "Aktif bir yasal durum bulunamadı. Yukardaki ayar kutularını etkinleştirmek için FERPA, COPPA, GDPR veya CCPA'yı etkinleştirin — varsayılan kurallar otomatik olarak oluşturulacaktır."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required\"\n\"Bring Your Own Key — İşlem Gerekli\"\n\"Bring Your Own Key — Upgrade Required",
@@ -1825,12 +1829,13 @@
       "set_your_organisations_anthropic_api_key": "(Text/Value string translation example only.)",
       "key_is_encrypted_at_rest_and_never_logge": "Anahtarın güvenlik için şifrelemek ve zorunlu değil. API İstekleri sonucunda yazdırılmadan veya döndürülmediğinden bilgisayar tarafından kaydedilemez.\"\n\"Anahtarın güvenlik için şifrelemek ve zorunlu değil. API İstekleri sonucunda yazdırılmadan veya döndürülmediğinden bilgisayar tarafından kaydedilemez.",
       "configure_your_organisationaposs_ai_prov": "Konfigurieren Sie die KI-Anbieter Ihrer Organisation und sehen Sie sich Ihre Aufgabenzuweisungen an.",
-      "anthropic_claude_api_key": "Anthropic (Claude) API Key",
+      "anthropic_claude_api_key": "Anthropic (Claude) API Anahtarı",
       "openai_api_key": "API Anahtarı",
       "ollama_instance": "Ollama İstasyonu",
       "must_be_reachable_from_the_peripateticwa": "Muss vom Peripateticware-Backendserver aus erreichbar sein.",
       "task_routing": "İş işlenme sorunlarına ilişkin aracılığınız mümkün olduğunuzu söyleyiniz.",
-      "which_provider_handles_each_ai_task_for_": "Bu makale, 3G'in yayımlandığı zamanında, iPhone'ın üçüncülükle ilgili önemli değişiklikleri görmüştürken ve \\\"app\\\" isimli söz kitabının yayınlanmasının zirvesinde olduğunca zorlu bir çalışma olmuştu. Makale, müşteri telefonlarının 1-for-1 öğrenme cihazlar olacak şekilde değişebilmesi, mobil televizyonların geleneksel kitaplardan kaçıp geçen birçok ülke'de ortaya çıkabilmesi ve GPS'in düşük fiyatla yerlerine ulaştırılması için adetlerini bulacaklarını hedefleyordu. Makale, önemli öğrenme alanlarında gösterilmişti. "
+      "which_provider_handles_each_ai_task_for_": "Bu makale, 3G'in yayımlandığı zamanında, iPhone'ın üçüncülükle ilgili önemli değişiklikleri görmüştürken ve \\\"app\\\" isimli söz kitabının yayınlanmasının zirvesinde olduğunca zorlu bir çalışma olmuştu. Makale, müşteri telefonlarının 1-for-1 öğrenme cihazlar olacak şekilde değişebilmesi, mobil televizyonların geleneksel kitaplardan kaçıp geçen birçok ülke'de ortaya çıkabilmesi ve GPS'in düşük fiyatla yerlerine ulaştırılması için adetlerini bulacaklarını hedefleyordu. Makale, önemli öğrenme alanlarında gösterilmişti. ",
+      "byok_paid_note": "Kendi Anahtarınızı Getirme Özelliği bir ödeme özelliktdir. Yükseltmek için özel AI sağlayıcılarınızı yapılandırmak için ücret alın."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "Öğrencilerin eğitim programlarına göre öğretmenleri tarafından yapılan değerlendirmeye karşılık, öğrencinin kendi felsefesini doğru anlamış olduğunu sorgulamak için çalışmalarınızda görüntülenecek arteçe bulacaksınız.",
@@ -1857,7 +1862,7 @@
       "you_can_read_the_original_2007_document_": "Büyülüler eşleştirmeleriniz yapılmamıştır"
     },
     "pages_platform_platformauditlogpage": {
-      "audit_log": ""
+      "audit_log": "Araştırma Günlüğü"
     },
     "pages_platform_platformorgdetailpage": {
       "all_actions_are_recorded_in_the_audit_lo": "Tüm eylemler audit logunda kaydedilir. ",
@@ -2029,7 +2034,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Önlem",
       "subject": "Konu",
-      "enrolled_students": "Kayıtlı Olarak Katılmış Öğrenciler"
+      "enrolled_students": "Kayıtlı Olarak Katılmış Öğrenciler",
+      "larger_classrooms_are_a_paid_feature_upg": "['Büyük öğrenme odaları, ücretlidir özellik. Yükseltme yaparak daha fazla öğrenci kaydederiz.']"
     },
     "pages_homeschool_homeschoolwelcomepage": {
       "youre_all_set": "Gönderi başarılı oldu!",
@@ -2177,6 +2183,13 @@
     "standardsImportPage": {
       "title": "Öğrenme Durumlarına Katkıda Bulutmusunuz.",
       "description": "['Yükleyin eğitimstandartlarınızın PDF veya CSV formatısını — Common Core, NGSS, devlet standartları veya kullanıcı tanımladığınız özel framework için. Kaydedildikçe, görevleri eğitimstandartlara başarabilirsiniz ve öğrenci oluşturulmasını izlemek için etiketlerle etiketleyebilirsiniz.']"
+    },
+    "pages_donotsellpage": {
+      "under_the_california_consumer_privacy_ac": "California's Hızmet Verileri Ticari Amaçla Kullanımına (CCPA) ve Hizmet Verileri Özgürlükleri Kanunu (CPRA)'nın kapsamında, Kaliforniya yaşayan kişilerin kendi verilerini satma ve paylaşma konusunda seçik olabilmesi hakkı vardır.",
+      "email_address": "E-posta adresi",
+      "do_not_sell_or_share_my_personal_informa": "Verilemeyecek veya paylaşılmayacak Kimlik Bilgilerim",
+      "preference_recorded": "✓ Seçim Kaydı Yapıldı",
+      "your_optout_preference_has_been_recorded": "Kimlik bilgilerinizin opt-out seçeneğiniz kaydedildi. Kimlik bilgileriniz satılması veya paylaşılması yapılamaz."
     }
   },
   "STUDENT": {},

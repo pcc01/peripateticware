@@ -157,7 +157,7 @@ export const ParentSettingsPage = () => {
           <h2>{t("landing:general_preferences", "General Preferences")}</h2>
           <div className={styles.settingGroup}>
             <label>{t("landing:language", "Language")}</label>
-            <LocaleSwitcher className={styles.select} />
+            <LocaleSwitcher className={styles.select} onChanged={() => handleChange('language', 'changed')} />
           </div>
 
           <div className={styles.settingGroup}>

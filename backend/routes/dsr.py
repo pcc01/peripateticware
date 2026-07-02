@@ -30,6 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.dependencies import get_current_user, optional_user
 from models.database import User
+from services.privacy_engine import hash_student_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/dsr", tags=["data-subject-rights"])
@@ -59,7 +60,11 @@ class OptOutRequest(BaseModel):
 async def _log_dsr_request(
     db: AsyncSession, user_id: str, request_type: str, details: dict
 ) -> None:
-    """Insert a DSR request record into rule_audit_log."""
+    """Insert a DSR request record into rule_audit_log.
+
+    actor_id is HASHED before storage (rule_audit_log principle: never store
+    raw IDs), and callers must not pass raw email addresses in details.
+    """
     try:
         await db.execute(text("""
             INSERT INTO rule_audit_log
@@ -68,7 +73,7 @@ async def _log_dsr_request(
                 (gen_random_uuid(), :action, 'dsr_request', :actor_id, 'data_subject', 'COMPLIANT', :notes)
         """), {
             "action": f"DSR_{request_type.upper()}",
-            "actor_id": user_id,
+            "actor_id": hash_student_id(user_id),
             "notes": str(details),
         })
     except Exception as e:
@@ -87,7 +92,7 @@ async def submit_access_request(
     Returns a summary immediately; full export is available via GET /dsr/download-my-data.
     """
     uid = str(current_user.id)
-    await _log_dsr_request(db, uid, "ACCESS", {"email": current_user.email})
+    await _log_dsr_request(db, uid, "ACCESS", {})  # no raw PII in audit notes
     await db.commit()
     return {
         "request_id": str(uuid4()),
@@ -111,7 +116,9 @@ async def download_my_data(
     Collects profile, learning sessions, evidence captures, consents, and notifications.
     """
     uid = str(current_user.id)
-    uid_hash = hashlib.sha256(uid.encode()).hexdigest()
+    # Salted hash — must match how ConsentManager / routes/privacy.py write
+    # consent_records.student_id_hash, or the export silently misses consents.
+    uid_hash = hash_student_id(uid)
 
     profile = {
         "id": uid,
@@ -176,14 +183,21 @@ async def submit_deletion_request(
 
     uid = str(current_user.id)
 
-    # Soft-delete: anonymise email, set deleted_at, deactivate
+    # Soft-delete: anonymise email + names AND clear the email blind index.
+    # Without clearing email_index, the HMAC of the real email address stays in
+    # the DB (a linkable identifier — not erasure) and permanently blocks the
+    # person from ever re-registering with the same email.
     try:
         await db.execute(text("""
             UPDATE users
-            SET is_active  = false,
-                deleted_at = NOW(),
-                email      = CONCAT('deleted_', id::text, '_',
-                                    EXTRACT(EPOCH FROM NOW())::int, '@deleted.invalid')
+            SET is_active   = false,
+                deleted_at  = NOW(),
+                email       = CONCAT('deleted_', id::text, '_',
+                                     EXTRACT(EPOCH FROM NOW())::int, '@deleted.invalid'),
+                email_index = CONCAT('deleted_', id::text),
+                full_name   = 'Deleted User',
+                first_name  = 'Deleted',
+                last_name   = 'User'
             WHERE id = :uid AND deleted_at IS NULL
         """), {"uid": uid})
     except Exception:
@@ -269,9 +283,21 @@ async def opt_out_of_data_sale(
     CCPA/CPRA: Do Not Sell or Share My Personal Information.
     Authenticated users: opt-out is recorded against their account.
     Unauthenticated users: opt-out is recorded by email hash.
+
+    Also honours the Global Privacy Control (GPC) browser signal: if the request
+    carries `Sec-GPC: 1`, that is treated as a valid opt-out request per CPRA,
+    even without an explicit form submission.
     """
     user_id: Optional[str] = None
     email_for_log: Optional[str] = body.email
+
+    gpc_signal = request.headers.get("Sec-GPC", "") == "1"
+
+    raw_ip = (
+        request.headers.get("x-forwarded-for", "")
+        or (request.client.host if request.client else "")
+    )
+    ip_hash = hashlib.sha256(raw_ip.encode()).hexdigest()
 
     if current_user:
         user_id = str(current_user.id)
@@ -279,17 +305,16 @@ async def opt_out_of_data_sale(
     elif body.email:
         # Record by email hash for unauthenticated users
         user_id = hashlib.sha256(body.email.lower().encode()).hexdigest()
+    elif gpc_signal:
+        # GPC-only opt-out (no email, not logged in): record by IP hash so the
+        # signal is honoured even though we can't tie it to an account. CPRA
+        # requires GPC to be processed as a valid opt-out on its own.
+        user_id = ip_hash
     else:
         raise HTTPException(
             status_code=400,
             detail="Provide email for unauthenticated opt-out, or log in first.",
         )
-
-    raw_ip = (
-        request.headers.get("x-forwarded-for", "")
-        or (request.client.host if request.client else "")
-    )
-    ip_hash = hashlib.sha256(raw_ip.encode()).hexdigest()
 
     # Record opt-out as a consent record
     try:
@@ -313,7 +338,7 @@ async def opt_out_of_data_sale(
         db,
         user_id or "anonymous",
         "OPT_OUT",
-        {"scope": body.scope},
+        {"scope": body.scope, "source": "gpc" if gpc_signal else "form"},
     )
     await db.commit()
 

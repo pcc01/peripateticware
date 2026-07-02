@@ -62,12 +62,20 @@ _CONFIG_DIR = os.path.join(os.path.dirname(__file__), '..', 'config', 'jurisdict
 # ── Minimal FERPA config (created on first import if absent) ──────────────────
 _FERPA_CONFIG = {
     "jurisdiction_id":  "ferpa_us",
+    # jurisdiction_name is REQUIRED by the canonical schema and the file loader
+    # (previously only "name"/"full_name" were present, which KeyError'd the
+    # loader — bug surfaced by schema validation).
+    "jurisdiction_name": "United States - Family Educational Rights and Privacy Act (FERPA)",
     "name":             "FERPA",
     "full_name":        "Family Educational Rights and Privacy Act",
     "country_code":     "US",
     "subdivision_code": None,
     "applies_to":       ["school", "district"],
     "framework":        "ferpa",
+    # Flat scalars so the merge/enforcement path has sensible FERPA defaults.
+    "max_retention_days": 365,
+    "encryption_required": True,
+    "student_data_sharing_allowed": False,
     "description":      (
         "FERPA protects the privacy of student education records at "
         "institutions receiving federal funding. Grants parents/eligible "

@@ -847,6 +847,24 @@ async def _upsert_rule(
     rule_definition["_crawled_at"]       = datetime.now(timezone.utc).isoformat()
     rule_definition["_auto_loaded"]      = auto_load
 
+    # Non-blocking ingestibility check: warn (don't drop) if this rule_definition
+    # wouldn't validate against the canonical ingestion schema, so a bad source
+    # surfaces in logs instead of silently landing unusable JSON in the DB.
+    try:
+        from schemas.privacy_rule import validate_rule_definition
+        _rd = dict(rule_definition)
+        _rd.setdefault("jurisdiction_id", source.jurisdiction)
+        _rd.setdefault("jurisdiction_name",
+                       rule_definition.get("jurisdiction_name",
+                                           rule_definition.get("regulation_name", source.jurisdiction)))
+        _rd.setdefault("country_code",
+                       rule_definition.get("country_code",
+                                           (source.country_codes or ["XX"])[0]))
+        validate_rule_definition(_rd)
+    except Exception as _ve:
+        logger.warning(f"Crawler: {source.jurisdiction} rule_definition failed schema validation "
+                       f"(storing anyway, will fall back on read): {_ve}")
+
     new_rule = ComplianceRule(
         rule_id               = new_rule_id,
         regulation_id         = source.source_id,

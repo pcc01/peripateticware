@@ -1,6 +1,6 @@
 {
   "landing": {
-    "500": "500",
+    "500": "500 (המספר 500)",
     "activitybuilderupdated": {
       "create_activity": "עמליה חדשה",
       "basic_information": "מידע בסיכום",
@@ -136,7 +136,8 @@
       "privacy_protected": "את המידע שלך מושמש בתוכן הזה כפי שמוגדר במסגרות האלו",
       "company_contact": "קontakt",
       "product_privacy_engine": "פרויבציה אנג'ין",
-      "resources_privacy": "פרויבציה אנג'ין"
+      "resources_privacy": "פרויבציה אנג'ין",
+      "legal_do_not_sell": "לא מועצה ל продаת או שיתוף מידעי זה"
     },
     "johndoe": "יוחנן דוא",
     "digital_journal": "דיגיטל יוורייל",
@@ -962,7 +963,7 @@
     "hs_how_title": "כיצד עובד",
     "hs_cta_signup": "התחבר לפרטים חדשים מجانים →",
     "hs_cta_login": "התחברות",
-    "gdpr_title": "GDPR",
+    "gdpr_title": "GDPR (גדרות פרטיות ראשוניות)",
     "ccpa_title": "קופה קפה",
     "components_shared_extractionwizard": {
       "set_name": "שם הנאמן",
@@ -1706,7 +1707,9 @@
       "cta_section_title": "צעד לחיזוי",
       "cta_section_subtitle": "תיאור צעד לחיזוי",
       "cta_section_desc": "סעיף של קיום CTA",
-      "loading_status": "מחיר התקנון של התקנון הבא..."
+      "loading_status": "מחיר התקנון של התקנון הבא...",
+      "coppa_family_title": "למשפחות בנים שמילאים 13",
+      "do_not_sell_link": "לא מועצה ל продаת או שיתוף מידע איזו פרטי איזוי"
     },
     "capture_photosvideo": "📸 צפייה בתמונות/VIDEO",
     "take_photos_record_videos_and_capture_au": "הצגת תמונות, ריכזית ואינטרנט אודיו לספקייה של עיניים ומצאים.",
@@ -1744,7 +1747,7 @@
     "privacy_first_desc": "נבנה לכיתות 12-6 מיום אחד. מצוע עם רשימות פרטיות גדולות — לא כמו סימניים אחרונים.",
     "ferpa_title": "\"פרוטוקול המשתמשים באדוכציות החינוך האמריקאי\" (Protocol of Educational Records in the United States)",
     "ferpa_desc": "הערכות של המדריך של הנוצרים מוגורים בחוק ארצי יוסף-אמריקאי",
-    "coppa_title": "COPPA",
+    "coppa_title": "פרטי הצעות לשחזרת נשארות פרטיות במדינת קליפורניה (CCPA) ומסכים הייתה לחוק הזכויות הפרטיות של המשכנזים בקליפורניה (CPRA), אזרחי קליפורניה יוכלו לבצע סיום למכירת או שיתוף גבולת את הפרטים הידועים שלהם. Peripateticware לא מכיר נתונים פרטיים, אך אתה יכול לשלח בקשה זו כדי לציין על ידי כתובת מסוג זו את הרצונך.",
     "coppa_desc": "סיכום ראשי לפARENTS נבנת עבור 학נים מתקצה 13.",
     "privacy_compliant": "מדירוטיבי מיקום פרטי",
     "privacy_review_needed": "צירוף מיקום פרטי - צריך לראות",
@@ -1756,7 +1759,7 @@
     "nav_homeschool": "בית-בחירה",
     "components_auth_signupscreen": {
       "you_can_change_this_later_in_your_organi": "כן שנותתם אחרת בגרפי האדминистратора.",
-      "country": "country",
+      "country": "Country (מדינה)",
       "setting_type": "type of setting",
       "my_students_include_children_under_13_en": "לחיפש את העודכת המוזרים, בחזקת האינטרפרסידן והאפשרויות המוזרים",
       "do_any_of_your_students_have_children_u": "אתה מצליח להגיע למילון 13 בשנה?",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": " Grade level",
       "subject": " Subject",
-      "enrolled_students": " Enrolled Students"
+      "enrolled_students": " Enrolled Students",
+      "larger_classrooms_are_a_paid_feature_upg": "חדשות רומחות חיוביות לקריאת כלים יותר נעימים. עדכן לשמור מספר משתמשים יותר."
     },
     "pages_admin_platformadminpage": {
       "tier": "שורף",
@@ -1921,7 +1925,7 @@
       "standards": "ביבלוט שפטראות",
       "rubrics": "רשימות",
       "settings": "הגדרות",
-      "analytics": "Analytics",
+      "analytics": "Analytics (אנליטיקה)",
       "progress": "מתן",
       "activities": "פעולות",
       "reports": "דיור",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "-- \"תוכניות התקן\"\n\"Data Architecture\" -- \"ארחitecture המידע\"\n\"Permission\" -- \"השגחה\"\n\"Legal Terms\" -- \"פסקי החוק\"\n\"Compliance Metrics\" -- \"מטקsfot התקן\"",
-      "toggle_which_privacy_frameworks_are_acti": "Translated Output:\nתחזור את הפרטים של פרטיות הביטוי המקסימים. נכון עד-תחזון בתחזון המחדל בתחזון האוטומטי בפרטי השילוצים הראשונים - הגורם את הפרטים הקווסים למדינתכם.\""
+      "toggle_which_privacy_frameworks_are_acti": "Translated Output:\nתחזור את הפרטים של פרטיות הביטוי המקסימים. נכון עד-תחזון בתחזון המחדל בתחזון האוטומטי בפרטי השילוצים הראשונים - הגורם את הפרטים הקווסים למדינתכם.\"",
+      "no_active_jurisdictions_found_use_the_fr": "לא נמצאו משטרפים פעילים. השתמש בסיס המכיל תוגgles מעלה כדי לאקטיבציה FERPA, COPPA, GDPR, או CCPA — ניתן ליצור שורשים ברירת מחדל."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "-- Technical Documentation Fields -- Legal Documentation Fields -- Regulat\u001b[7D\u001b[K\nRegulatory Compliance Metrics -- General Terminology -- Technical Concepts \u001b[K\n-- Permissions and Access Control -- Data Architecture -- Legal Terminology\u001b[11D\u001b[K\nTerminology -- Industry Standards -- Cyber Security Policies -- IT Infrastr\u001b[8D\u001b[K\nInfrastructure and Networks -- IT Operations -- Privacy Policy -- Privacy b\u001b[1D\u001b[K\nby Design -- Privacy Impact Assessment -- Information Protection -- Informa\u001b[7D\u001b[K\nInformation Security -- Information Risk Management -- Incident Response Pl\u001b[2D\u001b[K\nPlan -- ISO 27001 Compliance -- PCI DSS Compliance -- NIST Cybersecurity Fr\u001b[2D\u001b[K\nFramework -- GDPR Compliance -- HIPAA Compliance -- CISPE Compliance -- BCR\u001b[3D\u001b[K\nBCR-EU Compliance -- Swiss Privacy Act Compliance -- Australian Privacy Pri\u001b[3D\u001b[K\nPrinciples Compliance -- Brazilian Data Protection Law Compliance -- German\u001b[6D\u001b[K\nGerman Federal Data Protection Act Compliance -- Japanese Personal Informat\u001b[8D\u001b[K\nInformation Protection Act Compliance -- New Zealand Privacy Act Compliance\u001b[10D\u001b[K\nCompliance -- Singapore Personal Data Protection Act Compliance -- South Af\u001b[2D\u001b[K\nAfrican Protection of Personal Information Act Compliance -- Taiwan Persona\u001b[7D\u001b[K\nPersonal Information Protection Act Compliance -- Turkish Personal Data Pro\u001b[3D\u001b[K\nProtection Law Compliance -- California Consumer Privacy Act (CCPA) Complia\u001b[7D\u001b[K\nCompliance -- General Data Protection Regulation (GDPR) Compliance -- Unite\u001b[5D\u001b[K\nUnited States Health Insurance Portability and Accountability Act (HIPAA) C\u001b[1D\u001b[K\nCompliance -- United States National Institute of Standards and Technology \u001b[K\n(NIST) Cybersecurity Framework Compliance -- United Kingdom Information Com\u001b[3D\u001b[K\nCommissioner's Office (ICO) Data Protection Act 2018 Compliance -- European\u001b[8D\u001b[K\nEuropean Union General Data Protection Regulation (GDPR) Compliance -- Cana\u001b[4D\u001b[K\nCanadian Personal Information Protection and Electronic Documents Act (PIPE\u001b[5D\u001b[K\n(PIPEDA) Compliance.\" -- Technical Documentation Fields -- Legal Documentat\u001b[10D\u001b[K\nDocumentation Fields -- Regulatory Compliance Metrics -- General Terminolog\u001b[10D\u001b[K\nTerminology -- Technical Concepts -- Permissions and Access Control -- Data\u001b[4D\u001b[K\nData Architecture -- Legal Terminology -- Industry Standards -- Cyber Secur\u001b[5D\u001b[K\nSecurity Policies -- IT Infrastructure and Networks -- IT Operations -- Pri\u001b[3D\u001b[K\nPrivacy Policy -- Privacy by Design -- Privacy Impact Assessment -- Informa\u001b[7D\u001b[K\nInformation Protection -- Information Security -- Information Risk Manageme\u001b[8D\u001b[K\nManagement -- Incident Response Plan -- ISO 27001 Compliance -- PCI DSS Com\u001b[3D\u001b[K\nCompliance -- NIST Cybersecurity Framework -- GDPR Compliance -- HIPAA Comp\u001b[4D\u001b[K\nCompliance -- CISPE Compliance -- BCR-EU Compliance -- Swiss Privacy Act Co\u001b[2D\u001b[K\nCompliance -- Australian Privacy Principles Compliance -- Brazilian Data Pr\u001b[2D\u001b[K\nProtection Law Compliance -- German Federal Data Protection Act Compliance \u001b[K\n-- Japanese Personal Information Protection Act Compliance -- New Zealand P\u001b[1D\u001b[K\nPrivacy Act Compliance -- Singapore Personal Data Protection Act Compliance\u001b[10D\u001b[K\nCompliance -- South African Protection of Personal Information Act Complian\u001b[8D\u001b[K\nCompliance -- Taiwan Personal Information Protection Act Compliance -- Turk\u001b[4D\u001b[K\nTurkish Personal Data Protection Law Compliance -- California Consumer Priv\u001b[4D\u001b[K\nPrivacy Act (CCPA) Compliance -- General Data Protection Regulation (GDPR) \u001b[K\nCompliance -- United States Health Insurance Portability and Accountability\u001b[14D\u001b[K\nAccountability Act (HIPAA) Compliance -- United States National Institute o\u001b[1D\u001b[K\nof Standards and Technology (NIST) Cybersecurity Framework Compliance -- Un\u001b[2D\u001b[K\nUnited Kingdom Information Commissioner's Office (ICO) Data Protection Act \u001b[K\n2018 Compliance -- European Union General Data Protection Regulation (GDPR)\u001b[6D\u001b[K\n(GDPR) Compliance -- Canadian Personal Information Protection and Electroni\u001b[9D\u001b[K\nElectronic Documents Act (PIPEDA) Compliance.",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "> \"עמוד OLLAMA\"",
       "must_be_reachable_from_the_peripateticwa": "Muss erreichbar sein von der Peripateticware-Backend-Server.\"\n\"Muss erreichbar sein von dem Peripateticware-Backend-Server.\"\n\"Muss erreichbar sein von dem Peripateticware-Backendserver.\"\n\"Muss erreichbar sein von dem Peripateticware-Backendserver.",
       "task_routing": "-- \"מודיעה תפקידים\"\n\"Task Priority\" -- \"מודיעה נושאיות ביציעה תפקידים\"\n\"Access Control\" -- \"בחירה לפסוק לפרטים\"\n\"Data Privacy\" -- \"גזולות מידע בשאר העולם\"\n\"Compliance Metrics\" -- \"מידע על התקנות בשומן\"\n\"Legal Terms\" -- \"פסוקי חוק\"\n\"Data Architecture\" -- \"ארכITECTURE המידע\"\n\"Permission\" -- \"הזכויות\"\n\"Technical Documentation\" -- \"מודיעה техничеת\"\n\"Legal Documentation\" -- \"מודיעה חוקית\"\n\"Software Context Fields\" -- \"שפוטי מידע בספרות אלג'מיניסטית\"\n\"Technical/Legal Documentation\" -- \"מודיעה חוקית ותכנית\"\n\"Data Architecture\" -- \"ארכITECTURE המידע\"\n\"Permission\" -- \"הזכויות\"\n\"Technical Documentation\" -- \"מודיעה טכנית\"\n\"Legal Documentation\" -- \"מודיעה חוקית\"\n\"Software Context Fields\" -- \"שפוטי מידע בספרות אלג'מיניסטית\"",
-      "which_provider_handles_each_ai_task_for_": "(Translated Text: \"מי התעשה כל ה задаות אי טנטיביסטיות ברחבת האיגדה?\" Code\u001b[4D\u001b[K\nCode: 'he')\" -- this should match the target language's string exactly, wit\u001b[3D\u001b[K\nwithout syntax alterations or added explanatory text."
+      "which_provider_handles_each_ai_task_for_": "(Translated Text: \"מי התעשה כל ה задаות אי טנטיביסטיות ברחבת האיגדה?\" Code\u001b[4D\u001b[K\nCode: 'he')\" -- this should match the target language's string exactly, wit\u001b[3D\u001b[K\nwithout syntax alterations or added explanatory text.",
+      "byok_paid_note": ", "
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מobil יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפocket - כולם אתם אמורים. הפrodukty שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\n\"The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.\"\"\n\"הספר כותב בזמן שאין 3G נגדע בכל ארץ, והאיפון הוא מקום חוץ מתחת לשיגון. סיבותו - שטל פונעים יהיו 1-ל-1 ספר ביד, שתי רשות מוביל יהיו כאן במקום חוץ, וGPS יהיו עושים במחיר נכון להוספ לצד כל יושב בפוקט - כולם אתם אמורים. הפרודוקטי שהספר קרה להתחייב עליהם אינם קיים.\"\"\nYou are an expert in your field, and you have a lot of knowledge to share. But how do you make sure that people actually read what you write? Here are some tips on how to write effective blog posts.\n1. Start with a clear goal: Before you start writing, decide what you want to achieve with your post. Do you want to educate your readers, entertain them or persuade them to take action? Knowing your goal will help you structure your content and make it more effective.\n2. Choose a topic that resonates with your audience: Your blog post should be relevant to your target audience. Research your niche and find out what topics are currently trending in your industry. You can also use tools like Google Trends or BuzzSumo to see which topics are popular among your competitors.\n3. Use a catchy headline: A good headline is the first thing that readers will notice about your post. Make sure it’s attention-grabbing and accurately reflects the content of your article. You can use tools like CoSchedule or HubSpot to generate headlines for your posts.\n4. Write in a conversational tone: Your blog post should be easy to read and understand. Use simple language, short sentences and paragraphs, and avoid jargon or technical terms that may confuse your readers.\n5. Provide value to your audience: Make sure your content is informative, educational, or entertaining. Give your readers something they can use or learn from. You can also include tips, case studies, or examples to make your post more engaging and memorable.\n6. Use visuals: People are more likely to read blog posts that have images or videos. Include relevant graphics, photos, infographics, or videos in your post to break up the text and make it more visually appealing.\n7. Edit and proofread your content: Before you hit publish, take a few minutes to review your post for grammar errors, spelling mistakes, and typos. You can also ask someone else to read your post and provide feedback on its clarity or structure.\nBy following these tips, you can write effective blog posts that engage your readers and help you achieve your goals. Remember, the key is to create content that provides value to your audience while being easy to read and understand. Good luck!",
@@ -2121,7 +2127,7 @@
     "pages_teacher_teacherwelcomepage": {
       "welcome_to_peripateticware": "מזמן ברוך ב Peripateticware!",
       "lets_get_your_classroom_set_up": "הגדלו את השיפוץ העליון.",
-      "invite_your_first_students": "Invite your first students",
+      "invite_your_first_students": "התרצה להוזיע את ראשית התלמידים",
       "send_invite_links_to_students_or_parent": "שלחו קטעים הזמניים לאורחים בעסקים או לפרונטים. הם תצלון חשבון ותגיעו למדרשכם בספרות.",
       "you_can_also_bulk_import_via_csv_from_t": "אני גם מסתרגל בכולן משוּעה."
     },
@@ -2146,8 +2152,8 @@
       "discard": "נגד",
       "transcribing": "תוספות את העלמות...",
       "recording_saved": "שגיאה בתקן רשמית",
-      "mic_denied": "Microphone access is required to record audio. Please grant permission and try again.",
-      "uploading": ""
+      "mic_denied": "נדרש גישה למיקרופון כדי לשמור אודיו. בחשבון את האיזור ונסה שנייה.",
+      "uploading": "עלות קובץ שמור..."
     },
     "pendingReflectionQueue": {
       "awaiting_approval": "חייב לשמור",
@@ -2163,11 +2169,11 @@
     },
     "professorFieldworkPage": {
       "back": "← אֵין בָּא",
-      "no_activity_selected": ""
+      "no_activity_selected": "אין פעולה נבחרת."
     },
     "rubricImportPage": {
-      "title": "Import Rubric",
-      "description": ""
+      "title": "Import Rubric (העברה כריצה",
+      "description": "העלאת קובץ PDF או CSV שמופיע בו נרשמות הצירוף שלך. ה-AI יגיע כל צירוף, ואתה יכול לדרש ולערוך קבוצתם לפני שמירה."
     },
     "cta_privacy_note": "תוכלו לגמר בקשות FERPA וCOPPA. נתק מדעי הסטודנט אֵין נוצרים או שחזרות.",
     "curriculumImportPage": {
@@ -2177,6 +2183,13 @@
     "standardsImportPage": {
       "title": "בע",
       "description": ",\n    "
+    },
+    "pages_donotsellpage": {
+      "email_address": "['אימיל אדרס']",
+      "under_the_california_consumer_privacy_ac": "",
+      "do_not_sell_or_share_my_personal_informa": "לא מועצה לпродаת או שיתוף את הפרטים שלי היומיים",
+      "preference_recorded": "✓ נשמרה הקבוצה",
+      "your_optout_preference_has_been_recorded": "ה prefence שלך נשמרה. אנחנו לא נמכרות או לנתן פרטים יומיים שלך"
     }
   }
 }

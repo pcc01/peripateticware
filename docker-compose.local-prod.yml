@@ -1,0 +1,22 @@
+# Local production-mode override.
+#
+# Use this ONLY to exercise the production security hardening on your own machine
+# (the startup guard that hard-fails on default/blank secrets, fail-closed CORS,
+# fail-closed Paddle webhook, no demo-account seeding, HSTS/CSP tightening).
+#
+# It keeps localhost networking from docker-compose.yml and just flips
+# ENVIRONMENT to production. You MUST have real secrets in .env first:
+#
+#   python scripts/generate_local_secrets.py
+#   docker compose -f docker-compose.yml -f docker-compose.local-prod.yml up --build
+#
+# For everyday local dev, DON'T use this file — plain `docker compose up` runs in
+# development mode where the same secrets are optional (checks only warn).
+services:
+  backend:
+    environment:
+      ENVIRONMENT: production
+      # Exercise the privacy engine's blocking path too (optional):
+      # ENFORCEMENT_MODE: warn
+      # Turn on strict PII decrypt only AFTER encrypting existing rows:
+      # PII_DECRYPT_STRICT: "false"

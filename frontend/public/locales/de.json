@@ -127,7 +127,8 @@
       "privacy_protected": "Ihre Daten sind unter diesen Rahmenbedingungen geschützt",
       "company_contact": "Kontakt",
       "product_privacy_engine": "Datenschutz-Engine",
-      "resources_privacy": "Datenschutz-Engine"
+      "resources_privacy": "Datenschutz-Engine",
+      "legal_do_not_sell": "Ich verachte es, meine Daten zu verkaufen oder zu teilen"
     },
     "johndoe": "Johndoe",
     "landing": {
@@ -991,7 +992,9 @@
       "jurisdictions_enforced": "Gerichtsbarkeiten durchgesetzt",
       "last_updated": "Zuletzt aktualisiert",
       "cta_explore_docs": "Entdecken Sie Datenschutzdokumente",
-      "loading_status": "Lade den Compliance-Status herunter..."
+      "loading_status": "Lade den Compliance-Status herunter...",
+      "coppa_family_title": "Für Familien von Kindern unter 13",
+      "do_not_sell_link": "Ich verachte es, meine persönlichen Daten zu verkaufen oder zu teilen"
     },
     "loading_your_projects": "Lade deine Projekte...",
     "retry": "Wiederholen",
@@ -1425,7 +1428,7 @@
     "think_about": "Denke über...",
     "sketch": "Skizzieren",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticware"
+      "peripateticware": "Peripatetische Software"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Lade...",
@@ -1739,7 +1742,7 @@
     "select_child_prompt": "Wählen Sie ein Kind oben aus, um ihr Fortschritt zu sehen.",
     "pages_parentdashboard": {
       "what_youll_see_after_linking": "Was Sie nach dem Verknüpfen sehen:",
-      "parental_consent_status": "Parental Consent Status"
+      "parental_consent_status": "Elternaltersstatus"
     },
     "create_first_note": "Ihre erste Notiz erstellen",
     "response_in_progress": "Antwort im Gang. Fügen Sie Abbildungen hinzu und übermitteln Sie sie.",
@@ -1766,7 +1769,7 @@
       "sign_in": "Anmelden",
       "helps_us_apply_the_right_privacy_framewo": "Hilft uns, die richtigen Datenschutzrahmen (FERPA, COPPA, GDPR usw.) für Ihre Schüler anzuwenden.",
       "this_determines_whether_coppa_applies_": "Dies bestimmt, ob COPPA für Ihr Konto gilt.",
-      "i_confirm_that_i_am_18_years_of_age_or_o": "I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account)."
+      "i_confirm_that_i_am_18_years_of_age_or_o": "Ich bestätige, dass ich 18 Jahre alt bin oder älter (oder der rechtmäßige Vertreter von Minderjährigen auf diesem Konto)."
     },
     "cta_btn": "Jetzt kostenlos starten",
     "components_student_extendedwritingpanel": {
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Klassenstufe",
       "subject": "Unterrichtsfach",
-      "enrolled_students": "Inscritti"
+      "enrolled_students": "Inscritti",
+      "larger_classrooms_are_a_paid_feature_upg": "['Großere Klassenzimmer sind eine bezahlte Option. Melden Sie sich für mehr Schüler ein, indem Sie aufgewerten.']"
     },
     "pages_admin_platformadminpage": {
       "tier": "Stufe",
@@ -1915,7 +1919,7 @@
       "save_your_note_first_to_attach_photos_au": "💡 Speichern Sie Ihre Notiz zuerst, um Fotos, Audio und Videoaufnahmen anzuschließen."
     },
     "nav": {
-      "dashboard": "Dashboard",
+      "dashboard": "['Startseite']",
       "users": "Benutzerverwaltung",
       "classrooms": "Kursverwaltung",
       "standards": "Standardbibliothek",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Compliance-Frameworks",
-      "toggle_which_privacy_frameworks_are_acti": "Aktivieren Sie, welche Datenschutzrahmen aktuell durchgesetzt werden. Vorgegeben bei der ersten Boot-Session - aktivieren Sie diejenigen, die für Ihre Rechtsordnung relevant sind."
+      "toggle_which_privacy_frameworks_are_acti": "Aktivieren Sie, welche Datenschutzrahmen aktuell durchgesetzt werden. Vorgegeben bei der ersten Boot-Session - aktivieren Sie diejenigen, die für Ihre Rechtsordnung relevant sind.",
+      "no_active_jurisdictions_found_use_the_fr": "Keine aktiven Gerichtsbezirke gefunden. Verwende die Framework-Schalter oben, um FERPA, COPPA, GDPR oder CCPA zu aktivieren – standardmäßige Regeln werden automatisch erstellt."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Bring Your Own Key - Upgrade Required",
@@ -2043,10 +2048,11 @@
       "configure_your_organisationaposs_ai_prov": "Konfigurieren Sie die KI-Anbieter Ihrer Organisation und sehen Sie sich Ihre Aufgabenzuweisungen an.",
       "anthropic_claude_api_key": "Anthropic (Claude) API-Schlüssel",
       "openai_api_key": "OpenAI API-Schlüssel",
-      "ollama_instance": "Ollama Instance",
+      "ollama_instance": "Ollama-Instanz",
       "must_be_reachable_from_the_peripateticwa": "Muss vom Peripateticware-Backendserver aus erreichbar sein.",
       "task_routing": "Auftragsverteilung",
-      "which_provider_handles_each_ai_task_for_": "Welcher Anbieter übernimmt für Ihr Unternehmen die einzelnen KI-Aufgaben."
+      "which_provider_handles_each_ai_task_for_": "Welcher Anbieter übernimmt für Ihr Unternehmen die einzelnen KI-Aufgaben.",
+      "byok_paid_note": "Bring Your Own Key ist eine bezahlte Funktion. Um benutzerdefinierte AI-Anbieter für Ihre Schule oder Distrikt einzurichten, muss Sie aufwerten.\n\nHinweis: Dies gilt nur für Schulen und Bezirke in den Vereinigten Staaten."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "Das Papier entstand zu einer Zeit, in der das 3G-Netzwerk noch nicht flächendeckend ausgebaut war und der iPhone-Launch noch einige Monate auf sich warten ließ. Die Vorhersagen des Dokuments - dass Handys zu einem einzelnen Klassenzimmergerät werden würden, dass mobile Netzwerke abgelegene Regionen erreichen würden und GPS billig genug wird, um in jedem Schüler-Taschen zu sein - sind alle eingetroffen. Die von dem Papier geforderten Produkte wurden nicht hergestellt.",
@@ -2147,7 +2153,7 @@
       "transcribing": "Transkribieren...",
       "recording_saved": "Aufnahme gespeichert",
       "mic_denied": "Mikrofonzugang ist erforderlich, um Audio aufzuzeichnen. Bitte erteilen Sie die Erlaubnis und versuchen Sie es erneut.",
-      "uploading": ""
+      "uploading": "Aufnahme des Aufzeichnungs..."
     },
     "pendingReflectionQueue": {
       "awaiting_approval": "auf Erteilung von Genehmigung wartend",
@@ -2175,8 +2181,15 @@
       "title": "Importierter Status der akademischen Standards"
     },
     "standardsImportPage": {
-      "title": "Import Learning Standards",
+      "title": "Importiere Lernstandards",
       "description": "Lernstandards hochladen - Sie können ein PDF oder CSV der Lernstandards für Ihre Disziplin (Common Core, NGSS, Landesstandards oder eine eigene benutzerdefinierte Struktur) hochladen. Nach dem Speichern können Sie Aktivitäten gegen diese Standards markieren und den Schülerabdeckung verfolgen."
+    },
+    "pages_donotsellpage": {
+      "under_the_california_consumer_privacy_ac": "Unter dem California Consumer Privacy Act (CCPA) und California Privacy Rights Act (CPRA), haben Kalifornien-Bürger das Recht, sich gegen die Verkaufung oder den Austausch ihrer persönlichen Daten auszusprechen. Peripateticware verkauft keine personenbezogenen Daten, aber Sie können dieses Anliegen formal stellen, um Ihre Vorliebe offiziell festzuhalten.",
+      "email_address": "E-Mail-Adresse",
+      "do_not_sell_or_share_my_personal_informa": "Verkauf oder Teilen meiner persönlichen Information nicht",
+      "preference_recorded": "✓ Vorlieferung aufgezeichnet",
+      "your_optout_preference_has_been_recorded": "Ihre Auswahl zur Ausklammerung ist aufgezeichnet. Wir werden Ihre persönliche Information nicht verkaufen oder teilen."
     }
   },
   "STUDENT": {},

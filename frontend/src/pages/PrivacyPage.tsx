@@ -248,6 +248,25 @@ export const PrivacyPage: React.FC = () => {
         </div>
       </section>
 
+      {/* COPPA family notice (children under 13) */}
+      <section className="privacy-coppa-notice">
+        <div className="section-inner">
+          <h2 className="h-section">
+            {t('privacy.coppa_family_title', 'For families of children under 13')}
+          </h2>
+          <p className="body">
+            {t('privacy.coppa_family_body',
+              'Students under 13 can only join through a teacher, and their account stays ' +
+              'locked until a parent approves it through a secure, single-use link we email you. ' +
+              'We collect only what is needed for learning, never show ads, never sell data, and ' +
+              'you can review or delete your child’s information at any time.')}
+          </p>
+          <p className="body">
+            <a href="/do-not-sell">{t('privacy.do_not_sell_link', 'Do Not Sell or Share My Personal Information')}</a>
+          </p>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="privacy-cta">
         <div className="section-inner cta-content">

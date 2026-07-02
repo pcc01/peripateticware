@@ -237,11 +237,17 @@ export const audioApi = {
     return response.data
   },
 
-  // Build stream URL — authenticated via cookie or caller must append token as query param
-  streamUrl: (captureId: string): string => {
-    const token = localStorage.getItem('auth_token')
-    const qs = token ? `?token=${encodeURIComponent(token)}` : ''
-    return `/api/v1/student/captures/${captureId}/stream${qs}`
+  // Tokenless stream URL. NOTE: this alone is unauthenticated — prefer
+  // getMediaStreamUrl() (or pass captureId to <AudioPlayer>) which mints a
+  // short-lived signed media token. The raw JWT is NO LONGER placed in the URL.
+  streamUrl: (captureId: string): string =>
+    `/api/v1/student/captures/${captureId}/stream`,
+
+  // Mint a short-lived (5 min) signed media token and return the full stream
+  // URL with ?mt=<token>. Safe to use as an <audio>/<img> src.
+  getMediaStreamUrl: async (captureId: string): Promise<string> => {
+    const { data } = await apiClient.post(`/student/captures/${captureId}/media-token`)
+    return data.stream_url as string
   },
 }
 // ============================================================================
@@ -293,4 +299,6 @@ export const professorApi = {
    */
   getFieldworkLocations: (activityId: string): Promise<FieldworkLocationsResponse> =>
     apiClient
-      .get<FieldworkLocationsR
+      .get<FieldworkLocationsResponse>(`/activities/${activityId}/fieldwork-locations`)
+      .then((r) => r.data),
+}

@@ -504,6 +504,27 @@ async def add_evidence_capture(
     except json.JSONDecodeError:
         objectives, comps = [], []
 
+    # ── Privacy enforcement gate (runs BEFORE persisting) ────────────────────
+    # In ENFORCEMENT_MODE=block this refuses non-compliant submissions; in
+    # "log"/"warn" it never raises. Jurisdiction is derived from the student's
+    # org inside enforce_on_submission().
+    try:
+        pre_enforcement = await enforce_on_submission(
+            student_id=str(current_user.id),
+            data_type="student_evidence",
+            evidence_types=[capture_type],
+            db=db,
+        )
+        if pre_enforcement.status == "BLOCKED":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=pre_enforcement.blocking_reason or "Submission blocked by privacy policy",
+            )
+    except HTTPException:
+        raise
+    except Exception as _pre_err:
+        logger.warning("Pre-write enforcement check failed (allowing): %s", _pre_err)
+
     # Handle file upload
     file_url        = None
     file_size_bytes = None

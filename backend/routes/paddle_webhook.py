@@ -76,8 +76,15 @@ def _verify_paddle_signature(raw_body: bytes, signature_header: str) -> bool:
     Signed data:   {ts}:{raw_body}
     """
     if not settings.PADDLE_WEBHOOK_SECRET:
-        logger.warning("[paddle] PADDLE_WEBHOOK_SECRET not set — skipping signature check")
-        return True  # fail open in dev; always verify in production
+        # SECURITY: fail open ONLY in development. In any other environment an
+        # unset secret must reject all webhooks — otherwise anyone who can
+        # reach POST /webhooks/paddle can forge subscription.created events
+        # and grant themselves (or any org) a paid license tier for free.
+        if settings.ENVIRONMENT.lower() == "development":
+            logger.warning("[paddle] PADDLE_WEBHOOK_SECRET not set — skipping signature check (development only)")
+            return True
+        logger.error("[paddle] PADDLE_WEBHOOK_SECRET not set in non-development environment — rejecting webhook")
+        return False
 
     try:
         parts = dict(p.split("=", 1) for p in signature_header.split(";") if "=" in p)

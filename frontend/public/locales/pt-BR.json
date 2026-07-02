@@ -183,7 +183,8 @@
       "privacy_protected": "Seu dado está protegido por estes quadros",
       "company_contact": "Contato",
       "product_privacy_engine": "Engenharia de Privacidade",
-      "resources_privacy": "Engenharia de Privacidade"
+      "resources_privacy": "Engenharia de Privacidade",
+      "legal_do_not_sell": "Não venda ou compartilhe minhas informações pessoais"
     },
     "johndoe": "João Dórea",
     "digital_journal": "Jornal digital",
@@ -214,12 +215,12 @@
     "uploading_audio": "Carregando áudio...",
     "audio_recorded": "Resposta gravada (",
     "audiocapture": {
-      "s": "s)"
+      "s": ")"
     },
     "audio_recording": "Gravação de Áudio",
     "max": "Máximo",
     "audiorecorder": {
-      "s": "s",
+      "s": "]}",
       "recording_saved": "Gravação salva ("
     },
     "start_recording": "Iniciar Gravação",
@@ -353,7 +354,7 @@
     "activity_type": "Tipo de Atividade",
     "outdoor": "Externa",
     "indoor": "Interna",
-    "virtual": "Virtual",
+    "virtual": "Virtuais",
     "mixed": "Misturado",
     "eg_476839": "ex. 47,6839",
     "eg_1223081": "ex. -122,3081",
@@ -1324,7 +1325,7 @@
     "enable_sound_effects": "Ative Efeitos Sonoros",
     "email_adminexamplecom": "E-mail: admin@exemplo.com",
     "password_last_changed_30_days_ago": "A senha foi alterada recentemente: 30 dias atrás",
-    "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
+    "postgresql_16_pgvector": "['PostgreSQL 16 + pgvector']",
     "comingsoonpage": {
       "this_page_is_coming_soon": "Esta página estará disponível em breve.",
       "go_back": "← Voltar"
@@ -1661,7 +1662,7 @@
       "changes_to_this_policy": "Alterações na Política",
       "we_may_update_this_policy_as_the_service": "Pode ser atualizada esta política conforme o Serviço evoluir. Alterações significativas serão notificadas por meio de uma notificação no aplicativo.",
       "contact": "Contato",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "Voltar para a Página Inicial",
       "auth_token_desc": "Guarda o seu JWT de sessão. Expira após 24 horas.",
       "auth_user_desc": "Guarda a sua conta básica (nome, função). É apagado ao efetuar o logout.",
       "i18nextlng_desc": "Recordamos a sua preferência linguística.",
@@ -1706,7 +1707,9 @@
       "cta_section_title": "seção de chamada título",
       "cta_section_subtitle": "seção de chamada subtítulo",
       "cta_section_desc": "Seção de chamada de ação descrição",
-      "loading_status": "Carregando o status de conformidade..."
+      "loading_status": "Carregando o status de conformidade...",
+      "coppa_family_title": "Para famílias de crianças menores de 13 anos",
+      "do_not_sell_link": "Não venda ou compartilhe minhas informações pessoais"
     },
     "capture_photosvideo": "📸 Capturar fotos/vídeo",
     "take_photos_record_videos_and_capture_au": "Capture fotos, registre vídeos e capture áudio para documentar suas observações e achados.",
@@ -1742,7 +1745,7 @@
     },
     "privacy_first_title": "🔒 Primeiro a Privacidade",
     "privacy_first_desc": "Construído para K-12 desde o início. Compatível com os principais quadros de privacidade — não como um afterthought.",
-    "ferpa_title": "FERPA",
+    "ferpa_title": "['Lei Federal de Proteção à Privacidade dos Alunos (FERPA)']",
     "ferpa_desc": "Registros educacionais dos estudantes protegidos pela lei federal dos EUA.",
     "coppa_title": "COPPA (Lei de Proteção à Vida Privada dos Menores)",
     "coppa_desc": "Fluxo de consentimento paterno integrado para estudantes menores de 13 anos.",
@@ -1793,7 +1796,7 @@
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "Nome da localização",
       "latitude": "Latitude",
-      "longitude": "Longitude",
+      "longitude": "['Longitude', 'Latitude', 'Altitude', 'Speed', 'Heading', 'Pitch', 'Roll', 'Yaw', 'Magnetic Heading', 'Gyroscope X', 'Gyroscope Y', 'Gyroscope Z', 'Accelerometer X', 'Accelerometer Y', 'Accelerometer Z', 'Pressure', 'Temperature', 'Humidity']",
       "cognitive_taxonomy": "Taxonomia Cognitiva",
       "locationbased_learning": "📍 Aprendizagem Baseada em Localização",
       "get_ai_activity_suggestions": "🤖 Sugestões de Atividades com IA",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Nível de graduação",
       "subject": "Assunto",
-      "enrolled_students": "Alunos matriculados"
+      "enrolled_students": "Alunos matriculados",
+      "larger_classrooms_are_a_paid_feature_upg": "['Aulas maiores são uma features pagas. Atualize para matricular mais alunos.']"
     },
     "pages_admin_platformadminpage": {
       "tier": "Nível",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Quadros de conformidade",
-      "toggle_which_privacy_frameworks_are_acti": "Alterar os quadros de privacidade ativamente aplicáveis. Pre-carregados na primeira inicialização - ative-os consoante a jurisdição."
+      "toggle_which_privacy_frameworks_are_acti": "Alterar os quadros de privacidade ativamente aplicáveis. Pre-carregados na primeira inicialização - ative-os consoante a jurisdição.",
+      "no_active_jurisdictions_found_use_the_fr": "Não foram encontradas jurisdições ativas. Utilize as opções de alternância acima para ativar FERPA, COPPA, GDPR ou CCPA – regras padrão serão criadas automaticamente."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Traga a sua chave",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "Instância Ollama",
       "must_be_reachable_from_the_peripateticwa": "Tem de estar disponível para o servidor backend da Peripateticware.",
       "task_routing": "Encaminhamento de Tarefas",
-      "which_provider_handles_each_ai_task_for_": "Qual provedor lida com cada tarefa de IA na sua organização?"
+      "which_provider_handles_each_ai_task_for_": "Qual provedor lida com cada tarefa de IA na sua organização?",
+      "byok_paid_note": "Bring Your Own Key é uma funcionalidade paga. Atualize para configurar provedores de inteligência artificial personalizados para sua escola ou distrito."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "O artigo foi escrito num momento em que a 3G ainda não tinha sido totalmente implementada, o iPhone estava a meses do lançamento e \\\"app\\\" ainda não era uma palavra comum. As suas previsões - que os telemóveis se tornariam dispositivos de classe 1-para-1 na sala de aula, que as redes móveis chegariam a regiões remotas e que o GPS se tornaria barato o suficiente para colocar no bolso de cada aluno - todas se concretizaram. Os produtos que o artigo previa não existem ainda.",
@@ -2162,7 +2168,7 @@
       "your_teacher_wants_to_see_your_location_": "Seu professor quer ver sua localização durante esta atividade para que possam rastrear o progresso do trabalho de campo. Sua localização só será compartilhada enquanto a sessão estiver ativa."
     },
     "professorFieldworkPage": {
-      "back": "← Back",
+      "back": "Voltar ←",
       "no_activity_selected": "Nenhuma atividade selecionada."
     },
     "rubricImportPage": {
@@ -2170,14 +2176,21 @@
       "description": "Carregue um PDF ou CSV contendo seus critérios de avaliação. A IA extrairá cada critério, que você poderá revisar e editar antes de salvar."
     },
     "curriculumImportPage": {
-      "title": "Import State Academic Standards",
+      "title": "Importar Padrões Acadêmicos Estaduais",
       "description": "Carregue um PDF ou CSV de padrões académicos oficiais do estado (TEKS, NGSS, Common Core, etc.). Ollama extrai cada padrão para revisão. Uma vez salvo como um conjunto global, todos os professores e pais que ensinam em casa podem mapear as suas atividades contra estes padrões. Re-carregando o mesmo arquivo ignora o processamento (cache de checksum)."
     },
     "standardsImportPage": {
       "title": "Importar Padrões de Aprendizado",
       "description": "Carregue um PDF ou CSV dos padrões de aprendizado para sua disciplina - Common Core, NGSS, padrões estaduais ou seu próprio framework personalizado. Depois que salvo, você poderá marcar atividades contra esses padrões e acompanhar a cobertura do aluno."
     },
-    "cta_privacy_note": "FERPA e COPPA compatíveis. Os dados dos alunos nunca são vendidos ou compartilhados."
+    "cta_privacy_note": "FERPA e COPPA compatíveis. Os dados dos alunos nunca são vendidos ou compartilhados.",
+    "pages_donotsellpage": {
+      "email_address": "['Endereço de email']",
+      "under_the_california_consumer_privacy_ac": "Sob a Lei de Proteção à Privacidade do Consumidor da Califórnia (CCPA) e o Ato de Direitos de Privacidade da Califórnia (CPRA), residentes da Califórnia têm o direito de se opor à venda ou compartilhamento de suas informações pessoais. A Peripateticware não vende dados pessoais, mas você pode enviar esta solicitação para formalmente registrar sua preferência.",
+      "do_not_sell_or_share_my_personal_informa": "Não Vender ou Compartilhar Minha Informação Pessoal",
+      "preference_recorded": "✓ Preferência Gravada",
+      "your_optout_preference_has_been_recorded": "Minha preferência de opt-out foi gravada. Não varemos vender ou compartilhar minha informação pessoal."
+    }
   },
   "STUDENT": {},
   "TEACHER": {},

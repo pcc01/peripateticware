@@ -145,7 +145,8 @@
       "privacy_protected": "Your data is protected under these frameworks",
       "product_privacy_engine": "Privacy Engine",
       "company_contact": "Contact",
-      "resources_privacy": "Privacy Engine"
+      "resources_privacy": "Privacy Engine",
+      "legal_do_not_sell": "Do Not Sell or Share My Info"
     },
     "johndoe": "johndoe",
     "landing": {
@@ -1048,7 +1049,9 @@
       "cta_section_title": "cta section title",
       "cta_section_subtitle": "cta section subtitle",
       "cta_section_desc": "cta section desc",
-      "loading_status": "Loading compliance status…"
+      "loading_status": "Loading compliance status…",
+      "coppa_family_title": "For families of children under 13",
+      "do_not_sell_link": "Do Not Sell or Share My Personal Information"
     },
     "student_submits_evidence": "Student submits evidence",
     "system_identifies_jurisdiction": "System identifies jurisdiction",
@@ -1881,7 +1884,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Compliance Frameworks",
-      "toggle_which_privacy_frameworks_are_acti": "Toggle which privacy frameworks are actively enforced. Pre-seeded on first boot — enable the ones applicable to your jurisdiction."
+      "toggle_which_privacy_frameworks_are_acti": "Toggle which privacy frameworks are actively enforced. Pre-seeded on first boot — enable the ones applicable to your jurisdiction.",
+      "no_active_jurisdictions_found_use_the_fr": "No active jurisdictions found. Use the framework toggles above to activate FERPA, COPPA, GDPR, or CCPA — default rules will be created automatically."
     },
     "pages_joinclassroompage": {
       "invite_not_found": "Invite Not Found",
@@ -1905,7 +1909,8 @@
       "ollama_instance": "Ollama Instance",
       "must_be_reachable_from_the_peripateticwa": "Must be reachable from the Peripateticware backend server.",
       "task_routing": "Task Routing",
-      "which_provider_handles_each_ai_task_for_": "Which provider handles each AI task for your organisation."
+      "which_provider_handles_each_ai_task_for_": "Which provider handles each AI task for your organisation.",
+      "byok_paid_note": "Bring Your Own Key is a paid feature. Upgrade to configure custom AI providers for your school or district."
     },
     "pages_originstorypage": {
       "from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: Peripateticware 2007–2026",
@@ -2003,7 +2008,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Grade level",
       "subject": "Subject",
-      "enrolled_students": "Enrolled Students"
+      "enrolled_students": "Enrolled Students",
+      "larger_classrooms_are_a_paid_feature_upg": "Larger classrooms are a paid feature. Upgrade to enroll more students."
     },
     "privacy_data": "Privacy & Data",
     "pages_teachersettingspage": {
@@ -2177,6 +2183,13 @@
     "standardsImportPage": {
       "title": "Import Learning Standards",
       "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
+    },
+    "pages_donotsellpage": {
+      "do_not_sell_or_share_my_personal_informa": "Do Not Sell or Share My Personal Information",
+      "under_the_california_consumer_privacy_ac": "Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt out of the sale or sharing of their personal information. Peripateticware does not sell personal data, but you may submit this request to formally record your preference.",
+      "preference_recorded": "✓ Preference Recorded",
+      "your_optout_preference_has_been_recorded": "Your opt-out preference has been recorded. We will not sell or share your personal information.",
+      "email_address": "Email address"
     }
   },
   "STUDENT": {},

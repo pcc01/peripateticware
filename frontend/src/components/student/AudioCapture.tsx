@@ -9,7 +9,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 
 interface AudioPlayerProps {
-  src: string;
+  // Preferred: pass the captureId and let the player fetch a short-lived,
+  // single-use signed media token (no JWT in the URL). `src` remains supported
+  // for already-resolved/blob URLs.
+  captureId?: string;
+  src?: string;
   durationSeconds?: number;
   label?: string;
 }
@@ -17,7 +21,7 @@ interface AudioPlayerProps {
 const FORMAT_TIME = (secs: number) =>
 `${Math.floor(secs / 60)}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
 
-export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, durationSeconds, label }) => {
+export const AudioPlayer: React.FC<AudioPlayerProps> = ({ captureId, src, durationSeconds, label }) => {
   const { t } = useTranslation('landing');
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -25,6 +29,21 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, durationSeconds, 
   const [duration, setDuration] = useState(durationSeconds || 0);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(src);
+
+  // When given a captureId, mint a signed media token and build the stream URL.
+  useEffect(() => {
+    let cancelled = false;
+    if (captureId) {
+      audioApi
+        .getMediaStreamUrl(captureId)
+        .then((url) => { if (!cancelled) setResolvedSrc(url); })
+        .catch(() => { if (!cancelled) setError('Could not load audio'); });
+    } else {
+      setResolvedSrc(src);
+    }
+    return () => { cancelled = true; };
+  }, [captureId, src]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -46,7 +65,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, durationSeconds, 
       audio.removeEventListener('ended', onEnded);
       audio.removeEventListener('error', onError);
     };
-  }, [src]);
+  }, [resolvedSrc]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -85,7 +104,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, durationSeconds, 
 
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 space-y-2">
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio ref={audioRef} src={resolvedSrc} preload="metadata" />
       {label && <p className="text-xs text-gray-500 truncate">{label}</p>}
       {error && <p className="text-xs text-red-500">{error}</p>}
 
@@ -199,7 +218,7 @@ export const AudioCapture: React.FC<AudioCaptureProps> = ({
       <div className="space-y-2">
         <p className="text-xs text-green-600 font-medium">{t("landing:audio_recorded", "\u2713 Audio recorded (")}{result.duration_seconds}{t("landing:audiocapture.s", "s)")}</p>
         <AudioPlayer
-          src={audioApi.streamUrl(result.id)}
+          captureId={result.id}
           durationSeconds={result.duration_seconds}
           label="Your recording" />
         

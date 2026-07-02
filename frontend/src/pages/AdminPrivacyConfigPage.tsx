@@ -302,7 +302,7 @@ export default function AdminPrivacyConfigPage() {
         {error && <p style={{ color: '#c0392b' }}>{error}</p>}
 
         {!loading && !error && jurisdictions.length === 0 && (
-          <p style={{ color: '#888' }}>{t('adminprivacyconfigpage.no_active_jurisdictions_found_run_the_se', 'No active jurisdictions found. Run the seed migration to add defaults.')}</p>
+          <p style={{ color: '#888' }}>{t('pages_adminprivacyconfigpage.no_active_jurisdictions_found_use_the_fr', 'No active jurisdictions found. Use the framework toggles above to activate FERPA, COPPA, GDPR, or CCPA — default rules will be created automatically.')}</p>
         )}
 
         {!loading && jurisdictions.map(j => (

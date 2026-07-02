@@ -118,7 +118,8 @@
       "privacy_protected": "あなたのデータは、以下のフレームワークによって保護されています",
       "company_contact": "連絡先",
       "product_privacy_engine": "プライバシーエンジン",
-      "resources_privacy": "プライバシーエンジン"
+      "resources_privacy": "プライバシーエンジン",
+      "legal_do_not_sell": "販売や共有しない"
     },
     "johndoe": "ジョンドー",
     "digital_journal": "デジタル日記",
@@ -1307,7 +1308,9 @@
       "jurisdictions_enforced": "強制的に適用される地域",
       "last_updated": "最終更新日",
       "cta_explore_docs": "プライバシードキュメントを探索",
-      "loading_status": "ロー딩 컴플라이언스 상태…"
+      "loading_status": "ロー딩 컴플라이언스 상태…",
+      "coppa_family_title": "子ども13歳未満の家族向け",
+      "do_not_sell_link": "販売や共有しない個人情報"
     },
     "capture_photosvideo": "写真/動画を撮る",
     "take_photos_record_videos_and_capture_au": "観察や発見のドキュメントに写真、動画、音声を撮ります。",
@@ -1346,7 +1349,7 @@
       "changes_to_this_policy": "このポリシーに関する変更",
       "we_may_update_this_policy_as_the_service": "このポリシーはサービスが発展しますと更新される可能性があります。重要な変更はアプリ内通知経由で通知されます。",
       "contact": "連絡先",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "← ホームに戻る",
       "auth_token_desc": "保存 JWT セッション ID。24 時間後に失効します。",
       "auth_user_desc": "保存基本ユーザープロファイル（名、役職）。ログアウトしたらクリアされます。",
       "i18nextlng_desc": "選択した言語を記憶します。",
@@ -1652,7 +1655,7 @@
     "import_rubric": "PDF/CSV インポート",
     "no_rubrics": "ルビックはまだありません。",
     "criteria": "評価基準",
-    "pts": "pts",
+    "pts": "あなた@example.com",
     "edit": "編集",
     "pages_teacher_teacherproposalreviewpage": {
       "all_caught_up": "全更新済み！",
@@ -1842,8 +1845,8 @@
       "ai_settings": "人工智能の設定",
       "platform_api_keys": "プラットフォーム APIキー",
       "these_keys_are_used_for_all_saas_orgs_th": "これらのキーはSaaS Orgs(プラットフォーム キーを使用しない場合)、BYOK Orgs(API キーを持ち出す)に対して使用されます。",
-      "saas_orgs_using_platform_key": "SaaS Orgs (using platform key)",
-      "byok_orgs_own_api_key": "BYOK Orgs (own API key)"
+      "saas_orgs_using_platform_key": "SaaS 組織（プラットフォームキーを使用）",
+      "byok_orgs_own_api_key": "BYOK 組織（自社 API キー）"
     },
     "pages_platform_platformorgdetailpage": {
       "this_months_usage": "今月の使用実績",
@@ -1880,13 +1883,14 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "レベル",
       "subject": "主題",
-      "enrolled_students": "登錄学生"
+      "enrolled_students": "登錄学生",
+      "larger_classrooms_are_a_paid_feature_upg": "['大規模なクラスルームはプレミアム機能です。プレミアムにアップグレードして、もっと学生を招待できます。']"
     },
     "pages_admin_platformadminpage": {
       "tier": "レベル",
       "status": "状態",
       "no_task_data_yet": "タスクデータはまだありません。",
-      "6month_trend": "6-month trend",
+      "6month_trend": "6月間のトレンド",
       "reason_required_for_audit_log": "理由（監査ログに必須）",
       "spend_by_tier_this_month": "レベル別支出 (この月)",
       "no_spend_recorded_yet": "支出が記録されていないもの",
@@ -1940,7 +1944,7 @@
     "pages_parentmessagespage": {
       "messages": "メッセージ",
       "loading": "ロー딩...",
-      "from": "From",
+      "from": "送信元",
       "reply": "回答",
       "to": "アイムフロム",
       "write_placeholder": "お題に対しての回答を書きます。",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "合規性フレームワーク",
-      "toggle_which_privacy_frameworks_are_acti": "適用法域によって有効化されるプライバシー枠組みを切り替えます。初回起動時に事前セットされます — 適用可能なものは有効化してください。"
+      "toggle_which_privacy_frameworks_are_acti": "適用法域によって有効化されるプライバシー枠組みを切り替えます。初回起動時に事前セットされます — 適用可能なものは有効化してください。",
+      "no_active_jurisdictions_found_use_the_fr": "アクティブな法律領域が見つかりません。上にあるフレームワークトッルスを使用して、FERPA, COPPA, GDPR, または CCPAを有効にしてください。デフォルトのルールは自動的に作成されます。"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "自分の公開キーを使う — アップグレードが必要",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "オーラマ インスタンス",
       "must_be_reachable_from_the_peripateticwa": "ペリパトエワークベッキング バックエンド サーバにアクセスできる必要があります。",
       "task_routing": "タスク ルーティング",
-      "which_provider_handles_each_ai_task_for_": "どのプロバイダーが您の組織を 위해 각 AI 작업을 처리합니까?"
+      "which_provider_handles_each_ai_task_for_": "どのプロバイダーが您の組織を 위해 각 AI 작업을 처리합니까?",
+      "byok_paid_note": ", "
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "この論文は3Gが完全に導入されていない時期、iPhoneが発表される前の数개월、“アプリ”という言葉自体がまだ一般的ではなかった頃に書かれました。その中での予測—ある紙は、Cell Phoneが1-for-1クラスルームデバイスとなり、モバイルネットワークが偏遠地区に到達することが可能になり、GPSが学生の口のポケットに入れるほど 저렴해진다는 것—全てが事実となった。その紙が提唱した製品は存在하지 않았습니다.",
@@ -2171,12 +2177,19 @@
     },
     "cta_privacy_note": "FERPA 및 COPPA 규정을 준수합니다. 학생 데이터는 결코 판매하거나 공유하지 않습니다.",
     "curriculumImportPage": {
-      "description": "",
-      "title": "Import State Academic Standards"
+      "description": ", ",
+      "title": "学校規定の国立教育標準をインポート"
     },
     "standardsImportPage": {
       "title": "导入学习标准",
       "description": "上传一个 PDF 或 CSV 文件来载入您的学科的学习标准——通用教育标准、 Next Generation Science Standards(NGSS)、州级标准，或者自定义框架。一旦保存了这些标准，你就可以将活动标记为符合这些标准，并跟踪学生的覆盖率。"
+    },
+    "pages_donotsellpage": {
+      "email_address": "メールアドレス",
+      "under_the_california_consumer_privacy_ac": "-1",
+      "do_not_sell_or_share_my_personal_informa": "個人情報を販売または共有しないでください",
+      "preference_recorded": "✓ プリファレンスが記録されました",
+      "your_optout_preference_has_been_recorded": "['おプトアウトの設定が記録されました。私たちはあなたの個人情報を販売や共有しません。']"
     }
   },
   "STUDENT": {},

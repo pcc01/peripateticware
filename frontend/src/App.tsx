@@ -11,6 +11,7 @@ import { useAuthStore } from './stores/auth'
 
 import './design-system.css'
 import { useSkin } from './hooks/useSkin'
+import { useGlobalPrivacyControl } from './hooks/useGlobalPrivacyControl'
 import CookieConsentBanner from './components/CookieConsentBanner'
 import UpgradeModal from './components/UpgradeModal'
 import ParentConsentPage from './pages/ParentConsentPage'
@@ -287,6 +288,9 @@ const App: React.FC = () => {
   const setDirection = setSkin
   const location = useLocation()
 
+  // Honour the Global Privacy Control browser signal (CPRA) — auto opt-out.
+  useGlobalPrivacyControl()
+
   useEffect(() => { useAuthStore.getState().checkAuth() }, [])
 
   // RTL support — set dir attribute on <html> whenever language changes
@@ -425,4 +429,22 @@ const App: React.FC = () => {
           <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/help" element={
+          <Route path="/admin/help" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminHelpPage /></AdminLayout></ProtectedRoute>} />
+
+          {/* STUDENT — Journal */}
+          <Route path="/student/journal" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentJournalPage /></StudentLayout></ProtectedRoute>} />
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </div>
+    </I18nextProvider>
+  )
+}
+
+const AppWithRouter: React.FC = () => (
+  <Router>
+    <App />
+  </Router>
+)
+
+export default AppWithRouter

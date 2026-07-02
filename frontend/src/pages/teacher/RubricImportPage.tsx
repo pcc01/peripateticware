@@ -41,4 +41,11 @@ export const RubricImportPage: React.FC = () => {
       setType="rubric"
       title={t('rubricImportPage.title', 'Import Rubric')}
       description={t('rubricImportPage.description', 'Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving.')}
-      onSave={handleSa
+      onSave={handleSave}
+      onComplete={() => navigate(rubricsBase)}
+      onCancel={() => navigate(rubricsBase)}
+    />
+  );
+};
+
+export default RubricImportPage;

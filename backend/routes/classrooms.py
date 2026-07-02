@@ -684,17 +684,23 @@ async def accept_invite(
                     status_code=400,
                     detail="A parent or guardian email address is required for students under 13.",
                 )
-            consent_token = secrets.token_urlsafe(32)
+            # Single-use, HMAC-signed consent token (purpose="parent_consent",
+            # 72h TTL). The token embeds the student_id; the /privacy/consent
+            # endpoint validates + consumes it and derives the hash server-side.
+            # No secret is stored on the user row (consent_token column is left
+            # for legacy compatibility but no longer trusted for auth).
+            from services.signed_url import SignedURL
+            consent_token = SignedURL.generate(
+                purpose="parent_consent",
+                payload={"student_id": str(user_id)},
+            )
             await db.execute(text("""
                 UPDATE users
                 SET requires_parental_consent = TRUE,
                     is_active = FALSE,
-                    age_group = 'under_13',
-                    consent_token = :consent_token
+                    age_group = 'under_13'
                 WHERE id = :uid
-            """), {"uid": user_id, "consent_token": consent_token})
-            # Commit the user row before sending email so the token is persisted
-            # even if the email send itself fails
+            """), {"uid": user_id})
             await db.flush()
             student_name = f"{body.first_name} {body.last_name}"
             try:

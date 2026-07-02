@@ -192,4 +192,42 @@ export const HomeschoolExportPage: React.FC = () => {
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 4 }}>{t('pages_homeschool_homeschoolexportpage.to', 'To')}</label>
-            <input type="date" value={customTo} onChange={e => setCustomTo(e
+            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c',
+                      borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.9rem' }}>
+          {error}
+        </div>
+      )}
+
+      {upgradeDetail ? (
+        <UpgradeCTA
+          featureName="Portfolio Export"
+          requiredTier="homeschool_family"
+          currentTier={upgradeDetail.current_tier}
+        />
+      ) : (
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={!isValid || loading}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          padding: '12px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: '1rem',
+          background: 'var(--primary)', color: '#fff',
+          cursor: !isValid || loading ? 'not-allowed' : 'pointer',
+          opacity: !isValid || loading ? 0.6 : 1,
+        }}
+      >
+        <Download size={18} /> {loading ? 'Generating…' : `Download ${format.toUpperCase()}`}
+      </button>
+      )}
+    </div>
+  );
+}
+
+export default HomeschoolExportPage;

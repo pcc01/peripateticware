@@ -145,7 +145,8 @@
       "privacy_protected": "تمام البيانات حفظة على مدار الزمن خلال هذه القوائم",
       "company_contact": "تواصل",
       "product_privacy_engine": "خاصية الخصوصية",
-      "resources_privacy": "خاصية الخصوصية"
+      "resources_privacy": "خاصية الخصوصية",
+      "legal_do_not_sell": "لا تبيع أو تشارك معلوماتي"
     },
     "johndoe": "جوهن دو",
     "landing": {
@@ -216,7 +217,7 @@
     },
     "team_1_name": "بول سيردا",
     "team_1_role": "مؤسس ومنتج",
-    "team_1_initial": "P",
+    "team_1_initial": "ب",
     "team_2_name": "سوفيا نابرو",
     "team_2_role": "تصميم القرارات",
     "team_2_initial": "تفاصيل المنشور",
@@ -782,7 +783,7 @@
       "logout": "🚪 تسجيل الخروج"
     },
     "database": "القاعدة:",
-    "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
+    "postgresql_16_pgvector": "البرنامج PostgreSQL 16 + pgvector",
     "danger_zone": "منطقة الأبيض",
     "reset_to_defaults": "إعادة تعيين الافتراضي",
     "save_settings": "حفظ الإعدادات",
@@ -1048,7 +1049,9 @@
       "cta_section_title": "عنوان قسم الأمراض",
       "cta_section_subtitle": "القسم التحديثي عنوان",
       "cta_section_desc": "وصف قسم الأمر",
-      "loading_status": "تحميل الوضع المرصد في..."
+      "loading_status": "تحميل الوضع المرصد في...",
+      "coppa_family_title": "للأسر الصغار الذين فيهم الأطفال ذات سن 13 سنة أو أقل",
+      "do_not_sell_link": "لا تبيع أو تشارك معلوماتي الشخصية"
     },
     "student_submits_evidence": "الطالب يقدم الأحجية",
     "system_identifies_jurisdiction": "تحديد المحافظة",
@@ -1417,7 +1420,7 @@
       "back_to_home": "← إلى الخليج",
       "privacy_compliance_intro": "Peripateticware تؤطي بالمرافقة، GDPR، FERPA، CCPA، PIPEDA، LGPD و PDPA. بعض البيانات الأكثر خطيرة لدى الطلبة من جانب إيجار أو استخدامها لإعادة تصميم إعلاماً، والتي تشمل كل مزيد من التفاصيل في نطاق خاص في حقوق الخصوصية. رأى المرأة.",
       "privacy_policy_link": "خصائص خصوصية",
-      "privacy_compliance_outro": "",
+      "privacy_compliance_outro": "للتفاصيل الكاملة.",
       "questions_about_terms": "سؤالات حول هذه الأمانة؟"
     },
     "components_auth_loginscreen": {
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "وجهة الفرق",
       "subject": "مجال",
-      "enrolled_students": "تسجيل المخرجين\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة"
+      "enrolled_students": "تسجيل المخرجين\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة\"\n\"Enrollment\" -- \"الدعوة\"\n\"Student Records\" -- \"حساب الطلبة\"\n\"Grades\" -- \"الدرجات\"\n\"Gradebook\" -- \"كتيب الدرجات\"\n\"Course Catalog\" -- \"إقناع وأمانة المؤسسة\"\n\"Courses\" -- \"المواد المخصصة",
+      "larger_classrooms_are_a_paid_feature_upg": "['الدورات الكبيرة هي خصم مدفوع. استرجع للتحدث بإضافة أكثر طلاب.']"
     },
     "pages_admin_platformadminpage": {
       "tier": "{count} \"Floors\"} [$t('Please provide a valid floor number.')] [*] or [+] \u001b[K\nto add more floors.] {placeholder}{$t('Please provide a valid floor number.\u001b[7D\u001b[K\nnumber.')}[+] [+] to add more floors] {placeholder}{$t('Please provide a va\u001b[2D\u001b[K\nvalid floor number.')}[-] Remove a floor] {placeholder}{$t('Please provide \u001b[K\na valid floor number.')}]\n\"Tier\" {count} \"Etagern\" [$t('Bitte geben Sie eine gültige Etage an.')] [*]\u001b[3D\u001b[K\n[*] oder [+] zum Hinzufügen weiterer Etagen.] {placeholder}{$t('Bitte geben\u001b[5D\u001b[K\ngeben Sie eine gültige Etage an.')}[+] [+] zur Ergänzung weiterer Etagen.] \u001b[K\n{placeholder}{$t('Bitte geben Sie eine gültige Etage an.')}[-] Entfernen vo\u001b[2D\u001b[K\nvon einer Etage] {placeholder}{$t('Bitte geben Sie eine gültige Etage an.')\u001b[5D\u001b[K\nan.')}]",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "أنظمة التوفيق",
-      "toggle_which_privacy_frameworks_are_acti": "تحطم إجراء الخطاب الذي يضمن إجراء الإجراء الخاص بالخدمة الخاصة بالقانون. يتعديد فئة الخلاصات المؤلفة عن الأستاذ الأول عند التشغيل، ويتم إضافة الأفقاء المراجعة بالقانون المحلي. "
+      "toggle_which_privacy_frameworks_are_acti": "تحطم إجراء الخطاب الذي يضمن إجراء الإجراء الخاص بالخدمة الخاصة بالقانون. يتعديد فئة الخلاصات المؤلفة عن الأستاذ الأول عند التشغيل، ويتم إضافة الأفقاء المراجعة بالقانون المحلي. ",
+      "no_active_jurisdictions_found_use_the_fr": "لم يتم العثور على أي منطقة حكومية فعالة. استخدم الزجاجات التغييرات العليا فوق لتفعيل FERPA, COPPA, GDPR, أو CCPA — سيتم إنشاء القوانين الافتراضية بشكل تلقائي."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "تطبيق خيارك",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "مثالة Ollama",
       "must_be_reachable_from_the_peripateticwa": "يجب أن تكون مستعاضة من خلال الخادم الخارجي Peripateticware.",
       "task_routing": "تفتيش الأمر",
-      "which_provider_handles_each_ai_task_for_": "هو مؤقى من مؤثري المؤسسة على كل أمر AI."
+      "which_provider_handles_each_ai_task_for_": "هو مؤقى من مؤثري المؤسسة على كل أمر AI.",
+      "byok_paid_note": " Bring Your Own Key هو ميزة مدفوعة. تحدث للتحدث بالتطوير المخصص للجامعات أو المناطق الإضافية للتعليم العام باستخدام المزودين AI مختارين لديك."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "كتاب الدراسة كان يصدر في وقت ذاته غير مُطلب، والهاتف الثنقية عندي أعدّ إلى خلفية كل جائزة، وأنشطة التلفزيون المحلية ستصبح مُتوقعة، والمحدثين الموجودة في الكتاب كانوا أن الخطوب الذي يرغب فيه سيكون له عدد كامل من طالبين، والشخصيات الذين يحتوي على GPS سيكون جزء من كل طالب.",
@@ -2140,7 +2146,7 @@
     },
     "audioRecorder": {
       "almost_full": "جاء كثير",
-      "record": "",
+      "record": "أسجل",
       "stop": "اتمنى الخضوع",
       "keep": "الحفظ",
       "discard": "الرصيد",
@@ -2171,13 +2177,20 @@
     },
     "curriculumImportPage": {
       "title": "الإطار الأكاديمية للإطار الدولي للإطار الدولي للإطار الدولي للإطار الدولي",
-      "description": ""
+      "description": " تحميل PDF أو CSV من القانون العام للمؤسسات الدولية التعليمية (TEKS, NGSS, Common Core, etc.). Ollama يختصر كل قانون عام للتحقق منه. بعد حفظه كجمعية عامة، يمكن لجميع المعلمين والأسر المخدمة بالتعليم المنزلي تقاريرها ضمن هذه القانون العامة. إعادة تحميل الفايل الأنماطي المشابه يسارف من المعالجة (checksum cache)."
     },
     "standardsImportPage": {
       "title": "تحميل المعلمات التعليمية",
       "description": "تحميل PDF أو CSV مع الخاصيات التعليمية لديك، عموق كومون كور، NGSS، خاصيات الإقليم، أو مقالة خاصة. وتم حفظها، ثم يمكنك تعقيب أجزاء المعلمات ضد هذه الخاصيات وتتبع التواصل المستوحشر. "
     },
-    "cta_privacy_note": "تُؤتمن حمايةها والتقليد الخاص والشغف الأمثل."
+    "cta_privacy_note": "تُؤتمن حمايةها والتقليد الخاص والشغف الأمثل.",
+    "pages_donotsellpage": {
+      "email_address": "البريد الإلكتروني",
+      "under_the_california_consumer_privacy_ac": " تحت القانون الخصوصي للأهالي كاليفورنيا (CCPA) وقانون الحقوق الخصوصية في كاليفورنيا (CPRA), مستطيعون المدنيين في كاليفورنيا إلغاء البيع أو المشاركة بياناتهم الشخصية. Peripateticware لا يبيع بيانات الشخصية، ولكن يمكنك إرسال طلب هذا لتقديم طلب رسمي لتسجيل تفضيلاتك.",
+      "do_not_sell_or_share_my_personal_informa": "لا تبيع أو شق سفاحي الخاصة بيني",
+      "preference_recorded": "✓ التفضلات محفوظة",
+      "your_optout_preference_has_been_recorded": "تم حفظ تفضلاتك. لن نبيع أو نشارك بياناتك الخاصة."
+    }
   },
   "STUDENT": {},
   "TEACHER": {},

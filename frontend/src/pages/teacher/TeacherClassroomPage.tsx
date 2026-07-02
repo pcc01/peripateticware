@@ -228,9 +228,7 @@ export default function TeacherClassroomPage() {
           </div>
           {atCapacity && (
             <div className="mt-3">
-              <p className="text-xs text-gray-500 mb-2">
-                Larger classrooms are a paid feature. Upgrade to enroll more students.
-              </p>
+              <p className="text-xs text-gray-500 mb-2">{t('pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg', 'Larger classrooms are a paid feature. Upgrade to enroll more students.')}</p>
               <UpgradeCTA
                 featureName="Larger classrooms"
                 requiredTier="starter"
@@ -314,4 +312,8 @@ export default function TeacherClassroomPage() {
         </div>
       )}
 
-      {/* In
+      {/* Invite panel */}
+      <InviteStudentsPanel classroomId={classroom.id} onDone={load} />
+    </div>
+  );
+}

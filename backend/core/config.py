@@ -73,7 +73,10 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    # 1 hour. Short-lived access tokens limit the blast radius of a leaked token
+    # on shared/school devices; the frontend silently refreshes via
+    # POST /auth/refresh (which now enforces revocation + is_active).
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
     # Privacy Engine — audit log anonymisation
     # SHA-256(student_id + AUDIT_HASH_SALT) is stored in rule_audit_log.student_id_hash
@@ -111,6 +114,12 @@ class Settings(BaseSettings):
     PRIVACY_CONFIG_DIR: str = os.getenv("PRIVACY_CONFIG_DIR", "./backend/config/jurisdictions")
     ACTIVE_JURISDICTION: str = os.getenv("ACTIVE_JURISDICTION", "gdpr_eu")
     ENABLE_PRIVACY_CHECKS: bool = os.getenv("ENABLE_PRIVACY_CHECKS", "true").lower() == "true"
+    # Enforcement mode for enforce_on_submission():
+    #   "log"   — record signals, always ALLOW (default, safe rollout)
+    #   "warn"  — return WARNING status with reasons, but still ALLOW the write
+    #   "block" — return BLOCKED and callers must refuse the write
+    # Start in "log", move to "warn" once dashboards look right, then "block".
+    ENFORCEMENT_MODE: str = os.getenv("ENFORCEMENT_MODE", "log").lower()
     PRIVACY_NOTIFICATION_ENABLED: bool = os.getenv("PRIVACY_NOTIFICATION_ENABLED", "true").lower() == "true"
 
     # ── Phase 5: IAPP Crawler ─────────────────────────────────────────────────
@@ -220,15 +229,21 @@ class Settings(BaseSettings):
 
     @property
     def CORS_ORIGINS(self) -> list:
-        """Parse CORS_ORIGINS from string to list"""
+        """Parse CORS_ORIGINS from string to list.
+
+        SECURITY: fail CLOSED. A malformed CORS_ORIGINS value must yield an
+        empty allowlist, never ["*"] — with allow_credentials=True a wildcard
+        would let any website read authenticated API responses cross-origin.
+        """
         try:
-            return json.loads(self.CORS_ORIGINS_STR)
+            parsed = json.loads(self.CORS_ORIGINS_STR)
+            return parsed if isinstance(parsed, list) else []
         except (json.JSONDecodeError, TypeError):
-            return ["*"]
+            return []
 
     class Config:
         case_sensitive = True
 
 
 settings = Settings()
-Settings()
+# NOTE: keep this module import-safe — it is imported at startup by core.security.

@@ -118,7 +118,8 @@
       "privacy_protected": "I tuoi dati sono protetti da queste architetture",
       "company_contact": "Contatto",
       "product_privacy_engine": "-> \"Privacy Engine\" -- OK! (Preserve template variable, no syntax alterati\u001b[8D\u001b[K\nalterations, exact translation of the source value string text. No notes or\u001b[2D\u001b[K\nor formatting.) Note: This is a sample output that follows these rules. Do \u001b[K\nnot provide any additional text around translated values like notes or intr\u001b[4D\u001b[K\nintroductions. Only provide the final translated value strings.",
-      "resources_privacy": "- \"motore privacy\" <-- Italiano translation in brackets. If multiple trans\u001b[5D\u001b[K\ntranslations are available, please provide both the English and Italian var\u001b[3D\u001b[K\nvariants of each option with their respective values. Do not include any HT\u001b[2D\u001b[K\nHTML or XML markup. Provide a single text string value per line. No need fo\u001b[2D\u001b[K\nfor capitalization unless it is required by your target language rules or s\u001b[1D\u001b[K\nstyling guidelines. No need for punctuation unless it is required by your t\u001b[1D\u001b[K\ntarget language rules or styling guidelines. Example: \"Privacy Engine\" - \"m\u001b[2D\u001b[K\n\"motore privacy\"."
+      "resources_privacy": "- \"motore privacy\" <-- Italiano translation in brackets. If multiple trans\u001b[5D\u001b[K\ntranslations are available, please provide both the English and Italian var\u001b[3D\u001b[K\nvariants of each option with their respective values. Do not include any HT\u001b[2D\u001b[K\nHTML or XML markup. Provide a single text string value per line. No need fo\u001b[2D\u001b[K\nfor capitalization unless it is required by your target language rules or s\u001b[1D\u001b[K\nstyling guidelines. No need for punctuation unless it is required by your t\u001b[1D\u001b[K\ntarget language rules or styling guidelines. Example: \"Privacy Engine\" - \"m\u001b[2D\u001b[K\n\"motore privacy\".",
+      "legal_do_not_sell": "Non vendere o condividere i miei dati"
     },
     "johndoe": "giovannidoe",
     "digital_journal": "Diario digitale",
@@ -1260,7 +1261,7 @@
     "provide_constructive_feedback": "Fornisci feedback costruttivo...",
     "comingsoonpage": {
       "this_page_is_coming_soon": "Questa pagina verrà presto pubblicata.",
-      "go_back": "← Go Back"
+      "go_back": "Indietro ←"
     },
     "privacy_first": "Privacy prima",
     "eg_understand_photosynthesis_process": "ad esempio, Comprendere il processo della fotosintesi",
@@ -1307,7 +1308,9 @@
       "jurisdictions_enforced": "Jurisdizioni applicate",
       "last_updated": "Ultimo aggiornamento",
       "cta_explore_docs": "Esplora i documenti sulla privacy",
-      "loading_status": "Caricamento dello stato di conformità..."
+      "loading_status": "Caricamento dello stato di conformità...",
+      "coppa_family_title": "Per le famiglie dei bambini sotto i 13 anni",
+      "do_not_sell_link": "Non vendere o condividere i miei dati personali"
     },
     "capture_photosvideo": "📸 Cattura foto/video",
     "take_photos_record_videos_and_capture_au": "Prendi foto, registra video e cattura audio per documentare le tue osservazioni e trovare.",
@@ -1346,7 +1349,7 @@
       "changes_to_this_policy": "Modifiche alla Politica",
       "we_may_update_this_policy_as_the_service": "Potremmo aggiornare questa politica mentre il Servizio si sviluppa. Le modifiche significative saranno comunicati tramite notifica in-app.",
       "contact": "Contatto",
-      "back_to_home": "← Back to Home",
+      "back_to_home": "← Indietro a casa",
       "auth_token_desc": "Salva il tuo JWT di sessione. Scade dopo 24 ore.",
       "auth_user_desc": "Salva il tuo profilo utente di base (nome, ruolo). Cancellato all'accesso.",
       "i18nextlng_desc": "Ricorda la tua lingua preferita.",
@@ -1371,7 +1374,7 @@
       "the_service_is_provided_ldquoas_isrdquo_": "Il Servizio è fornito come sta. Peripateticware non sarà responsabile di qualsiasi danno indiretto, incidentale o conseguenziale derivante dall'uso del Servizio.",
       "back_to_home": "← Indietro a Home",
       "privacy_compliance_intro": "Peripateticware è conforme a COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD e PDPA. I dati degli studenti non vengono venduti o utilizzati per la pubblicità. Per maggiori dettagli consultare la",
-      "privacy_policy_link": "Privacy Policy",
+      "privacy_policy_link": "['Politica sulla privacy']",
       "privacy_compliance_outro": ".",
       "questions_about_terms": "Domande su questi termini?"
     },
@@ -1422,7 +1425,7 @@
     },
     "components_auth_loginscreen": {
       "try_a_demo_account": "🧪 PROVA CONTO DEMO",
-      "password_securepass123": "Password: SecurePass123!"
+      "password_securepass123": "Password: Password sicuro123!"
     },
     "cookie_consent_title": "Notifica sulla privacy",
     "learn_more": "Scopri di più",
@@ -1444,7 +1447,7 @@
     "hs_cta_signup": "Avvia Gratis →",
     "hs_cta_login": "Accedi",
     "gdpr_title": "GDPR",
-    "ccpa_title": "CCPA",
+    "ccpa_title": "CDCA",
     "components_shared_extractionwizard": {
       "set_name": "Imposta nome",
       "analysing_document": "Analisi documento...",
@@ -1475,7 +1478,7 @@
     "think_about": "Pensa a...",
     "sketch": "Schizzo",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticware"
+      "peripateticware": "Peripateticaware"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Caricamento...",
@@ -1880,7 +1883,8 @@
     "pages_teacher_teacherclassroompage": {
       "grade_level": "Livello di apprendimento",
       "subject": "Materia",
-      "enrolled_students": "Studenti iscritti"
+      "enrolled_students": "Studenti iscritti",
+      "larger_classrooms_are_a_paid_feature_upg": "['Le aule più grandi sono una caratteristica a pagamento. Aggiorna per iscriversi a più studenti.']"
     },
     "pages_admin_platformadminpage": {
       "tier": "Fascia",
@@ -1915,7 +1919,7 @@
       "save_your_note_first_to_attach_photos_au": "💡 Salva prima la tua nota per allegare foto, audio e video."
     },
     "nav": {
-      "dashboard": "Dashboard",
+      "dashboard": "Pannello di controllo",
       "users": "Gestione utenti",
       "classrooms": "Gestione classi",
       "standards": "Libreria standard",
@@ -2033,7 +2037,8 @@
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Framework di conformità",
-      "toggle_which_privacy_frameworks_are_acti": "Attiva/disattiva i framework sulla privacy. Pre-caricati al primo avvio - abilita quelli applicabili alla tua giurisdizione."
+      "toggle_which_privacy_frameworks_are_acti": "Attiva/disattiva i framework sulla privacy. Pre-caricati al primo avvio - abilita quelli applicabili alla tua giurisdizione.",
+      "no_active_jurisdictions_found_use_the_fr": "Non sono state trovate giurisdizioni attive. Utilizza i regolatori superiori per attivare FERPA, COPPA, GDPR o CCPA - le regole predefinite verranno create automaticamente."
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Porta la tua chiave - Upgrade Required",
@@ -2046,7 +2051,8 @@
       "ollama_instance": "Esempio Ollama",
       "must_be_reachable_from_the_peripateticwa": "Deve essere raggiungibile dal server di backend Peripateticware.",
       "task_routing": "Instradamento delle attività",
-      "which_provider_handles_each_ai_task_for_": "Quali provider gestiscono ogni attività AI per la vostra organizzazione."
+      "which_provider_handles_each_ai_task_for_": "Quali provider gestiscono ogni attività AI per la vostra organizzazione.",
+      "byok_paid_note": "Bring Your Own Key è una funzionalità a pagamento. Aggiorna per configurare i fornitori AI personalizzati per la tua scuola o distretto."
     },
     "pages_originstorypage": {
       "the_paper_was_written_at_a_moment_when_3": "Il documento è stato scritto in un momento in cui 3G non era ancora completamente disponibile, l'iPhone era a mesi di distanza dal lancio e \"app\" non era ancora una parola comune. Le sue previsioni - che i cellulari sarebbero diventati dispositivi da classe 1-per-1, che le reti mobili raggiungerebbero regioni remote e che il GPS diventerà abbastanza economico da mettere in tasca a ogni studente - sono tutte vere. I prodotti di cui il documento ha parlato non esistono.",
@@ -2172,11 +2178,18 @@
     "cta_privacy_note": "Conforme FERPA e COPPA. I dati degli studenti non vengono mai venduti o condivisi.",
     "curriculumImportPage": {
       "description": "['Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).', 'Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).', 'Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ciascun standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che fanno educazione a casa possono mappare le loro attività contro questi standard. Re-caricando lo stesso file si salta il processamento (cache di checksum).']",
-      "title": "Import State Academic Standards"
+      "title": "Importa Stato Standard Accademici"
     },
     "standardsImportPage": {
       "title": "Importa standard di apprendimento",
       "description": "Carica un PDF o CSV degli standard di apprendimento per la tua disciplina - Common Core, NGSS, standard statali o il tuo proprio framework personalizzato. Una volta salvati, potrai contrassegnare le attività contro questi standard e tenere traccia della copertura degli studenti."
+    },
+    "pages_donotsellpage": {
+      "email_address": "Indirizzo email",
+      "under_the_california_consumer_privacy_ac": "Sotto la legge sulla privacy dei consumatori della California (CCPA) e il California Privacy Rights Act (CPRA), i residenti della California hanno il diritto di optare fuori dalla vendita o condivisione delle informazioni personali. Peripateticware non commercializza dati personali, ma puoi presentare questa richiesta per formalizzare la tua preferenza.",
+      "do_not_sell_or_share_my_personal_informa": "Non Vendere o Condividere i Miei Dati Personali",
+      "preference_recorded": "✓ Preferenza Registrata",
+      "your_optout_preference_has_been_recorded": "Hai registrato la tua preferenza di opt-out. Non vendiamo o condivideremo i tuoi dati personali."
     }
   },
   "STUDENT": {},
