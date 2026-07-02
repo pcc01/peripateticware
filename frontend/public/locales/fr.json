@@ -1655,7 +1655,7 @@
     "import_rubric": "Importer PDF/CSV",
     "no_rubrics": "Pas de rubriques encore.",
     "criteria": "criteriaque",
-    "pts": "pts",
+    "pts": "points",
     "edit": "Modifier",
     "pages_teacher_teacherproposalreviewpage": {
       "all_caught_up": "Tout à jour !",
@@ -1942,7 +1942,7 @@
       "audit": "['Journal des audits']"
     },
     "pages_parentmessagespage": {
-      "messages": "Messages",
+      "messages": "Messagerie",
       "loading": "Chargement en cours",
       "from": "À partir de",
       "reply": "Répondre",
@@ -1959,7 +1959,7 @@
     "notifications": "Notification",
     "progress_reports": "Rapports d'avancement",
     "pages_parentreportspage": {
-      "engagement": "Engagement",
+      "engagement": "['Implication']",
       "highlights": "🌟 Faits saillants",
       "areas_to_watch": "⚠️ Domaines à surveiller",
       "growth_areas": "📈 Domaines de croissance",

@@ -1,37 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2"><file source-language="en" target-language="es" datatype="plaintext" original="es.json"><header><meta-group category="w3c-prov-jsonld"><meta type="provenance-graph">{
   "@context": {},
-  "@graph": [
-    {
-      "@id": "agent:OLLAMA-mistral_Profile__Application_UI_Strings_|_Temp__0.0",
-      "@type": "prov:Agent",
-      "prov:label": "Translation Engine Profile: OLLAMA-mistral [Profile: Application UI Strings | Temp: 0.0]"
-    },
-    {
-      "@id": "activity:translation-marzano-2026-07-02T20:12:23.920360+00:00",
-      "@type": "prov:Activity",
-      "prov:startTime": "2026-07-02T20:12:23.920360+00:00",
-      "actor": {
-        "@id": "agent:OLLAMA-mistral_Profile__Application_UI_Strings_|_Temp__0.0"
-      }
-    },
-    {
-      "@id": "entity:source-marzano",
-      "@type": "prov:Entity",
-      "prov:value": "Marzano"
-    },
-    {
-      "@id": "entity:target-marzano-v1",
-      "@type": "prov:Entity",
-      "prov:value": "['Marzameto']",
-      "generated_by": {
-        "@id": "activity:translation-marzano-2026-07-02T20:12:23.920360+00:00"
-      },
-      "used_source": {
-        "@id": "entity:source-marzano"
-      }
-    }
-  ]
+  "@graph": []
 }</meta></meta-group></header><body><trans-unit id="500" approved="no"><source>500</source><target>1000"
 "2000"
 "3000"

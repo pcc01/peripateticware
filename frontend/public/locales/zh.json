@@ -1747,7 +1747,7 @@
     "privacy_first_desc": "从一开始就为K-12构建。符合主要隐私框架 — 不是一个后备计划。",
     "ferpa_title": "美国教育权利保护法（Family Educational Rights and Privacy Act）",
     "ferpa_desc": "美国法律保护的学生教育记录",
-    "coppa_title": "",
+    "coppa_title": "[\" COPPA (Children's Online Privacy Protection Act)\"]",
     "coppa_desc": "学生年龄为13岁以下的用户内置了父母同意流程。",
     "privacy_compliant": "隐私合规",
     "privacy_review_needed": "隐私审查需要",

@@ -2595,5 +2595,6 @@
   "pages_donotsellpage.under_the_california_consumer_privacy_ac": "-1",
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "個人情報を販売または共有しないでください",
   "pages_donotsellpage.preference_recorded": "✓ プリファレンスが記録されました",
-  "pages_donotsellpage.your_optout_preference_has_been_recorded": "['おプトアウトの設定が記録されました。私たちはあなたの個人情報を販売や共有しません。']"
+  "pages_donotsellpage.your_optout_preference_has_been_recorded": "['おプトアウトの設定が記録されました。私たちはあなたの個人情報を販売や共有しません。']",
+  "auth.email_placeholder": "['例：you@example.com']"
 }
