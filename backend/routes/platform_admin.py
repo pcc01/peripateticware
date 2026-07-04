@@ -285,6 +285,49 @@ async def reinstate_org(
     logger.info(f"[platform_admin] Org {org_id} reinstated by {admin.id}")
 
 
+# ── Maintenance mode ──────────────────────────────────────────────────────────
+# Flag lives in Redis ("maintenance_mode"); enforced by MaintenanceModeMiddleware
+# in main.py, which exempts /api/v1/platform/* so this toggle always works.
+# TTL 7 days: if the operator forgets, maintenance auto-expires instead of
+# leaving the site dark forever.
+
+class MaintenanceBody(BaseModel):
+    enabled: bool
+
+
+@router.get("/maintenance")
+async def get_maintenance_status(
+    _admin: User = Depends(require_platform_admin),
+):
+    """Current maintenance-mode state."""
+    from core.cache import get_cache
+    enabled = bool(await get_cache("maintenance_mode"))
+    return {"enabled": enabled}
+
+
+@router.put("/maintenance", status_code=200)
+async def set_maintenance_mode(
+    body: MaintenanceBody,
+    request: Request,
+    admin: User = Depends(require_platform_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Turn maintenance mode on/off. Takes effect within ~5s (middleware cache)."""
+    from core.cache import set_cache, delete_cache
+    if body.enabled:
+        ok = await set_cache("maintenance_mode", True, ttl=7 * 24 * 3600)
+    else:
+        ok = await delete_cache("maintenance_mode")
+    if not ok:
+        raise HTTPException(status_code=503, detail="Could not update maintenance flag (Redis unavailable).")
+    await _audit(db, str(admin.id),
+                 "maintenance_enabled" if body.enabled else "maintenance_disabled",
+                 ip_address=request.client.host if request.client else None)
+    await db.commit()
+    logger.warning(f"[platform_admin] Maintenance mode {'ENABLED' if body.enabled else 'disabled'} by {admin.id}")
+    return {"enabled": body.enabled}
+
+
 # ── POST /platform/impersonate/{org_id} ───────────────────────────────────────
 
 @router.post("/impersonate/{org_id}")

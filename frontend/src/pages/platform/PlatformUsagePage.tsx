@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 import { useAuthStore } from '@/stores/auth';
 
 type Period = 'day' | 'week' | 'month';
@@ -23,9 +24,7 @@ export default function PlatformUsagePage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/v1/platform/usage?period=${period}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    platformFetch(`/api/v1/platform/usage?period=${period}`)
       .then(r => r.json())
       .then(setData)
       .finally(() => setLoading(false));

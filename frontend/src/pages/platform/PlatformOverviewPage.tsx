@@ -3,8 +3,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart2, Building2, Shield, Activity, TrendingUp, Key } from 'lucide-react';
+import { BarChart2, Building2, Shield, Activity, TrendingUp, Key, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 import { useAuthStore } from '@/stores/auth';
 
 interface Usage {
@@ -21,16 +22,44 @@ export default function PlatformOverviewPage() {
   const [usage, setUsage] = useState<Usage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [maintenance, setMaintenance] = useState<boolean | null>(null); // null = unknown
+  const [maintBusy, setMaintBusy] = useState(false);
 
   useEffect(() => {
-    fetch('/api/v1/platform/usage?period=month', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    platformFetch('/api/v1/platform/usage?period=month')
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(setUsage)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+
+    platformFetch('/api/v1/platform/maintenance')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => setMaintenance(!!d.enabled))
+      .catch(() => setMaintenance(null));
   }, [token]);
+
+  const toggleMaintenance = async () => {
+    const target = !maintenance;
+    const warning = target
+      ? 'Take the site DOWN for maintenance? All users get a 503 + maintenance page. You keep access to /platform.'
+      : 'Bring the site back UP?';
+    if (!confirm(warning)) return;
+    setMaintBusy(true);
+    try {
+      const res = await platformFetch('/api/v1/platform/maintenance', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: target }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+      setMaintenance(!!d.enabled);
+    } catch (e: any) {
+      setError(`Maintenance toggle failed: ${e.message}`);
+    } finally {
+      setMaintBusy(false);
+    }
+  };
 
   const fmt = (n: number) => n >= 1_000_000
     ? `${(n / 1_000_000).toFixed(1)}M`
@@ -50,6 +79,36 @@ export default function PlatformOverviewPage() {
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>
       )}
+
+      {/* Maintenance mode */}
+      <div className={`flex items-center justify-between p-4 rounded-2xl border ${
+        maintenance ? 'bg-red-50 border-red-300' : 'bg-white border-gray-100 shadow'
+      }`}>
+        <div className="flex items-center gap-3">
+          <Wrench className={`w-5 h-5 ${maintenance ? 'text-red-600' : 'text-gray-400'}`} />
+          <div>
+            <p className="text-sm font-semibold text-gray-800">Maintenance mode</p>
+            <p className="text-xs text-gray-500">
+              {maintenance === null
+                ? 'Status unavailable'
+                : maintenance
+                  ? 'SITE IS DOWN — all users see the maintenance page. /platform stays reachable for you.'
+                  : 'Site is up. Enabling returns 503 to everyone except /platform. Auto-expires after 7 days.'}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={toggleMaintenance}
+          disabled={maintBusy || maintenance === null}
+          className={`px-4 py-2 rounded-lg text-xs font-semibold transition disabled:opacity-50 ${
+            maintenance
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-red-600 text-white hover:bg-red-700'
+          }`}
+        >
+          {maintBusy ? '…' : maintenance ? 'Bring site back UP' : 'Take site DOWN'}
+        </button>
+      </div>
 
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

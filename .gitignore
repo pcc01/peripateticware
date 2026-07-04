@@ -430,3 +430,8 @@ backend/uploads/*
 mobile-build-guide.docx
 peripateticware_assessment.docx
 sprint_development_plan.docx
+
+# ── Internal deployment/ops docs (infra topology, backup layout) ──
+DEPLOY_PLAN.md
+DEPLOY_SMALL.md
+GO_LIVE_RUNBOOK.md

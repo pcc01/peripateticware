@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 
 interface AuditEntry {
   id: string;
@@ -31,7 +32,7 @@ export default function PlatformAuditLogPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/v1/platform/audit-log?page=${page}&page_size=25`, { credentials: 'include' })
+    platformFetch(`/api/v1/platform/audit-log?page=${page}&page_size=25`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(setData)
       .catch(e => setError(e.message))

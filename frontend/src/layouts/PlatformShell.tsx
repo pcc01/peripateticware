@@ -1,11 +1,12 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 // Shared shell for all /platform/* pages — provides back nav + logout icon.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
-import { LogOut, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { LogOut, ArrowLeft, LayoutDashboard, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
+import { getPlatformSecret, setPlatformSecret } from '@/utils/platformFetch';
 
 const PLATFORM_NAV = [
   { path: '/platform',           label: 'Overview' },
@@ -15,13 +16,72 @@ const PLATFORM_NAV = [
   { path: '/platform/audit-log', label: 'Audit' },
 ];
 
+/**
+ * One-time gate: /api/v1/platform/* requires the X-Platform-Secret header
+ * (second factor on top of JWT + is_platform_admin) whenever
+ * PLATFORM_API_SECRET is configured on the backend. The secret is entered
+ * here once per browser session and held in sessionStorage only.
+ */
+function PlatformSecretGate({ onDone }: { onDone: () => void }) {
+  const [value, setValue] = useState('');
+
+  const submit = (secret: string) => {
+    setPlatformSecret(secret);
+    onDone();
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg, #f9f6f1)' }}>
+      <form
+        onSubmit={e => { e.preventDefault(); submit(value.trim()); }}
+        className="bg-white border border-gray-200 rounded-xl p-6 w-full max-w-sm shadow-sm"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <KeyRound className="w-5 h-5 text-gray-500" />
+          <h1 className="text-sm font-semibold text-gray-800">Platform operator secret</h1>
+        </div>
+        <p className="text-xs text-gray-500 mb-4">
+          Enter the <code>PLATFORM_API_SECRET</code> for this environment. It is kept in this
+          tab's session only and sent as <code>X-Platform-Secret</code> with platform-admin requests.
+        </p>
+        <input
+          type="password"
+          autoFocus
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          placeholder="Platform secret"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gray-400"
+        />
+        <button
+          type="submit"
+          className="w-full bg-gray-900 text-white rounded-md py-2 text-sm font-medium hover:bg-gray-700 transition"
+        >
+          Continue
+        </button>
+        <button
+          type="button"
+          onClick={() => submit('')}
+          className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600"
+        >
+          Continue without a secret (dev — secret not configured)
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function PlatformShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuthStore();
   useSessionSecurity();
+  const [secretEntered, setSecretEntered] = useState(() => getPlatformSecret() !== null);
 
   const isRoot = location.pathname === '/platform';
+
+  if (!secretEntered) {
+    return <PlatformSecretGate onDone={() => setSecretEntered(true)} />;
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg, #f9f6f1)' }}>

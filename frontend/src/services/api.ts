@@ -48,6 +48,18 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('auth_user')
       window.location.href = '/login'
     }
+
+    // Maintenance mode: backend middleware answers 503 with detail "maintenance"
+    // for all non-exempt API calls. Send the user to the maintenance page
+    // (platform admins can still reach /platform — that surface is exempt).
+    if (
+      error.response?.status === 503 &&
+      (error.response?.data as { detail?: string })?.detail === 'maintenance' &&
+      window.location.pathname !== '/maintenance' &&
+      !window.location.pathname.startsWith('/platform')
+    ) {
+      window.location.href = '/maintenance'
+    }
     
     console.error('API Error:', {
       status: error.response?.status,

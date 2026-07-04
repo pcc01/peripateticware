@@ -12,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Key, Eye, EyeOff, Save, Trash2, Building2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 
 interface PlatformKey {
   provider: string;
@@ -44,14 +45,14 @@ export default function PlatformAISettingsPage() {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/platform/ai-keys', { credentials: 'include' })
+    platformFetch('/api/v1/platform/ai-keys')
       .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
       .then(data => setKeys(Array.isArray(data) ? data : [data]))
       .catch(e => setError(String(e)))
       .finally(() => setLoadingKeys(false));
 
     // Load orgs to show BYOK status
-    fetch('/api/v1/platform/orgs?page_size=200', { credentials: 'include' })
+    platformFetch('/api/v1/platform/orgs?page_size=200')
       .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
       .then(data => {
         const items: OrgRow[] = (data.items ?? data).map((o: any) => ({
@@ -70,9 +71,8 @@ export default function PlatformAISettingsPage() {
     if (!newKey.trim()) return;
     setSaving(true); setSaveMsg(null);
     try {
-      const res = await fetch('/api/v1/platform/ai-keys', {
+      const res = await platformFetch('/api/v1/platform/ai-keys', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ provider, api_key: newKey.trim() }),
       });
@@ -80,7 +80,7 @@ export default function PlatformAISettingsPage() {
       setSaveMsg('Key saved.');
       setNewKey('');
       // Refresh keys list
-      const updated = await fetch('/api/v1/platform/ai-keys', { credentials: 'include' }).then(r => r.json());
+      const updated = await platformFetch('/api/v1/platform/ai-keys').then(r => r.json());
       setKeys(Array.isArray(updated) ? updated : [updated]);
     } catch (e: any) {
       setSaveMsg(`Error: ${e.message}`);

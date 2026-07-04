@@ -57,14 +57,16 @@ class VisionService:
                 "Be concise and educational."
             )
         
-        # Try Ollama Llava first (local, free)
+        # Provider order follows LLM_PROVIDER, with the other as fallback:
+        #   ollama (dev default)  → Llava first, Claude Vision fallback
+        #   claude (production)   → Claude Vision first, Llava fallback
         if settings.LLM_PROVIDER.lower() == "ollama":
             result = await VisionService._analyze_with_ollama(
                 image_bytes,
                 image_format,
                 analysis_prompt
             )
-            
+
             # Fall back to Claude if Ollama fails
             if not result.get("text"):
                 result = await VisionService._analyze_with_claude(
@@ -73,13 +75,23 @@ class VisionService:
                     analysis_prompt
                 )
         else:
-            # Use Claude Vision (cloud, requires API key)
+            # Claude Vision first (cloud, ~$0.003/image on Haiku)
             result = await VisionService._analyze_with_claude(
                 image_bytes,
                 image_format,
                 analysis_prompt
             )
-        
+
+            # Fall back to local Llava if Claude fails (key/budget/outage)
+            if not result.get("text"):
+                fallback = await VisionService._analyze_with_ollama(
+                    image_bytes,
+                    image_format,
+                    analysis_prompt
+                )
+                if fallback.get("text"):
+                    result = fallback
+
         return result
     
     @staticmethod
@@ -154,7 +166,11 @@ class VisionService:
     ) -> Dict:
         """Analyze image using Claude Vision API (cloud, paid)"""
         try:
-            if not settings.CLAUDE_API_KEY:
+            # Accept either env name — ANTHROPIC_API_KEY is the standard,
+            # CLAUDE_API_KEY the legacy alias (same for the model).
+            api_key = settings.ANTHROPIC_API_KEY or settings.CLAUDE_API_KEY
+            model = settings.ANTHROPIC_MODEL or settings.CLAUDE_MODEL
+            if not api_key:
                 return {
                     "text": "",
                     "objects": [],
@@ -180,12 +196,12 @@ class VisionService:
                 response = await client.post(
                     "https://api.anthropic.com/v1/messages",
                     headers={
-                        "x-api-key": settings.CLAUDE_API_KEY,
+                        "x-api-key": api_key,
                         "anthropic-version": "2023-06-01",
                         "content-type": "application/json"
                     },
                     json={
-                        "model": settings.CLAUDE_MODEL,
+                        "model": model,
                         "max_tokens": 1024,
                         "messages": [
                             {
@@ -224,7 +240,7 @@ class VisionService:
                     "text": analysis_text,
                     "objects": objects,
                     "confidence": 0.90,
-                    "model": settings.CLAUDE_MODEL,
+                    "model": model,
                     "provider": "claude"
                 }
             else:

@@ -12,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle, CheckCircle, RefreshCw, UserCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 
 interface OrgDetail {
   id: string; slug: string; name: string; type: string;
@@ -35,7 +36,7 @@ export default function PlatformOrgDetailPage() {
   const fetchOrg = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/platform/orgs/${orgId}`, { credentials: 'include' });
+      const res = await platformFetch(`/api/v1/platform/orgs/${orgId}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setOrg(await res.json());
     } catch (e: any) {
@@ -50,7 +51,7 @@ export default function PlatformOrgDetailPage() {
   const doAction = async (path: string, successMsg: string) => {
     setActing(true); setMessage(null);
     try {
-      const res = await fetch(`/api/v1/platform/${path}`, { method: 'POST', credentials: 'include' });
+      const res = await platformFetch(`/api/v1/platform/${path}`, { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setMessage({ type: 'success', text: successMsg });
       await fetchOrg();
@@ -65,7 +66,7 @@ export default function PlatformOrgDetailPage() {
     if (!confirm("Issue a 1-hour impersonation token for this org's owner? This is logged.")) return;
     setActing(true); setMessage(null);
     try {
-      const res = await fetch(`/api/v1/platform/impersonate/${orgId}`, { method: 'POST', credentials: 'include' });
+      const res = await platformFetch(`/api/v1/platform/impersonate/${orgId}`, { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       // Store impersonation token and redirect

@@ -3,12 +3,19 @@
 
 # Production overrides for docker-compose.yml
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# NOTE: the `ports: !override` entries below REPLACE the base file's port
+# mappings instead of merging with them (the base file publishes 5432/8000/3000
+# on ALL interfaces — fine on a dev laptop, a hole on an internet-adjacent box).
+# `!override` requires Docker Compose >= 2.24.4. Verify the merged result with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml config | grep -A3 ports
 
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: production   # static build served by nginx — NOT the Vite dev server
       args:
         NODE_ENV: production
     restart: always
@@ -18,6 +25,9 @@ services:
       VITE_DEBUG: 'false'
     # No source volumes in production — use built image
     volumes: []
+    # Loopback only — cloudflared is the sole consumer
+    ports: !override
+      - "127.0.0.1:3000:3000"
     mem_limit: 512m
     cpus: '1.0'
 
@@ -37,12 +47,17 @@ services:
       DEBUG: 'false'
       LOG_LEVEL: INFO
     volumes: []
+    # Loopback only — cloudflared is the sole consumer
+    ports: !override
+      - "127.0.0.1:8000:8000"
     restart: always
     mem_limit: 1g
     cpus: '2.0'
 
   postgres:
     restart: always
+    # No host port at all — only other containers talk to Postgres
+    ports: !override []
     environment:
       POSTGRES_INITDB_ARGS: >-
         -c shared_buffers=256MB
@@ -55,9 +70,10 @@ services:
 
   redis:
     restart: always
+    ports: !override []
     mem_limit: 256m
 
-  # ── Prometheus metrics ───────────────────────────────────────────────────────
+  # ── Prometheus metrics ──────────────────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
     container_name: peripateticware-prometheus

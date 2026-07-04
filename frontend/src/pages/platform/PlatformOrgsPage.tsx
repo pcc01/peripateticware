@@ -11,6 +11,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { platformFetch } from '@/utils/platformFetch';
 
 interface Org {
   id: string; slug: string; name: string; type: string;
@@ -45,7 +46,7 @@ export default function PlatformOrgsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), per_page: String(PER_PAGE) });
       if (search) params.set('search', search);
-      const res = await fetch(`/api/v1/platform/orgs?${params}`, { credentials: 'include' });
+      const res = await platformFetch(`/api/v1/platform/orgs?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setOrgs(data.orgs);

@@ -299,6 +299,62 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(SecurityHeadersMiddleware)
 
+
+# ── Maintenance mode ──────────────────────────────────────────────────────────
+class MaintenanceModeMiddleware(BaseHTTPMiddleware):
+    """Return 503 for API traffic while the maintenance flag is set.
+
+    The flag lives in Redis (key: "maintenance_mode") and is toggled by a
+    platform admin via PUT /api/v1/platform/maintenance. It is cached
+    in-process for 5 seconds so we don't hit Redis on every request.
+
+    Exempt (so the operator can always sign in and turn it back OFF):
+      /health, /api/v1/auth/login, /api/v1/auth/refresh, /api/v1/platform/*
+
+    Fail-open: if Redis is unreachable the site stays UP.
+    """
+
+    _EXEMPT_PREFIXES = (
+        "/health",
+        "/api/v1/auth/login",
+        "/api/v1/auth/refresh",
+        "/api/v1/platform",
+    )
+    _CHECK_INTERVAL_S = 5.0
+    _state = {"enabled": False, "checked_at": 0.0}
+
+    async def dispatch(self, request: Request, call_next):
+        import time as _time
+        from starlette.responses import JSONResponse as _JSONResponse
+
+        path = request.url.path
+        if any(path.startswith(p) for p in self._EXEMPT_PREFIXES):
+            return await call_next(request)
+
+        now = _time.monotonic()
+        if now - self._state["checked_at"] > self._CHECK_INTERVAL_S:
+            try:
+                from core.cache import get_cache
+                self._state["enabled"] = bool(await get_cache("maintenance_mode"))
+            except Exception:
+                pass  # Redis down → fail open, site stays up
+            self._state["checked_at"] = now
+
+        if self._state["enabled"]:
+            return _JSONResponse(
+                status_code=503,
+                content={
+                    "detail": "maintenance",
+                    "message": "Peripateticware is down for scheduled maintenance. "
+                               "We'll be back shortly.",
+                },
+                headers={"Retry-After": "600"},
+            )
+        return await call_next(request)
+
+
+app.add_middleware(MaintenanceModeMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,

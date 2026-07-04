@@ -208,6 +208,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: dev   # Vite dev server; docker-compose.prod.yml overrides to the static production stage
     container_name: peripateticware-frontend
     depends_on:
       - backend

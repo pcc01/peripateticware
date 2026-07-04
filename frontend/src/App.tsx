@@ -127,6 +127,7 @@ import AdminStandardsPage from './pages/admin/AdminStandardsPage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import ParentMessagesPage from './pages/ParentMessagesPage'
 import NotFoundPage from './pages/NotFoundPage'
+import MaintenancePage from './pages/MaintenancePage'
 import StudentJournalPage from './pages/student/StudentJournalPage'
 
 const API_BASE = '/api/v1'
@@ -329,6 +330,7 @@ const App: React.FC = () => {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/privacy-confirmed" element={<PrivacyConfirmationPage />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
 
           {/* Platform super-admin routes — all wrapped in PlatformShell (back + logout header) */}
           <Route element={<PlatformShell />}>

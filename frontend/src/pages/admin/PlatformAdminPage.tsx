@@ -14,6 +14,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getToken, logout } from '../../services/auth'
 import { useTranslation } from 'react-i18next';
+import { getPlatformSecret } from '@/utils/platformFetch';
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 
@@ -21,11 +22,13 @@ const API = '/api/v1/platform'
 
 async function apiFetch(path: string, opts: RequestInit = {}) {
   const token = getToken()
+  const secret = getPlatformSecret()
   const res = await fetch(`${API}${path}`, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      ...(secret ? { 'X-Platform-Secret': secret } : {}),
       ...(opts.headers ?? {}),
     },
   })
