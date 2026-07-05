@@ -682,20 +682,20 @@ export const LandingPage: React.FC = () => {
       {/* Pricing */}
       <section id="pricing" style={{ background: 'var(--bg)', padding: '5rem var(--section-x, 1.5rem)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h2 style={{ textAlign: 'center', fontSize: '1.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '0.5rem' }}>{t('components_landingpage.simple_honest_pricing', 'Simple, honest pricing')}</h2>
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '3rem', fontSize: '1rem' }}>{t('components_landingpage.free_for_one_classroom_no_credit_card_re', 'Free for one classroom. No credit card required to start.')}</p>
+          <h2 style={{ textAlign: 'center', fontSize: '1.9rem', fontWeight: 800, color: 'var(--text)', marginBottom: '0.5rem' }}>{t('components_landingpage.simple_honest_pricing', 'Pricing')}</h2>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: '3rem', fontSize: '1rem' }}>{t('components_landingpage.free_for_one_classroom_no_credit_card_re', 'Plans for classrooms, schools, districts, and homeschool families.')}</p>
 
           {/* Tier cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
             {[
-              { name: 'Free', price: '$0', period: 'forever', highlight: false,
-                features: ['1 classroom', 'Up to 30 students', 'All activity types', 'Peri AI (shared pool)', 'Evidence capture', 'Portfolio view'] },
-              { name: 'Starter', price: '$29', period: '/mo', highlight: false,
-                features: ['3 classrooms', 'Up to 90 students', 'AI batch processing', 'Multi-admin', 'Org analytics', 'Priority email support'] },
-              { name: 'School', price: '$79', period: '/mo', highlight: true,
-                features: ['15 classrooms', '35 students each', 'Bring your own AI key', 'Priority AI queue', 'Standards compliance reports', 'Priority + SLA support'] },
-              { name: 'District', price: '$199', period: '/mo', highlight: false,
-                features: ['60 classrooms', '35 students each', 'BYOK + batch AI', 'District analytics', 'Dedicated onboarding', 'Priority + SLA support'] },
+              { name: 'Personal', highlight: false,
+                features: ['Individual classrooms', 'Core activity types', 'Peri AI', 'Evidence capture', 'Portfolio view'] },
+              { name: 'School', highlight: true,
+                features: ['Multiple classrooms', 'Multi-admin', 'Org analytics', 'Priority support'] },
+              { name: 'District', highlight: false,
+                features: ['District-wide deployment', 'Custom integrations', 'Dedicated onboarding', 'Priority + SLA support'] },
+              { name: 'Homeschool', highlight: false,
+                features: ['Family accounts', 'Portfolio PDF export', 'State compliance reports', 'Standards mapping'] },
             ].map(tier => (
               <div key={tier.name} style={{
                 background: tier.highlight ? 'var(--primary)' : 'var(--surface)',
@@ -708,11 +708,8 @@ export const LandingPage: React.FC = () => {
                   {tier.name}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
-                    {tier.price}
-                  </span>
-                  <span style={{ fontSize: '0.85rem', color: tier.highlight ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)' }}>
-                    {tier.period}
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
+                    Contact us for pricing
                   </span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.25rem', flex: 1 }}>
@@ -727,104 +724,24 @@ export const LandingPage: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={handleNavigateToAuth}
+                <a
+                  href="mailto:hello@peripateticware.com"
                   style={{
+                    display: 'inline-block', textAlign: 'center',
                     padding: '0.55rem 1rem', borderRadius: '0.4rem', fontWeight: 600,
-                    fontSize: '0.85rem', cursor: 'pointer', border: 'none',
+                    fontSize: '0.85rem', cursor: 'pointer', border: 'none', textDecoration: 'none',
                     background: tier.highlight ? '#fff' : 'var(--primary)',
                     color: tier.highlight ? 'var(--primary)' : '#fff',
                   }}
                 >
-                  {tier.price === '$0' ? 'Get started free' : 'Start free trial'}
-                </button>
+                  Contact Team
+                </a>
               </div>
             ))}
           </div>
 
-          {/* Homeschool tiers */}
-          <div style={{ marginTop: '2rem' }}>
-            <h3 style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '1.25rem' }}>{t('components_landingpage.homeschool_families', 'Homeschool families')}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              {[
-                {
-                  name: 'Homeschool Free', price: '$0', period: 'forever',
-                  highlight: false,
-                  features: [
-                    'Up to 2 children',
-                    'All activity types',
-                    'Peri AI inquiry companion',
-                    'Evidence capture (photos, audio)',
-                    'Activity log',
-                    'View progress',
-                  ],
-                  locked: ['Portfolio PDF export', 'State compliance reports', 'Standards mapping to activities'],
-                  cta: 'Start free',
-                },
-                {
-                  name: 'Homeschool Family', price: '$12', period: '/mo',
-                  highlight: true,
-                  features: [
-                    'Up to 4 children (add more for $3/child)',
-                    'Everything in Free',
-                    'Portfolio PDF export (per child)',
-                    'State compliance reports',
-                    'Apply state standards to activities',
-                    'Download standards sets',
-                    'Activity log CSV export',
-                  ],
-                  locked: [],
-                  cta: 'Start 30-day trial',
-                },
-              ].map(tier => (
-                <div key={tier.name} style={{
-                  background: tier.highlight ? 'var(--primary)' : 'var(--surface)',
-                  border: tier.highlight ? 'none' : '1px solid var(--border)',
-                  borderRadius: '0.6rem', padding: '1.5rem',
-                  boxShadow: tier.highlight ? '0 4px 24px rgba(27,67,50,0.2)' : 'none',
-                  display: 'flex', flexDirection: 'column',
-                }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: tier.highlight ? '#fff' : 'var(--text)', marginBottom: '0.25rem' }}>
-                    {tier.name}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem', marginBottom: '1rem' }}>
-                    <span style={{ fontSize: '1.6rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>{tier.price}</span>
-                    <span style={{ fontSize: '0.8rem', color: tier.highlight ? 'rgba(255,255,255,0.75)' : 'var(--text-muted)' }}>{tier.period}</span>
-                  </div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', flex: 1 }}>
-                    {tier.features.map(f => (
-                      <li key={f} style={{ fontSize: '0.82rem', padding: '0.2rem 0', color: tier.highlight ? 'rgba(255,255,255,0.9)' : 'var(--text-muted)', display: 'flex', gap: '0.4rem' }}>
-                        <span style={{ color: tier.highlight ? '#a7f3d0' : 'var(--primary)', flexShrink: 0 }}>✓</span>
-                        {f}
-                      </li>
-                    ))}
-                    {tier.locked.map(f => (
-                      <li key={f} style={{ fontSize: '0.82rem', padding: '0.2rem 0', color: 'var(--text-faint, #aaa)', display: 'flex', gap: '0.4rem', opacity: 0.55 }}>
-                        <span style={{ flexShrink: 0 }}>🔒</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={handleNavigateToAuth}
-                    style={{
-                      padding: '0.55rem 1rem', borderRadius: '0.4rem', fontWeight: 600,
-                      fontSize: '0.85rem', cursor: 'pointer', border: 'none',
-                      background: tier.highlight ? '#fff' : 'var(--primary)',
-                      color: tier.highlight ? 'var(--primary)' : '#fff',
-                      marginTop: 'auto',
-                    }}
-                  >
-                    {tier.cta}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '1.5rem' }}>
-            Annual billing saves 2 months. All plans include a 30-day free trial.
-            Enterprise and custom pricing available — <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)' }}>contact us</a>.
+            Contact our team for pricing details and to find the right plan — <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)' }}>contact us</a>.
           </p>
         </div>
       </section>
