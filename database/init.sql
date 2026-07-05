@@ -1241,6 +1241,38 @@ CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_entity_id ON ai_batch_queue(entity_
 CREATE INDEX IF NOT EXISTS ix_ai_batch_queue_batch_id  ON ai_batch_queue(anthropic_batch_id);
 
 -- ---------------------------------------------------------------------------
+-- platform_audit_log  (immutable audit trail for platform-admin actions:
+-- org suspend/reinstate, impersonation, AI key changes, maintenance toggles.
+-- Written by routes/platform_admin.py::_audit. Added 2026-07-05 — previously
+-- only created by an alembic migration, which init.sql-based installs never ran.)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS platform_audit_log (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_id    UUID NOT NULL,
+    action      VARCHAR(80) NOT NULL,
+    target_type VARCHAR(40),
+    target_id   VARCHAR(80),
+    detail      JSONB,
+    ip_address  VARCHAR(45),
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_actor_created ON platform_audit_log (actor_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_target        ON platform_audit_log (target_type, target_id);
+
+-- ---------------------------------------------------------------------------
+-- org_api_keys  (BYOK: per-org encrypted provider keys; read fail-open by
+-- services/ai_router.py::_get_org_key. Added 2026-07-05, same reason as above.)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS org_api_keys (
+    org_id        UUID NOT NULL,
+    provider      VARCHAR(64) NOT NULL,
+    encrypted_key TEXT NOT NULL,
+    model         VARCHAR(128),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (org_id, provider)
+);
+
+-- ---------------------------------------------------------------------------
 -- platform_ai_budgets  (per-org monthly AI spend cap, used for monitoring only
 -- — this is an internal alert threshold, not a customer billing/invoicing
 -- record; see backend/services/ai_router.py::_budget_check and
