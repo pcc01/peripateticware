@@ -175,7 +175,7 @@
   "sign_up": "Cadastrar-se",
   "why": "Porque",
   "team_1_name": "Paulo Cerda",
-  "team_1_role": "Fundador & Produto",
+  "team_1_role": "Fundador & PM",
   "team_1_initial": "Software de peripatético",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -1864,5 +1864,9 @@
   "pages_donotsellpage.your_optout_preference_has_been_recorded": "Minha preferência de opt-out foi gravada. Não varemos vender ou compartilhar minha informação pessoal.",
   "postgresql_16_pgvector": "['PostgreSQL 16 + pgvector']",
   "team_3_name": "Dolor Sit Amet",
-  "team_4_name": "Elit Sed Do"
+  "team_4_name": "Elit Sed Do",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "Paul passou uma década como professor, 4 anos trabalhando em edtechs, e há duas décadas vem experimentando formas de tirar o aprendizado dos livros e das salas de aula."
 }

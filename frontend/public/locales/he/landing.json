@@ -172,7 +172,7 @@
   "parent.feature_3_title": "תקופה במדריך / נשאר לאחרים",
   "parent.feature_3_desc": "קבל עדכונים אשר תהליכים מסגרים ומצגות נסגרו – בטוח ללא תפרידה מהקולל",
   "team_1_name": "פאול סרדה",
-  "team_1_role": "מנהל ומפתח פרויקט",
+  "team_1_role": "מייסד ו-PM",
   "team_1_initial": "פרויקט",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -1879,5 +1879,9 @@
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "לא מועצה לпродаת או שיתוף את הפרטים שלי היומיים",
   "pages_donotsellpage.preference_recorded": "✓ נשמרה הקבוצה",
   "pages_donotsellpage.your_optout_preference_has_been_recorded": "ה prefence שלך נשמרה. אנחנו לא נמכרות או לנתן פרטים יומיים שלך",
-  "pages_donotsellpage.under_the_california_consumer_privacy_ac": "בתוך האיסור של חוק הפrivacy של כליפורניה (CCPA) וחוק הזכויות הפרטיות של כליפורניה (CPRA), אwohner של כליפורניה יומין לבחירה על הצטרפות למכירת או שיתוף זרים של מידע פרטי שלהם."
+  "pages_donotsellpage.under_the_california_consumer_privacy_ac": "בתוך האיסור של חוק הפrivacy של כליפורניה (CCPA) וחוק הזכויות הפרטיות של כליפורניה (CPRA), אwohner של כליפורניה יומין לבחירה על הצטרפות למכירת או שיתוף זרים של מידע פרטי שלהם.",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "פול בילה עשור כמורה, ארבע שנים בעבודה בחברות אדטק, והוא מנסה כבר כשני עשורים לפרוץ את הלמידה מחוץ לספרים ולכיתות."
 }

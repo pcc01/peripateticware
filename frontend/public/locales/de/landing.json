@@ -177,7 +177,7 @@
   "parent.feature_3_title": "Immer informiert",
   "parent.feature_3_desc": "Benachrichtigungen bei abgeschlossenen Aktivitäten und erreichten Meilensteinen — ohne den Unterricht zu stören.",
   "team_1_name": "Team 1 Name",
-  "team_1_role": "Team 1 Rolle",
+  "team_1_role": "Founder & PM",
   "team_1_initial": "Team 1 Initiale",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -1865,5 +1865,9 @@
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "Verkauf oder Teilen meiner persönlichen Information nicht",
   "pages_donotsellpage.preference_recorded": "✓ Vorlieferung aufgezeichnet",
   "pages_donotsellpage.your_optout_preference_has_been_recorded": "Ihre Auswahl zur Ausklammerung ist aufgezeichnet. Wir werden Ihre persönliche Information nicht verkaufen oder teilen.",
-  "pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg": "['Großere Klassenzimmer sind eine bezahlte Option. Melden Sie sich für mehr Schüler ein, indem Sie aufgewerten.']"
+  "pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg": "['Großere Klassenzimmer sind eine bezahlte Option. Melden Sie sich für mehr Schüler ein, indem Sie aufgewerten.']",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "Paul spent a decade as a teacher, 4 years working for edtechs, and he has been experimenting with how to break learning out of books and classrooms for two decades."
 }

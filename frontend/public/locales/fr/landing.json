@@ -192,7 +192,7 @@
     "feature_3_desc": "Recevez des mises à jour quand les activités sont terminées et les étapes atteintes — sans perturber la classe."
   },
   "team_1_name": "Équipe 1 - Nom",
-  "team_1_role": "Rôle de l'équipe 1",
+  "team_1_role": "Founder & PM",
   "team_1_initial": "équipe 1 initiale",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -2589,5 +2589,9 @@
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "Ne vendrez ou ne partagez pas mon informations personnelles",
   "pages_donotsellpage.preference_recorded": "✓ Enregistrement préférence enregistrée",
   "pages_donotsellpage.your_optout_preference_has_been_recorded": "Votre préférence d'opt-out a été enregistrée. Nous ne vendrons ni ne partagerons vos informations personnelles.",
-  "cookiepolicypage.contact": "['Contact']"
+  "cookiepolicypage.contact": "['Contact']",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "Paul spent a decade as a teacher, 4 years working for edtechs, and he has been experimenting with how to break learning out of books and classrooms for two decades."
 }

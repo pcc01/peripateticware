@@ -158,7 +158,7 @@
   "parent.feature_3_title": "Güncel Kalın",
   "parent.feature_3_desc": "Etkinlikler tamamlandığında ve kilometre taşlarına ulaşıldığında bildirim alın — dersi bozmadan.",
   "team_1_name": "Takım 1 Adı",
-  "team_1_role": "Takım 1 Rolü",
+  "team_1_role": "Founder & PM",
   "team_1_initial": "ekip 1 başlangıç",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -1879,5 +1879,9 @@
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "Verilemeyecek veya paylaşılmayacak Kimlik Bilgilerim",
   "pages_donotsellpage.preference_recorded": "✓ Seçim Kaydı Yapıldı",
   "pages_donotsellpage.your_optout_preference_has_been_recorded": "Kimlik bilgilerinizin opt-out seçeneğiniz kaydedildi. Kimlik bilgileriniz satılması veya paylaşılması yapılamaz.",
-  "marzano": "['Marzan']"
+  "marzano": "['Marzan']",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "Paul spent a decade as a teacher, 4 years working for edtechs, and he has been experimenting with how to break learning out of books and classrooms for two decades."
 }

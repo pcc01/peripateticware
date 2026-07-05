@@ -34,6 +34,7 @@ export const LandingPage: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [selectedTeamMember, setSelectedTeamMember] = useState<number | null>(null);
 
   // Team carousel auto-advance
   useEffect(() => {
@@ -282,10 +283,10 @@ export const LandingPage: React.FC = () => {
   };
 
   const teamMembers = [
-  { name: t('team_1_name'), role: t('team_1_role'), avatar: t('team_1_initial') },
-  { name: t('team_2_name'), role: t('team_2_role'), avatar: t('team_2_initial') },
-  { name: t('team_3_name'), role: t('team_3_role'), avatar: t('team_3_initial') },
-  { name: t('team_4_name'), role: t('team_4_role'), avatar: t('team_4_initial') }];
+  { name: t('team_1_name'), role: t('team_1_role'), avatar: t('team_1_initial'), bio: t('team_1_bio') },
+  { name: t('team_2_name'), role: t('team_2_role'), avatar: t('team_2_initial'), bio: t('team_2_bio') },
+  { name: t('team_3_name'), role: t('team_3_role'), avatar: t('team_3_initial'), bio: t('team_3_bio') },
+  { name: t('team_4_name'), role: t('team_4_role'), avatar: t('team_4_initial'), bio: t('team_4_bio') }];
 
 
   const testimonials = [
@@ -565,7 +566,12 @@ export const LandingPage: React.FC = () => {
             <div
               key={idx}
               className="team-card"
-              style={{ opacity: idx === currentTeamIndex ? 1 : 0.5, transition: 'opacity 300ms ease' }}>
+              onClick={() => setSelectedTeamMember(idx)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTeamMember(idx); } }}
+              role="button"
+              tabIndex={0}
+              aria-haspopup="dialog"
+              style={{ opacity: idx === currentTeamIndex ? 1 : 0.5, transition: 'opacity 300ms ease', cursor: 'pointer' }}>
 
                 <div className="team-avatar">{member.avatar}</div>
                 <h4 className="h-card">{member.name}</h4>
@@ -575,6 +581,54 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Team member bio popup */}
+      {selectedTeamMember !== null &&
+      <div
+        onClick={() => setSelectedTeamMember(null)}
+        role="presentation"
+        style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          padding: '1.5rem',
+        }}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-label={teamMembers[selectedTeamMember].name}
+          style={{
+            background: 'var(--surface)', borderRadius: '0.75rem',
+            maxWidth: '420px', width: '100%', padding: '2rem',
+            position: 'relative', textAlign: 'center',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+          <button
+            onClick={() => setSelectedTeamMember(null)}
+            aria-label="Close"
+            style={{
+              position: 'absolute', top: '0.75rem', right: '0.75rem',
+              background: 'none', border: 'none', fontSize: '1.5rem',
+              lineHeight: 1, cursor: 'pointer', color: 'var(--text-muted)',
+            }}>
+            ×
+          </button>
+          <div className="team-avatar" style={{ margin: '0 auto 1rem' }}>
+            {teamMembers[selectedTeamMember].avatar}
+          </div>
+          <h3 className="h-card" style={{ marginBottom: '0.25rem' }}>
+            {teamMembers[selectedTeamMember].name}
+          </h3>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+            {teamMembers[selectedTeamMember].role}
+          </p>
+          <p className="body" style={{ lineHeight: 1.6, color: 'var(--text)' }}>
+            {teamMembers[selectedTeamMember].bio}
+          </p>
+        </div>
+      </div>
+      }
 
       {/* 14i.1 — Privacy First / Trust Badges section */}
       <section style={{ background: 'var(--primary-muted)', padding: '5rem var(--section-x, 1.5rem)' }}>

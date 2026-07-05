@@ -210,7 +210,7 @@
     "feature_3_desc": "تلقَّ إشعارات عند اكتمال الأنشطة والوصول إلى الأهداف — دون مقاطعة الفصل الدراسي."
   },
   "team_1_name": "بول سيردا",
-  "team_1_role": "مؤسس ومنتج",
+  "team_1_role": "مؤسس و PM",
   "team_1_initial": "ب",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
@@ -2556,5 +2556,9 @@
   "pages_donotsellpage.under_the_california_consumer_privacy_ac": " تحت القانون الخصوصي للأهالي كاليفورنيا (CCPA) وقانون الحقوق الخصوصية في كاليفورنيا (CPRA), مستطيعون المدنيين في كاليفورنيا إلغاء البيع أو المشاركة بياناتهم الشخصية. Peripateticware لا يبيع بيانات الشخصية، ولكن يمكنك إرسال طلب هذا لتقديم طلب رسمي لتسجيل تفضيلاتك.",
   "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "لا تبيع أو شق سفاحي الخاصة بيني",
   "pages_donotsellpage.preference_recorded": "✓ التفضلات محفوظة",
-  "pages_donotsellpage.your_optout_preference_has_been_recorded": "تم حفظ تفضلاتك. لن نبيع أو نشارك بياناتك الخاصة."
+  "pages_donotsellpage.your_optout_preference_has_been_recorded": "تم حفظ تفضلاتك. لن نبيع أو نشارك بياناتك الخاصة.",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "team_1_bio": "قضى بول عقدًا كاملاً معلمًا، وأربع سنوات يعمل في شركات التعليم التقني (EdTech)، وهو يجرّب منذ عقدين كيفية إخراج التعلّم من الكتب والفصول الدراسية."
 }
