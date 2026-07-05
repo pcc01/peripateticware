@@ -311,6 +311,34 @@ async def coverage_summary(
     """
     _require_homeschool(current_user)
 
+    # State standards compliance reporting requires Homeschool Family plan —
+    # same gate as generate_report()/export_portfolio() below. Previously this
+    # view had no tier check at all (see docs/FEATURE_GATE_AUDIT.md item 3);
+    # demo/sample accounts still bypass it so prospective users can preview
+    # the feature as an upgrade incentive.
+    _DEMO_DOMAINS = ("@example.com", "@test.local")
+    _is_demo = any(str(current_user.email or "").endswith(d) for d in _DEMO_DOMAINS)
+
+    if not _is_demo:
+        if current_user.org_id:
+            tier = (await db.execute(
+                text("SELECT license_tier FROM organizations WHERE id = :oid"),
+                {"oid": str(current_user.org_id)},
+            )).scalar() or "free"
+        else:
+            tier = "free"
+
+        if tier in ("free", "homeschool_free"):
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "code":          "UPGRADE_REQUIRED",
+                    "feature":       "standards_compliance_report",
+                    "required_tier": "homeschool_family",
+                    "current_tier":  tier,
+                },
+            )
+
     # Get children IDs
     child_rows = (await db.execute(
         text("SELECT child_id FROM homeschool_children WHERE parent_id = :pid"),

@@ -442,8 +442,12 @@ export const teacherApi = {
   },
 
   async getActivities(): Promise<Types.Activity[]> {
-    const response = await axiosInstance.get<Types.Activity[]>('/activities')
-    return response.data
+    // Backend returns a paginated object { items, total, page, page_size, total_pages }
+    // (see PaginatedActivityResponse), not a bare array — extract the array so
+    // callers (and the teacher store) always get Activity[].
+    const response = await axiosInstance.get<{ items?: Types.Activity[] } | Types.Activity[]>('/activities')
+    const data = response.data as any
+    return Array.isArray(data) ? data : (data?.items ?? [])
   },
 }
 

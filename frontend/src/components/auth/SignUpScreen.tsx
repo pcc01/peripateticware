@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 // found in the LICENSE.md file in the root directory of this source tree.
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,6 +70,8 @@ export default function SignupScreen({
   onFormChange
 }: SignupScreenProps = {}) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('invite') || undefined;
   const [selectedRole, setSelectedRole] = useState<UserRole>('TEACHER');
   const [schoolName, setSchoolName] = useState('');
   const { signup, isLoading, error: authError } = useAuthStore();
@@ -130,6 +132,7 @@ export default function SignupScreen({
         has_under_13:     showTeachingContext ? hasUnder13 : undefined,
         org_type_v2:      orgTypeV2 || undefined,
         ip_country_hint:  geoHint.countryCode || undefined,
+        invite_token:     inviteToken,
       });
 
       // Navigate based on whether the account is immediately active (EMAIL_DRY_RUN / dev)

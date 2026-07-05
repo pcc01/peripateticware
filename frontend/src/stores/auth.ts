@@ -243,6 +243,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
       has_under_13?: boolean
       org_type_v2?: string
       ip_country_hint?: string
+      invite_token?: string
     }) => {
       set({ isLoading: true, error: null })
 
@@ -264,6 +265,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
             has_under_13: data.has_under_13,
             org_type_v2: data.org_type_v2,
             ip_country_hint: data.ip_country_hint,
+            invite_token: data.invite_token,
           }),
         })
 

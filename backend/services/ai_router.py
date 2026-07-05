@@ -53,6 +53,7 @@ from core.database import get_session_factory
 from core.rate_limit import _get_redis
 from models.ai_batch import AiBatchQueue, AiTaskConfig, AiApiKey, TaskType, AIProvider, BatchStatus
 from services import anthropic_client as _anthropic
+from services.license_validator import BYOK_TIERS
 
 logger = logging.getLogger(__name__)
 
@@ -130,13 +131,9 @@ async def _get_api_key(db: AsyncSession, provider: str) -> Optional[str]:
 
 
 # Tiers that may use their own API key — budget cap is skipped for these orgs
-# when they have a key registered in org_api_keys.
-BYOK_TIERS = {
-    "school", "school_byok",
-    "district", "district_byok",
-    "enterprise",
-    "homeschool_family", "homeschool_coop",
-}
+# when they have a key registered in org_api_keys. Imported from
+# license_validator (single source of truth — see docs/FEATURE_GATE_AUDIT.md
+# item 1, this used to be a separate, out-of-sync copy defined here).
 
 
 async def _get_org_key(db: AsyncSession, org_id: Optional[str], provider: str) -> Optional[str]:

@@ -402,6 +402,22 @@ async def signup(
                 detail="Invalid role. Must be one of: teacher, parent, homeschool.",
             )
 
+        # ── Beta gate: when SIGNUP_MODE=invite_only, self-signup for TEACHER/
+        # PARENT/HOMESCHOOL also requires a valid invite code (students are
+        # already gated above). Config-driven — flip SIGNUP_MODE back to "open"
+        # in .env to fully restore today's open signup with no code changes.
+        from core.config import settings as _signup_cfg
+        if _signup_cfg.SIGNUP_MODE == "invite_only":
+            _valid_codes = {c.strip() for c in _signup_cfg.BETA_INVITE_CODES.split(",") if c.strip()}
+            if not body.invite_token or body.invite_token not in _valid_codes:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=(
+                        "Peripateticware is currently invite-only. Please request beta "
+                        "access, or enter the invite code you were given."
+                    ),
+                )
+
         # Create new user with uuid
         from sqlalchemy import text as _text
         new_user_id = uuid.uuid4()

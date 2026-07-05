@@ -160,6 +160,29 @@ class Settings(BaseSettings):
     # Set EMAIL_DRY_RUN=false in production to send real emails
     EMAIL_DRY_RUN: bool = os.getenv("EMAIL_DRY_RUN", "true").lower() == "true"
 
+    # ── Beta / Signup Gating ──────────────────────────────────────────────────
+    # "open"        — today's behaviour: anyone can self-signup as TEACHER/
+    #                 PARENT/HOMESCHOOL (students always need a classroom invite).
+    # "invite_only" — self-signup requires a code in BETA_INVITE_CODES; the
+    #                 frontend shows a "Request Beta Access" form instead of the
+    #                 signup form unless a valid ?invite=CODE is present.
+    # Flip this one value to switch modes — no other code changes needed.
+    SIGNUP_MODE: str = os.getenv("SIGNUP_MODE", "open").lower()
+    # Comma-separated list of valid invite codes, e.g. "beta-2026-a,beta-2026-b"
+    BETA_INVITE_CODES: str = os.getenv("BETA_INVITE_CODES", "")
+
+    # ── Beta Request → Google Sheet ───────────────────────────────────────────
+    # Path to a Google Cloud service-account JSON key file (mounted into the
+    # container) with edit access to BETA_SIGNUP_SHEET_ID. Leave blank to skip
+    # writing to Sheets (request is still emailed to BETA_NOTIFY_EMAIL).
+    GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "")
+    # The Sheet ID from its URL: docs.google.com/spreadsheets/d/<THIS_PART>/edit
+    BETA_SIGNUP_SHEET_ID: str = os.getenv("BETA_SIGNUP_SHEET_ID", "")
+    # Sheet tab name to append rows to
+    BETA_SIGNUP_SHEET_TAB: str = os.getenv("BETA_SIGNUP_SHEET_TAB", "Requests")
+    # Who gets emailed when a new beta request comes in (falls back to ADMIN_EMAIL)
+    BETA_NOTIFY_EMAIL: str = os.getenv("BETA_NOTIFY_EMAIL", "")
+
     # ── Platform Admin Security ──────────────────────────────────────────────────
     # Static secret required in X-Platform-Secret header on all /platform/* routes.
     # Separate from JWT auth — provides a second factor that never goes through the

@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import UpgradeCTA from '../../components/UpgradeCTA';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -84,10 +85,22 @@ export const HomeschoolCoveragePage: React.FC = () => {
   const [data, setData]       = useState<CoverageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [upgradeDetail, setUpgradeDetail] = useState<{ current_tier: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/v1/homeschool/coverage', { headers: authHeader() })
-      .then(r => r.ok ? r.json() : null)
+      .then(async r => {
+        if (!r.ok) {
+          const d = await r.json().catch(() => ({}));
+          const detail = d.detail ?? d;
+          if (r.status === 402 && detail?.code === 'UPGRADE_REQUIRED') {
+            setUpgradeDetail({ current_tier: detail.current_tier ?? 'free' });
+            window.dispatchEvent(new CustomEvent('upgrade-required', { detail }));
+          }
+          return null;
+        }
+        return r.json();
+      })
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
@@ -95,6 +108,21 @@ export const HomeschoolCoveragePage: React.FC = () => {
   const toggle = (key: string) => setExpanded(e => ({ ...e, [key]: !e[key] }));
 
   if (loading) return <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-body)', padding: 32 }}>{t('pages_homeschool_homeschoolcoveragepage.loading', 'Loading…')}</p>;
+
+  if (upgradeDetail) {
+    return (
+      <div style={{ fontFamily: 'var(--font-body)', maxWidth: 820 }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 6 }}>{t('pages_homeschool_homeschoolcoveragepage.coverage_report', 'Coverage Report')}</h1>
+        </div>
+        <UpgradeCTA
+          featureName="State Standards Compliance Report"
+          requiredTier="homeschool_family"
+          currentTier={upgradeDetail.current_tier}
+        />
+      </div>
+    );
+  }
 
   const sets = data?.standards_sets ?? [];
 

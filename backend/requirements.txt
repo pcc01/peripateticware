@@ -134,4 +134,10 @@ boto3>=1.34.0
 apscheduler==3.10.4
 
 # ============================================================================
+# GOOGLE SHEETS (beta signup requests — see services/google_sheets_service.py)
+# ============================================================================
+google-api-python-client==2.126.0
+google-auth==2.29.0
+
+# ============================================================================
 # SPREADSHEET SUPPORT (standa

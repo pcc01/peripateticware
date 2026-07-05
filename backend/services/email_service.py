@@ -168,6 +168,24 @@ async def send_welcome_email(to: str, name: str, role: str) -> bool:
     return await _send(to, f"Welcome to Peripateticware, {name}!", html)
 
 
+async def send_beta_request_confirmation(to: str, name: str) -> bool:
+    """Confirms receipt of a "Request Beta Access" submission to the requester."""
+    first_name = (name or "there").split(" ")[0]
+    html = _wrap(
+        "Thanks for your interest!",
+        "We've got your request",
+        f"""
+        <p>Hi {first_name},</p>
+        <p>Thanks for requesting beta access to Peripateticware. We've added you to our
+        list and will reach out at this email address once a spot opens up.</p>
+        <p>If you already have an invite code from us, you can go ahead and sign up now
+        using the link we sent you.</p>
+        <p>If you have questions in the meantime, just reply to this email.</p>
+        """,
+    )
+    return await _send(to, "We've received your Peripateticware beta request", html)
+
+
 async def send_parent_consent_email(to: str, token: str, student_name: str) -> bool:
     """Send parental consent request link."""
     link = f"{settings.FRONTEND_URL}/parent-consent/{token}"

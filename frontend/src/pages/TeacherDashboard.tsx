@@ -35,11 +35,15 @@ export const TeacherDashboard: React.FC = () => {
     navigate('/');
   };
 
-  // Extract data safely — prefer dashboardData arrays, fall back to store arrays
-  const activities = (dashboardData?.activities?.length ? dashboardData.activities : storeActivities) ?? [];
-  const teacherClasses = dashboardData?.classes ?? [];
-  const submissions = dashboardData?.recent_submissions ?? [];
-  const students = dashboardData?.recent_students ?? [];
+  // Extract data safely — prefer dashboardData arrays, fall back to store arrays.
+  // Guard with Array.isArray so an unexpected API shape (e.g. a paginated object
+  // instead of a bare array) degrades to an empty list instead of crashing the
+  // whole page (this previously threw "activities is not iterable").
+  const rawActivities = dashboardData?.activities?.length ? dashboardData.activities : storeActivities;
+  const activities = Array.isArray(rawActivities) ? rawActivities : [];
+  const teacherClasses = Array.isArray(dashboardData?.classes) ? dashboardData.classes : [];
+  const submissions = Array.isArray(dashboardData?.recent_submissions) ? dashboardData.recent_submissions : [];
+  const students = Array.isArray(dashboardData?.recent_students) ? dashboardData.recent_students : [];
 
   // Compute "recent activity" stat from activities list
   const sortedByDate = [...activities].sort(

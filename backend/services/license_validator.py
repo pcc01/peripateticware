@@ -51,7 +51,21 @@ TIER_ORDER: list[str] = [
     "enterprise",
 ]
 
-BYOK_TIERS: frozenset[str] = frozenset(["school_byok", "district_byok", "enterprise"])
+# Single source of truth for "which tiers may bring their own Ollama/Anthropic
+# key" — per SAAS_DESIGN.md's Feature Gate Map, that's School tier and up
+# (School/District, whether or not they're on the explicit *_byok SKU) plus
+# both paid homeschool tiers. services/ai_router.py imports this constant
+# rather than keeping its own copy — the two used to disagree (ai_router.py
+# included homeschool_family/homeschool_coop for its budget-cap-skip check,
+# but this set didn't, so a paying Homeschool Family/Co-op org could never
+# actually register a key via routes/org_ai_key.py). Fixed 2026-07 — see
+# docs/FEATURE_GATE_AUDIT.md item 1.
+BYOK_TIERS: frozenset[str] = frozenset([
+    "school", "school_byok",
+    "district", "district_byok",
+    "enterprise",
+    "homeschool_family", "homeschool_coop",
+])
 
 
 def tier_rank(tier: Optional[str]) -> int:

@@ -383,6 +383,9 @@ app.include_router(auth_router, prefix="/api/v1/auth")
 from routes.reset import router as reset_router
 app.include_router(reset_router)                           # prefix="/api/v1/public/password" in router
 
+from routes.beta import router as beta_router
+app.include_router(beta_router, prefix="/api/v1")           # /api/v1/config/public, /api/v1/beta/request
+
 # ── Sessions & Activities ─────────────────────────────────────────────────────
 from routes.sessions import router as sessions_router
 app.include_router(sessions_router, prefix="/api/v1/sessions")
