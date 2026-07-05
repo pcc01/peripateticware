@@ -58,14 +58,23 @@ services:
     restart: always
     # No host port at all — only other containers talk to Postgres
     ports: !override []
-    environment:
-      POSTGRES_INITDB_ARGS: >-
-        -c shared_buffers=256MB
-        -c effective_cache_size=512MB
-        -c maintenance_work_mem=64MB
-        -c checkpoint_completion_target=0.9
-        -c wal_buffers=16MB
-        -c max_connections=100
+    # Server tuning via command args (NOT POSTGRES_INITDB_ARGS — initdb chokes
+    # on GUC flags during first-time cluster init and the container never
+    # becomes healthy on a fresh volume)
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=512MB
+      - -c
+      - maintenance_work_mem=64MB
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - max_connections=100
     mem_limit: 1g
 
   redis:
