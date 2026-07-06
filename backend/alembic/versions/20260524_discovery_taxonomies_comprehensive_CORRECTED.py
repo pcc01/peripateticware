@@ -56,21 +56,30 @@ def upgrade() -> None:
     )
     discovery_mode_enum.create(op.get_bind(), checkfirst=True)
     
-    # Safely alter activity_type enum to include DISCOVERY
-    # Note: PostgreSQL ENUM alteration is tricky - we use raw SQL for safety
+    # Safely alter activity_type enum to include DISCOVERY.
+    # NOTE (fixed): activities.activity_type was already converted to plain
+    # VARCHAR elsewhere (see startup.py's apply_enum_and_core_column_migrations),
+    # so this ALTER TYPE targets a Postgres enum that no longer applies — it will
+    # always fail with "type activity_type does not exist" on a database that
+    # went through that conversion. A plain try/except here does NOT protect the
+    # rest of this migration: once a statement fails inside a Postgres
+    # transaction, the whole transaction is aborted regardless of whether Python
+    # catches the exception, so every op.add_column() below used to fail too
+    # with "current transaction is aborted". Using a SAVEPOINT (begin_nested)
+    # scopes the failure to just this statement.
     try:
-        op.execute(
-            sa.text("""
-                DO $$ BEGIN
-                    ALTER TYPE activity_type ADD VALUE 'discovery';
-                EXCEPTION WHEN duplicate_object THEN null;
-                END $$;
-            """)
-        )
+        with op.get_bind().begin_nested():
+            op.execute(
+                sa.text("""
+                    DO $$ BEGIN
+                        ALTER TYPE activity_type ADD VALUE 'discovery';
+                    EXCEPTION WHEN duplicate_object THEN null;
+                    END $$;
+                """)
+            )
     except Exception as e:
-        # If enum manipulation fails, it may already exist or be configured differently
-        # Log but don't fail - migration can continue
-        print(f"Note: Could not add 'discovery' to activity_type enum: {str(e)}")
+        # Obsolete on databases where activity_type is already VARCHAR — safe to skip.
+        print(f"Note: Could not add 'discovery' to activity_type enum (likely already VARCHAR, safe to ignore): {str(e)}")
     
     # ========================================================================
     # PHASE 5: Add Taxonomy Support (4 frameworks)
