@@ -380,6 +380,7 @@ SAAS_DESIGN.md
 COST_AND_DEPLOYMENT_ANALYSIS.md
 SPRINT_STATUS.md
 REGRESSION_LOG.md
+MAINTENANCE.md
 
 # ── Scratch / temp files ─────────────────────────────────────
 Verify fixes.txt
@@ -437,3 +438,10 @@ sprint_development_plan.docx
 DEPLOY_PLAN.md
 DEPLOY_SMALL.md
 GO_LIVE_RUNBOOK.md
+
+# ── Runtime secrets mounted into containers (service-account keys etc.) ──
+secrets/
+
+# ── Locale sync backup/corruption artifacts (never commit) ──────────────
+*.corrupt.bak
+frontend/public/locales/_sentinel_check.json

@@ -63,6 +63,7 @@ export interface AuthStore {
     has_under_13?: boolean
     org_type_v2?: string
     ip_country_hint?: string
+    invite_token?: string
   }) => Promise<void>
 
   logout: () => void

@@ -168,7 +168,7 @@ export default function SignupScreen({
           <div className="flex items-center mb-8">
             <Link
               to="/login"
-              aria-label="Back to login"
+              aria-label={t('components_auth_signupscreen.aria_label_back_to_login', 'Back to login')}
               className="text-gray-600 hover:text-gray-900 mr-4">
               
               <ArrowLeft className="w-5 h-5" aria-hidden="true" />
@@ -186,9 +186,7 @@ export default function SignupScreen({
           }
 
           {Object.keys(errors).length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">
-              Please fix the highlighted fields below before continuing.
-            </div>
+            <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded-lg mb-4 text-sm">{t('components_auth_signupscreen.please_fix_the_highlighted_fields_below_', 'Please fix the highlighted fields below before continuing.')}</div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
@@ -344,9 +342,9 @@ export default function SignupScreen({
               <div className="border border-green-200 rounded-xl p-4 bg-green-50 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
                   <MapPin className="w-4 h-4 text-green-700" />
-                  <span className="text-sm font-semibold text-green-800">Teaching Context</span>
+                  <span className="text-sm font-semibold text-green-800">{t('components_auth_signupscreen.teaching_context', 'Teaching Context')}</span>
                   {geoHint.isLoading && (
-                    <span className="text-xs text-gray-400 ml-1">Detecting location…</span>
+                    <span className="text-xs text-gray-400 ml-1">{t('components_auth_signupscreen.detecting_location', 'Detecting location…')}</span>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 -mt-1">{t('components_auth_signupscreen.helps_us_apply_the_right_privacy_framewo', 'Helps us apply the right privacy frameworks (FERPA, COPPA, GDPR, etc.) for your students.')}</p>
@@ -359,17 +357,17 @@ export default function SignupScreen({
                     onChange={e => setCountryCode(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                   >
-                    <option value="">Select country</option>
-                    <option value="US">🇺🇸 United States</option>
-                    <option value="GB">🇬🇧 United Kingdom</option>
-                    <option value="CA">🇨🇦 Canada</option>
-                    <option value="AU">🇦🇺 Australia</option>
-                    <option value="DE">🇩🇪 Germany</option>
-                    <option value="FR">🇫🇷 France</option>
-                    <option value="NL">🇳🇱 Netherlands</option>
-                    <option value="BR">🇧🇷 Brazil</option>
-                    <option value="SG">🇸🇬 Singapore</option>
-                    <option value="OTHER">🌍 Other</option>
+                    <option value="">{t('components_auth_signupscreen.select_country', 'Select country')}</option>
+                    <option value="US">{t('components_auth_signupscreen.united_states', '🇺🇸 United States')}</option>
+                    <option value="GB">{t('components_auth_signupscreen.united_kingdom', '🇬🇧 United Kingdom')}</option>
+                    <option value="CA">{t('components_auth_signupscreen.canada', '🇨🇦 Canada')}</option>
+                    <option value="AU">{t('components_auth_signupscreen.australia', '🇦🇺 Australia')}</option>
+                    <option value="DE">{t('components_auth_signupscreen.germany', '🇩🇪 Germany')}</option>
+                    <option value="FR">{t('components_auth_signupscreen.france', '🇫🇷 France')}</option>
+                    <option value="NL">{t('components_auth_signupscreen.netherlands', '🇳🇱 Netherlands')}</option>
+                    <option value="BR">{t('components_auth_signupscreen.brazil', '🇧🇷 Brazil')}</option>
+                    <option value="SG">{t('components_auth_signupscreen.singapore', '🇸🇬 Singapore')}</option>
+                    <option value="OTHER">{t('components_auth_signupscreen.other', '🌍 Other')}</option>
                   </select>
                 </div>
 
@@ -381,13 +379,13 @@ export default function SignupScreen({
                       <input type="radio" name="under13" value="yes" checked={hasUnder13}
                         onChange={() => setHasUnder13(true)}
                         className="accent-green-600" />
-                      <span className="text-sm text-gray-700">Yes — some are under 13</span>
+                      <span className="text-sm text-gray-700">{t('components_auth_signupscreen.yes_some_are_under_13', 'Yes — some are under 13')}</span>
                     </label>
                     <label className="flex items-center gap-1.5 cursor-pointer">
                       <input type="radio" name="under13" value="no" checked={!hasUnder13}
                         onChange={() => setHasUnder13(false)}
                         className="accent-green-600" />
-                      <span className="text-sm text-gray-700">No — all 13+</span>
+                      <span className="text-sm text-gray-700">{t('components_auth_signupscreen.no_all_13', 'No — all 13+')}</span>
                     </label>
                   </div>
                   <p className="text-xs text-gray-400 mt-1">{t('components_auth_signupscreen.this_determines_whether_coppa_applies_', 'This determines whether COPPA applies to your account.')}</p>

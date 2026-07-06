@@ -8,10 +8,15 @@ Peripateticware FastAPI Backend
 ✅ Phase 6: Student activity endpoints registered at /api/v1/student
 """
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.staticfiles import StaticFiles
+import hmac
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -204,12 +209,57 @@ async def lifespan(app: FastAPI):
 # CREATE APP
 # ============================================================================
 
+# In production, the default (unauthenticated) /docs, /redoc, /openapi.json are
+# disabled here and re-mounted below behind HTTP Basic Auth. Dev keeps the normal
+# open docs for local convenience — dev only ever runs on localhost.
+_LOCK_DOCS = settings.ENVIRONMENT == "production"
+
 app = FastAPI(
     title=settings.APP_NAME,
     version="0.1.0",
     description="Outdoor and peripatetic learning platform",
     lifespan=lifespan,
+    docs_url=None if _LOCK_DOCS else "/docs",
+    redoc_url=None if _LOCK_DOCS else "/redoc",
+    openapi_url=None if _LOCK_DOCS else "/openapi.json",
 )
+
+# ── Locked API docs (production only) ────────────────────────────────────────
+# Belt-and-suspenders under Cloudflare Access on admin.peripateticware.com:
+# even if Access is ever misconfigured, bypassed, or someone reaches the
+# origin directly, /docs /redoc /openapi.json still require a password that
+# lives only in .env, never in the frontend bundle or Access allowlist.
+if _LOCK_DOCS:
+    _docs_auth = HTTPBasic()
+
+    def _check_docs_auth(credentials: HTTPBasicCredentials = Depends(_docs_auth)) -> None:
+        if not settings.DOCS_PASSWORD:
+            # Fail closed: if no password is configured in production, docs stay off.
+            raise HTTPException(status_code=404)
+        user_ok = hmac.compare_digest(credentials.username, settings.DOCS_USERNAME)
+        pass_ok = hmac.compare_digest(credentials.password, settings.DOCS_PASSWORD)
+        if not (user_ok and pass_ok):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid docs credentials.",
+                headers={"WWW-Authenticate": "Basic"},
+            )
+
+    @app.get("/openapi.json", include_in_schema=False)
+    async def _protected_openapi(_: None = Depends(_check_docs_auth)):
+        return JSONResponse(
+            get_openapi(title=app.title, version=app.version, description=app.description, routes=app.routes)
+        )
+
+    @app.get("/docs", include_in_schema=False)
+    async def _protected_docs(_: None = Depends(_check_docs_auth)):
+        return get_swagger_ui_html(openapi_url="/openapi.json", title=f"{app.title} — docs")
+
+    @app.get("/redoc", include_in_schema=False)
+    async def _protected_redoc(_: None = Depends(_check_docs_auth)):
+        return get_redoc_html(openapi_url="/openapi.json", title=f"{app.title} — docs")
+
+    logger.info("🔒 API docs locked behind HTTP Basic Auth (production)")
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
 if RATE_LIMIT_ENABLED:

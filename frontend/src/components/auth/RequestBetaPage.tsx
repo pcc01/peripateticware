@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Compass } from 'lucide-react';
 import { PRODUCT_NAME } from '../../constants/brand';
+import { useTranslation } from 'react-i18next';
 
 const ROLE_OPTIONS = [
   { value: 'teacher', label: 'Teacher' },
@@ -16,6 +17,7 @@ const ROLE_OPTIONS = [
 ];
 
 export const RequestBetaPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('teacher');
@@ -56,7 +58,7 @@ export const RequestBetaPage: React.FC = () => {
       <div className="relative z-10 w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="flex items-center mb-8">
-            <Link to="/" aria-label="Back to home" className="text-gray-600 hover:text-gray-900 mr-4">
+            <Link to="/" aria-label={t('components_auth_requestbetapage.aria_label_back_to_home', 'Back to home')} className="text-gray-600 hover:text-gray-900 mr-4">
               <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             </Link>
             <div>
@@ -97,7 +99,7 @@ export const RequestBetaPage: React.FC = () => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="beta-name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label htmlFor="beta-name" className="block text-sm font-medium text-gray-700 mb-1">{t('components_auth_requestbetapage.name', 'Name')}</label>
                   <input
                     id="beta-name"
                     type="text"
@@ -109,7 +111,7 @@ export const RequestBetaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="beta-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label htmlFor="beta-email" className="block text-sm font-medium text-gray-700 mb-1">{t('components_auth_requestbetapage.email', 'Email')}</label>
                   <input
                     id="beta-email"
                     type="email"
@@ -121,7 +123,7 @@ export const RequestBetaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="beta-role" className="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
+                  <label htmlFor="beta-role" className="block text-sm font-medium text-gray-700 mb-1">{t('components_auth_requestbetapage.i_am_a', 'I am a...')}</label>
                   <select
                     id="beta-role"
                     value={role}
@@ -135,7 +137,7 @@ export const RequestBetaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="beta-org" className="block text-sm font-medium text-gray-700 mb-1">School / organization (optional)</label>
+                  <label htmlFor="beta-org" className="block text-sm font-medium text-gray-700 mb-1">{t('components_auth_requestbetapage.school_organization_optional', 'School / organization (optional)')}</label>
                   <input
                     id="beta-org"
                     type="text"
@@ -146,7 +148,7 @@ export const RequestBetaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="beta-message" className="block text-sm font-medium text-gray-700 mb-1">Anything else? (optional)</label>
+                  <label htmlFor="beta-message" className="block text-sm font-medium text-gray-700 mb-1">{t('components_auth_requestbetapage.anything_else_optional', 'Anything else? (optional)')}</label>
                   <textarea
                     id="beta-message"
                     value={message}

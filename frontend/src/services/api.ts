@@ -436,6 +436,19 @@ export const teacherApi = {
     return response.data
   },
 
+  // Raw session rows from GET /activities/teacher/submissions (this endpoint
+  // returns *all* sessions — in_progress, completed, paused — across every
+  // activity this teacher owns). Filtered here to just the sessions that are
+  // currently live, so the dashboard can link straight into the GPS map at
+  // /teacher/sessions/{session_id}/monitor.
+  async getActiveSessions(): Promise<Types.TeacherActiveSession[]> {
+    const response = await axiosInstance.get<Types.TeacherActiveSession[]>('/activities/teacher/submissions', {
+      params: { limit: 200 },
+    })
+    const rows = Array.isArray(response.data) ? response.data : []
+    return rows.filter((r) => r.status === 'in_progress')
+  },
+
   async getDashboard(): Promise<Types.TeacherDashboardData> {
     const response = await axiosInstance.get<Types.TeacherDashboardData>('/activities/teacher/dashboard')
     return response.data
@@ -648,6 +661,7 @@ export function useTeacher() {
     deleteActivity: (id: string) =>
       axiosInstance.delete(`/teacher/activities/${id}`).then(() => undefined),
     getSubmissions: (params?: Types.SubmissionQueryParams) => teacherApi.getSubmissions(params),
+    getActiveSessions: () => teacherApi.getActiveSessions(),
     approveSubmission: (id: string, data?: { feedback?: string; score?: number }) =>
       axiosInstance.post(`/activities/teacher/submissions/${id}/approve`, data ?? {}).then((r) => r.data),
     rejectSubmission: (id: string, feedback: string) =>
