@@ -190,6 +190,15 @@ class Settings(BaseSettings):
     # Leave blank in development to skip the check.
     PLATFORM_API_SECRET: str = os.getenv("PLATFORM_API_SECRET", "")
 
+    # ── API Docs Lock (production only) ─────────────────────────────────────────
+    # /docs, /redoc, /openapi.json are disabled by default in production and
+    # re-mounted behind HTTP Basic Auth (see main.py). This is a second layer
+    # under Cloudflare Access on admin.peripateticware.com — the docs stay
+    # closed even if the Access policy is ever misconfigured or bypassed.
+    # Generate a password with: python -c "import secrets; print(secrets.token_urlsafe(24))"
+    DOCS_USERNAME: str = os.getenv("DOCS_USERNAME", "admin")
+    DOCS_PASSWORD: str = os.getenv("DOCS_PASSWORD", "")
+
     # ── Paddle Billing ───────────────────────────────────────────────────────────
     # Get these from your Paddle dashboard → Developer Tools → Authentication
     PADDLE_API_KEY:         str = os.getenv("PADDLE_API_KEY", "")
