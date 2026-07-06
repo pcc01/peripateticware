@@ -73,8 +73,16 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
             await conn.execute(text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token_used VARCHAR(128)"
             ))
+            # NOTE: no REFERENCES organizations(id) here on purpose — the
+            # organizations table isn't created until apply_core_schema_migrations()
+            # runs later in the startup sequence (main.py). A hard FK here failed
+            # on any database where organizations didn't exist yet, which aborted
+            # this entire transaction and silently rolled back every column added
+            # above and below it (email_index, deleted_at, state_code, activities
+            # location columns) on every single restart. Plain UUID column;
+            # referential integrity for org_id is enforced at the application layer.
             await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES organizations(id)"
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id UUID"
             ))
             await conn.execute(text(
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)"
