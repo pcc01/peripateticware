@@ -24,165 +24,128 @@ logger = logging.getLogger(__name__)
 _DEMO_CLASS_NAME = "Demo Class — Field Science"
 
 
+async def _exec_safepoint(conn, sql: str, label: str | None = None) -> bool:
+    """Execute one DDL/DML statement inside its own SAVEPOINT.
+
+    Prevents the cascading-failure bug where one obsolete or order-dependent
+    statement (e.g. a statement referencing a table/column that a later
+    migration block hasn't created yet) aborts the *entire* enclosing
+    transaction — silently skipping every statement that runs after it in
+    that transaction, even completely unrelated ones. A plain try/except
+    around the call does NOT protect later statements: once Postgres marks a
+    transaction aborted, every subsequent statement fails with
+    "current transaction is aborted" until a ROLLBACK or SAVEPOINT boundary,
+    regardless of whether Python catches the exception.
+
+    Pattern matches the fix already applied to
+    backend/alembic/versions/20260524_discovery_taxonomies_comprehensive_CORRECTED.py
+    (commit bc631f4) — using begin_nested() issues a real SQL SAVEPOINT, so a
+    failure here only rolls back to that savepoint, not the whole transaction.
+
+    Returns True if the statement committed, False if it was skipped.
+    """
+    try:
+        async with conn.begin_nested():
+            await conn.execute(text(sql))
+        return True
+    except Exception as e:
+        logger.warning(f"⊘ Migration statement skipped ({label or sql[:60].strip()}…): {e}")
+        return False
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # MIGRATION HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def apply_enum_and_core_column_migrations(engine) -> None:
-    """Block 1: Enum types + ADD COLUMN IF NOT EXISTS for activities and users."""
-    try:
-        async with engine.begin() as conn:
-            # Create enum types if missing, then convert columns to VARCHAR so
-            # we are never dependent on the enum type again.
-            await conn.execute(text("""
-                DO $$ BEGIN
-                    CREATE TYPE activity_status AS ENUM ('draft', 'published', 'archived');
-                EXCEPTION WHEN duplicate_object THEN NULL;
-                END $$
-            """))
-            await conn.execute(text("""
-                DO $$ BEGIN
-                    CREATE TYPE activity_type_enum AS ENUM (
-                        'inquiry','field_observation','hands_on','project',
-                        'discussion','experiment','discovery'
-                    );
-                EXCEPTION WHEN duplicate_object THEN NULL;
-                END $$
-            """))
-            await conn.execute(text(
-                "ALTER TABLE activities ALTER COLUMN status TYPE VARCHAR(50) "
-                "USING status::VARCHAR"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ALTER COLUMN activity_type TYPE VARCHAR(50) "
-                "USING activity_type::VARCHAR"
-            ))
-            # ── Users columns ────────────────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS age_group VARCHAR(20)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_platform_admin BOOLEAN NOT NULL DEFAULT FALSE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS primary_org_id UUID"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_country_code VARCHAR(10)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token_used VARCHAR(128)"
-            ))
-            # NOTE: no REFERENCES organizations(id) here on purpose — the
-            # organizations table isn't created until apply_core_schema_migrations()
-            # runs later in the startup sequence (main.py). A hard FK here failed
-            # on any database where organizations didn't exist yet, which aborted
-            # this entire transaction and silently rolled back every column added
-            # above and below it (email_index, deleted_at, state_code, activities
-            # location columns) on every single restart. Plain UUID column;
-            # referential integrity for org_id is enforced at the application layer.
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id UUID"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS consent_token VARCHAR(128)"
-            ))
-            # ── Session 33 encryption + soft-delete columns ───────────────────
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_index VARCHAR(64)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS state_code VARCHAR(10)"
-            ))
-            # Backfill email_index with plain email for users where encryption is off
-            await conn.execute(text(
-                "UPDATE users SET email_index = LOWER(email) WHERE email_index IS NULL"
-            ))
-            # ── Activities location columns ───────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS enriched_location_id UUID"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_address VARCHAR(512)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_info TEXT"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS suggested_lessons JSONB"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS wiki_location_id VARCHAR(255)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_source VARCHAR(50)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_context_id UUID"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS privacy_jurisdiction_id VARCHAR(100)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS privacy_compliant BOOLEAN DEFAULT FALSE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS last_compliance_check TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS originator_student_id UUID"
-            ))
-            # ── Taxonomy / assessment columns ─────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS assessment_type VARCHAR(50) DEFAULT 'formative'"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS marzano_level INTEGER"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS dok_level INTEGER"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS solo_level INTEGER"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS primary_framework VARCHAR(50) DEFAULT 'blooms'"
-            ))
-            # ── Shared library columns ─────────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS share_scope VARCHAR(20) DEFAULT 'org'"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS language VARCHAR(50)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS state_standard VARCHAR(100)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discipline VARCHAR(100)"
-            ))
-            # ── AssessmentRubrics columns ──────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS total_points INTEGER NOT NULL DEFAULT 100"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()"
-            ))
-        logger.info("✅ Enum and core column migrations applied")
-    except Exception as e:
-        logger.warning(f"⊘ Enum/core column migration skipped: {e}")
+    """Block 1: Enum types + ADD COLUMN IF NOT EXISTS for activities and users.
+
+    2026-07-07 fix: every statement now runs through _exec_safepoint(), which
+    scopes each one to its own SAVEPOINT. Previously all statements shared one
+    transaction, so the AssessmentRubrics ALTERs at the bottom of this
+    function — which reference a table that apply_core_schema_migrations()
+    (Block 5) doesn't create until *later* in the startup sequence, see
+    main.py's call order — failed on every restart of a fresh/reconciled
+    database and silently rolled back every other column in this function,
+    including is_platform_admin, email_index, deleted_at, and state_code.
+    """
+    async with engine.begin() as conn:
+        # Create enum types if missing, then convert columns to VARCHAR so
+        # we are never dependent on the enum type again.
+        await _exec_safepoint(conn, """
+            DO $$ BEGIN
+                CREATE TYPE activity_status AS ENUM ('draft', 'published', 'archived');
+            EXCEPTION WHEN duplicate_object THEN NULL;
+            END $$
+        """, "create activity_status enum")
+        await _exec_safepoint(conn, """
+            DO $$ BEGIN
+                CREATE TYPE activity_type_enum AS ENUM (
+                    'inquiry','field_observation','hands_on','project',
+                    'discussion','experiment','discovery'
+                );
+            EXCEPTION WHEN duplicate_object THEN NULL;
+            END $$
+        """, "create activity_type_enum")
+        await _exec_safepoint(conn,
+            "ALTER TABLE activities ALTER COLUMN status TYPE VARCHAR(50) "
+            "USING status::VARCHAR", "activities.status -> VARCHAR")
+        await _exec_safepoint(conn,
+            "ALTER TABLE activities ALTER COLUMN activity_type TYPE VARCHAR(50) "
+            "USING activity_type::VARCHAR", "activities.activity_type -> VARCHAR")
+        # ── Users columns ────────────────────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS age_group VARCHAR(20)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_platform_admin BOOLEAN NOT NULL DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS primary_org_id UUID")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_country_code VARCHAR(10)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS invite_token_used VARCHAR(128)")
+        # NOTE: no REFERENCES organizations(id) here on purpose — the
+        # organizations table isn't created until apply_core_schema_migrations()
+        # runs later in the startup sequence (main.py). A hard FK here failed
+        # on any database where organizations didn't exist yet. Plain UUID
+        # column; referential integrity for org_id is enforced at the
+        # application layer.
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id UUID")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS consent_token VARCHAR(128)")
+        # ── Session 33 encryption + soft-delete columns ───────────────────
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_index VARCHAR(64)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS state_code VARCHAR(10)")
+        # Backfill email_index with plain email for users where encryption is off
+        await _exec_safepoint(conn, "UPDATE users SET email_index = LOWER(email) WHERE email_index IS NULL")
+        # ── Activities location columns ───────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS enriched_location_id UUID")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_address VARCHAR(512)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_info TEXT")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS suggested_lessons JSONB")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS wiki_location_id VARCHAR(255)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_source VARCHAR(50)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_context_id UUID")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS privacy_jurisdiction_id VARCHAR(100)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS privacy_compliant BOOLEAN DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS last_compliance_check TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS originator_student_id UUID")
+        # ── Taxonomy / assessment columns ─────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS assessment_type VARCHAR(50) DEFAULT 'formative'")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS marzano_level INTEGER")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS dok_level INTEGER")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS solo_level INTEGER")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS primary_framework VARCHAR(50) DEFAULT 'blooms'")
+        # ── Shared library columns ─────────────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS share_scope VARCHAR(20) DEFAULT 'org'")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS language VARCHAR(50)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS state_standard VARCHAR(100)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discipline VARCHAR(100)")
+        # ── AssessmentRubrics columns ──────────────────────────────────────
+        # assessment_rubrics doesn't exist until Block 5 runs (see docstring
+        # above) — these three harmlessly skip via savepoint until then, and
+        # Block 5 already creates the table with these columns included.
+        await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS total_points INTEGER NOT NULL DEFAULT 100")
+        await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE")
+        await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()")
+    logger.info("✅ Enum and core column migrations applied")
 
 
 async def apply_location_table_migrations(engine) -> None:
@@ -403,538 +366,445 @@ async def apply_parent_activity_submission_migrations(engine) -> None:
 
 
 async def apply_core_schema_migrations(engine) -> None:
-    """Block 5: Discovery mode, compliance, org/classroom, standards, student tables."""
-    try:
-        async with engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))  # verify connection
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS rubric_id UUID"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS curriculum_unit_ids UUID[] DEFAULT '{}'"
-            ))
-            # ── Discovery-mode columns ──────────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_mode VARCHAR(50)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_task_description TEXT"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_required BOOLEAN DEFAULT FALSE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_documentation_requirements JSONB"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_success_criteria TEXT"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_difficulty_level INTEGER DEFAULT 2"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_time_limit_minutes INTEGER"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_gps_capture_enabled BOOLEAN DEFAULT TRUE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_sharing_rules JSONB"
-            ))
-            # ── Publishing / stats columns ────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS is_shareable BOOLEAN DEFAULT FALSE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS hero_image_url VARCHAR(512)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ADD COLUMN IF NOT EXISTS published_at TIMESTAMP"
-            ))
-            # ── Phase content columns ─────────────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE activities ALTER COLUMN location_latitude DROP NOT NULL"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ALTER COLUMN location_longitude DROP NOT NULL"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE activities ALTER COLUMN location_name DROP NOT NULL"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE users ADD COLUMN IF NOT EXISTS requires_parental_consent BOOLEAN NOT NULL DEFAULT FALSE"
-            ))
-            # ── Compliance tables ─────────────────────────────────────────────
-            await conn.execute(text(
-                """CREATE TABLE IF NOT EXISTS compliance_rules (
-                    rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    regulation_id VARCHAR(100),
-                    version VARCHAR(20),
-                    jurisdiction VARCHAR(100) NOT NULL,
-                    effective_date TIMESTAMP,
-                    sunset_date TIMESTAMP,
-                    rule_definition JSONB,
-                    created_by VARCHAR(255) DEFAULT 'system',
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    previous_version_id UUID,
-                    change_log TEXT,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    audit_hash VARCHAR(256),
-                    regulation_type VARCHAR(20) NOT NULL DEFAULT 'privacy',
-                    ai_student_permitted BOOLEAN NOT NULL DEFAULT TRUE,
-                    ai_teacher_permitted BOOLEAN NOT NULL DEFAULT TRUE
-                )"""
-            ))
-            for _col_sql in [
-                "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS regulation_type VARCHAR(20) NOT NULL DEFAULT 'privacy'",
-                "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS ai_student_permitted BOOLEAN NOT NULL DEFAULT TRUE",
-                "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS ai_teacher_permitted BOOLEAN NOT NULL DEFAULT TRUE",
-            ]:
-                try:
-                    await conn.execute(text(_col_sql))
-                except Exception:
-                    pass  # column already exists
-            await conn.execute(text(
-                """CREATE TABLE IF NOT EXISTS rule_audit_log (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    rule_id VARCHAR(256),
-                    data_access_id UUID,
-                    student_id_hash VARCHAR(256),
-                    action VARCHAR(100) NOT NULL DEFAULT 'access',
-                    data_type VARCHAR(100),
-                    timestamp TIMESTAMP DEFAULT NOW(),
-                    rules_applied JSONB,
-                    enforcement_actions JSONB,
-                    compliance_status VARCHAR(20) NOT NULL DEFAULT 'COMPLIANT',
-                    actor_id VARCHAR(256),
-                    actor_role VARCHAR(50),
-                    jurisdiction_ids JSONB,
-                    notes TEXT
-                )"""
-            ))
-            await conn.execute(text(
-                "CREATE TABLE IF NOT EXISTS consent_records ("
-                "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
-                "student_id_hash VARCHAR(256) NOT NULL,"
-                "jurisdiction VARCHAR(50) NOT NULL,"
-                "consent_type VARCHAR(50) NOT NULL,"
-                "data_categories JSONB,"
-                "granted_at TIMESTAMP DEFAULT NOW(),"
-                "granted_by VARCHAR(256),"
-                "withdrawn_at TIMESTAMP,"
-                "is_active BOOLEAN NOT NULL DEFAULT TRUE,"
-                "consent_version VARCHAR(10),"
-                "ip_hash VARCHAR(256),"
-                "user_agent_hash VARCHAR(256))"
-            ))
-            await conn.execute(text("ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS data_categories JSONB"))
-            await conn.execute(text("ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS withdrawn_at TIMESTAMP"))
-            await conn.execute(text("ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS granted_by VARCHAR(256)"))
-            await conn.execute(text("ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS ip_hash VARCHAR(256)"))
-            await conn.execute(text("ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS user_agent_hash VARCHAR(256)"))
-            # ── Multi-tenancy tables ───────────────────────────────────────────
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS organizations (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    slug VARCHAR(100) UNIQUE NOT NULL,
-                    name VARCHAR(255) NOT NULL,
-                    type VARCHAR(50) NOT NULL DEFAULT 'school',
-                    license_tier VARCHAR(30) NOT NULL DEFAULT 'free',
-                    license_status VARCHAR(20) NOT NULL DEFAULT 'active',
-                    max_teachers INTEGER DEFAULT 3,
-                    max_classrooms INTEGER DEFAULT 1,
-                    max_students INTEGER DEFAULT 30,
-                    contact_email VARCHAR(255),
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS classrooms (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    name VARCHAR(255) NOT NULL,
-                    grade_level INTEGER,
-                    subject VARCHAR(100),
-                    teacher_id UUID REFERENCES users(id) ON DELETE SET NULL,
-                    org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS classroom_students (
-                    classroom_id UUID REFERENCES classrooms(id) ON DELETE CASCADE,
-                    student_id UUID REFERENCES users(id) ON DELETE CASCADE,
-                    enrolled_at TIMESTAMP DEFAULT NOW(),
-                    PRIMARY KEY (classroom_id, student_id)
-                )
-            """))
-            # ── Standards & rubrics tables ─────────────────────────────────────
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS standards_sets (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    name VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    type VARCHAR(50) NOT NULL,
-                    owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
-                    state_code VARCHAR(10),
-                    is_global BOOLEAN DEFAULT FALSE,
-                    source_file VARCHAR(512),
-                    criteria JSONB DEFAULT '[]',
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS max_students_per_classroom INTEGER DEFAULT 30"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS country_code VARCHAR(10)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subdivision_code VARCHAR(20)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS has_under_13_students BOOLEAN NOT NULL DEFAULT TRUE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS privacy_jurisdiction_ids JSONB DEFAULT '[]'::jsonb"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS org_type_v2 VARCHAR(50)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS ip_country_hint VARCHAR(10)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS trial_started_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS grace_period_started_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_customer_id VARCHAR(128)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_subscription_id VARCHAR(128)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subscription_ends_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS grade_level VARCHAR(50) DEFAULT ''"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS subject VARCHAR(100) DEFAULT ''"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS source_checksum VARCHAR(64)"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'complete'"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS last_processed_at TIMESTAMP"
-            ))
-            await conn.execute(text(
-                "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS valid_until DATE"
-            ))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS homeschool_children (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    parent_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    child_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    grade_level INTEGER DEFAULT 0,
-                    age_band VARCHAR(10) DEFAULT 'k6',
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    UNIQUE(parent_id, child_id)
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS activity_standards_map (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
-                    standards_set_id UUID NOT NULL REFERENCES standards_sets(id) ON DELETE CASCADE,
-                    criterion_id VARCHAR(100) NOT NULL,
-                    coverage_level VARCHAR(50) DEFAULT 'partial',
-                    notes TEXT,
-                    mapped_by UUID REFERENCES users(id) ON DELETE SET NULL,
-                    ai_suggested BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    CONSTRAINT uq_activity_standards_criterion
-                        UNIQUE (activity_id, standards_set_id, criterion_id)
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS user_privacy_preferences (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-                    ferpa_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-                    coppa_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-                    data_sharing_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-                    ai_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-                    configured_at TIMESTAMP,
-                    org_id UUID,
-                    org_governed BOOLEAN NOT NULL DEFAULT FALSE,
-                    org_governed_at TIMESTAMP,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            for _col in [
-                "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_id UUID",
-                "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_governed BOOLEAN NOT NULL DEFAULT FALSE",
-                "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_governed_at TIMESTAMP",
-            ]:
-                await conn.execute(text(_col))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS assessment_rubrics (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    title VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    framework VARCHAR(50) DEFAULT 'blooms',
-                    criteria JSONB NOT NULL DEFAULT '[]',
-                    total_points INTEGER DEFAULT 100,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            # ── Phase 7 student tables ─────────────────────────────────────────
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_captures (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    session_id UUID,
-                    capture_type VARCHAR(20) NOT NULL DEFAULT 'photo',
-                    file_path VARCHAR(512),
-                    file_url VARCHAR(512),
-                    transcript TEXT,
-                    transcript_status VARCHAR(20) DEFAULT 'pending',
-                    latitude DOUBLE PRECISION, longitude DOUBLE PRECISION,
-                    location_name VARCHAR(255),
-                    metadata JSONB DEFAULT '{}',
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_notebooks (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    session_id UUID,
-                    content TEXT,
-                    tags TEXT[] DEFAULT '{}',
-                    is_private BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_field_notes (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    session_id UUID,
-                    title VARCHAR(255),
-                    description TEXT,
-                    status VARCHAR(30) DEFAULT 'draft',
-                    teacher_feedback TEXT,
-                    is_shared BOOLEAN DEFAULT FALSE,
-                    latitude DOUBLE PRECISION, longitude DOUBLE PRECISION,
-                    location_name VARCHAR(255),
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_self_projects (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    title VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    status VARCHAR(30) DEFAULT 'active',
-                    subject VARCHAR(100),
-                    grade_level INTEGER,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_peer_projects (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    initiator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    partner_id UUID REFERENCES users(id) ON DELETE SET NULL,
-                    title VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    status VARCHAR(30) DEFAULT 'proposed',
-                    subject VARCHAR(100),
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_proposals (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    teacher_id UUID REFERENCES users(id) ON DELETE SET NULL,
-                    title VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    location_name VARCHAR(255),
-                    subject VARCHAR(100),
-                    status VARCHAR(30) DEFAULT 'draft',
-                    teacher_feedback TEXT,
-                    approved_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            # ── student_proposals column drift ─────────────────────────────────
-            await conn.execute(text(
-                "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS note_to_teacher TEXT"
-            ))
-            # ── Align student tables with their ORM models (ADD COLUMN drift fixes) ──
-            for _alter in [
-                "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS self_project_id UUID REFERENCES student_self_projects(id) ON DELETE SET NULL",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_latitude DOUBLE PRECISION",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_longitude DOUBLE PRECISION",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS self_tagged_objective_ids UUID[] NOT NULL DEFAULT '{}'",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS submitted_for_promotion_at TIMESTAMP",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS submitted_with_message TEXT",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_by_teacher_id UUID REFERENCES users(id) ON DELETE SET NULL",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS teacher_feedback TEXT",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL",
-                "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_at TIMESTAMP",
-                "ALTER TABLE student_peer_projects ALTER COLUMN initiator_id DROP NOT NULL",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS author_student_id UUID REFERENCES users(id) ON DELETE CASCADE",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS class_id UUID REFERENCES classes(id) ON DELETE CASCADE",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS learning_objectives_text JSONB NOT NULL DEFAULT '[]'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS guiding_prompts JSONB NOT NULL DEFAULT '[]'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS curriculum_objective_ids UUID[] NOT NULL DEFAULT '{}'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS allowed_capture_types TEXT[] NOT NULL DEFAULT '{}'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS audience VARCHAR(30) NOT NULL DEFAULT 'whole_class'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS target_student_ids UUID[] NOT NULL DEFAULT '{}'",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approval_required BOOLEAN NOT NULL DEFAULT TRUE",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approved_by_teacher_id UUID REFERENCES users(id) ON DELETE SET NULL",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS teacher_feedback TEXT",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS published_at TIMESTAMP",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS author_can_see_individual_responses BOOLEAN NOT NULL DEFAULT FALSE",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
-                "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
-            ]:
-                try:
-                    await conn.execute(text(_alter))
-                except Exception as _ae:
-                    logger.warning(f"⊘ student schema ALTER skipped: {_ae}")
-            # ── Phase 6: evidence_captures + notebook_entries ──────────────────
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS evidence_captures (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    session_id UUID REFERENCES learning_sessions(id) ON DELETE CASCADE,
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    capture_type VARCHAR(50) NOT NULL,
-                    title VARCHAR(255),
-                    description TEXT,
-                    file_url TEXT,
-                    file_size_bytes INTEGER,
-                    duration_seconds INTEGER,
-                    transcription TEXT,
-                    learning_objectives JSONB DEFAULT '[]',
-                    competencies JSONB DEFAULT '[]',
-                    location_latitude DOUBLE PRECISION,
-                    location_longitude DOUBLE PRECISION,
-                    ai_analysis JSONB,
-                    device_metadata JSONB,
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_evidence_captures_session  ON evidence_captures (session_id)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_evidence_captures_student  ON evidence_captures (student_id)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_evidence_captures_activity ON evidence_captures (activity_id)"
-            ))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS notebook_entries (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    session_id UUID REFERENCES learning_sessions(id) ON DELETE CASCADE,
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
-                    reflection_type VARCHAR(50) NOT NULL DEFAULT 'freeform',
-                    title VARCHAR(255),
-                    content TEXT NOT NULL DEFAULT '',
-                    learning_objectives JSONB DEFAULT '[]',
-                    competencies JSONB DEFAULT '[]',
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_notebook_entries_session ON notebook_entries (session_id)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_notebook_entries_student ON notebook_entries (student_id)"
-            ))
-            # ── student_competencies + student_profiles ────────────────────────
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_competencies (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    competency_name VARCHAR(255) NOT NULL,
-                    description TEXT,
-                    category VARCHAR(100),
-                    status VARCHAR(30) NOT NULL DEFAULT 'emerging',
-                    progress_percent INTEGER NOT NULL DEFAULT 0,
-                    evidence_count INTEGER NOT NULL DEFAULT 0,
-                    first_achieved_at TIMESTAMP,
-                    last_achieved_at TIMESTAMP,
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-                )
-            """))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_student_competencies_student ON student_competencies (student_id)"
-            ))
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS student_profiles (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-                    learning_style VARCHAR(50),
-                    bloom_level INTEGER DEFAULT 1,
-                    marzano_level INTEGER DEFAULT 1,
-                    grade_level INTEGER,
-                    device_sensor_precision DOUBLE PRECISION,
-                    device_npu_power DOUBLE PRECISION,
-                    device_camera_level DOUBLE PRECISION,
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-                )
-            """))
-        logger.info("✅ Core schema migrations applied")
-    except Exception as e:
-        logger.warning(f"⊘ Core schema migration skipped: {e}")
+    """Block 5: Discovery mode, compliance, org/classroom, standards, student tables.
+
+    2026-07-07 fix: every statement now runs through _exec_safepoint() instead
+    of sharing one bare transaction. This function used to abort entirely the
+    first time it hit a statement referencing stale schema (e.g.
+    student_peer_projects.initiator_id after that column was renamed to
+    author_student_id on this database) — and because Postgres aborts the
+    whole transaction on any failure, every statement AFTER that point used
+    to silently no-op too (evidence_captures, notebook_entries,
+    student_competencies, student_profiles, and the rest of the
+    student_peer_projects columns), even though each was individually wrapped
+    in its own try/except. Catching the Python exception never fixed the
+    underlying aborted Postgres transaction — only a SAVEPOINT does.
+    """
+    async with engine.begin() as conn:
+        await conn.execute(text("SELECT 1"))  # verify connection
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS rubric_id UUID")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS curriculum_unit_ids UUID[] DEFAULT '{}'")
+        # ── Discovery-mode columns ──────────────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_mode VARCHAR(50)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_task_description TEXT")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_required BOOLEAN DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_documentation_requirements JSONB")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_success_criteria TEXT")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_difficulty_level INTEGER DEFAULT 2")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_time_limit_minutes INTEGER")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_gps_capture_enabled BOOLEAN DEFAULT TRUE")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_location_sharing_rules JSONB")
+        # ── Publishing / stats columns ────────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS is_shareable BOOLEAN DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS hero_image_url VARCHAR(512)")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS published_at TIMESTAMP")
+        # ── Phase content columns ─────────────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE activities ALTER COLUMN location_latitude DROP NOT NULL")
+        await _exec_safepoint(conn, "ALTER TABLE activities ALTER COLUMN location_longitude DROP NOT NULL")
+        await _exec_safepoint(conn, "ALTER TABLE activities ALTER COLUMN location_name DROP NOT NULL")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS requires_parental_consent BOOLEAN NOT NULL DEFAULT FALSE")
+        # ── Compliance tables ─────────────────────────────────────────────
+        await _exec_safepoint(conn,
+            """CREATE TABLE IF NOT EXISTS compliance_rules (
+                rule_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                regulation_id VARCHAR(100),
+                version VARCHAR(20),
+                jurisdiction VARCHAR(100) NOT NULL,
+                effective_date TIMESTAMP,
+                sunset_date TIMESTAMP,
+                rule_definition JSONB,
+                created_by VARCHAR(255) DEFAULT 'system',
+                created_at TIMESTAMP DEFAULT NOW(),
+                previous_version_id UUID,
+                change_log TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                audit_hash VARCHAR(256),
+                regulation_type VARCHAR(20) NOT NULL DEFAULT 'privacy',
+                ai_student_permitted BOOLEAN NOT NULL DEFAULT TRUE,
+                ai_teacher_permitted BOOLEAN NOT NULL DEFAULT TRUE
+            )""", "create compliance_rules")
+        for _col_sql in [
+            "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS regulation_type VARCHAR(20) NOT NULL DEFAULT 'privacy'",
+            "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS ai_student_permitted BOOLEAN NOT NULL DEFAULT TRUE",
+            "ALTER TABLE compliance_rules ADD COLUMN IF NOT EXISTS ai_teacher_permitted BOOLEAN NOT NULL DEFAULT TRUE",
+        ]:
+            await _exec_safepoint(conn, _col_sql)
+        await _exec_safepoint(conn,
+            """CREATE TABLE IF NOT EXISTS rule_audit_log (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                rule_id VARCHAR(256),
+                data_access_id UUID,
+                student_id_hash VARCHAR(256),
+                action VARCHAR(100) NOT NULL DEFAULT 'access',
+                data_type VARCHAR(100),
+                timestamp TIMESTAMP DEFAULT NOW(),
+                rules_applied JSONB,
+                enforcement_actions JSONB,
+                compliance_status VARCHAR(20) NOT NULL DEFAULT 'COMPLIANT',
+                actor_id VARCHAR(256),
+                actor_role VARCHAR(50),
+                jurisdiction_ids JSONB,
+                notes TEXT
+            )""", "create rule_audit_log")
+        await _exec_safepoint(conn,
+            "CREATE TABLE IF NOT EXISTS consent_records ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(),"
+            "student_id_hash VARCHAR(256) NOT NULL,"
+            "jurisdiction VARCHAR(50) NOT NULL,"
+            "consent_type VARCHAR(50) NOT NULL,"
+            "data_categories JSONB,"
+            "granted_at TIMESTAMP DEFAULT NOW(),"
+            "granted_by VARCHAR(256),"
+            "withdrawn_at TIMESTAMP,"
+            "is_active BOOLEAN NOT NULL DEFAULT TRUE,"
+            "consent_version VARCHAR(10),"
+            "ip_hash VARCHAR(256),"
+            "user_agent_hash VARCHAR(256))", "create consent_records")
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS data_categories JSONB")
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS withdrawn_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS granted_by VARCHAR(256)")
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS ip_hash VARCHAR(256)")
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS user_agent_hash VARCHAR(256)")
+        # ── Multi-tenancy tables ───────────────────────────────────────────
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS organizations (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                slug VARCHAR(100) UNIQUE NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                type VARCHAR(50) NOT NULL DEFAULT 'school',
+                license_tier VARCHAR(30) NOT NULL DEFAULT 'free',
+                license_status VARCHAR(20) NOT NULL DEFAULT 'active',
+                max_teachers INTEGER DEFAULT 3,
+                max_classrooms INTEGER DEFAULT 1,
+                max_students INTEGER DEFAULT 30,
+                contact_email VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create organizations")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS classrooms (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                grade_level INTEGER,
+                subject VARCHAR(100),
+                teacher_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                org_id UUID REFERENCES organizations(id) ON DELETE SET NULL,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create classrooms")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS classroom_students (
+                classroom_id UUID REFERENCES classrooms(id) ON DELETE CASCADE,
+                student_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                enrolled_at TIMESTAMP DEFAULT NOW(),
+                PRIMARY KEY (classroom_id, student_id)
+            )
+        """, "create classroom_students")
+        # ── Standards & rubrics tables ─────────────────────────────────────
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS standards_sets (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                type VARCHAR(50) NOT NULL,
+                owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                state_code VARCHAR(10),
+                is_global BOOLEAN DEFAULT FALSE,
+                source_file VARCHAR(512),
+                criteria JSONB DEFAULT '[]',
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create standards_sets")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS max_students_per_classroom INTEGER DEFAULT 30")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS country_code VARCHAR(10)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subdivision_code VARCHAR(20)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS has_under_13_students BOOLEAN NOT NULL DEFAULT TRUE")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS privacy_jurisdiction_ids JSONB DEFAULT '[]'::jsonb")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS org_type_v2 VARCHAR(50)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS ip_country_hint VARCHAR(10)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS trial_started_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS grace_period_started_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_customer_id VARCHAR(128)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_subscription_id VARCHAR(128)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subscription_ends_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE")
+        await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS grade_level VARCHAR(50) DEFAULT ''")
+        await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS subject VARCHAR(100) DEFAULT ''")
+        await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS source_checksum VARCHAR(64)")
+        await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'complete'")
+        await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS last_processed_at TIMESTAMP")
+        await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS valid_until DATE")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS homeschool_children (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                parent_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                child_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                grade_level INTEGER DEFAULT 0,
+                age_band VARCHAR(10) DEFAULT 'k6',
+                created_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(parent_id, child_id)
+            )
+        """, "create homeschool_children")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS activity_standards_map (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+                standards_set_id UUID NOT NULL REFERENCES standards_sets(id) ON DELETE CASCADE,
+                criterion_id VARCHAR(100) NOT NULL,
+                coverage_level VARCHAR(50) DEFAULT 'partial',
+                notes TEXT,
+                mapped_by UUID REFERENCES users(id) ON DELETE SET NULL,
+                ai_suggested BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                CONSTRAINT uq_activity_standards_criterion
+                    UNIQUE (activity_id, standards_set_id, criterion_id)
+            )
+        """, "create activity_standards_map")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS user_privacy_preferences (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                ferpa_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+                coppa_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                data_sharing_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+                ai_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                configured_at TIMESTAMP,
+                org_id UUID,
+                org_governed BOOLEAN NOT NULL DEFAULT FALSE,
+                org_governed_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create user_privacy_preferences")
+        for _col in [
+            "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_id UUID",
+            "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_governed BOOLEAN NOT NULL DEFAULT FALSE",
+            "ALTER TABLE user_privacy_preferences ADD COLUMN IF NOT EXISTS org_governed_at TIMESTAMP",
+        ]:
+            await _exec_safepoint(conn, _col)
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS assessment_rubrics (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                framework VARCHAR(50) DEFAULT 'blooms',
+                criteria JSONB NOT NULL DEFAULT '[]',
+                total_points INTEGER DEFAULT 100,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create assessment_rubrics")
+        # ── Phase 7 student tables ─────────────────────────────────────────
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_captures (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                session_id UUID,
+                capture_type VARCHAR(20) NOT NULL DEFAULT 'photo',
+                file_path VARCHAR(512),
+                file_url VARCHAR(512),
+                transcript TEXT,
+                transcript_status VARCHAR(20) DEFAULT 'pending',
+                latitude DOUBLE PRECISION, longitude DOUBLE PRECISION,
+                location_name VARCHAR(255),
+                metadata JSONB DEFAULT '{}',
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_captures")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_notebooks (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                session_id UUID,
+                content TEXT,
+                tags TEXT[] DEFAULT '{}',
+                is_private BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_notebooks")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_field_notes (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                session_id UUID,
+                title VARCHAR(255),
+                description TEXT,
+                status VARCHAR(30) DEFAULT 'draft',
+                teacher_feedback TEXT,
+                is_shared BOOLEAN DEFAULT FALSE,
+                latitude DOUBLE PRECISION, longitude DOUBLE PRECISION,
+                location_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_field_notes")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_self_projects (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                status VARCHAR(30) DEFAULT 'active',
+                subject VARCHAR(100),
+                grade_level INTEGER,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_self_projects")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_peer_projects (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                initiator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                partner_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                status VARCHAR(30) DEFAULT 'proposed',
+                subject VARCHAR(100),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_peer_projects")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_proposals (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                teacher_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                location_name VARCHAR(255),
+                subject VARCHAR(100),
+                status VARCHAR(30) DEFAULT 'draft',
+                teacher_feedback TEXT,
+                approved_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create student_proposals")
+        # ── student_proposals column drift ─────────────────────────────────
+        await _exec_safepoint(conn, "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS note_to_teacher TEXT")
+        # ── Align student tables with their ORM models (ADD COLUMN drift fixes) ──
+        for _alter in [
+            "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS self_project_id UUID REFERENCES student_self_projects(id) ON DELETE SET NULL",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_latitude DOUBLE PRECISION",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_longitude DOUBLE PRECISION",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS self_tagged_objective_ids UUID[] NOT NULL DEFAULT '{}'",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS submitted_for_promotion_at TIMESTAMP",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS submitted_with_message TEXT",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_by_teacher_id UUID REFERENCES users(id) ON DELETE SET NULL",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS teacher_feedback TEXT",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_activity_id UUID REFERENCES activities(id) ON DELETE SET NULL",
+            "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_at TIMESTAMP",
+            "ALTER TABLE student_peer_projects ALTER COLUMN initiator_id DROP NOT NULL",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS author_student_id UUID REFERENCES users(id) ON DELETE CASCADE",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS class_id UUID REFERENCES classes(id) ON DELETE CASCADE",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS learning_objectives_text JSONB NOT NULL DEFAULT '[]'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS guiding_prompts JSONB NOT NULL DEFAULT '[]'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS curriculum_objective_ids UUID[] NOT NULL DEFAULT '{}'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS allowed_capture_types TEXT[] NOT NULL DEFAULT '{}'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS audience VARCHAR(30) NOT NULL DEFAULT 'whole_class'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS target_student_ids UUID[] NOT NULL DEFAULT '{}'",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approval_required BOOLEAN NOT NULL DEFAULT TRUE",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approved_by_teacher_id UUID REFERENCES users(id) ON DELETE SET NULL",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS teacher_feedback TEXT",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS published_at TIMESTAMP",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS author_can_see_individual_responses BOOLEAN NOT NULL DEFAULT FALSE",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
+            "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
+        ]:
+            await _exec_safepoint(conn, _alter, "student schema ALTER")
+        # ── Phase 6: evidence_captures + notebook_entries ──────────────────
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS evidence_captures (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                session_id UUID REFERENCES learning_sessions(id) ON DELETE CASCADE,
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                capture_type VARCHAR(50) NOT NULL,
+                title VARCHAR(255),
+                description TEXT,
+                file_url TEXT,
+                file_size_bytes INTEGER,
+                duration_seconds INTEGER,
+                transcription TEXT,
+                learning_objectives JSONB DEFAULT '[]',
+                competencies JSONB DEFAULT '[]',
+                location_latitude DOUBLE PRECISION,
+                location_longitude DOUBLE PRECISION,
+                ai_analysis JSONB,
+                device_metadata JSONB,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )
+        """, "create evidence_captures")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_evidence_captures_session  ON evidence_captures (session_id)")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_evidence_captures_student  ON evidence_captures (student_id)")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_evidence_captures_activity ON evidence_captures (activity_id)")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS notebook_entries (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                session_id UUID REFERENCES learning_sessions(id) ON DELETE CASCADE,
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                activity_id UUID REFERENCES activities(id) ON DELETE SET NULL,
+                reflection_type VARCHAR(50) NOT NULL DEFAULT 'freeform',
+                title VARCHAR(255),
+                content TEXT NOT NULL DEFAULT '',
+                learning_objectives JSONB DEFAULT '[]',
+                competencies JSONB DEFAULT '[]',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )
+        """, "create notebook_entries")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_notebook_entries_session ON notebook_entries (session_id)")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_notebook_entries_student ON notebook_entries (student_id)")
+        # ── student_competencies + student_profiles ────────────────────────
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_competencies (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                competency_name VARCHAR(255) NOT NULL,
+                description TEXT,
+                category VARCHAR(100),
+                status VARCHAR(30) NOT NULL DEFAULT 'emerging',
+                progress_percent INTEGER NOT NULL DEFAULT 0,
+                evidence_count INTEGER NOT NULL DEFAULT 0,
+                first_achieved_at TIMESTAMP,
+                last_achieved_at TIMESTAMP,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )
+        """, "create student_competencies")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_student_competencies_student ON student_competencies (student_id)")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS student_profiles (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                learning_style VARCHAR(50),
+                bloom_level INTEGER DEFAULT 1,
+                marzano_level INTEGER DEFAULT 1,
+                grade_level INTEGER,
+                device_sensor_precision DOUBLE PRECISION,
+                device_npu_power DOUBLE PRECISION,
+                device_camera_level DOUBLE PRECISION,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )
+        """, "create student_profiles")
+    logger.info("✅ Core schema migrations applied")
 
 
 async def apply_billing_column_migrations(engine) -> None:
