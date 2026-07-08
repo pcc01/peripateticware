@@ -632,6 +632,14 @@ async def apply_core_schema_migrations(engine) -> None:
         for _col in [
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS file_size_bytes INTEGER",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS mime_type VARCHAR(100)",
+            # captured_at: present in database/init.sql and required by the ORM
+            # model (models/database.py StudentCapture.captured_at, indexed,
+            # non-null-default). Missing from THIS fallback CREATE TABLE, so
+            # any query that loads a StudentCapture row on a DB bootstrapped
+            # here — e.g. field notes / journal / self-project pages, which
+            # all eagerly load captures via selectinload — 500s with
+            # "column student_captures.captured_at does not exist".
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS captured_at TIMESTAMP DEFAULT NOW()",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_confidence FLOAT",
@@ -639,8 +647,22 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS duration_seconds INTEGER",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS dimensions VARCHAR(20)",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS description TEXT",
+            # location_lat_enc / location_lon_enc: the ORM model declares these
+            # as EncryptedString(200) (models/database.py StudentCapture) for
+            # the field-encryption feature, but NEITHER database/init.sql NOR
+            # any prior migration ever created them — the encryption feature
+            # was added to the model without a matching schema change. Every
+            # default SELECT of StudentCapture includes all mapped columns, so
+            # this 500s the same way the missing captured_at column did.
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lat_enc VARCHAR(200)",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lon_enc VARCHAR(200)",
         ]:
             await _exec_safepoint(conn, _col)
+        await _exec_safepoint(
+            conn,
+            "CREATE INDEX IF NOT EXISTS idx_student_captures_timestamp ON student_captures (captured_at)",
+            "create idx_student_captures_timestamp",
+        )
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS student_notebooks (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
