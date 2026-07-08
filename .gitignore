@@ -432,7 +432,5 @@ frontend/vite.config.ts.timestamp-*.mjs
 # (backend/scripts, frontend/scripts, frontend/my-app/scripts, mobile/scripts,
 # root scripts/) — that swallowed the real i18n pipeline/tooling in
 # frontend/scripts, which is product code, not a one-off. Un-ignore it below.
-scripts/
-!frontend/scripts/
-
-# ── Internal sprint docs in backend/docs ────────────
+# It also silently swallowed backend/scripts/encrypt_existing_data.py — the
+# one-time FIELD_ENCRYPTION_KEY b

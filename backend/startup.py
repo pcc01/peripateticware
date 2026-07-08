@@ -620,6 +620,27 @@ async def apply_core_schema_migrations(engine) -> None:
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """, "create student_captures")
+        # StudentCapture ORM model (models/database.py) and database/init.sql
+        # (the Postgres first-init script, which only ever runs against a
+        # brand-new empty data volume) both declare more columns than the
+        # CREATE above. On any DB that was bootstrapped by THIS fallback
+        # instead of init.sql, those columns never existed — every INSERT
+        # from routes that set file_size_bytes/mime_type/etc. (e.g.
+        # phase7_student_initiated.py's capture upload) 500s with
+        # "column ... does not exist". Backfill them here so this block is
+        # self-healing regardless of which path created the table.
+        for _col in [
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS file_size_bytes INTEGER",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS mime_type VARCHAR(100)",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_confidence FLOAT",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_language VARCHAR(10)",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS duration_seconds INTEGER",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS dimensions VARCHAR(20)",
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS description TEXT",
+        ]:
+            await _exec_safepoint(conn, _col)
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS student_notebooks (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1486,24 +1507,4 @@ async def start_background_tasks(async_session, settings) -> None:
     # a guess: it matches this function's own docstring (hourly alert job,
     # 15-min anomaly job) and tasks/budget_monitor.py's two exported functions.
     if _scheduler is not None:
-        try:
-            from tasks.budget_monitor import budget_alert_check, anomaly_detect, monthly_summary
-
-            # budget_alert_check() and anomaly_detect() now open and close
-            # their own DB session internally (see tasks/budget_monitor.py —
-            # this lets them be scanned via Redis without holding a session
-            # the whole time, and lets tests call them with zero args), so
-            # they're registered directly as job targets instead of being
-            # wrapped in a closure over async_session().
-            _scheduler.add_job(budget_alert_check, "interval", hours=1,     id="budget_alert",    replace_existing=True)
-            _scheduler.add_job(anomaly_detect,     "interval", minutes=15, id="anomaly_detect",   replace_existing=True)
-            _scheduler.add_job(monthly_summary,    "cron", day=1, hour=6,   id="monthly_summary",  replace_existing=True)
-            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly, monthly summary)")
-        except Exception as e:
-            logger.warning(f"⊘ Budget monitor jobs not added: {e}")
-
-    # ── Privacy legislation crawler ───────────────────────────────────────────
-    # Previously IAPP_CRAWLER_SCHEDULE was defined in config but referenced
-    # NOWHERE — the "scheduled crawl" the crawler docstrings promised never ran.
-    # It is now registered here, on that cron, but only when IAPP_CRAWLER_ENABLED
-    # is true (default false), s
+   
