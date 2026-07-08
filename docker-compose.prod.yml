@@ -101,4 +101,14 @@ services:
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
- 
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "127.0.0.1:9090:9090"   # localhost only — expose via Caddy if needed
+    networks:
+      - peripateticware
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:

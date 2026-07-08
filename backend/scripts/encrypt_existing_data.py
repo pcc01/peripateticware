@@ -97,4 +97,8 @@ async def main() -> None:
         await backfill_users(db)
         await backfill_captures(db)
         await db.commit()
-    logger.info("Backfill complete. All changes committed.
+    logger.info("Backfill complete. All changes committed.")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

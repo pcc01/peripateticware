@@ -433,4 +433,9 @@ frontend/vite.config.ts.timestamp-*.mjs
 # root scripts/) — that swallowed the real i18n pipeline/tooling in
 # frontend/scripts, which is product code, not a one-off. Un-ignore it below.
 # It also silently swallowed backend/scripts/encrypt_existing_data.py — the
-# one-time FIELD_ENCRYPTION_KEY b
+# one-time FIELD_ENCRYPTION_KEY backfill script. Un-ignore both real script
+# directories; the root-level scripts/ (Claude session diagnostics) stays
+# ignored via scripts/* above.
+scripts/
+!frontend/scripts/
+!backend/scripts/

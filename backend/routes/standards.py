@@ -295,25 +295,52 @@ async def upload_and_parse(
     try:
         from services.document_parser import parse_document
         from services.standards_parser import extract_criteria
-        parsed   = await parse_document(file_bytes, file.filename or "upload", file.content_type)
-        criteria = await extract_criteria(parsed.text, set_type=set_type, name=name)
+        parsed = await parse_document(file_bytes, file.filename or "upload", file.content_type)
+    except Exception as exc:
+        # Couldn't even get text out of the file — corrupt upload, unsupported
+        # format, missing optional dependency (pypdf/Pillow/openpyxl), etc.
+        # Log with a traceback (previously this only got the str(exc) one-liner,
+        # both here and in the response, which made server-side debugging as
+        # blind as the user-facing message) and give the user something
+        # specific enough to act on instead of a generic "failed".
+        logger.error("Document parsing failed for %r: %s", file.filename, exc, exc_info=True)
+        return {
+            "criteria":   [],
+            "checksum":   checksum,
+            "warnings":   [f"Couldn't read this file ({type(exc).__name__}: {exc}). "
+                           f"Confirm it's a valid PDF or CSV, or add criteria manually."],
+            "method":     "failed",
+            "page_count": 0,
+            "char_count": 0,
+        }
+
+    try:
+        from services.standards_parser import extract_criteria
+        criteria, extraction_error = await extract_criteria(parsed.text, set_type=set_type, name=name)
+        warnings = list(parsed.warnings)
+        if extraction_error:
+            warnings.append(extraction_error)
         return {
             "criteria":   criteria,
             "checksum":   checksum,
-            "warnings":   parsed.warnings,
+            "warnings":   warnings,
             "method":     parsed.method,
             "page_count": parsed.page_count,
             "char_count": len(parsed.text),
         }
     except Exception as exc:
-        logger.warning(f"Document parsing failed: {exc}")
+        # extract_criteria() itself is documented to never raise — this is
+        # a genuine "shouldn't happen" backstop, so it's worth a full
+        # traceback rather than the swallowed one-liner this used to be.
+        logger.error("Criteria extraction failed unexpectedly for %r: %s", file.filename, exc, exc_info=True)
         return {
             "criteria":   [],
             "checksum":   checksum,
-            "warnings":   [str(exc)],
-            "method":     "failed",
-            "page_count": 0,
-            "char_count": 0,
+            "warnings":   [f"Criteria extraction failed unexpectedly ({type(exc).__name__}: {exc}). "
+                           f"Add criteria manually, or try again."],
+            "method":     parsed.method,
+            "page_count": parsed.page_count,
+            "char_count": len(parsed.text),
         }
 
 
@@ -491,26 +518,37 @@ async def refresh_standards_set(
     try:
         from services.document_parser import parse_document
         from services.standards_parser import extract_criteria
-        parsed   = await parse_document(file_bytes, file.filename or "upload", file.content_type)
-        criteria = await extract_criteria(parsed.text, set_type=s.type, name=s.name)
+        parsed = await parse_document(file_bytes, file.filename or "upload", file.content_type)
+        criteria, extraction_error = await extract_criteria(parsed.text, set_type=s.type, name=s.name)
         s.criteria          = criteria
-        s.processing_status = "complete"
+        s.processing_status = "complete" if criteria else "failed"
         s.last_processed_at = datetime.utcnow()
         s.valid_until       = _default_valid_until(s.type)
         s.updated_at        = datetime.utcnow()
         await db.commit()
-        # Re-index updated criteria in RAG store
-        asyncio.create_task(_index_standards_set_criteria(s, current_user.id, db))
+        if criteria:
+            # Re-index updated criteria in RAG store
+            asyncio.create_task(_index_standards_set_criteria(s, current_user.id, db))
+            message = f"Re-processed successfully. {len(criteria)} criteria extracted."
+        else:
+            # extract_criteria() no longer raises on failure — it returns a
+            # specific reason instead (dead Ollama connection, unparseable
+            # LLM output, genuinely nothing found, etc.). Surface that reason
+            # here instead of the old generic "Extraction failed: {exc}",
+            # which never actually fired for this path in the first place
+            # since nothing here raised — this whole failure mode returned
+            # a false "success" with silently empty criteria before.
+            message = extraction_error or "Re-processed, but no criteria were found in the file."
         return {
             **_serialize(s, include_criteria=True),
             "cache_hit": False,
-            "message":   f"Re-processed successfully. {len(criteria)} criteria extracted.",
+            "message":   message,
         }
     except Exception as exc:
         s.processing_status = "failed"
         await db.commit()
-        logger.error(f"Refresh failed for {set_id}: {exc}")
-        raise HTTPException(status_code=500, detail=f"Extraction failed: {exc}")
+        logger.error("Refresh failed for %s: %s", set_id, exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Couldn't read this file ({type(exc).__name__}: {exc}).")
 
 
 # ---------------------------------------------------------------------------

@@ -1507,4 +1507,66 @@ async def start_background_tasks(async_session, settings) -> None:
     # a guess: it matches this function's own docstring (hourly alert job,
     # 15-min anomaly job) and tasks/budget_monitor.py's two exported functions.
     if _scheduler is not None:
-   
+        try:
+            from tasks.budget_monitor import budget_alert_check, anomaly_detect, monthly_summary
+
+            # budget_alert_check() and anomaly_detect() now open and close
+            # their own DB session internally (see tasks/budget_monitor.py —
+            # this lets them be scanned via Redis without holding a session
+            # the whole time, and lets tests call them with zero args), so
+            # they're registered directly as job targets instead of being
+            # wrapped in a closure over async_session().
+            _scheduler.add_job(budget_alert_check, "interval", hours=1,     id="budget_alert",    replace_existing=True)
+            _scheduler.add_job(anomaly_detect,     "interval", minutes=15, id="anomaly_detect",   replace_existing=True)
+            _scheduler.add_job(monthly_summary,    "cron", day=1, hour=6,   id="monthly_summary",  replace_existing=True)
+            logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly, monthly summary)")
+        except Exception as e:
+            logger.warning(f"⊘ Budget monitor jobs not added: {e}")
+
+    # ── Privacy legislation crawler ───────────────────────────────────────────
+    # Previously IAPP_CRAWLER_SCHEDULE was defined in config but referenced
+    # NOWHERE — the "scheduled crawl" the crawler docstrings promised never ran.
+    # It is now registered here, on that cron, but only when IAPP_CRAWLER_ENABLED
+    # is true (default false), so it stays off until an operator opts in.
+    if _scheduler is not None and getattr(settings, "IAPP_CRAWLER_ENABLED", False):
+        try:
+            from apscheduler.triggers.cron import CronTrigger
+            from services.iapp_privacy_crawler import run_privacy_crawler
+            from core.database import get_session_factory
+
+            async def _run_privacy_crawler_job():
+                # Own DB session — a scheduled job can't share a request session.
+                async with get_session_factory()() as _db:
+                    try:
+                        await run_privacy_crawler(
+                            db=_db,
+                            auto_load=getattr(settings, "PRIVACY_AUTO_LOAD", False),
+                        )
+                    except Exception as _exc:
+                        logger.error(f"Scheduled privacy crawl failed: {_exc}")
+
+            _cron = settings.IAPP_CRAWLER_SCHEDULE.split()
+            _scheduler.add_job(
+                _run_privacy_crawler_job,
+                CronTrigger(
+                    minute=_cron[0], hour=_cron[1], day=_cron[2],
+                    month=_cron[3], day_of_week=_cron[4],
+                ),
+                id="privacy_crawler",
+                replace_existing=True,
+            )
+            logger.info("✅ Privacy legislation crawler scheduled (%s)", settings.IAPP_CRAWLER_SCHEDULE)
+        except Exception as e:
+            logger.warning(f"⊘ Privacy crawler job not added: {e}")
+    else:
+        logger.info("⊘ Privacy crawler disabled (IAPP_CRAWLER_ENABLED=false) — not scheduled")
+
+    # Start the shared scheduler — without this call, none of the job groups
+    # registered above (retention cleanup, AI batch, budget monitor,
+    # privacy crawler) ever run.
+    if _scheduler is not None and not _scheduler.running:
+        try:
+            _scheduler.start()
+            logger.info("✅ APScheduler started")
+        except Exception as e:
+            logger.warning(f"⊘ APScheduler failed to start: {e}")
