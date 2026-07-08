@@ -164,17 +164,33 @@ async def process_inquiry(
     """
     try:
         # ── Session ownership check (IDOR prevention) ─────────────────────────
+        # Wrapped: callers like the teacher activity-builder's "Generate
+        # Suggestions" panel (OllamaLessonSuggestions.tsx) send a synthetic,
+        # non-UUID session_id ("activity-builder") since there's no real
+        # learning_sessions row for that flow. Casting that string against
+        # the UUID id column raises an uncaught asyncpg
+        # InvalidTextRepresentationError, which previously fell through to
+        # the generic except below and always 500'd as "Failed to process
+        # inquiry" — regardless of LLM provider. Treat any lookup failure
+        # (bad UUID, no matching row, etc.) as "no ownership conflict" and
+        # continue, same fail-open pattern used by the cache lookup below.
         if request.session_id:
             from sqlalchemy import text as _t
-            sess_row = (await db.execute(
-                _t("SELECT user_id FROM learning_sessions WHERE id = :sid"),
-                {"sid": str(request.session_id)}
-            )).fetchone()
-            if sess_row and str(sess_row[0]) != str(current_user.id):
-                raise HTTPException(
-                    status_code=403,
-                    detail="Access denied: session belongs to another user"
-                )
+            try:
+                sess_row = (await db.execute(
+                    _t("SELECT user_id FROM learning_sessions WHERE id = :sid"),
+                    {"sid": str(request.session_id)}
+                )).fetchone()
+                if sess_row and str(sess_row[0]) != str(current_user.id):
+                    raise HTTPException(
+                        status_code=403,
+                        detail="Access denied: session belongs to another user"
+                    )
+            except HTTPException:
+                raise
+            except Exception as sess_err:
+                logger.warning(f"Session ownership check skipped (non-UUID or DB issue): {sess_err}")
+                await db.rollback()
 
         # ── Cache lookup ──────────────────────────────────────────────────────
         loc_ctx = request.effective_location()
