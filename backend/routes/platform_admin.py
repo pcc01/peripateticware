@@ -217,7 +217,7 @@ async def get_org_detail(
         SELECT COALESCE(SUM(tokens_in + tokens_out), 0), COALESCE(SUM(cost_usd), 0)
         FROM platform_ai_ledger
         WHERE org_id = :oid AND created_at >= :ms
-    """), {"oid": org_id, "ms": month_start})).first()
+    """), {"oid": org_id, "ms": month_start.replace(tzinfo=None)})).first()
 
     user_count = (await db.execute(
         text("SELECT COUNT(*) FROM users WHERE org_id = :oid"), {"oid": org_id}
@@ -392,11 +392,18 @@ async def platform_usage(
     else:
         since = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
+    # platform_ai_ledger.created_at is TIMESTAMP (no timezone) in the actual
+    # schema (database/init.sql) — asyncpg raises DataError binding a
+    # tz-aware datetime against it ("can't subtract offset-naive and
+    # offset-aware datetimes"). Strip tzinfo for the query param only;
+    # `since`/`now` stay tz-aware for the period-boundary math above.
+    since_naive = since.replace(tzinfo=None)
+
     totals = (await db.execute(text("""
         SELECT COALESCE(SUM(tokens_in + tokens_out), 0), COALESCE(SUM(cost_usd), 0),
                COUNT(DISTINCT org_id)
         FROM platform_ai_ledger WHERE created_at >= :since
-    """), {"since": since})).first()
+    """), {"since": since_naive})).first()
 
     top_orgs = (await db.execute(text("""
         SELECT l.org_id, o.name, SUM(l.tokens_in + l.tokens_out) AS toks, COALESCE(SUM(l.cost_usd), 0) AS cost
@@ -406,7 +413,7 @@ async def platform_usage(
         GROUP  BY l.org_id, o.name
         ORDER  BY toks DESC
         LIMIT  10
-    """), {"since": since})).fetchall()
+    """), {"since": since_naive})).fetchall()
 
     return {
         "period":         period,
