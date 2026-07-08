@@ -308,7 +308,14 @@ async def update_activity(
     for field, value in update_data.items():
         setattr(activity, field, value)
 
-    activity.updated_at = datetime.now(timezone.utc)
+    # DB column is TIMESTAMP WITHOUT TIME ZONE (see database/init.sql and
+    # models/database.py's Activity.updated_at = Column(DateTime, ...) with
+    # no timezone=True). asyncpg refuses to bind a timezone-AWARE datetime
+    # to that column ("can't subtract offset-naive and offset-aware
+    # datetimes"), which was silently 500ing every activity update/publish/
+    # archive/media-upload call. Use naive UTC (matching the ORM's own
+    # default=datetime.utcnow) instead of datetime.now(timezone.utc).
+    activity.updated_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(activity)
@@ -424,7 +431,14 @@ async def publish_activity(
 
     # ── Save published status ─────────────────────────────────────────────────
     activity.status = ActivityStatus.PUBLISHED
-    activity.updated_at = datetime.now(timezone.utc)
+    # DB column is TIMESTAMP WITHOUT TIME ZONE (see database/init.sql and
+    # models/database.py's Activity.updated_at = Column(DateTime, ...) with
+    # no timezone=True). asyncpg refuses to bind a timezone-AWARE datetime
+    # to that column ("can't subtract offset-naive and offset-aware
+    # datetimes"), which was silently 500ing every activity update/publish/
+    # archive/media-upload call. Use naive UTC (matching the ORM's own
+    # default=datetime.utcnow) instead of datetime.now(timezone.utc).
+    activity.updated_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(activity)
@@ -461,7 +475,14 @@ async def archive_activity(
         )
 
     activity.status = ActivityStatus.ARCHIVED
-    activity.updated_at = datetime.now(timezone.utc)
+    # DB column is TIMESTAMP WITHOUT TIME ZONE (see database/init.sql and
+    # models/database.py's Activity.updated_at = Column(DateTime, ...) with
+    # no timezone=True). asyncpg refuses to bind a timezone-AWARE datetime
+    # to that column ("can't subtract offset-naive and offset-aware
+    # datetimes"), which was silently 500ing every activity update/publish/
+    # archive/media-upload call. Use naive UTC (matching the ORM's own
+    # default=datetime.utcnow) instead of datetime.now(timezone.utc).
+    activity.updated_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(activity)
@@ -1326,7 +1347,14 @@ async def upload_activity_media(
         # SQLAlchemy JSONB mutation tracking requires reassignment
         activity.attachments = existing_attachments + [new_attachment]
 
-    activity.updated_at = datetime.now(timezone.utc)
+    # DB column is TIMESTAMP WITHOUT TIME ZONE (see database/init.sql and
+    # models/database.py's Activity.updated_at = Column(DateTime, ...) with
+    # no timezone=True). asyncpg refuses to bind a timezone-AWARE datetime
+    # to that column ("can't subtract offset-naive and offset-aware
+    # datetimes"), which was silently 500ing every activity update/publish/
+    # archive/media-upload call. Use naive UTC (matching the ORM's own
+    # default=datetime.utcnow) instead of datetime.now(timezone.utc).
+    activity.updated_at = datetime.utcnow()
     await db.commit()
 
     return {
@@ -1353,7 +1381,14 @@ async def delete_activity_hero_image(
     if activity.teacher_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     activity.hero_image_url = None
-    activity.updated_at = datetime.now(timezone.utc)
+    # DB column is TIMESTAMP WITHOUT TIME ZONE (see database/init.sql and
+    # models/database.py's Activity.updated_at = Column(DateTime, ...) with
+    # no timezone=True). asyncpg refuses to bind a timezone-AWARE datetime
+    # to that column ("can't subtract offset-naive and offset-aware
+    # datetimes"), which was silently 500ing every activity update/publish/
+    # archive/media-upload call. Use naive UTC (matching the ORM's own
+    # default=datetime.utcnow) instead of datetime.now(timezone.utc).
+    activity.updated_at = datetime.utcnow()
     await db.commit()
 
 
