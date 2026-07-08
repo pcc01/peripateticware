@@ -1,0 +1,27 @@
+GENERIC HOMESCHOOL COMPLIANCE REPORT TEMPLATE
+
+NOTE: No state-specific template was found for the requested jurisdiction.
+This is a generic template. The output will be marked needs_human_review=true.
+The parent/guardian must verify all fields and language against their state's
+actual requirements before submission.
+
+REQUIRED FIELDS (universal minimums):
+- student_name
+- reporting_period (start date and end date)
+- subjects_covered (list)
+- hours_of_instruction (total, or per subject)
+- parent_guardian_name
+
+RECOMMENDED SECTIONS:
+1. Student Information
+2. Reporting Period
+3. Subjects and Hours of Instruction
+4. Learning Objectives and Progress Summary
+5. Assessment Methods Used
+6. Parent/Guardian Declaration
+
+DECLARATION LANGUAGE:
+"I, [parent_guardian_name], declare that the information provided in this
+report is accurate and complete to the best of my knowledge."
+
+Signature line: _________________________________ Date: _____________

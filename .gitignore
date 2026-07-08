@@ -368,7 +368,15 @@ run-diagnostic.ps1
 diagnostic-output.txt
 
 # ── Agent pipeline & all outputs (never commit) ──────────────
+# NOTE: bare "agents/" (here and at line ~100) matches any dir named "agents"
+# anywhere in the repo, not just the root Claude-pipeline folder it targets —
+# it was also swallowing backend/agents/ (real FastAPI route dependency: the
+# activity-review/compliance-report/rubric-scoring/standards agents imported
+# by routes/agents.py and routes/inference.py) and backend/tests/agents/.
+# Un-ignore those specifically; the root agents/ stays ignored.
 agents/
+!backend/agents/
+!backend/tests/agents/
 
 # ── Additional session / planning docs ───────────────────────
 COLLEGE_LEVEL_SCOPE.md
@@ -427,16 +435,4 @@ frontend/vite.config.ts.timestamp-*.mjs
 scripts/
 !frontend/scripts/
 
-# ── Internal sprint docs in backend/docs ─────────────────────
-backend/docs/SPRINT_TRACK_*.md
-
-# ── Runtime upload folder (contents excluded, .gitkeep tracks folder) ──
-backend/uploads/*
-!backend/uploads/.gitkeep
-
-# ── Internal Word docs ───────────────────────────────────────
-mobile-build-guide.docx
-peripateticware_assessment.docx
-sprint_development_plan.docx
-
-# ── Internal deployment/ops docs (infra topology, backup layout) �
+# ── Internal sprint docs in backend/docs ────────────

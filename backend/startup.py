@@ -875,6 +875,14 @@ async def apply_rag_documents_table(engine) -> None:
 async def apply_student_phase7_migrations(engine) -> None:
     """Block 7: Extended student field_notes / peer_projects column migrations."""
     _stmts = [
+        # ── Tables the ORM models declare (models/database.py: PeerProjectExampleCapture,
+        # PeerProjectResponse, PeerProjectResponseCapture, ClassSettings) but that no
+        # migration anywhere ever created — every "challenges" endpoint touching peer
+        # project examples/responses/class settings 500'd with "relation does not exist".
+        "CREATE TABLE IF NOT EXISTS peer_project_example_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), peer_project_id UUID NOT NULL REFERENCES student_peer_projects(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, caption TEXT, \"order\" INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(peer_project_id, capture_id))",
+        "CREATE TABLE IF NOT EXISTS peer_project_responses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), peer_project_id UUID NOT NULL REFERENCES student_peer_projects(id) ON DELETE CASCADE, student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, status VARCHAR(30) DEFAULT 'in_progress', notebook_entry_id UUID REFERENCES student_notebooks(id) ON DELETE SET NULL, completed_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(peer_project_id, student_id))",
+        "CREATE TABLE IF NOT EXISTS peer_project_response_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), response_id UUID NOT NULL REFERENCES peer_project_responses(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, \"order\" INT DEFAULT 0, UNIQUE(response_id, capture_id))",
+        "CREATE TABLE IF NOT EXISTS class_settings (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), class_id UUID NOT NULL UNIQUE REFERENCES classes(id) ON DELETE CASCADE, peer_project_approval_mode VARCHAR(20) DEFAULT 'teacher_gate', peer_project_author_sees_individual_responses BOOLEAN DEFAULT FALSE, students_can_create_peer_projects BOOLEAN DEFAULT TRUE, students_can_create_field_notes BOOLEAN DEFAULT TRUE, updated_at TIMESTAMPTZ DEFAULT NOW())",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_latitude DOUBLE PRECISION",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_longitude DOUBLE PRECISION",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS self_project_id UUID REFERENCES student_self_projects(id) ON DELETE SET NULL",
@@ -1498,46 +1506,4 @@ async def start_background_tasks(async_session, settings) -> None:
     # Previously IAPP_CRAWLER_SCHEDULE was defined in config but referenced
     # NOWHERE — the "scheduled crawl" the crawler docstrings promised never ran.
     # It is now registered here, on that cron, but only when IAPP_CRAWLER_ENABLED
-    # is true (default false), so it stays off until an operator opts in.
-    if _scheduler is not None and getattr(settings, "IAPP_CRAWLER_ENABLED", False):
-        try:
-            from apscheduler.triggers.cron import CronTrigger
-            from services.iapp_privacy_crawler import run_privacy_crawler
-            from core.database import get_session_factory
-
-            async def _run_privacy_crawler_job():
-                # Own DB session — a scheduled job can't share a request session.
-                async with get_session_factory()() as _db:
-                    try:
-                        await run_privacy_crawler(
-                            db=_db,
-                            auto_load=getattr(settings, "PRIVACY_AUTO_LOAD", False),
-                        )
-                    except Exception as _exc:
-                        logger.error(f"Scheduled privacy crawl failed: {_exc}")
-
-            _cron = settings.IAPP_CRAWLER_SCHEDULE.split()
-            _scheduler.add_job(
-                _run_privacy_crawler_job,
-                CronTrigger(
-                    minute=_cron[0], hour=_cron[1], day=_cron[2],
-                    month=_cron[3], day_of_week=_cron[4],
-                ),
-                id="privacy_crawler",
-                replace_existing=True,
-            )
-            logger.info("✅ Privacy legislation crawler scheduled (%s)", settings.IAPP_CRAWLER_SCHEDULE)
-        except Exception as e:
-            logger.warning(f"⊘ Privacy crawler job not added: {e}")
-    else:
-        logger.info("⊘ Privacy crawler disabled (IAPP_CRAWLER_ENABLED=false) — not scheduled")
-
-    # Start the shared scheduler — without this call, none of the job groups
-    # registered above (retention cleanup, AI batch, budget monitor,
-    # privacy crawler) ever run.
-    if _scheduler is not None and not _scheduler.running:
-        try:
-            _scheduler.start()
-            logger.info("✅ APScheduler started")
-        except Exception as e:
-            logger.warning(f"⊘ APScheduler failed to start: {e}")
+    # is true (default false), s

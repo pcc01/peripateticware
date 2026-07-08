@@ -1,0 +1,29 @@
+WASHINGTON STATE HOMESCHOOL ANNUAL REPORT TEMPLATE
+Statute: RCW 28A.200.010
+
+REQUIRED FIELDS for a valid Washington annual report:
+- student_name (full legal name)
+- parent_guardian_name (the person of record who filed the Declaration of Intent)
+- reporting_period (academic year, e.g. "September 2025 through June 2026")
+- subjects_covered — Washington requires instruction in: reading, writing, spelling,
+  language, mathematics, social studies, science, art, music, health, PE, and
+  occupational education (as applicable by grade level)
+- hours_of_instruction (minimum 1,000 hours per year per RCW 28A.225.010)
+- assessment_method — one of: standardized test, portfolio review,
+  annual assessment by a certificated person, or approved alternative
+
+REPORT STRUCTURE:
+1. Declaration of Intent on File: [Yes / No — indicate filing date if known]
+2. Student Information
+3. Academic Year and Hours of Instruction
+4. Subjects and Progress
+5. Assessment Method Used This Year
+6. Parent/Guardian Certification
+
+CERTIFICATION LANGUAGE:
+"I certify that [student_name] received home-based instruction meeting the
+requirements of RCW 28A.200.010 during the reporting period stated above, and
+that instruction was provided in the subjects required under Washington law."
+
+Signature: _________________________________ Date: _____________
+Printed name: _________________________________
