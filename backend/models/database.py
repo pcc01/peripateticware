@@ -1049,7 +1049,13 @@ class StudentFieldNoteCapture(Base):
                            nullable=False, index=True)
     capture_id    = Column(UUID(as_uuid=True), ForeignKey("student_captures.id"),
                            nullable=False, index=True)
-    order         = Column(Integer, default=0, nullable=False)
+    # DB column is order_index, not order — database/init.sql avoids the
+    # reserved SQL keyword; map the Python attribute to that real name so
+    # this class doesn't drift from whichever schema-creation path actually
+    # ran (init.sql on a fresh volume, vs. the ALTER/CREATE fallback in
+    # startup.py, which previously assumed a literal "order" column and
+    # 500'd with "column ... order does not exist" on any init.sql-bootstrapped DB).
+    order         = Column("order_index", Integer, default=0, nullable=False)
 
     field_note = relationship("StudentFieldNote", back_populates="captures")
     capture    = relationship("StudentCapture")
@@ -1117,7 +1123,8 @@ class PeerProjectExampleCapture(Base):
     capture_id      = Column(UUID(as_uuid=True), ForeignKey("student_captures.id"),
                              nullable=False, index=True)
     caption         = Column(Text, nullable=True)
-    order           = Column(Integer, default=0, nullable=False)
+    # DB column is order_index — see StudentFieldNoteCapture.order comment above.
+    order           = Column("order_index", Integer, default=0, nullable=False)
 
     peer_project = relationship("StudentPeerProject", back_populates="example_captures")
     capture      = relationship("StudentCapture")
@@ -1167,7 +1174,8 @@ class PeerProjectResponseCapture(Base):
                          nullable=False, index=True)
     capture_id  = Column(UUID(as_uuid=True), ForeignKey("student_captures.id"),
                          nullable=False, index=True)
-    order       = Column(Integer, default=0, nullable=False)
+    # DB column is order_index — see StudentFieldNoteCapture.order comment above.
+    order       = Column("order_index", Integer, default=0, nullable=False)
 
     response    = relationship("PeerProjectResponse", back_populates="captures")
     capture     = relationship("StudentCapture")
@@ -1343,11 +1351,4 @@ class RagDocument(Base):
     id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     source_type = Column(String(50),  nullable=False, index=True)   # standards|curriculum|homeschool|custom
     source_id   = Column(String(255), nullable=True,  index=True)   # UUID of parent record (or filename)
-    source_name = Column(String(512), nullable=True)                 # human-readable name of parent record
-    chunk_index = Column(Integer,     nullable=False, default=0)     # 0-based position within source
-    content     = Column(Text,        nullable=False)                # raw text of this chunk
-    metadata_   = Column("metadata", JSONB, default=dict)            # {grade_level, subject, state_code, …}
-    embedding   = Column(Vector(384), nullable=True)                 # 384-dim nomic-embed / all-MiniLM
-    owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
-    created_at  = Column(DateTime, default=datetime.utcnow)
-    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    source_name = Column(String(512), nullable=True)                 # human-readable name of 
