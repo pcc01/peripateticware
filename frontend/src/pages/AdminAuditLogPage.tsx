@@ -83,7 +83,7 @@ export default function AdminAuditLogPage() {
       if (filterFrom)   params.from_dt = new Date(filterFrom).toISOString()
       if (filterTo)     params.to_dt   = new Date(filterTo).toISOString()
 
-      const res = await apiClient.get(`/api/v1/privacy/audit-log`, {
+      const res = await apiClient.get(`/privacy/audit-log`, {
         params,
       })
       setRows(res.data.items || [])
@@ -110,7 +110,7 @@ export default function AdminAuditLogPage() {
       if (filterFrom)   params.from_dt = new Date(filterFrom).toISOString()
       if (filterTo)     params.to_dt   = new Date(filterTo).toISOString()
 
-      const res = await apiClient.get(`/api/v1/privacy/audit-log/export`, {
+      const res = await apiClient.get(`/privacy/audit-log/export`, {
         params,
         responseType: 'blob',
       })
@@ -141,9 +141,7 @@ export default function AdminAuditLogPage() {
         <button
           onClick={exportCSV}
           style={{ marginLeft: 'auto', background: '#4a7c59', color: '#fff', border: 'none', borderRadius: 8, padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.9rem' }}
-        >
-          ⬇ Export CSV
-        </button>
+        >{t('pages_adminauditlogpage.export_csv', '⬇ Export CSV')}</button>
       </div>
 
       {/* Summary stats */}
@@ -165,52 +163,48 @@ export default function AdminAuditLogPage() {
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           Status
           <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }}>
-            <option value="">All</option>
-            <option value="COMPLIANT">Compliant</option>
-            <option value="WARNING">Warning</option>
-            <option value="BLOCKED">Blocked</option>
+            <option value="">{t('pages_adminauditlogpage.all', 'All')}</option>
+            <option value="COMPLIANT">{t('pages_adminauditlogpage.compliant', 'Compliant')}</option>
+            <option value="WARNING">{t('pages_adminauditlogpage.warning', 'Warning')}</option>
+            <option value="BLOCKED">{t('pages_adminauditlogpage.blocked', 'Blocked')}</option>
           </select>
         </label>
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           Actor Role
           <select value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }}>
-            <option value="">All</option>
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-            <option value="parent">Parent</option>
-            <option value="admin">Admin</option>
-            <option value="system">System</option>
+            <option value="">{t('pages_adminauditlogpage.all', 'All')}</option>
+            <option value="student">{t('pages_adminauditlogpage.student', 'Student')}</option>
+            <option value="teacher">{t('pages_adminauditlogpage.teacher', 'Teacher')}</option>
+            <option value="parent">{t('pages_adminauditlogpage.parent', 'Parent')}</option>
+            <option value="admin">{t('pages_adminauditlogpage.admin', 'Admin')}</option>
+            <option value="system">{t('pages_adminauditlogpage.system', 'System')}</option>
           </select>
         </label>
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           From
-          <input type="date" aria-label="Filter from date" value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
+          <input type="date" aria-label={t('pages_adminauditlogpage.aria_label_filter_from_date', 'Filter from date')} value={filterFrom} onChange={e => { setFilterFrom(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
         </label>
 
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem', color: '#444' }}>
           To
-          <input type="date" aria-label="Filter to date" value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
+          <input type="date" aria-label={t('pages_adminauditlogpage.aria_label_filter_to_date', 'Filter to date')} value={filterTo} onChange={e => { setFilterTo(e.target.value); setPage(1) }} style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem' }} />
         </label>
 
         <button
           onClick={resetFilters}
           style={{ background: 'none', border: '1px solid #ccc', borderRadius: 8, padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.85rem' }}
-        >
-          Reset
-        </button>
+        >{t('pages_adminauditlogpage.reset', 'Reset')}</button>
       </div>
 
       {/* Table */}
       <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,.08)', overflow: 'hidden' }}>
-        {loading && <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>Loading…</div>}
+        {loading && <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>{t('pages_adminauditlogpage.loading', 'Loading…')}</div>}
         {error   && <div style={{ padding: '1rem 1.5rem', color: '#c0392b' }}>{error}</div>}
 
         {!loading && !error && rows.length === 0 && (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
-            No audit records found. Compliance events are logged here automatically as users interact with privacy-gated features.
-          </div>
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>{t('pages_adminauditlogpage.no_audit_records_found_compliance_events', 'No audit records found. Compliance events are logged here automatically as users interact with privacy-gated features.')}</div>
         )}
 
         {!loading && rows.length > 0 && (

@@ -63,7 +63,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
     setLoading(true);
     setError('');
     try {
-      const { data } = await apiClient.post(`/api/v1/classrooms/${classroomId}/invites`, {
+      const { data } = await apiClient.post(`/classrooms/${classroomId}/invites`, {
         emails: [],
       });
       setResults(data.invites);
@@ -89,7 +89,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
     setLoading(true);
     setError('');
     try {
-      const { data } = await apiClient.post(`/api/v1/classrooms/${classroomId}/invites`, {
+      const { data } = await apiClient.post(`/classrooms/${classroomId}/invites`, {
         emails: list,
       });
       setResults(data.invites);
@@ -170,7 +170,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
                   <button
                     onClick={() => copyToClipboard(`${baseUrl}/join/${inv.token}`, inv.token)}
                     className="flex-shrink-0 text-gray-400 hover:text-green-700"
-                    title="Copy link"
+                    title={t('components_teacher_invitestudentspanel.title_copy_link', 'Copy link')}
                   >
                     {copied === inv.token
                       ? <Check className="w-4 h-4 text-green-600" />
@@ -201,7 +201,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
               <textarea
                 value={emails}
                 onChange={e => setEmails(e.target.value)}
-                placeholder="alex@email.com&#10;maria@email.com&#10;james@email.com"
+                placeholder={t('components_teacher_invitestudentspanel.placeholder_alexemailcom10mariaemailcom10jamesemailc', 'alex@email.com&#10;maria@email.com&#10;james@email.com')}
                 rows={5}
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 mb-3"
               />
@@ -224,7 +224,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
                   <button
                     onClick={() => copyToClipboard(`${baseUrl}/join/${inv.token}`, inv.token)}
                     className="text-gray-400 hover:text-green-700"
-                    title="Copy join link"
+                    title={t('components_teacher_invitestudentspanel.title_copy_join_link', 'Copy join link')}
                   >
                     {copied === inv.token
                       ? <Check className="w-4 h-4 text-green-600" />

@@ -71,8 +71,8 @@ export default function TeacherClassroomPage() {
     if (!classroomId) return;
     try {
       const [cResp, iResp] = await Promise.all([
-        apiClient.get(`/api/v1/classrooms/${classroomId}`),
-        apiClient.get(`/api/v1/classrooms/${classroomId}/invites`),
+        apiClient.get(`/classrooms/${classroomId}`),
+        apiClient.get(`/classrooms/${classroomId}/invites`),
       ]);
       setClassroom(cResp.data);
       setInvites(iResp.data.filter((i: Invite) => i.status === 'pending'));
@@ -92,7 +92,7 @@ export default function TeacherClassroomPage() {
     if (!classroomId) return;
     setSavingEdit(true);
     try {
-      await apiClient.patch(`/api/v1/classrooms/${classroomId}`, {
+      await apiClient.patch(`/classrooms/${classroomId}`, {
         name:        editName.trim() || undefined,
         grade_level: editGrade !== '' ? Number(editGrade) : null,
         subject:     editSubject.trim() || null,
@@ -110,7 +110,7 @@ export default function TeacherClassroomPage() {
     if (!classroomId || !window.confirm('Remove this student from the classroom?')) return;
     setRemovingId(studentId);
     try {
-      await apiClient.delete(`/api/v1/classrooms/${classroomId}/students/${studentId}`);
+      await apiClient.delete(`/classrooms/${classroomId}/students/${studentId}`);
       load();
     } catch (e: any) {
       setError(e?.response?.data?.detail ?? 'Could not remove student.');
@@ -122,7 +122,7 @@ export default function TeacherClassroomPage() {
   const revokeInvite = async (inviteId: string) => {
     if (!classroomId) return;
     try {
-      await apiClient.delete(`/api/v1/classrooms/${classroomId}/invites/${inviteId}`);
+      await apiClient.delete(`/classrooms/${classroomId}/invites/${inviteId}`);
       setInvites(prev => prev.filter(i => i.id !== inviteId));
     } catch {}
   };
@@ -162,7 +162,7 @@ export default function TeacherClassroomPage() {
         {editing ? (
           <div className="space-y-3">
             <input value={editName} onChange={e => setEditName(e.target.value)}
-              placeholder="Classroom name"
+              placeholder={t('pages_teacher_teacherclassroompage.placeholder_classroom_name', 'Classroom name')}
               className="w-full border rounded-lg px-3 py-2 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-green-500" />
             <div className="flex gap-3">
               <div className="flex-1">
@@ -174,7 +174,7 @@ export default function TeacherClassroomPage() {
               <div className="flex-1">
                 <label className="text-xs text-gray-500 block mb-1">{t('pages_teacher_teacherclassroompage.subject', 'Subject')}</label>
                 <input value={editSubject} onChange={e => setEditSubject(e.target.value)}
-                  placeholder="e.g. Science"
+                  placeholder={t('pages_teacher_teacherclassroompage.placeholder_eg_science', 'e.g. Science')}
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
               </div>
             </div>
@@ -213,9 +213,7 @@ export default function TeacherClassroomPage() {
               {classroom.students.length} / {classroom.max_students_per_classroom} students
             </span>
             {atCapacity ? (
-              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-medium">
-                Class full — upgrade to add more
-              </span>
+              <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-medium">{t('pages_teacher_teacherclassroompage.class_full_upgrade_to_add_more', 'Class full — upgrade to add more')}</span>
             ) : (
               <span className="text-xs text-gray-400">{classroom.max_students_per_classroom - classroom.students.length} spots left</span>
             )}
@@ -245,9 +243,7 @@ export default function TeacherClassroomPage() {
           <h2 className="font-semibold text-gray-900">{t('pages_teacher_teacherclassroompage.enrolled_students', 'Enrolled Students')}</h2>
         </div>
         {classroom.students.length === 0 ? (
-          <div className="px-6 py-10 text-center text-gray-400 text-sm">
-            No students enrolled yet. Use the invite panel below to add them.
-          </div>
+          <div className="px-6 py-10 text-center text-gray-400 text-sm">{t('pages_teacher_teacherclassroompage.no_students_enrolled_yet_use_the_invite_', 'No students enrolled yet. Use the invite panel below to add them.')}</div>
         ) : (
           <div className="divide-y divide-gray-100">
             {classroom.students.map(s => (
@@ -266,7 +262,7 @@ export default function TeacherClassroomPage() {
                     onClick={() => removeStudent(s.id)}
                     disabled={removingId === s.id}
                     className="text-gray-300 hover:text-red-500 transition disabled:opacity-40"
-                    title="Remove from classroom"
+                    title={t('pages_teacher_teacherclassroompage.title_remove_from_classroom', 'Remove from classroom')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -302,7 +298,7 @@ export default function TeacherClassroomPage() {
                     </span>
                   )}
                   <button onClick={() => revokeInvite(inv.id)}
-                    className="text-gray-300 hover:text-red-500 transition" title="Revoke">
+                    className="text-gray-300 hover:text-red-500 transition" title={t('pages_teacher_teacherclassroompage.title_revoke', 'Revoke')}>
                     <X className="w-4 h-4" />
                   </button>
                 </div>

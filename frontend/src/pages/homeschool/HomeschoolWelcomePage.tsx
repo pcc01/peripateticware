@@ -19,8 +19,6 @@ import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
 import { PRODUCT_NAME } from '../../constants/brand';
 
-const API = import.meta.env.VITE_API_URL || '/api/v1';
-
 // ── US States list ────────────────────────────────────────────────────────────
 const US_STATES = [
   'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
@@ -89,7 +87,7 @@ const HomeschoolWelcomePage: React.FC = () => {
           age_band:    child.age_band,
         };
         try {
-          await apiClient.post(`${API}/homeschool/children`, payload);
+          await apiClient.post(`/homeschool/children`, payload);
         } catch (err: any) {
           if (err?.statusCode === 402 || err?.response?.status === 402) {
             const body = err?.originalError?.response?.data ?? err?.response?.data ?? {};
@@ -114,7 +112,7 @@ const HomeschoolWelcomePage: React.FC = () => {
     // Persist a local flag FIRST so the dashboard never bounces back here even if
     // the onboarding API is unavailable (this was the "can't close / infinite loop").
     try { localStorage.setItem('hs_onboarding_dismissed', '1'); } catch { /* ignore */ }
-    await apiClient.post(`${API}/onboarding/dismiss`).catch(() => null);
+    await apiClient.post(`/onboarding/dismiss`).catch(() => null);
     navigate('/homeschool');
   };
 
@@ -123,7 +121,7 @@ const HomeschoolWelcomePage: React.FC = () => {
   };
 
   const goToNewActivity = async () => {
-    await apiClient.post(`${API}/onboarding/dismiss`).catch(() => null);
+    await apiClient.post(`/onboarding/dismiss`).catch(() => null);
     navigate('/homeschool/activities/new');
   };
 
@@ -145,7 +143,7 @@ const HomeschoolWelcomePage: React.FC = () => {
           <button
             onClick={goToDashboard}
             style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '0.25rem' }}
-            title="Skip setup"
+            title={t('pages_homeschool_homeschoolwelcomepage.title_skip_setup', 'Skip setup')}
           >
             <X size={18} />
           </button>
@@ -236,9 +234,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                   padding: '0.4rem 0.9rem', cursor: 'pointer', fontSize: '0.8rem',
                   width: '100%', marginBottom: '1.25rem',
                 }}
-              >
-                + Add another child
-              </button>
+              >{t('pages_homeschool_homeschoolwelcomepage.add_another_child', '+ Add another child')}</button>
 
               {error && <p style={{ color: '#b91c1c', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{error}</p>}
             </div>
@@ -259,7 +255,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                   marginBottom: '1.25rem',
                 }}
               >
-                <option value="">— Select your state (optional) —</option>
+                <option value="">{t('pages_homeschool_homeschoolwelcomepage.select_your_state_optional', '— Select your state (optional) —')}</option>
                 {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolwelcomepage.35_us_states_require_homeschool_parents_', '35 US states require homeschool parents to keep learning records. Peripateticware generates the reports automatically from your activity log.')}</p>
@@ -280,9 +276,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                     background: 'var(--primary)', color: '#fff',
                     border: 'none', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer',
                   }}
-                >
-                  Create first activity →
-                </button>
+                >{t('pages_homeschool_homeschoolwelcomepage.create_first_activity', 'Create first activity →')}</button>
                 <button
                   onClick={goToDashboard}
                   style={{
@@ -290,9 +284,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                     background: 'transparent', color: 'var(--text-muted)',
                     border: '1px solid var(--border)', fontWeight: 500, fontSize: '0.9rem', cursor: 'pointer',
                   }}
-                >
-                  Go to dashboard
-                </button>
+                >{t('pages_homeschool_homeschoolwelcomepage.go_to_dashboard', 'Go to dashboard')}</button>
               </div>
             </div>
           )}

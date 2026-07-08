@@ -9,7 +9,7 @@ import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
  * Lets administrators:
  *  - View all active jurisdictions and rule versions
  *  - Expand a rule's full JSON definition
- *  - Upload / paste a new JSON config and POST to /api/v1/privacy/rules
+ *  - Upload / paste a new JSON config and POST to /privacy/rules
  */
 
 import React, { useEffect, useState } from 'react'
@@ -89,7 +89,7 @@ export default function AdminPrivacyConfigPage() {
 
   async function loadFrameworkStatus() {
     try {
-      const res = await apiClient.get(`/api/v1/privacy/status`)
+      const res = await apiClient.get(`/privacy/status`)
       const active: string[] = (res.data?.frameworks_enforced || []).map((f: string) => f.toLowerCase())
       const status: Record<string, boolean> = {}
       KNOWN_FRAMEWORKS.forEach(f => { status[f.id] = active.includes(f.id) })
@@ -102,10 +102,10 @@ export default function AdminPrivacyConfigPage() {
     try {
       if (currentlyActive) {
         // Deactivate: set is_active=false on all rules for this framework
-        await apiClient.patch(`/api/v1/privacy/rules/framework/${frameworkId}/deactivate`, {})
+        await apiClient.patch(`/privacy/rules/framework/${frameworkId}/deactivate`, {})
       } else {
         // Activate: POST seed rule if none exist, or re-activate
-        await apiClient.patch(`/api/v1/privacy/rules/framework/${frameworkId}/activate`, {})
+        await apiClient.patch(`/privacy/rules/framework/${frameworkId}/activate`, {})
       }
       await loadFrameworkStatus()
       await loadJurisdictions()
@@ -125,7 +125,7 @@ export default function AdminPrivacyConfigPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await apiClient.get(`/api/v1/privacy/jurisdictions`)
+      const res = await apiClient.get(`/privacy/jurisdictions`)
       setJurisdictions(res.data)
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load jurisdictions')
@@ -138,7 +138,7 @@ export default function AdminPrivacyConfigPage() {
     setDetailLoading(true)
     setRuleDetail(null)
     try {
-      const res = await apiClient.get(`/api/v1/privacy/rules/${ruleId}`)
+      const res = await apiClient.get(`/privacy/rules/${ruleId}`)
       setRuleDetail(res.data)
     } catch (err: any) {
       console.error('Failed to load rule detail', err)
@@ -187,7 +187,7 @@ export default function AdminPrivacyConfigPage() {
     try {
       const parsed = JSON.parse(newJson)
       await apiClient.post(
-        `/api/v1/privacy/rules`,
+        `/privacy/rules`,
         {
           rule_id:        newRuleId,
           regulation_id:  newRegId,
@@ -230,9 +230,7 @@ export default function AdminPrivacyConfigPage() {
         <button
           onClick={downloadJson}
           style={{ marginLeft: 'auto', background: '#2d4a3e', color: '#fff', border: 'none', borderRadius: 8, padding: '0.5rem 1rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
-        >
-          ⬇ Download as JSON
-        </button>
+        >{t('pages_adminprivacyconfigpage.download_as_json', '⬇ Download as JSON')}</button>
       </div>
 
       {addSuccess && (
@@ -348,10 +346,10 @@ export default function AdminPrivacyConfigPage() {
                         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem', fontSize: '0.85rem' }}>
                           <thead>
                             <tr style={{ background: '#eee' }}>
-                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>Rule ID</th>
-                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>Version</th>
-                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>Created</th>
-                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>Change Log</th>
+                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>{t('pages_adminprivacyconfigpage.rule_id', 'Rule ID')}</th>
+                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>{t('pages_adminprivacyconfigpage.version', 'Version')}</th>
+                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>{t('pages_adminprivacyconfigpage.created', 'Created')}</th>
+                              <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>{t('pages_adminprivacyconfigpage.change_log', 'Change Log')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -395,13 +393,11 @@ export default function AdminPrivacyConfigPage() {
                   <button
                     type="button"
                     onClick={() => setNewRuleId(genUUID())}
-                    title="Generate a new UUID"
+                    title={t('pages_adminprivacyconfigpage.title_generate_a_new_uuid', 'Generate a new UUID')}
                     style={{ padding: '0.5rem 0.8rem', borderRadius: 6, border: '1px solid #ccc', background: '#fff', cursor: 'pointer', fontSize: '1rem' }}
                   >↻</button>
                 </div>
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                  Unique identifier stored in the database — generated automatically.
-                </span>
+                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{t('pages_adminprivacyconfigpage.unique_identifier_stored_in_the_database', 'Unique identifier stored in the database — generated automatically.')}</span>
               </label>
             </div>
 
@@ -451,7 +447,7 @@ export default function AdminPrivacyConfigPage() {
               <input
                 value={newChangeLog}
                 onChange={e => setNewChangeLog(e.target.value)}
-                placeholder="What changed in this version?"
+                placeholder={t('pages_adminprivacyconfigpage.placeholder_what_changed_in_this_version', 'What changed in this version?')}
                 style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.7rem', fontSize: '0.9rem' }}
               />
             </label>

@@ -19,8 +19,6 @@ import { useTranslation } from 'react-i18next';
 import PrivacySetupWizard, { PrivacyResult } from '../../components/PrivacySetupWizard';
 import { PRODUCT_NAME } from '../../constants/brand';
 
-const API = import.meta.env.VITE_API_URL || '/api/v1';
-
 const STEPS = ['Privacy Setup', 'Invite Students'];
 
 export default function TeacherWelcomePage() {
@@ -34,7 +32,7 @@ export default function TeacherWelcomePage() {
   const [inviteMsg, setInviteMsg] = useState<string | null>(null);
 
   const dismiss = async () => {
-    await apiClient.post(`${API}/onboarding/dismiss`).catch(() => null);
+    await apiClient.post(`/onboarding/dismiss`).catch(() => null);
     navigate('/teacher');
   };
 
@@ -51,14 +49,14 @@ export default function TeacherWelcomePage() {
       // Create a default classroom if we don't have one yet
       let cid = classroomId;
       if (!cid) {
-        const res = await apiClient.post(`${API}/classrooms`, {
+        const res = await apiClient.post(`/classrooms`, {
           name: 'My First Class',
           grade_level: 'mixed',
         });
         cid = res.data.id;
         setClassroomId(cid);
       }
-      await apiClient.post(`${API}/classrooms/${cid}/invites`, {
+      await apiClient.post(`/classrooms/${cid}/invites`, {
         email: inviteEmail.trim(),
       });
       setInviteMsg(`Invite sent to ${inviteEmail.trim()}`);
@@ -87,7 +85,7 @@ export default function TeacherWelcomePage() {
           <button
             onClick={dismiss}
             style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', padding: '0.25rem' }}
-            title="Skip setup"
+            title={t('pages_teacher_teacherwelcomepage.title_skip_setup', 'Skip setup')}
           >
             <X size={18} />
           </button>
@@ -156,7 +154,7 @@ export default function TeacherWelcomePage() {
                   value={inviteEmail}
                   onChange={e => setInviteEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && sendInvite()}
-                  placeholder="student@example.com"
+                  placeholder={t('pages_teacher_teacherwelcomepage.placeholder_studentexamplecom', 'student@example.com')}
                   style={{
                     flex: 1, padding: '0.55rem 0.75rem',
                     border: '1px solid var(--border)', borderRadius: '0.35rem',
@@ -217,9 +215,7 @@ export default function TeacherWelcomePage() {
                 background: 'var(--primary)', color: '#fff',
                 border: 'none', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer',
               }}
-            >
-              Go to dashboard →
-            </button>
+            >{t('pages_teacher_teacherwelcomepage.go_to_dashboard', 'Go to dashboard →')}</button>
           </div>
         )}
       </div>

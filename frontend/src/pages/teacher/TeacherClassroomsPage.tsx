@@ -13,8 +13,6 @@ import { Plus, Users, BookOpen, AlertCircle } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
 
-const API = import.meta.env.VITE_API_URL || '/api/v1';
-
 interface Classroom {
   id:            string;
   name:          string;
@@ -38,7 +36,7 @@ const TeacherClassroomsPage: React.FC = () => {
   const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiClient.get(`${API}/classrooms`)
+    apiClient.get(`/classrooms`)
       .then(r => setClassrooms(r.data))
       .catch(() => setError('Could not load classrooms.'))
       .finally(() => setLoading(false));
@@ -48,7 +46,7 @@ const TeacherClassroomsPage: React.FC = () => {
     if (!newName.trim()) return;
     setCreateError(null);
     try {
-      const r = await apiClient.post(`${API}/classrooms`, { name: newName.trim() });
+      const r = await apiClient.post(`/classrooms`, { name: newName.trim() });
       navigate(`/teacher/classrooms/${r.data.id}`);
     } catch (e: any) {
       setCreateError(e?.response?.data?.detail || 'Failed to create classroom.');
@@ -56,9 +54,7 @@ const TeacherClassroomsPage: React.FC = () => {
   };
 
   if (loading) return (
-    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-      Loading classrooms…
-    </div>
+    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>{t('pages_teacher_teacherclassroomspage.loading_classrooms', 'Loading classrooms…')}</div>
   );
 
   return (
@@ -96,7 +92,7 @@ const TeacherClassroomsPage: React.FC = () => {
               value={newName}
               onChange={e => setNewName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && createClassroom()}
-              placeholder="e.g. Year 6 Science — Period 2"
+              placeholder={t('pages_teacher_teacherclassroomspage.placeholder_eg_year_6_science_period_2', 'e.g. Year 6 Science — Period 2')}
               style={{
                 flex: '1 1 260px', padding: '0.5rem 0.75rem',
                 border: '1px solid var(--border)', borderRadius: '0.35rem',
@@ -113,9 +109,7 @@ const TeacherClassroomsPage: React.FC = () => {
                 fontWeight: 600, fontSize: '0.875rem',
                 cursor: newName.trim() ? 'pointer' : 'not-allowed', opacity: newName.trim() ? 1 : 0.5,
               }}
-            >
-              Create
-            </button>
+            >{t('pages_teacher_teacherclassroomspage.create', 'Create')}</button>
             <button
               onClick={() => { setCreating(false); setNewName(''); setCreateError(null); }}
               style={{ padding: '0.5rem 0.75rem', borderRadius: '0.35rem', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.875rem' }}
@@ -170,9 +164,7 @@ const TeacherClassroomsPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                 <h3 style={{ fontWeight: 600, color: 'var(--text)', margin: 0, fontSize: '1rem' }}>{c.name}</h3>
                 {!c.is_active && (
-                  <span style={{ fontSize: '0.7rem', background: '#f1f5f9', color: '#64748b', padding: '2px 6px', borderRadius: '1rem' }}>
-                    Archived
-                  </span>
+                  <span style={{ fontSize: '0.7rem', background: '#f1f5f9', color: '#64748b', padding: '2px 6px', borderRadius: '1rem' }}>{t('pages_teacher_teacherclassroomspage.archived', 'Archived')}</span>
                 )}
               </div>
 

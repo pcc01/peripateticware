@@ -77,7 +77,7 @@ const SharedLibraryPage: React.FC = () => {
       if (stateStandard) params.state_standard = stateStandard;
       if (discipline) params.discipline = discipline;
 
-      const { data } = await apiClient.get('/api/v1/activities/shared-library', { params });
+      const { data } = await apiClient.get('/activities/shared-library', { params });
       // Guard: only an array is renderable; an error object/string here would crash the list.
       setActivities(Array.isArray(data) ? data : []);
     } catch (e: any) {
@@ -94,7 +94,7 @@ const SharedLibraryPage: React.FC = () => {
   const handleCopy = async (id: string) => {
     setCopying(id);
     try {
-      await apiClient.post(`/api/v1/activities/${id}/copy`);
+      await apiClient.post(`/activities/${id}/copy`);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 3000);
     } catch (e: any) {
@@ -126,7 +126,7 @@ const SharedLibraryPage: React.FC = () => {
           <Search size={15} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
-            placeholder="Search title, description, location…"
+            placeholder={t('pages_teacher_sharedlibrarypage.placeholder_search_title_description_location', 'Search title, description, location…')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
@@ -171,9 +171,7 @@ const SharedLibraryPage: React.FC = () => {
 
         {hasActiveFilters && (
           <button onClick={clearFilters}
-            style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-            Clear
-          </button>
+            style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>{t('pages_teacher_sharedlibrarypage.clear', 'Clear')}</button>
         )}
       </div>
 
@@ -186,14 +184,14 @@ const SharedLibraryPage: React.FC = () => {
         }}>
           <div>
             <label style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>{t('pages_teacher_sharedlibrarypage.subject', 'Subject')}</label>
-            <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. Science"
+            <input value={subject} onChange={e => setSubject(e.target.value)} placeholder={t('pages_teacher_sharedlibrarypage.placeholder_eg_science', 'e.g. Science')}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem', boxSizing: 'border-box' }} />
           </div>
           <div>
             <label style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>{t('pages_teacher_sharedlibrarypage.grade_level', 'Grade level')}</label>
             <select value={gradeLevel} onChange={e => setGradeLevel(e.target.value)}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem' }}>
-              <option value="">Any</option>
+              <option value="">{t('pages_teacher_sharedlibrarypage.any', 'Any')}</option>
               {Array.from({ length: 10 }, (_, i) => i + 3).map(g => (
                 <option key={g} value={g}>Grade {g}</option>
               ))}
@@ -201,14 +199,14 @@ const SharedLibraryPage: React.FC = () => {
           </div>
           <div>
             <label style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>{t('pages_teacher_sharedlibrarypage.language', 'Language')}</label>
-            <input value={language} onChange={e => setLanguage(e.target.value)} placeholder="e.g. English"
+            <input value={language} onChange={e => setLanguage(e.target.value)} placeholder={t('pages_teacher_sharedlibrarypage.placeholder_eg_english', 'e.g. English')}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem', boxSizing: 'border-box' }} />
           </div>
           <div>
             <label style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>{t('pages_teacher_sharedlibrarypage.state_standard', 'State standard')}</label>
             <select value={stateStandard} onChange={e => setStateStandard(e.target.value)}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem' }}>
-              <option value="">Any</option>
+              <option value="">{t('pages_teacher_sharedlibrarypage.any', 'Any')}</option>
               {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
                 'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
                 'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
@@ -220,7 +218,7 @@ const SharedLibraryPage: React.FC = () => {
             <label style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>{t('pages_teacher_sharedlibrarypage.discipline', 'Discipline')}</label>
             <select value={discipline} onChange={e => setDiscipline(e.target.value)}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem' }}>
-              <option value="">Any</option>
+              <option value="">{t('pages_teacher_sharedlibrarypage.any', 'Any')}</option>
               {['STEM','Humanities','Arts','Social Studies','Physical Education','Foreign Language','Computer Science','Career & Technical'].map(d => (
                 <option key={d} value={d}>{d}</option>
               ))}
@@ -231,9 +229,7 @@ const SharedLibraryPage: React.FC = () => {
 
       {/* Loading */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
-          Loading…
-        </div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>{t('pages_teacher_sharedlibrarypage.loading', 'Loading…')}</div>
       )}
 
       {/* Error */}
