@@ -47,8 +47,17 @@ def _load(path: Path) -> dict:
 
 
 def _save(path: Path, data: dict) -> None:
-    with open(path, "w", encoding="utf-8") as f:
+    # Atomic write (temp file + os.replace) — see translate_sync.save_json
+    # for why: a plain open()+json.dump() leaves a truncated, unparseable
+    # file on disk if interrupted mid-write, which is what corrupted 24 of
+    # this project's locale JSON files (including en.json) before
+    # scripts/repair_locale_json.py fixed them.
+    tmp_path = path.with_suffix(path.suffix + f".tmp{os.getpid()}")
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, path)
 
 
 def _flatten(d: dict, prefix: str = "") -> dict:

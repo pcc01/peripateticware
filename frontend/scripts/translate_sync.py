@@ -25,6 +25,233 @@ MS_TRANSLATOR_ENDPOINT = "https://api.cognitive.microsofttranslator.com"
 LOCALES_DIR = Path(__file__).parent.parent / "public" / "locales"
 SOURCE_LANG_CODE = "en"
 
+# =====================================================================
+# OUTPUT SANITIZATION — reject/clean garbage before it ever reaches disk
+# =====================================================================
+# Root cause of the corruption found across es/it/ja/etc locale files:
+# the Ollama CLI fallback path (subprocess.run(["ollama", "run", ...])) can
+# leak raw terminal control codes, and both local and hosted models
+# occasionally hallucinate repeated placeholder-token spam, wrong-script
+# output, or non-string JSON values (which used to get silently str()'d —
+# e.g. Python's str(False) == "False", which is exactly the literal "False"
+# card text found in the Japanese privacy compliance cards). None of this
+# was validated before being written to public/locales/*.json.
+
+_ANSI_ESCAPE_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+_CONTROL_CHAR_RE = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
+
+
+def strip_control_sequences(text: str) -> str:
+    """Strips ANSI escape codes and other non-printable control characters
+    that leak in from CLI subprocess output. Newlines are preserved."""
+    if not isinstance(text, str):
+        return text
+    text = _ANSI_ESCAPE_RE.sub('', text)
+    text = _CONTROL_CHAR_RE.sub('', text)
+    return text
+
+
+# Unicode block ranges used to sanity-check that a translation actually
+# landed in the expected script for non-Latin target languages. Latin-script
+# languages (es, fr, de, it, ...) have no entry and are skipped — there's no
+# cheap reliable script check for those (a wrong-language Latin-script
+# response, e.g. French text saved for Spanish, isn't caught here, only
+# wrong-SCRIPT output is).
+_SCRIPT_RANGES: dict[str, list[tuple[int, int]]] = {
+    "ja": [(0x3040, 0x30FF), (0x4E00, 0x9FFF), (0xFF66, 0xFF9F)],
+    "zh": [(0x4E00, 0x9FFF)],
+    "ko": [(0xAC00, 0xD7A3), (0x1100, 0x11FF)],
+    "ar": [(0x0600, 0x06FF), (0x0750, 0x077F)],
+    "he": [(0x0590, 0x05FF)],
+}
+
+
+def has_expected_script(text: str, lang_code: str) -> bool:
+    """Returns False when a non-Latin-script target locale's translation
+    contains none of the expected script's characters — e.g. the exact bug
+    found where ja.json literally contained Spanish and English text for
+    two of the five 'meet_peri.exchange' keys (Ollama answered in the wrong
+    language for those batch items, and nothing checked the output)."""
+    base = lang_code.split('-')[0].lower()
+    ranges = _SCRIPT_RANGES.get(base)
+    if not ranges:
+        return True
+    letters = [c for c in text if c.isalpha()]
+    if len(letters) < 8:
+        # Too short to meaningfully judge — most short acronyms/technical
+        # terms (GDPR, API, JSON, "OK") are legitimately Latin-script even in
+        # a non-Latin target locale. Real prose translations are almost
+        # always longer than this, so the false-negative risk here is low.
+        return True
+    return any(any(lo <= ord(c) <= hi for lo, hi in ranges) for c in letters)
+
+
+def looks_like_garbage(text, src: str) -> bool:
+    """Catches the concrete corruption patterns found in production locale
+    files: non-string JSON values stringified (str(False) == 'False'),
+    repeated placeholder-token hallucination spam ('%s', '$t{...}'), a
+    translation wrapped in a stringified list/array repr, or a response
+    wildly longer than anything a real translation of the source would be."""
+    if not isinstance(text, str):
+        return True
+    stripped = text.strip()
+    if not stripped:
+        return True
+    if stripped in ("False", "True", "None", "null", "undefined", "[]", "{}"):
+        return True
+    if stripped.count('%s') >= 3 or stripped.count('$t{') >= 2:
+        return True
+    if (stripped.startswith('["') and stripped.endswith('"]')) or \
+       (stripped.startswith("['") and stripped.endswith("']")):
+        return True
+    if len(stripped) > max(80, len(src) * 4):
+        return True
+    return False
+
+
+# =====================================================================
+# DO-NOT-TRANSLATE ENFORCEMENT
+# =====================================================================
+# Mirrors frontend/src/constants/i18n-do-not-translate.md, which previously
+# existed only as documentation — nothing in the pipeline actually read or
+# enforced it. Keys matched here are copied verbatim into every locale
+# instead of being sent to the LLM.
+DO_NOT_TRANSLATE_EXACT_KEYS = {
+    "peripateticware",
+    "layouts_dashboardshell.peripateticware",
+    "homeschool.layouts_dashboardshell.peripateticware",
+    "footer.brand_title",
+    "footer.company_name",
+    "privacy.ferpa_card_title",
+    "privacy.coppa_card_title",
+    "privacy.gdpr_card_title",
+    "privacy.ccpa_card_title",
+    "privacy_engine.ferpa_card_title",
+    "privacy_engine.coppa_card_title",
+    "privacy_engine.gdpr_card_title",
+    "privacy_engine.ccpa_card_title",
+}
+
+DO_NOT_TRANSLATE_KEY_PATTERNS = [
+    # Testimonial author/quote fields are placeholder lorem ipsum, not real
+    # people — must not be "translated" into fabricated-sounding content.
+    re.compile(r'(^|\.)testimonial_\d+_(author|text)$'),
+    # Team member proper names — never translated (real or placeholder).
+    re.compile(r'(^|\.)team_\d+_name$'),
+    # team_2/3/4 are mockup placeholders used to build the page (per Paul,
+    # 2026-07) — only team_1 (Paul, real) is genuine content. Lock the
+    # mockup members' role/initial/bio as lorem ipsum; team_1_bio is
+    # deliberately NOT matched here so it translates normally once written.
+    re.compile(r'(^|\.)team_[234]_(role|initial|bio)$'),
+    # Terms & Conditions: product decision (2026-07) to keep this page
+    # English-only for now regardless of site locale.
+    re.compile(r'^termspage\.'),
+]
+
+# Demo/placeholder emails (you@example.com, teacher@example.com, ...) and the
+# real contact address must be byte-for-byte identical in every locale.
+#
+# Two separate patterns on purpose:
+#  - DEMO_EMAIL_FULL_RE: the value is NOTHING BUT an email address (e.g. the
+#    key "youexamplecom": "you@example.com") — safe to lock the whole value.
+#  - EMBEDDED_EMAIL_RE: an email address sitting inside a larger translatable
+#    sentence (e.g. "demo_teacher": "Teacher: teacher@example.com", or the
+#    localization_notice paragraph). Locking the WHOLE value here would freeze
+#    the surrounding label/sentence in English forever in every locale — the
+#    actual production bug was the opposite: the LOCAL PART of the email
+#    itself was getting mistranslated ("tú@example.com", "あなた@example.com",
+#    "you@example.com.tr" with a mangled TLD, one literally wrapped in JSON
+#    list syntax). So compound strings are still translated normally, but the
+#    exact email substring is verified present in the output afterward (see
+#    email_addresses_preserved, used alongside looks_like_garbage) — if the
+#    LLM altered it, that's treated as a bad translation and retried/rejected
+#    exactly like any other corruption.
+DEMO_EMAIL_FULL_RE = re.compile(r'^[\w.+-]+@(example\.com|peripateticware\.com)$', re.IGNORECASE)
+EMBEDDED_EMAIL_RE = re.compile(r'[\w.+-]+@(?:example\.com|peripateticware\.com)', re.IGNORECASE)
+
+
+def bad_reasons(text, src: str, lang_code: str) -> list[str]:
+    """Returns the list of validation checks a candidate translation failed —
+    used both to decide whether to retry/reject it and to explain why in the
+    debug log, since 'suspect output' alone doesn't say what was wrong with it."""
+    reasons = []
+    if looks_like_garbage(text, src):
+        reasons.append("garbage_pattern")
+    if isinstance(text, str) and not has_expected_script(text, lang_code):
+        reasons.append("wrong_script")
+    if not email_addresses_preserved(src, text):
+        reasons.append("email_altered")
+    return reasons
+
+
+# =====================================================================
+# DEBUG LOG — raw before/after for every suspect translation
+# =====================================================================
+# Console output used to print one "Suspect output ... retrying" line per key,
+# which is unreadable at scale (a single Ollama/Arabic run flagged 150+ keys).
+# Now the console only prints a one-line summary per locale, and every suspect
+# case's actual raw model output (both the failed batch candidate and the
+# retry) is written here so it can be inspected and shared for debugging —
+# printing "suspect" to the console never told anyone what the model actually
+# returned.
+DEBUG_LOG_PATH = Path(__file__).parent / "translation_debug.jsonl"
+_debug_log_initialized = False
+
+
+def init_debug_log():
+    global _debug_log_initialized
+    if not _debug_log_initialized:
+        DEBUG_LOG_PATH.write_text("", encoding="utf-8")
+        _debug_log_initialized = True
+
+
+def log_suspect_translation(lang_code: str, key: str, src: str,
+                             raw_candidate, reasons: list[str],
+                             raw_retry=None, retry_reasons: list[str] | None = None,
+                             final_status: str = "") -> None:
+    entry = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "lang": lang_code,
+        "key": key,
+        "source_text": src,
+        "batch_output_raw": raw_candidate,
+        "batch_output_failed_checks": reasons,
+        "retry_output_raw": raw_retry,
+        "retry_output_failed_checks": retry_reasons,
+        "final_status": final_status,
+    }
+    with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
+def is_do_not_translate(key: str, value: str) -> bool:
+    if key in DO_NOT_TRANSLATE_EXACT_KEYS:
+        return True
+    if any(p.search(key) for p in DO_NOT_TRANSLATE_KEY_PATTERNS):
+        return True
+    if isinstance(value, str) and DEMO_EMAIL_FULL_RE.match(value.strip()):
+        return True
+    return False
+
+
+def email_addresses_preserved(src: str, translated: str) -> bool:
+    """False if src contains a demo/contact email address and the translated
+    text doesn't contain that exact same address — i.e. the LLM translated or
+    otherwise altered the local part of the email instead of leaving it as-is.
+    Requires a boundary right after the match (not just substring containment)
+    so "you@example.com.tr" doesn't falsely pass as containing
+    "you@example.com" — a real corruption found in the Turkish locale file."""
+    if not isinstance(translated, str):
+        return False
+    src_emails = {m.group(0).lower() for m in EMBEDDED_EMAIL_RE.finditer(src)}
+    if not src_emails:
+        return True
+    translated_lower = translated.lower()
+    for email in src_emails:
+        if not re.search(re.escape(email) + r'(?![\w.-])', translated_lower):
+            return False
+    return True
+
 
 def extract_list_from_json(parsed_obj, texts: list[str]) -> list[str] | None:
     """
@@ -33,14 +260,22 @@ def extract_list_from_json(parsed_obj, texts: list[str]) -> list[str] | None:
     arrays in objects like {"translations": [...]}, map key-values,
     or map index strings.
     """
+    # NOTE: non-string JSON scalars (bool/None/int/dict/list) are mapped to ""
+    # rather than str()-coerced — str(False) == "False" is exactly the literal
+    # "False" text found rendered in the Japanese privacy compliance cards.
+    # An empty string is caught downstream by looks_like_garbage() and
+    # triggers a retry instead of silently saving the wrong value.
+    def _as_str(x):
+        return x if isinstance(x, str) else ""
+
     expected_len = len(texts)
     if isinstance(parsed_obj, list) and len(parsed_obj) == expected_len:
-        return [str(x) for x in parsed_obj]
+        return [_as_str(x) for x in parsed_obj]
     if isinstance(parsed_obj, dict):
         # Case A: Dict with expected_len keys. Keys might be original strings or indices.
         if len(parsed_obj) == expected_len:
             # 1. Try mapping keys to texts normalized
-            key_map = {str(k).strip().lower(): str(v) for k, v in parsed_obj.items()}
+            key_map = {str(k).strip().lower(): _as_str(v) for k, v in parsed_obj.items()}
             mapped_results = []
             for t in texts:
                 t_norm = str(t).strip().lower()
@@ -48,17 +283,17 @@ def extract_list_from_json(parsed_obj, texts: list[str]) -> list[str] | None:
                     mapped_results.append(key_map[t_norm])
             if len(mapped_results) == expected_len:
                 return mapped_results
-            
+
             # 2. Try sorting keys numerically if they look like indices
             try:
                 sorted_keys = sorted(parsed_obj.keys(), key=lambda x: int(re.sub(r'\D', '', str(x))))
                 if len(sorted_keys) == expected_len:
-                    return [str(parsed_obj[k]) for k in sorted_keys]
+                    return [_as_str(parsed_obj[k]) for k in sorted_keys]
             except Exception:
                 pass
-            
+
             # 3. Fallback: Return raw values in order of iteration
-            return [str(v) for v in parsed_obj.values()]
+            return [_as_str(v) for v in parsed_obj.values()]
         
         # Case B: Nested search in dict values
         for val in parsed_obj.values():
@@ -292,7 +527,7 @@ class UniversalOrchestrator:
 
     def clean_llm_chatter(self, raw_output: str) -> str:
         """Defensive string filter matrix to wipe clean any conversational chatter or markdown fences."""
-        text = raw_output.strip()
+        text = strip_control_sequences(raw_output).strip()
         if not text:
             return ""
         if text.startswith("```"):
@@ -470,6 +705,27 @@ class UniversalOrchestrator:
             response = request.json()
             return [res['translations'][0]['text'] for res in response]
 
+        elif self.provider == "OLLAMA":
+            # The /api/chat + assistant-pre-seed JSON batching in
+            # translate_llm_batch was found (via translation_debug.jsonl on a
+            # live --reset run) to reliably produce well-formed-but-EMPTY JSON
+            # arrays from mistral-nemo — e.g. {"translations": ["", "", "",
+            # "", ""]}. Because that parses successfully as valid JSON of the
+            # right length, parse_json_defensively never raises, so the
+            # internal self-healing fallback inside translate_llm_batch never
+            # triggers either — every key in the batch silently comes back as
+            # "", gets flagged suspect downstream, and is re-translated one at
+            # a time anyway via the (reliable) /api/generate call in
+            # translate_single. That happened for essentially 100% of keys in
+            # the "Application UI Strings" category, meaning the batch call
+            # was pure overhead: an extra network round trip that never once
+            # produced usable output before the real translation happened via
+            # the single-string retry path. Skip the batch attempt entirely
+            # for Ollama and go straight to the proven single-call path —
+            # this halves latency and eliminates the noise at the source
+            # instead of just logging it more quietly.
+            return [self.retry_call(lambda t=t: self.translate_single(t, lang_name, lang_code)) for t in texts]
+
         # For Generative AI models, optimize via structured list prompts
         return self.translate_llm_batch(texts, lang_name, lang_code)
 
@@ -509,7 +765,20 @@ def load_json(path: Path) -> dict:
         except json.JSONDecodeError: return {}
 
 def save_json(path: Path, data: dict):
-    with open(path, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=2)
+    """Atomic write: json.dump into a sibling temp file, then os.replace() over
+    the real path. A plain open(path, "w") + json.dump() leaves a truncated,
+    unparseable file on disk if the process is interrupted mid-write (killed,
+    disk full, terminal closed) — which is exactly what corrupted en.json and
+    23 other locale files before scripts/repair_locale_json.py fixed them.
+    os.replace() is a single filesystem rename, so the destination file is
+    always either the old complete version or the new complete version —
+    never a partial one."""
+    tmp_path = path.with_suffix(path.suffix + f".tmp{os.getpid()}")
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp_path, path)
 
 def get_timestamp() -> str: return datetime.now(timezone.utc).isoformat()
 
@@ -546,7 +815,31 @@ def parse_existing_xliff_with_prov(path: Path) -> dict:
             if "Version: " in n_txt:
                 try: v = int(n_txt.split("Version: ")[1].split()[0])
                 except: pass
-            res["strings"][k] = {"version": v, "approved": tu.get("approved") == "yes"}
+            # The actual status string (e.g. "needs_manual_translation"),
+            # not just the "approved" yes/no attribute — write_xliff_prov_file
+            # collapses every non-"approved" status to approved="no", so
+            # "needs_manual_translation" and ordinary "pending_review" were
+            # otherwise indistinguishable on the next run. Without this, a key
+            # that got the English fallback saved after a failed retry looked
+            # identical to a normal successful translation next run (its
+            # saved value matches its source, same as any do-not-translate or
+            # coincidentally-identical key) — is_new/text_changed both came
+            # back False, so it was silently never retried again.
+            status_txt = None
+            if "Status: " in n_txt:
+                try: status_txt = n_txt.split("Status: ")[1].split(" |")[0].strip()
+                except: pass
+            # Source text as of the last time this key was translated — used
+            # to detect real English-text changes (see sync_pipeline) instead
+            # of comparing the translation's current value to today's source.
+            source_el = tu.find('xliff:source', ns)
+            src_txt = source_el.text if source_el is not None and source_el.text is not None else None
+            res["strings"][k] = {
+                "version": v,
+                "approved": tu.get("approved") == "yes",
+                "source": src_txt,
+                "status": status_txt,
+            }
         m_el = root.find('.//xliff:meta[@type="provenance-graph"]', ns)
         if m_el is not None and m_el.text and m_el.text.strip():
             try:
@@ -581,15 +874,69 @@ def write_xliff_prov_file(path: Path, lang: str, en_flat_strings: dict, target_f
     except Exception:
         with open(path, "wb") as f: f.write(b'<?xml version="1.0" encoding="utf-8"?>\n' + raw_xml_bytes)
 
+# Directories under public/locales/ that exist but aren't real target locales.
+SKIP_LOCALE_DIRS = {"en", "tu", "_tu_backup"}
+
+# Safety-net names, used only if the `babel` package isn't installed or can't
+# parse a given code. NOT meant to be maintained per-language — babel (see
+# _resolve_language_name) covers virtually every real ISO 639-1 / BCP-47 code
+# dynamically. Adding a language should never require touching this file.
+_STATIC_FALLBACK_NAMES = {
+    "es": "Spanish", "fr": "French", "de": "German", "ja": "Japanese",
+    "ar": "Arabic", "he": "Hebrew", "it": "Italian", "zh": "Chinese",
+    "tr": "Turkish", "pt-br": "Portuguese", "ko": "Korean",
+}
+
+try:
+    from babel import Locale as _BabelLocale
+    _HAS_BABEL = True
+except ImportError:
+    _HAS_BABEL = False
+    print("⚠️  'babel' not installed (pip install babel) — falling back to a small "
+          "static language-name list for the translation prompt. Install babel so "
+          "new locale codes resolve automatically.")
+
+
+def _resolve_language_name(code: str) -> str:
+    """Resolve an ISO/BCP-47 locale code ('ko', 'pt-BR', 'zh-TW', ...) to its
+    English display name for the translation prompt. Uses babel when available
+    (covers essentially any real code with no maintenance); falls back to the
+    small static list, then to the raw uppercased code if all else fails."""
+    if _HAS_BABEL:
+        try:
+            display_name = _BabelLocale.parse(code, sep='-').get_display_name('en')
+            if display_name:
+                return display_name
+        except Exception:
+            pass
+    return _STATIC_FALLBACK_NAMES.get(code.lower(), code.upper())
+
+
 def get_target_languages() -> list[str]:
-    """Scans locales/ for flat {lang}.json files (excluding en.json = source)."""
+    """
+    The trigger for "this is a locale we support" is a SUBDIRECTORY under
+    public/locales/ (e.g. public/locales/ko/) — matching what sync_locales.py
+    already requires to exist before it'll distribute translations into it.
+    Adding a new language is therefore just: create the folder.
+
+    If a locale folder exists with no matching flat {code}.json seed file yet
+    (the file translate_sync.py actually writes translations into), one is
+    created automatically here. Language names are resolved dynamically
+    (see _resolve_language_name) instead of a hardcoded map.
+    """
     languages = []
     if not LOCALES_DIR.exists(): return languages
-    lang_map = {"es": "Spanish", "fr": "French", "de": "German", "ja": "Japanese", "ar": "Arabic", "he": "Hebrew", "it": "Italian", "zh": "Chinese", "tr": "Turkish", "pt-br": "Portuguese"}
-    for f in LOCALES_DIR.iterdir():
-        if f.is_file() and f.suffix == '.json' and f.stem.lower() != SOURCE_LANG_CODE:
-            code = f.stem
-            languages.append((code, lang_map.get(code.lower(), code.upper())))
+    for entry in sorted(LOCALES_DIR.iterdir()):
+        if not entry.is_dir():
+            continue
+        code = entry.name
+        if code.lower() in SKIP_LOCALE_DIRS:
+            continue
+        json_path = LOCALES_DIR / f"{code}.json"
+        if not json_path.exists():
+            json_path.write_text("{}\n", encoding="utf-8")
+            print(f"🆕 New locale folder detected: {code}/ — created {json_path.name} to seed it")
+        languages.append((code, _resolve_language_name(code)))
     return languages
 
 # =====================================================================
@@ -654,6 +1001,9 @@ def run_interactive_wizard() -> tuple[str, str, str, str, bool]:
     return provider, content_type, style, mode, reset_languages
 
 def sync_pipeline():
+    init_debug_log()
+    print(f"🪵  Suspect-translation details will be logged to: {DEBUG_LOG_PATH}")
+
     # Setup argparse to allow command-line automation and reset flags
     parser = argparse.ArgumentParser(description="Peripateticware Advanced Localization & Reset Wizard")
     parser.add_argument("--reset", action="store_true", help="Clean reset: wipes existing target translations and re-translates from scratch")
@@ -721,23 +1071,140 @@ def sync_pipeline():
         delta_keys = []
         delta_texts = []
 
+        # Regional-variant fallback (e.g. fr-CA falls back to fr, pt-BR-style
+        # variants to pt, zh-TW to zh): i18next's own fallbackLng chain (see
+        # frontend/src/config/i18n.ts) already resolves a missing key in a
+        # variant locale by looking it up in its base language at runtime.
+        # So the pipeline's job here is NOT to copy the base language's text
+        # into the variant's file — that would duplicate ~everything on disk
+        # and in the bundle, and freeze it stale the moment the base locale's
+        # translation is later improved. Instead: any key the base locale
+        # already covers is simply left OUT of the variant's saved file
+        # entirely, so it's resolved live via the fallback chain. Only keys
+        # missing from BOTH the variant and its base are genuinely new and
+        # get machine-translated — and any key the variant already has its
+        # own explicit value for (a real region-specific override, whether
+        # hand-edited or from a prior run) is always preserved untouched.
+        base_lang_code = lang_code.split('-')[0] if '-' in lang_code else None
+        base_target_json = {}
+        if base_lang_code and base_lang_code != lang_code:
+            base_json_path = LOCALES_DIR / f"{base_lang_code}.json"
+            if base_json_path.exists():
+                base_target_json = flatten_json(load_json(base_json_path).get("landing", {}))
+
+        deferred_to_fallback_count = 0
+        legacy_no_source_count = 0
+        retry_from_failure_count = 0
+        suspect_count = 0
+        fixed_on_retry_count = 0
+        still_bad_count = 0
+        placeholder_default = lambda key: key.split('.')[-1].replace('_', ' ')
+
         # Step 1: Filter out the translation delta to process
+        locked_count = 0
         for k, src in en_strings.items():
+            # Do-not-translate enforcement (brand name, legal acronyms, demo
+            # emails, testimonial/team-name fields, Terms & Conditions) — see
+            # frontend/src/constants/i18n-do-not-translate.md. Copied verbatim,
+            # never sent to the LLM, in every locale.
+            if is_do_not_translate(k, src):
+                if target_json.get(k) != src:
+                    target_json[k] = src
+                    locked_count += 1
+                meta_tracking[k] = {
+                    "version": historical_strings.get(k, {}).get("version", 1),
+                    "status": "locked_do_not_translate",
+                }
+                continue
+
             current_target_val = target_json.get(k, "")
-            is_new = k not in target_json or current_target_val == "" or current_target_val == k.split('.')[-1].replace('_', ' ')
-            text_changed = not is_new and current_target_val == src 
-            
-            if is_new or text_changed:
+            is_new = k not in target_json or current_target_val == "" or current_target_val == placeholder_default(k)
+
+            # A key needs re-translation when the ENGLISH SOURCE TEXT it was
+            # translated from has changed — not when the existing translation
+            # happens to read the same as the English text. That second
+            # condition is common and legitimate (brand names, numbers, short
+            # cognates, acronyms), and comparing against it flagged those keys
+            # as "changed" and re-sent them to the LLM on every single run,
+            # forever, even with zero real edits. Compare instead against the
+            # source text recorded in the XLIFF the last time this key was
+            # translated (see parse_existing_xliff_with_prov).
+            hist = historical_strings.get(k)
+            if is_new:
+                text_changed = False
+            elif hist is not None and hist.get("source") is not None:
+                text_changed = hist["source"] != src
+            else:
+                # No recorded source (XLIFF predates this tracking, or the
+                # key was added by hand outside the pipeline). Can't tell if
+                # the source changed, so don't force a retranslation on a
+                # guess — this run records its source and future runs will
+                # track real changes correctly from here on.
+                text_changed = False
+                legacy_no_source_count += 1
+
+            # A key left as the English fallback last run (both the batch and
+            # single-retry translations failed validation) has a saved value
+            # identical to its source — so is_new and text_changed both come
+            # back False forever unless we also check the recorded status.
+            # Without this, a key that failed once was silently never retried
+            # again on any future run, incremental or reset.
+            needs_retry_from_last_run = hist is not None and hist.get("status") == "needs_manual_translation"
+            if needs_retry_from_last_run:
+                retry_from_failure_count += 1
+
+            if (is_new or text_changed or needs_retry_from_last_run) and base_target_json:
+                base_val = base_target_json.get(k, "")
+                base_is_usable = bool(base_val) and base_val != src and base_val != placeholder_default(k)
+                if base_is_usable:
+                    # Base locale already covers this key — defer to the
+                    # runtime fallback chain instead of translating or
+                    # copying. Remove any stale placeholder that may already
+                    # be sitting in target_json (e.g. from before this
+                    # locale had a base to fall back to) so it doesn't get
+                    # written out and shadow the fallback.
+                    target_json.pop(k, None)
+                    deferred_to_fallback_count += 1
+                    meta_tracking[k] = {
+                        "version": historical_strings.get(k, {}).get("version", 0) + 1,
+                        "status": f"fallback_to_{base_lang_code}",
+                    }
+                    continue
+
+            if is_new or text_changed or needs_retry_from_last_run:
                 delta_keys.append(k)
                 delta_texts.append(str(src))
-                
+
                 # Add source length to the character counter
                 string_length = len(str(src))
                 locale_character_count += string_length
                 grand_total_characters += string_length
-                meta_tracking[k] = {"version": historical_strings.get(k, {}).get("version", 0) + 1, "status": "new_translation" if is_new else "pending_review"}
+                meta_tracking[k] = {
+                    "version": historical_strings.get(k, {}).get("version", 0) + 1,
+                    "status": "new_translation" if is_new else "pending_review",
+                }
             else:
                 meta_tracking[k] = {"version": historical_strings.get(k, {}).get("version", 1), "status": "approved" if historical_strings.get(k, {}).get("approved") else "pending_review"}
+
+        if deferred_to_fallback_count:
+            print(f"  \U0001f501 [{lang_code}] {deferred_to_fallback_count} key(s) left out of the saved "
+                  f"file — resolved at runtime via the fallback chain to '{base_lang_code}' "
+                  f"(see i18n.ts). No LLM call, no duplication. To make one of these keys "
+                  f"read differently in {lang_code}, add it explicitly to {lang_code}.json — "
+                  f"future runs will preserve that override.")
+
+        if legacy_no_source_count:
+            print(f"  ℹ️  [{lang_code}] {legacy_no_source_count} key(s) had no recorded source text "
+                  f"(XLIFF predates source-change tracking) — left untouched this run; source-text "
+                  f"changes will be detected correctly for them from now on.")
+
+        if locked_count:
+            print(f"  🔒 [{lang_code}] {locked_count} do-not-translate key(s) locked to the English "
+                  f"source (brand name, legal acronyms, demo emails, testimonials, Terms & Conditions).")
+
+        if retry_from_failure_count:
+            print(f"  \U0001f504 [{lang_code}] {retry_from_failure_count} key(s) previously marked "
+                  f"'needs_manual_translation' (failed validation last run) queued for another attempt.")
 
         # Step 2: Translate in grouped batches to eliminate rate-limiting
         if delta_keys:
@@ -794,10 +1261,55 @@ def sync_pipeline():
                         # Fill failed translations with fallback empty text so alignment doesn't break
                         translated_results.extend([""] * len(batch_texts))
                 
-                # Map translated strings back into the localized JSON tracking dictionary
+                # Map translated strings back into the localized JSON tracking
+                # dictionary — but validate each one first. This is the fix for
+                # the corruption found in production locale files: ANSI escape
+                # codes and hallucinated chatter leaking in from the Ollama CLI
+                # fallback, non-string JSON values silently str()-coerced
+                # ("False" showing up as literal card text), and — the exact
+                # cause of the Japanese "Meet Peri" modal showing Spanish and
+                # English lines — a translation landing in entirely the wrong
+                # script with nothing checking it before it was saved.
                 for idx, key in enumerate(group_keys):
-                    if idx < len(translated_results):
-                        target_json[key] = translated_results[idx]
+                    if idx >= len(translated_results):
+                        continue
+                    original_src = group_texts[idx]
+                    raw_output = translated_results[idx]
+                    candidate = strip_control_sequences(raw_output) \
+                        if isinstance(raw_output, str) else raw_output
+
+                    reasons = bad_reasons(candidate, original_src, lang_code)
+                    if reasons:
+                        suspect_count += 1
+                        raw_retry = engine.retry_call(
+                            lambda: engine.translate_single(original_src, lang_name, lang_code)
+                        )
+                        retried = strip_control_sequences(raw_retry) if isinstance(raw_retry, str) else raw_retry
+                        retry_reasons = bad_reasons(retried, original_src, lang_code)
+
+                        if not retry_reasons:
+                            candidate = retried
+                            fixed_on_retry_count += 1
+                            final_status = "fixed_on_retry"
+                        else:
+                            candidate = original_src
+                            meta_tracking[key]["status"] = "needs_manual_translation"
+                            still_bad_count += 1
+                            final_status = "left_as_english_fallback"
+
+                        log_suspect_translation(
+                            lang_code, key, original_src, raw_output, reasons,
+                            raw_retry=raw_retry, retry_reasons=retry_reasons,
+                            final_status=final_status,
+                        )
+
+                    target_json[key] = candidate
+
+        if suspect_count:
+            print(f"  🔎 [{lang_code}] {suspect_count} suspect translation(s) caught — "
+                  f"{fixed_on_retry_count} fixed on single-string retry, "
+                  f"{still_bad_count} left as English fallback (needs manual translation). "
+                  f"Raw model output for all of these: {DEBUG_LOG_PATH}")
 
         # Step 3: Prune stale keys (keys in target that no longer exist in English source)
         stale = [k for k in target_json if k not in en_strings]

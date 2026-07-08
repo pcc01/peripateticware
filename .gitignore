@@ -420,7 +420,12 @@ test_*.ps1
 frontend/vite.config.ts.timestamp-*.mjs
 
 # ── Scripts directory (diagnostics / one-offs) ───────────────
+# NOTE: bare "scripts/" matches any dir named "scripts" anywhere in the repo
+# (backend/scripts, frontend/scripts, frontend/my-app/scripts, mobile/scripts,
+# root scripts/) — that swallowed the real i18n pipeline/tooling in
+# frontend/scripts, which is product code, not a one-off. Un-ignore it below.
 scripts/
+!frontend/scripts/
 
 # ── Internal sprint docs in backend/docs ─────────────────────
 backend/docs/SPRINT_TRACK_*.md
@@ -434,14 +439,4 @@ mobile-build-guide.docx
 peripateticware_assessment.docx
 sprint_development_plan.docx
 
-# ── Internal deployment/ops docs (infra topology, backup layout) ──
-DEPLOY_PLAN.md
-DEPLOY_SMALL.md
-GO_LIVE_RUNBOOK.md
-
-# ── Runtime secrets mounted into containers (service-account keys etc.) ──
-secrets/
-
-# ── Locale sync backup/corruption artifacts (never commit) ──────────────
-*.corrupt.bak
-frontend/public/locales/_sentinel_check.json
+# ── Internal deployment/ops docs (infra topology, backup layout) �

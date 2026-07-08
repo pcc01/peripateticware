@@ -4,7 +4,15 @@
 //
 // What this script does:
 //   1. Scans src/ for .tsx/.ts/.jsx/.js files
-//   2. Replaces hardcoded JSX text in <h1–h4>, <p>, <label> with t("key", "fallback")
+//   2. Replaces hardcoded JSX text in <h1-h4>, <p>, <label>, <button>, <option>,
+//      <span>, <div>, <td>, <th>, <a>, <li> with t("key", "fallback") — only
+//      when the tag's entire content is a single plain-text run (no nested
+//      tags or {expressions}), so layout containers with children are untouched
+//   2b. Replaces hardcoded JSX ATTRIBUTE values — placeholder="...",
+//      aria-label="...", title="...", alt="..." — with the same t() pattern.
+//      Distinct from #2/#5's object-property pass: attributes use `attr="x"`
+//      syntax, never the `key: 'x'` syntax the property pass matches, so this
+//      is its own regex/pass (see replaceAttrStrings).
 //   3. Ensures `import { useTranslation } from 'react-i18next'` is present in every
 //      modified file
 //   4. Ensures `const { t } = useTranslation('landing')` is injected into component
@@ -102,7 +110,18 @@ function ensureHookInComponents(content) {
 
   // FIX (Risk 1): Check for ANY useTranslation call, not just 'landing'.
   // This prevents clobbering files that already use a different namespace.
-  const HOOK_HAS_RE = /useTranslation\s*\(/;
+  //
+  // FIX (task #11, post-LocaleSwitcher.tsx incident): the previous version of
+  // this regex only checked whether SOME useTranslation() call existed in the
+  // body — but a component can legitimately call useTranslation() for other
+  // bindings only, e.g. `const { i18n } = useTranslation()`. Pass 1/Pass 3
+  // would then inject a bare `t('key', 'default')` call into that component
+  // (correctly, since t() calls were genuinely absent before tagging), the
+  // hook-injection guard would see the existing useTranslation() call and
+  // wrongly assume `t` was already in scope, and skip injecting the hook —
+  // producing a runtime `ReferenceError: t is not defined`. Now we require
+  // `t` specifically to be one of the destructured names.
+  const HOOK_HAS_RE = /const\s*\{[^}]*\bt\b[^}]*\}\s*=\s*useTranslation\s*\(/;
 
   // Pass 1: expression-body one-liners (narrowed — Risk 3)
   // Only matches PascalCase names with ≥2 chars, no generic type params on LHS
@@ -114,12 +133,49 @@ function ensureHookInComponents(content) {
   });
 
   // Pass 2: block-body components
-  const BLOCK_RE = /(?:export\s+(?:default\s+)?)?(?:function\s+[A-Z][A-Za-z0-9_]*|const\s+[A-Z][A-Za-z0-9_]*(?:\s*:\s*(?:React\s*\.\s*)?(?:FC|VFC|ReactNode|ReactElement|FunctionComponent)(?:<[^>]*>)?)?\s*=\s*(?:\([^)]*\)|\w+)\s*=>)[^{]*\{/g;
+  //
+  // FIX (2026-07): the old version matched up through `[^{]*\{` in one regex,
+  // which grabs the FIRST brace after the signature as "the body open brace."
+  // That's wrong whenever the parameter list itself contains braces — e.g. a
+  // destructured prop with an inline type annotation:
+  //   function PlatformSecretGate({ onDone }: { onDone: () => void }) { ... }
+  // The `{ onDone }` (or its type `{ onDone: () => void }`) gets mistaken for
+  // the body, so the real body is never inspected for t() calls and the hook
+  // silently fails to get injected. Now we only match up to the parameter
+  // list's opening '(' here, then walk paren-depth (ignoring braces
+  // entirely) to find its true matching ')', and look for the real body
+  // brace after that.
+  const BLOCK_RE = /(?:export\s+(?:default\s+)?)?(?:function\s+[A-Z][A-Za-z0-9_]*|const\s+[A-Z][A-Za-z0-9_]*(?:\s*:\s*(?:React\s*\.\s*)?(?:FC|VFC|ReactNode|ReactElement|FunctionComponent)(?:<[^>]*>)?)?\s*=)\s*(?=\()/g;
+
+  // Given the index of a parameter list's opening '(', walks paren-depth
+  // (braces are irrelevant here — we only care about matching parens) to
+  // find where the parameter list actually ends, then looks for the next
+  // '{' within a short bounded window (handles ": ReturnType =>" or " =>"
+  // in between). Returns -1 if no brace body follows nearby — e.g. an
+  // expression-bodied arrow (`=> <jsx/>`), which Pass 1 handles separately.
+  function findBodyOpenBrace(text, parenStart) {
+    let depth = 0;
+    let i = parenStart;
+    for (; i < text.length; i++) {
+      if (text[i] === '(') depth++;
+      else if (text[i] === ')') {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    const windowEnd = Math.min(text.length, i + 200);
+    const tail = text.slice(i, windowEnd);
+    const braceMatch = tail.match(/^[^{]*?\{/);
+    if (!braceMatch) return -1;
+    return i + braceMatch[0].length - 1;
+  }
 
   const injections = [];
   let m;
   while ((m = BLOCK_RE.exec(content)) !== null) {
-    const openBrace  = m.index + m[0].length - 1;
+    const parenStart = m.index + m[0].length; // lookahead didn't consume the '('
+    const openBrace   = findBodyOpenBrace(content, parenStart);
+    if (openBrace === -1) continue;
     const closeBrace = findMatchingClose(content, openBrace);
     const body       = content.slice(openBrace + 1, closeBrace);
     if (T_CALL_RE.test(body) && !HOOK_HAS_RE.test(body)) {
@@ -138,7 +194,13 @@ function ensureHookInComponents(content) {
 // ─── Hardcoded-string replacement ────────────────────────────────────────────
 
 function replaceHardcodedStrings(fileContent, filenameScope, masterCatalog) {
-  const JSX_TAG_RE = /<(label|h1|h2|h3|h4|p)([^>]*)>([^<>{|}]+)<\/\1>/g;
+  // Widened from the original (label|h1-4|p) set — see tag_coverage_report.cjs,
+  // which found 261 hardcoded strings sitting in exactly these additional tags
+  // across the app's dashboard pages. Still requires the tag's ENTIRE content
+  // to be one plain-text run ([^<>{|}]+, no nested tags/expressions), so a
+  // <div> or <span> used as a layout container with children is never touched
+  // — only ones whose sole content is literal text.
+  const JSX_TAG_RE = /<(label|h1|h2|h3|h4|p|button|option|span|div|td|th|a|li)([^>]*)>([^<>{|}]+)<\/\1>/g;
   let changed = false;
 
   const result = fileContent.replace(JSX_TAG_RE, (full, tag, attrs, rawText) => {
@@ -230,6 +292,54 @@ function replaceObjectStringProps(fileContent, filenameScope, masterCatalog) {
   return [result, changed];
 }
 
+// ─── JSX attribute string replacement ────────────────────────────────────────
+//
+// Catches user-facing strings in specific JSX attributes — placeholder="...",
+// aria-label="...", title="...", alt="..." — which Pass 1 and Pass 2 never
+// touch: Pass 1 only matches tag-body text, Pass 2 only matches JS
+// object-literal `key: 'value'` syntax. JSX attributes use `attr="value"`
+// syntax (no colon), so they need their own pattern.
+//
+// `placeholder={t('key','x')}` is valid JSX exactly like a tag body would be,
+// so the replacement template just swaps quotes for a t() call the same way.
+// The regex requires the value to start with a literal quote character, so
+// an attribute already using an expression (placeholder={something}) can
+// never match — this pass is naturally idempotent on a second run.
+
+const TRANSLATABLE_ATTRS = ['placeholder', 'aria-label', 'title', 'alt'];
+
+function replaceAttrStrings(fileContent, filenameScope, masterCatalog) {
+  const attrPattern = TRANSLATABLE_ATTRS.join('|');
+  const ATTR_RE = new RegExp(
+    `\\b(${attrPattern})=(['"])((?:(?!\\2)[^\\\\]|\\\\.)*)\\2`,
+    'g'
+  );
+
+  let changed = false;
+  const result = fileContent.replace(ATTR_RE, (full, attr, quote, rawValue) => {
+    const value = rawValue.trim();
+    if (isTechnicalString(value)) return full;
+
+    const normalizedText = value.replace(/\s+/g, ' ').trim();
+    const cleanKey = normalizedText
+      .toLowerCase()
+      .replace(/[^a-z0-9_\s]/g, '')
+      .trim()
+      .replace(/\s+/g, '_')
+      .substring(0, 40);
+
+    if (!cleanKey) return full;
+
+    const attrSlug = attr.replace(/-/g, '_');
+    const scopedKey = `${filenameScope}.${attrSlug}_${cleanKey}`;
+    assignNestedKey(masterCatalog, scopedKey, normalizedText);
+    changed = true;
+    return `${attr}={t('${scopedKey}', '${normalizedText.replace(/'/g, "\\'")}')}`;
+  });
+
+  return [result, changed];
+}
+
 // ─── Scope from full relative path (Risk 2 fix) ───────────────────────────────
 // e.g. src/components/auth/LoginScreen.tsx → "components_auth_loginscreen"
 // Two different index.tsx files → "pages_index" vs "components_index"
@@ -277,13 +387,37 @@ function crawlAndTag() {
 
         harvestExistingTCalls(content, masterCatalog);
 
-        const scope          = deriveScope(fullPath);
-        const [tagged, did]  = replaceHardcodedStrings(content, scope, masterCatalog);
+        const scope = deriveScope(fullPath);
+
+        // Passes 1 and 3 both produce `{t(...)}` — valid ONLY inside real JSX.
+        // A plain .ts/.js file can never contain real JSX, but it CAN contain
+        // a string or template literal with HTML-looking text in it (e.g. a
+        // Leaflet attribution string, or a banner built via `.innerHTML =`
+        // outside React) — the tag/attribute regexes below don't know the
+        // difference between "real JSX" and "HTML sitting inside a string",
+        // so on a .ts/.js file that distinction is exactly backwards: it
+        // would corrupt the string (this broke constants.ts and
+        // useSessionSecurity.ts on 2026-07-06 — reverted, see git history).
+        // Restricting these two passes to .tsx/.jsx closes that off; Pass 2's
+        // `prop: t(...)` output is valid in any JS/TS context so it still
+        // runs everywhere.
+        const isJsxCapable = /\.(tsx|jsx)$/.test(item);
+
+        let did = false, tagged = content;
+        if (isJsxCapable) {
+          [tagged, did] = replaceHardcodedStrings(content, scope, masterCatalog);
+        }
         if (did) content = tagged;
 
         // Pass 2: object property strings (e.g. carousel data, config arrays)
         const [propTagged, propDid] = replaceObjectStringProps(content, scope, masterCatalog);
         if (propDid) content = propTagged;
+
+        // Pass 3: JSX attribute values (placeholder, aria-label, title, alt)
+        if (isJsxCapable) {
+          const [attrTagged, attrDid] = replaceAttrStrings(content, scope, masterCatalog);
+          if (attrDid) content = attrTagged;
+        }
 
         if (/\bt\(['"]/.test(content)) {
           content = ensureUseTranslationImport(content);
