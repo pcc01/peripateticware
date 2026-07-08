@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Users, BookOpen, AlertCircle } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '@/utils/errorMessage';
 
 interface Classroom {
   id:            string;
@@ -49,7 +50,21 @@ const TeacherClassroomsPage: React.FC = () => {
       const r = await apiClient.post(`/classrooms`, { name: newName.trim() });
       navigate(`/teacher/classrooms/${r.data.id}`);
     } catch (e: any) {
-      setCreateError(e?.response?.data?.detail || 'Failed to create classroom.');
+      // e.response.data.detail can be a plain string OR a structured
+      // upgrade-required object ({code, feature, required_tier,
+      // current_tier, limit, current}) when FastAPI raises
+      // HTTPException(402, detail={...}) for a license-tier limit (e.g.
+      // classroom_count). Rendering that object directly as a React child
+      // throws "Minified React error #31" and unmounts the whole app (the
+      // blank-page symptom) — getErrorMessage always coerces to a string.
+      const detail = e?.response?.data?.detail;
+      if (detail && typeof detail === 'object' && detail.code === 'UPGRADE_REQUIRED') {
+        setCreateError(
+          `You've reached your plan's classroom limit (${detail.current}/${detail.limit}). Upgrade to ${detail.required_tier} to add more classrooms.`
+        );
+      } else {
+        setCreateError(getErrorMessage(e, 'Failed to create classroom.'));
+      }
     }
   };
 
