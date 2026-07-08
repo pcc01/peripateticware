@@ -46,7 +46,13 @@ services:
       ENVIRONMENT: production
       DEBUG: 'false'
       LOG_LEVEL: INFO
-    volumes: []
+    # `!override` REPLACES the base list (a plain [] would merge = keep the
+    # dev source mount). Prod runs the code baked into the image; only data
+    # volumes + the Google service-account secret are mounted.
+    volumes: !override
+      - media_files:/app/media
+      - uploads_dev:/app/uploads
+      - ./secrets:/run/secrets:ro
     # Loopback only — cloudflared is the sole consumer
     ports: !override
       - "127.0.0.1:8000:8000"

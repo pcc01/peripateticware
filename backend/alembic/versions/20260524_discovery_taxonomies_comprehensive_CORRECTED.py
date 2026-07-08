@@ -47,7 +47,23 @@ class DiscoveryMode(str, enum.Enum):
 
 def upgrade() -> None:
     """Upgrade: Add comprehensive activity features"""
-    
+
+    # This migration has partially applied before (e.g. a prior run got as far
+    # as adding marzano_level, then failed later in the same transaction and
+    # was never recorded in alembic_version). Plain op.add_column() blows up
+    # with "column already exists" on any column that made it through a prior
+    # partial run. Build a set of columns that already exist and skip those,
+    # so this migration is safe to re-run to completion from any partial state.
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    existing_columns = {col["name"] for col in inspector.get_columns("activities")}
+
+    def add_column_if_missing(table_name: str, column: sa.Column) -> None:
+        if column.name in existing_columns:
+            print(f"Note: {table_name}.{column.name} already exists — skipping.")
+            return
+        op.add_column(table_name, column)
+
     # Create enum types in PostgreSQL
     discovery_mode_enum = postgresql.ENUM(
         'location_based', 'task_based',
@@ -85,28 +101,28 @@ def upgrade() -> None:
     # PHASE 5: Add Taxonomy Support (4 frameworks)
     # ========================================================================
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'marzano_level',
         sa.Integer(),
         nullable=True,
         comment='Marzano taxonomy level (1-4)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'dok_level',
         sa.Integer(),
         nullable=True,
         comment='Depth of Knowledge level (1-4)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'solo_level',
         sa.Integer(),
         nullable=True,
         comment='SOLO taxonomy level (1-5)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'primary_framework',
         sa.String(50),
         server_default='blooms',
@@ -114,7 +130,7 @@ def upgrade() -> None:
         comment='Primary assessment framework: blooms, marzano, dok, solo, or custom'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'custom_framework_data',
         postgresql.JSONB(),
         nullable=True,
@@ -126,7 +142,7 @@ def upgrade() -> None:
     # PREREQUISITE: assessment_rubrics table must exist (from prior migration)
     # ========================================================================
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'rubric_id',
         sa.UUID(as_uuid=True),
         sa.ForeignKey('assessment_rubrics.id', ondelete='SET NULL'),
@@ -139,7 +155,7 @@ def upgrade() -> None:
     # PREREQUISITE: location_contexts table must exist (from prior migration)
     # ========================================================================
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'location_context_id',
         sa.UUID(as_uuid=True),
         sa.ForeignKey('location_contexts.id', ondelete='SET NULL'),
@@ -151,21 +167,21 @@ def upgrade() -> None:
     # DISCOVERY/SCAVENGER HUNT MODE
     # ========================================================================
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_mode',
         discovery_mode_enum,
         nullable=True,
         comment='Discovery mode: location_based or task_based (null for non-discovery activities)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_task_description',
         sa.Text(),
         nullable=True,
         comment='Description of the discovery/scavenger hunt task'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_location_required',
         sa.Boolean(),
         server_default='false',
@@ -173,28 +189,28 @@ def upgrade() -> None:
         comment='Teacher specifies location (true) or student documents location (false)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_documentation_requirements',
         postgresql.JSONB(),
         nullable=True,
         comment='What student must document: photos, measurements, notes, sketches, etc. {photos: true, photo_count_minimum: 2, ...}'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_success_criteria',
         sa.Text(),
         nullable=True,
         comment='How teacher recognizes successful discovery (what to look for in documentation)'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_difficulty_level',
         sa.Integer(),
         nullable=True,
         comment='Discovery difficulty: 1=Easy, 2=Medium, 3=Hard, 4=Expert'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_time_limit_minutes',
         sa.Integer(),
         nullable=True,
@@ -205,14 +221,14 @@ def upgrade() -> None:
     # PRIVACY & LOCATION TRACKING
     # ========================================================================
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'location_source',
         sa.String(50),
         nullable=True,
         comment='How location was obtained: teacher_specified, gps_captured, student_documented'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'privacy_jurisdiction_id',
         sa.String(100),
         nullable=True,
@@ -220,7 +236,7 @@ def upgrade() -> None:
         comment='Privacy jurisdiction: GDPR, COPPA, FERPA, etc.'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'privacy_compliant',
         sa.Boolean(),
         server_default='false',
@@ -228,14 +244,14 @@ def upgrade() -> None:
         comment='Whether activity meets privacy compliance standards'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'last_compliance_check',
         sa.DateTime(),
         nullable=True,
         comment='Timestamp of last privacy compliance check'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_location_gps_capture_enabled',
         sa.Boolean(),
         server_default='true',
@@ -243,7 +259,7 @@ def upgrade() -> None:
         comment='Auto-capture student GPS location when submitting discovery'
     ))
     
-    op.add_column('activities', sa.Column(
+    add_column_if_missing('activities', sa.Column(
         'discovery_location_sharing_rules',
         postgresql.JSONB(),
         nullable=True,
@@ -371,18 +387,18 @@ def downgrade() -> None:
     op.drop_column('activities', 'discovery_location_required')
     op.drop_column('activities', 'discovery_task_description')
     op.drop_column('activities', 'discovery_mode')
-    
+
     # Phase 5: WikiLocation & Rubrics
     op.drop_column('activities', 'location_context_id')
     op.drop_column('activities', 'rubric_id')
-    
+
     # Phase 5: Taxonomies
     op.drop_column('activities', 'custom_framework_data')
     op.drop_column('activities', 'primary_framework')
     op.drop_column('activities', 'solo_level')
     op.drop_column('activities', 'dok_level')
     op.drop_column('activities', 'marzano_level')
-    
+
     # Drop enums - with safe error handling
     try:
         # Only drop if not referenced elsewhere
@@ -395,7 +411,7 @@ def downgrade() -> None:
 # ============================================================================
 # HELPER FUNCTION FOR TESTING LOCALLY (Windows PowerShell)
 # ============================================================================
-# 
+#
 # To test this migration locally before applying to production:
 #
 # 1. Set down_revision to your current latest migration ID
@@ -403,22 +419,22 @@ def downgrade() -> None:
 #    ```powershell
 #    # Navigate to backend folder
 #    cd backend
-#    
+#
 #    # Create test revision (don't apply yet)
 #    python -m alembic revision --autogenerate -m "test_discovery_taxonomies"
-#    
+#
 #    # Check migration looks good
 #    type alembic/versions/20260524_discovery_taxonomies_comprehensive.py
-#    
+#
 #    # Upgrade in DEV database
 #    python -m alembic upgrade head
-#    
+#
 #    # Test that application still works
 #    python main.py
-#    
+#
 #    # If everything works, downgrade to test rollback
 #    python -m alembic downgrade -1
-#    
+#
 #    # Then upgrade again
 #    python -m alembic upgrade head
 #    ```
