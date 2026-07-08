@@ -62,47 +62,48 @@ _FENCED_JSON = f"```json\n{_GOOD_JSON}\n```"
 # ---------------------------------------------------------------------------
 
 class TestProviderResolution:
+    """
+    NOTE: these tests used to `importlib.reload(core.config)` /
+    `importlib.reload(agents.provider)` to pick up monkeypatched env vars.
+    That mints a brand-new `Settings()` instance and rebinds
+    `core.config.settings` to it -- but every module that already did
+    `from core.config import settings` (agents.base_agent, agents.provider
+    itself before the reload runs, etc.) keeps its OLD reference. Later
+    tests in this file that do `patch("core.config.settings.X", ...)` were
+    silently patching an orphaned object that `agents.base_agent` never
+    reads from, so the patch had no effect on real behavior. In
+    test_timeout_returns_error this meant the patched AGENT_TIMEOUT_SECONDS=0
+    never took effect and the test fell back to the real default of 120s.
+    Fix: monkeypatch attributes directly on the live `agents.provider.settings`
+    singleton instead of reloading modules -- no identity ever changes, and
+    monkeypatch auto-restores on teardown.
+    """
+
     def test_per_agent_override_beats_global(self, monkeypatch):
-        monkeypatch.setenv("AGENT_STANDARDS_MAPPING_PROVIDER", "claude")
-        monkeypatch.setenv("LLM_PROVIDER", "ollama")
-        from importlib import reload
-        import core.config as cfg
-        reload(cfg)
         import agents.provider as prov
-        reload(prov)
+        monkeypatch.setattr(prov.settings, "AGENT_STANDARDS_MAPPING_PROVIDER", "claude")
+        monkeypatch.setattr(prov.settings, "LLM_PROVIDER", "ollama")
         result = prov.resolve_provider("AGENT_STANDARDS_MAPPING_PROVIDER", "ollama")
         assert result == "claude"
 
     def test_global_beats_default(self, monkeypatch):
-        monkeypatch.setenv("AGENT_STANDARDS_MAPPING_PROVIDER", "")
-        monkeypatch.setenv("LLM_PROVIDER", "claude")
-        from importlib import reload
-        import core.config as cfg
-        reload(cfg)
         import agents.provider as prov
-        reload(prov)
+        monkeypatch.setattr(prov.settings, "AGENT_STANDARDS_MAPPING_PROVIDER", "")
+        monkeypatch.setattr(prov.settings, "LLM_PROVIDER", "claude")
         result = prov.resolve_provider("AGENT_STANDARDS_MAPPING_PROVIDER", "ollama")
         assert result == "claude"
 
     def test_agent_default_used_when_no_overrides(self, monkeypatch):
-        monkeypatch.setenv("AGENT_COMPLIANCE_PROVIDER", "")
-        monkeypatch.setenv("LLM_PROVIDER", "")
-        from importlib import reload
-        import core.config as cfg
-        reload(cfg)
         import agents.provider as prov
-        reload(prov)
+        monkeypatch.setattr(prov.settings, "AGENT_COMPLIANCE_PROVIDER", "")
+        monkeypatch.setattr(prov.settings, "LLM_PROVIDER", "")
         result = prov.resolve_provider("AGENT_COMPLIANCE_PROVIDER", "claude")
         assert result == "claude"
 
     def test_compliance_defaults_to_claude_no_env(self, monkeypatch):
         """Compliance agent defaults to claude with no env set — spec requirement."""
-        monkeypatch.setenv("AGENT_COMPLIANCE_PROVIDER", "claude")
-        from importlib import reload
-        import core.config as cfg
-        reload(cfg)
         import agents.provider as prov
-        reload(prov)
+        monkeypatch.setattr(prov.settings, "AGENT_COMPLIANCE_PROVIDER", "claude")
         result = prov.resolve_provider("AGENT_COMPLIANCE_PROVIDER", "claude")
         assert result == "claude"
 

@@ -95,9 +95,20 @@ class StandardsMappingAgent(BaseAgent):
     def _validate_against_candidates(
         self, output: StandardsMappingOutput, candidate_codes: set
     ) -> StandardsMappingOutput:
-        """Remove any mapping whose code is not in the retrieved candidate set."""
-        if not candidate_codes:
-            return output
+        """Remove any mapping whose code is not in the retrieved candidate set.
+
+        NOTE: this used to short-circuit with `if not candidate_codes: return
+        output`, i.e. skip filtering entirely when there were zero candidates.
+        That's backwards: an empty candidate set means the LLM had nothing to
+        ground its answer in, so every code it returned is by definition
+        invented and should be stripped -- not passed through unfiltered.
+        Since run_with_retrieval()'s retrieval step is currently stubbed to
+        always return zero candidates (see its comment above), that early
+        return meant this anti-hallucination filter was a permanent no-op in
+        every real call path. The plain list-comprehension filter below
+        already handles candidate_codes == set() correctly on its own
+        (nothing is "in" an empty set), so the special case is unnecessary.
+        """
         filtered = [m for m in output.mappings if m.code in candidate_codes]
         if len(filtered) != len(output.mappings):
             removed = [m.code for m in output.mappings if m.code not in candidate_codes]

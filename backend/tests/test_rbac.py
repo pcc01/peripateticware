@@ -118,12 +118,40 @@ def test_require_same_org_none_resource_org_passes():
 
 
 def test_require_same_org_admin_bypasses():
+    """Admin bypass is ORG-SCOPED: an admin only bypasses for their OWN org.
+
+    NOTE: this test used to call require_same_org("org2", user) with
+    user.org_id == "org1" and assert it did NOT raise -- i.e. it asserted
+    admins bypass the org check unconditionally, even across orgs. That
+    was the pre-fix behavior. core/dependencies.py::require_same_org was
+    deliberately changed (see the "SECURITY: admin bypass is now
+    ORG-SCOPED" comment there) because an admin of Org A who learned
+    resource IDs belonging to Org B was being let through. The test was
+    never updated to match, so it was asserting the very vulnerability
+    the source fixed. Fixed here to verify the bypass only applies within
+    the admin's own org; test_require_same_org_admin_blocked_different_org
+    below covers the cross-org case the fix was for.
+    """
     from core.dependencies import require_same_org
     from models.database import UserRole
     user = MagicMock()
     user.org_id = "org1"
     user.role = UserRole.ADMIN
-    require_same_org("org2", user)  # admin passes even for different org
+    require_same_org("org1", user)  # admin passes for a resource in their own org
+
+
+def test_require_same_org_admin_blocked_different_org():
+    """Security fix regression test: an admin must NOT bypass for a
+    resource belonging to a DIFFERENT org, even with the default
+    allow_admin=True."""
+    from core.dependencies import require_same_org
+    from models.database import UserRole
+    user = MagicMock()
+    user.org_id = "org1"
+    user.role = UserRole.ADMIN
+    with pytest.raises(HTTPException) as exc:
+        require_same_org("org2", user)
+    assert exc.value.status_code == 403
 
 
 def test_require_same_org_admin_blocked_when_allow_admin_false():
