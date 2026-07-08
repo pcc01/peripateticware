@@ -771,6 +771,32 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
         ]:
             await _exec_safepoint(conn, _alter, "student schema ALTER")
+        # ── Native-enum -> VARCHAR conversions ──────────────────────────────
+        # database/init.sql (the fresh-volume bootstrap path) declares these
+        # status/audience columns as native Postgres ENUM types
+        # (field_note_status_enum, self_project_status_enum,
+        # peer_project_status_enum, peer_project_audience_enum,
+        # peer_project_response_status_enum). Every ORM model in
+        # models/database.py maps them as plain Column(String(30)) instead —
+        # matching the same VARCHAR-not-enum choice already made for
+        # activities.status/activity_type above in
+        # apply_enum_and_core_column_migrations(). On any DB bootstrapped via
+        # init.sql (enum columns), every INSERT/UPDATE that writes a plain
+        # Python string into one of these columns 500s with
+        # "column ... is of type ..._enum but expression is of type character
+        # varying" — e.g. creating a field note, self-project, or peer
+        # project/challenge. Also: field_note_status_enum only defines
+        # ('draft','complete','archived'), but the route code uses
+        # 'submitted'/'promoted' too (see phase7_student_initiated.py) — the
+        # enum was stale even on its own terms, not just a type mismatch.
+        for _enum_col in [
+            "ALTER TABLE student_field_notes ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
+            "ALTER TABLE student_self_projects ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
+            "ALTER TABLE student_peer_projects ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
+            "ALTER TABLE student_peer_projects ALTER COLUMN audience TYPE VARCHAR(30) USING audience::VARCHAR",
+            "ALTER TABLE peer_project_responses ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
+        ]:
+            await _exec_safepoint(conn, _enum_col, "enum -> VARCHAR")
         # ── Phase 6: evidence_captures + notebook_entries ──────────────────
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS evidence_captures (
