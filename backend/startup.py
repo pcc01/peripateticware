@@ -948,9 +948,11 @@ async def apply_student_phase7_migrations(engine) -> None:
         # PeerProjectResponse, PeerProjectResponseCapture, ClassSettings) but that no
         # migration anywhere ever created — every "challenges" endpoint touching peer
         # project examples/responses/class settings 500'd with "relation does not exist".
-        "CREATE TABLE IF NOT EXISTS peer_project_example_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), peer_project_id UUID NOT NULL REFERENCES student_peer_projects(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, caption TEXT, \"order\" INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(peer_project_id, capture_id))",
+        "CREATE TABLE IF NOT EXISTS peer_project_example_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), peer_project_id UUID NOT NULL REFERENCES student_peer_projects(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, caption TEXT, order_index INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(peer_project_id, capture_id))",
+        "ALTER TABLE peer_project_example_captures RENAME COLUMN \"order\" TO order_index",
         "CREATE TABLE IF NOT EXISTS peer_project_responses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), peer_project_id UUID NOT NULL REFERENCES student_peer_projects(id) ON DELETE CASCADE, student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, status VARCHAR(30) DEFAULT 'in_progress', notebook_entry_id UUID REFERENCES student_notebooks(id) ON DELETE SET NULL, completed_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(peer_project_id, student_id))",
-        "CREATE TABLE IF NOT EXISTS peer_project_response_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), response_id UUID NOT NULL REFERENCES peer_project_responses(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, \"order\" INT DEFAULT 0, UNIQUE(response_id, capture_id))",
+        "CREATE TABLE IF NOT EXISTS peer_project_response_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), response_id UUID NOT NULL REFERENCES peer_project_responses(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, order_index INT DEFAULT 0, UNIQUE(response_id, capture_id))",
+        "ALTER TABLE peer_project_response_captures RENAME COLUMN \"order\" TO order_index",
         "CREATE TABLE IF NOT EXISTS class_settings (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), class_id UUID NOT NULL UNIQUE REFERENCES classes(id) ON DELETE CASCADE, peer_project_approval_mode VARCHAR(20) DEFAULT 'teacher_gate', peer_project_author_sees_individual_responses BOOLEAN DEFAULT FALSE, students_can_create_peer_projects BOOLEAN DEFAULT TRUE, students_can_create_field_notes BOOLEAN DEFAULT TRUE, updated_at TIMESTAMPTZ DEFAULT NOW())",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_latitude DOUBLE PRECISION",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS location_longitude DOUBLE PRECISION",
@@ -962,7 +964,8 @@ async def apply_student_phase7_migrations(engine) -> None:
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_activity_id UUID",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_at TIMESTAMPTZ",
-        "CREATE TABLE IF NOT EXISTS student_field_note_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), field_note_id UUID NOT NULL REFERENCES student_field_notes(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, \"order\" INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(field_note_id, capture_id))",
+        "CREATE TABLE IF NOT EXISTS student_field_note_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), field_note_id UUID NOT NULL REFERENCES student_field_notes(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, order_index INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(field_note_id, capture_id))",
+        "ALTER TABLE student_field_note_captures RENAME COLUMN \"order\" TO order_index",
         "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS author_student_id UUID",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS class_id UUID",
