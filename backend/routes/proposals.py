@@ -109,7 +109,7 @@ async def create_proposal(
     proposal_id = uuid.uuid4()
     await db.execute(text("""
         INSERT INTO student_proposals
-          (id, student_id, title, description, location_name,
+          (id, student_id, title, challenge_description, location_hint,
            subject, note_to_teacher, status, created_at, updated_at)
         VALUES
           (:id, :sid, :title, :desc, :loc, :subj, :note, 'draft', NOW(), NOW())
@@ -171,13 +171,14 @@ async def update_proposal(
     if dict(row)["status"] not in ("draft", "rejected"):
         raise HTTPException(status_code=400, detail="Can only edit draft or rejected proposals")
 
-    # Map frontend field names to DB column names
-    _field_map = {
-        "challenge_description": "description",
-        "location_hint": "location_name",
-    }
-    raw = {k: v for k, v in body.model_dump().items() if v is not None}
-    updates = {_field_map.get(k, k): v for k, v in raw.items()}
+    # Frontend field names now match the DB column names exactly
+    # (challenge_description, location_hint — see database/init.sql) —
+    # no translation needed. This used to map them to description/
+    # location_name, columns that only ever existed in startup.py's
+    # fallback CREATE TABLE, not in init.sql (the path this DB actually
+    # bootstrapped through), so every edit 500'd the same way
+    # create_proposal's INSERT did before this fix.
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
     if not updates:
         return {"ok": True}
     set_clause = ", ".join(f"{k} = :{k}" for k in updates)
