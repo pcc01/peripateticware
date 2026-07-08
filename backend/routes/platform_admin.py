@@ -214,7 +214,7 @@ async def get_org_detail(
     now = datetime.now(timezone.utc)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     usage = (await db.execute(text("""
-        SELECT COALESCE(SUM(total_tokens), 0), COALESCE(SUM(cost_usd), 0)
+        SELECT COALESCE(SUM(tokens_in + tokens_out), 0), COALESCE(SUM(cost_usd), 0)
         FROM platform_ai_ledger
         WHERE org_id = :oid AND created_at >= :ms
     """), {"oid": org_id, "ms": month_start})).first()
@@ -393,13 +393,13 @@ async def platform_usage(
         since = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
     totals = (await db.execute(text("""
-        SELECT COALESCE(SUM(total_tokens), 0), COALESCE(SUM(cost_usd), 0),
+        SELECT COALESCE(SUM(tokens_in + tokens_out), 0), COALESCE(SUM(cost_usd), 0),
                COUNT(DISTINCT org_id)
         FROM platform_ai_ledger WHERE created_at >= :since
     """), {"since": since})).first()
 
     top_orgs = (await db.execute(text("""
-        SELECT l.org_id, o.name, SUM(l.total_tokens) AS toks, COALESCE(SUM(l.cost_usd), 0) AS cost
+        SELECT l.org_id, o.name, SUM(l.tokens_in + l.tokens_out) AS toks, COALESCE(SUM(l.cost_usd), 0) AS cost
         FROM   platform_ai_ledger l
         LEFT   JOIN organizations o ON o.id = l.org_id
         WHERE  l.created_at >= :since
