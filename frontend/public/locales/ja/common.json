@@ -1,1 +1,15 @@
-{}
+{
+  "nav": {
+    "activities": "\\u5BB6\\u5EAD\\u8A08\\u7B97",
+    "challenges": "\\u30AF\\u30E9\\u30F3\\u30BB\\u30EB",
+    "progress": "進行中",
+    "new_activity": "新しいアクティビティ",
+    "library": "共有ライブラリ",
+    "rubrics": "ルール",
+    "standards": "基準",
+    "dashboard": "ダッシュボード",
+    "reports": "レポート",
+    "calendar": "カレンダー",
+    "messages": "メッセージ"
+  }
+}

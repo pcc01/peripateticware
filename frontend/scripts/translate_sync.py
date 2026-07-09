@@ -199,9 +199,14 @@ _debug_log_initialized = False
 
 
 def init_debug_log():
+    """Marks the start of a run with a separator line instead of truncating
+    the file — past runs' raw model output is kept for later review (the
+    per-key 'still English' status already persists forever in each locale's
+    .xlf; this keeps the raw-output detail alongside it too)."""
     global _debug_log_initialized
     if not _debug_log_initialized:
-        DEBUG_LOG_PATH.write_text("", encoding="utf-8")
+        with open(DEBUG_LOG_PATH, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"run_started": datetime.now(timezone.utc).isoformat()}) + "\n")
         _debug_log_initialized = True
 
 
@@ -251,6 +256,36 @@ def email_addresses_preserved(src: str, translated: str) -> bool:
         if not re.search(re.escape(email) + r'(?![\w.-])', translated_lower):
             return False
     return True
+
+
+def protect_emails(text: str) -> tuple[str, dict[str, str]]:
+    """Swaps embedded demo/contact emails for a {email_N} placeholder — the
+    same {count}/%s/$t(...) template-variable style the system prompt already
+    instructs every model to preserve verbatim — before the text is sent for
+    translation. The model never sees the real address, so it can't
+    mistranslate it (e.g. "localization@peripateticware.com" becoming
+    "localización@peripateticware.com"), and the surrounding sentence still
+    gets translated normally instead of the whole line falling back to
+    English just because the email inside it got altered. Returns the
+    protected text and a map to restore the real address afterward."""
+    if not isinstance(text, str):
+        return text, {}
+    email_map: dict[str, str] = {}
+
+    def _sub(m: re.Match) -> str:
+        placeholder = f"{{email_{len(email_map) + 1}}}"
+        email_map[placeholder] = m.group(0)
+        return placeholder
+
+    return EMBEDDED_EMAIL_RE.sub(_sub, text), email_map
+
+
+def restore_emails(text, email_map: dict[str, str]):
+    if not isinstance(text, str) or not email_map:
+        return text
+    for placeholder, email in email_map.items():
+        text = text.replace(placeholder, email)
+    return text
 
 
 def extract_list_from_json(parsed_obj, texts: list[str]) -> list[str] | None:
@@ -544,29 +579,30 @@ class UniversalOrchestrator:
 
     def translate_single(self, text: str, lang_name: str, lang_code: str) -> str:
         """Fallback translation loop for generative LLM providers requiring sequential prompts."""
+        protected_text, email_map = protect_emails(text)
         prompt = (
             f"{self.system_prompt}\n\n"
             f"Target Language: Translate directly into fluent, natural {lang_name} (Code: '{lang_code.lower()}').\n"
-            f"Input Value String To Translate:\n\"{text}\""
+            f"Input Value String To Translate:\n\"{protected_text}\""
         )
-        
+
         self._pace_llm_call()  # Force safe chronological separation
-        
+
         if self.provider == "CLAUDE":
             msg = self.client.messages.create(
                 model=self.active_model, max_tokens=1024, system=self.system_prompt,
                 temperature=self.temperature,
-                messages=[{"role": "user", "content": f"Translate this text directly: {text}"}]
+                messages=[{"role": "user", "content": f"Translate this text directly: {protected_text}"}]
             )
-            return self.clean_llm_chatter(msg.content[0].text)
-            
+            return restore_emails(self.clean_llm_chatter(msg.content[0].text), email_map)
+
         elif self.provider == "GEMINI":
             res = self.client.models.generate_content(
                 model=self.active_model, contents=prompt,
                 config={"system_instruction": self.system_prompt, "temperature": self.temperature}
             )
-            return self.clean_llm_chatter(res.text)
-            
+            return restore_emails(self.clean_llm_chatter(res.text), email_map)
+
         elif self.provider == "OLLAMA":
             # Direct API request to avoid CLI escape crashes
             try:
@@ -582,23 +618,26 @@ class UniversalOrchestrator:
                 }
                 res = requests.post(url, json=payload, timeout=120)
                 res.raise_for_status()
-                return self.clean_llm_chatter(res.json().get("response", ""))
+                return restore_emails(self.clean_llm_chatter(res.json().get("response", "")), email_map)
             except Exception:
                 # Fallback to CLI using standard input (stdin) to prevent WinError 206 command-line limits
                 cmd = ["ollama", "run", self.active_model]
                 result = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", check=True)
-                return self.clean_llm_chatter(result.stdout)
-            
+                return restore_emails(self.clean_llm_chatter(result.stdout), email_map)
+
         return text
 
     def translate_llm_batch(self, texts: list[str], lang_name: str, lang_code: str) -> list[str]:
         """Translates multiple texts in a single roundtrip to bypass strict free tier limitations."""
+        protected_pairs = [protect_emails(t) for t in texts]
+        protected_texts = [p[0] for p in protected_pairs]
+        email_maps = [p[1] for p in protected_pairs]
         prompt = (
             f"{self.system_prompt}\n\n"
             f"Target Language: Translate directly into fluent, natural {lang_name} (Code: '{lang_code.lower()}').\n"
             f"You are translating a batch of strings. You MUST return a JSON object with a single key 'translations' containing the list of translated strings matching the input array order and size exactly.\n"
             f"Example output structure:\n{{\"translations\": [\"translation_1\", \"translation_2\", \"translation_3\"]}}\n\n"
-            f"Input JSON Array of strings to translate:\n{json.dumps(texts, ensure_ascii=False)}"
+            f"Input JSON Array of strings to translate:\n{json.dumps(protected_texts, ensure_ascii=False)}"
         )
         
         def run_call():
@@ -663,7 +702,8 @@ class UniversalOrchestrator:
             cleaned = self.clean_llm_chatter(raw_response)
 
             # Use robust defensive JSON parser to locate the list even if nested in objects
-            return parse_json_defensively(cleaned, texts)
+            parsed = parse_json_defensively(cleaned, texts)
+            return [restore_emails(t, email_maps[i]) for i, t in enumerate(parsed)]
         except Exception as e:
             # Gracefully self-heal: Fallback sequentially if batch compilation failed
             print(f"   ⚠️  Batch compilation failed ({e}). Self-healing with paced sequential fallback...")
@@ -1012,7 +1052,12 @@ def sync_pipeline():
     parser.add_argument("--content-type", type=str, help="Content type for Machete mode")
     parser.add_argument("--style", type=str, help="Style configuration for Machete mode")
     parser.add_argument("--non-interactive", action="store_true", help="Skip the interactive setup wizard")
-    
+    parser.add_argument("--languages", type=str, default=None,
+                         help="Comma-separated locale codes to restrict this run to (e.g. "
+                              "'ja,pt-BR,tr,zh'). Matched case-insensitively against the "
+                              "locale folder names under public/locales/. Defaults to every "
+                              "locale folder found (previous behavior) when omitted.")
+
     args, unknown = parser.parse_known_args()
     
     # Determine if we open the interactive menu or use command-line defaults
@@ -1040,6 +1085,28 @@ def sync_pipeline():
 
     en_strings = flatten_json(en_nested)
     target_langs = get_target_languages()
+
+    # Restrict to a specific subset of locales for this run (e.g. resuming
+    # only the languages that haven't been done yet, without re-touching
+    # locales that are already complete or intentionally left for later).
+    # Everything downstream — the incremental delta detection, XLIFF
+    # provenance history, do-not-translate locking — is untouched, so a
+    # filtered run behaves exactly like a full run scoped to fewer folders.
+    if args.languages:
+        requested = [c.strip() for c in args.languages.split(",") if c.strip()]
+        requested_lower = {c.lower() for c in requested}
+        matched = [(code, name) for code, name in target_langs if code.lower() in requested_lower]
+        matched_lower = {code.lower() for code, _ in matched}
+        missing = [c for c in requested if c.lower() not in matched_lower]
+        if missing:
+            print(f"⚠️  --languages requested locale(s) with no matching folder under "
+                  f"public/locales/, skipping: {', '.join(missing)}")
+        if not matched:
+            print("❌ None of the requested --languages match an existing locale folder. Nothing to do.")
+            return
+        target_langs = matched
+        print(f"🎯 Restricting this run to: {', '.join(f'{c} ({n})' for c, n in target_langs)}")
+
     print(f"🚀 Launching Production Pipeline via: {engine.get_method_string()}\n")
 
     # --- TELEMETRY ACCUMULATORS ---

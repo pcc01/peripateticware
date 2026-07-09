@@ -1,1 +1,19 @@
-{}
+{
+  "nav": {
+    "activities": "Activit├ęs",
+    "challenges": "D%C3%A9fis",
+    "progress": "Progression",
+    "new_activity": "Nouvelle activité",
+    "library": "Bibliothèque partagée",
+    "rubrics": "Critères d'évaluation",
+    "standards": "Normes",
+    "dashboard": "Tableau de bord",
+    "submissions": "Soumissions",
+    "classrooms": "Classes'}, {",
+    "reports": "Rapports",
+    "calendar": "Calendrier",
+    "notifications": "Lier votre enfant",
+    "users": "Utilisateurs",
+    "analytics": " Parents"
+  }
+}

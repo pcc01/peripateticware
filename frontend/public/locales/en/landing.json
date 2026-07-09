@@ -870,6 +870,7 @@
     "teacher_note": "Teacher Note"
   },
   "pages_sessionpage": {
+    "10003": "&#10003;",
     "location_sharing": "Location Sharing",
     "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active."
   },
@@ -1366,15 +1367,19 @@
   },
   "teaching_preferences": "Teaching Preferences",
   "teaching_tip": "Teaching Tip:",
+  "team_1_bio": "Paul spent a decade as a teacher, 4 years working for edtechs, and he has been experimenting with how to break learning out of books and classrooms for two decades.",
   "team_1_initial": "P",
   "team_1_name": "Paul Cerda",
   "team_1_role": "Founder & PM",
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "team_2_initial": "L",
   "team_2_name": "Lorem Ipsum",
   "team_2_role": "Lorem Ipsum Dolor",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
   "team_3_initial": "D",
   "team_3_name": "Dolor Sit Amet",
   "team_3_role": "Consectetur Adipiscing",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
   "team_4_initial": "E",
   "team_4_name": "Elit Sed Do",
   "team_4_role": "Eiusmod Tempor",
@@ -1500,10 +1505,5 @@
   "work_with_teammates_share_observations_a": "Work with teammates, share observations, and learn from each other's discoveries.",
   "work_with_your_teammates_and_share_your_": "Work with your teammates and share your observations and ideas.",
   "works_across_5_continents_we_handle_the_": "Works across 5 continents. We handle the legal complexity. You handle the learning.",
-  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant.",
-  "write_notes_sketch_diagrams_and_record_d": "Write notes, sketch diagrams, and record data. Every detail can be important.",
-  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-  "team_1_bio": "Paul spent a decade as a teacher, 4 years working for edtechs, and he has been experimenting with how to break learning out of books and classrooms for two decades."
+  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant."
 }

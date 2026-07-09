@@ -119,34 +119,35 @@
     "select": "-- Select --",
     "footer": {
       "brand_title": "Peripateticware",
-      "brand_desc": "brand desc",
-      "product_title": "product title",
-      "product_features": "product features",
-      "product_tools": "product tools",
-      "product_pricing": "product pricing",
-      "product_demo": "product demo",
-      "company_title": "company title",
-      "company_about": "company about",
-      "company_team": "company team",
-      "company_blog": "company blog",
-      "company_careers": "company careers",
-      "resources_title": "resources title",
-      "resources_docs": "resources docs",
-      "resources_guides": "resources guides",
-      "resources_api": "resources api",
-      "resources_support": "resources support",
-      "legal_title": "legal title",
-      "legal_privacy": "legal privacy",
-      "legal_terms": "legal terms",
-      "legal_cookies": "legal cookies",
-      "legal_contact": "legal contact",
+      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
+      "product_title": "Product",
+      "product_features": "Features",
+      "product_tools": "Tools",
+      "product_pricing": "Pricing",
+      "product_demo": "Demo",
+      "company_title": "Company",
+      "company_about": "About",
+      "company_team": "Team",
+      "company_blog": "Blog",
+      "company_careers": "Careers",
+      "resources_title": "Resources",
+      "resources_docs": "Documentation",
+      "resources_guides": "Guides",
+      "resources_api": "API",
+      "resources_support": "Support",
+      "legal_title": "Legal",
+      "legal_privacy": "Privacy",
+      "legal_terms": "Terms",
+      "legal_cookies": "Cookies",
+      "legal_contact": "Contact",
       "company_name": "Peripateticware",
-      "all_rights": "all rights",
+      "all_rights": "All rights reserved.",
       "privacy_protected": "Your data is protected under these frameworks",
       "product_privacy_engine": "Privacy Engine",
       "company_contact": "Contact",
       "resources_privacy": "Privacy Engine",
-      "legal_do_not_sell": "Do Not Sell or Share My Info"
+      "legal_do_not_sell": "Do Not Sell or Share My Info",
+      "legal_licensing": "Licensing"
     },
     "johndoe": "johndoe",
     "landing": {
@@ -158,20 +159,61 @@
     "story_title": "Why Learning Moves",
     "story_text_1": "Aristotle walked as he taught. He believed the act of moving — through space, through questions, through observation — was itself a form of thinking. Two thousand years later, the research agrees.",
     "story_text_2": "Peripateticware puts that insight in your pocket. Teachers design activities that bring curriculum to life in the real world. Students explore, capture, and reflect. Peri guides the inquiry. And learning — finally — moves.",
-    "field_journal_title": "field journal title",
-    "field_journal_desc": "field journal desc",
-    "field_journal_feature_1": "field journal feature 1",
-    "field_journal_feature_2": "field journal feature 2",
-    "field_journal_feature_3": "field journal feature 3",
+    "field_journal_title": "The Field Journal: Learning That Stays",
+    "field_journal_desc": "Students don't just do an activity — they record it. The Field Journal is where raw observations become structured knowledge. Back at their desk, students expand their notes with extended analysis, personal reflection, and connections to what they already know. Teachers can review, respond, and promote entries to the student's permanent portfolio.",
+    "field_journal_feature_1": "Capture in the field — photo, audio, and written notes geotagged to the exact spot",
+    "field_journal_feature_2": "Expand at your desk — four structured sections (Analysis, Reflection, Connections, Questions) guide deeper thinking after the activity",
+    "field_journal_feature_3": "Teacher feedback built in — teachers annotate and approve entries; approved notes flow automatically into the portfolio",
     "features": "Features",
-    "pricing": "Pricing",
+    "pricing": {
+      "personal": {
+        "title": "Personal",
+        "subtitle": "For individual students",
+        "price": "Free",
+        "description": "Get started with outdoor learning",
+        "feature": {
+          "1": "Geo-tagged observations",
+          "2": "AI-powered reflection prompts",
+          "3": "Progress tracking"
+        },
+        "cta": "Start Free"
+      },
+      "school": {
+        "title": "School",
+        "subtitle": "For teachers & classrooms",
+        "description": "Full classroom management",
+        "feature": {
+          "1": "Activity builder",
+          "2": "Student management",
+          "3": "Assessment rubrics",
+          "4": "Parent portal"
+        },
+        "cta": "Contact Sales"
+      },
+      "district": {
+        "title": "District",
+        "subtitle": "For entire districts",
+        "price": "Custom",
+        "description": "Enterprise features & support",
+        "feature": {
+          "1": "Unlimited teachers & students",
+          "2": "Custom integrations",
+          "3": "Dedicated support",
+          "4": "Privacy compliance",
+          "5": "Advanced analytics"
+        },
+        "cta": "Contact Sales"
+      }
+    },
     "about": "About",
     "login": "Login",
     "sign_up": "Sign Up",
     "why": "Why",
     "s_choose_peripateticware": "s Choose Peripateticware",
     "simple_transparent_pricing": "Simple, Transparent Pricing",
-    "privacy_first": "Privacy First",
+    "privacy_first": {
+      "badge": "Privacy & Compliance"
+    },
     "your_data_is_yours_we_collect_minimal_in": "Your data is yours. We collect minimal information and never sell it. Peripateticware uses encrypted connections, anonymous aggregation, and transparent data practices. You control what data is shared, with whom, and for how long.",
     "student": {
       "headline": "Learning Happens Outside",
@@ -216,27 +258,27 @@
       "feature_3_desc": "Receive updates when activities are completed and milestones are reached — without interrupting class."
     },
     "team_1_name": "Paul Cerda",
-    "team_1_role": "Founder & Product",
+    "team_1_role": "Founder & PM",
     "team_1_initial": "P",
-    "team_2_name": "Sofia Navarro",
-    "team_2_role": "Curriculum Design",
-    "team_2_initial": "S",
-    "team_3_name": "James Okafor",
-    "team_3_role": "Engineering",
-    "team_3_initial": "J",
-    "team_4_name": "Amara Singh",
-    "team_4_role": "Privacy & Compliance",
-    "team_4_initial": "A",
-    "testimonial_1_text": "My students have never been this engaged. Peri asks the questions I'd ask myself — it's like having a teaching assistant in the field.",
-    "testimonial_1_author": "Jane Smith · Science Teacher, Grade 7",
-    "testimonial_2_text": "I used to dread outdoor days because I couldn't track what students were doing. Now I can see every capture in real time. It's transformed how I plan.",
-    "testimonial_2_author": "Marcus Webb · Middle School Teacher",
-    "testimonial_3_text": "My daughter came home talking about riparian zones. She had photos, sketches, and a reflection she was actually proud of. That has never happened before.",
-    "testimonial_3_author": "Margaret Brown · Parent",
-    "testimonial_4_text": "The activity builder took me 15 minutes. The curriculum alignment suggestions were spot on. I've already planned a whole term of outdoor sessions.",
-    "testimonial_4_author": "Alex Johnson · Department Head, Life Sciences",
-    "testimonial_5_text": "I asked Peri why edges are more biodiverse and it just kept asking me questions back. I ended up figuring it out myself. That felt really good.",
-    "testimonial_5_author": "Maya, Grade 10 Student",
+    "team_2_name": "Lorem Ipsum",
+    "team_2_role": "Lorem Ipsum",
+    "team_2_initial": "L",
+    "team_3_name": "Lorem Ipsum",
+    "team_3_role": "Lorem Ipsum",
+    "team_3_initial": "L",
+    "team_4_name": "Lorem Ipsum",
+    "team_4_role": "Lorem Ipsum",
+    "team_4_initial": "L",
+    "testimonial_1_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "testimonial_1_author": "Lorem Ipsum · Field Name, Grade 0",
+    "testimonial_2_text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "testimonial_2_author": "Lorem Ipsum · Field Name",
+    "testimonial_3_text": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "testimonial_3_author": "Lorem Ipsum · Field Name",
+    "testimonial_4_text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    "testimonial_4_author": "Lorem Ipsum · Field Name",
+    "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam.",
+    "testimonial_5_author": "Lorem Ipsum · Field Name",
     "team_title": "Built by educators, for educators",
     "testimonials_title": "What educators are saying",
     "phonecarousel": {
@@ -1029,26 +1071,26 @@
       "summary_title": "Privacy by design",
       "summary_subtitle": "Built for schools, trusted by parents",
       "summary_desc": "Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold, never used for advertising, and never shared without consent.",
-      "summary_cta": "summary cta",
-      "engine_core_title": "engine core title",
-      "engine_core_desc": "engine core desc",
-      "jurisdiction_aware_title": "jurisdiction aware title",
-      "jurisdiction_aware_desc": "jurisdiction aware desc",
-      "auto_updates_title": "auto updates title",
-      "auto_updates_desc": "auto updates desc",
-      "versioned_rules_title": "versioned rules title",
-      "versioned_rules_desc": "versioned rules desc",
-      "extensible_title": "extensible title",
-      "extensible_desc": "extensible desc",
-      "encrypted_by_default_title": "encrypted by default title",
-      "encrypted_by_default_desc": "encrypted by default desc",
-      "on_device_first_title": "on device first title",
-      "on_device_first_desc": "on device first desc",
-      "consent_framework_title": "consent framework title",
-      "consent_framework_desc": "consent framework desc",
-      "cta_section_title": "cta section title",
-      "cta_section_subtitle": "cta section subtitle",
-      "cta_section_desc": "cta section desc",
+      "summary_cta": "See how it works",
+      "engine_core_title": "How the Privacy Engine works",
+      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
+      "jurisdiction_aware_title": "Jurisdiction Aware",
+      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
+      "auto_updates_title": "Auto Updates",
+      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
+      "versioned_rules_title": "Versioned Rules",
+      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
+      "extensible_title": "Extensible",
+      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
+      "encrypted_by_default_title": "Encrypted by Default",
+      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
+      "on_device_first_title": "On-Device First",
+      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
+      "consent_framework_title": "Consent Framework",
+      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
+      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
+      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
+      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
       "loading_status": "Loading compliance status…",
       "coppa_family_title": "For families of children under 13",
       "do_not_sell_link": "Do Not Sell or Share My Personal Information"
@@ -1191,7 +1233,48 @@
     "drawing": "Drawing",
     "sketch_directly_inapp_handwriting_captur": "Sketch directly in-app. Handwriting captured too.",
     "voice_notes_and_explanations_autotranscr": "Voice notes and explanations. Auto-transcribed.",
-    "meet_peri": "Meet Peri",
+    "meet_peri": {
+      "step": {
+        "1": {
+          "phase": "Engage",
+          "desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking."
+        },
+        "2": {
+          "phase": "Observe",
+          "desc": "Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague."
+        },
+        "3": {
+          "phase": "Analyse",
+          "desc": "Peri asks comparison and classification questions. What\\'s similar? What\\'s different? What pattern do you see?"
+        },
+        "4": {
+          "phase": "Explain",
+          "desc": "Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints."
+        },
+        "5": {
+          "phase": "Apply",
+          "desc": "Peri asks what this means for a new situation. Knowledge becomes portable."
+        }
+      },
+      "exchange": {
+        "1": {
+          "text": "You\\'re at the creek bank. Before we measure anything — what\\'s the first thing you notice about the water right here versus ten feet upstream?"
+        },
+        "2": {
+          "text": "It\\'s slower here and there\\'s more mud on the bottom."
+        },
+        "3": {
+          "text": "Good observation. Why do you think the mud settled here and not upstream where the water is faster?"
+        },
+        "4": {
+          "text": "Maybe slower water can\\'t carry as much stuff?"
+        },
+        "5": {
+          "text": "That\\'s the right direction. What could you measure or photograph here to support that idea?"
+        }
+      },
+      "badge": "Meet Peri"
+    },
     "your_ai_thinking_partner_when_youre_stuc": "Your AI thinking partner. When you're stuck, ask Peri. She'll never give you the answer—just ask the next question.",
     "what_does_photosynthesis_do": "What does photosynthesis do?",
     "i_see_youre_thinking_about_how_plants_ma": "I see you're thinking about how plants make food. What do you think happens to the sunlight they capture?",
@@ -1425,7 +1508,13 @@
     },
     "components_auth_loginscreen": {
       "try_a_demo_account": "🧪 TRY A DEMO ACCOUNT",
-      "password_securepass123": "Password: SecurePass123!"
+      "password_securepass123": "Password: SecurePass123!",
+      "you_were_signed_out_due_to_inactivity_pl": "You were signed out due to inactivity. Please sign in again.",
+      "your_session_expired_please_sign_in_agai": "Your session expired. Please sign in again.",
+      "email_confirmed_you_can_now_sign_in": "Email confirmed! You can now sign in.",
+      "that_link_has_expired_please_request_a_n": "That link has expired. Please request a new one.",
+      "that_link_is_invalid_please_try_again": "That link is invalid. Please try again.",
+      "or": "or"
     },
     "nav_homeschool": "Homeschool",
     "age_confirmation": "I confirm that I am 13 years of age or older, or that I have parental consent to create this account.",
@@ -1433,7 +1522,9 @@
     "cookie_notice": "This site uses cookies only for login authentication — no tracking or advertising cookies. ",
     "learn_more": "Learn more",
     "components_landing_loginmodal": {
-      "demo_accounts_click_to_fill": "DEMO ACCOUNTS — click to fill"
+      "demo_accounts_click_to_fill": "DEMO ACCOUNTS — click to fill",
+      "aria_label_authentication": "Authentication",
+      "aria_label_close_dialog": "Close dialog"
     },
     "homeschool": {
       "headline": "Your Classroom. Your Backyard. Your Rules.",
@@ -1488,10 +1579,21 @@
       "description": "Description",
       "name": "Name",
       "category": "Category",
-      "saving_your_criteria_set": "Saving your criteria set…"
+      "saving_your_criteria_set": "Saving your criteria set…",
+      "back": "← Back",
+      "drop_a_file_here_or_click_to_browse": "Drop a file here or click to browse",
+      "pdf_or_csv_max_10_mb": "PDF or CSV · Max 10 MB",
+      "cancel": "Cancel",
+      "parse_document": "Parse Document →",
+      "add": "+ Add",
+      "no_criteria_extracted_try_a_different_fi": "No criteria extracted. Try a different file or add them manually.",
+      "aria_label_upload_file_pdf_csv_or_excel": "Upload file (PDF, CSV, or Excel)",
+      "aria_label_criteria_set_name": "Criteria set name"
     },
     "components_student_aristotelianprompt": {
-      "loading_prompt": "Loading prompt…"
+      "loading_prompt": "Loading prompt…",
+      "observation_prompt": "Observation prompt",
+      "title_get_a_different_question": "Get a different question"
     },
     "privacy_compliant": "Privacy Compliant",
     "privacy_review_needed": "Privacy Review Needed",
@@ -1520,38 +1622,72 @@
     "start_activity": "You're here — Start capturing!",
     "preview_note": "Capture buttons are disabled in preview mode",
     "layouts_dashboardshell": {
-      "peripateticware": "Peripateticware"
+      "peripateticware": "Peripateticware",
+      "skip_to_main_content": "Skip to main content",
+      "aria_label_sign_out": "Sign out",
+      "aria_label_main_navigation": "Main navigation"
     },
     "pages_admin_adminanalyticspage": {
       "loading": "Loading…",
       "analytics": "Analytics",
       "user_overview": "User Overview",
       "activity_sessions": "Activity & Sessions",
-      "system_health": "System Health"
+      "system_health": "System Health",
+      "view": "View →"
     },
     "pages_admin_adminclassespage": {
       "loading": "Loading…",
       "new_class": "New Class",
       "class_name": "Class name *",
       "grade_level": "Grade level",
-      "subject": "Subject"
+      "subject": "Subject",
+      "cancel": "Cancel",
+      "placeholder_search_classes": "Search classes…",
+      "aria_label_search_classes": "Search classes",
+      "placeholder_eg_period_3_biology": "e.g. Period 3 Biology",
+      "placeholder_optional": "Optional"
     },
     "pages_admin_adminstandardspage": {
       "standards_library": "Standards Library",
       "global_standards_sets_shared_across_all_": "Global standards sets shared across all users. State academic standards (TEKS, NGSS, Common Core) and state homeschool reporting requirements are managed here.",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "no_expiry": "No expiry",
+      "expired": "EXPIRED",
+      "extend": "Extend",
+      "placeholder_search_by_name_or_state_code": "Search by name or state code…",
+      "aria_label_show_expired_standards": "Show expired standards",
+      "title_state_academic_standards": "State Academic Standards",
+      "title_state_reporting_requirements": "State Reporting Requirements"
     },
     "pages_admin_adminsystempage": {
       "system_settings": "System Settings",
       "health_check_unavailable": "Health check unavailable",
       "loading_environment": "Loading environment…",
-      "add_a_new_environment_key_stored_in_the_": "Add a new environment key. Stored in the database and overrides .env on next request. A backend restart applies most settings."
+      "add_a_new_environment_key_stored_in_the_": "Add a new environment key. Stored in the database and overrides .env on next request. A backend restart applies most settings.",
+      "title_system_health": "System Health",
+      "title_environment_variables": "Environment Variables",
+      "title_add_configuration_key": "Add Configuration Key",
+      "aria_label_configuration_key_name": "Configuration key name",
+      "placeholder_value": "value",
+      "aria_label_configuration_value": "Configuration value",
+      "placeholder_description_optional": "Description (optional)",
+      "aria_label_configuration_description": "Configuration description"
     },
     "pages_admin_adminuserspage": {
       "loading": "Loading…",
       "add_to_class": "Add to Class",
       "no_classes_exist_yet_create_one_in_class": "No classes exist yet. Create one in Class Management first.",
-      "class": "Class"
+      "class": "Class",
+      "all_roles": "All roles",
+      "added_to_class": "Added to class.",
+      "placeholder_email": "Email",
+      "aria_label_new_user_email": "New user email",
+      "placeholder_full_name": "Full name",
+      "aria_label_new_user_full_name": "New user full name",
+      "placeholder_password": "Password",
+      "aria_label_new_user_password": "New user password",
+      "placeholder_search_name_or_email": "Search name or email…",
+      "aria_label_search_users_by_name_or_email": "Search users by name or email"
     },
     "privacy_status": "Privacy Status",
     "active_frameworks": "Active Frameworks",
@@ -1563,13 +1699,18 @@
       "log_in_with_the_admin_panel_credentials_": "Log in with the admin panel credentials to view and edit environment variables.",
       "no_environment_variables_loaded": "No environment variables loaded.",
       "add_configuration_key": "➕ Add Configuration Key",
-      "key_names_are_autouppercased_value_is_sa": "Key names are auto-uppercased. Value is saved immediately and loaded on next server restart."
+      "key_names_are_autouppercased_value_is_sa": "Key names are auto-uppercased. Value is saved immediately and loaded on next server restart.",
+      "unlock_env_panel": "Unlock Env Panel",
+      "placeholder_username": "Username",
+      "placeholder_password": "Password",
+      "placeholder_value": "value"
     },
     "pages_auth_forgotpasswordpage": {
       "check_your_inbox": "Check your inbox",
       "forgot_password": "Forgot password?",
       "enter_your_email_and_well_send_a_reset_l": "Enter your email and we'll send a reset link.",
-      "email_address": "Email address"
+      "email_address": "Email address",
+      "placeholder_youexamplecom": "you@example.com"
     },
     "pages_auth_resetpasswordpage": {
       "link_expired_or_invalid": "Link expired or invalid",
@@ -1578,7 +1719,9 @@
       "you_can_now_sign_in_with_your_new_passwo": "You can now sign in with your new password.",
       "choose_a_new_password": "Choose a new password",
       "new_password": "New password",
-      "confirm_password": "Confirm password"
+      "confirm_password": "Confirm password",
+      "placeholder_min_8_characters": "Min. 8 characters",
+      "placeholder_repeat_password": "Repeat password"
     },
     "pages_auth_verifyemailpage": {
       "verifying_your_email": "Verifying your email…",
@@ -1603,13 +1746,22 @@
       "grade_level": "Grade level",
       "age_band": "Age band",
       "loading": "Loading…",
-      "no_children_added_yet_add_your_first_chi": "No children added yet. Add your first child to get started."
+      "no_children_added_yet_add_your_first_chi": "No children added yet. Add your first child to get started.",
+      "k6_ages_512": "K–6 (Ages 5–12)",
+      "712_ages_1217": "7–12 (Ages 12–17)",
+      "1318_ages_1318": "13–18 (Ages 13–18)",
+      "view_progress": "View progress →",
+      "aria_label_childs_full_name": "Child's full name",
+      "aria_label_childs_email_address": "Child's email address",
+      "aria_label_childs_password": "Child's password",
+      "aria_label_childs_grade_level_012": "Child's grade level (0-12)"
     },
     "pages_homeschool_homeschoolcoveragepage": {
       "loading": "Loading…",
       "coverage_report": "Coverage Report",
       "which_state_requirements_have_your_child": "Which state requirements have your children's activities covered this year?",
-      "import_your_states_homeschool_reporting_": "Import your state's homeschool reporting requirements to start tracking coverage."
+      "import_your_states_homeschool_reporting_": "Import your state's homeschool reporting requirements to start tracking coverage.",
+      "covered": "covered"
     },
     "pages_homeschool_homeschooldashboard": {
       "your_homeschool_at_a_glance": "Your homeschool at a glance.",
@@ -1625,19 +1777,27 @@
       "generate_a_pdf_portfolio_or_csv_activity": "Generate a PDF portfolio or CSV activity log for any date range.",
       "child": "Child",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "add_children_first_before_exporting_a_po": "Add children first before exporting a portfolio."
     },
     "pages_homeschool_homeschoolprogresspage": {
       "loading": "Loading…",
       "add_children_first_to_track_their_progre": "Add children first to track their progress.",
-      "progress": "Progress"
+      "progress": "Progress",
+      "overall_progress": "Overall Progress"
     },
     "pages_homeschool_homeschoolrequirementspage": {
       "loading": "Loading…",
       "standards_requirements": "Standards & Requirements",
       "manage_the_academic_standards_and_report": "Manage the academic standards and reporting requirements used in your coverage report.",
       "your_state": "Your state",
-      "when_you_upload_a_pdf_or_csv_ollama_extr": "When you upload a PDF or CSV, Ollama extracts the criteria once and caches them. Re-uploading the same file skips Ollama entirely (checksum match). A different file triggers re-extraction. Pre-seeded state sets were hand-authored and are always instant. Sets expire annually — you'll see a warning near the expiry date."
+      "when_you_upload_a_pdf_or_csv_ollama_extr": "When you upload a PDF or CSV, Ollama extracts the criteria once and caches them. Re-uploading the same file skips Ollama entirely (checksum match). A different file triggers re-extraction. Pre-seeded state sets were hand-authored and are always instant. Sets expire annually — you'll see a warning near the expiry date.",
+      "expired": "EXPIRED",
+      "shared": "SHARED",
+      "coverage": "Coverage",
+      "select_your_state": "— Select your state —",
+      "title_reporting_requirements": "Reporting Requirements",
+      "title_state_academic_standards": "State Academic Standards"
     },
     "pages_homeschool_homeschoolsettingspage": {
       "settings": "Settings",
@@ -1651,7 +1811,11 @@
       "field_guide_green_warm_beige_terrain_ora": "Field Guide (green + warm beige) · Terrain (orange + light) · Atmosphere (purple + dark)",
       "language": "Language",
       "privacy_amp_data": "Privacy &amp; Data",
-      "as_a_homeschool_teacher_you_operate_outs": "As a homeschool teacher you operate outside institutional FERPA requirements, but COPPA still applies to any child under 13."
+      "as_a_homeschool_teacher_you_operate_outs": "As a homeschool teacher you operate outside institutional FERPA requirements, but COPPA still applies to any child under 13.",
+      "name": "Name",
+      "email": "Email",
+      "your_privacy_settings_are_managed_by_you": "🏫 Your privacy settings are managed by your co-op or organisation. Contact your administrator to make changes.",
+      "youre_using_default_privacy_settings_rev": "⚠ You're using default privacy settings. Review and save below to confirm your configuration."
     },
     "link_child_description": "Enter your child's Peripateticware email address. We'll send them a verification request — once they accept, their progress and activities will appear in your dashboard.",
     "request_sent": "Request Sent!",
@@ -1683,7 +1847,16 @@
     "select_child_prompt": "Select a child above to view their progress.",
     "pages_parentdashboard": {
       "what_youll_see_after_linking": "What you'll see after linking:",
-      "parental_consent_status": "Parental Consent Status"
+      "parental_consent_status": "Parental Consent Status",
+      "checking": "Checking…",
+      "consent_granted": "Consent granted ✓",
+      "consent_pending_review": "Consent pending — Review",
+      "overall_progress_amp_competency_scores": "📊 Overall progress &amp; competency scores",
+      "active_and_completed_activities": "📚 Active and completed activities",
+      "upcoming_sessions_and_due_dates": "🗓️ Upcoming sessions and due dates",
+      "submitted_evidence_and_field_notes": "📸 Submitted evidence and field notes",
+      "teacher_feedback_and_messages": "💬 Teacher feedback and messages",
+      "downloadable_progress_reports": "📋 Downloadable progress reports"
     },
     "field_notes": "Field Notes",
     "new_field_note": "New Field Note",
@@ -1707,19 +1880,32 @@
       "tell_students_what_to_find_observe_or_do": "Tell students what to find, observe, or do. Be specific.",
       "location_hint": "Location Hint",
       "a_general_hint_dont_give_away_exact_coor": "A general hint — don't give away exact coordinates.",
-      "subject": "Subject"
+      "subject": "Subject",
+      "loading": "Loading…",
+      "edit_below_and_resubmit": "Edit below and resubmit.",
+      "optional": "(optional)",
+      "placeholder_eg_find_a_stream_with_native_plants": "e.g. Find a stream with native plants",
+      "placeholder_eg_visit_a_local_stream_and_identify_at_": "e.g. Visit a local stream and identify at least 3 native plants growing along the bank. Photograph each one and note what makes it native.",
+      "placeholder_eg_any_stream_or_creek_a_local_park_near": "e.g. Any stream or creek, a local park, near a wooded trail",
+      "placeholder_anything_youd_like_your_teacher_to_know_": "Anything you'd like your teacher to know about this challenge…"
     },
     "pages_student_proposalslistpage": {
       "my_challenges": "My Challenges",
       "challenge_other_students_to_find_or_inte": "Challenge other students to find or interact with a real place.",
       "no_challenges_yet": "No challenges yet",
-      "create_a_reverse_scavenger_hunt_challeng": "Create a reverse scavenger hunt — challenge classmates to find a stream, spot a plant, or visit a place."
+      "create_a_reverse_scavenger_hunt_challeng": "Create a reverse scavenger hunt — challenge classmates to find a stream, spot a plant, or visit a place.",
+      "loading": "Loading…",
+      "new_challenge": "+ New Challenge",
+      "create_your_first_challenge": "Create your first challenge"
     },
     "new_project": "New Project",
     "no_projects": "No projects yet.",
     "start_project": "Start a project",
     "pages_student_studentjournalpage": {
-      "my_journal": "My Journal"
+      "my_journal": "My Journal",
+      "loading": "Loading…",
+      "new_entry": "+ New Entry",
+      "write_your_first_entry": "Write your first entry"
     },
     "my_data": "My Data",
     "my_data_desc": "Download or delete your personal data. This cannot be undone.",
@@ -1743,19 +1929,28 @@
       "challenge": "Challenge",
       "location_hint": "Location Hint",
       "students_note_to_you": "Student's note to you",
-      "feedback_for_student_required_if_rejecti": "Feedback for student (required if rejecting)"
+      "feedback_for_student_required_if_rejecti": "Feedback for student (required if rejecting)",
+      "loading": "Loading…",
+      "placeholder_optional_for_approval_required_for_rejec": "Optional for approval, required for rejection…"
     },
     "pages_teacher_teacherstandardspage": {
       "learning_standards": "Learning Standards",
       "loading": "Loading…",
-      "no_standards_imported_yet_upload_a_pdf_o": "No standards imported yet. Upload a PDF or CSV of your discipline's learning standards."
+      "no_standards_imported_yet_upload_a_pdf_o": "No standards imported yet. Upload a PDF or CSV of your discipline's learning standards.",
+      "title_my_discipline_standards": "My Discipline Standards",
+      "title_schoolwide_global_standards": "School-wide / Global Standards",
+      "title_my_rubrics": "My Rubrics"
     },
     "pages_teacher_teacherstudentspage": {
       "loading": "Loading…",
       "invite_a_student": "Invite a Student",
       "you_dont_have_any_classes_yet_create_a_c": "You don’t have any classes yet. Create a class first, then invite students to it.",
       "class": "Class",
-      "student_email": "Student email"
+      "student_email": "Student email",
+      "invite_student": "+ Invite Student",
+      "invitation_sent_the_student_will_get_an_": "Invitation sent. The student will get an email with a join link.",
+      "placeholder_search_by_name_or_email": "Search by name or email…",
+      "placeholder_studentexamplecom": "student@example.com"
     },
     "components_auth_signupscreen": {
       "you_can_change_this_later_in_your_organi": "You can change this later in your organisation settings.",
@@ -1769,7 +1964,24 @@
       "create_account": "Create account",
       "already_have_an_account": "Already have an account?",
       "sign_in": "Sign in",
-      "i_confirm_that_i_am_18_years_of_age_or_o": "I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account)."
+      "i_confirm_that_i_am_18_years_of_age_or_o": "I confirm that I am 18 years of age or older (or the legal guardian of minor users on this account).",
+      "please_fix_the_highlighted_fields_below_": "Please fix the highlighted fields below before continuing.",
+      "teaching_context": "Teaching Context",
+      "detecting_location": "Detecting location…",
+      "select_country": "Select country",
+      "united_states": "🇺🇸 United States",
+      "united_kingdom": "🇬🇧 United Kingdom",
+      "canada": "🇨🇦 Canada",
+      "australia": "🇦🇺 Australia",
+      "germany": "🇩🇪 Germany",
+      "france": "🇫🇷 France",
+      "netherlands": "🇳🇱 Netherlands",
+      "brazil": "🇧🇷 Brazil",
+      "singapore": "🇸🇬 Singapore",
+      "other": "🌍 Other",
+      "yes_some_are_under_13": "Yes — some are under 13",
+      "no_all_13": "No — all 13+",
+      "aria_label_back_to_login": "Back to login"
     },
     "choose_peripateticware": "Choose Peripateticware",
     "cta_title": "Ready to take learning outside?",
@@ -1785,7 +1997,8 @@
       "from_the_original_2007_paper": "From the original 2007 paper",
       "simple_honest_pricing": "Simple, honest pricing",
       "free_for_one_classroom_no_credit_card_re": "Free for one classroom. No credit card required to start.",
-      "homeschool_families": "Homeschool families"
+      "homeschool_families": "Homeschool families",
+      "aria_label_close": "Close"
     },
     "components_privacysetupwizard": {
       "where_are_you_teaching": "Where are you teaching?",
@@ -1800,10 +2013,15 @@
       "these_defaults_apply_to_your_account_stu": "These defaults apply to your account. Students and parents can set their own preferences, and you can change yours at any time in Settings.",
       "your_privacy_setup": "Your privacy setup",
       "frameworks_now_active_on_your_account": "Frameworks now active on your account:",
-      "no_specific_frameworks_are_preselected_b": "No specific frameworks are pre-selected based on your answers. You can enable them any time in Settings."
+      "no_specific_frameworks_are_preselected_b": "No specific frameworks are pre-selected based on your answers. You can enable them any time in Settings.",
+      "select_your_state": "— Select your state —",
+      "student_data_is_never_sold_or_shared_wit": "🔒 Student data is never sold or shared with advertisers. You can export or delete all data at any time under Admin &gt; Privacy Configuration.",
+      "placeholder_2letter_country_code_eg_de_fr_gb": "2-letter country code, e.g. DE, FR, GB"
     },
     "components_student_extendedwritingpanel": {
-      "extended_writing": "📝 Extended Writing"
+      "extended_writing": "📝 Extended Writing",
+      "no_content": "(no content)",
+      "title_delete_section": "Delete section"
     },
     "components_teacher_activitymanager": {
       "context": "Context",
@@ -1821,7 +2039,27 @@
       "discipline": "Discipline",
       "this_activity_involves_student_location_": "This activity involves student location data and/or students under 13. Please confirm the following before publishing.",
       "this_is_how_the_activity_appears_to_stud": "This is how the activity appears to students in the app.",
-      "capture_buttons_are_disabled_in_preview_": "Capture buttons are disabled in preview mode."
+      "capture_buttons_are_disabled_in_preview_": "Capture buttons are disabled in preview mode.",
+      "privacy_settings_confirmed": "Privacy settings confirmed ✓",
+      "this_activity_only_collects_data_necessa": "This activity only collects data necessary for the educational purpose",
+      "location_data_is_used_only_to_verify_stu": "Location data is used only to verify student presence at the activity site",
+      "parental_or_guardian_consent_is_in_place": "Parental or guardian consent is in place where required by law",
+      "language_arts": "Language Arts",
+      "social_studies": "Social Studies",
+      "interdisciplinary": "Interdisciplinary",
+      "other": "Other",
+      "none": "None",
+      "optional": "(optional)",
+      "no_rubric": "No rubric",
+      "student_view_preview": "👁 Student View Preview",
+      "learning_goals": "LEARNING GOALS",
+      "bring_with_you": "BRING WITH YOU",
+      "start_activity": "Start Activity",
+      "placeholder_eg_lincoln_park_city_museum": "e.g., Lincoln Park, City Museum…",
+      "aria_label_location_latitude": "Location latitude",
+      "aria_label_location_longitude": "Location longitude",
+      "placeholder_eg_english": "e.g. English",
+      "fieldwork_map": "Fieldwork Map"
     },
     "components_teacher_enhancedactivitybuilder": {
       "locationbased_learning": "📍 Location-Based Learning",
@@ -1836,14 +2074,37 @@
       "this_is_how_the_activity_appears_to_stud": "This is how the activity appears to students in the app.",
       "these_three_fields_drive_the_student_exp": "These three fields drive the student experience. Students progress through Orient \\u2192 Inquire \\u2192 Reflect on their phone.",
       "no_inquiry_instructions_yet_write_them_i": "No inquiry instructions yet — write them in the Learning tab.",
-      "students_locations_are_shared_with_you_i": "Students' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13."
+      "students_locations_are_shared_with_you_i": "Students' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
+      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
+      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
+      "u2014_what_students_see_on_mobile": "\\u2014 what students see on mobile",
+      "orient": "ORIENT",
+      "inquire": "INQUIRE",
+      "reflect": "REFLECT",
+      "optional": "(optional)",
+      "no_rubric": "— No rubric —",
+      "orient_arrive_amp_observe": "ORIENT — Arrive &amp; Observe",
+      "inquire_observe_amp_capture": "INQUIRE — Observe &amp; Capture",
+      "capture_tools_available_to_students": "CAPTURE TOOLS — available to students",
+      "reflect_make_meaning": "REFLECT — Make Meaning",
+      "learning_goals": "LEARNING GOALS",
+      "bring_with_you": "BRING WITH YOU",
+      "start_activity": "Start Activity",
+      "cancel": "Cancel",
+      "placeholder_eg_riverside_park_austin_tx": "e.g. Riverside Park, Austin TX",
+      "placeholder_eg_look_around_you_notice_the_layers_of_": "e.g. Look around you. Notice the layers of the forest \\u2014 the tall canopy trees, the shrubs and ferns below, and the ground covered in moss and fallen logs. Find a spot to stand quietly for 60 seconds and observe \\u2014 what do you see, hear, and smell?",
+      "placeholder_eg_choose_one_investigation_question_and": "e.g. Choose one investigation question and use your capture tools to record evidence:&#10;&#10;1. DECOMPOSERS: Find a fallen log. Who or what is breaking it down? Photograph what you find.&#10;&#10;2. LAYERS: How many distinct layers can you identify in the forest? Photograph each layer.",
+      "placeholder_eg_based_on_your_investigation_answer_wh": "e.g. Based on your investigation, answer: What would happen to this forest if one species disappeared entirely? Use specific examples from what you observed today."
     },
     "components_teacher_invitestudentspanel": {
       "invite_students": "Invite Students",
       "generate_a_link_anyone_can_use_to_join_t": "Generate a link anyone can use to join this classroom. Good for in-person signup — show it on a screen or print it as a QR code.",
       "enter_student_emails_one_per_line_or_com": "Enter student emails (one per line, or comma-separated). Each student gets their own invite link by email.",
       "invite_sent": "Invite sent",
-      "upload_a_csv_or_spreadsheet_with_one_stu": "Upload a CSV or spreadsheet with one student email per row in the first column. Names, headers, and extra columns are ignored."
+      "upload_a_csv_or_spreadsheet_with_one_stu": "Upload a CSV or spreadsheet with one student email per row in the first column. Names, headers, and extra columns are ignored.",
+      "title_copy_link": "Copy link",
+      "placeholder_alexemailcom10mariaemailcom10jamesemailc": "alex@email.com&#10;maria@email.com&#10;james@email.com",
+      "title_copy_join_link": "Copy join link"
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "Subject",
@@ -1852,10 +2113,26 @@
       "group_size": "Group size",
       "setting": "Setting",
       "special_focus_optional": "Special focus (optional)",
-      "peri_is_thinking": "Peri is thinking…"
+      "peri_is_thinking": "Peri is thinking…",
+      "add_an_activity_title_above_for_better_s": "⚠️ Add an activity title above for better suggestions.",
+      "outdoor": "Outdoor",
+      "indoor": "Indoor",
+      "field_trip": "Field trip",
+      "regenerate": "🔄 Regenerate",
+      "placeholder_eg_science_history": "e.g. Science, History…",
+      "aria_label_subject": "Subject",
+      "placeholder_eg_5": "e.g. 5",
+      "aria_label_grade_level": "Grade level",
+      "placeholder_eg_45": "e.g. 45",
+      "aria_label_duration_in_minutes": "Duration in minutes",
+      "placeholder_eg_24_students_pairs": "e.g. 24 students, pairs…",
+      "aria_label_group_size": "Group size",
+      "placeholder_eg_ell_students_stem": "e.g. ELL students, STEM…",
+      "aria_label_special_focus_or_differentiation": "Special focus or differentiation"
     },
     "components_upgradecta": {
-      "upgrade_to_unlock_this_feature_and_more": "Upgrade to unlock this feature and more."
+      "upgrade_to_unlock_this_feature_and_more": "Upgrade to unlock this feature and more.",
+      "contact_us": "Contact us"
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "Choose provider per task. Changes take effect immediately — no restart needed.",
@@ -1876,16 +2153,37 @@
       "task_routing": "Task Routing",
       "choose_which_provider_handles_each_ai_ta": "Choose which provider handles each AI task. Greyed-out means the provider is not configured.",
       "changes_apply_immediately_orglevel_byok_": "Changes apply immediately. Org-level BYOK routing overrides these defaults per org.",
-      "ai_configuration": "AI Configuration"
+      "ai_configuration": "AI Configuration",
+      "free": "Free",
+      "current_url": "Current URL",
+      "no_task_configurations_found_backend_nee": "No task configurations found. Backend needs to restart with the seeded ai_task_config table.",
+      "current_key": "Current key",
+      "not_set": "Not set",
+      "save": "Save",
+      "title_anthropic_claude_api_key": "Anthropic (Claude) API Key",
+      "placeholder_skant": "sk-ant-...",
+      "title_openai_api_key": "OpenAI API Key",
+      "placeholder_sk": "sk-...",
+      "aria_label_ollama_server_url": "Ollama server URL",
+      "aria_label_api_key_value": "API key value"
     },
     "pages_admin_adminhelppage": {
       "admin_help_documentation": "Admin Help & Documentation",
-      "frequently_asked_questions_and_quick_ref": "Frequently asked questions and quick reference for administrators."
+      "frequently_asked_questions_and_quick_ref": "Frequently asked questions and quick reference for administrators.",
+      "placeholder_search_help_topics": "Search help topics…"
     },
     "pages_adminprivacyconfigpage": {
       "compliance_frameworks": "Compliance Frameworks",
       "toggle_which_privacy_frameworks_are_acti": "Toggle which privacy frameworks are actively enforced. Pre-seeded on first boot — enable the ones applicable to your jurisdiction.",
-      "no_active_jurisdictions_found_use_the_fr": "No active jurisdictions found. Use the framework toggles above to activate FERPA, COPPA, GDPR, or CCPA — default rules will be created automatically."
+      "no_active_jurisdictions_found_use_the_fr": "No active jurisdictions found. Use the framework toggles above to activate FERPA, COPPA, GDPR, or CCPA — default rules will be created automatically.",
+      "download_as_json": "⬇ Download as JSON",
+      "rule_id": "Rule ID",
+      "version": "Version",
+      "created": "Created",
+      "change_log": "Change Log",
+      "unique_identifier_stored_in_the_database": "Unique identifier stored in the database — generated automatically.",
+      "title_generate_a_new_uuid": "Generate a new UUID",
+      "placeholder_what_changed_in_this_version": "What changed in this version?"
     },
     "pages_joinclassroompage": {
       "invite_not_found": "Invite Not Found",
@@ -1896,7 +2194,11 @@
       "email_address": "Email address",
       "password": "Password",
       "confirm_password": "Confirm password",
-      "you_are_invited": "You are invited!"
+      "you_are_invited": "You are invited!",
+      "password_8_chars_uppercase_lowercase_num": "Password: 8+ chars, uppercase, lowercase, number, and special character (@$!%*?&).",
+      "required_for_coppa_compliance": "(required for COPPA compliance)",
+      "log_in": "Log in",
+      "placeholder_min_8_chars_1_upper_1_number_1_special": "Min 8 chars, 1 upper, 1 number, 1 special"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Bring Your Own Key — Upgrade Required",
@@ -1910,7 +2212,18 @@
       "must_be_reachable_from_the_peripateticwa": "Must be reachable from the Peripateticware backend server.",
       "task_routing": "Task Routing",
       "which_provider_handles_each_ai_task_for_": "Which provider handles each AI task for your organisation.",
-      "byok_paid_note": "Bring Your Own Key is a paid feature. Upgrade to configure custom AI providers for your school or district."
+      "byok_paid_note": "Bring Your Own Key is a paid feature. Upgrade to configure custom AI providers for your school or district.",
+      "current_key": "Current key",
+      "not_set": "Not set",
+      "consoleanthropiccom": "console.anthropic.com",
+      "platformopenaicom": "platform.openai.com",
+      "free": "Free",
+      "current_url": "Current URL",
+      "using_platform_default": "Using platform default",
+      "save": "Save",
+      "platform_default": "Platform default",
+      "contact_platform_support": "contact platform support",
+      "title_remove": "Remove"
     },
     "pages_originstorypage": {
       "from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: Peripateticware 2007–2026",
@@ -1927,125 +2240,378 @@
       "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
       "choose_your_own_adventure": "Choose Your Own Adventure",
       "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn't fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
+      "origin_story": "Origin Story",
+      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
       "the_reverse_scavenger_hunt_where_student": "The reverse scavenger hunt — where students propose an activity based on something they found — is the closest thing in the platform to that 2007 vision. A student finds a peculiar rock formation. They propose it as an activity. The teacher approves it. Other students go look. Questions emerge that no curriculum document anticipated. Learning moves.",
       "why_this_took_until_2026": "Why This Took Until 2026",
-      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn't ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher's home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn't have known how long the road would be.",
-      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn't try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
-      "thats_a_harder_sell_schools_are_riskaver": "That's a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you've watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
+      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
+      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
+      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
       "the_white_paper_is_still_online": "The white paper is still online.",
-      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn't."
+      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
+      "read_the_original_2007_paper": "Read the Original 2007 Paper →"
     },
-    "pages_parentprogresspage": {
-      "no_children_linked_yet": "No children linked yet",
-      "link_your_childs_account_to_start_tracki": "Link your child's account to start tracking their learning progress.",
-      "teacher_note": "Teacher Note",
-      "no_progress_data_yet_for_this_child": "No progress data yet for this child."
+    "components_activitydetailpage": {
+      "loading": "Loading…"
     },
-    "pages_platform_platformaisettingspage": {
-      "ai_settings": "AI Settings",
-      "platform_api_keys": "Platform API Keys",
-      "these_keys_are_used_for_all_saas_orgs_th": "These keys are used for all SaaS orgs that don't bring their own key.",
-      "saas_orgs_using_platform_key": "SaaS Orgs (using platform key)",
-      "byok_orgs_own_api_key": "BYOK Orgs (own API key)"
+    "components_auth_requestbetapage": {
+      "aria_label_back_to_home": "Back to home",
+      "name": "Name",
+      "email": "Email",
+      "i_am_a": "I am a...",
+      "school_organization_optional": "School / organization (optional)",
+      "anything_else_optional": "Anything else? (optional)"
     },
-    "pages_platform_platformauditlogpage": {
-      "audit_log": "Audit Log"
+    "components_common_map": {
+      "aria_label_zone_shape": "Zone shape"
     },
-    "pages_platform_platformorgdetailpage": {
-      "this_months_usage": "This month's usage",
-      "tokens": "Tokens",
-      "cost": "Cost",
-      "admin_actions": "Admin actions",
-      "all_actions_are_recorded_in_the_audit_lo": "All actions are recorded in the audit log."
+    "components_common_modal": {
+      "aria_label_close_modal": "Close modal"
     },
-    "pages_platform_platformorgspage": {
-      "organisations": "Organisations"
+    "components_cookieconsentbanner": {
+      "got_it": "Got it"
     },
-    "pages_platform_platformoverviewpage": {
-      "platform_admin": "Platform Admin",
-      "superadmin_view_this_months_activity": "Super-admin view — this month's activity",
-      "top_orgs_by_token_usage": "Top orgs by token usage",
-      "superadmin_view_this_monthaposs_activity": "Super-admin view — this month&apos;s activity"
+    "components_landing_storysection": {
+      "alt_a_student_walking_through_the_forest_wit": "A student walking through the forest with a mobile device"
     },
-    "pages_platform_platformusagepage": {
-      "usage_analytics": "Usage Analytics",
-      "platformwide_ai_token_spend": "Platform-wide AI token spend"
+    "persona_tab": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "parent": "Parent",
+      "homeschool": "🏡 Homeschool"
     },
-    "pages_privacyconfirmationpage": {
-      "privacy_set_up": "Privacy Set Up",
-      "weve_automatically_applied_the_right_pro": "We've automatically applied the right protections for your students based on your location.",
-      "go_to_dashboard": "Go to Dashboard"
+    "persona_tab_plural": {
+      "student": "Students",
+      "teacher": "Teachers",
+      "parent": "Parents",
+      "homeschool": "Homeschoolers"
     },
-    "pages_privacyenginepage": {
-      "key_rules_enforced": "Key Rules Enforced",
-      "peripateticwares_privacy_engine_enforces": "Peripateticware's privacy engine enforces FERPA, COPPA, GDPR, and SOC 2 through a configurable rule system — so every data operation is compliant by default, regardless of which jurisdiction your school operates in.",
-      "how_it_works": "How it works",
-      "six_layers_of_privacy_running_automatica": "Six layers of privacy, running automatically on every request.",
-      "supported_frameworks": "Supported frameworks",
-      "click_any_framework_to_see_the_specific_": "Click any framework to see the specific rules Peripateticware enforces.",
-      "what_institutions_can_configure": "What institutions can configure",
-      "within_the_bounds_of_the_applicable_law_": "Within the bounds of the applicable law, institution admins have control over:",
-      "questions_about_compliance_for_your_dist": "Questions about compliance for your district?",
-      "our_team_can_walk_you_through_how_the_en": "Our team can walk you through how the engine maps to your jurisdiction&apos;s requirements."
+    "phone_carousel": {
+      "student": {
+        "1": {
+          "title": "Field Journal — Wetlands Visit",
+          "prompt": "What patterns do you notice in how the plants are arranged near the water's edge?",
+          "badge": "Observation"
+        },
+        "2": {
+          "title": "Peri asks a question",
+          "prompt": "You found three different insects. What do they have in common, and what makes each one different?",
+          "badge": "Inquiry"
+        },
+        "3": {
+          "title": "Evidence Captured",
+          "prompt": "Great observation! Now — what do you think caused the leaves to change colour on this side of the tree?",
+          "badge": "Analyze"
+        }
+      },
+      "teacher": {
+        "1": {
+          "title": "Create Activity — River Study",
+          "prompt": "Set location, objectives, and cognitive level. Peri generates guiding questions automatically.",
+          "badge": "Setup"
+        },
+        "2": {
+          "title": "Live Session Monitor",
+          "prompt": "14 students active · 3 field notes submitted · 2 waiting for your feedback",
+          "badge": "Monitoring"
+        },
+        "3": {
+          "title": "Peri AI Suggestions",
+          "prompt": "Based on your subject and location, here are 4 Bloom's-aligned activity ideas…",
+          "badge": "AI Assist"
+        }
+      },
+      "parent": {
+        "1": {
+          "title": "Emma's Progress",
+          "subtitle": "Grade 4 · Spring 2026",
+          "badge": "On Track",
+          "stat": {
+            "1": {
+              "label": "Activities"
+            },
+            "2": {
+              "label": "This Week"
+            },
+            "3": {
+              "label": "Badges"
+            }
+          },
+          "task": {
+            "1": {
+              "text": "Science — Ecosystem unit ✓"
+            },
+            "2": {
+              "text": "Math — Geometry field trip ✓"
+            },
+            "3": {
+              "text": "History — Capitol visit"
+            },
+            "4": {
+              "text": "Portfolio export ready"
+            }
+          }
+        },
+        "2": {
+          "title": "Weekly Progress",
+          "subtitle": "Emma · Week of May 26",
+          "badge": "On Track",
+          "stat": {
+            "1": {
+              "label": "Activities"
+            },
+            "2": {
+              "label": "Hours"
+            },
+            "3": {
+              "label": "Engagement"
+            }
+          },
+          "task": {
+            "1": {
+              "text": "Ecosystem observation ✓"
+            },
+            "2": {
+              "text": "Water cycle lab ✓"
+            },
+            "3": {
+              "text": "Capitol visit — pending"
+            }
+          }
+        },
+        "3": {
+          "title": "Recent Updates",
+          "subtitle": "From Ms. Smith · Today",
+          "badge": "2 New",
+          "prompt": "\"Emma showed great initiative identifying native plants. Field sketch portfolio approved.\"",
+          "stat": {
+            "1": {
+              "label": "This Week"
+            },
+            "2": {
+              "label": "This Month"
+            },
+            "3": {
+              "label": "Portfolio",
+              "value": "Ready"
+            }
+          }
+        }
+      },
+      "homeschool": {
+        "1": {
+          "title": "Today's Activity",
+          "subtitle": "Earth Science · Emma & Lucas",
+          "badge": "● Active",
+          "task": {
+            "1": {
+              "text": "Identify rock types at outcrop"
+            },
+            "2": {
+              "text": "Measure stream flow rate"
+            },
+            "3": {
+              "text": "Photograph erosion evidence"
+            },
+            "4": {
+              "text": "Complete observation log"
+            }
+          }
+        },
+        "2": {
+          "title": "Standards Coverage",
+          "subtitle": "Texas Homeschool Requirements",
+          "badge": "68% Met",
+          "stat": {
+            "1": {
+              "label": "Met"
+            },
+            "2": {
+              "label": "Partial"
+            },
+            "3": {
+              "label": "Gaps"
+            }
+          },
+          "task": {
+            "1": {
+              "text": "Science — Earth Systems ✓"
+            },
+            "2": {
+              "text": "Math — Measurement ✓"
+            },
+            "3": {
+              "text": "History — Texas Geography"
+            },
+            "4": {
+              "text": "Language Arts — Research"
+            }
+          }
+        },
+        "3": {
+          "title": "Portfolio Ready",
+          "subtitle": "Spring 2026 · Emma Rivera",
+          "badge": "Export Ready",
+          "stat": {
+            "1": {
+              "label": "Activities"
+            },
+            "2": {
+              "label": "Evidence"
+            },
+            "3": {
+              "label": "Pages"
+            }
+          },
+          "task": {
+            "1": {
+              "text": "Cover page ✓"
+            },
+            "2": {
+              "text": "Activity log ✓"
+            },
+            "3": {
+              "text": "Standards coverage ✓"
+            },
+            "4": {
+              "text": "Evidence thumbnails ✓"
+            }
+          },
+          "prompt": "PDF portfolio is ready. Includes all required TX state reporting fields."
+        }
+      }
     },
-    "pages_student_reflectioneditorpage": {
-      "your_teacher_reviewed_your_field_work": "Your teacher reviewed your field work:",
-      "use_what_you_observed_captured_and_exper": "Use what you observed, captured, and experienced in the field. Your reflection should show your thinking — not just what happened, but what it means and what questions it opens up."
+    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "origin_story": {
+      "badge": "Origin Story",
+      "read_full_link": "Read the full origin story →"
     },
-    "pages_teacher_sharedlibrarypage": {
-      "shared_activity_library": "🌐 Shared Activity Library",
-      "activities_marked_as_shareable_by_you_or": "Activities marked as shareable by you or your colleagues. Copy any to your own activities.",
-      "browse_activities_shared_by_teachers_acr": "Browse activities shared by teachers across your organisation and globally. Copy any to your own library.",
-      "subject": "Subject",
-      "grade_level": "Grade level",
-      "language": "Language",
-      "state_standard": "State standard",
-      "discipline": "Discipline",
-      "no_shared_activities_found": "No shared activities found.",
-      "try_adjusting_your_filters_or_publish_an": "Try adjusting your filters, or publish and share one of your own activities."
+    "compliance": {
+      "ferpa": {
+        "name": "Family Educational Rights and Privacy Act",
+        "region": "United States"
+      },
+      "coppa": {
+        "name": "Children\\'s Online Privacy Protection Act",
+        "region": "United States"
+      },
+      "gdpr": {
+        "name": "General Data Protection Regulation",
+        "region": "European Union"
+      },
+      "ccpa": {
+        "name": "California Consumer Privacy Act",
+        "region": "California, US"
+      },
+      "lgpd": {
+        "name": "Lei Geral de Proteção de Dados",
+        "region": "Brazil"
+      },
+      "pipeda": {
+        "name": "Personal Information Protection and Electronic Documents Act",
+        "region": "Canada"
+      }
     },
-    "pages_teacher_teacherclassroompage": {
-      "grade_level": "Grade level",
-      "subject": "Subject",
-      "enrolled_students": "Enrolled Students",
-      "larger_classrooms_are_a_paid_feature_upg": "Larger classrooms are a paid feature. Upgrade to enroll more students."
+    "pricing_tier": {
+      "personal": {
+        "name": "Personal",
+        "feature": {
+          "1": "Individual classrooms",
+          "2": "Core activity types",
+          "3": "Peri AI",
+          "4": "Evidence capture",
+          "5": "Portfolio view"
+        }
+      },
+      "school": {
+        "name": "School",
+        "feature": {
+          "1": "Multiple classrooms",
+          "2": "Multi-admin",
+          "3": "Org analytics",
+          "4": "Priority support"
+        }
+      },
+      "district": {
+        "name": "District",
+        "feature": {
+          "1": "District-wide deployment",
+          "2": "Custom integrations",
+          "3": "Dedicated onboarding",
+          "4": "Priority + SLA support"
+        }
+      },
+      "homeschool": {
+        "name": "Homeschool",
+        "feature": {
+          "1": "Family accounts",
+          "2": "Portfolio PDF export",
+          "3": "State compliance reports",
+          "4": "Standards mapping"
+        }
+      },
+      "contact_for_pricing": "Contact us for pricing",
+      "contact_team": "Contact Team",
+      "contact_footer_pre": "Contact our team for pricing details and to find the right plan —",
+      "contact_footer_link": "contact us"
     },
-    "privacy_data": "Privacy & Data",
-    "pages_teachersettingspage": {
-      "these_settings_apply_to_your_account_and": "These settings apply to your account and the activities you create. FERPA and COPPA compliance checks run automatically when you publish an activity."
+    "cta_privacy_note": "FERPA and COPPA compliant. Student data is never sold or shared.",
+    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
+    "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_4_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "components_localeswitcher": {
+      "aria_label_select_language": "Select language"
     },
-    "pages_admin_platformadminpage": {
-      "tier": "Tier",
-      "status": "Status",
-      "reason_required_for_audit_log": "Reason (required for audit log)",
-      "spend_by_tier_this_month": "Spend by tier (this month)",
-      "no_spend_recorded_yet": "No spend recorded yet.",
-      "top_tasks_this_month": "Top tasks (this month)",
-      "no_task_data_yet": "No task data yet.",
-      "6month_trend": "6-month trend",
-      "no_historical_data_yet": "No historical data yet.",
-      "all_figures_are_product_signals_byok_spe": "All figures are product signals. BYOK spend is logged for analytics but billed to the org's own Anthropic account."
+    "audioRecorder": {
+      "mic_denied": "Microphone access is required to record audio. Please grant permission and try again.",
+      "almost_full": "Almost full",
+      "record": "Record",
+      "stop": "Stop",
+      "keep": "Keep",
+      "discard": "Discard",
+      "transcribing": "Transcribing…",
+      "uploading": "Uploading recording…",
+      "recording_saved": "Recording saved"
     },
-    "pages_homeschool_homeschoolwelcomepage": {
-      "welcome_to_peripateticware": "Welcome to Peripateticware 🌿",
-      "lets_get_you_set_up_in_3_quick_steps": "Let's get you set up in 3 quick steps.",
-      "who_are_you_teaching": "Who are you teaching?",
-      "add_each_childs_name_and_grade_you_can_a": "Add each child's name and grade. You can add more children later from the Children page.",
-      "which_state_do_you_homeschool_in": "Which state do you homeschool in?",
-      "this_helps_peripateticware_show_the_righ": "This helps Peripateticware show the right state reporting requirements and standards sets. You can change this any time in Settings.",
-      "35_us_states_require_homeschool_parents_": "35 US states require homeschool parents to keep learning records. Peripateticware generates the reports automatically from your activity log.",
-      "youre_all_set": "You're all set!",
-      "ready_to_create_your_first_outdoor_activ": "Ready to create your first outdoor activity? Peri will suggest Aristotelian inquiry questions tailored to your location and subject."
-    },
-    "pages_teacher_teacherclassroomspage": {
-      "my_classrooms": "My Classrooms",
-      "new_classroom": "New classroom",
-      "you_dont_have_any_classrooms_yet": "You don't have any classrooms yet."
+    "components_student_capture_audiorecorder": {
+      "aria_label_start_recording": "Start recording",
+      "aria_label_stop_recording": "Stop recording",
+      "aria_label_keep_recording": "Keep recording",
+      "aria_label_discard_recording": "Discard recording",
+      "aria_label_audio_seek": "Audio seek",
+      "aria_label_change_playback_speed": "Change playback speed",
+      "aria_label_download_recording": "Download recording",
+      "download": "⬇ Download"
     },
     "components_student_fieldnoteeditor": {
+      "alt_field_note_photo_capture": "Field note photo capture",
+      "aria_label_field_note_video_capture": "Field note video capture",
+      "type_what_you_observed": "(type what you observed)",
+      "no_field_notes_captured_yet": "No field notes captured yet.",
       "save_your_note_first_to_attach_photos_au": "💡 Save your note first to attach photos, audio, and video captures.",
       "capture_evidence": "Capture Evidence"
+    },
+    "pendingReflectionQueue": {
+      "awaiting_approval": "Awaiting approval",
+      "teacher_commented": "Teacher commented",
+      "reflection_in_progress": "Reflection in progress",
+      "ready_to_reflect": "Ready to reflect",
+      "section_title": "Pending Reflections",
+      "teacher_label": "Teacher"
+    },
+    "components_student_selfprojectview": {
+      "aria_label_project_title": "Project title",
+      "aria_label_prompt_text": "Prompt text"
+    },
+    "components_teacher_coursefieldworktracker": {
+      "no_fieldwork_submissions_yet": "No fieldwork submissions yet.",
+      "gps_pins_will_appear_here_once_students_": "GPS pins will appear here once students submit field notes or captures.",
+      "title_fieldwork_locations": "Fieldwork Locations",
+      "pins_are_stored_snapshots_from_field_not": "Pins are stored snapshots from field note and capture submissions — not live tracking."
+    },
+    "components_upgrademodal": {
+      "aria_label_close": "Close"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -2070,12 +2636,143 @@
       "submissions": "Submissions",
       "students": "Students"
     },
+    "layouts_platformshell": {
+      "platform_operator_secret": "Platform operator secret",
+      "placeholder_platform_secret": "Platform secret",
+      "continue": "Continue",
+      "title_back_to_dashboard": "Back to dashboard",
+      "title_back": "Back",
+      "platform_admin": "Platform Admin",
+      "title_sign_out": "Sign out"
+    },
+    "curriculumImportPage": {
+      "title": "Import State Academic Standards",
+      "description": "Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache)."
+    },
+    "pages_admin_platformadminpage": {
+      "placeholder_search_name_or_email": "Search name or email…",
+      "all_tiers": "All tiers",
+      "refresh": "↻ Refresh",
+      "loading": "Loading…",
+      "no_organizations_found": "No organizations found",
+      "title_teachers": "Teachers",
+      "title_students": "Students",
+      "title_homeschool": "Homeschool",
+      "tier": "Tier",
+      "status": "Status",
+      "reason_required_for_audit_log": "Reason (required for audit log)",
+      "placeholder_eg_upgraded_to_school_plan_per_invoice_1": "e.g. Upgraded to school plan per invoice #123",
+      "spend_by_tier_this_month": "Spend by tier (this month)",
+      "no_spend_recorded_yet": "No spend recorded yet.",
+      "orgs": "Orgs",
+      "cost": "Cost",
+      "top_tasks_this_month": "Top tasks (this month)",
+      "no_task_data_yet": "No task data yet.",
+      "task": "Task",
+      "calls": "Calls",
+      "6month_trend": "6-month trend",
+      "no_historical_data_yet": "No historical data yet.",
+      "month": "Month",
+      "active_orgs": "Active orgs",
+      "total_spend": "Total spend",
+      "all_figures_are_product_signals_byok_spe": "All figures are product signals. BYOK spend is logged for analytics but billed to the org\\'s own Anthropic account.",
+      "no_audit_entries_yet": "No audit entries yet",
+      "peripateticware": "Peripateticware",
+      "platform_admin": "⚙ Platform Admin",
+      "adminexamplecom": "admin@example.com",
+      "sign_out": "Sign out"
+    },
+    "pages_adminauditlogpage": {
+      "export_csv": "⬇ Export CSV",
+      "all": "All",
+      "compliant": "Compliant",
+      "warning": "Warning",
+      "blocked": "Blocked",
+      "student": "Student",
+      "teacher": "Teacher",
+      "parent": "Parent",
+      "admin": "Admin",
+      "system": "System",
+      "aria_label_filter_from_date": "Filter from date",
+      "aria_label_filter_to_date": "Filter to date",
+      "reset": "Reset",
+      "loading": "Loading…",
+      "no_audit_records_found_compliance_events": "No audit records found. Compliance events are logged here automatically as users interact with privacy-gated features."
+    },
+    "pages_admindashboard": {
+      "title_view_all_users": "View all users",
+      "title_view_all_activities": "View all activities"
+    },
+    "pages_cookiepolicypage": {
+      "helloperipateticwarecom": "hello@peripateticware.com"
+    },
+    "pages_donotsellpage": {
+      "do_not_sell_or_share_my_personal_informa": "Do Not Sell or Share My Personal Information",
+      "under_the_california_consumer_privacy_ac": "Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt out of the sale or sharing of their personal information. Peripateticware does not sell personal data, but you may submit this request to formally record your preference.",
+      "preference_recorded": "✓ Preference Recorded",
+      "your_optout_preference_has_been_recorded": "Your opt-out preference has been recorded. We will not sell or share your personal information.",
+      "email_address": "Email address",
+      "placeholder_youexamplecom": "you@example.com",
+      "privacyperipateticwarecom": "privacy@peripateticware.com"
+    },
+    "pages_homeschool_homeschoolwelcomepage": {
+      "title_skip_setup": "Skip setup",
+      "lets_get_you_set_up_in_3_quick_steps": "Let\\'s get you set up in 3 quick steps.",
+      "who_are_you_teaching": "Who are you teaching?",
+      "add_each_childs_name_and_grade_you_can_a": "Add each child\\'s name and grade. You can add more children later from the Children page.",
+      "add_another_child": "+ Add another child",
+      "which_state_do_you_homeschool_in": "Which state do you homeschool in?",
+      "this_helps_peripateticware_show_the_righ": "This helps Peripateticware show the right state reporting requirements and standards sets. You can change this any time in Settings.",
+      "select_your_state_optional": "— Select your state (optional) —",
+      "35_us_states_require_homeschool_parents_": "35 US states require homeschool parents to keep learning records. Peripateticware generates the reports automatically from your activity log.",
+      "youre_all_set": "You\\'re all set!",
+      "ready_to_create_your_first_outdoor_activ": "Ready to create your first outdoor activity? Peri will suggest Aristotelian inquiry questions tailored to your location and subject.",
+      "create_first_activity": "Create first activity →",
+      "go_to_dashboard": "Go to dashboard"
+    },
+    "pages_licensingpage": {
+      "licensing": "Licensing",
+      "these_are_related_but_distinct_using_per": "These are related but distinct: using peripateticware.com doesn\\'t require you to know or care about the source license below, and the source license is what governs anyone running their own copy of the code — including the fact that it\\'s what permits Paul, as the license holder, to operate this SaaS in the first place.",
+      "the_source_license_bsl_11_apache_20": "The source license: BSL 1.1 → Apache 2.0",
+      "free_today_under_bsl_11_for": "Free today, under BSL 1.1, for:",
+      "individual_educators_using_it_in_their_o": "Individual educators using it in their own classroom",
+      "noncommercial_research_or_personal_proje": "Non-commercial, research, or personal projects",
+      "a_single_classroom_of_530_students_selfh": "A single classroom of 5–30 students, self-hosted",
+      "requires_a_commercial_license_today_for": "Requires a commercial license today for:",
+      "school_districts_or_charter_management_o": "School districts or charter management organizations (5+ classrooms)",
+      "anyone_offering_it_as_a_hosted_service_s": "Anyone offering it as a hosted service (SaaS) to third parties",
+      "reselling_rebranding_or_forking_it_into_": "Reselling, rebranding, or forking it into a competing product",
+      "reselling_or_rebranding_the_software": "Reselling or rebranding the software",
+      "forking_it_to_create_a_competing_product": "Forking it to create a competing product",
+      "sublicensing_without_permission": "Sublicensing without permission",
+      "claiming_it_as_your_own_work": "Claiming it as your own work",
+      "after_may_1_2030": "After May 1, 2030",
+      "the_license_converts_automatically_to_ap": "The license converts automatically to Apache 2.0. At that point anyone can use, self-host, modify, or offer it as a service &mdash; no commercial license required, fully community-owned.",
+      "opensource_components": "Open-source components",
+      "commercial_licensing": "Commercial licensing",
+      "if_your_organization_needs_a_commercial_": "If your organization needs a commercial license — a school district, charter management organization, EdTech company, or anyone wanting to self-host and resell — contact Paul Christopher Cerda for pricing based on your organization\\'s size and needs.",
+      "adminthewordinbitscom": "admin@thewordinbits.com",
+      "faq": "FAQ"
+    },
+    "pages_linkchildpage": {
+      "placeholder_studentexamplecom": "student@example.com"
+    },
+    "pages_maintenancepage": {
+      "down_for_maintenance": "Down for maintenance",
+      "peripateticware_is_briefly_offline_while": "Peripateticware is briefly offline while we make improvements. Your work is safe — we\\'ll be back shortly."
+    },
     "activity_schedule": "Activity schedule for your children",
     "pages_parentcalendarpage": {
+      "pending": "(pending)",
       "link_a_child_from_the_dashboard_to_see_t": "Link a child from the Dashboard to see their calendar.",
       "no_activities_found_for_this_child": "No activities found for this child.",
       "activities_assigned_by_teachers_will_app": "Activities assigned by teachers will appear here."
     },
+    "gps_what_we_collect": "What location sharing means",
+    "gps_only_during": "GPS coordinates shared only during the active fieldwork session",
+    "gps_teacher_only": "Visible only to the class teacher — not other students or the public",
+    "gps_stored": "Location snapshots stored per submission (not continuous tracking)",
+    "gps_expires": "Consent expires automatically when the activity ends (max 30 days)",
     "pages_parentmessagespage": {
       "messages": "Messages",
       "subtitle": "Messages from your child’s teachers. Reply to stay in touch.",
@@ -2094,18 +2791,133 @@
     "notifications": "Notifications",
     "activity_updates": "Updates about your children\\'s activities",
     "pages_parentnotificationspage": {
-      "youll_be_notified_when_your_children_com": "You'll be notified when your children complete activities, receive feedback, or have upcoming sessions."
+      "mark_all_read": "Mark all read",
+      "youll_be_notified_when_your_children_com": "You\\'ll be notified when your children complete activities, receive feedback, or have upcoming sessions."
+    },
+    "pages_parentprogresspage": {
+      "no_children_linked_yet": "No children linked yet",
+      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
+      "link_a_child": "Link a child",
+      "teacher_note": "Teacher Note",
+      "no_progress_data_yet_for_this_child": "No progress data yet for this child."
     },
     "progress_reports": "Progress Reports",
     "reports_subtitle": "Weekly and monthly summaries for your children",
     "pages_parentreportspage": {
       "link_a_child_from_the_dashboard_to_see_t": "Link a child from the Dashboard to see their reports.",
+      "loading_report": "Loading report…",
       "engagement": "Engagement",
       "highlights": "🌟 Highlights",
       "areas_to_watch": "⚠️ Areas to Watch",
+      "no_activity_this_week_check_in_with_thei": "No activity this week. Check in with their teacher if unexpected.",
       "competencies_achieved": "🏆 Competencies Achieved",
       "growth_areas": "📈 Growth Areas",
       "teacher_recommendations": "💡 Teacher Recommendations"
+    },
+    "pages_platform_platformaisettingspage": {
+      "ai_settings": "AI Settings",
+      "platform_api_keys": "Platform API Keys",
+      "these_keys_are_used_for_all_saas_orgs_th": "These keys are used for all SaaS orgs that don\\'t bring their own key.",
+      "not_set": "Not set",
+      "anthropic": "Anthropic",
+      "openai": "OpenAI",
+      "gemini": "Gemini",
+      "placeholder_skant": "sk-ant-…",
+      "saas_orgs_using_platform_key": "SaaS Orgs (using platform key)",
+      "byok_orgs_own_api_key": "BYOK Orgs (own API key)",
+      "org": "Org",
+      "tier": "Tier",
+      "loading": "Loading…"
+    },
+    "pages_platform_platformauditlogpage": {
+      "audit_log": "Audit Log",
+      "time": "Time",
+      "action": "Action",
+      "actor": "Actor",
+      "target_org": "Target Org",
+      "detail": "Detail",
+      "loading": "Loading…",
+      "no_audit_entries_yet": "No audit entries yet."
+    },
+    "pages_platform_platformorgdetailpage": {
+      "suspended": "Suspended",
+      "this_months_usage": "This month\\'s usage",
+      "tokens": "Tokens",
+      "cost": "Cost",
+      "admin_actions": "Admin actions",
+      "all_actions_are_recorded_in_the_audit_lo": "All actions are recorded in the audit log."
+    },
+    "pages_platform_platformorgspage": {
+      "organisations": "Organisations",
+      "placeholder_search_by_name_slug_or_email": "Search by name, slug, or email…",
+      "search": "Search",
+      "loading": "Loading…",
+      "name": "Name",
+      "tier": "Tier",
+      "country": "Country",
+      "users": "Users",
+      "status": "Status",
+      "suspended": "Suspended",
+      "no_organisations_found": "No organisations found."
+    },
+    "pages_platform_platformoverviewpage": {
+      "platform_admin": "Platform Admin",
+      "superadmin_view_this_monthaposs_activity": "Super-admin view — this month&apos;s activity",
+      "maintenance_mode": "Maintenance mode",
+      "top_orgs_by_token_usage": "Top orgs by token usage",
+      "org": "Org",
+      "tokens": "Tokens",
+      "cost": "Cost"
+    },
+    "pages_platform_platformusagepage": {
+      "usage_analytics": "Usage Analytics",
+      "platformwide_ai_token_spend": "Platform-wide AI token spend"
+    },
+    "pages_privacyconfirmationpage": {
+      "privacy_set_up": "Privacy Set Up",
+      "weve_automatically_applied_the_right_pro": "We\\'ve automatically applied the right protections for your students based on your location.",
+      "no_specific_frameworks_were_detected_for": "No specific frameworks were detected for your location. Standard data protection practices apply.",
+      "go_to_dashboard": "Go to Dashboard"
+    },
+    "pages_privacyenginepage": {
+      "key_rules_enforced": "Key Rules Enforced",
+      "privacy_engine": "Privacy Engine",
+      "peripateticwares_privacy_engine_enforces": "Peripateticware\\'s privacy engine enforces FERPA, COPPA, GDPR, and SOC 2 through a configurable rule system — so every data operation is compliant by default, regardless of which jurisdiction your school operates in.",
+      "currently_active": "Currently active:",
+      "how_it_works": "How it works",
+      "six_layers_of_privacy_running_automatica": "Six layers of privacy, running automatically on every request.",
+      "supported_frameworks": "Supported frameworks",
+      "click_any_framework_to_see_the_specific_": "Click any framework to see the specific rules Peripateticware enforces.",
+      "what_institutions_can_configure": "What institutions can configure",
+      "within_the_bounds_of_the_applicable_law_": "Within the bounds of the applicable law, institution admins have control over:",
+      "questions_about_compliance_for_your_dist": "Questions about compliance for your district?",
+      "our_team_can_walk_you_through_how_the_en": "Our team can walk you through how the engine maps to your jurisdiction&apos;s requirements.",
+      "contact_us": "Contact us"
+    },
+    "pages_privacypage": {
+      "live": "LIVE"
+    },
+    "pages_sessionpage": {
+      "10003": "&#10003;",
+      "location_sharing": "Location Sharing",
+      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active."
+    },
+    "pages_student_reflectioneditorpage": {
+      "field_reflection": "📝 Field + Reflection",
+      "draft": "Draft",
+      "your_teacher_reviewed_your_field_work": "Your teacher reviewed your field work:",
+      "use_what_you_observed_captured_and_exper": "Use what you observed, captured, and experienced in the field. Your reflection should show your thinking — not just what happened, but what it means and what questions it opens up.",
+      "saved": "✓ Saved",
+      "saving": "Saving…"
+    },
+    "pages_student_studentactivitiespage": {
+      "find_activities": "Find Activities",
+      "explore_published_activities_near_you": "Explore published activities near you",
+      "dismiss": "Dismiss",
+      "loading_activities": "Loading activities...",
+      "no_activities_available": "No activities available",
+      "there_are_no_published_activities_yet_ch": "There are no published activities yet. Check back soon — your teacher may be preparing something!",
+      "refreshing": "Refreshing..."
     },
     "pages_studentactivitydetailpage": {
       "could_not_load_activity": "Could not load activity",
@@ -2114,63 +2926,21 @@
       "materials_needed": "Materials needed",
       "your_inquiry_task": "Your inquiry task",
       "add_evidence": "Add Evidence",
+      "placeholder_title_optional": "Title (optional)",
       "reflection": "Reflection",
       "write_your_reflection": "Write your reflection",
       "what_did_you_observe_what_did_you_learn_": "What did you observe? What did you learn? How does it connect to your prior knowledge?",
+      "placeholder_reflection_title_optional": "Reflection title (optional)",
+      "placeholder_write_your_reflection_here": "Write your reflection here…",
       "activity_submitted": "Activity Submitted!",
       "great_work_your_teacher_will_review_your": "Great work. Your teacher will review your evidence and reflection."
     },
-    "pages_teacher_teacherwelcomepage": {
-      "welcome_to_peripateticware": "Welcome to Peripateticware 🌿",
-      "lets_get_your_classroom_set_up": "Let's get your classroom set up.",
-      "invite_your_first_students": "Invite your first students",
-      "send_invite_links_to_students_or_parent": "Send invite links to students or parents. They\\'ll create an account and join your classroom automatically.",
-      "you_can_also_bulk_import_via_csv_from_t": "You can also bulk-import via CSV from the Classrooms page."
-    },
-    "components_teacher_coursefieldworktracker": {
-      "no_fieldwork_submissions_yet": "No fieldwork submissions yet.",
-      "gps_pins_will_appear_here_once_students_": "GPS pins will appear here once students submit field notes or captures.",
-      "pins_are_stored_snapshots_from_field_not": "Pins are stored snapshots from field note and capture submissions — not live tracking."
-    },
-    "gps_what_we_collect": "What location sharing means",
-    "gps_only_during": "GPS coordinates shared only during the active fieldwork session",
-    "gps_teacher_only": "Visible only to the class teacher — not other students or the public",
-    "gps_stored": "Location snapshots stored per submission (not continuous tracking)",
-    "gps_expires": "Consent expires automatically when the activity ends (max 30 days)",
-    "pages_student_studentactivitiespage": {
-      "find_activities": "Find Activities",
-      "explore_published_activities_near_you": "Explore published activities near you",
-      "loading_activities": "Loading activities...",
-      "no_activities_available": "No activities available",
-      "there_are_no_published_activities_yet_ch": "There are no published activities yet. Check back soon — your teacher may be preparing something!"
-    },
-    "cta_privacy_note": "FERPA and COPPA compliant. Student data is never sold or shared.",
-    "audioRecorder": {
-      "mic_denied": "Microphone access is required to record audio. Please grant permission and try again.",
-      "almost_full": "Almost full",
-      "record": "Record",
-      "stop": "Stop",
-      "keep": "Keep",
-      "discard": "Discard",
-      "transcribing": "Transcribing…",
-      "uploading": "Uploading recording…",
-      "recording_saved": "Recording saved"
-    },
-    "pendingReflectionQueue": {
-      "awaiting_approval": "awaiting approval",
-      "teacher_commented": "teacher commented",
-      "reflection_in_progress": "reflection in progress",
-      "ready_to_reflect": "ready to reflect",
-      "section_title": "section title",
-      "teacher_label": "teacher label"
-    },
-    "curriculumImportPage": {
-      "title": "Import State Academic Standards",
-      "description": "Upload a PDF or CSV of official state academic standards (TEKS, NGSS, Common Core, etc.). Ollama extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache)."
-    },
-    "pages_sessionpage": {
-      "location_sharing": "Location Sharing",
-      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active."
+    "pages_teacher_activitylistpage": {
+      "loading_activities": "Loading activities…",
+      "placeholder_search_activities": "Search activities…",
+      "make_sure_the_backend_is_running_and_you": "Make sure the backend is running and you are logged in.",
+      "title_fieldwork_map": "Fieldwork Map — GPS locations submitted by students",
+      "title_preview_as_student": "Preview as Student"
     },
     "professorFieldworkPage": {
       "back": "← Back",
@@ -2180,20 +2950,75 @@
       "title": "Import Rubric",
       "description": "Upload a PDF or CSV containing your rubric criteria. The AI will extract each criterion, which you can review and edit before saving."
     },
+    "pages_teacher_sharedlibrarypage": {
+      "shared_activity_library": "🌐 Shared Activity Library",
+      "browse_activities_shared_by_teachers_acr": "Browse activities shared by teachers across your organisation and globally. Copy any to your own library.",
+      "placeholder_search_title_description_location": "Search title, description, location…",
+      "clear": "Clear",
+      "subject": "Subject",
+      "placeholder_eg_science": "e.g. Science",
+      "grade_level": "Grade level",
+      "any": "Any",
+      "language": "Language",
+      "placeholder_eg_english": "e.g. English",
+      "state_standard": "State standard",
+      "discipline": "Discipline",
+      "loading": "Loading…",
+      "no_shared_activities_found": "No shared activities found.",
+      "try_adjusting_your_filters_or_publish_an": "Try adjusting your filters, or publish and share one of your own activities."
+    },
     "standardsImportPage": {
       "title": "Import Learning Standards",
       "description": "Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage."
     },
-    "pages_donotsellpage": {
-      "do_not_sell_or_share_my_personal_informa": "Do Not Sell or Share My Personal Information",
-      "under_the_california_consumer_privacy_ac": "Under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA), California residents have the right to opt out of the sale or sharing of their personal information. Peripateticware does not sell personal data, but you may submit this request to formally record your preference.",
-      "preference_recorded": "✓ Preference Recorded",
-      "your_optout_preference_has_been_recorded": "Your opt-out preference has been recorded. We will not sell or share your personal information.",
-      "email_address": "Email address"
+    "pages_teacher_teacherclassroompage": {
+      "placeholder_classroom_name": "Classroom name",
+      "grade_level": "Grade level",
+      "subject": "Subject",
+      "placeholder_eg_science": "e.g. Science",
+      "class_full_upgrade_to_add_more": "Class full — upgrade to add more",
+      "larger_classrooms_are_a_paid_feature_upg": "Larger classrooms are a paid feature. Upgrade to enroll more students.",
+      "enrolled_students": "Enrolled Students",
+      "no_students_enrolled_yet_use_the_invite_": "No students enrolled yet. Use the invite panel below to add them.",
+      "title_remove_from_classroom": "Remove from classroom",
+      "title_revoke": "Revoke"
+    },
+    "pages_teacher_teacherclassroomspage": {
+      "loading_classrooms": "Loading classrooms…",
+      "my_classrooms": "My Classrooms",
+      "new_classroom": "New classroom",
+      "placeholder_eg_year_6_science_period_2": "e.g. Year 6 Science — Period 2",
+      "create": "Create",
+      "you_dont_have_any_classrooms_yet": "You don\\'t have any classrooms yet.",
+      "archived": "Archived"
+    },
+    "pages_teacher_teacherwelcomepage": {
+      "title_skip_setup": "Skip setup",
+      "lets_get_your_classroom_set_up": "Let's get your classroom set up.",
+      "invite_your_first_students": "Invite your first students",
+      "send_invite_links_to_students_or_parent": "Send invite links to students or parents. They\\'ll create an account and join your classroom automatically.",
+      "placeholder_studentexamplecom": "student@example.com",
+      "you_can_also_bulk_import_via_csv_from_t": "You can also bulk-import via CSV from the Classrooms page.",
+      "go_to_dashboard": "Go to dashboard →"
+    },
+    "live_sessions": "Live Sessions (",
+    "started": "Started:",
+    "monitor_map": "Monitor Map",
+    "privacy_data": "Privacy & Data",
+    "pages_teachersettingspage": {
+      "your_privacy_settings_are_managed_by_you": "🏫 Your privacy settings are managed by your school or organisation. Contact your administrator to make changes.",
+      "youre_using_default_privacy_settings_rev": "⚠ You\\'re using default privacy settings. Review and save your preferences below to confirm your configuration.",
+      "these_settings_apply_to_your_account_and": "These settings apply to your account and the activities you create. FERPA and COPPA compliance checks run automatically when you publish an activity."
+    },
+    "pages_teachersubmissionspage": {
+      "field_work_ready": "🏕️ Field Work Ready",
+      "reviewed": "✓ Reviewed",
+      "approved": "✓ Approved",
+      "placeholder_comment_on_the_field_observations_eviden": "Comment on the field observations, evidence quality, or what to focus on in the reflection...",
+      "your_feedback": "Your feedback:"
+    },
+    "pages_termspage": {
+      "helloperipateticwarecom": "hello@peripateticware.com"
     }
-  },
-  "STUDENT": {},
-  "TEACHER": {},
-  "common": {},
-  "curriculum": {}
+  }
 }

@@ -1,1 +1,18 @@
-{}
+{
+  "nav": {
+    "activities": "Crea",
+    "challenges": "Sfide",
+    "settings": "Impostazioni",
+    "new_activity": "Nuova Attività",
+    "library": "Libreria Condivisa",
+    "rubrics": "Criteri di Valutazione",
+    "standards": "Standard",
+    "dashboard": "Cruscotto",
+    "students": "Studenti",
+    "classrooms": "Aule",
+    "notifications": "Collega tuo figlio",
+    "users": "Utenti",
+    "ai_config": "Routing e chiavi AI",
+    "audit": "Registri delle attività"
+  }
+}
