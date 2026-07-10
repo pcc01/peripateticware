@@ -43,7 +43,7 @@ describe('App launch', () => {
 describe('Login flow', () => {
   it('logs in successfully with valid credentials', async () => {
     // If already logged in, skip
-    const alreadyLoggedIn = await element(by.id('dashboard-root')).isVisible().catch(() => false);
+    const alreadyLoggedIn = await detoxExpect(element(by.id('dashboard-root'))).toBeVisible().then(() => true).catch(() => false);
     if (alreadyLoggedIn) return;
 
     await waitFor(element(by.id('email-input'))).toBeVisible().withTimeout(5000);
@@ -68,7 +68,7 @@ describe('Login flow', () => {
 describe('Student activity flow', () => {
   beforeEach(async () => {
     // Ensure logged in
-    const loggedIn = await element(by.id('dashboard-root')).isVisible().catch(() => false);
+    const loggedIn = await detoxExpect(element(by.id('dashboard-root'))).toBeVisible().then(() => true).catch(() => false);
     if (!loggedIn) {
       await element(by.id('email-input')).typeText(TEST_EMAIL);
       await element(by.id('password-input')).typeText(TEST_PASSWORD);
