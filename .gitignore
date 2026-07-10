@@ -439,3 +439,10 @@ frontend/vite.config.ts.timestamp-*.mjs
 scripts/
 !frontend/scripts/
 !backend/scripts/
+
+# local-only docs & scripts
+LOCAL_DOCKER.md
+PEN_TEST_PLAN.md
+LOAD_TEST_PLAN.md
+SECURITY_PRIVACY_REVIEW.md
+scripts/Test-LocationEnrich.ps1
