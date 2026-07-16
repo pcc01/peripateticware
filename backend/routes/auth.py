@@ -75,7 +75,14 @@ router = APIRouter(
 
 class LoginRequest(BaseModel):
     """Login request - supports email OR id"""
-    email: Optional[EmailStr] = None
+    # NOTE: intentionally `str`, not `EmailStr`. EmailStr's email-validator
+    # rejects RFC 6761 special-use domains (.local, .test, .example, .invalid),
+    # which breaks login for @test.local E2E/Detox/Maestro seed accounts.
+    # Strict format validation belongs on SignupRequest/RegisterRequest (where
+    # we're creating a real account); at login we're just looking up an
+    # existing string against the DB — a non-matching value simply fails with
+    # 401 invalid credentials, so there's no security reason to 422 here.
+    email: Optional[str] = None
     id: Optional[str] = None
     password: str
     

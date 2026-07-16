@@ -16,7 +16,7 @@ on:
       - 'mobile/**'
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ANDROID — matrix across API 35 / 33 / 30 / 24
+# ANDROID — matrix across API 37 / 35 / 33 / 30 / 24
 # ──────────────────────────────────────────────────────────────────────────────
 jobs:
   android-e2e:
@@ -28,6 +28,14 @@ jobs:
       fail-fast: false          # keep other API levels running if one fails
       matrix:
         include:
+          - api-level: 37
+            android-version: '17 CinnamonBun'
+            target: google_apis
+            arch: x86_64
+            profile: Pixel 6
+            avd-name: Pixel_6_API_37
+            detox-config: android.api37.debug
+
           - api-level: 35
             android-version: '15 VanillaIceCream'
             target: google_apis
@@ -178,8 +186,12 @@ jobs:
       - name: Install Detox CLI
         run: npm install -g detox-cli
 
-      - name: Install CocoaPods
-        run: sudo gem install cocoapods
+      - name: Setup Ruby + Bundler (pinned CocoaPods via mobile/Gemfile)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: mobile
 
       - name: Cache CocoaPods
         uses: actions/cache@v4
@@ -192,9 +204,9 @@ jobs:
         working-directory: mobile
         run: npx expo prebuild --platform ios --no-install
 
-      - name: Install Pods
-        working-directory: mobile/ios
-        run: pod install
+      - name: Install Pods (pinned CocoaPods via bundle exec)
+        working-directory: mobile
+        run: bundle exec pod install --project-directory=ios
 
       - name: Build iOS app for testing
         working-directory: mobile
