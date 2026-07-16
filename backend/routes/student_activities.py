@@ -1343,7 +1343,7 @@ async def student_record_gps_consent(
                         (student_id, activity_id, consent_type, given_by_student,
                          consent_given_at, expires_at)
                     VALUES
-                        (:sid::uuid, :aid::uuid, 'gps_tracking', TRUE,
+                        (CAST(:sid AS uuid), CAST(:aid AS uuid), 'gps_tracking', TRUE,
                          NOW(), NOW() + INTERVAL '1 year')
                 """),
                 {"sid": str(current_user.id), "aid": body.activity_id},
@@ -1353,8 +1353,8 @@ async def student_record_gps_consent(
                 _text("""
                     UPDATE consent_logs
                     SET withdrawn_at = NOW()
-                    WHERE student_id   = :sid::uuid
-                      AND activity_id  = :aid::uuid
+                    WHERE student_id   = CAST(:sid AS uuid)
+                      AND activity_id  = CAST(:aid AS uuid)
                       AND consent_type = 'gps_tracking'
                       AND withdrawn_at IS NULL
                 """),

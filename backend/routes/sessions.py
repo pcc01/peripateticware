@@ -547,9 +547,9 @@ async def _check_gps_consent(
         result = await db.execute(
             text("""
                 SELECT id FROM consent_logs
-                WHERE student_id   = :sid::uuid
+                WHERE student_id   = CAST(:sid AS uuid)
                   AND consent_type = 'gps_tracking'
-                  AND activity_id  = :aid::uuid
+                  AND activity_id  = CAST(:aid AS uuid)
                   AND (given_by_student = TRUE OR given_by_parent = TRUE)
                   AND withdrawn_at IS NULL
                   AND (expires_at IS NULL OR expires_at > NOW())
