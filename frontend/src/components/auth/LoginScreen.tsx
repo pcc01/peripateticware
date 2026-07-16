@@ -101,9 +101,9 @@ export default function LoginScreen({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
               {[
                 { label: 'Teacher',    email: 'teacher@example.com',    color: '#4a7c59' },
-                { label: 'Student',    email: 'student@example.com',    color: '#0284c7' },
-                { label: 'Parent',     email: 'parent@example.com',     color: '#d97706' },
-                { label: 'Homeschool', email: 'homeschool@example.com', color: '#16a34a' },
+                { label: 'Student',    email: 'student@example.com',    color: '#0369a1' },
+                { label: 'Parent',     email: 'parent@example.com',     color: '#b45309' },
+                { label: 'Homeschool', email: 'homeschool@example.com', color: '#15803d' },
                 { label: 'Admin',      email: 'admin@example.com',      color: '#64748b' },
               ].map(({ label, email: demoEmail, color }) => (
                 <button key={label} type="button"

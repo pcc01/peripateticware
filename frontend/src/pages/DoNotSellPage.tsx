@@ -83,8 +83,8 @@ export default function DoNotSellPage() {
       <hr style={{ margin: '2rem 0', borderColor: '#e5e7eb' }} />
       <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
         For questions about this request, contact{' '}
-        <a href="mailto:privacy@peripateticware.com" style={{ color: '#1d4ed8' }}>{t('pages_donotsellpage.privacyperipateticwarecom', 'privacy@peripateticware.com')}</a>.
-        See our <Link to="/privacy" style={{ color: '#1d4ed8' }}>Privacy Policy</Link> for more.
+        <a href="mailto:privacy@peripateticware.com" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>{t('pages_donotsellpage.privacyperipateticwarecom', 'privacy@peripateticware.com')}</a>.
+        See our <Link to="/privacy" style={{ color: '#1d4ed8', textDecoration: 'underline' }}>Privacy Policy</Link> for more.
       </p>
     </div>
   );

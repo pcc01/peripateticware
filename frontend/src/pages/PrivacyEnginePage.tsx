@@ -236,11 +236,11 @@ export default function PrivacyEnginePage() {
       </div>
 
       {/* CTA */}
-      <div className="bg-green-800 text-white">
+      <div className="bg-green-800" style={{ color: '#ffffff' }}>
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
-            <h3 className="text-xl font-bold mb-1" style={{ fontFamily: 'var(--font-head, "Lora", Georgia, serif)' }}>{t('pages_privacyenginepage.questions_about_compliance_for_your_dist', 'Questions about compliance for your district?')}</h3>
-            <p className="text-green-200 text-sm">{t('pages_privacyenginepage.our_team_can_walk_you_through_how_the_en', 'Our team can walk you through how the engine maps to your jurisdiction&apos;s requirements.')}</p>
+            <h3 className="text-xl font-bold mb-1" style={{ fontFamily: 'var(--font-head, "Lora", Georgia, serif)', color: '#ffffff' }}>{t('pages_privacyenginepage.questions_about_compliance_for_your_dist', 'Questions about compliance for your district?')}</h3>
+            <p className="text-sm" style={{ color: '#bbf7d0' }}>{t('pages_privacyenginepage.our_team_can_walk_you_through_how_the_en', 'Our team can walk you through how the engine maps to your jurisdiction&apos;s requirements.')}</p>
           </div>
           <div className="flex gap-3 flex-shrink-0">
             <a
@@ -249,7 +249,8 @@ export default function PrivacyEnginePage() {
             >{t('pages_privacyenginepage.contact_us', 'Contact us')}</a>
             <Link
               to="/privacy"
-              className="px-5 py-2.5 border border-white/40 text-white font-semibold rounded-lg hover:bg-white/10 transition text-sm"
+              className="px-5 py-2.5 border border-white/40 font-semibold rounded-lg hover:bg-white/10 transition text-sm"
+              style={{ color: '#ffffff' }}
             >
               Privacy policy
             </Link>

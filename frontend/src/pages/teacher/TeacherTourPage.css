@@ -6,7 +6,7 @@
   --surface-alt: #f5f0e6;
   --border: #e0d8cb;
   --text: #1e1a14;
-  --text-muted: #7a6f5e;
+  --text-muted: #6b6150; /* WCAG 1.4.3 AA — kept in sync with design-system.css */
   --accent: #4a7c59;
   --accent-deep: #2d5037;
 }

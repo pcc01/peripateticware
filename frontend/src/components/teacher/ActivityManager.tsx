@@ -111,6 +111,13 @@ const ActivityManager = () => {
   const [rubrics, setRubrics] = useState<{ id: string; title: string }[]>([]);
   const [selectedRubricId, setSelectedRubricId] = useState('');
 
+  // GPS live tracking + homeschool self-consent (parent IS the user, so consent
+  // is recorded at save time rather than via the async per-student parent-consent
+  // flow used for org/school accounts). See GPS_MAP_HANDOFF.md.
+  const [showLocationTools, setShowLocationTools] = useState(false);
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
+
   const TAXONOMIES: Record<string, { label: string; levels: { value: string; label: string }[] }> = {
     blooms: {
       label: "Bloom's Revised",
@@ -365,6 +372,7 @@ const ActivityManager = () => {
         activity_type: normalizeActivityType(formData.activity_type),
         // Include privacy confirmation flag when the teacher has confirmed review items
         ...(privacyConfirmed ? { privacy_confirmed: true } : {}),
+        discovery_location_gps_capture_enabled: gpsEnabled,
       } as any;
 
       let savedActivityId: string | undefined = isEditing ? id : undefined;
@@ -385,6 +393,26 @@ const ActivityManager = () => {
               headers: { Authorization: `Bearer ${token}` },
             });
           } catch (err) { console.warn('Rubric attach error:', err); }
+        }
+      }
+
+      // Homeschool self-consent: the parent IS the account holder, so consent
+      // is recorded immediately on save rather than via the async per-student
+      // parent-consent flow used for org/school accounts.
+      if (gpsEnabled && homeschoolGpsConsent && savedActivityId && currentUser?.role?.toLowerCase() === 'homeschool') {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          try {
+            await fetch('/api/v1/parent/consent/gps', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                student_id: currentUser.id,
+                activity_id: savedActivityId,
+                consent_given: true,
+              }),
+            });
+          } catch (err) { console.warn('GPS self-consent error:', err); }
         }
       }
 
@@ -542,6 +570,7 @@ const ActivityManager = () => {
               <span className="text-red-500">*</span>
             </label>
             <input
+              id="title"
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -624,6 +653,49 @@ const ActivityManager = () => {
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>
           </div>
+
+          {/* GPS live tracking toggle */}
+          <button
+            type="button"
+            onClick={() => setShowLocationTools(v => !v)}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium mb-3"
+          >
+            {showLocationTools ? '▼' : '▶'} {t('components_teacher_activitymanager.location', '📍 Location')}
+          </button>
+          {showLocationTools && (
+            <div className="mb-4">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={gpsEnabled}
+                  onChange={(e) => {
+                    setGpsEnabled(e.target.checked);
+                    if (!e.target.checked) setHomeschoolGpsConsent(false);
+                  }}
+                  style={{ width: 16, height: 16 }}
+                />
+                <span style={{ fontWeight: 600 }}>{t('components_teacher_activitymanager.enable_live_gps_tracking_during_this_act', '📍 Enable live GPS tracking during this activity')}</span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1" style={{ marginLeft: 26 }}>{t('components_teacher_activitymanager.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
+
+              {/* Homeschool self-consent — the parent IS the account holder, so
+                  consent is collected here rather than via the async per-student
+                  parent-consent flow used for org/school accounts. */}
+              {gpsEnabled && currentUser?.role?.toLowerCase() === 'homeschool' && (
+                <div className="mt-2 p-3 rounded-lg border border-gray-200 bg-gray-50" style={{ marginLeft: 26 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={homeschoolGpsConsent}
+                      onChange={(e) => setHomeschoolGpsConsent(e.target.checked)}
+                      style={{ width: 16, height: 16 }}
+                    />
+                    <span className="text-sm">{t('components_teacher_activitymanager.i_consent_to_gps_location_capture_for_my', 'I consent to GPS location capture for my child during this activity')}</span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Learning Objectives */}
           <div>

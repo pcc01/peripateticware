@@ -11,7 +11,11 @@
   --border: #e0d8cb;
   --border-strong: #c9bfaa;
   --text: #1e1a14;
-  --text-muted: #7a6f5e;
+  /* WCAG 1.4.3 AA fix (kept in sync with design-system.css): #7a6f5e was
+     under 4.5:1 on --surface-alt/--primary-muted; #6b6150 clears it. This
+     file loads after design-system.css, so a stale value here silently
+     re-broke the accessibility fix site-wide until this was aligned. */
+  --text-muted: #6b6150;
   --text-faint: #a89d8a;
   --accent: #4a7c59;
   --accent-deep: #2d5037;

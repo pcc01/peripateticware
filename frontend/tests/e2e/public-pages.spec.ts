@@ -246,3 +246,70 @@ test.describe('Public — Parent Consent', () => {
     await expect(page.locator('body')).not.toContainText('Uncaught');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Locale Switcher — landing page language dropdown
+// Regression coverage for a reported gap: confirm Korean (added to both
+// SUPPORTED_LANGUAGES in config/i18n.ts and LOCALES in LocaleSwitcher.tsx)
+// actually renders as a selectable option in the web UI, not just in config.
+// ---------------------------------------------------------------------------
+
+test.describe('Public — Locale Switcher', () => {
+  test('landing page language dropdown includes Korean and switching loads Korean copy', async ({ page }) => {
+    await page.goto('/');
+    const switcher = page.getByLabel(/select language/i);
+    await expect(switcher).toBeVisible();
+
+    // Korean option is present with its autonym label.
+    await expect(switcher.locator('option[value="ko"]')).toHaveText('한국어');
+
+    await switcher.selectOption('ko');
+    await expect(switcher).toHaveValue('ko');
+
+    // i18next persists the choice to localStorage and the <html lang> attr
+    // updates — both are cheap, reliable signals that the switch actually
+    // took effect (rather than just changing the <select>'s own value).
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('i18nextLng'))).toBe('ko');
+  });
+
+  test('all configured SUPPORTED_LANGUAGES appear as dropdown options', async ({ page }) => {
+    await page.goto('/');
+    const switcher = page.getByLabel(/select language/i);
+    await expect(switcher).toBeVisible();
+
+    // Kept in sync with config/i18n.ts SUPPORTED_LANGUAGES — if a language is
+    // added there but not to LocaleSwitcher.tsx's LOCALES list (or vice
+    // versa), this test catches the drift.
+    for (const code of ['en', 'es', 'fr', 'ar', 'ja', 'ko', 'pt-BR']) {
+      await expect(switcher.locator(`option[value="${code}"]`)).toHaveCount(1);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Mistral localization-notice banner — must actually render in the target
+// locale's language, not silently fall back to the English default string.
+// Regression coverage for a found gap: several locales' landing.json had
+// this key present but copy-pasted verbatim from the English fallback
+// (i.e. i18next never errors or shows a missing-key warning for this case
+// — the string just silently ships untranslated). Fixed for es/fr/de/it/
+// pt-BR/he/ar/fr-CA (fr-CA now correctly inherits fr's translation via the
+// i18next fallback chain instead of carrying its own stale English copy).
+// ---------------------------------------------------------------------------
+
+test.describe('Public — Localization Notice Banner', () => {
+  const ENGLISH_TEXT = 'Localized using Mistral LLM for user convenience.';
+
+  for (const code of ['es', 'fr', 'de', 'it', 'pt-BR', 'he', 'ar', 'ja', 'ko', 'tr', 'zh']) {
+    test(`banner text is actually translated for locale "${code}" (not the English fallback)`, async ({ page }) => {
+      await page.addInitScript((lng) => {
+        window.localStorage.setItem('i18nextLng', lng);
+      }, code);
+      await page.goto('/');
+
+      const banner = page.locator('text=localization@peripateticware.com');
+      await expect(banner).toBeVisible({ timeout: 10_000 });
+      await expect(banner).not.toContainText(ENGLISH_TEXT);
+    });
+  }
+});

@@ -300,7 +300,10 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
     await page.getByText(/enable live gps tracking/i).click();
     await page.getByText(/i consent to gps location capture for my child/i).click();
 
-    await page.getByRole('button', { name: /save draft/i }).click();
+    // ActivityManager (the component actually routed at /homeschool/activities/new)
+    // labels its submit button "Create Activity", not "Save Draft" — accept either
+    // so this test doesn't re-break if the routed component changes again.
+    await page.getByRole('button', { name: /create activity|save draft/i }).click();
 
     await expect.poll(() => consentBody, { timeout: 10_000 }).not.toBeNull();
     expect(consentBody).toMatchObject({ activity_id: NEW_ACTIVITY_ID, consent_given: true });

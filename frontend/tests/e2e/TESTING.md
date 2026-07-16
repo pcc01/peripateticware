@@ -113,6 +113,92 @@ still tracked under "What to Test Next" below.
 
 ---
 
+## Root-Cause Fixes — 20 Failures (July 16, 2026)
+
+A real run (`npx playwright test --project=chromium` from `frontend/`) came back
+256 passed / 20 failed / 4 skipped. All 20 were root-caused and fixed (not just
+patched at the assertion level) — re-run confirmed all passing:
+
+- **Platform tests (10)** — `PlatformShell`'s operator-secret gate reads
+  `sessionStorage`, which Playwright's `storageState` does not capture (only
+  cookies + localStorage). Fixed with `page.addInitScript` seeding
+  `pw_platform_secret` in `platform-flows.spec.ts`'s `beforeEach`.
+- **`targeted-flows.spec.ts`** — a loose regex (`/activities found/`) matched
+  both the real count text and the empty-state "No shared activities found."
+  Tightened to anchor on a leading digit.
+- **`auth-flows.spec.ts` Signup** — test assumed a single signup mode; the app
+  actually has two, gated by backend config (open signup form vs. invite-only
+  `RequestBetaPage`). Test now branches on which is actually rendered.
+- **8 WCAG 2.1 AA color-contrast failures** (axe-core) — fixed at the source
+  across `LandingPage.tsx`, `CookieConsentBanner.tsx`, `PrivacyEnginePage.tsx`,
+  `DoNotSellPage.tsx`, `LoginScreen.tsx`, and the shared `--text-muted` CSS
+  variable (`globals.css` + the duplicate `ParentFeaturesPage.css` /
+  `StudentHowItWorksPage.css` / `TeacherTourPage.css` pairs) — see
+  `THREAD_HANDOFF.md` for the full before/after contrast ratios.
+
+`@axe-core/playwright` + `axe-core` were also missing from `package.json`
+devDependencies — `accessibility.spec.ts` couldn't even import until added.
+
+## GPS Toggle / Homeschool Self-Consent — Ported to ActivityManager (July 16, 2026)
+
+`gps-fieldwork-map.spec.ts`'s "Homeschool — GPS toggle and self-consent on
+activity creation" tests (2 of them) failed because the GPS toggle +
+self-consent checkbox markup only existed in `EnhancedActivityBuilder.tsx`,
+which is **not routed anywhere** — `/homeschool/activities/new` and
+`/teacher/activities/new` both render `ActivityManager.tsx`. Ported the
+feature (state, `#title` id, "📍 Location" toggle section, GPS checkbox,
+homeschool self-consent checkbox, and the `POST /api/v1/parent/consent/gps`
+call on save) directly into `ActivityManager.tsx`, the actually-tested,
+actually-routed component. Both tests now pass; the other 16 tests in that
+file were unaffected. See "Open Items" in `THREAD_HANDOFF.md` for the
+follow-up cleanup this surfaced (`EnhancedActivityBuilder.tsx` /
+`ActivityDetailPage.tsx` are now confirmed orphaned dead code).
+
+## Locale Switcher Coverage Added (July 16, 2026)
+
+No test previously covered the landing-page language dropdown at all. Added
+`public-pages.spec.ts` → `Public — Locale Switcher`: asserts Korean (`ko`)
+renders as a selectable option with its autonym label, that selecting it
+actually changes `i18n.changeLanguage` state (persisted to
+`localStorage.i18nextLng`), and that every code in `config/i18n.ts`'s
+`SUPPORTED_LANGUAGES` has a matching `<option>` in `LocaleSwitcher.tsx`'s
+`LOCALES` (catches future drift between the two lists). Added in response to
+a report that Korean was missing from the web language chooser — see
+`THREAD_HANDOFF.md` → "Language / Locale" for the investigation (source
+already has `ko` wired correctly in both files; likely a stale `dist/`
+build, not a code gap).
+
+---
+
+## Mistral Localization-Notice Banner — Missing Translations Fixed (July 16, 2026)
+
+Audited every locale's `landing.json` for the `localization_notice` key (the
+"Localized using Mistral LLM..." banner shown on the landing page for any
+non-English locale). The key existed in every locale file, but 8 of them had
+it copy-pasted verbatim from the English fallback — i18next doesn't warn or
+error on this, so the banner was silently shipping in English for those
+locales despite otherwise being fully translated. **Fixed:** `es`, `fr`,
+`de`, `it`, `pt-BR`, `he`, `ar`. `fr-CA` had its own stale English copy too;
+removed it entirely so it now correctly inherits the fixed `fr` translation
+via the existing i18next fallback chain (matches this repo's documented
+fr-CA design — region file should only hold genuinely region-specific
+overrides). Already correctly translated, no change needed: `ja`, `ko`,
+`tr`, `zh`.
+
+New coverage: `public-pages.spec.ts` → `Public — Localization Notice Banner`
+— one test per locale, asserts the banner's text does not equal the English
+fallback string, so a future untranslated-copy-paste regression fails loudly
+instead of shipping silently.
+
+**Mobile has no equivalent banner, and can't yet** — `mobile/src/i18n/t.ts`
+is a documented placeholder that always returns the English fallback
+regardless of locale; there is no i18n library wired up and no translated
+strings anywhere in the mobile app (see `mobile/FEATURE_PLAN.md` section 3.1
+— this is a known, deliberately deferred scope decision, not something this
+pass touched). See `THREAD_HANDOFF.md` for the full note.
+
+---
+
 ## Known Issues Documented in Tests
 
 ### App bugs (tests pass but document the problem)

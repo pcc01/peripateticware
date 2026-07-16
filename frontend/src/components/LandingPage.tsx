@@ -481,7 +481,7 @@ export const LandingPage: React.FC = () => {
         <section id="tools" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '4rem var(--section-x, 1.5rem)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '12px' }}>
+              <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary-deep)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '12px' }}>
                 {t('meet_peri.badge', 'Meet Peri')}
               </span>
               <h2 className="h-section" style={{ marginBottom: '0.5rem' }}>{t('components_landingpage.guided_inquiry_that_leads_to_real_knowle', 'Guided inquiry that leads to real knowledge')}</h2>
@@ -512,7 +512,7 @@ export const LandingPage: React.FC = () => {
 
             {/* Sample exchange */}
             <div style={{ background: 'var(--primary-muted)', border: '1px solid var(--primary)', borderRadius: '14px', padding: '1.75rem', maxWidth: '720px', margin: '0 auto' }}>
-              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>{t('components_landingpage.sample_exchange_creek_study_grade_5', 'Sample exchange — Creek Study, Grade 5')}</p>
+              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-deep)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>{t('components_landingpage.sample_exchange_creek_study_grade_5', 'Sample exchange — Creek Study, Grade 5')}</p>
               {[
                 { from: 'Peri', text: t('meet_peri.exchange.1.text', 'You\'re at the creek bank. Before we measure anything — what\'s the first thing you notice about the water right here versus ten feet upstream?') },
                 { from: 'Emma', text: t('meet_peri.exchange.2.text', 'It\'s slower here and there\'s more mud on the bottom.') },
@@ -563,7 +563,7 @@ export const LandingPage: React.FC = () => {
       <section id="about" style={{ background: 'var(--surface)', padding: '5rem var(--section-x, 1.5rem)', borderTop: '1px solid var(--border)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
           <div>
-            <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
+            <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary-deep)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
               {t('origin_story.badge', 'Origin Story')}
             </span>
             <h2 className="h-section" style={{ marginBottom: '1rem' }}>{t('components_landingpage.built_from_a_2007_idea_that_took_until_2', 'Built from a 2007 idea that took until 2026 to be possible')}</h2>
@@ -576,7 +576,7 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
           <div style={{ background: 'var(--primary-muted)', borderRadius: '1.25rem', padding: '2rem', border: '1px solid var(--primary)' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>{t('components_landingpage.from_the_original_2007_paper', 'From the original 2007 paper')}</p>
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-deep)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>{t('components_landingpage.from_the_original_2007_paper', 'From the original 2007 paper')}</p>
             <blockquote style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.75, fontStyle: 'italic', borderLeft: '3px solid var(--primary)', paddingLeft: '1rem', margin: 0 }}>
               "What if a math product presented a discussion of the arch when a student stood inside
               a cathedral? What if the student could learn the history of the church, the biography
@@ -606,9 +606,11 @@ export const LandingPage: React.FC = () => {
               role="button"
               tabIndex={0}
               aria-haspopup="dialog"
-              style={{ opacity: idx === currentTeamIndex ? 1 : 0.5, transition: 'opacity 300ms ease', cursor: 'pointer' }}>
+              style={{ cursor: 'pointer' }}>
 
-                <div className="team-avatar">{member.avatar}</div>
+                {/* Only the avatar dims for inactive cards — name/role text stays at
+                    full opacity so it keeps AA-compliant contrast (WCAG 1.4.3). */}
+                <div className="team-avatar" style={{ opacity: idx === currentTeamIndex ? 1 : 0.5, transition: 'opacity 300ms ease' }}>{member.avatar}</div>
                 <h4 className="h-card">{member.name}</h4>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{member.role}</p>
               </div>
@@ -712,7 +714,7 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', color: 'var(--text-faint)', fontSize: '0.8rem' }}>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
             {t('no_ads_no_tracking', 'No ads. No tracking. No selling student data. Ever.')}
           </p>
         </div>
@@ -756,7 +758,10 @@ export const LandingPage: React.FC = () => {
               {testimonials.map((_, idx) =>
               <button
                 key={idx}
+                type="button"
                 onClick={() => setCurrentTestimonialIndex(idx)}
+                aria-label={t('components_landingpage.aria_label_show_testimonial', 'Show testimonial {{n}}', { n: idx + 1 })}
+                aria-current={idx === currentTestimonialIndex ? 'true' : undefined}
                 style={{
                   width: '10px', height: '10px', borderRadius: '50%',
                   background: idx === currentTestimonialIndex ? 'var(--primary)' : 'var(--border)',
@@ -826,7 +831,7 @@ export const LandingPage: React.FC = () => {
                   {tier.features.map(f => (
                     <li key={f} style={{
                       fontSize: '0.82rem', padding: '0.2rem 0',
-                      color: tier.highlight ? 'rgba(255,255,255,0.9)' : 'var(--text-muted)',
+                      color: tier.highlight ? '#ffffff' : 'var(--text-muted)',
                       display: 'flex', gap: '0.4rem',
                     }}>
                       <span style={{ color: tier.highlight ? '#a7f3d0' : 'var(--primary)', flexShrink: 0 }}>✓</span>
@@ -851,7 +856,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '1.5rem' }}>
-            {t('pricing_tier.contact_footer_pre', 'Contact our team for pricing details and to find the right plan —')} <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)' }}>{t('pricing_tier.contact_footer_link', 'contact us')}</a>.
+            {t('pricing_tier.contact_footer_pre', 'Contact our team for pricing details and to find the right plan —')} <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{t('pricing_tier.contact_footer_link', 'contact us')}</a>.
           </p>
         </div>
       </section>
@@ -867,7 +872,7 @@ export const LandingPage: React.FC = () => {
             style={{ background: '#fff', color: 'var(--primary)', border: 'none', borderRadius: '0.6rem', padding: '0.85rem 2rem', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }}>
             {t('cta_btn', 'Get Started Free')} →
           </button>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', marginTop: '1.25rem' }}>
+          <p style={{ color: '#ffffff', fontSize: '0.8rem', marginTop: '1.25rem' }}>
             {t('cta_privacy_note', 'FERPA and COPPA compliant. Student data is never sold or shared.')}
           </p>
         </div>

@@ -1,198 +1,415 @@
 {
-  "components_teacher_activitymanager.latitude": "Latitude",
-  "components_teacher_activitymanager.longitude": "49°50′N",
-  "components_teacher_activitymanager.discipline": "Discipline",
-  "components_teacher_enhancedactivitybuilder.latitude": "Latitude",
-  "components_teacher_enhancedactivitybuilder.longitude": "49°50′N",
-  "pages_platform_platformorgspage.organisations": "Organisations",
-  "pages_teacher_sharedlibrarypage.discipline": "Discipline",
-  "nav.messages": "Messages",
-  "phone_carousel.student.1.badge": "Observation",
-  "phone_carousel.parent.2.stat.3.label": "Engagement",
-  "phone_carousel.homeschool.3.stat.3.label": "Pages",
-  "persona_tab.parent": "Parent d'él\\u00E8ve",
-  "persona_tab_plural.parent": " Parents d'él\\u00E8ves",
-  "compliance.pipeda.region": "Canada",
-  "pages_admin_adminhelppage.placeholder_search_help_topics": "Recherche aide sur les sujets…",
-  "pages_admin_adminhelppage.admin_help_documentation": "Aide de l'administrateur et documentation",
-  "components_auth_requestbetapage.school_organization_optional": "École / organisation (facultatif)",
-  "components_auth_requestbetapage.anything_else_optional": "Autre chose ? (facultatif)",
-  "components_common_map.aria_label_zone_shape": "Forme de la zone",
-  "components_common_modal.aria_label_close_modal": "Fermer la boîte de dialogue",
-  "persona_tab_plural.student": "Étudiants",
-  "persona_tab_plural.teacher": "Enseignants",
-  "persona_tab_plural.homeschool": "Éducateurs à la maison",
-  "phone_carousel.student.3.title": "Prises d'évidence",
-  "phone_carousel.student.3.badge": "Analyser",
-  "phone_carousel.teacher.1.badge": "Configuration",
-  "phone_carousel.teacher.2.badge": "Surveillance",
-  "phone_carousel.teacher.3.badge": "Assistance par IA'}, {",
-  "phone_carousel.parent.2.title": "Progrès hebdomadaire'}, {",
-  "phone_carousel.homeschool.3.task.3.text": "Couverture des normes ✓",
-  "phone_carousel.homeschool.3.task.4.text": "Miniat\u001b[7D\u001b[K\n",
-  "phone_carousel.homeschool.3.prompt": ", ",
-  "phone_carousel.homeschool.1.task.1.text": "Identifier les types de roches à l'affleurement",
-  "phone_carousel.homeschool.1.task.2.text": "Mesurer le débit du flux de données",
-  "phone_carousel.homeschool.1.task.3.text": "Photograph erosion evidence",
-  "phone_carousel.homeschool.1.task.4.text": "Logue d'observation complet",
-  "phone_carousel.homeschool.2.task.1.text": "Sciences - Systèmes de la Terre ✓",
-  "phone_carousel.homeschool.2.task.2.text": "Mathématiques - Mesures ✓",
-  "phone_carousel.homeschool.2.task.3.text": "Histoire - Géographie du Texas",
-  "phone_carousel.homeschool.2.task.4.text": "Langues — Recherche",
-  "compliance.pipeda.name": "Personal Information Protection and Electronic Documents Act",
-  "compliance.gdpr.name": "General Data Protection Regulation",
-  "compliance.ccpa.name": "California Consumer Privacy Act",
-  "compliance.lgpd.name": "Lei Geral de Proteção de Dados",
-  "components_student_capture_audiorecorder.aria_label_download_recording": "Télécharger l'enregistrement",
-  "components_student_capture_audiorecorder.download": "⬇ Télécharger",
-  "pendingReflectionQueue.awaiting_approval": "en attente d'approbation",
-  "pendingReflectionQueue.teacher_commented": "le professeur a commenté",
-  "pages_admin_platformadminpage.peripateticware": "Logiciel erratique",
-  "pages_licensingpage.individual_educators_using_it_in_their_o": "Éducateurs individuels l'utilisant dans leur propre salle de classe'}, {",
-  "pages_licensingpage.these_are_related_but_distinct_using_per": "Ces éléments sont liés mais distincts : l'utilisation de peripateticware.com n'exige pas de connaître ou de se soucier de la licence source ci-dessous, et la licence source est ce qui réglemente toute personne exécutant sa propre copie du code - y compris le fait qu'elle permette à Paul, en tant que titulaire de la licence, d'exploitation de cette SaaS en premier lieu.",
-  "pages_student_reflectioneditorpage.draft": "Draft",
-  "pages_student_reflectioneditorpage.saved": "✓ Saved",
-  "pages_student_reflectioneditorpage.saving": "Saving…",
+  "components_teacher_activitymanager": {
+    "latitude": "Latitude",
+    "longitude": "49°50′N",
+    "discipline": "Discipline"
+  },
+  "components_teacher_enhancedactivitybuilder": {
+    "latitude": "Latitude",
+    "longitude": "49°50′N"
+  },
+  "pages_platform_platformorgspage": {
+    "organisations": "Organisations"
+  },
+  "pages_teacher_sharedlibrarypage": {
+    "discipline": "Discipline"
+  },
+  "nav": {
+    "messages": "Messages",
+    "notifications": "Notifications"
+  },
+  "phone_carousel": {
+    "student": {
+      "1": {
+        "badge": "Observation"
+      },
+      "3": {
+        "title": "Prises d'évidence",
+        "badge": "Analyser"
+      }
+    },
+    "parent": {
+      "2": {
+        "stat": {
+          "3": {
+            "label": "Engagement"
+          }
+        },
+        "title": "Progrès hebdomadaire'}, {"
+      },
+      "1": {
+        "stat": {
+          "3": {
+            "label": "Insignes"
+          }
+        }
+      }
+    },
+    "homeschool": {
+      "3": {
+        "stat": {
+          "3": {
+            "label": "Pages"
+          }
+        },
+        "task": {
+          "3": {
+            "text": "Couverture des normes ✓"
+          },
+          "4": {
+            "text": "Miniat\u001b[7D\u001b[K\n"
+          }
+        },
+        "prompt": ", "
+      },
+      "1": {
+        "task": {
+          "1": {
+            "text": "Identifier les types de roches à l'affleurement"
+          },
+          "2": {
+            "text": "Mesurer le débit du flux de données"
+          },
+          "3": {
+            "text": "Photograph erosion evidence"
+          },
+          "4": {
+            "text": "Logue d'observation complet"
+          }
+        }
+      },
+      "2": {
+        "task": {
+          "1": {
+            "text": "Sciences - Systèmes de la Terre ✓"
+          },
+          "2": {
+            "text": "Mathématiques - Mesures ✓"
+          },
+          "3": {
+            "text": "Histoire - Géographie du Texas"
+          },
+          "4": {
+            "text": "Langues — Recherche"
+          }
+        }
+      }
+    },
+    "teacher": {
+      "1": {
+        "badge": "Configuration"
+      },
+      "2": {
+        "badge": "Surveillance"
+      },
+      "3": {
+        "badge": "Assistance par IA'}, {"
+      }
+    }
+  },
+  "persona_tab": {
+    "parent": "Parent d'él\\u00E8ve"
+  },
+  "persona_tab_plural": {
+    "parent": " Parents d'él\\u00E8ves",
+    "student": "Étudiants",
+    "teacher": "Enseignants",
+    "homeschool": "Éducateurs à la maison"
+  },
+  "compliance": {
+    "pipeda": {
+      "region": "Canada",
+      "name": "Personal Information Protection and Electronic Documents Act"
+    },
+    "gdpr": {
+      "name": "General Data Protection Regulation"
+    },
+    "ccpa": {
+      "name": "California Consumer Privacy Act"
+    },
+    "lgpd": {
+      "name": "Lei Geral de Proteção de Dados"
+    },
+    "ferpa": {
+      "name": "Loi sur la confidentialit√© des dossiers √©ducatifs des √©tudiants",
+      "region": "√Čtats-Unis"
+    },
+    "coppa": {
+      "name": "Loi sur la protection de la vie priv√©e des enfants en ligne",
+      "region": "États-Unis d'Amérique"
+    }
+  },
+  "pages_admin_adminhelppage": {
+    "placeholder_search_help_topics": "Recherche aide sur les sujets…",
+    "admin_help_documentation": "Aide de l'administrateur et documentation"
+  },
+  "components_auth_requestbetapage": {
+    "school_organization_optional": "École / organisation (facultatif)",
+    "anything_else_optional": "Autre chose ? (facultatif)"
+  },
+  "components_common_map": {
+    "aria_label_zone_shape": "Forme de la zone"
+  },
+  "components_common_modal": {
+    "aria_label_close_modal": "Fermer la boîte de dialogue"
+  },
+  "components_student_capture_audiorecorder": {
+    "aria_label_download_recording": "Télécharger l'enregistrement",
+    "download": "⬇ Télécharger"
+  },
+  "pendingReflectionQueue": {
+    "awaiting_approval": "en attente d'approbation",
+    "teacher_commented": "le professeur a commenté"
+  },
+  "pages_admin_platformadminpage": {
+    "peripateticware": "Logiciel erratique",
+    "adminexamplecom": "admin@example.com"
+  },
+  "pages_licensingpage": {
+    "individual_educators_using_it_in_their_o": "Éducateurs individuels l'utilisant dans leur propre salle de classe'}, {",
+    "these_are_related_but_distinct_using_per": "Ces éléments sont liés mais distincts : l'utilisation de peripateticware.com n'exige pas de connaître ou de se soucier de la licence source ci-dessous, et la licence source est ce qui réglemente toute personne exécutant sa propre copie du code - y compris le fait qu'elle permette à Paul, en tant que titulaire de la licence, d'exploitation de cette SaaS en premier lieu.",
+    "faq": "FAQ",
+    "the_source_license_bsl_11_apache_20": "La licence source : BSL 1.1 → Apache 2.0",
+    "free_today_under_bsl_11_for": "Gratuit aujourd'hui, sous BSL 1.1, pour:",
+    "adminthewordinbitscom": "admin@motparmot.ca"
+  },
+  "pages_student_reflectioneditorpage": {
+    "draft": "Draft",
+    "saved": "✓ Saved",
+    "saving": "Saving…"
+  },
   "monitor_map": "Monitor Map",
-  "pages_teachersubmissionspage.field_work_ready": "Prêt pour le travail sur le terrain 🏕️",
-  "pages_teachersubmissionspage.reviewed": "Révision effectuée ✓",
-  "pages_teachersubmissionspage.approved": "Approuvé ✓",
-  "pages_teachersubmissionspage.your_feedback": "Votre feedback :",
-  "pricing.personal.description": "Commencez votre apprentissage en plein air",
-  "pricing.personal.feature.1": "Observations géolocalisées",
-  "pricing.district.title": "Région scolaire'}, {",
-  "pricing.district.subtitle": "Pour l'ensemble des districts",
-  "pricing.district.price": "Personnalisé",
-  "pricing.district.description": "False",
-  "components_landing_loginmodal.aria_label_authentication": "False",
-  "components_landing_storysection.alt_a_student_walking_through_the_forest_wit": "False",
-  "pricing_tier.personal.name": "False",
-  "pricing_tier.personal.feature.1": "False",
-  "pricing_tier.personal.feature.3": "Péri AI",
-  "pricing_tier.personal.feature.4": "fr-ca",
-  "pricing_tier.district.feature.2": "Priorit√© + Support SLA",
-  "pricing_tier.district.feature.3": "Exportation de PDF de portefeuille",
-  "pricing_tier.homeschool.feature.3": "False",
-  "pricing_tier.homeschool.feature.4": "False",
-  "pricing_tier.contact_for_pricing": "False",
-  "meet_peri.step.1.desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking.",
+  "pages_teachersubmissionspage": {
+    "field_work_ready": "Prêt pour le travail sur le terrain 🏕️",
+    "reviewed": "Révision effectuée ✓",
+    "approved": "Approuvé ✓",
+    "your_feedback": "Votre feedback :"
+  },
+  "pricing": {
+    "personal": {
+      "description": "Commencez votre apprentissage en plein air",
+      "feature": {
+        "1": "Observations géolocalisées"
+      }
+    },
+    "district": {
+      "title": "Région scolaire'}, {",
+      "subtitle": "Pour l'ensemble des districts",
+      "price": "Personnalisé",
+      "description": "False"
+    }
+  },
+  "components_landing_loginmodal": {
+    "aria_label_authentication": "False"
+  },
+  "components_landing_storysection": {
+    "alt_a_student_walking_through_the_forest_wit": "False"
+  },
+  "pricing_tier": {
+    "personal": {
+      "name": "False",
+      "feature": {
+        "1": "False",
+        "3": "Péri AI",
+        "4": "fr-ca"
+      }
+    },
+    "district": {
+      "feature": {
+        "2": "Priorit√© + Support SLA",
+        "3": "Exportation de PDF de portefeuille"
+      }
+    },
+    "homeschool": {
+      "feature": {
+        "3": "False",
+        "4": "False"
+      }
+    },
+    "contact_for_pricing": "False",
+    "school": {
+      "name": "École'}, {"
+    }
+  },
+  "meet_peri": {
+    "step": {
+      "1": {
+        "desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking."
+      }
+    }
+  },
   "cta_title": "Prêt à apprendre en dehors ?",
   "cta_desc": "Gratuit pour les enseignants individuels. Pas de carte de crédit requise.",
-  "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
-  "layouts_platformshell.platform_operator_secret": "Platform operator secret",
-  "curriculumImportPage.title": "Importer les normes académiques de l'État'}, {",
-  "pages_donotsellpage.under_the_california_consumer_privacy_ac": "Conformément à la loi de protection de la vie privée des consommateurs de la Californie (CCPA) et à la loi sur les droits à la vie privée de la Californie (CPRA), les résidents de la Californie ont le droit de se désinscrire de la vente ou du partage de leurs informations personnelles. Peripateticware ne vend pas de données personnelles, mais vous pouvez soumettre cette demande pour enregistrer formellement vos préférences.",
-  "pages_donotsellpage.privacyperipateticwarecom": "privacy@peripateticware.com",
-  "pages_maintenancepage.down_for_maintenance": "En entretien d'entretien",
+  "layouts_platformshell": {
+    "platform_operator_secret": "Platform operator secret"
+  },
+  "curriculumImportPage": {
+    "title": "Importer les normes académiques de l'État'}, {"
+  },
+  "pages_donotsellpage": {
+    "under_the_california_consumer_privacy_ac": "Conformément à la loi de protection de la vie privée des consommateurs de la Californie (CCPA) et à la loi sur les droits à la vie privée de la Californie (CPRA), les résidents de la Californie ont le droit de se désinscrire de la vente ou du partage de leurs informations personnelles. Peripateticware ne vend pas de données personnelles, mais vous pouvez soumettre cette demande pour enregistrer formellement vos préférences.",
+    "privacyperipateticwarecom": "privacy@peripateticware.com",
+    "do_not_sell_or_share_my_personal_informa": "Ne pas vendre ou partager mes informations personnelles",
+    "preference_recorded": "Préférence enregistrée",
+    "placeholder_youexamplecom": "you@example.com"
+  },
+  "pages_maintenancepage": {
+    "down_for_maintenance": "En entretien d'entretien"
+  },
   "gps_expires": "Le consentement expire automatiquement à la fin de l'activité (maximum 30 jours)",
-  "pages_teacher_teacherwelcomepage.invite_your_first_students": "Inviter vos premiers étudiants'}, {",
-  "pages_adminprivacyconfigpage.version": "Version",
-  "pages_adminprivacyconfigpage.title_generate_a_new_uuid": "Générer un nouvel UUID",
-  "pages_adminprivacyconfigpage.placeholder_what_changed_in_this_version": "Qu'est-ce qui a changé dans cette version ?",
-  "pages_org_admin_orgaiconfigpage.bring_your_own_key_upgrade_required": "Apportez votre propre clé — Mise à jour requise",
-  "pages_org_admin_orgaiconfigpage.not_set": "Non défini",
-  "pages_org_admin_orgaiconfigpage.consoleanthropiccom": "console.anthropic.com",
-  "pages_org_admin_orgaiconfigpage.platformopenaicom": "plateforme.openai.com",
-  "pages_originstorypage.the_2007_paper_described_a_choose_your_o": "Le papier de 2007 a décrit un modèle d'apprentissage \"à la carte\", où les étudiants suivent des tangentes, poursuivent ce qui les intéresse et rencontrent les concepts du programme par les portes dérobées de la véritable curiosité plutôt que par l'entrée principale de l'instruction. Le papier a reconnu que cela était \"quelque peu chaotique\" et qu'il faudrait de nouveaux types de conception pédagogique, de nouveaux outils d'évaluation et des enseignants prêts à abandonner un certain contrôle pour une véritable implication.",
-  "pages_originstorypage.peripateticware_doesnt_fully_solve_the_c": "Peripateticware ne résout pas complètement le chaos — cette tension est réelle et probablement permanente. Ce qu'il fait, c'est donner aux enseignants assez de structure pour rester sains (activités conçues, objectifs d'apprentissage, phases d'achèvement, workflows d'approbation de l'enseignant) tout en donnant aux étudiants assez de liberté pour aller quelque part (contenu déclenché par GPS, activités proposées par les étudiants, notes de terrain autodirigées, projets entre pairs).",
-  "pages_originstorypage.the_reverse_scavenger_hunt_where_student": "La chasse au trésor inverse — où les étudiants proposent une activité basée sur quelque chose qu'ils ont trouvé — est la chose la plus proche de cette vision de 2007 sur la plateforme. Un étudiant découvre une formation rocheuse particulière. Il la propose comme activité. L'enseignant l'approuve. D'autres étudiants vont voir. Des questions émergent que aucun document de programme n'avait anticipées.",
-  "pages_originstorypage.the_short_answer_is_that_most_of_the_ena": "La réponse courte est que la plupart de la technologie d'activation n'était pas prête en 2007. La présence de GPS dans chaque poche est venue en premier (2010–2015). Ensuite, les caméras mobiles de haute qualité. Ensuite, les API cloud abordables pour les écoles. Ensuite, les modèles d'IA locaux (Ollama, llama.cpp) qui peuvent être exécutés sur le serveur domestique d'un enseignant sans facture d'inférence de $10 000 par mois. Le papier de 2007 avait raison quant à la destination; il n'aurait pas pu savoir combien de temps prendrait le chemin.",
-  "pages_adminauditlogpage.blocked": "Bloqué",
-  "pages_adminauditlogpage.student": "Étudiant",
-  "pages_adminauditlogpage.teacher": "Enseignant",
-  "pages_adminauditlogpage.parent": "Parent",
-  "pages_adminauditlogpage.admin": "Administrateur",
-  "pages_cookiepolicypage.helloperipateticwarecom": "hello@peripateticware.com",
-  "pages_platform_platformauditlogpage.action": "action",
-  "pages_platform_platformauditlogpage.no_audit_entries_yet": "Aucune entrée d'audit pour le moment.",
-  "pages_privacyenginepage.privacy_engine": "Moteur de confidentialité'}, {",
-  "pages_privacyenginepage.click_any_framework_to_see_the_specific_": "Cliquez sur tout cadre pour voir les règles spécifiques que Peripateticware applique.",
-  "phone_carousel.parent.1.stat.3.label": "Insignes",
-  "compliance.ferpa.name": "Loi sur la confidentialit√© des dossiers √©ducatifs des √©tudiants",
-  "compliance.ferpa.region": "√Čtats-Unis",
-  "compliance.coppa.name": "Loi sur la protection de la vie priv√©e des enfants en ligne",
-  "compliance.coppa.region": "États-Unis d'Amérique",
-  "pages_licensingpage.faq": "FAQ",
-  "pages_licensingpage.the_source_license_bsl_11_apache_20": "La licence source : BSL 1.1 → Apache 2.0",
-  "pages_licensingpage.free_today_under_bsl_11_for": "Gratuit aujourd'hui, sous BSL 1.1, pour:",
-  "pages_platform_platformaisettingspage.openai": "OpenAI",
-  "pages_sessionpage.location_sharing": "Partage de l'emplacement",
-  "pages_donotsellpage.do_not_sell_or_share_my_personal_informa": "Ne pas vendre ou partager mes informations personnelles",
-  "pages_donotsellpage.preference_recorded": "Préférence enregistrée",
-  "pages_parentcalendarpage.activities_assigned_by_teachers_will_app": "Les activités attribuées par les enseignants apparaitront ici.",
+  "pages_teacher_teacherwelcomepage": {
+    "invite_your_first_students": "Inviter vos premiers étudiants'}, {",
+    "placeholder_studentexamplecom": "student@example.com"
+  },
+  "pages_adminprivacyconfigpage": {
+    "version": "Version",
+    "title_generate_a_new_uuid": "Générer un nouvel UUID",
+    "placeholder_what_changed_in_this_version": "Qu'est-ce qui a changé dans cette version ?"
+  },
+  "pages_org_admin_orgaiconfigpage": {
+    "bring_your_own_key_upgrade_required": "Apportez votre propre clé — Mise à jour requise",
+    "not_set": "Non défini",
+    "consoleanthropiccom": "console.anthropic.com",
+    "platformopenaicom": "plateforme.openai.com"
+  },
+  "pages_originstorypage": {
+    "the_2007_paper_described_a_choose_your_o": "Le papier de 2007 a décrit un modèle d'apprentissage \"à la carte\", où les étudiants suivent des tangentes, poursuivent ce qui les intéresse et rencontrent les concepts du programme par les portes dérobées de la véritable curiosité plutôt que par l'entrée principale de l'instruction. Le papier a reconnu que cela était \"quelque peu chaotique\" et qu'il faudrait de nouveaux types de conception pédagogique, de nouveaux outils d'évaluation et des enseignants prêts à abandonner un certain contrôle pour une véritable implication.",
+    "peripateticware_doesnt_fully_solve_the_c": "Peripateticware ne résout pas complètement le chaos — cette tension est réelle et probablement permanente. Ce qu'il fait, c'est donner aux enseignants assez de structure pour rester sains (activités conçues, objectifs d'apprentissage, phases d'achèvement, workflows d'approbation de l'enseignant) tout en donnant aux étudiants assez de liberté pour aller quelque part (contenu déclenché par GPS, activités proposées par les étudiants, notes de terrain autodirigées, projets entre pairs).",
+    "the_reverse_scavenger_hunt_where_student": "La chasse au trésor inverse — où les étudiants proposent une activité basée sur quelque chose qu'ils ont trouvé — est la chose la plus proche de cette vision de 2007 sur la plateforme. Un étudiant découvre une formation rocheuse particulière. Il la propose comme activité. L'enseignant l'approuve. D'autres étudiants vont voir. Des questions émergent que aucun document de programme n'avait anticipées.",
+    "the_short_answer_is_that_most_of_the_ena": "La réponse courte est que la plupart de la technologie d'activation n'était pas prête en 2007. La présence de GPS dans chaque poche est venue en premier (2010–2015). Ensuite, les caméras mobiles de haute qualité. Ensuite, les API cloud abordables pour les écoles. Ensuite, les modèles d'IA locaux (Ollama, llama.cpp) qui peuvent être exécutés sur le serveur domestique d'un enseignant sans facture d'inférence de $10 000 par mois. Le papier de 2007 avait raison quant à la destination; il n'aurait pas pu savoir combien de temps prendrait le chemin."
+  },
+  "pages_adminauditlogpage": {
+    "blocked": "Bloqué",
+    "student": "Étudiant",
+    "teacher": "Enseignant",
+    "parent": "Parent",
+    "admin": "Administrateur"
+  },
+  "pages_cookiepolicypage": {
+    "helloperipateticwarecom": "hello@peripateticware.com"
+  },
+  "pages_platform_platformauditlogpage": {
+    "action": "action",
+    "no_audit_entries_yet": "Aucune entrée d'audit pour le moment."
+  },
+  "pages_privacyenginepage": {
+    "privacy_engine": "Moteur de confidentialité'}, {",
+    "click_any_framework_to_see_the_specific_": "Cliquez sur tout cadre pour voir les règles spécifiques que Peripateticware applique.",
+    "key_rules_enforced": "Règles clés appliquées",
+    "peripateticwares_privacy_engine_enforces": "Le moteur de confidentialité de Peripateticware applique FERPA, COPPA, GDPR et SOC 2 grâce à un système de règles configurables — ainsi, chaque opération sur les données est conforme par défaut, quelle que soit la juridiction dans laquelle votre école fonctionne.",
+    "how_it_works": "Comment ça marche",
+    "six_layers_of_privacy_running_automatica": "Six couches de confidentialité fonctionnant automatiquement à chaque demande.",
+    "supported_frameworks": "Cadres pris en charge"
+  },
+  "pages_platform_platformaisettingspage": {
+    "openai": "OpenAI"
+  },
+  "pages_sessionpage": {
+    "location_sharing": "Partage de l'emplacement"
+  },
+  "pages_parentcalendarpage": {
+    "activities_assigned_by_teachers_will_app": "Les activités attribuées par les enseignants apparaitront ici."
+  },
   "gps_only_during": "Les coordonnées GPS sont partagées uniquement pendant la session de terrain active",
   "gps_teacher_only": "Visible seulement à l'enseignant de la classe — pas aux autres étudiants ou au public",
-  "pages_teacher_teacherclassroompage.class_full_upgrade_to_add_more": "None",
-  "pages_privacyconfirmationpage.privacy_set_up": "Configuration de la confidentialit√©",
-  "pages_privacyconfirmationpage.weve_automatically_applied_the_right_pro": "Nous avons appliqu√© automatiquement les bonnes mesures de protection pour vos √©l√®ves en fonction de votre emplacement.",
-  "pages_privacyconfirmationpage.go_to_dashboard": "Aller au tableau de bord",
-  "pages_privacyenginepage.key_rules_enforced": "Règles clés appliquées",
-  "pages_privacyenginepage.peripateticwares_privacy_engine_enforces": "Le moteur de confidentialité de Peripateticware applique FERPA, COPPA, GDPR et SOC 2 grâce à un système de règles configurables — ainsi, chaque opération sur les données est conforme par défaut, quelle que soit la juridiction dans laquelle votre école fonctionne.",
-  "pages_privacyenginepage.how_it_works": "Comment ça marche",
-  "pages_privacyenginepage.six_layers_of_privacy_running_automatica": "Six couches de confidentialité fonctionnant automatiquement à chaque demande.",
-  "pages_privacyenginepage.supported_frameworks": "Cadres pris en charge",
-  "pricing_tier.school.name": "École'}, {",
+  "pages_teacher_teacherclassroompage": {
+    "class_full_upgrade_to_add_more": "None"
+  },
+  "pages_privacyconfirmationpage": {
+    "privacy_set_up": "Configuration de la confidentialit√©",
+    "weve_automatically_applied_the_right_pro": "Nous avons appliqu√© automatiquement les bonnes mesures de protection pour vos √©l√®ves en fonction de votre emplacement.",
+    "go_to_dashboard": "Aller au tableau de bord"
+  },
   "gps_stored": "Snapshots de l'emplacement stockées par soumission (non-suivi continu)",
-  "auth.fullname_placeholder": "Smith, Jane",
+  "auth": {
+    "fullname_placeholder": "Smith, Jane"
+  },
   "youexamplecom": "you@example.com",
-  "footer.resources_docs": "Documentation",
-  "footer.resources_api": "API",
-  "footer.resources_support": "Support",
-  "footer.company_contact": "Contact",
-  "footer.legal_contact": "Contact",
-  "team_2_role": "Lorem Ipsum",
-  "team_3_name": "Lorem Ipsum",
-  "team_3_role": "Lorem Ipsum",
-  "team_3_initial": "L",
-  "team_4_name": "Lorem Ipsum",
-  "team_4_role": "Lorem Ipsum",
-  "team_4_initial": "L",
-  "testimonial_1_author": "Lorem Ipsum · Field Name, Grade 0",
-  "testimonial_2_author": "Lorem Ipsum · Field Name",
-  "testimonial_3_author": "Lorem Ipsum · Field Name",
-  "testimonial_4_author": "Lorem Ipsum · Field Name",
-  "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam.",
-  "testimonial_5_author": "Lorem Ipsum · Field Name",
-  "termspage.the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their institution.",
-  "termspage.the_service_is_provided_ldquoas_isrdquo_": "The Service is provided &ldquo;as is.&rdquo; Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
-  "layouts_dashboardshell.peripateticware": "Peripateticware",
-  "pages_auth_forgotpasswordpage.placeholder_youexamplecom": "you@example.com",
-  "pages_teacher_teacherstudentspage.placeholder_studentexamplecom": "student@example.com",
-  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "team_4_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  "pages_admin_platformadminpage.adminexamplecom": "admin@example.com",
-  "pages_donotsellpage.placeholder_youexamplecom": "you@example.com",
-  "pages_linkchildpage.placeholder_studentexamplecom": "student@example.com",
-  "pages_teacher_teacherwelcomepage.placeholder_studentexamplecom": "student@example.com",
-  "pages_termspage.helloperipateticwarecom": "hello@peripateticware.com",
+  "footer": {
+    "resources_docs": "Documentation",
+    "resources_api": "API",
+    "resources_support": "Support",
+    "company_contact": "Contact",
+    "legal_contact": "legal contact"
+  },
+  "team_2_role": "Lorem Ipsum Dolor",
+  "team_3_name": "Dolor Sit Amet",
+  "team_3_role": "Consectetur Adipiscing",
+  "team_3_initial": "D",
+  "team_4_name": "Elit Sed Do",
+  "team_4_role": "Eiusmod Tempor",
+  "team_4_initial": "E",
+  "testimonial_1_author": "Lorem Ipsum · Placeholder Title",
+  "testimonial_2_author": "Dolor Sit · Placeholder Title",
+  "testimonial_3_author": "Amet Consectetur · Placeholder Title",
+  "testimonial_4_author": "Adipiscing Elit · Placeholder Title",
+  "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
+  "testimonial_5_author": "Sed Do Eiusmod · Placeholder Title",
+  "termspage": {
+    "the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their legal guardian.",
+    "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided “as is.” Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service."
+  },
+  "layouts_dashboardshell": {
+    "peripateticware": "Peripateticware"
+  },
+  "pages_auth_forgotpasswordpage": {
+    "placeholder_youexamplecom": "you@example.com"
+  },
+  "pages_teacher_teacherstudentspage": {
+    "placeholder_studentexamplecom": "student@example.com"
+  },
+  "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "pages_linkchildpage": {
+    "placeholder_studentexamplecom": "student@example.com"
+  },
+  "pages_termspage": {
+    "helloperipateticwarecom": "hello@peripateticware.com"
+  },
   "pe": "QC",
-  "activitymanager.latitude": "49° N",
-  "activitymanager.longitude": "49°50′N",
-  "activitypreview.latitude": "49° N",
-  "activitypreview.longitude": "49°50′N",
+  "activitymanager": {
+    "latitude": "49° N",
+    "longitude": "49°50′N"
+  },
+  "activitypreview": {
+    "latitude": "49° N",
+    "longitude": "49°50′N"
+  },
   "minutes": "59",
   "performancebased": "Basé sur les performances",
-  "locationpicker.longitude": "49°50′N",
+  "locationpicker": {
+    "longitude": "49°50′N"
+  },
   "new_york_ny": "Nouveau York, NY",
-  "metrics.engagement_score": "Engagement score",
+  "metrics": {
+    "engagement_score": "Engagement score"
+  },
   "photo": "photo",
   "district": "Distrikt",
   "phase": "Phase",
   "gdpr_title": "GDPR",
   "ccpa_title": "CCPA",
-  "components_shared_extractionwizard.description": "Description",
+  "components_shared_extractionwizard": {
+    "description": "Description"
+  },
   "description": "Description",
-  "pages_homeschool_homeschoolexportpage.format": "Formater",
+  "pages_homeschool_homeschoolexportpage": {
+    "format": "Formater"
+  },
   "pts": "pts",
-  "nav.notifications": "Notifications",
-  "pages_licensingpage.adminthewordinbitscom": "admin@motparmot.ca",
-  "pages_parentmessagespage.messages": "Messages",
+  "pages_parentmessagespage": {
+    "messages": "Messages"
+  },
   "notifications": "Notifications",
-  "privacy.extensible_title": "Extensible",
-  "privacy.consent_framework_title": "consent\\_framework",
+  "privacy": {
+    "extensible_title": "Extensible",
+    "consent_framework_title": "consent\\_framework"
+  },
   "ferpa_title": "FERPA",
   "coppa_title": "COPPA",
-  "pages_admin_adminaiconfigpage.placeholder_skant": "sk-ant-",
-  "pages_admin_adminaiconfigpage.placeholder_sk": "sk-"
+  "pages_admin_adminaiconfigpage": {
+    "placeholder_skant": "sk-ant-",
+    "placeholder_sk": "sk-"
+  }
 }

@@ -17,6 +17,21 @@ const __dirname = path.dirname(__filename);
 
 test.use({ storageState: path.join(__dirname, '.auth/platform.json') });
 
+// PlatformShell gates every /platform/* route behind a one-time-per-session
+// "operator secret" prompt (see layouts/PlatformShell.tsx). That gate is
+// intentionally stored in sessionStorage only (never localStorage — see
+// utils/platformFetch.ts), which Playwright's `storageState` mechanism does
+// NOT persist (storageState only captures cookies + localStorage). Without
+// this, every test in this file would hit the secret gate instead of the
+// actual page content. Seeding sessionStorage via addInitScript before each
+// navigation correctly simulates "an admin who already passed the gate this
+// browser session" — the same state a real returning user would be in.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem('pw_platform_secret', '');
+  });
+});
+
 function collectConsoleErrors(page: Page) {
   const errors: string[] = [];
   page.on('console', msg => {

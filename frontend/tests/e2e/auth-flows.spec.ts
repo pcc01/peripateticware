@@ -104,23 +104,40 @@ test.describe('Auth – Forgot password', () => {
 // 4. Signup
 // ---------------------------------------------------------------------------
 test.describe('Auth – Signup', () => {
-  test('page loads and has required fields', async ({ page }) => {
+  // /signup is gated by SignupGateWrapper (App.tsx): it fetches the backend's
+  // public config and shows either the real signup form OR the "Request Beta
+  // Access" page, depending on SIGNUP_MODE. Both are valid, intentional product
+  // states — the tests below accept either rather than assuming open signup.
+  async function isOpenSignupForm(page: import('@playwright/test').Page) {
+    return page.locator('input[type="password"]').first().isVisible({ timeout: 10_000 }).catch(() => false);
+  }
+
+  test('page loads and has required fields (open signup) or the beta-request form (invite-only)', async ({ page }) => {
     await page.goto('/signup');
     await expect(page).not.toHaveURL(/\/login/);
 
     // SignUpScreen: labels have no htmlFor association — use type/position selectors
     await expect(page.locator('input[type="text"]').first()).toBeVisible({ timeout: 10_000 });   // first name
-    await expect(page.locator('input[type="text"]').nth(1)).toBeVisible({ timeout: 10_000 });   // last name
     await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('input[type="password"]').first()).toBeVisible({ timeout: 10_000 });
+
+    if (await isOpenSignupForm(page)) {
+      // Open mode: full signup form, including last name + password fields.
+      await expect(page.locator('input[type="text"]').nth(1)).toBeVisible({ timeout: 5_000 });   // last name
+      await expect(page.locator('input[type="password"]').first()).toBeVisible({ timeout: 5_000 });
+    } else {
+      // Invite-only mode: RequestBetaPage renders instead — has name/email/role fields, no password.
+      await expect(page.getByText(/request beta|beta access/i).first()).toBeVisible({ timeout: 5_000 });
+    }
   });
 
   test('has a role selector', async ({ page }) => {
     await page.goto('/signup');
-    // SignUpScreen shows role buttons: Teacher, Student, Parent, Homeschool
+    // SignUpScreen (open mode) shows role buttons: Teacher, Student, Parent, Homeschool.
+    // RequestBetaPage (invite-only mode) shows a role <select> with equivalent options.
     const roleEl = page
       .getByRole('button', { name: /teacher|student|parent|homeschool/i })
-      .or(page.getByLabel(/i am a/i))
+      .or(page.getByRole('combobox'))
+      .or(page.getByLabel(/i am a|role/i))
       .or(page.getByText(/i am a/i));
     await expect(roleEl.first()).toBeVisible({ timeout: 10_000 });
   });

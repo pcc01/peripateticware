@@ -61,9 +61,13 @@ test.describe('Teacher — Shared Library', () => {
     await page.goto('/teacher/shared-library');
     // Wait for the "Loading…" spinner to disappear before checking the footer
     await expect(page.getByText('Loading…')).not.toBeVisible({ timeout: 15_000 });
-    // Footer <p> always reads "N activities found" — scope with filter so strict mode doesn't fire
+    // Footer <p> always reads "N activities found" (e.g. "0 activities found").
+    // NOTE: the empty-state message "No shared activities found." also contains
+    // the substring "activities found", so a loose /activities found/ filter
+    // matches both and trips Playwright's strict mode when the list is empty.
+    // Anchor on the leading digit to target only the footer counter.
     await expect(
-      page.locator('p').filter({ hasText: /activities found/ }),
+      page.locator('p').filter({ hasText: /^\d+ activit/ }),
     ).toBeVisible({ timeout: 10_000 });
   });
 
