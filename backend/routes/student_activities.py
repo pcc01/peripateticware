@@ -1323,28 +1323,43 @@ async def student_record_gps_consent(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Student (13+) records their own GPS-tracking consent for an activity."""
+    """
+    Student (13+) records their own GPS-tracking consent for an activity.
+
+    consent_logs is an append-only audit table (real FK on student_id, no
+    unique constraint by design -- see database/init.sql / models.database.ConsentLog).
+    Granting inserts a new row; revoking soft-closes any currently-active
+    row(s) by setting withdrawn_at, rather than upserting a single "current
+    state" row.
+    """
     if current_user.role not in (UserRole.STUDENT, UserRole.HOMESCHOOL):
         raise HTTPException(status_code=403, detail="Student access only")
 
-    import hashlib
-    student_id_hash = hashlib.sha256(str(current_user.id).encode()).hexdigest()
-
     try:
-        await db.execute(
-            _text("""
-                INSERT INTO consent_logs
-                    (student_id_hash, consent_type, consent_given, consent_method, activity_id, expires_at)
-                VALUES (:hash, 'gps_tracking', :given, 'student_self', :aid::uuid, NOW() + INTERVAL '1 year')
-                ON CONFLICT (student_id_hash, consent_type, activity_id)
-                DO UPDATE SET
-                    consent_given  = EXCLUDED.consent_given,
-                    consent_method = EXCLUDED.consent_method,
-                    expires_at     = EXCLUDED.expires_at,
-                    created_at     = NOW()
-            """),
-            {"hash": student_id_hash, "given": body.consent_given, "aid": body.activity_id},
-        )
+        if body.consent_given:
+            await db.execute(
+                _text("""
+                    INSERT INTO consent_logs
+                        (student_id, activity_id, consent_type, given_by_student,
+                         consent_given_at, expires_at)
+                    VALUES
+                        (:sid::uuid, :aid::uuid, 'gps_tracking', TRUE,
+                         NOW(), NOW() + INTERVAL '1 year')
+                """),
+                {"sid": str(current_user.id), "aid": body.activity_id},
+            )
+        else:
+            await db.execute(
+                _text("""
+                    UPDATE consent_logs
+                    SET withdrawn_at = NOW()
+                    WHERE student_id   = :sid::uuid
+                      AND activity_id  = :aid::uuid
+                      AND consent_type = 'gps_tracking'
+                      AND withdrawn_at IS NULL
+                """),
+                {"sid": str(current_user.id), "aid": body.activity_id},
+            )
         await db.commit()
     except Exception as e:
         logger.error(f"Student GPS consent error: {e}")

@@ -533,23 +533,30 @@ async def _check_gps_consent(
     student_id,
     activity_id,
 ) -> bool:
-    """Return True if active GPS-tracking consent exists for this student+activity."""
+    """Return True if active GPS-tracking consent exists for this student+activity.
+
+    consent_logs is a real, pre-existing append-only audit table (student_id
+    is a genuine FK to users.id, not a hash -- see database/init.sql /
+    models.database.ConsentLog). "Active consent" = the most recent
+    gps_tracking row for this student+activity that hasn't been withdrawn
+    or expired and was actually granted (by the student or a parent).
+    """
     if not activity_id:
         return False
-    import hashlib
-    student_id_hash = hashlib.sha256(str(student_id).encode()).hexdigest()
     try:
         result = await db.execute(
             text("""
-                SELECT consent_given FROM consent_logs
-                WHERE student_id_hash = :sid_hash
-                  AND consent_type    = 'gps_tracking'
-                  AND activity_id     = :aid::uuid
-                  AND consent_given   = TRUE
+                SELECT id FROM consent_logs
+                WHERE student_id   = :sid::uuid
+                  AND consent_type = 'gps_tracking'
+                  AND activity_id  = :aid::uuid
+                  AND (given_by_student = TRUE OR given_by_parent = TRUE)
+                  AND withdrawn_at IS NULL
                   AND (expires_at IS NULL OR expires_at > NOW())
+                ORDER BY consent_given_at DESC
                 LIMIT 1
             """),
-            {"sid_hash": student_id_hash, "aid": str(activity_id)},
+            {"sid": str(student_id), "aid": str(activity_id)},
         )
         row = result.fetchone()
         return row is not None

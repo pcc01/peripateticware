@@ -984,19 +984,17 @@ async def apply_student_phase7_migrations(engine) -> None:
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_latitude FLOAT",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
         "ALTER TABLE student_peer_projects ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
-        # GPS map infrastructure (Session 30)
+        # GPS map infrastructure (Session 30).
+        # NOTE: consent_logs is NOT created here -- it's a real, pre-existing
+        # table (see database/init.sql + models.database.ConsentLog) with a
+        # completely different, append-only schema (student_id FK,
+        # given_by_student/given_by_parent, withdrawn_at -- no unique
+        # constraint by design). An earlier version of this migration block
+        # tried to CREATE TABLE / ADD CONSTRAINT a fake student_id_hash-based
+        # schema against it; that was always a silent no-op / silent failure
+        # against the real table and has been removed. See GPS_MAP_HANDOFF.md
+        # addendum for the full incident writeup.
         "CREATE TABLE IF NOT EXISTS session_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, student_id UUID, event_type VARCHAR(50) NOT NULL, phase VARCHAR(30), metadata JSONB, created_at TIMESTAMP DEFAULT NOW())",
-        "CREATE TABLE IF NOT EXISTS consent_logs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), student_id_hash VARCHAR(256) NOT NULL, consent_type VARCHAR(50) NOT NULL, consent_given BOOLEAN NOT NULL DEFAULT FALSE, consent_method VARCHAR(50), activity_id UUID, created_at TIMESTAMP DEFAULT NOW(), expires_at TIMESTAMP)",
-        """
-        DO $$
-        BEGIN
-            ALTER TABLE consent_logs
-                ADD CONSTRAINT uq_consent_logs_student_type_activity
-                UNIQUE (student_id_hash, consent_type, activity_id);
-        EXCEPTION
-            WHEN duplicate_object THEN NULL;
-        END $$;
-        """,
     ]
     for _s in _stmts:
         try:

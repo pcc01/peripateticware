@@ -895,35 +895,43 @@ async def record_gps_consent(
     Parent records GPS-tracking consent for a specific student+activity.
     Stores a row in consent_logs with consent_type='gps_tracking'.
     Set consent_given=false to explicitly revoke.
-    Idempotent -- upserts on (student_id_hash, consent_type, activity_id).
+
+    consent_logs is an append-only audit table (real FK on student_id, no
+    unique constraint by design -- see database/init.sql / models.database.ConsentLog).
+    Granting inserts a new row; revoking soft-closes any currently-active
+    row(s) by setting withdrawn_at, rather than upserting a single "current
+    state" row.
     """
-    import hashlib
-    from datetime import timezone
-
-    student_id_hash = hashlib.sha256(body.student_id.encode()).hexdigest()
-    expires_at_expr = "NOW() + INTERVAL '30 days'"
-
     try:
-        await db.execute(text(f"""
-            INSERT INTO consent_logs
-                (student_id_hash, consent_type, consent_given, consent_method, activity_id, expires_at)
-            VALUES
-                (:hash, 'gps_tracking', :given, 'parent_web', :aid::uuid, {expires_at_expr})
-            ON CONFLICT (student_id_hash, consent_type, activity_id)
-            DO UPDATE SET
-                consent_given  = EXCLUDED.consent_given,
-                consent_method = EXCLUDED.consent_method,
-                expires_at     = EXCLUDED.expires_at,
-                created_at     = NOW()
-        """), {
-            "hash": student_id_hash,
-            "given": body.consent_given,
-            "aid": body.activity_id,
-        })
+        if body.consent_given:
+            await db.execute(text("""
+                INSERT INTO consent_logs
+                    (student_id, activity_id, consent_type, given_by_parent,
+                     parent_id, consent_given_at, expires_at)
+                VALUES
+                    (:sid::uuid, :aid::uuid, 'gps_tracking', TRUE,
+                     :pid::uuid, NOW(), NOW() + INTERVAL '30 days')
+            """), {
+                "sid": body.student_id,
+                "aid": body.activity_id,
+                "pid": str(current_user.id),
+            })
+        else:
+            await db.execute(text("""
+                UPDATE consent_logs
+                SET withdrawn_at = NOW()
+                WHERE student_id   = :sid::uuid
+                  AND activity_id  = :aid::uuid
+                  AND consent_type = 'gps_tracking'
+                  AND withdrawn_at IS NULL
+            """), {
+                "sid": body.student_id,
+                "aid": body.activity_id,
+            })
         await db.commit()
     except Exception as e:
         import logging
-        logging.getLogger(__name__).error(f"GPS consent upsert error: {e}")
+        logging.getLogger(__name__).error(f"GPS consent write error: {e}")
         raise HTTPException(status_code=500, detail="Failed to record consent")
 
     return {
