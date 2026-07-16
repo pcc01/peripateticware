@@ -1,5 +1,5 @@
 // app/login.tsx
-// Student login screen — uses existing theme + band system
+// Student login screen — uses existing theme system
 
 import React, { useState } from 'react';
 import {
@@ -9,14 +9,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
+import { t } from '@/src/i18n/t';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
-  const { band } = useBand();
   const { login } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -62,9 +61,8 @@ export default function LoginScreen() {
         <View style={styles.periWrap}>
           <PeriSpeech
             text="Welcome back! Sign in to continue your learning journey."
-            band={band}
             theme={theme}
-            size={band === 'k6' ? 48 : 40}
+            size={40}
           />
         </View>
 
@@ -73,6 +71,7 @@ export default function LoginScreen() {
             EMAIL
           </Text>
           <TextInput
+            testID="email-input"
             style={inputStyle}
             value={email}
             onChangeText={setEmail}
@@ -87,6 +86,7 @@ export default function LoginScreen() {
             PASSWORD
           </Text>
           <TextInput
+            testID="password-input"
             style={inputStyle}
             value={password}
             onChangeText={setPassword}
@@ -99,13 +99,20 @@ export default function LoginScreen() {
           {loading ? (
             <ActivityIndicator color={theme.accent} style={{ marginTop: 8 }} />
           ) : (
-            <Btn label="Sign in" onPress={handleLogin} theme={theme} band={band} />
+            <Btn label={t('login.signIn', 'Sign in')} onPress={handleLogin} theme={theme} />
           )}
         </View>
 
-        <TouchableOpacity onPress={() => Alert.alert('Password reset', 'Contact your teacher to reset your password.')}>
+        <TouchableOpacity
+          onPress={() => Alert.alert(
+            t('login.passwordReset.title', 'Password reset'),
+            t('login.passwordReset.body', 'Contact your teacher to reset your password.')
+          )}
+          accessibilityRole="button"
+          accessibilityLabel={t('login.forgotPassword', 'Forgot password?')}
+        >
           <Text style={[styles.forgotText, { color: theme.textFaint, fontFamily: theme.fontBody }]}>
-            Forgot password?
+            {t('login.forgotPassword', 'Forgot password?')}
           </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>

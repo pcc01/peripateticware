@@ -35,4 +35,11 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "in-app-camera"
 # camera-shutter only renders once InAppCamera's onCameraReady fires
-# (see the component's `!ready` gate) â€
+# (see the component's `!ready` gate) â€” tapOn waits for it to exist, which
+# is what makes this reliable instead of racing native camera init.
+- tapOn:
+    id: "camera-shutter"
+- assertNotVisible:
+    id: "capture-sheet"
+- assertVisible:
+    id: "activity-screen"

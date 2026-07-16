@@ -6,10 +6,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 
 import { ThemeProvider } from '@/src/theme/ThemeContext';
-import { BandProvider } from '@/src/bands/BandContext';
 import { AuthProvider, useAuth } from '@/src/stores/AuthContext';
 import { initOfflineLayer } from '@/src/db/appInit';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
+import { getHasOnboarded } from '@/src/onboarding/onboardingFlag';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -56,6 +56,11 @@ class ErrorBoundary extends React.Component<
 }
 
 // ── Auth guard ───────────────────────────────────────────────────────
+// Tour-then-login model (mobile/FEATURE_PLAN.md section 3.4): the
+// onboarding tour never creates an account — real accounts are created by
+// a teacher or homeschool parent in the web app, same as before this
+// change. Onboarding's only job now is to run once on a device that's
+// never seen it, then hand off to the real /login screen.
 function AuthGuard() {
   const { user, isLoading } = useAuth();
   useConnectivity();
@@ -66,14 +71,24 @@ function AuthGuard() {
 
   const segments = useSegments();
 
+  // null = not checked yet (avoid a flash-of-wrong-screen before we know).
+  const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null);
   useEffect(() => {
-    if (isLoading) return;
+    getHasOnboarded().then(setHasOnboarded);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading || hasOnboarded === null) return;
     const inOnboarding = segments[0] === '(onboarding)';
     const inLogin = segments[0] === 'login';
     const inAuth = inOnboarding || inLogin;
-    if (!user && !inAuth) router.replace('/login');
-    else if (user && inLogin) router.replace('/(tabs)');
-  }, [user, isLoading, segments]);
+
+    if (!user && !inAuth) {
+      router.replace(hasOnboarded ? '/login' : '/(onboarding)');
+    } else if (user && inLogin) {
+      router.replace('/(tabs)');
+    }
+  }, [user, isLoading, hasOnboarded, segments]);
 
   return null;
 }
@@ -130,19 +145,16 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <BandProvider>
-          <AuthProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
-              <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
-              <Stack.Screen name="login"         options={{ headerShown: false }} />
-              <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
-              <Stack.Screen name="modal"         options={{ presentation: 'modal' }} />
-            </Stack>
-            <AuthGuard />
-            <StatusBar style="auto" />
-          </AuthProvider>
-        </BandProvider>
+        <AuthProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
+            <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
+            <Stack.Screen name="login"         options={{ headerShown: false }} />
+            <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
+          </Stack>
+          <AuthGuard />
+          <StatusBar style="auto" />
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

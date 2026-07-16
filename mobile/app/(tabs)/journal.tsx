@@ -4,17 +4,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
 import { fetchJournal, JournalEntry } from '@/src/api/journal';
 
 export default function JournalScreen() {
   const { theme } = useTheme();
-  const { band } = useBand();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const label = band === 'k6' ? 'Field Journal' : 'Field Notes';
+  const label = 'Field Notes';
 
   const load = useCallback(async () => {
     const data = await fetchJournal();
@@ -30,7 +28,7 @@ export default function JournalScreen() {
   }, [load]);
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]}>
+    <SafeAreaView testID="journal-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{label}</Text>
       </View>
@@ -38,6 +36,7 @@ export default function JournalScreen() {
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
       ) : (
         <FlatList
+          testID="journal-list"
           data={entries}
           keyExtractor={(e) => e.id}
           contentContainerStyle={{ padding: 16, gap: 10 }}

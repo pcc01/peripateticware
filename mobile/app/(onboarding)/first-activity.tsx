@@ -6,8 +6,7 @@ import { View, Text, StyleSheet, useWindowDimensions, StatusBar } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
-import { copy } from '@/src/bands/copy';
+import { onboardingCopy as c } from '@/src/onboarding/copy';
 import { fetchActivities, Activity } from '@/src/api/activities';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -16,8 +15,6 @@ import Btn from '@/src/components/Btn';
 export default function FirstActivityScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
-  const { band } = useBand();
-  const c = copy[band];
   const { name = '' } = useLocalSearchParams<{ name: string }>();
   const [firstActivity, setFirstActivity] = React.useState<Activity | null>(null);
 
@@ -43,9 +40,8 @@ export default function FirstActivityScreen() {
 
           <PeriSpeech
             text={c.firstActivityPeriSpeech(name as string)}
-            band={band}
             theme={theme}
-            size={band === 'k6' ? 48 : 40}
+            size={40}
           />
 
           {/* Activity card */}
@@ -76,13 +72,11 @@ export default function FirstActivityScreen() {
             label={c.firstActivityCta}
             onPress={() => router.replace('/(tabs)')}
             theme={theme}
-            band={band}
           />
           <Btn
             label={c.firstActivityBrowseCta}
             onPress={() => router.replace('/(tabs)')}
             theme={theme}
-            band={band}
             variant="secondary"
           />
         </View>

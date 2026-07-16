@@ -32,4 +32,14 @@ appId: com.peripateticware.app
     id: "capture-mode-note"
 - tapOn:
     id: "capture-note-input"
-- inputText:
+- inputText: "Found three different leaf shapes near the water."
+- tapOn:
+    id: "capture-note-save"
+# CaptureSheet's upload() calls onClose() on success (online upload or
+# offline-queue fallback both hit this path), so the sheet closing is the
+# right signal the note was saved rather than asserting a specific
+# online/offline outcome.
+- assertNotVisible:
+    id: "capture-sheet"
+- assertVisible:
+    id: "activity-screen"

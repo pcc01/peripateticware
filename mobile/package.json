@@ -14,7 +14,8 @@
     "test:maestro:settings": "maestro test maestro/flows/settings -e STUDENT_EMAIL=student@test.local -e STUDENT_PASSWORD=Test1234!",
     "test:maestro:all-devices": "powershell -ExecutionPolicy Bypass -File scripts/run-maestro-all-devices.ps1",
     "test:ios:preflight": "bash scripts/test-preflight-ios.sh",
-    "test:ios:all-devices": "bash scripts/run-tests-ios.sh"
+    "test:ios:all-devices": "bash scripts/run-tests-ios.sh",
+    "test:maestro:offline-capture": "powershell -ExecutionPolicy Bypass -File scripts/run-offline-capture-test.ps1"
   },
   "dependencies": {
     "@expo-google-fonts/dm-mono": "^0.2.3",
@@ -40,6 +41,7 @@
     "expo-location": "~19.0.8",
     "expo-network": "~8.0.8",
     "expo-router": "~6.0.23",
+    "expo-speech": "~14.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
@@ -61,4 +63,14 @@
   },
   "devDependencies": {
     "@types/jest": "29.5.14",
-    "@types/react": "~19.
+    "@types/react": "~19.1.0",
+    "detox": "^20.51.4",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "jest": "^29.7.0",
+    "jest-circus": "^29.7.0",
+    "patch-package": "^8.0.1",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}

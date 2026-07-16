@@ -1,0 +1,60 @@
+# Covers MANUAL_TESTING_GUIDE.md section 5E.1 ("Disable WiFi, take a photo ->
+# Capture is queued (no error crash)") — the one item the original Detox
+# suite explicitly skipped (see e2e/discover.test.js's "SKIPPED: 3.2/3.3"
+# comment) because Detox has no reliable way to toggle real OS network
+# state. Maestro doesn't either, from inside a YAML flow — but it shells
+# out through adb like everything else in this project's tooling, so the
+# network toggle happens OUTSIDE this file, via adb, in
+# scripts/run-offline-capture-test.ps1, which wraps this flow with
+# `adb shell svc wifi disable` / `svc data disable` before running it.
+# Do not run this flow standalone expecting it to go offline itself — it
+# only asserts the OFFLINE-branch behavior; something else has to have
+# actually cut the network first.
+#
+# Uses note capture (not photo) to keep this deterministic and fast — the
+# offline/online branch lives in CaptureSheet's upload() function, which is
+# shared by every capture type (src/components/CaptureSheet.tsx lines
+# 52-91), so exercising it via the simplest capture type (text note, no
+# camera/mic permission dance) is sufficient; which capture type triggers it
+# is incidental to what's being tested here.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+- tapOn:
+    id: "capture-btn-note"
+- assertVisible:
+    id: "capture-sheet"
+- tapOn:
+    id: "capture-mode-note"
+- tapOn:
+    id: "capture-note-input"
+- inputText: "Queued while offline — should upload once reconnected."
+- tapOn:
+    id: "capture-note-save"
+
+# The offline-specific signal: CaptureSheet.tsx shows this exact native
+# Alert (title + message, single default "OK" button) only when
+# Network.getNetworkStateAsync() reports not connected/reachable — this is
+# the one assertion in this whole suite that actually proves the OFFLINE
+# branch ran, not just "the sheet closed" (which happens on the online path
+# too, so 12.1-note-capture.yaml's "closes on save" assertion alone can't
+# tell the two paths apart).
+- assertVisible: "📵 Saved offline"
+- assertVisible: "This capture is saved on your device and will upload when you reconnect."
+- tapOn: "OK"
+
+- assertNotVisible:
+    id: "capture-sheet"
+- assertVisible:
+    id: "activity-screen"

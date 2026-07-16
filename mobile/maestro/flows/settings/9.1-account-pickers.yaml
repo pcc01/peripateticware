@@ -1,5 +1,7 @@
 # Mirrors e2e/settings.test.js "9.1 — shows account email and the
-# theme/age-band pickers". Same testIDs/text as the Detox version.
+# theme picker". Same testIDs/text as the Detox version.
+# NOTE: the age-band picker (K-6/7-12/College) was removed — see
+# mobile/FEATURE_PLAN.md section 1 — so those assertions were dropped.
 appId: com.peripateticware.app
 ---
 - launchApp:
@@ -13,6 +15,3 @@ appId: com.peripateticware.app
 - assertVisible: "Field Guide"
 - assertVisible: "Terrain"
 - assertVisible: "Atmosphere"
-- assertVisible: "K–6"
-- assertVisible: "7–12"
-- assertVisible: "College"

@@ -4,12 +4,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
 import { fetchProgress, ProgressData } from '@/src/api/journal';
 
 export default function ProgressScreen() {
   const { theme } = useTheme();
-  const { band } = useBand();
   const [data, setData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -23,7 +21,7 @@ export default function ProgressScreen() {
   const onRefresh = useCallback(async () => { setRefreshing(true); await load(); setRefreshing(false); }, [load]);
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]}>
+    <SafeAreaView testID="progress-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>Progress</Text>
       </View>
@@ -31,13 +29,14 @@ export default function ProgressScreen() {
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
       ) : (
         <ScrollView
+          testID="progress-scroll"
           contentContainerStyle={{ padding: 16, gap: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
         >
           {/* Stats row */}
           <View style={styles.statsRow}>
             {[
-              { label: band === 'k6' ? 'Adventures' : 'Activities', value: data?.total_activities_completed ?? 0, emoji: '🏅' },
+              { label: 'Activities', value: data?.total_activities_completed ?? 0, emoji: '🏅' },
               { label: 'Captures',  value: data?.total_captures ?? 0,              emoji: '📷' },
               { label: 'Day streak', value: data?.current_streak_days ?? 0,        emoji: '🔥' },
             ].map((stat) => (

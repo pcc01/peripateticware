@@ -10,7 +10,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
 import { fetchActivity, Activity } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -19,6 +18,7 @@ import CaptureSheet from '@/src/components/CaptureSheet';
 import Btn from '@/src/components/Btn';
 import { useGeofence } from '@/src/hooks/useGeofence';
 import { logSessionEvent } from '@/src/api/sessionEvents';
+import { t } from '@/src/i18n/t';
 
 type Phase = 'brief' | 'orient' | 'inquiry' | 'reflect';
 
@@ -30,7 +30,6 @@ const PHASES: Phase[] = ['orient', 'inquiry', 'reflect'];
 export default function ActivityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme, setLocationSkin } = useTheme();
-  const { band } = useBand();
 
   const [activity, setActivity] = useState<Activity | null>(null);
   const [phase, setPhase] = useState<Phase>('brief');
@@ -130,8 +129,13 @@ export default function ActivityScreen() {
     <SafeAreaView testID="activity-screen" style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
-          <Text style={[styles.backBtn, { color: theme.accent }]}>‹ Back</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back', 'Back')}
+        >
+          <Text style={[styles.backBtn, { color: theme.accent }]}>‹ {t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <PhaseIndicator phase={phase} theme={theme} />
       </View>
@@ -143,6 +147,8 @@ export default function ActivityScreen() {
           style={[styles.geofenceToast, { backgroundColor: theme.warnLight, borderColor: theme.warn }]}
           onPress={() => setGeofenceToast(false)}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('activity.geofence.dismiss', 'Dismiss location warning')}
         >
           <Text style={[styles.geofenceToastText, { fontFamily: theme.fontBody, color: theme.warn }]}>
             📍 Step closer to {activity?.location_name ?? 'the activity location'} to keep going.
@@ -152,14 +158,13 @@ export default function ActivityScreen() {
       )}
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {phase === 'brief' && <BriefPhase activity={activity} theme={theme} band={band} onStart={advancePhase} />}
-        {phase === 'orient' && <OrientPhase activity={activity} theme={theme} band={band} onReady={advancePhase} />}
+        {phase === 'brief' && <BriefPhase activity={activity} theme={theme} onStart={advancePhase} />}
+        {phase === 'orient' && <OrientPhase activity={activity} theme={theme} onReady={advancePhase} />}
         {phase === 'inquiry' && (
           <InquiryPhase
             activity={activity}
             question={question}
             theme={theme}
-            band={band}
             onNext={advancePhase}
             onAskPeri={() => setShowChat(true)}
             onCapture={() => setShowCapture(true)}
@@ -170,7 +175,6 @@ export default function ActivityScreen() {
           visible={showChat}
           onClose={() => setShowChat(false)}
           theme={theme}
-          band={band}
           activityTitle={activity.title}
           activitySubject={activity.subject}
           currentPrompt={question?.question_text}
@@ -180,7 +184,6 @@ export default function ActivityScreen() {
           onClose={() => setShowCapture(false)}
           onCaptured={(c) => setCaptures((prev) => [...prev, c])}
           theme={theme}
-          band={band}
           activityId={activity.id}
         />
         {phase === 'reflect' && (
@@ -189,7 +192,6 @@ export default function ActivityScreen() {
             reflection={reflection}
             onChangeReflection={setReflection}
             theme={theme}
-            band={band}
             onSubmit={advancePhase}
             submitted={submitted}
           />
@@ -224,7 +226,7 @@ function PhaseIndicator({ phase, theme }: { phase: Phase; theme: any }) {
 }
 
 // ── Brief phase ────────────────────────────────────────────────────────────
-function BriefPhase({ activity, theme, band, onStart }: any) {
+function BriefPhase({ activity, theme, onStart }: any) {
   const subjectEmoji: Record<string, string> = {
     science: '🔬', math: '📐', history: '🏛', art: '🎨', language: '📖', default: '📍',
   };
@@ -234,9 +236,8 @@ function BriefPhase({ activity, theme, band, onStart }: any) {
     <View style={{ gap: 20 }}>
       <PeriSpeech
         text={`Here's what you'll be doing today. Take a moment to read through before heading out.`}
-        band={band}
         theme={theme}
-        size={band === 'k6' ? 44 : 36}
+        size={36}
       />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
         <Text style={[styles.cardEmoji]}>{emoji}</Text>
@@ -261,16 +262,14 @@ function BriefPhase({ activity, theme, band, onStart }: any) {
           {activity.bloom_level && <Chip label={activity.bloom_level} theme={theme} />}
         </View>
       </View>
-      <Btn label="I'm ready — let's go" onPress={onStart} theme={theme} band={band} />
+      <Btn label={t('activity.brief.startCta', "I'm ready — let's go")} onPress={onStart} theme={theme} />
     </View>
   );
 }
 
 // ── Orient phase ───────────────────────────────────────────────────────────
-function OrientPhase({ activity, theme, band, onReady }: any) {
-  const periText = band === 'k6'
-    ? 'Take a look around! What do you notice first?'
-    : "You've arrived. Take a moment to observe your surroundings before starting.";
+function OrientPhase({ activity, theme, onReady }: any) {
+  const periText = "You've arrived. Take a moment to observe your surroundings before starting.";
 
   return (
     <View style={{ gap: 20 }}>
@@ -278,7 +277,7 @@ function OrientPhase({ activity, theme, band, onReady }: any) {
         <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>PHASE 1 · ORIENT</Text>
         <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Arrive & Observe</Text>
       </View>
-      <PeriSpeech text={periText} band={band} theme={theme} size={band === 'k6' ? 44 : 36} />
+      <PeriSpeech text={periText} theme={theme} size={36} />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
         <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>TODAY'S TARGETS</Text>
         {(activity.learning_objectives ?? ['Look around and note what you see']).map((obj: string, i: number) => (
@@ -288,13 +287,13 @@ function OrientPhase({ activity, theme, band, onReady }: any) {
           </View>
         ))}
       </View>
-      <Btn label="I'm oriented — begin inquiry" onPress={onReady} theme={theme} band={band} />
+      <Btn label={t('activity.orient.readyCta', "I'm oriented — begin inquiry")} onPress={onReady} theme={theme} />
     </View>
   );
 }
 
 // ── Inquiry phase ──────────────────────────────────────────────────────────
-function InquiryPhase({ activity, question, theme, band, onNext, onAskPeri, onCapture, captureCount }: any) {
+function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture, captureCount }: any) {
   const periText = question?.question_text
     ?? "Look closely. What evidence can you find? Capture what you observe.";
 
@@ -304,7 +303,7 @@ function InquiryPhase({ activity, question, theme, band, onNext, onAskPeri, onCa
         <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>PHASE 2 · INQUIRY</Text>
         <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Observe & Capture</Text>
       </View>
-      <PeriSpeech text={periText} band={band} theme={theme} size={band === 'k6' ? 44 : 36} />
+      <PeriSpeech text={periText} theme={theme} size={36} />
 
       {question?.follow_up && (
         <View style={[styles.followUpCard, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>
@@ -322,16 +321,18 @@ function InquiryPhase({ activity, question, theme, band, onNext, onAskPeri, onCa
         </Text>
         <View style={styles.captureRow}>
           {[
-            { icon: '📷', id: 'photo', testID: 'capture-btn-photo' },
-            { icon: '🎤', id: 'audio', testID: 'capture-btn-audio' },
-            { icon: '✏️', id: 'note',  testID: 'capture-btn-note'  },
-            { icon: '🎥', id: 'video', testID: 'capture-btn-video' },
-          ].map(({ icon, id, testID }) => (
+            { icon: '📷', id: 'photo', testID: 'capture-btn-photo', label: t('activity.capture.photo', 'Add photo') },
+            { icon: '🎤', id: 'audio', testID: 'capture-btn-audio', label: t('activity.capture.audio', 'Add voice recording') },
+            { icon: '✏️', id: 'note',  testID: 'capture-btn-note',  label: t('activity.capture.note', 'Add note')  },
+            { icon: '🎥', id: 'video', testID: 'capture-btn-video', label: t('activity.capture.video', 'Add video') },
+          ].map(({ icon, id, testID, label }) => (
             <TouchableOpacity
               key={id}
               testID={testID}
               style={[styles.captureBtn, { borderColor: theme.border, borderRadius: theme.radiusSm, backgroundColor: theme.surfaceAlt }]}
               onPress={onCapture}
+              accessibilityRole="button"
+              accessibilityLabel={label}
             >
               <Text style={styles.captureIcon}>{icon}</Text>
             </TouchableOpacity>
@@ -341,21 +342,21 @@ function InquiryPhase({ activity, question, theme, band, onNext, onAskPeri, onCa
       <TouchableOpacity
         onPress={onAskPeri}
         style={[styles.askPeriBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
+        accessibilityRole="button"
+        accessibilityLabel={t('activity.inquiry.askPeri', 'Ask Peri')}
       >
         <Text style={[styles.askPeriLabel, { fontFamily: theme.fontBody, color: theme.accent }]}>
-          💬 Ask Peri
+          💬 {t('activity.inquiry.askPeri', 'Ask Peri')}
         </Text>
       </TouchableOpacity>
-      <Btn label="Done capturing — reflect" onPress={onNext} theme={theme} band={band} />
+      <Btn label={t('activity.inquiry.doneCta', 'Done capturing — reflect')} onPress={onNext} theme={theme} />
     </View>
   );
 }
 
 // ── Reflect phase ──────────────────────────────────────────────────────────
-function ReflectPhase({ activity, reflection, onChangeReflection, theme, band, onSubmit, submitted }: any) {
-  const prompt = band === 'k6'
-    ? 'What was the most amazing thing you found today?'
-    : 'What did this place teach you that a textbook couldn\'t?';
+function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSubmit, submitted }: any) {
+  const prompt = 'What did this place teach you that a textbook couldn\'t?';
 
   return (
     <View style={{ gap: 20 }}>
@@ -365,9 +366,8 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, band, o
       </View>
       <PeriSpeech
         text="Almost done. Write one thing you'll remember from today."
-        band={band}
         theme={theme}
-        size={band === 'k6' ? 44 : 36}
+        size={36}
       />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
         <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>YOUR REFLECTION</Text>
@@ -394,10 +394,9 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, band, o
         />
       </View>
       <Btn
-        label={submitted ? 'Submitted ✓' : 'Submit field work'}
+        label={submitted ? t('activity.reflect.submitted', 'Submitted ✓') : t('activity.reflect.submitCta', 'Submit field work')}
         onPress={onSubmit}
         theme={theme}
-        band={band}
       />
     </View>
   );
@@ -450,4 +449,3 @@ const styles = StyleSheet.create({
   askPeriBtn:      { borderWidth: 1, padding: 12, alignItems: 'center' },
   askPeriLabel:    { fontSize: 14, fontWeight: '600' },
 });
-                                                                                                                                                                          

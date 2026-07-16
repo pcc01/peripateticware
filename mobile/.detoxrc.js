@@ -46,25 +46,55 @@ module.exports = {
 
   devices: {
     // ── Android emulators ──────────────────────────────────────────────────
+    // gpuMode is pinned to 'swiftshader_indirect' on every device below.
+    // Without an explicit value, Detox's default resolves differently between
+    // headless and non-headless invocations (observed: 'angle_indirect' vs
+    // whatever produced the swiftshader/lavapipe-backed boot snapshot). The
+    // emulator treats a renderer mismatch against its saved snapshot as
+    // invalid and force-discards it ("Change of GLES renderer detected" /
+    // "Failed to load snapshot 'default_boot'"), triggering a slow cold boot
+    // and — if a test run starts before that finishes — a "Test suite failed
+    // to run" failure with no real Jest error. Pinning it keeps every run
+    // requesting the same renderer so the snapshot stays valid and boots fast.
+    // headless is also pinned to true on every device so the emulator's
+    // window mode never varies between an ad hoc CLI run and the
+    // run-android-e2e.ps1 script (which already always passes --headless).
+    'emulator.api37': {
+      type: 'android.emulator',
+      device: { avdName: 'Pixel_6_API_37' },
+      gpuMode: 'swiftshader_indirect',
+      headless: true,
+    },
     'emulator.api35': {
       type: 'android.emulator',
       device: { avdName: 'Pixel_6_API_35' },
+      gpuMode: 'swiftshader_indirect',
+      headless: true,
     },
     'emulator.api33': {
       type: 'android.emulator',
       device: { avdName: 'Pixel_6_API_33' },
+      gpuMode: 'swiftshader_indirect',
+      headless: true,
     },
     'emulator.api30': {
       type: 'android.emulator',
       device: { avdName: 'Pixel_6_API_30' },
+      gpuMode: 'swiftshader_indirect',
+      headless: true,
     },
     'emulator.api24': {
       // API 24 uses x86 and default (non-Google) image for availability
       type: 'android.emulator',
       device: { avdName: 'Nexus_5X_API_24' },
+      gpuMode: 'swiftshader_indirect',
+      headless: true,
     },
 
     // ── iOS simulators ────────────────────────────────────────────────────
+    // CI-only (require Xcode 16+/17+ — not available on the Ventura Intel Mac,
+    // which is capped at Xcode 15.2 / iOS 17 SDK). Covered by GitHub-hosted
+    // macOS runners in .github/workflows/mobile-e2e.yml instead.
     'simulator.ios26': {
       type: 'ios.simulator',
       device: { type: 'iPhone 16', os: 'iOS 26' },
@@ -72,6 +102,11 @@ module.exports = {
     'simulator.ios18': {
       type: 'ios.simulator',
       device: { type: 'iPhone 15', os: 'iOS 18' },
+    },
+    // Locally-runnable on the Ventura Intel Mac (Xcode 15.2 ships iOS 17 SDK).
+    'simulator.ios17': {
+      type: 'ios.simulator',
+      device: { type: 'iPhone 15', os: 'iOS 17' },
     },
     'simulator.ios16': {
       // iPhone 8 is the flagship legacy device for iOS 16 floor testing
@@ -82,6 +117,11 @@ module.exports = {
 
   configurations: {
     // ── Android ────────────────────────────────────────────────────────────
+    // API 37 — Android 17 (Cinnamon Bun)
+    'android.api37.debug': {
+      device: 'emulator.api37',
+      app: 'android.debug',
+    },
     // API 35 — Android 15 (VanillaIceCream)
     'android.api35.debug': {
       device: 'emulator.api35',
@@ -110,16 +150,29 @@ module.exports = {
 
     // ── iOS ───────────────────────────────────────────────────────────────
     // iOS 26 — current baseline (~86 % of recent devices)
+    // CI-ONLY: requires Xcode 17+ (iOS 26 SDK). The Ventura Intel Mac is
+    // capped at Xcode 15.2 and cannot run this simulator locally — leave it
+    // to the GitHub-hosted macos-latest runner.
     'ios.26.debug': {
       device: 'simulator.ios26',
       app: 'ios.debug',
     },
     // iOS 18 — primary fallback
+    // CI-ONLY: requires Xcode 16+ (iOS 18 SDK). Same Ventura/Xcode 15.2
+    // ceiling as ios.26.debug above — not runnable on the local Mac.
     'ios.18.debug': {
       device: 'simulator.ios18',
       app: 'ios.debug',
     },
+    // iOS 17 — LOCAL: runnable on the Ventura Intel Mac (Xcode 15.2 bundles
+    // the iOS 17 SDK/simulator runtime). Fills the gap between the
+    // CI-only ios.18/ios.26 configs above and the ios.16 floor below.
+    'ios.17.debug': {
+      device: 'simulator.ios17',
+      app: 'ios.debug',
+    },
     // iOS 16 — floor (last version for iPhone 8 / iPhone X)
+    // LOCAL: runnable on the Ventura Intel Mac.
     'ios.16.debug': {
       device: 'simulator.ios16',
       app: 'ios.debug',

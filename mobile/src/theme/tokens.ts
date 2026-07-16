@@ -47,7 +47,11 @@ export const themes: Record<ThemeName, Theme> = {
     border: '#e0d8cb',
     borderStrong: '#c8bfae',
     text: '#1e1a14',
-    textMuted: '#7a6f5e',
+    // WCAG AA fix: was #7a6f5e (4.34:1 on surfaceAlt, below the 4.5:1
+    // minimum) — matches the fix already applied on web
+    // (frontend/src/design-system.css); ported here per FEATURE_PLAN.md
+    // section 2. Now 5.36:1 on surfaceAlt.
+    textMuted: '#6b6150',
     textFaint: '#b0a898',
     accent: '#4a7c59',
     accentText: '#ffffff',
@@ -80,7 +84,10 @@ export const themes: Record<ThemeName, Theme> = {
     border: '#d8cebc',
     borderStrong: '#c0b49e',
     text: '#1a1410',
-    textMuted: '#7a6a54',
+    // WCAG AA fix: was #7a6a54 (4.24:1 on surfaceAlt, below 4.5:1) — same
+    // pattern as fieldGuide, found while auditing this theme too. Now
+    // 5.02:1 on surfaceAlt.
+    textMuted: '#6d5f4b',
     textFaint: '#a8988a',
     accent: '#d45a28',
     accentText: '#ffffff',
@@ -113,7 +120,10 @@ export const themes: Record<ThemeName, Theme> = {
     border: '#2e4035',
     borderStrong: '#3a5045',
     text: '#f0ead8',
-    textMuted: '#7a9080',
+    // WCAG AA fix: was #7a9080 (4.01:1 on surfaceAlt, below 4.5:1) — same
+    // pattern as fieldGuide, found while auditing this theme too. Now
+    // 4.96:1 on surfaceAlt.
+    textMuted: '#8da093',
     textFaint: '#4a6058',
     accent: '#5bc4a0',
     accentText: '#141c17',

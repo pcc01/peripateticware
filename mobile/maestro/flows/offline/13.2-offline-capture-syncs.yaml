@@ -1,0 +1,43 @@
+# Covers MANUAL_TESTING_GUIDE.md section 5E.2 ("Re-enable WiFi -> Queued
+# capture auto-uploads"). Companion to 13.1-offline-capture-queued.yaml —
+# run AFTER that flow, and after scripts/run-offline-capture-test.ps1 has
+# re-enabled the network (`adb shell svc wifi enable` / `svc data enable`).
+#
+# Known limitation, documented rather than papered over: there is currently
+# no UI-visible "synced" / "pending" indicator anywhere in the app (checked
+# app/(tabs)/journal.tsx — capture entries carry no sync-status testID or
+# text). src/hooks/useConnectivity.ts's flushQueue() call on reconnect only
+# logs to the console ("✅ Synced N items"), nothing renders. So this flow
+# can only assert the WEAKER thing: that reconnecting and relaunching
+# doesn't crash or error, not that the specific queued note from 13.1
+# actually made it to the server. Confirming the strong version would need
+# either (a) a real sync-status indicator added to the Journal UI — worth
+# doing anyway, see the feature plan for why — or (b) a direct backend
+# check (GET the capture by the queue id and confirm it exists server-side)
+# added to the wrapper script outside Maestro. Flagging this rather than
+# writing an assertion that looks stronger than it actually is.
+#
+# useConnectivity polls every 15s (see the `setInterval(check, 15_000)`),
+# so the wrapper script waits at least that long after re-enabling the
+# network before running this flow.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: false
+    permissions:
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+
+# Weak-but-real assertion: app is fully functional post-reconnect, no crash
+# or stuck error state after the queue-flush ran in the background.
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- tapOn:
+    id: "tab-progress"
+- assertVisible:
+    id: "progress-screen"

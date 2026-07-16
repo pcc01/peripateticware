@@ -9,7 +9,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
 import { fetchActivities, Activity } from '@/src/api/activities';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -21,7 +20,6 @@ const SUBJECT_EMOJI: Record<string, string> = {
 
 export default function DiscoverScreen() {
   const { theme } = useTheme();
-  const { band } = useBand();
   const { isOnline } = useConnectivity();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +49,7 @@ export default function DiscoverScreen() {
     : "Let's find something to explore nearby.";
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]}>
+    <SafeAreaView testID="discover-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
           Discover
@@ -66,7 +64,7 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      <PeriSpeech text={periText} band={band} theme={theme} size={band === 'k6' ? 44 : 36} />
+      <PeriSpeech text={periText} theme={theme} size={36} />
 
       {loading ? (
         <View style={styles.center}>
@@ -83,6 +81,7 @@ export default function DiscoverScreen() {
         </View>
       ) : (
         <FlatList
+          testID="discover-list"
           data={activities}
           keyExtractor={(a) => a.id}
           contentContainerStyle={{ padding: 16, gap: 10 }}

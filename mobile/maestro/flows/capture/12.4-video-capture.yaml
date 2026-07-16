@@ -37,4 +37,4 @@ appId: com.peripateticware.app
 - assertNotVisible:
     id: "capture-sheet"
 - assertVisible:
-    
+    id: "activity-screen"

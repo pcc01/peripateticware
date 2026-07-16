@@ -9,18 +9,17 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { Theme } from '@/src/theme/tokens';
-import { AgeBand } from '@/src/bands/copy';
 import { uploadCapture, Capture } from '@/src/api/captures';
 import { queueCapture } from '@/src/db/offlineQueue';
 import * as Network from 'expo-network';
 import InAppCamera, { CapturedFile } from '@/src/components/InAppCamera';
+import { t } from '@/src/i18n/t';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
   onCaptured: (capture: Capture) => void;
   theme: Theme;
-  band: AgeBand;
   sessionId?: string;
   activityId?: string;
   latitude?: number;
@@ -30,14 +29,14 @@ interface Props {
 type CaptureMode = null | 'photo' | 'audio' | 'note' | 'video';
 
 const MODES = [
-  { mode: 'photo' as CaptureMode, emoji: '📷', label: 'Photo' },
-  { mode: 'audio' as CaptureMode, emoji: '🎤', label: 'Voice' },
-  { mode: 'note'  as CaptureMode, emoji: '✏️', label: 'Note'  },
-  { mode: 'video' as CaptureMode, emoji: '🎥', label: 'Video' },
+  { mode: 'photo' as CaptureMode, emoji: '📷', label: t('capture.mode.photo', 'Photo') },
+  { mode: 'audio' as CaptureMode, emoji: '🎤', label: t('capture.mode.audio', 'Voice') },
+  { mode: 'note'  as CaptureMode, emoji: '✏️', label: t('capture.mode.note', 'Note')  },
+  { mode: 'video' as CaptureMode, emoji: '🎥', label: t('capture.mode.video', 'Video') },
 ];
 
 export default function CaptureSheet({
-  visible, onClose, onCaptured, theme, band,
+  visible, onClose, onCaptured, theme,
   sessionId, activityId, latitude, longitude,
 }: Props) {
   const [mode, setMode] = useState<CaptureMode>(null);
@@ -78,13 +77,13 @@ export default function CaptureSheet({
           transcript: null,
         });
         Alert.alert(
-          '📵 Saved offline',
-          'This capture is saved on your device and will upload when you reconnect.'
+          t('capture.offline.title', '📵 Saved offline'),
+          t('capture.offline.body', 'This capture is saved on your device and will upload when you reconnect.')
         );
       }
       onClose();
     } catch (e) {
-      Alert.alert('Upload failed', e instanceof Error ? e.message : 'Try again');
+      Alert.alert(t('capture.uploadFailed.title', 'Upload failed'), e instanceof Error ? e.message : t('common.tryAgain', 'Try again'));
     } finally {
       setUploading(false);
     }
@@ -104,7 +103,7 @@ export default function CaptureSheet({
   const startRecording = async () => {
     const { status } = await Audio.requestPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow microphone access to record audio.');
+      Alert.alert(t('capture.micPermission.title', 'Permission needed'), t('capture.micPermission.body', 'Allow microphone access to record audio.'));
       return;
     }
     await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
@@ -142,9 +141,15 @@ export default function CaptureSheet({
       <View testID="capture-sheet" style={[styles.root, { backgroundColor: theme.bg }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
-            {band === 'k6' ? 'Capture something!' : 'Add evidence'}
+            {t('capture.title', 'Add evidence')}
           </Text>
-          <TouchableOpacity testID="capture-close" onPress={onClose} hitSlop={12}>
+          <TouchableOpacity
+            testID="capture-close"
+            onPress={onClose}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close', 'Close')}
+          >
             <Text style={[styles.closeBtn, { color: theme.textMuted }]}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -153,7 +158,7 @@ export default function CaptureSheet({
           <View style={styles.center}>
             <ActivityIndicator color={theme.accent} size="large" />
             <Text style={[styles.uploadingText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
-              Uploading…
+              {t('capture.uploading', 'Uploading…')}
             </Text>
           </View>
         ) : mode === null ? (
@@ -165,6 +170,8 @@ export default function CaptureSheet({
                 testID={`capture-mode-${m.mode}`}
                 onPress={() => setMode(m.mode)}
                 style={[styles.modeBtn, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
+                accessibilityRole="button"
+                accessibilityLabel={m.label}
               >
                 <Text style={styles.modeEmoji}>{m.emoji}</Text>
                 <Text style={[styles.modeLabel, { fontFamily: theme.fontBody, color: theme.text }]}>{m.label}</Text>
@@ -178,17 +185,25 @@ export default function CaptureSheet({
               testID="capture-record-btn"
               onPress={recording ? stopRecording : startRecording}
               style={[styles.recordBtn, { backgroundColor: recording ? theme.warn : theme.accent, borderRadius: 999 }]}
+              accessibilityRole="button"
+              accessibilityLabel={recording ? t('capture.stopRecording', 'Stop recording') : t('capture.startRecording', 'Start recording')}
+              accessibilityState={{ selected: recording }}
             >
               <Text style={styles.recordIcon}>{recording ? '⏹' : '🎤'}</Text>
             </TouchableOpacity>
             <Text testID="capture-record-status" style={[styles.durationText, { fontFamily: theme.fontMono, color: theme.textMuted }]}>
               {recording
-                ? `Recording ${recordingDuration}s — tap to stop`
-                : 'Tap to start recording'}
+                ? t('capture.recordingStatus', 'Recording {{seconds}}s — tap to stop').replace('{{seconds}}', String(recordingDuration))
+                : t('capture.tapToStart', 'Tap to start recording')}
             </Text>
             {!recording && (
-              <TouchableOpacity testID="capture-audio-back" onPress={() => setMode(null)}>
-                <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← Back</Text>
+              <TouchableOpacity
+                testID="capture-audio-back"
+                onPress={() => setMode(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.back', 'Back')}
+              >
+                <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← {t('common.back', 'Back')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -196,7 +211,7 @@ export default function CaptureSheet({
           // Text note
           <View style={[styles.noteContainer]}>
             <Text style={[styles.noteLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
-              FIELD NOTE
+              {t('capture.fieldNote', 'FIELD NOTE')}
             </Text>
             <TextInput
               testID="capture-note-input"
@@ -209,7 +224,7 @@ export default function CaptureSheet({
               }]}
               value={noteText}
               onChangeText={setNoteText}
-              placeholder="Write what you observe…"
+              placeholder={t('capture.notePlaceholder', 'Write what you observe…')}
               placeholderTextColor={theme.textFaint}
               multiline
               autoFocus
@@ -223,13 +238,21 @@ export default function CaptureSheet({
                 backgroundColor: noteText.trim() ? theme.accent : theme.border,
                 borderRadius: theme.radiusSm,
               }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('capture.saveNote', 'Save note')}
+              accessibilityState={{ disabled: !noteText.trim() }}
             >
               <Text style={[styles.submitLabel, { color: theme.accentText, fontFamily: theme.fontBody }]}>
-                Save note
+                {t('capture.saveNote', 'Save note')}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity testID="capture-note-back" onPress={() => setMode(null)}>
-              <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← Back</Text>
+            <TouchableOpacity
+              testID="capture-note-back"
+              onPress={() => setMode(null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back', 'Back')}
+            >
+              <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← {t('common.back', 'Back')}</Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -267,4 +290,3 @@ const styles = StyleSheet.create({
   submitLabel:   { fontSize: 15, fontWeight: '600' },
   uploadingText: { fontSize: 14 },
 });
-                                                                                                                                                                                                                                                         

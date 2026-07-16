@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Peripateticware",
-    "slug": "Peripateticware",
+    "slug": "peripateticware",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,6 +16,9 @@
         "NSMicrophoneUsageDescription": "Peripateticware uses your microphone to record field audio.",
         "NSPhotoLibraryUsageDescription": "Peripateticware saves captures to your photo library.",
         "NSLocationWhenInUseUsageDescription": "Peripateticware uses your location to find nearby activities."
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
@@ -35,8 +38,20 @@
         "android.permission.READ_MEDIA_VIDEO",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "output": "static",
@@ -77,10 +92,14 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "http://192.168.50.40:8000",
+      "apiUrl": "http://10.0.2.2:8000",
       "eas": {
-        "projectId": "peripateticware"
+        "projectId": "aff166e5-83d2-45a6-abc3-e822b7755de4"
       }
+    },
+    "owner": "pcc01",
+    "updates": {
+      "url": "https://u.expo.dev/aff166e5-83d2-45a6-abc3-e822b7755de4"
     }
   }
 }

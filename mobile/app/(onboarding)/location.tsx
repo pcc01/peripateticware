@@ -7,8 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
-import { copy } from '@/src/bands/copy';
+import { onboardingCopy as c } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -16,8 +15,6 @@ import Btn from '@/src/components/Btn';
 export default function LocationScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
-  const { band } = useBand();
-  const c = copy[band];
   const { name } = useLocalSearchParams<{ name: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -55,12 +52,12 @@ export default function LocationScreen() {
           borderColor: theme.border,
         }]}>
           <View style={[styles.handle, { backgroundColor: theme.border }]} />
-          <PeriSpeech text={c.locationPeriSpeech} band={band} theme={theme} size={band === 'k6' ? 48 : 40} />
+          <PeriSpeech text={c.locationPeriSpeech} theme={theme} size={40} />
           <Text style={[styles.note, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
             {c.locationReassurance}
           </Text>
-          <Btn label={c.locationConfirmCta} onPress={handleAllow} theme={theme} band={band} loading={loading} />
-          <Btn label={c.locationSkipCta} onPress={advance} theme={theme} band={band} variant="secondary" />
+          <Btn label={c.locationConfirmCta} onPress={handleAllow} theme={theme} loading={loading} />
+          <Btn label={c.locationSkipCta} onPress={advance} theme={theme} variant="secondary" />
         </View>
       </SafeAreaView>
     </View>

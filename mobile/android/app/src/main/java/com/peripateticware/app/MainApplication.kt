@@ -10,6 +10,7 @@ import com.facebook.react.ReactNativeHost
 import com.facebook.react.common.ReleaseLevel
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
 import expo.modules.ApplicationLifecycleDispatcher
@@ -43,8 +44,11 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     // SoLoader must be initialized before DefaultNewArchitectureEntryPoint.load(),
-    // which calls SoLoader.loadLibrary("react_newarchdefaults").
-    SoLoader.init(this, false)
+    // which calls SoLoader.loadLibrary("react_newarchdefaults"). RN 0.79+ merges many
+    // small native libs (including libreact_featureflagsjni.so) into one merged .so —
+    // SoLoader needs OpenSourceMergedSoMapping to know how to resolve symbols out of it,
+    // otherwise it throws SoLoaderDSONotFoundError for anything that got merged.
+    SoLoader.init(this, OpenSourceMergedSoMapping)
     DefaultNewArchitectureEntryPoint.releaseLevel = try {
       ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
     } catch (e: IllegalArgumentException) {

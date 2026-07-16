@@ -82,7 +82,13 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
             >
               <Text style={[styles.permissionBtnLabel, { color: theme.accentText }]}>Allow access</Text>
             </TouchableOpacity>
-            <TouchableOpacity testID="camera-close" onPress={onClose} hitSlop={12}>
+            <TouchableOpacity
+              testID="camera-close"
+              onPress={onClose}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel"
+            >
               <Text style={styles.cancelLink}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -97,7 +103,13 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
               onCameraReady={() => setReady(true)}
             />
             <View style={styles.topBar}>
-              <TouchableOpacity testID="camera-close" onPress={onClose} hitSlop={12}>
+              <TouchableOpacity
+                testID="camera-close"
+                onPress={onClose}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="Close camera"
+              >
                 <Text style={styles.closeIcon}>✕</Text>
               </TouchableOpacity>
               {mode === 'video' && (
@@ -116,7 +128,13 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                 // only wait for the button to exist).
                 <Text testID="camera-loading" style={styles.recordStatus}>Starting camera…</Text>
               ) : mode === 'photo' ? (
-                <TouchableOpacity testID="camera-shutter" onPress={takePhoto} style={styles.shutterOuter}>
+                <TouchableOpacity
+                  testID="camera-shutter"
+                  onPress={takePhoto}
+                  style={styles.shutterOuter}
+                  accessibilityRole="button"
+                  accessibilityLabel="Take photo"
+                >
                   <View style={styles.shutterInner} />
                 </TouchableOpacity>
               ) : (
@@ -124,6 +142,9 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                   testID="camera-record"
                   onPress={recording ? stopRecording : startRecording}
                   style={[styles.shutterOuter, recording && { borderColor: theme.warn }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={recording ? 'Stop recording' : 'Start recording'}
+                  accessibilityState={{ selected: recording }}
                 >
                   <View style={[styles.shutterInner, recording ? styles.shutterInnerRecording : { backgroundColor: theme.warn }]} />
                 </TouchableOpacity>
@@ -145,4 +166,10 @@ const styles = StyleSheet.create({
   permissionBtnLabel:    { fontSize: 15, fontWeight: '600' },
   cancelLink:            { color: '#ccc', fontSize: 14, marginTop: 8 },
   topBar:                { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 48 },
-  closeIcon:       
+  closeIcon:             { color: 'white', fontSize: 22 },
+  recordStatus:          { color: 'white', fontSize: 13 },
+  bottomBar:             { position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center', paddingBottom: 40 },
+  shutterOuter:          { width: 76, height: 76, borderRadius: 38, borderWidth: 4, borderColor: 'white', alignItems: 'center', justifyContent: 'center' },
+  shutterInner:          { width: 60, height: 60, borderRadius: 30, backgroundColor: 'white' },
+  shutterInnerRecording: { width: 28, height: 28, borderRadius: 6, backgroundColor: 'red' },
+});

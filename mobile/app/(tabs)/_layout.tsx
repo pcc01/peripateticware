@@ -28,19 +28,19 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Discover', tabBarIcon: ({ size }) => <TabIcon emoji="🗺" size={size} /> }}
+        options={{ title: 'Discover', tabBarButtonTestID: 'tab-discover', tabBarIcon: ({ size }) => <TabIcon emoji="🗺" size={size} /> }}
       />
       <Tabs.Screen
         name="journal"
-        options={{ title: 'Journal', tabBarIcon: ({ size }) => <TabIcon emoji="📓" size={size} /> }}
+        options={{ title: 'Journal', tabBarButtonTestID: 'tab-journal', tabBarIcon: ({ size }) => <TabIcon emoji="📓" size={size} /> }}
       />
       <Tabs.Screen
         name="progress"
-        options={{ title: 'Progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
+        options={{ title: 'Progress', tabBarButtonTestID: 'tab-progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: 'Settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
+        options={{ title: 'Settings', tabBarButtonTestID: 'tab-settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
       />
     </Tabs>
   );

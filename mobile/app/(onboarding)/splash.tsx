@@ -6,8 +6,7 @@ import { View, Text, StyleSheet, useWindowDimensions, StatusBar } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
-import { copy } from '@/src/bands/copy';
+import { onboardingCopy as c } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -15,8 +14,6 @@ import Btn from '@/src/components/Btn';
 export default function SplashScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
-  const { band } = useBand();
-  const c = copy[band];
 
   return (
     <View style={[styles.root, { backgroundColor: theme.mapBase }]}>
@@ -34,11 +31,11 @@ export default function SplashScreen() {
           borderColor: theme.border,
         }]}>
           <View style={[styles.handle, { backgroundColor: theme.border }]} />
-          <PeriSpeech text={c.splashPeriSpeech} band={band} theme={theme} size={band === 'k6' ? 52 : 44} />
+          <PeriSpeech text={c.splashPeriSpeech} theme={theme} size={44} />
           <Text style={[styles.wordmark, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
             PERIPATETICWARE
           </Text>
-          <Btn label={c.splashCta} onPress={() => router.push('/(onboarding)/name')} theme={theme} band={band} />
+          <Btn label={c.splashCta} onPress={() => router.push('/(onboarding)/name')} theme={theme} />
         </View>
       </SafeAreaView>
     </View>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, type ViewStyle } from 'react-native';
 import type { Theme } from '@/src/theme/tokens';
-import type { AgeBand } from '@/src/bands/copy';
 
 interface BtnProps {
   label: string;
@@ -11,12 +10,11 @@ interface BtnProps {
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
-  band?: AgeBand;
 }
 
-export default function Btn({ label, onPress, theme, variant = 'primary', loading, disabled, style, band }: BtnProps) {
-  const minHeight = band === 'k6' ? 52 : 44;
-  const fontSize = band === 'k6' ? 16 : 15;
+export default function Btn({ label, onPress, theme, variant = 'primary', loading, disabled, style }: BtnProps) {
+  const minHeight = 44;
+  const fontSize = 15;
 
   const containerStyle: ViewStyle = {
     primary:   { backgroundColor: theme.accent,     borderRadius: theme.radius, minHeight },
@@ -36,6 +34,9 @@ export default function Btn({ label, onPress, theme, variant = 'primary', loadin
       activeOpacity={0.8}
       disabled={disabled || loading}
       style={[styles.base, containerStyle, disabled && styles.dimmed, style]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       {loading
         ? <ActivityIndicator color={textColor} />

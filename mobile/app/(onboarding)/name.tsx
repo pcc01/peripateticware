@@ -6,8 +6,7 @@ import { View, TextInput, StyleSheet, useWindowDimensions, KeyboardAvoidingView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { useBand } from '@/src/bands/BandContext';
-import { copy } from '@/src/bands/copy';
+import { onboardingCopy as c } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -28,8 +27,6 @@ function ProgressDots({ theme, active }: { theme: any; active: number }) {
 export default function NameScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
-  const { band } = useBand();
-  const c = copy[band];
   const [name, setName] = useState('');
   const canContinue = name.trim().length > 0;
 
@@ -52,7 +49,7 @@ export default function NameScreen() {
             borderRadius: theme.radiusLg,
             borderColor: theme.border,
           }]}>
-            <PeriSpeech text={c.namePeriSpeech} band={band} theme={theme} size={band === 'k6' ? 48 : 40} />
+            <PeriSpeech text={c.namePeriSpeech} theme={theme} size={40} />
             <TextInput
               value={name}
               onChangeText={setName}
@@ -67,11 +64,11 @@ export default function NameScreen() {
                 borderRadius: theme.radius,
                 fontFamily: theme.fontBody,
                 color: theme.text,
-                fontSize: band === 'k6' ? 18 : 16,
-                minHeight: band === 'k6' ? 52 : 44,
+                fontSize: 16,
+                minHeight: 44,
               }]}
             />
-            <Btn label={c.nameCta} onPress={advance} theme={theme} band={band} disabled={!canContinue} />
+            <Btn label={c.nameCta} onPress={advance} theme={theme} disabled={!canContinue} />
             <ProgressDots theme={theme} active={1} />
           </View>
         </SafeAreaView>

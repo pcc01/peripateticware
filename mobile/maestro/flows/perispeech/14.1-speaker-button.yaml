@@ -1,0 +1,27 @@
+# New coverage for the speaker/read-aloud button added to PeriSpeech
+# (src/components/PeriSpeech.tsx) — see mobile/FEATURE_PLAN.md section 3.2/3.3.
+#
+# Uses the login screen because PeriSpeech renders there before any auth is
+# needed, keeping this flow independent of seeded test credentials.
+#
+# Maestro can assert the button exists, is tappable, and that its visible
+# state flips (icon swaps between the "speak" and "playing" glyphs, per
+# `speaking` state in useSpeech) — it can't assert that audio actually
+# played on-device. Same class of limitation already documented for the
+# AI-reply-text gap in the PeriChat flows.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "login-screen"
+- assertVisible:
+    id: "peri-speech-speaker"
+- tapOn:
+    id: "peri-speech-speaker"
+# Icon swaps to the "playing" state (⏸) while speaking.
+- assertVisible: "⏸"
+- tapOn:
+    id: "peri-speech-speaker"
+# Tapping again stops playback — icon swaps back.
+- assertVisible: "🔊"

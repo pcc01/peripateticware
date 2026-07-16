@@ -8,7 +8,6 @@ import {
   FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
 import { Theme } from '@/src/theme/tokens';
-import { AgeBand } from '@/src/bands/copy';
 import CrowAvatar from '@/src/components/CrowAvatar';
 import { chatWithPeri, ChatMessage } from '@/src/api/inference';
 
@@ -16,7 +15,6 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   theme: Theme;
-  band: AgeBand;
   activityTitle?: string;
   activitySubject?: string;
   currentPrompt?: string;
@@ -28,14 +26,10 @@ interface DisplayMessage {
   content: string;
 }
 
-const PERI_GREETING: Record<AgeBand, string> = {
-  k6:      "Hi! I'm Peri 🐦 Ask me anything about what you're seeing out there!",
-  m712:    "I'm Peri. Ask me anything about the activity or what you're observing.",
-  college: "I'm Peri. I can help you think through your observations. What's on your mind?",
-};
+const PERI_GREETING = "I'm Peri. Ask me anything about the activity or what you're observing.";
 
 export default function PeriChatSheet({
-  visible, onClose, theme, band,
+  visible, onClose, theme,
   activityTitle, activitySubject, currentPrompt,
 }: Props) {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -45,9 +39,9 @@ export default function PeriChatSheet({
 
   useEffect(() => {
     if (visible && messages.length === 0) {
-      setMessages([{ id: 'greeting', role: 'assistant', content: PERI_GREETING[band] }]);
+      setMessages([{ id: 'greeting', role: 'assistant', content: PERI_GREETING }]);
     }
-  }, [visible, band]);
+  }, [visible]);
 
   const send = async () => {
     const text = input.trim();
@@ -91,14 +85,21 @@ export default function PeriChatSheet({
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <KeyboardAvoidingView
+        testID="peri-chat-sheet"
         style={[styles.root, { backgroundColor: theme.bg }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <CrowAvatar band={band} theme={theme} size={32} />
+          <CrowAvatar theme={theme} size={32} />
           <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Ask Peri</Text>
-          <TouchableOpacity onPress={onClose} hitSlop={12}>
+          <TouchableOpacity
+            testID="peri-chat-close"
+            onPress={onClose}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Close chat"
+          >
             <Text style={[styles.closeBtn, { color: theme.textMuted }]}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -118,7 +119,7 @@ export default function PeriChatSheet({
                 : [styles.periBubble, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }],
             ]}>
               {item.role === 'assistant' && (
-                <CrowAvatar band={band} theme={theme} size={20} />
+                <CrowAvatar theme={theme} size={20} />
               )}
               <Text style={[
                 styles.bubbleText,
@@ -132,7 +133,7 @@ export default function PeriChatSheet({
 
         {loading && (
           <View style={styles.typingRow}>
-            <CrowAvatar band={band} theme={theme} size={20} />
+            <CrowAvatar theme={theme} size={20} />
             <ActivityIndicator color={theme.accent} size="small" />
           </View>
         )}
@@ -140,6 +141,7 @@ export default function PeriChatSheet({
         {/* Input */}
         <View style={[styles.inputRow, { borderTopColor: theme.border, backgroundColor: theme.surface }]}>
           <TextInput
+            testID="peri-chat-input"
             style={[styles.input, {
               backgroundColor: theme.surfaceAlt,
               borderColor: theme.border,
@@ -149,15 +151,20 @@ export default function PeriChatSheet({
             }]}
             value={input}
             onChangeText={setInput}
-            placeholder={band === 'k6' ? 'Ask Peri anything…' : 'Ask a question…'}
+            placeholder="Ask a question…"
             placeholderTextColor={theme.textFaint}
             onSubmitEditing={send}
             returnKeyType="send"
           />
           <TouchableOpacity
+            testID="peri-chat-send"
             onPress={send}
             disabled={!input.trim() || loading}
             style={[styles.sendBtn, { backgroundColor: input.trim() ? theme.accent : theme.border, borderRadius: theme.radiusFull }]}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityState={{ disabled: !input.trim() || loading }}
           >
             <Text style={styles.sendIcon}>↑</Text>
           </TouchableOpacity>
