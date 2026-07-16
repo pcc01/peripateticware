@@ -452,3 +452,18 @@ PEN_TEST_PLAN.md
 LOAD_TEST_PLAN.md
 SECURITY_PRIVACY_REVIEW.md
 scripts/Test-LocationEnrich.ps1
+
+# ── Local-only ops/status docs (infra topology, session status — 2026-07-16) ──
+DEPLOY_PLAN.md
+DEPLOY_SMALL.md
+GO_LIVE_RUNBOOK.md
+backend/docs/SPRINT_TRACK_1_STATUS.md
+backend/docs/SPRINT_TRACK_2_STATUS.md
+backend/docs/SPRINT_TRACK_3_STATUS.md
+
+# ── Generated QA / test-run artifacts (not source — 2026-07-16) ──
+frontend/qa/
+/test-results/
+mobile/maestro-debug/
+mobile/logcat_run.txt
+backend/uploads/captures/
