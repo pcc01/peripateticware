@@ -1,0 +1,22 @@
+# Mirrors e2e/settings.test.js "9.4 — Sign Out clears the session and
+# returns to the login screen". Uses Maestro's `index` selector to hit the
+# 2nd "Sign out" match (the native confirm-dialog's destructive button),
+# same disambiguation Detox needed via `.atIndex(1)`.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- tapOn:
+    id: "tab-settings"
+- assertVisible:
+    id: "settings-screen"
+- tapOn: "Sign out"
+- assertVisible:
+    text: "Sign out"
+    index: 1
+- tapOn:
+    text: "Sign out"
+    index: 1
+- assertVisible:
+    id: "login-screen"

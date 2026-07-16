@@ -1,0 +1,11 @@
+# Mirrors e2e/starter.test.js "Sanity — should show the login screen".
+# Original Detox test calls device.launchApp() without clearing state,
+# relying on "unauthenticated launch always lands on login" — but that only
+# holds if there's no persisted session. Using clearState here instead, so
+# this sanity check is reliable regardless of what ran before it.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "login-screen"

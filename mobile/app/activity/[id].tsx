@@ -127,7 +127,7 @@ export default function ActivityScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
+    <SafeAreaView testID="activity-screen" style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={12}>
@@ -139,6 +139,7 @@ export default function ActivityScreen() {
       {/* Geofence toast — non-blocking, dismissible */}
       {geofenceToast && (
         <TouchableOpacity
+          testID="geofence-toast"
           style={[styles.geofenceToast, { backgroundColor: theme.warnLight, borderColor: theme.warn }]}
           onPress={() => setGeofenceToast(false)}
           activeOpacity={0.8}
@@ -318,14 +319,19 @@ function InquiryPhase({ activity, question, theme, band, onNext, onAskPeri, onCa
         <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>CAPTURE EVIDENCE</Text>
         <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
           Use your camera, voice, or notes to record what you find.
-          {'\n'}(Full capture tools coming in next sprint — camera & audio integration)
         </Text>
         <View style={styles.captureRow}>
-          {['📷', '🎤', '✏️', '🎥'].map((icon) => (
+          {[
+            { icon: '📷', id: 'photo', testID: 'capture-btn-photo' },
+            { icon: '🎤', id: 'audio', testID: 'capture-btn-audio' },
+            { icon: '✏️', id: 'note',  testID: 'capture-btn-note'  },
+            { icon: '🎥', id: 'video', testID: 'capture-btn-video' },
+          ].map(({ icon, id, testID }) => (
             <TouchableOpacity
-              key={icon}
+              key={id}
+              testID={testID}
               style={[styles.captureBtn, { borderColor: theme.border, borderRadius: theme.radiusSm, backgroundColor: theme.surfaceAlt }]}
-              onPress={() => Alert.alert('Coming soon', 'Full capture tools in next sprint')}
+              onPress={onCapture}
             >
               <Text style={styles.captureIcon}>{icon}</Text>
             </TouchableOpacity>
@@ -369,6 +375,7 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, band, o
           {prompt}
         </Text>
         <TextInput
+          testID="reflection-input"
           style={[styles.reflectionInput, {
             backgroundColor: theme.surfaceAlt,
             borderColor: theme.border,
@@ -443,3 +450,4 @@ const styles = StyleSheet.create({
   askPeriBtn:      { borderWidth: 1, padding: 12, alignItems: 'center' },
   askPeriLabel:    { fontSize: 14, fontWeight: '600' },
 });
+                                                                                                                                                                          

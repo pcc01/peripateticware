@@ -1,0 +1,23 @@
+# Mirrors e2e/journal.test.js "Journal Screen" (7.1, 7.4).
+#
+# SKIPPED: 7.2/7.3 (tap an entry -> detail screen). No app/journal/[id].tsx
+# route exists, and journal entry cards in app/(tabs)/journal.tsx have no
+# onPress/navigation wired up — tapping one does nothing. Same gap the
+# Detox version flagged.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+
+# 7.4 — pull to refresh does not crash the list
+- swipe:
+    from:
+      id: "journal-list"
+    direction: DOWN
+- assertVisible:
+    id: "journal-screen"

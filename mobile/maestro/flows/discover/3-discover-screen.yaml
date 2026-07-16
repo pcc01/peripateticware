@@ -1,0 +1,47 @@
+# Mirrors e2e/discover.test.js "Discover Screen" (3.4, 3.1, 3.5 — combined
+# into one flow since the original Detox file runs them sequentially in a
+# single session via beforeAll).
+#
+# SKIPPED: 3.2/3.3 (disable/re-enable device WiFi -> offline banner). No
+# offline-mode mock exists in the app (src/hooks/useConnectivity.ts reads
+# real OS network state), and toggling real device WiFi isn't something
+# Maestro's standard command set does either. Same gap the Detox version
+# flagged.
+#
+# First use of `swipe` in this Maestro suite (pull-to-refresh) — verify the
+# gesture actually triggers RefreshControl on-device.
+#
+# NOTE: Maestro's plain-text assertVisible does a full-string regex match
+# against each accessibility node's text, not a substring/contains search
+# (confirmed by a real failure while running this flow: the location line
+# renders as a single Text node "📍 Local creek or drainage channel" —
+# app/(tabs)/index.tsx's `<Text>📍 {activity.location_name}</Text>` — and
+# asserting just "Local creek or drainage channel" failed even though the
+# text was visibly on screen, per the UI hierarchy dump at the failure
+# point). Wildcarding with `.*` is the documented way to match a substring.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+
+# 3.4 — activity cards show title, subject/duration, and location
+- assertVisible: "Creek Habitat Study"
+- assertVisible: ".*Local creek or drainage channel.*"
+
+# 3.1 — pull to refresh reloads the activity list
+- swipe:
+    from:
+      id: "discover-list"
+    direction: DOWN
+- assertVisible: "Creek Habitat Study"
+
+# 3.5 — tapping an activity card opens the Brief phase
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- assertVisible: "Creek Habitat Study"
+- assertVisible: "I'm ready — let's go"
+- tapOn: "‹ Back"
+- assertVisible:
+    id: "discover-screen"

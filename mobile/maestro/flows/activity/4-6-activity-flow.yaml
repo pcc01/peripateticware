@@ -1,0 +1,59 @@
+# Mirrors e2e/activity-flow.test.js "Activity Flow (Brief -> Orient ->
+# Inquiry -> Reflect -> Submit)" — combines MANUAL_TESTING_GUIDE.md sections
+# 4 and 6, same as the Detox version, since both walk the same
+# app/activity/[id].tsx screen through its phases in one continuous,
+# stateful session (beforeAll + sequential it() blocks, not independent
+# tests).
+#
+# 4.7 ("Ask Peri responds") is exercised only up to sending the message —
+# asserting on the actual AI reply text would require Ollama running on the
+# host, not guaranteed in CI. Same limitation the Detox version flagged.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+
+# 4.1 — Brief phase shows title, description, and the start CTA
+- assertVisible: "Creek Habitat Study"
+- assertVisible: "I'm ready — let's go"
+
+# 4.2/4.3 — advances Brief -> Orient
+- tapOn: "I'm ready — let's go"
+- assertVisible: "Arrive & Observe"
+- assertVisible: "I'm oriented — begin inquiry"
+
+# 4.4/4.5 — advances Orient -> Inquiry, showing the question + capture row
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+# 4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet
+- tapOn: "💬 Ask Peri"
+- assertVisible:
+    id: "peri-chat-sheet"
+- assertVisible: "I'm Peri. Ask me anything about the activity or what you're observing."
+- tapOn:
+    id: "peri-chat-input"
+- inputText: "What insects live near a creek?"
+- tapOn:
+    id: "peri-chat-send"
+- assertVisible: "What insects live near a creek?"
+- tapOn:
+    id: "peri-chat-close"
+- assertNotVisible:
+    id: "peri-chat-sheet"
+
+# 6.1-6.4 — advances Inquiry -> Reflect, submits, and returns to Discover
+- tapOn: "Done capturing — reflect"
+- assertVisible: "Make Meaning"
+- tapOn:
+    id: "reflection-input"
+- inputText: "The creek water was clearer than I expected."
+- tapOn: "Submit field work"
+- assertVisible: "Submitted! 🎉"
+- tapOn: "Done"
+- assertVisible:
+    id: "discover-screen"

@@ -1,0 +1,40 @@
+# New coverage — see 12.1-note-capture.yaml and 12.3-photo-capture.yaml
+# headers for context. Video capture didn't exist anywhere in the app
+# before this session — src/components/InAppCamera.tsx and the 'video'
+# CaptureMode in CaptureSheet.tsx were both built from scratch here, backed
+# by expo-camera's CameraView.recordAsync()/stopRecording(). Backend
+# already supported "video" as a capture_type (backend/models/database.py
+# CaptureType enum), so no backend change was needed.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      camera: allow
+      microphone: allow
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+- tapOn:
+    id: "capture-btn-video"
+- assertVisible:
+    id: "capture-sheet"
+- tapOn:
+    id: "capture-mode-video"
+- assertVisible:
+    id: "in-app-camera"
+- tapOn:
+    id: "camera-record"
+- assertVisible: ".*Recording.*tap to stop.*"
+- tapOn:
+    id: "camera-record"
+- assertNotVisible:
+    id: "capture-sheet"
+- assertVisible:
+    

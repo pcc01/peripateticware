@@ -1,0 +1,19 @@
+# Mirrors e2e/auth.test.js "1.4 — shows a "Login failed" alert on wrong
+# credentials and stays on login".
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "login-screen"
+- tapOn:
+    id: "email-input"
+- inputText: "wrong-user@nowhere.test"
+- tapOn:
+    id: "password-input"
+- inputText: "DefinitelyWrong1"
+- tapOn: "Sign in"
+- assertVisible: "Login failed"
+- tapOn: "OK"
+- assertVisible:
+    id: "login-screen"

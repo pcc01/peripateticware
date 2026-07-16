@@ -1,0 +1,33 @@
+# Mirrors e2e/age-band-adaptation.test.js "Age-Band Adaptation".
+#
+# NOTE (carried over from the Detox version): age band is NOT a per-account
+# login attribute in this app — src/bands/BandContext.tsx holds it as
+# client-only local state, defaulting to 'm712' on every launch, changeable
+# only via the Settings > Age Band picker. No seeded account is tagged with
+# an age band. This flow exercises the real mechanism (switching band
+# reactively changes journal.tsx/progress.tsx copy) instead of a
+# nonexistent per-account K-6/7-12 login.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+
+# defaults to 7-12 band copy ("Field Notes" / "Activities")
+- tapOn:
+    id: "tab-journal"
+- assertVisible: "Field Notes"
+- tapOn:
+    id: "tab-progress"
+- assertVisible: "ACTIVITIES"
+
+# 11.1 — switches to K-6 band copy after selecting K-6 in Settings
+- tapOn:
+    id: "tab-settings"
+- tapOn: "K–6"
+- tapOn:
+    id: "tab-journal"
+- assertVisible: "Field Journal"
+- tapOn:
+    id: "tab-progress"
+- assertVisible: "ADVENTURES"

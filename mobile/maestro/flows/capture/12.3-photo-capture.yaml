@@ -1,0 +1,38 @@
+# New coverage — see 12.1-note-capture.yaml header for context.
+#
+# Photo capture now stays fully in-app (src/components/InAppCamera.tsx,
+# wrapping expo-camera's CameraView) instead of handing off to the OS
+# system Camera app, specifically so it has real testIDs and is
+# automatable here — that in-app-camera rebuild happened in this same
+# session, together with this flow. First use of expo-camera and of the
+# `permissions.camera: allow` grant in this suite; the emulator's virtual
+# camera produces a synthetic test-pattern image, which is fine for
+# exercising the capture pipeline but isn't a real photo.
+# permissions.location: allow — Inquiry phase triggers a geofence
+# location-permission dialog regardless of what the test is actually
+# about; see 12.1-note-capture.yaml header for how this was found.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      camera: allow
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+- tapOn:
+    id: "capture-btn-photo"
+- assertVisible:
+    id: "capture-sheet"
+- tapOn:
+    id: "capture-mode-photo"
+- assertVisible:
+    id: "in-app-camera"
+# camera-shutter only renders once InAppCamera's onCameraReady fires
+# (see the component's `!ready` gate) �

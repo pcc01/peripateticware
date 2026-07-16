@@ -415,7 +415,17 @@ class Project(Base):
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=True)
 
-    status = Column(Enum(ProjectStatus), default=ProjectStatus.PLANNING, index=True)
+    # native_enum=False + values_callable: avoids relying on a Postgres native
+    # enum type existing (SQLAlchemy's default implicit type name "projectstatus"
+    # is never created by either bootstrap path — startup.py's fallback doesn't
+    # create it at all, and database/init.sql creates a differently-named
+    # "project_status_enum" instead). Stored as plain VARCHAR using the enum's
+    # lowercase .value strings.
+    status = Column(
+        Enum(ProjectStatus, native_enum=False, values_callable=lambda e: [x.value for x in e]),
+        default=ProjectStatus.PLANNING,
+        index=True,
+    )
 
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -492,7 +502,18 @@ class StudentCapture(Base):
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
     session_id  = Column(UUID(as_uuid=True), ForeignKey("learning_sessions.id"))
 
-    capture_type    = Column(Enum(CaptureType), nullable=False)
+    # native_enum=False + values_callable: see ProjectStatus.status above for
+    # why — same implicit-type-name mismatch bug (expects Postgres type
+    # "capturetype", which no bootstrap path creates), plus this one also
+    # fixes a values mismatch: SQLAlchemy's default sends the enum MEMBER
+    # NAME ("TEXT", "PHOTO") rather than its value ("text", "photo"), which
+    # doesn't match the lowercase values used elsewhere (fallback table's
+    # DEFAULT 'photo', Pydantic validators, etc). This was the concrete bug
+    # behind the "type capturetype does not exist" 500 on capture uploads.
+    capture_type    = Column(
+        Enum(CaptureType, native_enum=False, values_callable=lambda e: [x.value for x in e]),
+        nullable=False,
+    )
     file_path       = Column(String(512))
     file_size_bytes = Column(Integer)
     mime_type       = Column(String(100))
@@ -617,7 +638,12 @@ class StudentCompetency(Base):
     description     = Column(Text)
     category        = Column(String(100))
 
-    status           = Column(Enum(CompetencyStatus), default=CompetencyStatus.NOT_STARTED, index=True)
+    # native_enum=False + values_callable: see ProjectStatus.status above.
+    status           = Column(
+        Enum(CompetencyStatus, native_enum=False, values_callable=lambda e: [x.value for x in e]),
+        default=CompetencyStatus.NOT_STARTED,
+        index=True,
+    )
     progress_percent = Column(Integer, default=0)
     evidence_count   = Column(Integer, default=0)
 
@@ -813,7 +839,8 @@ class ComplianceCheck(Base):
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), index=True)
 
     jurisdiction_id  = Column(String(100), index=True)
-    framework        = Column(Enum(PrivacyFramework))
+    # native_enum=False + values_callable: see ProjectStatus.status above.
+    framework        = Column(Enum(PrivacyFramework, native_enum=False, values_callable=lambda e: [x.value for x in e]))
     student_age      = Column(Integer)
 
     is_compliant     = Column(Boolean, default=False)
@@ -904,7 +931,8 @@ class PrivacyConfiguration(Base):
     id                = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     jurisdiction_id   = Column(String(100), unique=True, index=True)
     jurisdiction_name = Column(String(255))
-    framework         = Column(Enum(PrivacyFramework))
+    # native_enum=False + values_callable: see ProjectStatus.status above.
+    framework         = Column(Enum(PrivacyFramework, native_enum=False, values_callable=lambda e: [x.value for x in e]))
     country_code      = Column(String(2), index=True)
     subdivision_code  = Column(String(10), nullable=True)
 
@@ -1351,4 +1379,11 @@ class RagDocument(Base):
     id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     source_type = Column(String(50),  nullable=False, index=True)   # standards|curriculum|homeschool|custom
     source_id   = Column(String(255), nullable=True,  index=True)   # UUID of parent record (or filename)
-    source_name = Column(String(512), nullable=True)                 # human-readable name of 
+    source_name = Column(String(512), nullable=True)                 # human-readable name of parent record
+    chunk_index = Column(Integer,     nullable=False, default=0)     # 0-based position within source
+    content     = Column(Text,        nullable=False)                # raw text of this chunk
+    metadata_   = Column("metadata", JSONB, default=dict)            # {grade_level, subject, state_code, …}
+    embedding   = Column(Vector(384), nullable=True)                 # 384-dim nomic-embed / all-MiniLM
+    owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

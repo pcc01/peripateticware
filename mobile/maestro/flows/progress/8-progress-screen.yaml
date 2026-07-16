@@ -1,0 +1,24 @@
+# Mirrors e2e/progress.test.js "Progress Screen" (8.1, 8.2/8.3).
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- tapOn:
+    id: "tab-progress"
+- assertVisible:
+    id: "progress-screen"
+
+# 8.1 — shows the stats row (activities, captures, streak)
+- assertVisible: "ACTIVITIES"
+- assertVisible: "CAPTURES"
+- assertVisible: "DAY STREAK"
+
+# 8.2/8.3 — scrolling reveals the rest of the screen without crashing.
+# Maestro has no direct "scrollTo bottom of element by id" equivalent to
+# Detox's .scrollTo('bottom') — approximating with repeated whole-screen
+# scroll gestures instead.
+- scroll
+- scroll
+- assertVisible:
+    id: "progress-screen"

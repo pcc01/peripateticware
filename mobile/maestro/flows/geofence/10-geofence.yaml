@@ -1,0 +1,41 @@
+# Mirrors e2e/geofence.test.js "Geofence (Location-Based Guard)". Uses
+# "Creek Habitat Study" (location_latitude=37.8716, location_longitude=
+# -122.2727, location_radius_meters=500 — backend/startup.py seed default).
+#
+# FIRST USE of Maestro's setLocation/permissions commands in this suite —
+# same caveat the Detox version flagged: the `permissions.location: allow`
+# grant must actually take on the Android emulator for
+# src/hooks/useGeofence.ts's requestForegroundPermissionsAsync() to
+# succeed, or the watcher never starts and the geofence-toast assertions
+# below will time out. Verify on-device before trusting this in CI.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: allow
+- setLocation:
+    latitude: 37.8716
+    longitude: -122.2727
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+# 10.1 — no warning while inside the activity radius
+- setLocation:
+    latitude: 37.8716
+    longitude: -122.2727
+- assertNotVisible:
+    id: "geofence-toast"
+
+# 10.2/10.3 — shows a non-blocking toast when the student leaves the radius
+- setLocation:
+    latitude: 37.95
+    longitude: -122.35
+- assertVisible:
+    id: "geofence-toast"
+- assertVisible: "Done capturing — reflect"

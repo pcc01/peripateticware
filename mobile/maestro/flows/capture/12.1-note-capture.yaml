@@ -1,0 +1,35 @@
+# New coverage (not in the original Detox suite — capture wasn't wired to
+# the UI when that suite was written; app/activity/[id].tsx's capture row
+# just showed an Alert.alert('Coming soon', ...) stub). Wired up and tested
+# together in this session: src/components/CaptureSheet.tsx (photo/audio/
+# note/video mode picker) is now reachable via the real capture-btn-*
+# buttons instead of the stub.
+#
+# permissions.location: allow — every flow that reaches the Inquiry phase
+# (not just the geofence flow) triggers useGeofence's location permission
+# request, which pops a blocking native dialog if not pre-granted. Found
+# this the hard way: without it, this flow (and 12.2/12.4) failed with the
+# OS location dialog covering the screen and eating taps meant for the app.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+- tapOn:
+    id: "capture-btn-note"
+- assertVisible:
+    id: "capture-sheet"
+- tapOn:
+    id: "capture-mode-note"
+- tapOn:
+    id: "capture-note-input"
+- inputText:

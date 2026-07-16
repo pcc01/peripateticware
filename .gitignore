@@ -271,6 +271,7 @@ database/backups/*.dump
 .env*
 !.env.example
 !.env.example_old
+!mobile/.env.test.example
 secrets/
 .aws/
 .credentials
@@ -415,6 +416,7 @@ verify_fixes.py
 frontend/peripateticware-fixes/
 backups/
 mobile/artifacts/
+mobile/maestro/reports/
 
 # ── Test run outputs (not source) ───────────────────────────
 frontend/test-results/
@@ -433,12 +435,16 @@ frontend/vite.config.ts.timestamp-*.mjs
 # root scripts/) — that swallowed the real i18n pipeline/tooling in
 # frontend/scripts, which is product code, not a one-off. Un-ignore it below.
 # It also silently swallowed backend/scripts/encrypt_existing_data.py — the
-# one-time FIELD_ENCRYPTION_KEY backfill script. Un-ignore both real script
+# one-time FIELD_ENCRYPTION_KEY backfill script. It also silently swallowed
+# mobile/scripts/ — the Android/iOS Detox E2E preflight + runner scripts
+# (run-android-e2e.ps1, test-preflight-ios.sh, run-tests-ios.sh), which are
+# real test tooling, not one-offs. Un-ignore all three real script
 # directories; the root-level scripts/ (Claude session diagnostics) stays
 # ignored via scripts/* above.
 scripts/
 !frontend/scripts/
 !backend/scripts/
+!mobile/scripts/
 
 # local-only docs & scripts
 LOCAL_DOCKER.md

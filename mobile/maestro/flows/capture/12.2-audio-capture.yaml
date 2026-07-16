@@ -1,0 +1,27 @@
+# New coverage — see 12.1-note-capture.yaml header for context on why this
+# wasn't testable before this session, and for why permissions.location is
+# required here too (Inquiry phase triggers a geofence location-permission
+# dialog regardless of what the test is actually about).
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+    permissions:
+      microphone: allow
+      location: allow
+- runFlow: ../login-student.yaml
+- tapOn: "Creek Habitat Study"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- assertVisible: "Observe & Capture"
+
+- tapOn:
+    id: "capture-btn-audio"
+- assertVisible:
+    id: "capture-sheet"
+- tapOn:
+    id: "capture-mode-audio"
+- tapOn:
+    id: "c

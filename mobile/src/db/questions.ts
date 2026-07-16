@@ -2,7 +2,7 @@
 // Downloads questions.sqlite from backend on first launch (or when stale),
 // then queries locally. Zero network required in the field.
 
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { getDb } from './database';
 import { API_BASE, getToken } from '@/src/api/client';
 
@@ -42,22 +42,22 @@ export async function syncQuestionsFromServer(): Promise<void> {
       : {};
 
     // Download the sqlite file
-    const tmpPath = FileSystem.cacheDirectory + 'questions_download.sqlite';
-    const result = await FileSystem.downloadAsync(
+    const destination = new File(Paths.cache, 'questions_download.sqlite');
+    const downloadedFile = await File.downloadFileAsync(
       `${API_BASE}/api/v1/aristotelian-questions/sqlite`,
-      tmpPath,
-      { headers }
+      destination,
+      { headers, idempotent: true }
     );
-    if (result.status !== 200) throw new Error(`Download failed: ${result.status}`);
+    // Non-2xx responses reject with an UnableToDownload error, so no manual status check needed.
 
     // Open downloaded DB and read all rows
     const { SQLiteDatabase } = await import('expo-sqlite');
-    const downloadedDb = await (await import('expo-sqlite')).openDatabaseAsync(tmpPath);
+    const downloadedDb = await (await import('expo-sqlite')).openDatabaseAsync(downloadedFile.uri);
     const rows = await downloadedDb.getAllAsync<LocalQuestion>(
       'SELECT * FROM aristotelian_questions ORDER BY id'
     );
     await downloadedDb.closeAsync();
-    await FileSystem.deleteAsync(tmpPath, { idempotent: true });
+    downloadedFile.delete();
 
     if (rows.length === 0) return; // Nothing to import
 

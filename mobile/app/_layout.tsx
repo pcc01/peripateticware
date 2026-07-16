@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, LogBox } from 'react-native';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -12,6 +12,21 @@ import { initOfflineLayer } from '@/src/db/appInit';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// NOTE: Any console.warn/error in a dev build (ours or a third-party
+// library's, e.g. expo-av's deprecation notice) triggers RN's LogBox
+// banner ("Open debugger to view warnings"), which visually overlaps the
+// bottom of the screen — including the tab bar — and silently swallows
+// taps aimed at elements underneath it (bit us three separate times during
+// E2E testing: a missing font, a deprecated FileSystem API, and an
+// expo-av deprecation notice, each an unrelated warning triggering the
+// same failure). Suppressing the banner fixes the root cause instead of
+// chasing every future warning individually. Warnings still print to the
+// Metro/console log — this only hides the in-app overlay. Only active in
+// dev builds; production builds don't show LogBox regardless.
+if (__DEV__) {
+  LogBox.ignoreAllLogs(true);
+}
 
 // ── Error boundary — shows crash details on screen ──────────────────
 class ErrorBoundary extends React.Component<
@@ -76,7 +91,11 @@ export default function RootLayout() {
           Lora_700Bold:          require('@expo-google-fonts/lora/Lora_700Bold.ttf'),
           DMSans_400Regular:     require('@expo-google-fonts/dm-sans/DMSans_400Regular.ttf'),
           DMSans_500Medium:      require('@expo-google-fonts/dm-sans/DMSans_500Medium.ttf'),
-          DMSans_600SemiBold:    require('@expo-google-fonts/dm-sans/DMSans_600SemiBold.ttf'),
+          // NOTE: DMSans_600SemiBold does not exist in the installed
+          // @expo-google-fonts/dm-sans package (only 400/500/700 are
+          // shipped) and isn't referenced anywhere as a fontFamily in
+          // theme/tokens.ts — was dead weight causing a Font.loadAsync
+          // rejection (and the resulting LogBox banner) on every launch.
           DMMono_400Regular:     require('@expo-google-fonts/dm-mono/DMMono_400Regular.ttf'),
           DMMono_500Medium:      require('@expo-google-fonts/dm-mono/DMMono_500Medium.ttf'),
           ZillaSlab_400Regular:  require('@expo-google-fonts/zilla-slab/ZillaSlab_400Regular.ttf'),
@@ -96,8 +115,14 @@ export default function RootLayout() {
     prepare().finally(() => clearTimeout(timeout));
   }, []);
 
-  const onLayout = useCallback(async () => {
-    if (appReady) await SplashScreen.hideAsync().catch(() => {});
+  // NOTE: Stack (expo-router) does not forward `onLayout` to a native view —
+  // it's a navigator config component, not a View. Relying on onLayout here
+  // silently never fires, so the splash screen never dismisses. Hide it
+  // directly once we know we're ready to render instead.
+  useEffect(() => {
+    if (appReady) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
   }, [appReady]);
 
   if (!appReady) return null;
@@ -107,7 +132,7 @@ export default function RootLayout() {
       <ThemeProvider>
         <BandProvider>
           <AuthProvider>
-            <Stack onLayout={onLayout} screenOptions={{ headerShown: false }}>
+            <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
               <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
               <Stack.Screen name="login"         options={{ headerShown: false }} />

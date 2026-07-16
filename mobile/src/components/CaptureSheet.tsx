@@ -7,13 +7,13 @@ import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   Alert, ActivityIndicator, Modal,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
 import { Theme } from '@/src/theme/tokens';
 import { AgeBand } from '@/src/bands/copy';
 import { uploadCapture, Capture } from '@/src/api/captures';
 import { queueCapture } from '@/src/db/offlineQueue';
 import * as Network from 'expo-network';
+import InAppCamera, { CapturedFile } from '@/src/components/InAppCamera';
 
 interface Props {
   visible: boolean;
@@ -27,12 +27,13 @@ interface Props {
   longitude?: number;
 }
 
-type CaptureMode = null | 'photo' | 'audio' | 'note';
+type CaptureMode = null | 'photo' | 'audio' | 'note' | 'video';
 
 const MODES = [
   { mode: 'photo' as CaptureMode, emoji: '📷', label: 'Photo' },
   { mode: 'audio' as CaptureMode, emoji: '🎤', label: 'Voice' },
   { mode: 'note'  as CaptureMode, emoji: '✏️', label: 'Note'  },
+  { mode: 'video' as CaptureMode, emoji: '🎥', label: 'Video' },
 ];
 
 export default function CaptureSheet({
@@ -89,29 +90,14 @@ export default function CaptureSheet({
     }
   };
 
-  // ── Photo ─────────────────────────────────────────────────────────────────
-  const handlePhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      // Fall back to camera
-      const camStatus = await ImagePicker.requestCameraPermissionsAsync();
-      if (camStatus.status !== 'granted') {
-        Alert.alert('Permission needed', 'Allow camera access to take photos.');
-        return;
-      }
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: false,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      const ext = asset.uri.split('.').pop() ?? 'jpg';
-      await upload({ uri: asset.uri, name: `photo.${ext}`, type: asset.mimeType ?? 'image/jpeg' }, 'photo');
-    }
+  // ── Photo / Video ────────────────────────────────────────────────────────
+  // Both use the in-app camera (InAppCamera, wrapping expo-camera's
+  // CameraView) instead of handing off to the OS system Camera app —
+  // keeps capture fully inside our own UI/testIDs.
+  const handleCameraCaptured = async (file: CapturedFile) => {
+    const captureType = mode === 'video' ? 'video' : 'photo';
+    setMode(null);
+    await upload(file, captureType);
   };
 
   // ── Audio ─────────────────────────────────────────────────────────────────
@@ -153,12 +139,12 @@ export default function CaptureSheet({
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
-      <View style={[styles.root, { backgroundColor: theme.bg }]}>
+      <View testID="capture-sheet" style={[styles.root, { backgroundColor: theme.bg }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
             {band === 'k6' ? 'Capture something!' : 'Add evidence'}
           </Text>
-          <TouchableOpacity onPress={onClose} hitSlop={12}>
+          <TouchableOpacity testID="capture-close" onPress={onClose} hitSlop={12}>
             <Text style={[styles.closeBtn, { color: theme.textMuted }]}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -176,10 +162,8 @@ export default function CaptureSheet({
             {MODES.map((m) => (
               <TouchableOpacity
                 key={m.mode}
-                onPress={() => {
-                  if (m.mode === 'photo') handlePhoto();
-                  else setMode(m.mode);
-                }}
+                testID={`capture-mode-${m.mode}`}
+                onPress={() => setMode(m.mode)}
                 style={[styles.modeBtn, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
               >
                 <Text style={styles.modeEmoji}>{m.emoji}</Text>
@@ -191,18 +175,19 @@ export default function CaptureSheet({
           // Audio recorder
           <View style={styles.center}>
             <TouchableOpacity
+              testID="capture-record-btn"
               onPress={recording ? stopRecording : startRecording}
               style={[styles.recordBtn, { backgroundColor: recording ? theme.warn : theme.accent, borderRadius: 999 }]}
             >
               <Text style={styles.recordIcon}>{recording ? '⏹' : '🎤'}</Text>
             </TouchableOpacity>
-            <Text style={[styles.durationText, { fontFamily: theme.fontMono, color: theme.textMuted }]}>
+            <Text testID="capture-record-status" style={[styles.durationText, { fontFamily: theme.fontMono, color: theme.textMuted }]}>
               {recording
                 ? `Recording ${recordingDuration}s — tap to stop`
                 : 'Tap to start recording'}
             </Text>
             {!recording && (
-              <TouchableOpacity onPress={() => setMode(null)}>
+              <TouchableOpacity testID="capture-audio-back" onPress={() => setMode(null)}>
                 <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← Back</Text>
               </TouchableOpacity>
             )}
@@ -214,6 +199,7 @@ export default function CaptureSheet({
               FIELD NOTE
             </Text>
             <TextInput
+              testID="capture-note-input"
               style={[styles.noteInput, {
                 backgroundColor: theme.surface,
                 borderColor: theme.border,
@@ -230,6 +216,7 @@ export default function CaptureSheet({
               textAlignVertical="top"
             />
             <TouchableOpacity
+              testID="capture-note-save"
               onPress={submitNote}
               disabled={!noteText.trim()}
               style={[styles.submitBtn, {
@@ -241,12 +228,20 @@ export default function CaptureSheet({
                 Save note
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setMode(null)}>
+            <TouchableOpacity testID="capture-note-back" onPress={() => setMode(null)}>
               <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← Back</Text>
             </TouchableOpacity>
           </View>
         ) : null}
       </View>
+
+      <InAppCamera
+        visible={mode === 'photo' || mode === 'video'}
+        mode={mode === 'video' ? 'video' : 'photo'}
+        onClose={() => setMode(null)}
+        onCaptured={handleCameraCaptured}
+        theme={theme}
+      />
     </Modal>
   );
 }
@@ -272,3 +267,4 @@ const styles = StyleSheet.create({
   submitLabel:   { fontSize: 15, fontWeight: '600' },
   uploadingText: { fontSize: 14 },
 });
+                                                                                                                                                                                                                                                         

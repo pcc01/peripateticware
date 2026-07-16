@@ -1,0 +1,25 @@
+# maestro/flows/login-student.yaml
+#
+# Reusable login subflow — mirrors e2e/helpers.js::loginAsStudent().
+# Uses the SAME testIDs the Detox suite already relies on (login-screen,
+# email-input, password-input, discover-screen), since React Native's
+# `testID` prop compiles down to a native resource-id / accessibility
+# identifier that both Detox and Maestro read the same way. No app code
+# changes needed to run this.
+#
+# Credentials are passed in via `maestro test -e STUDENT_EMAIL=... -e
+# STUDENT_PASSWORD=...` (see the seeded test account in mobile/.env.test /
+# backend/startup.py::seed_test_accounts).
+appId: com.peripateticware.app
+---
+- assertVisible:
+    id: "login-screen"
+- tapOn:
+    id: "email-input"
+- inputText: "${STUDENT_EMAIL}"
+- tapOn:
+    id: "password-input"
+- inputText: "${STUDENT_PASSWORD}"
+- tapOn: "Sign in"
+- assertVisible:
+    id: "discover-screen"

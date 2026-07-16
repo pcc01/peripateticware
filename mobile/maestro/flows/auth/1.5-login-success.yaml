@@ -1,0 +1,9 @@
+# Mirrors e2e/auth.test.js "1.5 — logs in as a student and lands on the
+# Discover tab".
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- assertVisible:
+    id: "discover-screen"

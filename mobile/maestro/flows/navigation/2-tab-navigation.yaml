@@ -1,0 +1,55 @@
+# Mirrors e2e/navigation.test.js "Navigation (Bottom Tab Bar)" (2.1-2.4,
+# 2.5 — combined into one flow since the original Detox file runs them
+# sequentially in a single session via beforeAll).
+#
+# ⚠️ KNOWN DISCREPANCY (found while converting, not yet fixed): the 2.5
+# assertions below ("only 4 tabs, no Explore") match the *intended* design
+# per app/(tabs)/_layout.tsx, which only registers 4 <Tabs.Screen> entries
+# (index/journal/progress/settings) — same as what the Detox test's comment
+# describes. But a live screenshot taken during this session
+# (mobile/maestro-debug/screenshot-❌-1784096779588-*.png) shows FIVE tabs
+# actually rendering: Discover, Journal, Progress, Settings, and a lowercase
+# "explore" tab. app/(tabs)/explore.tsx exists as a Redirect-only stub (kept
+# "to avoid broken imports" per its own comment) and expo-router appears to
+# auto-register any file in (tabs)/ as a tab unless explicitly hidden via
+# `<Tabs.Screen name="explore" options={{ href: null }} />` — which
+# _layout.tsx does not currently do. This flow is written to match the
+# INTENDED behavior (and will currently fail on 2.5) rather than assert
+# around a bug — fix is either hiding explore.tsx's tab or updating this
+# flow if the 5th tab turns out to be intentional now.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+
+# 2.1-2.4 — taps each of the 4 tabs and shows the matching screen
+- tapOn:
+    id: "tab-discover"
+- assertVisible:
+    id: "discover-screen"
+- tapOn:
+    id: "tab-journal"
+- assertVisible:
+    id: "journal-screen"
+- tapOn:
+    id: "tab-progress"
+- assertVisible:
+    id: "progress-screen"
+- tapOn:
+    id: "tab-settings"
+- assertVisible:
+    id: "settings-screen"
+
+# 2.5 — only the 4 registered tabs are visible, no extra "Explore" tab
+- assertVisible:
+    id: "tab-discover"
+- assertVisible:
+    id: "tab-journal"
+- assertVisible:
+    id: "tab-progress"
+- assertVisible:
+    id: "tab-settings"
+- assertNotVisible:
+    id: "tab-explore"
+- assertNotVisible: "Explore"

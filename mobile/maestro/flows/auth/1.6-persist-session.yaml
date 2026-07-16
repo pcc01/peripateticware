@@ -1,0 +1,16 @@
+# Mirrors e2e/auth.test.js "1.6 — stays logged in after backgrounding and
+# reopening the app". Detox uses device.sendToHome() + launchApp({newInstance:
+# false}); the closest Maestro equivalents are pressKey: Home to background
+# the app, then a plain launchApp (no clearState) to bring it back to the
+# foreground without wiping the session. First use of pressKey: Home in this
+# suite — verify on-device that it backgrounds rather than closing the app.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- pressKey: Home
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "discover-screen"
