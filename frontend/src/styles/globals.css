@@ -39,6 +39,19 @@
   /* Spacing */
   --section-y: 96px;
   --section-x: clamp(20px, 5vw, 80px);
+
+  /* Header/nav spacing — one shared, fluid scale used by the logo, nav
+     links, locale switcher, and auth buttons together, so the header
+     adapts as a single system instead of each piece having its own fixed
+     pixel value that breaks independently once translated text (Spanish,
+     German, etc.) runs longer than the English original. Values shrink
+     smoothly with viewport width (clamp, same pattern as --section-x)
+     rather than snapping at a single breakpoint. */
+  --nav-min-height: 64px;
+  --nav-gap-lg: clamp(12px, 2.5vw, 32px);
+  --nav-gap-sm: clamp(6px, 1vw, 10px);
+  --nav-link-size: clamp(0.85rem, 0.78rem + 0.3vw, 0.95rem);
+  --nav-btn-pad-x: clamp(10px, 1.4vw, 14px);
 }
 
 * {

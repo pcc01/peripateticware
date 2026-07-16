@@ -108,12 +108,11 @@ export const TeacherSubmissionsPage: React.FC = () => {
 
   // Helper: phase badge for submission list items
   const PhaseBadge = ({ s }: { s: any }) => {
+  const { t } = useTranslation('landing');
     if (!s.completion_mode || s.completion_mode === 'field_only') return null;
     if (s.completion_phase === 'field_work' && s.field_phase_status === 'submitted') {
       return (
-        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-          🏕️ Field Work Ready
-        </span>
+        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">{t('pages_teachersubmissionspage.field_work_ready', '🏕️ Field Work Ready')}</span>
       );
     }
     if (s.completion_phase === 'reflection') {
@@ -302,10 +301,10 @@ export const TeacherSubmissionsPage: React.FC = () => {
                     <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                       🏕️ Field Work Review
                       {selectedSubmission.field_phase_status === 'reviewed' && (
-                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Reviewed</span>
+                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{t('pages_teachersubmissionspage.reviewed', '✓ Reviewed')}</span>
                       )}
                       {selectedSubmission.field_phase_status === 'approved' && (
-                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Approved</span>
+                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{t('pages_teachersubmissionspage.approved', '✓ Approved')}</span>
                       )}
                     </h3>
                     <p className="text-xs text-gray-500 mb-3">
@@ -326,7 +325,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                         <textarea
                           value={fieldFeedback}
                           onChange={(e) => setFieldFeedback(e.target.value)}
-                          placeholder="Comment on the field observations, evidence quality, or what to focus on in the reflection..."
+                          placeholder={t('pages_teachersubmissionspage.placeholder_comment_on_the_field_observations_eviden', 'Comment on the field observations, evidence quality, or what to focus on in the reflection...')}
                           className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                           rows={3}
                         />
@@ -365,7 +364,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                     )}
                     {selectedSubmission.field_phase_feedback && !fieldReviewMode && (
                       <div className="mt-3 text-xs text-gray-600 bg-amber-50 border border-amber-200 rounded-lg p-2">
-                        <span className="font-medium">Your feedback: </span>{selectedSubmission.field_phase_feedback}
+                        <span className="font-medium">{t('pages_teachersubmissionspage.your_feedback', 'Your feedback:')}</span>{selectedSubmission.field_phase_feedback}
                       </div>
                     )}
                   </div>

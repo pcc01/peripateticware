@@ -105,7 +105,7 @@ const ProposalFormPage: React.FC = () => {
     }
   }
 
-  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</div>
+  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalformpage.loading', 'Loading…')}</div>
   if (!proposal) return <div className="p-8 text-center text-red-600">{error ?? 'Not found'}</div>
 
   return (
@@ -133,7 +133,7 @@ const ProposalFormPage: React.FC = () => {
         <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
           📝 <strong>Needs revision.</strong>
           {proposal.teacher_feedback && <span className="ml-1">Teacher said: <em>{proposal.teacher_feedback}</em></span>}
-          <span className="ml-1">Edit below and resubmit.</span>
+          <span className="ml-1">{t('pages_student_proposalformpage.edit_below_and_resubmit', 'Edit below and resubmit.')}</span>
         </div>
       )}
 
@@ -156,7 +156,7 @@ const ProposalFormPage: React.FC = () => {
             value={form.title}
             onChange={handleChange}
             disabled={!isEditable}
-            placeholder="e.g. Find a stream with native plants"
+            placeholder={t('pages_student_proposalformpage.placeholder_eg_find_a_stream_with_native_plants', 'e.g. Find a stream with native plants')}
             className="w-full px-3 py-2 rounded-lg border text-sm"
             style={{
               background: 'var(--surface)',
@@ -179,7 +179,7 @@ const ProposalFormPage: React.FC = () => {
             onChange={handleChange}
             disabled={!isEditable}
             rows={4}
-            placeholder="e.g. Visit a local stream and identify at least 3 native plants growing along the bank. Photograph each one and note what makes it native."
+            placeholder={t('pages_student_proposalformpage.placeholder_eg_visit_a_local_stream_and_identify_at_', 'e.g. Visit a local stream and identify at least 3 native plants growing along the bank. Photograph each one and note what makes it native.')}
             className="w-full px-3 py-2 rounded-lg border text-sm resize-y"
             style={{
               background: 'var(--surface)',
@@ -199,7 +199,7 @@ const ProposalFormPage: React.FC = () => {
             value={form.location_hint}
             onChange={handleChange}
             disabled={!isEditable}
-            placeholder="e.g. Any stream or creek, a local park, near a wooded trail"
+            placeholder={t('pages_student_proposalformpage.placeholder_eg_any_stream_or_creek_a_local_park_near', 'e.g. Any stream or creek, a local park, near a wooded trail')}
             className="w-full px-3 py-2 rounded-lg border text-sm"
             style={{
               background: 'var(--surface)',
@@ -233,7 +233,7 @@ const ProposalFormPage: React.FC = () => {
         {/* Note to teacher */}
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
-            Note to Teacher <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>(optional)</span>
+            Note to Teacher <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalformpage.optional', '(optional)')}</span>
           </label>
           <textarea
             name="note_to_teacher"
@@ -241,7 +241,7 @@ const ProposalFormPage: React.FC = () => {
             onChange={handleChange}
             disabled={!isEditable}
             rows={2}
-            placeholder="Anything you'd like your teacher to know about this challenge…"
+            placeholder={t('pages_student_proposalformpage.placeholder_anything_youd_like_your_teacher_to_know_', 'Anything you\'d like your teacher to know about this challenge…')}
             className="w-full px-3 py-2 rounded-lg border text-sm resize-y"
             style={{
               background: 'var(--surface)',

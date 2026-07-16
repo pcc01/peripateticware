@@ -62,7 +62,7 @@ const ForgotPasswordPage: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('pages_auth_forgotpasswordpage.email_address', 'Email address')}</label>
             <input
               type="email" required value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t('pages_auth_forgotpasswordpage.placeholder_youexamplecom', 'you@example.com')}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>

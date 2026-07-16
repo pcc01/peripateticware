@@ -130,9 +130,9 @@ export const AdminUsersPage: React.FC = () => {
 
       {showCreate && (
         <form onSubmit={handleCreate} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <input required placeholder="Email" type="email" aria-label="New user email" value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
-          <input required placeholder="Full name" aria-label="New user full name" value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
-          <input required placeholder="Password" type="password" aria-label="New user password" value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder={t('pages_admin_adminuserspage.placeholder_email', 'Email')} type="email" aria-label={t('pages_admin_adminuserspage.aria_label_new_user_email', 'New user email')} value={newUser.email} onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder={t('pages_admin_adminuserspage.placeholder_full_name', 'Full name')} aria-label={t('pages_admin_adminuserspage.aria_label_new_user_full_name', 'New user full name')} value={newUser.full_name} onChange={e => setNewUser(p => ({ ...p, full_name: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+          <input required placeholder={t('pages_admin_adminuserspage.placeholder_password', 'Password')} type="password" aria-label={t('pages_admin_adminuserspage.aria_label_new_user_password', 'New user password')} value={newUser.password} onChange={e => setNewUser(p => ({ ...p, password: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
           <select value={newUser.role} onChange={e => setNewUser(p => ({ ...p, role: e.target.value }))} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
             {['STUDENT','TEACHER','PARENT','ADMIN'].map(r => <option key={r}>{r}</option>)}
           </select>
@@ -143,9 +143,9 @@ export const AdminUsersPage: React.FC = () => {
       )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" aria-label="Search users by name or email" style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('pages_admin_adminuserspage.placeholder_search_name_or_email', 'Search name or email…')} aria-label={t('pages_admin_adminuserspage.aria_label_search_users_by_name_or_email', 'Search users by name or email')} style={{ flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }} />
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem' }}>
-          <option value="">All roles</option>
+          <option value="">{t('pages_admin_adminuserspage.all_roles', 'All roles')}</option>
           {['STUDENT','TEACHER','PARENT','ADMIN'].map(r => <option key={r}>{r}</option>)}
         </select>
       </div>
@@ -193,7 +193,7 @@ export const AdminUsersPage: React.FC = () => {
               </>
             )}
 
-            {assignOk && <div style={{ background: '#dcfce7', border: '1px solid #86efac', color: '#166534', borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>Added to class.</div>}
+            {assignOk && <div style={{ background: '#dcfce7', border: '1px solid #86efac', color: '#166534', borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>{t('pages_admin_adminuserspage.added_to_class', 'Added to class.')}</div>}
             {assignError && <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>{assignError}</div>}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>

@@ -87,56 +87,73 @@ export const LandingPage: React.FC = () => {
     }
   };
 
+  // Persona tab display labels — used by the nav shortcut, the persona-tab
+  // buttons, and the "Why {X}s Choose Peripateticware" heading. Previously
+  // these were derived by capitalizing the raw tab key (English only,
+  // never translated); now they go through t() like everything else.
+  const tabLabel: Record<HeroTab, string> = {
+    student: t('persona_tab.student', 'Student'),
+    teacher: t('persona_tab.teacher', 'Teacher'),
+    parent: t('persona_tab.parent', 'Parent'),
+    homeschool: t('persona_tab.homeschool', '🏡 Homeschool'),
+  };
+  const tabLabelPlural: Record<HeroTab, string> = {
+    student: t('persona_tab_plural.student', 'Students'),
+    teacher: t('persona_tab_plural.teacher', 'Teachers'),
+    parent: t('persona_tab_plural.parent', 'Parents'),
+    homeschool: t('persona_tab_plural.homeschool', 'Homeschoolers'),
+  };
+
   const personaCarousels = {
     student: [
       {
-        title: 'Field Journal — Wetlands Visit',
-        prompt: "What patterns do you notice in how the plants are arranged near the water's edge?",
+        title: t('phone_carousel.student.1.title', 'Field Journal — Wetlands Visit'),
+        prompt: t('phone_carousel.student.1.prompt', "What patterns do you notice in how the plants are arranged near the water's edge?"),
         emoji: '🌿',
         backgroundColor: '#eaf2ec',
-        badge: 'Observation',
+        badge: t('phone_carousel.student.1.badge', 'Observation'),
         location: 'Maplewood Wetlands'
       },
       {
-        title: 'Peri asks a question',
-        prompt: "You found three different insects. What do they have in common, and what makes each one different?",
+        title: t('phone_carousel.student.2.title', 'Peri asks a question'),
+        prompt: t('phone_carousel.student.2.prompt', "You found three different insects. What do they have in common, and what makes each one different?"),
         emoji: '🦋',
         backgroundColor: '#f0fdf4',
-        badge: 'Inquiry',
+        badge: t('phone_carousel.student.2.badge', 'Inquiry'),
         location: 'School Garden'
       },
       {
-        title: 'Evidence Captured',
-        prompt: "Great observation! Now — what do you think caused the leaves to change colour on this side of the tree?",
+        title: t('phone_carousel.student.3.title', 'Evidence Captured'),
+        prompt: t('phone_carousel.student.3.prompt', "Great observation! Now — what do you think caused the leaves to change colour on this side of the tree?"),
         emoji: '📸',
         backgroundColor: '#ecfdf5',
-        badge: 'Analyze',
+        badge: t('phone_carousel.student.3.badge', 'Analyze'),
         location: 'City Park'
       },
     ],
     teacher: [
       {
-        title: 'Create Activity — River Study',
-        prompt: "Set location, objectives, and cognitive level. Peri generates guiding questions automatically.",
+        title: t('phone_carousel.teacher.1.title', 'Create Activity — River Study'),
+        prompt: t('phone_carousel.teacher.1.prompt', "Set location, objectives, and cognitive level. Peri generates guiding questions automatically."),
         emoji: '🗺️',
         backgroundColor: '#eef2ff',
-        badge: 'Setup',
+        badge: t('phone_carousel.teacher.1.badge', 'Setup'),
         location: 'Activity Builder'
       },
       {
-        title: 'Live Session Monitor',
-        prompt: "14 students active · 3 field notes submitted · 2 waiting for your feedback",
+        title: t('phone_carousel.teacher.2.title', 'Live Session Monitor'),
+        prompt: t('phone_carousel.teacher.2.prompt', "14 students active · 3 field notes submitted · 2 waiting for your feedback"),
         emoji: '📊',
         backgroundColor: '#f5f3ff',
-        badge: 'Monitoring',
+        badge: t('phone_carousel.teacher.2.badge', 'Monitoring'),
         location: 'Sessions Dashboard'
       },
       {
-        title: 'Peri AI Suggestions',
-        prompt: "Based on your subject and location, here are 4 Bloom's-aligned activity ideas…",
+        title: t('phone_carousel.teacher.3.title', 'Peri AI Suggestions'),
+        prompt: t('phone_carousel.teacher.3.prompt', "Based on your subject and location, here are 4 Bloom's-aligned activity ideas…"),
         emoji: '✨',
         backgroundColor: '#faf5ff',
-        badge: 'AI Assist',
+        badge: t('phone_carousel.teacher.3.badge', 'AI Assist'),
         location: 'Activity Builder'
       },
     ],
@@ -145,55 +162,55 @@ export const LandingPage: React.FC = () => {
       {
         emoji: '📈',
         backgroundColor: '#fef9ec',
-        title: "Emma's Progress",
-        subtitle: 'Grade 4 · Spring 2026',
-        badge: 'On Track',
+        title: t('phone_carousel.parent.1.title', "Emma's Progress"),
+        subtitle: t('phone_carousel.parent.1.subtitle', 'Grade 4 · Spring 2026'),
+        badge: t('phone_carousel.parent.1.badge', 'On Track'),
         badgeColor: '#4a7c59',
         location: 'Parent Dashboard',
         stats: [
-          { label: 'Activities', value: '12' },
-          { label: 'This Week', value: '3h' },
-          { label: 'Badges', value: '5' },
+          { label: t('phone_carousel.parent.1.stat.1.label', 'Activities'), value: '12' },
+          { label: t('phone_carousel.parent.1.stat.2.label', 'This Week'), value: '3h' },
+          { label: t('phone_carousel.parent.1.stat.3.label', 'Badges'), value: '5' },
         ],
         tasks: [
-          { text: 'Science — Ecosystem unit ✓', done: true },
-          { text: 'Math — Geometry field trip ✓', done: true },
-          { text: 'History — Capitol visit', done: false },
-          { text: 'Portfolio export ready', done: true },
+          { text: t('phone_carousel.parent.1.task.1.text', 'Science — Ecosystem unit ✓'), done: true },
+          { text: t('phone_carousel.parent.1.task.2.text', 'Math — Geometry field trip ✓'), done: true },
+          { text: t('phone_carousel.parent.1.task.3.text', 'History — Capitol visit'), done: false },
+          { text: t('phone_carousel.parent.1.task.4.text', 'Portfolio export ready'), done: true },
         ],
       },
       {
         emoji: '📊',
         backgroundColor: '#fef9ec',
-        title: 'Weekly Progress',
-        subtitle: 'Emma · Week of May 26',
-        badge: 'On Track',
+        title: t('phone_carousel.parent.2.title', 'Weekly Progress'),
+        subtitle: t('phone_carousel.parent.2.subtitle', 'Emma · Week of May 26'),
+        badge: t('phone_carousel.parent.2.badge', 'On Track'),
         badgeColor: '#4a7c59',
         location: 'Progress',
         stats: [
-          { label: 'Activities', value: '3' },
-          { label: 'Hours', value: '4.5h' },
-          { label: 'Engagement', value: '92%' },
+          { label: t('phone_carousel.parent.2.stat.1.label', 'Activities'), value: '3' },
+          { label: t('phone_carousel.parent.2.stat.2.label', 'Hours'), value: '4.5h' },
+          { label: t('phone_carousel.parent.2.stat.3.label', 'Engagement'), value: '92%' },
         ],
         tasks: [
-          { text: 'Ecosystem observation ✓', done: true },
-          { text: 'Water cycle lab ✓', done: true },
-          { text: 'Capitol visit — pending', done: false },
+          { text: t('phone_carousel.parent.2.task.1.text', 'Ecosystem observation ✓'), done: true },
+          { text: t('phone_carousel.parent.2.task.2.text', 'Water cycle lab ✓'), done: true },
+          { text: t('phone_carousel.parent.2.task.3.text', 'Capitol visit — pending'), done: false },
         ],
       },
       {
         emoji: '🔔',
         backgroundColor: '#fff7ed',
-        title: 'Recent Updates',
-        subtitle: 'From Ms. Smith · Today',
-        badge: '2 New',
+        title: t('phone_carousel.parent.3.title', 'Recent Updates'),
+        subtitle: t('phone_carousel.parent.3.subtitle', 'From Ms. Smith · Today'),
+        badge: t('phone_carousel.parent.3.badge', '2 New'),
         badgeColor: '#d97706',
         location: 'Dashboard',
-        prompt: '"Emma showed great initiative identifying native plants. Field sketch portfolio approved."',
+        prompt: t('phone_carousel.parent.3.prompt', '"Emma showed great initiative identifying native plants. Field sketch portfolio approved."'),
         stats: [
-          { label: 'This Week', value: '2' },
-          { label: 'This Month', value: '8' },
-          { label: 'Portfolio', value: 'Ready' },
+          { label: t('phone_carousel.parent.3.stat.1.label', 'This Week'), value: '2' },
+          { label: t('phone_carousel.parent.3.stat.2.label', 'This Month'), value: '8' },
+          { label: t('phone_carousel.parent.3.stat.3.label', 'Portfolio'), value: t('phone_carousel.parent.3.stat.3.value', 'Ready') },
         ],
       },
     ],
@@ -202,58 +219,58 @@ export const LandingPage: React.FC = () => {
       {
         emoji: '🏕️',
         backgroundColor: '#dceedd',
-        title: 'Today\'s Activity',
-        subtitle: 'Earth Science · Emma & Lucas',
-        badge: '● Active',
+        title: t('phone_carousel.homeschool.1.title', "Today's Activity"),
+        subtitle: t('phone_carousel.homeschool.1.subtitle', 'Earth Science · Emma & Lucas'),
+        badge: t('phone_carousel.homeschool.1.badge', '● Active'),
         badgeColor: '#16a34a',
         location: 'Barton Creek Greenbelt',
         tasks: [
-          { text: 'Identify rock types at outcrop', done: true },
-          { text: 'Measure stream flow rate', done: true },
-          { text: 'Photograph erosion evidence', done: false },
-          { text: 'Complete observation log', done: false },
+          { text: t('phone_carousel.homeschool.1.task.1.text', 'Identify rock types at outcrop'), done: true },
+          { text: t('phone_carousel.homeschool.1.task.2.text', 'Measure stream flow rate'), done: true },
+          { text: t('phone_carousel.homeschool.1.task.3.text', 'Photograph erosion evidence'), done: false },
+          { text: t('phone_carousel.homeschool.1.task.4.text', 'Complete observation log'), done: false },
         ],
       },
       {
         emoji: '📋',
         backgroundColor: '#f0fdf4',
-        title: 'Standards Coverage',
-        subtitle: 'Texas Homeschool Requirements',
-        badge: '68% Met',
+        title: t('phone_carousel.homeschool.2.title', 'Standards Coverage'),
+        subtitle: t('phone_carousel.homeschool.2.subtitle', 'Texas Homeschool Requirements'),
+        badge: t('phone_carousel.homeschool.2.badge', '68% Met'),
         badgeColor: '#16a34a',
         location: 'Coverage Dashboard',
         stats: [
-          { label: 'Met', value: '17' },
-          { label: 'Partial', value: '5' },
-          { label: 'Gaps', value: '3' },
+          { label: t('phone_carousel.homeschool.2.stat.1.label', 'Met'), value: '17' },
+          { label: t('phone_carousel.homeschool.2.stat.2.label', 'Partial'), value: '5' },
+          { label: t('phone_carousel.homeschool.2.stat.3.label', 'Gaps'), value: '3' },
         ],
         tasks: [
-          { text: 'Science — Earth Systems ✓', done: true },
-          { text: 'Math — Measurement ✓', done: true },
-          { text: 'History — Texas Geography', done: false },
-          { text: 'Language Arts — Research', done: false },
+          { text: t('phone_carousel.homeschool.2.task.1.text', 'Science — Earth Systems ✓'), done: true },
+          { text: t('phone_carousel.homeschool.2.task.2.text', 'Math — Measurement ✓'), done: true },
+          { text: t('phone_carousel.homeschool.2.task.3.text', 'History — Texas Geography'), done: false },
+          { text: t('phone_carousel.homeschool.2.task.4.text', 'Language Arts — Research'), done: false },
         ],
       },
       {
         emoji: '📄',
         backgroundColor: '#ecfdf5',
-        title: 'Portfolio Ready',
-        subtitle: 'Spring 2026 · Emma Rivera',
-        badge: 'Export Ready',
+        title: t('phone_carousel.homeschool.3.title', 'Portfolio Ready'),
+        subtitle: t('phone_carousel.homeschool.3.subtitle', 'Spring 2026 · Emma Rivera'),
+        badge: t('phone_carousel.homeschool.3.badge', 'Export Ready'),
         badgeColor: '#16a34a',
         location: 'Export',
         stats: [
-          { label: 'Activities', value: '24' },
-          { label: 'Evidence', value: '61' },
-          { label: 'Pages', value: '18' },
+          { label: t('phone_carousel.homeschool.3.stat.1.label', 'Activities'), value: '24' },
+          { label: t('phone_carousel.homeschool.3.stat.2.label', 'Evidence'), value: '61' },
+          { label: t('phone_carousel.homeschool.3.stat.3.label', 'Pages'), value: '18' },
         ],
         tasks: [
-          { text: 'Cover page ✓', done: true },
-          { text: 'Activity log ✓', done: true },
-          { text: 'Standards coverage ✓', done: true },
-          { text: 'Evidence thumbnails ✓', done: true },
+          { text: t('phone_carousel.homeschool.3.task.1.text', 'Cover page ✓'), done: true },
+          { text: t('phone_carousel.homeschool.3.task.2.text', 'Activity log ✓'), done: true },
+          { text: t('phone_carousel.homeschool.3.task.3.text', 'Standards coverage ✓'), done: true },
+          { text: t('phone_carousel.homeschool.3.task.4.text', 'Evidence thumbnails ✓'), done: true },
         ],
-        prompt: 'PDF portfolio is ready. Includes all required TX state reporting fields.',
+        prompt: t('phone_carousel.homeschool.3.prompt', 'PDF portfolio is ready. Includes all required TX state reporting fields.'),
       },
     ],
 
@@ -300,31 +317,46 @@ export const LandingPage: React.FC = () => {
   const pricingOptions: PricingOption[] = [
   {
     id: 'personal',
-    title: 'Personal',
-    subtitle: 'For individual students',
-    price: 'Free',
-    description: 'Get started with outdoor learning',
-    features: ['Geo-tagged observations', 'AI-powered reflection prompts', 'Progress tracking'],
-    cta: 'Start Free'
+    title: t('pricing.personal.title', 'Personal'),
+    subtitle: t('pricing.personal.subtitle', 'For individual students'),
+    price: t('pricing.personal.price', 'Free'),
+    description: t('pricing.personal.description', 'Get started with outdoor learning'),
+    features: [
+      t('pricing.personal.feature.1', 'Geo-tagged observations'),
+      t('pricing.personal.feature.2', 'AI-powered reflection prompts'),
+      t('pricing.personal.feature.3', 'Progress tracking'),
+    ],
+    cta: t('pricing.personal.cta', 'Start Free')
   },
   {
     id: 'school',
-    title: 'School',
-    subtitle: 'For teachers & classrooms',
+    title: t('pricing.school.title', 'School'),
+    subtitle: t('pricing.school.subtitle', 'For teachers & classrooms'),
     price: '$99/mo',
-    description: 'Full classroom management',
-    features: ['Activity builder', 'Student management', 'Assessment rubrics', 'Parent portal'],
-    cta: 'Contact Sales',
+    description: t('pricing.school.description', 'Full classroom management'),
+    features: [
+      t('pricing.school.feature.1', 'Activity builder'),
+      t('pricing.school.feature.2', 'Student management'),
+      t('pricing.school.feature.3', 'Assessment rubrics'),
+      t('pricing.school.feature.4', 'Parent portal'),
+    ],
+    cta: t('pricing.school.cta', 'Contact Sales'),
     featured: true
   },
   {
     id: 'district',
-    title: 'District',
-    subtitle: 'For entire districts',
-    price: 'Custom',
-    description: 'Enterprise features & support',
-    features: ['Unlimited teachers & students', 'Custom integrations', 'Dedicated support', 'Privacy compliance', 'Advanced analytics'],
-    cta: 'Contact Sales'
+    title: t('pricing.district.title', 'District'),
+    subtitle: t('pricing.district.subtitle', 'For entire districts'),
+    price: t('pricing.district.price', 'Custom'),
+    description: t('pricing.district.description', 'Enterprise features & support'),
+    features: [
+      t('pricing.district.feature.1', 'Unlimited teachers & students'),
+      t('pricing.district.feature.2', 'Custom integrations'),
+      t('pricing.district.feature.3', 'Dedicated support'),
+      t('pricing.district.feature.4', 'Privacy compliance'),
+      t('pricing.district.feature.5', 'Advanced analytics'),
+    ],
+    cta: t('pricing.district.cta', 'Contact Sales')
   }];
 
 
@@ -335,33 +367,26 @@ export const LandingPage: React.FC = () => {
     <div className="landing-page">
       {/* Navigation */}
       <nav className="sticky top-0 z-50" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 var(--section-x)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="landing-nav-inner">
+          <h1 className="landing-nav-logo">
             <span>🧭</span>{PRODUCT_NAME}
-
           </h1>
 
-          <div style={{ display: 'flex', gap: '32px' }} className="md-nav-links">
-            <button onClick={() => setActiveTab('homeschool')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, fontSize: '0.95rem', textDecoration: 'none', padding: 0 }}>🏡 Homeschool</button>
+          <div className="md-nav-links landing-nav-links">
+            <button onClick={() => setActiveTab('homeschool')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, textDecoration: 'none', padding: 0 }}>{tabLabel.homeschool}</button>
             <a href="#features" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:features", "Features")}</a>
             <a href="#pricing" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:pricing", "Pricing")}</a>
             <a href="#about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:about", "About")}</a>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div className="landing-nav-actions">
             <LocaleSwitcher />
 
-            <button
-              onClick={handleNavigateToAuth}
-              className="btn btn--primary"
-              style={{ padding: '8px 14px', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+            <button onClick={handleNavigateToAuth} className="btn btn--primary">
               {t("landing:login", "Login")}
             </button>
 
-            <button
-              onClick={() => navigate('/signup')}
-              className="btn btn--ghost"
-              style={{ padding: '8px 14px', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+            <button onClick={() => navigate('/signup')} className="btn btn--ghost">
               {t("landing:sign_up", "Sign Up")}
             </button>
 
@@ -383,17 +408,27 @@ export const LandingPage: React.FC = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen &&
-        <div style={{ background: 'var(--surface)', padding: 'var(--section-x)', borderTop: '1px solid var(--border)' }}>
-            <a href="#features" style={{ display: 'block', color: 'var(--text)', padding: '12px 0', textDecoration: 'none' }}>{t("landing:features", "Features")}</a>
-            <a href="#pricing" style={{ display: 'block', color: 'var(--text)', padding: '12px 0', textDecoration: 'none' }}>{t("landing:pricing", "Pricing")}</a>
-            <a href="#about" style={{ display: 'block', color: 'var(--text)', padding: '12px 0', textDecoration: 'none' }}>{t("landing:about", "About")}</a>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-              <button onClick={handleNavigateToAuth} className="btn btn--primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>{t("landing:login", "Login")}</button>
-              <button onClick={() => navigate('/signup')} className="btn btn--ghost" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>{t("landing:sign_up", "Sign Up")}</button>
+        <div className="landing-mobile-menu">
+            <a href="#features">{t("landing:features", "Features")}</a>
+            <a href="#pricing">{t("landing:pricing", "Pricing")}</a>
+            <a href="#about">{t("landing:about", "About")}</a>
+            <div className="landing-mobile-menu-actions">
+              <button onClick={handleNavigateToAuth} className="btn btn--primary">{t("landing:login", "Login")}</button>
+              <button onClick={() => navigate('/signup')} className="btn btn--ghost">{t("landing:sign_up", "Sign Up")}</button>
             </div>
           </div>
         }
       </nav>
+
+      {/* Machine-translation notice — shown only when viewing in a non-English locale.
+          Guard against i18n.language being momentarily undefined during initial
+          render (before the language-detector plugin resolves), which otherwise
+          throws "can't access property startsWith, i18n.language is undefined". */}
+      {!!i18n.language && !i18n.language.startsWith('en') && (
+        <div style={{ background: 'var(--primary-muted)', borderBottom: '1px solid var(--primary)', padding: '0.6rem var(--section-x, 1.5rem)', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text)' }}>
+          {t('localization_notice', 'Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.')}
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="hero-section">
@@ -406,7 +441,7 @@ export const LandingPage: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               className={`persona-tab ${activeTab === tab ? 'active' : ''}`}
               style={{ textTransform: 'capitalize' }}>
-                {tab === 'homeschool' ? '🏡 Homeschool' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tabLabel[tab]}
               </button>
             )}
           </div>
@@ -447,7 +482,7 @@ export const LandingPage: React.FC = () => {
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
               <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '12px' }}>
-                Meet Peri
+                {t('meet_peri.badge', 'Meet Peri')}
               </span>
               <h2 className="h-section" style={{ marginBottom: '0.5rem' }}>{t('components_landingpage.guided_inquiry_that_leads_to_real_knowle', 'Guided inquiry that leads to real knowledge')}</h2>
               <p className="body" style={{ color: 'var(--text-muted)', maxWidth: '620px', margin: '0 auto' }}>
@@ -458,11 +493,11 @@ export const LandingPage: React.FC = () => {
             {/* Step-by-step flow */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
               {[
-                { step: '1', phase: 'Engage', icon: '👀', desc: 'Peri sets the scene and asks your child what they notice. No right answer yet — just looking.' },
-                { step: '2', phase: 'Observe', icon: '🔍', desc: 'Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague.' },
-                { step: '3', phase: 'Analyse', icon: '⚖️', desc: 'Peri asks comparison and classification questions. What\'s similar? What\'s different? What pattern do you see?' },
-                { step: '4', phase: 'Explain', icon: '💡', desc: 'Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints.' },
-                { step: '5', phase: 'Apply', icon: '🛠️', desc: 'Peri asks what this means for a new situation. Knowledge becomes portable.' },
+                { step: '1', phase: t('meet_peri.step.1.phase', 'Engage'), icon: '👀', desc: t('meet_peri.step.1.desc', 'Peri sets the scene and asks your child what they notice. No right answer yet — just looking.') },
+                { step: '2', phase: t('meet_peri.step.2.phase', 'Observe'), icon: '🔍', desc: t('meet_peri.step.2.desc', 'Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague.') },
+                { step: '3', phase: t('meet_peri.step.3.phase', 'Analyse'), icon: '⚖️', desc: t('meet_peri.step.3.desc', 'Peri asks comparison and classification questions. What\'s similar? What\'s different? What pattern do you see?') },
+                { step: '4', phase: t('meet_peri.step.4.phase', 'Explain'), icon: '💡', desc: t('meet_peri.step.4.desc', 'Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints.') },
+                { step: '5', phase: t('meet_peri.step.5.phase', 'Apply'), icon: '🛠️', desc: t('meet_peri.step.5.desc', 'Peri asks what this means for a new situation. Knowledge becomes portable.') },
               ].map(({ step, phase, icon, desc }) => (
                 <div key={step} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.25rem', position: 'relative' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -479,11 +514,11 @@ export const LandingPage: React.FC = () => {
             <div style={{ background: 'var(--primary-muted)', border: '1px solid var(--primary)', borderRadius: '14px', padding: '1.75rem', maxWidth: '720px', margin: '0 auto' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '1rem' }}>{t('components_landingpage.sample_exchange_creek_study_grade_5', 'Sample exchange — Creek Study, Grade 5')}</p>
               {[
-                { from: 'Peri', text: 'You\'re at the creek bank. Before we measure anything — what\'s the first thing you notice about the water right here versus ten feet upstream?' },
-                { from: 'Emma', text: 'It\'s slower here and there\'s more mud on the bottom.' },
-                { from: 'Peri', text: 'Good observation. Why do you think the mud settled here and not upstream where the water is faster?' },
-                { from: 'Emma', text: 'Maybe slower water can\'t carry as much stuff?' },
-                { from: 'Peri', text: 'That\'s the right direction. What could you measure or photograph here to support that idea?' },
+                { from: 'Peri', text: t('meet_peri.exchange.1.text', 'You\'re at the creek bank. Before we measure anything — what\'s the first thing you notice about the water right here versus ten feet upstream?') },
+                { from: 'Emma', text: t('meet_peri.exchange.2.text', 'It\'s slower here and there\'s more mud on the bottom.') },
+                { from: 'Peri', text: t('meet_peri.exchange.3.text', 'Good observation. Why do you think the mud settled here and not upstream where the water is faster?') },
+                { from: 'Emma', text: t('meet_peri.exchange.4.text', 'Maybe slower water can\'t carry as much stuff?') },
+                { from: 'Peri', text: t('meet_peri.exchange.5.text', 'That\'s the right direction. What could you measure or photograph here to support that idea?') },
               ].map((msg, i) => (
                 <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexDirection: msg.from === 'Peri' ? 'row' : 'row-reverse' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: msg.from === 'Peri' ? 'var(--primary)' : '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: msg.from === 'Peri' ? '#fff' : 'var(--primary)', flexShrink: 0 }}>
@@ -506,7 +541,7 @@ export const LandingPage: React.FC = () => {
           <h2 className="h-section text-center">
             {activeTab === 'homeschool'
               ? t('homeschool.features_title', 'Everything a Homeschool Family Needs')
-              : `${t("landing:why", "Why")} ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}s ${`Choose ${PRODUCT_NAME}`}`}
+              : `${t("landing:why", "Why")} ${tabLabelPlural[activeTab]} ${t('components_landingpage.choose_product', 'Choose {{product}}', { product: PRODUCT_NAME })}`}
           </h2>
 
           <div className="features-grid">
@@ -529,7 +564,7 @@ export const LandingPage: React.FC = () => {
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
           <div>
             <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
-              Origin Story
+              {t('origin_story.badge', 'Origin Story')}
             </span>
             <h2 className="h-section" style={{ marginBottom: '1rem' }}>{t('components_landingpage.built_from_a_2007_idea_that_took_until_2', 'Built from a 2007 idea that took until 2026 to be possible')}</h2>
             <p style={{ color: 'var(--text-muted)', lineHeight: 1.8, marginBottom: '1rem' }}>{t('components_landingpage.peripateticware_began_as_a_white_paper_w', 'Peripateticware began as a white paper written inside McGraw-Hill Education. It argued that GPS-enabled mobile devices would transform learning — that students walking through real places, guided by structured inquiry, could learn in a way textbooks never allowed.')}</p>
@@ -537,7 +572,7 @@ export const LandingPage: React.FC = () => {
             <Link
               to="/about/origin"
               style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', padding: '0.7rem 1.5rem', borderRadius: '0.6rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
-              Read the full origin story →
+              {t('origin_story.read_full_link', 'Read the full origin story →')}
             </Link>
           </div>
           <div style={{ background: 'var(--primary-muted)', borderRadius: '1.25rem', padding: '2rem', border: '1px solid var(--primary)' }}>
@@ -606,7 +641,7 @@ export const LandingPage: React.FC = () => {
           }}>
           <button
             onClick={() => setSelectedTeamMember(null)}
-            aria-label="Close"
+            aria-label={t('components_landingpage.aria_label_close', 'Close')}
             style={{
               position: 'absolute', top: '0.75rem', right: '0.75rem',
               background: 'none', border: 'none', fontSize: '1.5rem',
@@ -635,7 +670,7 @@ export const LandingPage: React.FC = () => {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <span style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
-              Privacy &amp; Compliance
+              {t('privacy_first.badge', 'Privacy & Compliance')}
             </span>
             <h2 className="h-section" style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>
               {t('privacy_first_title', 'Built for Privacy from Day One')}
@@ -648,12 +683,12 @@ export const LandingPage: React.FC = () => {
           {/* Compliance badge grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
             {[
-              { acronym: 'FERPA', name: 'Family Educational Rights and Privacy Act', region: 'United States' },
-              { acronym: 'COPPA', name: 'Children\'s Online Privacy Protection Act', region: 'United States' },
-              { acronym: 'GDPR', name: 'General Data Protection Regulation', region: 'European Union' },
-              { acronym: 'CCPA', name: 'California Consumer Privacy Act', region: 'California, US' },
-              { acronym: 'LGPD', name: 'Lei Geral de Proteção de Dados', region: 'Brazil' },
-              { acronym: 'PIPEDA', name: 'Personal Information Protection and Electronic Documents Act', region: 'Canada' },
+              { acronym: 'FERPA', name: t('compliance.ferpa.name', 'Family Educational Rights and Privacy Act'), region: t('compliance.ferpa.region', 'United States') },
+              { acronym: 'COPPA', name: t('compliance.coppa.name', 'Children\'s Online Privacy Protection Act'), region: t('compliance.coppa.region', 'United States') },
+              { acronym: 'GDPR', name: t('compliance.gdpr.name', 'General Data Protection Regulation'), region: t('compliance.gdpr.region', 'European Union') },
+              { acronym: 'CCPA', name: t('compliance.ccpa.name', 'California Consumer Privacy Act'), region: t('compliance.ccpa.region', 'California, US') },
+              { acronym: 'LGPD', name: t('compliance.lgpd.name', 'Lei Geral de Proteção de Dados'), region: t('compliance.lgpd.region', 'Brazil') },
+              { acronym: 'PIPEDA', name: t('compliance.pipeda.name', 'Personal Information Protection and Electronic Documents Act'), region: t('compliance.pipeda.region', 'Canada') },
             ].map(({ acronym, name, region }) => (
               <div key={acronym} style={{
                 background: 'var(--surface)',
@@ -742,14 +777,35 @@ export const LandingPage: React.FC = () => {
           {/* Tier cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
             {[
-              { name: 'Personal', highlight: false,
-                features: ['Individual classrooms', 'Core activity types', 'Peri AI', 'Evidence capture', 'Portfolio view'] },
-              { name: 'School', highlight: true,
-                features: ['Multiple classrooms', 'Multi-admin', 'Org analytics', 'Priority support'] },
-              { name: 'District', highlight: false,
-                features: ['District-wide deployment', 'Custom integrations', 'Dedicated onboarding', 'Priority + SLA support'] },
-              { name: 'Homeschool', highlight: false,
-                features: ['Family accounts', 'Portfolio PDF export', 'State compliance reports', 'Standards mapping'] },
+              { name: t('pricing_tier.personal.name', 'Personal'), highlight: false,
+                features: [
+                  t('pricing_tier.personal.feature.1', 'Individual classrooms'),
+                  t('pricing_tier.personal.feature.2', 'Core activity types'),
+                  t('pricing_tier.personal.feature.3', 'Peri AI'),
+                  t('pricing_tier.personal.feature.4', 'Evidence capture'),
+                  t('pricing_tier.personal.feature.5', 'Portfolio view'),
+                ] },
+              { name: t('pricing_tier.school.name', 'School'), highlight: true,
+                features: [
+                  t('pricing_tier.school.feature.1', 'Multiple classrooms'),
+                  t('pricing_tier.school.feature.2', 'Multi-admin'),
+                  t('pricing_tier.school.feature.3', 'Org analytics'),
+                  t('pricing_tier.school.feature.4', 'Priority support'),
+                ] },
+              { name: t('pricing_tier.district.name', 'District'), highlight: false,
+                features: [
+                  t('pricing_tier.district.feature.1', 'District-wide deployment'),
+                  t('pricing_tier.district.feature.2', 'Custom integrations'),
+                  t('pricing_tier.district.feature.3', 'Dedicated onboarding'),
+                  t('pricing_tier.district.feature.4', 'Priority + SLA support'),
+                ] },
+              { name: t('pricing_tier.homeschool.name', 'Homeschool'), highlight: false,
+                features: [
+                  t('pricing_tier.homeschool.feature.1', 'Family accounts'),
+                  t('pricing_tier.homeschool.feature.2', 'Portfolio PDF export'),
+                  t('pricing_tier.homeschool.feature.3', 'State compliance reports'),
+                  t('pricing_tier.homeschool.feature.4', 'Standards mapping'),
+                ] },
             ].map(tier => (
               <div key={tier.name} style={{
                 background: tier.highlight ? 'var(--primary)' : 'var(--surface)',
@@ -763,7 +819,7 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem', marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1.1rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
-                    Contact us for pricing
+                    {t('pricing_tier.contact_for_pricing', 'Contact us for pricing')}
                   </span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.25rem', flex: 1 }}>
@@ -788,14 +844,14 @@ export const LandingPage: React.FC = () => {
                     color: tier.highlight ? 'var(--primary)' : '#fff',
                   }}
                 >
-                  Contact Team
+                  {t('pricing_tier.contact_team', 'Contact Team')}
                 </a>
               </div>
             ))}
           </div>
 
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '1.5rem' }}>
-            Contact our team for pricing details and to find the right plan — <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)' }}>contact us</a>.
+            {t('pricing_tier.contact_footer_pre', 'Contact our team for pricing details and to find the right plan —')} <a href="mailto:hello@peripateticware.com" style={{ color: 'var(--primary)' }}>{t('pricing_tier.contact_footer_link', 'contact us')}</a>.
           </p>
         </div>
       </section>

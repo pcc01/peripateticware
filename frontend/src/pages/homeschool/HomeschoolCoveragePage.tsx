@@ -189,7 +189,7 @@ export const HomeschoolCoveragePage: React.FC = () => {
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>{pct}%</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>covered</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{t('pages_homeschool_homeschoolcoveragepage.covered', 'covered')}</div>
                 </div>
               </div>
 

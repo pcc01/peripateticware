@@ -136,9 +136,9 @@ export function LoginModal({ isOpen, onClose, initialRole = 'student' }: LoginMo
 
   return (
     <div className="modal-overlay" onClick={onClose} role="presentation">
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Authentication">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('components_landing_loginmodal.aria_label_authentication', 'Authentication')}>
         {/* Close button */}
-        <button className="modal-close" onClick={onClose} aria-label="Close dialog">×</button>
+        <button className="modal-close" onClick={onClose} aria-label={t('components_landing_loginmodal.aria_label_close_dialog', 'Close dialog')}>×</button>
 
         {/* Tabs */}
         <div className="modal-tabs">

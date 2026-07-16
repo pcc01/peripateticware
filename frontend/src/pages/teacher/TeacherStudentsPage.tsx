@@ -103,15 +103,13 @@ export const TeacherStudentsPage: React.FC = () => {
           onClick={openInvite}
           style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 8, border: 'none',
                    background: 'var(--primary)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-        >
-          + Invite Student
-        </button>
+        >{t('pages_teacher_teacherstudentspage.invite_student', '+ Invite Student')}</button>
       </div>
 
       <input
         value={search}
         onChange={e => setSearch(e.target.value)}
-        placeholder="Search by name or email…"
+        placeholder={t('pages_teacher_teacherstudentspage.placeholder_search_by_name_or_email', 'Search by name or email…')}
         style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', marginBottom: 24, boxSizing: 'border-box' }}
       />
 
@@ -187,7 +185,7 @@ export const TeacherStudentsPage: React.FC = () => {
                 <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, fontSize: '0.9rem' }}>{t('pages_teacher_teacherstudentspage.student_email', 'Student email')}</label>
                 <input
                   type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} autoFocus
-                  placeholder="student@example.com"
+                  placeholder={t('pages_teacher_teacherstudentspage.placeholder_studentexamplecom', 'student@example.com')}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', marginBottom: 16, boxSizing: 'border-box' }}
                 />
               </>
@@ -195,9 +193,7 @@ export const TeacherStudentsPage: React.FC = () => {
 
             {inviteOk && (
               <div style={{ background: '#dcfce7', border: '1px solid #86efac', color: '#166534',
-                            borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>
-                Invitation sent. The student will get an email with a join link.
-              </div>
+                            borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>{t('pages_teacher_teacherstudentspage.invitation_sent_the_student_will_get_an_', 'Invitation sent. The student will get an email with a join link.')}</div>
             )}
             {inviteError && (
               <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c',

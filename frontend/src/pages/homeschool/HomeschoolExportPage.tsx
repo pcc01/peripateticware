@@ -113,9 +113,7 @@ export const HomeschoolExportPage: React.FC = () => {
       <div style={{ fontFamily: 'var(--font-body)', maxWidth: 560 }}>
         <h1 style={{ fontFamily: 'var(--font-head)', marginBottom: 8 }}>{t('pages_homeschool_homeschoolexportpage.export_portfolio', 'Export Portfolio')}</h1>
         <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)',
-                      background: 'var(--surface-alt)', borderRadius: 12 }}>
-          Add children first before exporting a portfolio.
-        </div>
+                      background: 'var(--surface-alt)', borderRadius: 12 }}>{t('pages_homeschool_homeschoolexportpage.add_children_first_before_exporting_a_po', 'Add children first before exporting a portfolio.')}</div>
       </div>
     );
   }

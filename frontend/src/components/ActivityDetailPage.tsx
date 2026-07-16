@@ -13,12 +13,13 @@ import { Activity } from '@/types/teacher';
 import { useTeacherStore } from '@/stores/teacher';
 import ActivityBuilderBase from './teacher/EnhancedActivityBuilder';
 import ActivityPreviewBase from '@/components/teacher/ActivityPreview';
+import { useTranslation } from 'react-i18next';
 
 // These components accept props that their current signatures don't declare yet
 const ActivityBuilder = ActivityBuilderBase as React.ComponentType<{ activity?: any; onSave?: any; onCancel?: any }>;
 const ActivityPreview = ActivityPreviewBase as React.ComponentType<{ activity?: any }>;
 
-const LoadingSpinner = () => <div style={{padding:'2rem',textAlign:'center'}}>Loading…</div>
+const LoadingSpinner = () => <div style={{padding:'2rem',textAlign:'center'}}>{t('components_activitydetailpage.loading', 'Loading…')}</div>
 ;
 
 export const ActivityDetailPage: React.FC = () => {

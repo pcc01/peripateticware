@@ -419,3 +419,33 @@ test.describe('Teacher — Session Monitor (parameterised)', () => {
     await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
   });
 });
+
+// ── 19. Parameterised Detail Routes ───────────────────────────────────────────
+// These routes take a resource :id. With a well-formed but non-existent UUID
+// they must render a graceful error/empty state — never a raw TypeError or a
+// login redirect — regardless of whether seed data exists.
+
+test.describe('Teacher — Parameterised Detail Routes', () => {
+  const FAKE_ID = '00000000-0000-0000-0000-000000000000';
+
+  const routes: Array<[string, string]> = [
+    ['Project detail',            `/teacher/projects/${FAKE_ID}`],
+    ['Activity editor',           `/teacher/activities/${FAKE_ID}`],
+    ['Rubric editor',             `/teacher/rubrics/${FAKE_ID}`],
+    ['Student preview',           `/teacher/activities/${FAKE_ID}/student-preview`],
+    ['Fieldwork monitor',         `/teacher/activities/${FAKE_ID}/fieldwork`],
+    ['Classroom detail',          `/teacher/classrooms/${FAKE_ID}`],
+  ];
+
+  for (const [label, route] of routes) {
+    test(`${label} (${route}) loads without redirect or crash`, async ({ page }) => {
+      const errors = collectConsoleErrors(page);
+      await page.goto(route);
+      await expect(page).not.toHaveURL(/\/login/);
+      await expect(page.locator('body')).not.toBeEmpty();
+      await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
+      const typeErrors = errors.filter(e => e.includes('TypeError'));
+      expect(typeErrors, `No TypeErrors on ${route}`).toHaveLength(0);
+    });
+  }
+});

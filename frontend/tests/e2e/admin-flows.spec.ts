@@ -172,6 +172,13 @@ test.describe('Admin – Rubrics', () => {
     await expect(page).not.toHaveURL(/\/login/);
     await expect(page.locator('form, input, textarea, h1, h2').first()).toBeVisible({ timeout: 10_000 });
   });
+
+  test('/admin/rubrics/:id (unknown id) loads the builder without crash', async ({ page }) => {
+    await page.goto('/admin/rubrics/00000000-0000-0000-0000-000000000000');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
+    await expect(page.locator('form, input, textarea, h1, h2, main').first()).toBeVisible({ timeout: 10_000 });
+  });
 });
 
 // ---------------------------------------------------------------------------

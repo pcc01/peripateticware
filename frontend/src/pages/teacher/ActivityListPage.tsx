@@ -32,7 +32,8 @@ const ActivityListPage: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate()
   const location = useLocation()
-  const activitiesBase = location.pathname.startsWith('/homeschool')
+  const isHomeschool = location.pathname.startsWith('/homeschool')
+  const activitiesBase = isHomeschool
     ? '/homeschool/activities'
     : '/teacher/activities'
   const [activities, setActivities] = useState<Activity[]>([])
@@ -90,9 +91,7 @@ const ActivityListPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '48px', textAlign: 'center', color: '#6b7280' }}>
-        Loading activities…
-      </div>
+      <div style={{ padding: '48px', textAlign: 'center', color: '#6b7280' }}>{t('pages_teacher_activitylistpage.loading_activities', 'Loading activities…')}</div>
     )
   }
 
@@ -129,7 +128,7 @@ const ActivityListPage: React.FC = () => {
             type="search"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search activities…"
+            placeholder={t('pages_teacher_activitylistpage.placeholder_search_activities', 'Search activities…')}
             style={{
               width: '100%',
               maxWidth: '400px',
@@ -153,9 +152,7 @@ const ActivityListPage: React.FC = () => {
             color: '#991b1b',
           }}>
             <strong>Error:</strong> {error}
-            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#6b7280' }}>
-              Make sure the backend is running and you are logged in.
-            </div>
+            <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#6b7280' }}>{t('pages_teacher_activitylistpage.make_sure_the_backend_is_running_and_you', 'Make sure the backend is running and you are logged in.')}</div>
           </div>
         )}
 
@@ -215,12 +212,33 @@ const ActivityListPage: React.FC = () => {
               </div>
               <div style={{ marginLeft: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {statusBadge(activity.status)}
+                {!isHomeschool && (
+                  <button
+                    onClick={e => {
+                      e.stopPropagation()
+                      navigate(`/teacher/activities/${activity.id}/fieldwork`)
+                    }}
+                    title={t('pages_teacher_activitylistpage.title_fieldwork_map', 'Fieldwork Map — GPS locations submitted by students')}
+                    style={{
+                      background: 'none',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      padding: '4px 10px',
+                      fontSize: '0.78rem',
+                      color: '#6b7280',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    🗺 Fieldwork Map
+                  </button>
+                )}
                 <button
                   onClick={e => {
                     e.stopPropagation()
                     navigate(`${activitiesBase}/${activity.id}/student-preview`)
                   }}
-                  title="Preview as Student"
+                  title={t('pages_teacher_activitylistpage.title_preview_as_student', 'Preview as Student')}
                   style={{
                     background: 'none',
                     border: '1px solid #d1d5db',

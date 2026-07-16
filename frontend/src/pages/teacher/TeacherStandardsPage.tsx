@@ -122,9 +122,9 @@ export const TeacherStandardsPage: React.FC = () => {
         </div>
       )}
 
-      <Section title="My Discipline Standards" items={myStandards} showDelete />
-      <Section title="School-wide / Global Standards" items={globalStandards} showDelete={false} />
-      <Section title="My Rubrics" items={rubrics} showDelete />
+      <Section title={t('pages_teacher_teacherstandardspage.title_my_discipline_standards', 'My Discipline Standards')} items={myStandards} showDelete />
+      <Section title={t('pages_teacher_teacherstandardspage.title_schoolwide_global_standards', 'School-wide / Global Standards')} items={globalStandards} showDelete={false} />
+      <Section title={t('pages_teacher_teacherstandardspage.title_my_rubrics', 'My Rubrics')} items={rubrics} showDelete />
     </div>
   );
 };

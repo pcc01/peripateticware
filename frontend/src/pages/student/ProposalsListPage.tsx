@@ -43,7 +43,7 @@ const ProposalsListPage: React.FC = () => {
     }
   }
 
-  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</div>
+  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>{t('pages_student_proposalslistpage.loading', 'Loading…')}</div>
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -56,9 +56,7 @@ const ProposalsListPage: React.FC = () => {
           onClick={handleNew}
           className="px-4 py-2 rounded-lg text-white font-medium"
           style={{ background: 'var(--primary)' }}
-        >
-          + New Challenge
-        </button>
+        >{t('pages_student_proposalslistpage.new_challenge', '+ New Challenge')}</button>
       </div>
 
       {error && (
@@ -74,9 +72,7 @@ const ProposalsListPage: React.FC = () => {
             onClick={handleNew}
             className="px-6 py-2 rounded-lg text-white font-medium"
             style={{ background: 'var(--primary)' }}
-          >
-            Create your first challenge
-          </button>
+          >{t('pages_student_proposalslistpage.create_your_first_challenge', 'Create your first challenge')}</button>
         </div>
       ) : (
         <ul className="mt-6 space-y-3">

@@ -150,7 +150,7 @@ const Map: React.FC<MapProps> = ({
           <select
           value={currentZoneShape}
           onChange={(e) => setCurrentZoneShape(e.target.value as ZoneShape)}
-          aria-label="Zone shape"
+          aria-label={t('components_common_map.aria_label_zone_shape', 'Zone shape')}
           className="px-3 py-1 rounded text-sm border border-color-border">
           
             <option value={ZoneShape.CIRCLE}>{t("landing:circle", "Circle")}</option>

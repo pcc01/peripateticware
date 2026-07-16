@@ -15,6 +15,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
   { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
   { code: 'pt-BR', name: 'Português (Brasil)', flag: '🇧🇷' },
 ]
 
@@ -42,10 +43,24 @@ i18n
       'en-GB': ['en'],
       'en-AU': ['en-GB', 'en'],
       'en-CA': ['en-GB', 'en'],
+      // fr-CA (Quebec French): only the genuinely region-specific keys live
+      // under public/locales/fr-CA/ — everything else resolves live from
+      // 'fr' via this chain. translate_sync.py deliberately does NOT copy
+      // fr's content into fr-CA's files (no duplication, always in sync
+      // with fr's latest translations).
+      'fr-CA': ['fr', 'en'],
       default:  ['en'],
     },
     nonExplicitSupportedLngs: true,
-    lng: 'en',
+    // NOTE: deliberately NOT setting `lng` here. Per i18next's own docs, an
+    // explicit `lng` "overrides language detection" — it would make the
+    // LanguageDetector plugin above (order: ['localStorage', 'navigator'])
+    // a no-op, so the app always boots in English regardless of a user's
+    // saved selection or browser language. That was live here before this
+    // fix: every full page reload / new session silently reset a user's
+    // chosen language back to English. `fallbackLng.default: ['en']`
+    // already covers "nothing detected" — that's the correct place for an
+    // English default, not a hardcoded `lng`.
     defaultNS: 'landing',
     ns: ['landing', 'STUDENT', 'TEACHER', 'common', 'curriculum'],
     backend: {

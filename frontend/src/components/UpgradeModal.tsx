@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import UpgradeCTA from './UpgradeCTA'
+import { useTranslation } from 'react-i18next';
 
 // Map feature → human-readable name and Paddle price ID
 const FEATURE_CONFIG: Record<string, { name: string; paddlePriceId: string }> = {
@@ -42,6 +43,7 @@ interface UpgradePayload {
 }
 
 export default function UpgradeModal() {
+  const { t } = useTranslation('landing');
   const [payload, setPayload] = useState<UpgradePayload | null>(null)
 
   useEffect(() => {
@@ -70,7 +72,7 @@ export default function UpgradeModal() {
         <button
           onClick={() => setPayload(null)}
           className="float-right text-gray-400 hover:text-gray-600 text-xl leading-none"
-          aria-label="Close"
+          aria-label={t('components_upgrademodal.aria_label_close', 'Close')}
         >
           ×
         </button>

@@ -235,9 +235,7 @@ export const PrivacyPage: React.FC = () => {
                       background: '#e8f4ea', color: '#2d7d46',
                       borderRadius: 4, padding: '0.15rem 0.5rem', fontSize: '0.72rem', fontWeight: 600,
                     }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2d7d46', display: 'inline-block' }} />
-                      LIVE
-                    </span>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#2d7d46', display: 'inline-block' }} />{t('pages_privacypage.live', 'LIVE')}</span>
                   )}
                   <h3 className="h-card">{t(card.titleKey)}</h3>
                   <p className="body">{t(card.descKey)}</p>

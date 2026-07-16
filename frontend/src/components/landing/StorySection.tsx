@@ -8,7 +8,7 @@ export function StorySection() {
       <div className="story-inner">
         <div className="story-container">
           <div className="story-image">
-            <img src="/forest-walker.svg" alt="A student walking through the forest with a mobile device" className="story-forest" />
+            <img src="/forest-walker.svg" alt={t('components_landing_storysection.alt_a_student_walking_through_the_forest_wit', 'A student walking through the forest with a mobile device')} className="story-forest" />
           </div>
 
           <div className="story-text">
@@ -19,7 +19,7 @@ export function StorySection() {
         </div>
 
         {/* Field Journal Section */}
-        <div className="field-journal-container">
+        <div className="field-journal-container" id="field-journal">
           <div className="field-journal-image">
             <img src="/images/DigitalJournal.svg" alt={t("landing:digital_journal", "Digital journal")} />
           </div>

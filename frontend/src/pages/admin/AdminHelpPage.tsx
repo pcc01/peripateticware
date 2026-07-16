@@ -36,7 +36,7 @@ export default function AdminHelpPage() {
 
       <input
         type="search"
-        placeholder="Search help topics…"
+        placeholder={t('pages_admin_adminhelppage.placeholder_search_help_topics', 'Search help topics…')}
         value={search}
         onChange={e => setSearch(e.target.value)}
         style={{

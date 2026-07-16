@@ -51,7 +51,7 @@ export default function DoNotSellPage() {
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder={t('pages_donotsellpage.placeholder_youexamplecom', 'you@example.com')}
             aria-describedby={error ? 'dns-error' : undefined}
             aria-invalid={error ? true : undefined}
             style={{
@@ -83,9 +83,7 @@ export default function DoNotSellPage() {
       <hr style={{ margin: '2rem 0', borderColor: '#e5e7eb' }} />
       <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>
         For questions about this request, contact{' '}
-        <a href="mailto:privacy@peripateticware.com" style={{ color: '#1d4ed8' }}>
-          privacy@peripateticware.com
-        </a>.
+        <a href="mailto:privacy@peripateticware.com" style={{ color: '#1d4ed8' }}>{t('pages_donotsellpage.privacyperipateticwarecom', 'privacy@peripateticware.com')}</a>.
         See our <Link to="/privacy" style={{ color: '#1d4ed8' }}>Privacy Policy</Link> for more.
       </p>
     </div>

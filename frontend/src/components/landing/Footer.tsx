@@ -45,10 +45,13 @@ export function Footer() {
         <div className="footer-column">
           <h3 className="footer-title">{t('footer.product_title')}</h3>
           <ul className="footer-links">
-            <li><Link to="/#features">{t('footer.product_features')}</Link></li>
-            <li><Link to="/#tools">{t('footer.product_tools')}</Link></li>
+            {/* "Features" → Meet Peri (id="tools" — only rendered on the homeschool tab; see caveat below) */}
+            <li><Link to="/#tools">{t('footer.product_features')}</Link></li>
+            {/* "Tools" → the value-props section (id="features") — same section for every persona tab,
+                just a different title per tab ("Why Students/Teachers/Parents Choose Peripateticware" or
+                "Everything a Homeschool Family Needs"), so this link always resolves regardless of tab. */}
+            <li><Link to="/#features">{t('footer.product_tools')}</Link></li>
             <li><Link to="/#pricing">{t('footer.product_pricing')}</Link></li>
-            <li><Link to="/privacy-engine">{t('footer.product_privacy_engine', 'Privacy Engine')}</Link></li>
           </ul>
         </div>
 
@@ -66,8 +69,9 @@ export function Footer() {
         <div className="footer-column">
           <h3 className="footer-title">{t('footer.resources_title')}</h3>
           <ul className="footer-links">
-            <li><Link to="/privacy-engine">{t('footer.resources_privacy', 'Privacy Engine')}</Link></li>
+            <li><Link to="/privacy-engine">{t('footer.product_privacy_engine', 'Privacy Engine')}</Link></li>
             <li><a href="mailto:hello@peripateticware.com?subject=Support">{t('footer.resources_support')}</a></li>
+            <li><Link to="/licensing">{t('footer.legal_licensing', 'Licensing')}</Link></li>
           </ul>
         </div>
 
@@ -78,8 +82,6 @@ export function Footer() {
             <li><Link to="/privacy">{t('footer.legal_privacy')}</Link></li>
             <li><Link to="/terms">{t('footer.legal_terms')}</Link></li>
             <li><Link to="/cookies">{t('footer.legal_cookies')}</Link></li>
-            <li><Link to="/licensing">{t('footer.legal_licensing', 'Licensing')}</Link></li>
-            <li><a href="mailto:hello@peripateticware.com">{t('footer.legal_contact')}</a></li>
             <li>
               <Link to="/do-not-sell" className="footer-link-ccpa">
                 {t('footer.legal_do_not_sell', 'Do Not Sell or Share My Info')}

@@ -154,9 +154,7 @@ export default function UpgradeCTA({
         Questions?{' '}
         <a href="mailto:hello@peripateticware.com?subject=Upgrade%20enquiry"
           className="text-amber-600 hover:underline font-medium"
-        >
-          Contact us
-        </a>
+        >{t('components_upgradecta.contact_us', 'Contact us')}</a>
       </p>
     </div>
   );

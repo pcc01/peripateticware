@@ -100,6 +100,106 @@
 }
 
 /* ============================================================================
+   NAVIGATION
+   Uses the --nav-* tokens defined in globals.css (fluid, shared spacing
+   scale) so the logo, links, locale switcher, and auth buttons all resize
+   together as viewport/text-length changes, instead of a fixed 64px-tall
+   row with hardcoded gaps that overflows once a translation runs long
+   (e.g. Spanish "Iniciar sesión" / "Regístrate" vs English "Login" / "Sign
+   Up"). Below 768px the links collapse into the hamburger menu instead of
+   wrapping (see RESPONSIVE DESIGN section) — this covers the in-between
+   range where that hide-behavior doesn't kick in yet but fixed pixel gaps
+   used to overflow.
+   ============================================================================ */
+
+.landing-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px var(--section-x);
+  min-height: var(--nav-min-height);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--nav-gap-sm) var(--nav-gap-lg);
+}
+
+.landing-nav-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.landing-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--nav-gap-lg);
+  font-size: var(--nav-link-size);
+}
+
+.landing-nav-links a,
+.landing-nav-links button {
+  white-space: nowrap;
+}
+
+.landing-nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--nav-gap-sm);
+  flex-shrink: 0;
+  /* Pins this group to the right edge of whichever line it ends up on.
+     Without this, once .landing-nav-inner's flex-wrap pushes this group
+     onto its own second line, a lone flex item under justify-content:
+     space-between defaults to flex-start (left) — which is what looked
+     like the header "mirroring" for Spanish: the locale switcher/login/
+     signup cluster jumping to the left instead of staying pinned right.
+     margin-left: auto claims all remaining space on ITS line for this
+     item specifically, regardless of the parent's justify-content, so it
+     stays right-aligned whether it's sharing line 1 with the logo/links
+     or wrapped onto its own line. */
+  margin-left: auto;
+}
+
+.landing-nav-actions .btn {
+  padding: 8px var(--nav-btn-pad-x);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.landing-mobile-menu {
+  background: var(--surface);
+  padding: var(--section-x);
+  border-top: 1px solid var(--border);
+}
+
+.landing-mobile-menu a {
+  display: block;
+  color: var(--text);
+  padding: 12px 0;
+  text-decoration: none;
+}
+
+.landing-mobile-menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nav-gap-sm);
+  margin-top: 16px;
+}
+
+.landing-mobile-menu-actions .btn {
+  padding: 8px var(--nav-btn-pad-x);
+  font-size: 0.85rem;
+}
+
+/* ============================================================================
    HERO SECTION
    ============================================================================ */
 
@@ -122,6 +222,20 @@
   grid-template-columns: 1fr 1fr;
   gap: 80px;
   align-items: center;
+}
+
+/* Grid items default to min-width: auto (= min-content), so a column with
+   long unwrappable content (a nowrap CTA button, a long word in a
+   translation) can demand more than its 1fr share and squeeze the sibling
+   column narrower/leftward — this is what could make the phone mockup
+   look like it "moved left" for a longer translation, even though the
+   grid-template-columns split is unchanged. min-width: 0 removes that
+   implicit floor so both columns always honor their actual 1fr/1fr split
+   regardless of text length; content wraps within its own column instead
+   of pushing into the other one. */
+.hero-text,
+.hero-mockup {
+  min-width: 0;
 }
 
 /* Phone mockup */
@@ -175,6 +289,7 @@
 
 .persona-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 32px;
   border-bottom: 2px solid var(--surface-deep);
@@ -218,6 +333,7 @@
 
 .hero-ctas {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   margin-top: 32px;
 }

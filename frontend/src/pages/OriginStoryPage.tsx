@@ -25,9 +25,7 @@ export default function OriginStoryPage() {
 
       {/* Header */}
       <header style={{ marginBottom: '3rem' }}>
-        <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>
-          Origin Story
-        </span>
+        <span style={{ display: 'inline-block', background: 'var(--primary-muted)', color: 'var(--primary)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px', marginBottom: '1rem' }}>{t('pages_originstorypage.origin_story', 'Origin Story')}</span>
         <h1 style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1.2, marginBottom: '1rem' }}>{t('pages_originstorypage.from_a_white_paper_to_a_working_platform', 'From a White Paper to a Working Platform: Peripateticware 2007–2026')}</h1>
         <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
           In February 2007, a document circulated internally at McGraw-Hill Education. It was titled
@@ -106,9 +104,7 @@ export default function OriginStoryPage() {
           href="https://thewordinbits.com/2010/02/22/66/"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', padding: '0.75rem 1.75rem', borderRadius: '0.6rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>
-          Read the Original 2007 Paper →
-        </a>
+          style={{ display: 'inline-block', background: 'var(--primary)', color: '#fff', padding: '0.75rem 1.75rem', borderRadius: '0.6rem', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem' }}>{t('pages_originstorypage.read_the_original_2007_paper', 'Read the Original 2007 Paper →')}</a>
       </section>
     </div>
   );

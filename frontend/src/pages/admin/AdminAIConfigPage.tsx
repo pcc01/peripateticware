@@ -255,11 +255,11 @@ export default function AdminAIConfigPage() {
 
       <ProviderCard
         icon={<Key className="w-5 h-5 text-purple-600" />}
-        title="Anthropic (Claude) API Key"
+        title={t('pages_admin_adminaiconfigpage.title_anthropic_claude_api_key', 'Anthropic (Claude) API Key')}
         accentClass="focus:ring-purple-500"
         saveClass="bg-purple-700 hover:bg-purple-800"
         current={anthropic?.key_set ? anthropic.key_preview : null}
-        placeholder="sk-ant-..."
+        placeholder={t('pages_admin_adminaiconfigpage.placeholder_skant', 'sk-ant-...')}
         value={anthropicKey}
         show={showAnthropicKey}
         onToggleShow={() => setShowAnthropicKey(v => !v)}
@@ -273,11 +273,11 @@ export default function AdminAIConfigPage() {
 
       <ProviderCard
         icon={<Key className="w-5 h-5 text-amber-600" />}
-        title="OpenAI API Key"
+        title={t('pages_admin_adminaiconfigpage.title_openai_api_key', 'OpenAI API Key')}
         accentClass="focus:ring-amber-500"
         saveClass="bg-amber-600 hover:bg-amber-700"
         current={openai?.key_set ? openai.key_preview : null}
-        placeholder="sk-..."
+        placeholder={t('pages_admin_adminaiconfigpage.placeholder_sk', 'sk-...')}
         value={openaiKey}
         show={showOpenaiKey}
         onToggleShow={() => setShowOpenaiKey(v => !v)}
@@ -293,14 +293,14 @@ export default function AdminAIConfigPage() {
         <div className="flex items-center gap-2">
           <Server className="w-5 h-5 text-green-700" />
           <h2 className="font-semibold text-gray-900">{t('pages_admin_adminaiconfigpage.ollama_instance_url', 'Ollama Instance URL')}</h2>
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free</span>
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{t('pages_admin_adminaiconfigpage.free', 'Free')}</span>
           <span className={`ml-auto flex items-center gap-1 text-xs font-medium ${ollamaOk ? 'text-green-700' : 'text-gray-400'}`}>
             <span className={`inline-block w-2 h-2 rounded-full ${ollamaOk ? 'bg-green-500' : 'bg-gray-300'}`} />
             {ollamaOk ? 'Reachable' : 'Not reachable'}
           </span>
         </div>
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-sm text-gray-500">Current URL</span>
+          <span className="text-sm text-gray-500">{t('pages_admin_adminaiconfigpage.current_url', 'Current URL')}</span>
           {ollama?.source === 'database' && ollama.url ? (
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded text-green-700">{ollama.url}</span>
@@ -316,7 +316,7 @@ export default function AdminAIConfigPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <input type="text" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)} aria-label="Ollama server URL"
+          <input type="text" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)} aria-label={t('pages_admin_adminaiconfigpage.aria_label_ollama_server_url', 'Ollama server URL')}
             placeholder="http://localhost:11434"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500" />
           <button onClick={() => saveProvider('ollama', ollamaUrl)} disabled={saving || !ollamaUrl.trim()}
@@ -334,9 +334,7 @@ export default function AdminAIConfigPage() {
         </div>
         <div className="divide-y divide-gray-50">
           {tasks.length === 0 && (
-            <div className="px-6 py-6 text-sm text-gray-400 italic">
-              No task configurations found. Backend needs to restart with the seeded ai_task_config table.
-            </div>
+            <div className="px-6 py-6 text-sm text-gray-400 italic">{t('pages_admin_adminaiconfigpage.no_task_configurations_found_backend_nee', 'No task configurations found. Backend needs to restart with the seeded ai_task_config table.')}</div>
           )}
           {tasks.map(task => {
             const meta  = TASK_LABELS[task.task_type];
@@ -402,11 +400,12 @@ interface ProviderCardProps {
 
 function ProviderCard({ icon, title, accentClass, saveClass, current, placeholder, value, show,
   onToggleShow, onChange, onSave, onDelete, saving, docsUrl, docsLabel }: ProviderCardProps) {
+  const { t } = useTranslation('landing');
   return (
     <section className="bg-white rounded-2xl shadow border border-gray-100 p-6 space-y-4">
       <div className="flex items-center gap-2">{icon}<h2 className="font-semibold text-gray-900">{title}</h2></div>
       <div className="flex items-center justify-between py-2 border-b border-gray-100">
-        <span className="text-sm text-gray-500">Current key</span>
+        <span className="text-sm text-gray-500">{t('pages_admin_adminaiconfigpage.current_key', 'Current key')}</span>
         {current ? (
           <div className="flex items-center gap-2">
             <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">{current}</span>
@@ -414,11 +413,11 @@ function ProviderCard({ icon, title, accentClass, saveClass, current, placeholde
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
-        ) : <span className="text-sm text-gray-400 italic">Not set</span>}
+        ) : <span className="text-sm text-gray-400 italic">{t('pages_admin_adminaiconfigpage.not_set', 'Not set')}</span>}
       </div>
       <div className="flex gap-2">
         <div className="flex-1 relative">
-          <input type={show ? 'text' : 'password'} value={value} onChange={e => onChange(e.target.value)} aria-label="API key value"
+          <input type={show ? 'text' : 'password'} value={value} onChange={e => onChange(e.target.value)} aria-label={t('pages_admin_adminaiconfigpage.aria_label_api_key_value', 'API key value')}
             placeholder={current ? '...... (enter new key to replace)' : placeholder}
             className={`w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 pr-10 ${accentClass}`}
             autoComplete="off" />
@@ -427,9 +426,7 @@ function ProviderCard({ icon, title, accentClass, saveClass, current, placeholde
           </button>
         </div>
         <button onClick={onSave} disabled={saving || !value.trim()}
-          className={`${saveClass} text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-40 transition`}>
-          Save
-        </button>
+          className={`${saveClass} text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-40 transition`}>{t('pages_admin_adminaiconfigpage.save', 'Save')}</button>
       </div>
       <p className="text-xs text-gray-400">
         Get a key at <a href={docsUrl} target="_blank" rel="noreferrer" className="hover:underline text-blue-500">{docsLabel}</a>.

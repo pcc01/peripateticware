@@ -57,9 +57,7 @@ export const TermsPage: React.FC = () => {
         <h2>{t('termspage.8_contact', '8. Contact')}</h2>
         <p>
           {t('termspage.questions_about_terms', 'Questions about these Terms?')}{' '}
-          <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">
-            hello@peripateticware.com
-          </a>
+          <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">{t('pages_termspage.helloperipateticwarecom', 'hello@peripateticware.com')}</a>
         </p>
       </main>
     </div>

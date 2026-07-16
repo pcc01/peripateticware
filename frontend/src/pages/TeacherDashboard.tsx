@@ -7,13 +7,15 @@
  * Displays: Activities, Students, Submissions, Classes, Summary Stats
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTeacherStore } from '@/stores';
 import styles from './TeacherDashboard.module.css';
 import { useAuthStore } from '@/stores/auth';
 import { fmtDate } from '@/utils/date';
+import { teacherApi } from '@/services/api';
+import type { TeacherActiveSession } from '@/types';
 
 export const TeacherDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -29,6 +31,12 @@ export const TeacherDashboard: React.FC = () => {
   } = useTeacherStore();
 
   const { logout } = useAuthStore();
+
+  // Live GPS fieldwork sessions — links out to the map-based session monitor
+  // at /teacher/sessions/:id/monitor (see GPS_MAP_HANDOFF.md). Fetched
+  // separately since the dashboard summary endpoint doesn't include sessions.
+  const [activeSessions, setActiveSessions] = useState<TeacherActiveSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
 
   const handleLogout = () => {
     logout();
@@ -57,11 +65,23 @@ export const TeacherDashboard: React.FC = () => {
     (a) => new Date(a.created_at).getTime() >= oneWeekAgo
   ).length;
 
+  const loadActiveSessions = async () => {
+    setSessionsLoading(true);
+    try {
+      const sessions = await teacherApi.getActiveSessions();
+      setActiveSessions(sessions);
+    } catch (err) {
+      console.error('Failed to load active sessions:', err);
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
+
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       try {
-        await Promise.all([fetchDashboard(), fetchActivities()]);
+        await Promise.all([fetchDashboard(), fetchActivities(), loadActiveSessions()]);
       } catch (err) {
         console.error('Failed to load dashboard:', err);
       }
@@ -72,7 +92,7 @@ export const TeacherDashboard: React.FC = () => {
   // Handle refresh
   const handleRefresh = async () => {
     try {
-      await Promise.all([fetchDashboard(), fetchActivities()]);
+      await Promise.all([fetchDashboard(), fetchActivities(), loadActiveSessions()]);
     } catch (err) {
       console.error('Refresh failed:', err);
     }
@@ -153,6 +173,46 @@ export const TeacherDashboard: React.FC = () => {
           )}
         </div>
       </section>
+
+      {/* Live Sessions — GPS fieldwork tracking */}
+      {!sessionsLoading && activeSessions.length > 0 && (
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: '#dc2626',
+                  marginRight: 8,
+                }}
+              />
+              {t('landing:live_sessions', 'Live Sessions (')}{activeSessions.length})
+            </h2>
+          </div>
+          <div className={styles.submissionsList}>
+            {activeSessions.map((session) => (
+              <div key={session.session_id} className={styles.submissionItem}>
+                <div className={styles.submissionInfo}>
+                  <h3>{session.student_name}</h3>
+                  <p className={styles.projectId}>{session.activity_title}</p>
+                  <small>
+                    {t('landing:started', 'Started:')} {session.started_at ? fmtDate(session.started_at) : '—'}
+                  </small>
+                </div>
+                <button
+                  onClick={() => navigate(`/teacher/sessions/${session.session_id}/monitor`)}
+                  className={styles.gradeBtn}
+                >
+                  🗺 {t('landing:monitor_map', 'Monitor Map')}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Activities Section */}
       <section className={styles.section}>

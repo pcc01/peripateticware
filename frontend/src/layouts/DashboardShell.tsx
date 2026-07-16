@@ -54,9 +54,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-blue-700 focus:rounded focus:shadow-lg"
-      >
-        Skip to main content
-      </a>
+      >{t('layouts_dashboardshell.skip_to_main_content', 'Skip to main content')}</a>
       <aside
         className={`flex flex-col border-r transition-all duration-200 flex-shrink-0 ${collapsed ? 'w-14' : 'w-56'}`}
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
@@ -100,7 +98,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
               </div>
               <button
                 onClick={handleLogout}
-                aria-label="Sign out"
+                aria-label={t('layouts_dashboardshell.aria_label_sign_out', 'Sign out')}
                 className="p-1.5 rounded hover:text-red-600 hover:bg-red-50 transition flex-shrink-0 border border-transparent hover:border-red-200"
                 style={{ color: 'var(--text-muted)' }}
               >
@@ -111,7 +109,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
             <button
               onClick={handleLogout}
               className="w-full flex justify-center items-center py-1 rounded hover:text-red-600 hover:bg-red-50 transition"
-              aria-label="Sign out"
+              aria-label={t('layouts_dashboardshell.aria_label_sign_out', 'Sign out')}
               style={{ color: 'var(--text-muted)' }}
             >
               <LogOut size={15} aria-hidden="true" />
@@ -120,7 +118,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
         </div>
 
         {/* Nav groups */}
-        <nav aria-label="Main navigation" className="flex-1 overflow-y-auto py-2 px-1.5 space-y-3">
+        <nav aria-label={t('layouts_dashboardshell.aria_label_main_navigation', 'Main navigation')} className="flex-1 overflow-y-auto py-2 px-1.5 space-y-3">
           {navGroups.map(group => (
             <div key={group.label}>
               {!collapsed && (

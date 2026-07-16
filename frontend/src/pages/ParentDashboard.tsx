@@ -70,13 +70,11 @@ function ConsentStatusPanel({ linkedChildren }: { linkedChildren: { id: string; 
           <div key={s.childId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'white', borderRadius: 8, border: '1px solid var(--border, #e5e7eb)' }}>
             <span style={{ fontSize: 14, color: 'var(--text, #111)' }}>{s.childName}</span>
             {s.loading ? (
-              <span style={{ fontSize: 12, color: 'var(--text-muted, #6b7280)' }}>Checking…</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted, #6b7280)' }}>{t('pages_parentdashboard.checking', 'Checking…')}</span>
             ) : s.hasConsent ? (
-              <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>Consent granted ✓</span>
+              <span style={{ fontSize: 12, color: '#15803d', fontWeight: 600 }}>{t('pages_parentdashboard.consent_granted', 'Consent granted ✓')}</span>
             ) : (
-              <a href={`/parent-consent/${s.studentHash}`} style={{ fontSize: 12, color: '#b45309', fontWeight: 600, textDecoration: 'underline' }}>
-                Consent pending — Review
-              </a>
+              <a href={`/parent-consent/${s.studentHash}`} style={{ fontSize: 12, color: '#b45309', fontWeight: 600, textDecoration: 'underline' }}>{t('pages_parentdashboard.consent_pending_review', 'Consent pending — Review')}</a>
             )}
           </div>
         ))}
@@ -178,12 +176,12 @@ export const ParentDashboard: React.FC = () => {
           }}>
             <p style={{ fontWeight: 600, marginBottom: 8 }}>{t('pages_parentdashboard.what_youll_see_after_linking', 'What you\'ll see after linking:')}</p>
             <ul style={{ color: 'var(--text-muted)', lineHeight: 2, paddingLeft: 20, margin: 0 }}>
-              <li>📊 Overall progress &amp; competency scores</li>
-              <li>📚 Active and completed activities</li>
-              <li>🗓️ Upcoming sessions and due dates</li>
-              <li>📸 Submitted evidence and field notes</li>
-              <li>💬 Teacher feedback and messages</li>
-              <li>📋 Downloadable progress reports</li>
+              <li>{t('pages_parentdashboard.overall_progress_amp_competency_scores', '📊 Overall progress &amp; competency scores')}</li>
+              <li>{t('pages_parentdashboard.active_and_completed_activities', '📚 Active and completed activities')}</li>
+              <li>{t('pages_parentdashboard.upcoming_sessions_and_due_dates', '🗓️ Upcoming sessions and due dates')}</li>
+              <li>{t('pages_parentdashboard.submitted_evidence_and_field_notes', '📸 Submitted evidence and field notes')}</li>
+              <li>{t('pages_parentdashboard.teacher_feedback_and_messages', '💬 Teacher feedback and messages')}</li>
+              <li>{t('pages_parentdashboard.downloadable_progress_reports', '📋 Downloadable progress reports')}</li>
             </ul>
           </div>
           <button

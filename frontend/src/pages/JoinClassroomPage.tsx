@@ -123,9 +123,7 @@ export default function JoinClassroomPage() {
           )}
         </div>
 
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-700">
-          Password: 8+ chars, uppercase, lowercase, number, and special character (@$!%*?&).
-        </div>
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-700">{t('pages_joinclassroompage.password_8_chars_uppercase_lowercase_num', 'Password: 8+ chars, uppercase, lowercase, number, and special character (@$!%*?&).')}</div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -155,7 +153,7 @@ export default function JoinClassroomPage() {
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">
-              Date of Birth <span className="text-gray-400">(required for COPPA compliance)</span>
+              Date of Birth <span className="text-gray-400">{t('pages_joinclassroompage.required_for_coppa_compliance', '(required for COPPA compliance)')}</span>
             </label>
             <input
               type="date"
@@ -172,7 +170,7 @@ export default function JoinClassroomPage() {
             <div className="relative">
               <input type={showPw ? 'text' : 'password'} required value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="Min 8 chars, 1 upper, 1 number, 1 special"
+                placeholder={t('pages_joinclassroompage.placeholder_min_8_chars_1_upper_1_number_1_special', 'Min 8 chars, 1 upper, 1 number, 1 special')}
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 pr-10" />
               <button type="button" onClick={() => setShowPw(s => !s)}
                 className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
@@ -203,7 +201,7 @@ export default function JoinClassroomPage() {
 
         <p className="text-center text-xs text-gray-400 mt-6">
           Already have an account?{' '}
-          <a href="/login" className="text-green-700 hover:underline">Log in</a>
+          <a href="/login" className="text-green-700 hover:underline">{t('pages_joinclassroompage.log_in', 'Log in')}</a>
         </p>
       </div>
     </div>

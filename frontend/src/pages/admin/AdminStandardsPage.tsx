@@ -60,9 +60,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function ExpiryBadge({ set }: { set: StandardsSet }) {
-  if (!set.valid_until) return <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>No expiry</span>;
+  const { t } = useTranslation('landing');
+  if (!set.valid_until) return <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('pages_admin_adminstandardspage.no_expiry', 'No expiry')}</span>;
   if (set.is_expired) return (
-    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#fee2e2', color: '#b91c1c' }}>EXPIRED</span>
+    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: '#fee2e2', color: '#b91c1c' }}>{t('pages_admin_adminstandardspage.expired', 'EXPIRED')}</span>
   );
   const d = set.days_until_expiry ?? 999;
   return (
@@ -152,11 +153,11 @@ const AdminStandardsPage: React.FC = () => {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name or state code…"
+          placeholder={t('pages_admin_adminstandardspage.placeholder_search_by_name_or_state_code', 'Search by name or state code…')}
           style={{ flex: 1, minWidth: 200, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem', background: 'var(--surface)', color: 'var(--text)' }}
         />
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
-          <input type="checkbox" id="show-expired" checked={showExpired} onChange={e => setShowExpired(e.target.checked)} aria-label="Show expired standards" />
+          <input type="checkbox" id="show-expired" checked={showExpired} onChange={e => setShowExpired(e.target.checked)} aria-label={t('pages_admin_adminstandardspage.aria_label_show_expired_standards', 'Show expired standards')} />
           Show expired
         </label>
         <button
@@ -171,7 +172,7 @@ const AdminStandardsPage: React.FC = () => {
 
       {/* ── State Academic Standards ───────────────────────────────────────── */}
       <Section
-        title="State Academic Standards"
+        title={t('pages_admin_adminstandardspage.title_state_academic_standards', 'State Academic Standards')}
         subtitle={`${standards.length} sets — TEKS, NGSS, Common Core, etc. Shared globally; all users can map activities against these.`}
         count={filter(standards).length}
         onImport={() => navigate('/admin/curriculum/import')}
@@ -190,7 +191,7 @@ const AdminStandardsPage: React.FC = () => {
 
       {/* ── State Reporting Requirements ──────────────────────────────────── */}
       <Section
-        title="State Reporting Requirements"
+        title={t('pages_admin_adminstandardspage.title_state_reporting_requirements', 'State Reporting Requirements')}
         subtitle={`${reporting.length} states seeded — homeschool annual reporting requirements. Pre-seeded for 15 states; upload for additional states via homeschool reporting upload.`}
         count={filter(reporting).length}
         empty={filter(reporting).length === 0 && !loading}
@@ -226,6 +227,7 @@ function SetRow({ set, onDelete, onExtend, deleting }: {
   onExtend: () => void;
   deleting: boolean;
 }) {
+  const { t } = useTranslation('landing');
   return (
     <div style={{
       padding: '14px 18px',
@@ -261,9 +263,7 @@ function SetRow({ set, onDelete, onExtend, deleting }: {
         <button
           onClick={onExtend}
           style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-muted)' }}
-        >
-          Extend
-        </button>
+        >{t('pages_admin_adminstandardspage.extend', 'Extend')}</button>
         <button
           onClick={onDelete}
           disabled={deleting}

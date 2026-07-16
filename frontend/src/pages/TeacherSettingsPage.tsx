@@ -199,13 +199,9 @@ export const TeacherSettingsPage = () => {
           <h2>{t('landing:privacy_data', 'Privacy & Data')}</h2>
 
           {orgGoverned ? (
-            <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#1e40af' }}>
-              🏫 Your privacy settings are managed by your school or organisation. Contact your administrator to make changes.
-            </div>
+            <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#1e40af' }}>{t('pages_teachersettingspage.your_privacy_settings_are_managed_by_you', '🏫 Your privacy settings are managed by your school or organisation. Contact your administrator to make changes.')}</div>
           ) : privacyConfigured === false && !privacyBannerDismissed ? (
-            <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#92400e' }}>
-              ⚠ You're using default privacy settings. Review and save your preferences below to confirm your configuration.
-            </div>
+            <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#92400e' }}>{t('pages_teachersettingspage.youre_using_default_privacy_settings_rev', '⚠ You\'re using default privacy settings. Review and save your preferences below to confirm your configuration.')}</div>
           ) : null}
 
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>{t('pages_teachersettingspage.these_settings_apply_to_your_account_and', 'These settings apply to your account and the activities you create. FERPA and COPPA compliance checks run automatically when you publish an activity.')}</p>

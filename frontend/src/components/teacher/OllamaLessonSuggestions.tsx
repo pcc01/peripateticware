@@ -289,40 +289,38 @@ export const OllamaLessonSuggestions = ({
 
           {/* Required — read-only summary */}
           {!title.trim() && (
-            <div style={{ padding: '8px 12px', background: 'var(--surface-alt)', borderRadius: 6, marginBottom: '0.75rem', fontSize: '0.83rem', color: 'var(--text-muted)' }}>
-              ⚠️ Add an activity title above for better suggestions.
-            </div>
+            <div style={{ padding: '8px 12px', background: 'var(--surface-alt)', borderRadius: 6, marginBottom: '0.75rem', fontSize: '0.83rem', color: 'var(--text-muted)' }}>{t('components_teacher_ollamalessonsuggestions.add_an_activity_title_above_for_better_s', '⚠️ Add an activity title above for better suggestions.')}</div>
           )}
 
           {/* Optional fields grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '0.75rem' }}>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.subject', 'Subject')}</label>
-              <input style={inputStyle} value={optSubject} onChange={e => setOptSubject(e.target.value)} placeholder="e.g. Science, History…" aria-label="Subject" />
+              <input style={inputStyle} value={optSubject} onChange={e => setOptSubject(e.target.value)} placeholder={t('components_teacher_ollamalessonsuggestions.placeholder_eg_science_history', 'e.g. Science, History…')} aria-label={t('components_teacher_ollamalessonsuggestions.aria_label_subject', 'Subject')} />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.grade_level', 'Grade level')}</label>
-              <input style={inputStyle} type="number" min={3} max={12} value={optGrade} onChange={e => setOptGrade(e.target.value)} placeholder="e.g. 5" aria-label="Grade level" />
+              <input style={inputStyle} type="number" min={3} max={12} value={optGrade} onChange={e => setOptGrade(e.target.value)} placeholder={t('components_teacher_ollamalessonsuggestions.placeholder_eg_5', 'e.g. 5')} aria-label={t('components_teacher_ollamalessonsuggestions.aria_label_grade_level', 'Grade level')} />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.duration_minutes', 'Duration (minutes)')}</label>
-              <input style={inputStyle} type="number" min={10} max={300} value={optDuration} onChange={e => setOptDuration(e.target.value)} placeholder="e.g. 45" aria-label="Duration in minutes" />
+              <input style={inputStyle} type="number" min={10} max={300} value={optDuration} onChange={e => setOptDuration(e.target.value)} placeholder={t('components_teacher_ollamalessonsuggestions.placeholder_eg_45', 'e.g. 45')} aria-label={t('components_teacher_ollamalessonsuggestions.aria_label_duration_in_minutes', 'Duration in minutes')} />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.group_size', 'Group size')}</label>
-              <input style={inputStyle} value={optGroupSize} onChange={e => setOptGroupSize(e.target.value)} placeholder="e.g. 24 students, pairs…" aria-label="Group size" />
+              <input style={inputStyle} value={optGroupSize} onChange={e => setOptGroupSize(e.target.value)} placeholder={t('components_teacher_ollamalessonsuggestions.placeholder_eg_24_students_pairs', 'e.g. 24 students, pairs…')} aria-label={t('components_teacher_ollamalessonsuggestions.aria_label_group_size', 'Group size')} />
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.setting', 'Setting')}</label>
               <select style={inputStyle} value={optSetting} onChange={e => setOptSetting(e.target.value as any)}>
-                <option value="outdoor">Outdoor</option>
-                <option value="indoor">Indoor</option>
-                <option value="field_trip">Field trip</option>
+                <option value="outdoor">{t('components_teacher_ollamalessonsuggestions.outdoor', 'Outdoor')}</option>
+                <option value="indoor">{t('components_teacher_ollamalessonsuggestions.indoor', 'Indoor')}</option>
+                <option value="field_trip">{t('components_teacher_ollamalessonsuggestions.field_trip', 'Field trip')}</option>
               </select>
             </div>
             <div>
               <label style={labelStyle}>{t('components_teacher_ollamalessonsuggestions.special_focus_optional', 'Special focus (optional)')}</label>
-              <input style={inputStyle} value={optFocus} onChange={e => setOptFocus(e.target.value)} placeholder="e.g. ELL students, STEM…" aria-label="Special focus or differentiation" />
+              <input style={inputStyle} value={optFocus} onChange={e => setOptFocus(e.target.value)} placeholder={t('components_teacher_ollamalessonsuggestions.placeholder_eg_ell_students_stem', 'e.g. ELL students, STEM…')} aria-label={t('components_teacher_ollamalessonsuggestions.aria_label_special_focus_or_differentiation', 'Special focus or differentiation')} />
             </div>
           </div>
 
@@ -416,9 +414,7 @@ export const OllamaLessonSuggestions = ({
             <button
               onClick={fetchSuggestions}
               disabled={isLoading}
-              style={{ padding: '6px 14px', borderRadius: 6, fontSize: '0.82rem', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', opacity: isLoading ? 0.6 : 1 }}>
-              🔄 Regenerate
-            </button>
+              style={{ padding: '6px 14px', borderRadius: 6, fontSize: '0.82rem', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', opacity: isLoading ? 0.6 : 1 }}>{t('components_teacher_ollamalessonsuggestions.regenerate', '🔄 Regenerate')}</button>
           </div>
         </>
       )}

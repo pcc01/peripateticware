@@ -20,6 +20,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
+import { useTranslation } from 'react-i18next';
 
 // ── Configuration ────────────────────────────────────────────────────────────
 const IDLE_MINUTES      = 30;           // warn after this many idle minutes

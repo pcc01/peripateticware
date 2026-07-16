@@ -57,19 +57,19 @@ export default function PlatformAuditLogPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
             <tr>
-              <th className="px-4 py-3 text-left">Time</th>
-              <th className="px-4 py-3 text-left">Action</th>
-              <th className="px-4 py-3 text-left">Actor</th>
-              <th className="px-4 py-3 text-left">Target Org</th>
-              <th className="px-4 py-3 text-left">Detail</th>
+              <th className="px-4 py-3 text-left">{t('pages_platform_platformauditlogpage.time', 'Time')}</th>
+              <th className="px-4 py-3 text-left">{t('pages_platform_platformauditlogpage.action', 'Action')}</th>
+              <th className="px-4 py-3 text-left">{t('pages_platform_platformauditlogpage.actor', 'Actor')}</th>
+              <th className="px-4 py-3 text-left">{t('pages_platform_platformauditlogpage.target_org', 'Target Org')}</th>
+              <th className="px-4 py-3 text-left">{t('pages_platform_platformauditlogpage.detail', 'Detail')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {loading && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Loading…</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t('pages_platform_platformauditlogpage.loading', 'Loading…')}</td></tr>
             )}
             {!loading && data?.items.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">No audit entries yet.</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t('pages_platform_platformauditlogpage.no_audit_entries_yet', 'No audit entries yet.')}</td></tr>
             )}
             {data?.items.map(entry => (
               <tr key={entry.id} className="hover:bg-gray-50">

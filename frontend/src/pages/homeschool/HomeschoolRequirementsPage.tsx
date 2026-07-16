@@ -68,11 +68,10 @@ function authHeader(): Record<string, string> {
 }
 
 function ExpiryBadge({ set }: { set: StandardsSet }) {
+  const { t } = useTranslation('landing');
   if (!set.valid_until) return null;
   if (set.is_expired) return (
-    <span style={{ fontSize:'0.7rem',fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#fee2e2',color:'#b91c1c' }}>
-      EXPIRED
-    </span>
+    <span style={{ fontSize:'0.7rem',fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#fee2e2',color:'#b91c1c' }}>{t('pages_homeschool_homeschoolrequirementspage.expired', 'EXPIRED')}</span>
   );
   const days = set.days_until_expiry ?? 999;
   return (
@@ -106,6 +105,7 @@ function SetCard({ set, onDelete, onRefresh, onCoverage }: {
   onRefresh: (id:string)=>void;
   onCoverage: ()=>void;
 }) {
+  const { t } = useTranslation('landing');
   const nearExpiry = !set.is_expired && (set.days_until_expiry??999) <= 30;
   return (
     <div style={{
@@ -119,9 +119,7 @@ function SetCard({ set, onDelete, onRefresh, onCoverage }: {
           <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
             <span style={{fontWeight:600,fontSize:'0.95rem'}}>{set.name}</span>
             {set.is_global && (
-              <span style={{fontSize:'0.68rem',fontWeight:700,padding:'1px 7px',borderRadius:20,background:'#dbeafe',color:'#1d4ed8'}}>
-                SHARED
-              </span>
+              <span style={{fontSize:'0.68rem',fontWeight:700,padding:'1px 7px',borderRadius:20,background:'#dbeafe',color:'#1d4ed8'}}>{t('pages_homeschool_homeschoolrequirementspage.shared', 'SHARED')}</span>
             )}
             {set.state_code && (
               <span style={{fontSize:'0.68rem',fontWeight:700,padding:'1px 7px',borderRadius:20,background:'#f3f4f6',color:'#374151'}}>
@@ -141,9 +139,7 @@ function SetCard({ set, onDelete, onRefresh, onCoverage }: {
           </div>
         </div>
         <div style={{display:'flex',gap:8,flexShrink:0,flexWrap:'wrap'}}>
-          <button onClick={onCoverage} style={{padding:'5px 12px',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,border:'1px solid var(--primary)',color:'var(--primary)',background:'transparent'}}>
-            Coverage
-          </button>
+          <button onClick={onCoverage} style={{padding:'5px 12px',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,border:'1px solid var(--primary)',color:'var(--primary)',background:'transparent'}}>{t('pages_homeschool_homeschoolrequirementspage.coverage', 'Coverage')}</button>
           {(set.is_expired || nearExpiry) && (
             <button onClick={()=>onRefresh(set.id)} style={{padding:'5px 12px',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,border:'1px solid #f59e0b',color:'#b45309',background:'#fffbeb'}}>
               Re-upload
@@ -266,7 +262,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
             onChange={e => handleStateChange(e.target.value)}
             style={{padding:'7px 12px',borderRadius:8,border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text)',fontSize:'0.9rem',minWidth:220}}
           >
-            <option value="">— Select your state —</option>
+            <option value="">{t('pages_homeschool_homeschoolrequirementspage.select_your_state', '— Select your state —')}</option>
             {US_STATES.map(([code,name]) => (
               <option key={code} value={code}>{name}</option>
             ))}
@@ -281,7 +277,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
 
       {/* ── Reporting Requirements ─────────────────────────────────────────── */}
       <Section
-        title="Reporting Requirements"
+        title={t('pages_homeschool_homeschoolrequirementspage.title_reporting_requirements', 'Reporting Requirements')}
         subtitle={
           stateCode && stateHasGlobal
             ? `Showing the shared requirements for ${stateCode}. These are seeded from state law and updated annually. Your personal uploads appear below.`
@@ -308,7 +304,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
 
       {/* ── State Academic Standards ───────────────────────────────────────── */}
       <Section
-        title="State Academic Standards"
+        title={t('pages_homeschool_homeschoolrequirementspage.title_state_academic_standards', 'State Academic Standards')}
         subtitle="Official academic standards for your state (TEKS, NGSS, Common Core, etc.). Shared globally — uploaded once and available to all users for mapping activities to specific standards."
         icon="📐"
         buttonLabel="+ Import Standards"

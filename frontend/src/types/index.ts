@@ -364,6 +364,20 @@ export interface TeacherSubmission {
   feedback?: string
 }
 
+// Raw row shape returned by GET /activities/teacher/submissions
+// (backend/routes/activities.py::teacher_submissions) — used for the
+// dashboard's "Live Sessions" list, which links to the GPS session monitor.
+export interface TeacherActiveSession {
+  session_id: string
+  student_id: string
+  student_name: string
+  student_email: string
+  activity_id: string
+  activity_title: string
+  status: 'in_progress' | 'completed' | 'paused'
+  started_at: string | null
+}
+
 export interface TeacherDashboardData {
   recent_students?: unknown[]
   total_students: number

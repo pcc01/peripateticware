@@ -456,7 +456,7 @@ const StudentActivityDetailPage: React.FC = () => {
 
               <input
                 type="text"
-                placeholder="Title (optional)"
+                placeholder={t('pages_studentactivitydetailpage.placeholder_title_optional', 'Title (optional)')}
                 value={evidenceTitle}
                 onChange={(e) => setEvidenceTitle(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -552,14 +552,14 @@ const StudentActivityDetailPage: React.FC = () => {
 
               <input
                 type="text"
-                placeholder="Reflection title (optional)"
+                placeholder={t('pages_studentactivitydetailpage.placeholder_reflection_title_optional', 'Reflection title (optional)')}
                 value={reflectionTitle}
                 onChange={(e) => setReflectionTitle(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
 
               <textarea
-                placeholder="Write your reflection here…"
+                placeholder={t('pages_studentactivitydetailpage.placeholder_write_your_reflection_here', 'Write your reflection here…')}
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
                 rows={8}

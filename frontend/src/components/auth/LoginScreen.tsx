@@ -64,15 +64,15 @@ export default function LoginScreen({
   };
 
   const statusBanner = sessionReason === 'idle'
-    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">You were signed out due to inactivity. Please sign in again.</div>
+    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">{t('components_auth_loginscreen.you_were_signed_out_due_to_inactivity_pl', 'You were signed out due to inactivity. Please sign in again.')}</div>
     : sessionReason === 'expired'
-    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">Your session expired. Please sign in again.</div>
+    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">{t('components_auth_loginscreen.your_session_expired_please_sign_in_agai', 'Your session expired. Please sign in again.')}</div>
     : verifiedBanner
-    ? <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">Email confirmed! You can now sign in.</div>
+    ? <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">{t('components_auth_loginscreen.email_confirmed_you_can_now_sign_in', 'Email confirmed! You can now sign in.')}</div>
     : errorParam === 'link_expired'
-    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">That link has expired. Please request a new one.</div>
+    ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">{t('components_auth_loginscreen.that_link_has_expired_please_request_a_n', 'That link has expired. Please request a new one.')}</div>
     : errorParam === 'invalid_link'
-    ? <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">That link is invalid. Please try again.</div>
+    ? <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">{t('components_auth_loginscreen.that_link_is_invalid_please_try_again', 'That link is invalid. Please try again.')}</div>
     : null;
 
   return (
@@ -179,7 +179,7 @@ export default function LoginScreen({
 
           <div className="my-6 flex items-center">
             <div className="flex-1 border-t border-gray-300" />
-            <span className="px-3 text-gray-500 text-sm">or</span>
+            <span className="px-3 text-gray-500 text-sm">{t('components_auth_loginscreen.or', 'or')}</span>
             <div className="flex-1 border-t border-gray-300" />
           </div>
 

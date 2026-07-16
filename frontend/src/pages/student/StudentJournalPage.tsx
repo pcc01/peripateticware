@@ -80,7 +80,7 @@ const StudentJournalPage: React.FC = () => {
   const totalComplete = notes.filter(n => (n.status as string) === 'completed').length
 
   if (loading) return (
-    <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</div>
+    <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>{t('pages_student_studentjournalpage.loading', 'Loading…')}</div>
   )
 
   return (
@@ -98,9 +98,7 @@ const StudentJournalPage: React.FC = () => {
           onClick={handleNew}
           className="px-4 py-2 rounded-lg text-white font-medium text-sm"
           style={{ background: 'var(--primary)' }}
-        >
-          + New Entry
-        </button>
+        >{t('pages_student_studentjournalpage.new_entry', '+ New Entry')}</button>
       </div>
 
       {error && (
@@ -142,9 +140,7 @@ const StudentJournalPage: React.FC = () => {
               onClick={handleNew}
               className="px-6 py-2 rounded-lg text-white font-medium"
               style={{ background: 'var(--primary)' }}
-            >
-              Write your first entry
-            </button>
+            >{t('pages_student_studentjournalpage.write_your_first_entry', 'Write your first entry')}</button>
           )}
         </div>
       )}

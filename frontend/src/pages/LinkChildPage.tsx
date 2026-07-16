@@ -103,7 +103,7 @@ export const LinkChildPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="student@example.com"
+              placeholder={t('pages_linkchildpage.placeholder_studentexamplecom', 'student@example.com')}
               required
               style={{
                 width: '100%', padding: '10px 14px', borderRadius: 8,

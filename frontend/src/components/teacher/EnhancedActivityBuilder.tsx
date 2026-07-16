@@ -726,7 +726,7 @@ export const ActivityBuilder = () => {
                     ...prev,
                     location: { ...prev.location, address: e.target.value }
                   }))}
-                  placeholder="e.g. Riverside Park, Austin TX"
+                  placeholder={t('components_teacher_enhancedactivitybuilder.placeholder_eg_riverside_park_austin_tx', 'e.g. Riverside Park, Austin TX')}
                   className={styles.input}
                   style={{ flex: 1 }}
                 />
@@ -833,7 +833,7 @@ export const ActivityBuilder = () => {
                   }}
                   style={{ width: 16, height: 16 }}
                 />
-                <span style={{ fontWeight: 600 }}>📍 Enable live GPS tracking during this activity</span>
+                <span style={{ fontWeight: 600 }}>{t('components_teacher_enhancedactivitybuilder.enable_live_gps_tracking_during_this_act', '📍 Enable live GPS tracking during this activity')}</span>
               </label>
               <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4, marginLeft: 26 }}>{t('components_teacher_enhancedactivitybuilder.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
             </div>
@@ -848,9 +848,7 @@ export const ActivityBuilder = () => {
                     onChange={(e) => setHomeschoolGpsConsent(e.target.checked)}
                     style={{ width: 16, height: 16 }}
                   />
-                  <span style={{ fontSize: 14 }}>
-                    I consent to GPS location capture for my child during this activity
-                  </span>
+                  <span style={{ fontSize: 14 }}>{t('components_teacher_enhancedactivitybuilder.i_consent_to_gps_location_capture_for_my', 'I consent to GPS location capture for my child during this activity')}</span>
                 </label>
               </div>
             )}
@@ -886,13 +884,13 @@ export const ActivityBuilder = () => {
 
             {/* \u2500\u2500 Phase Content \u2500\u2500 what students read on the mobile app \u2500\u2500 */}
             <div className={styles.subsection}>
-              <h3>\uD83D\uDCF1 Activity Phases <span style={{ fontWeight: 'normal', color: '#888', fontSize: 13 }}>\u2014 what students see on mobile</span></h3>
+              <h3>\uD83D\uDCF1 Activity Phases <span style={{ fontWeight: 'normal', color: '#888', fontSize: 13 }}>{t('components_teacher_enhancedactivitybuilder.u2014_what_students_see_on_mobile', '\u2014 what students see on mobile')}</span></h3>
               <p style={{ color: '#666', fontSize: 13, marginBottom: 12 }}>{t('components_teacher_enhancedactivitybuilder.these_three_fields_drive_the_student_exp', 'These three fields drive the student experience. Students progress through Orient \u2192 Inquire \u2192 Reflect on their phone.')}</p>
 
               <div className={styles.formGroup}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ background: '#e8f5e9', color: '#2e7d32', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>ORIENT</span>
+                    <span style={{ background: '#e8f5e9', color: '#2e7d32', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>{t('components_teacher_enhancedactivitybuilder.orient', 'ORIENT')}</span>
                     What students observe when they arrive
                   </span>
                   <button
@@ -906,7 +904,7 @@ export const ActivityBuilder = () => {
                 <textarea
                   value={formData.orient_phase}
                   onChange={(e) => setFormData((p) => ({ ...p, orient_phase: e.target.value }))}
-                  placeholder="e.g. Look around you. Notice the layers of the forest \u2014 the tall canopy trees, the shrubs and ferns below, and the ground covered in moss and fallen logs. Find a spot to stand quietly for 60 seconds and observe \u2014 what do you see, hear, and smell?"
+                  placeholder={t('components_teacher_enhancedactivitybuilder.placeholder_eg_look_around_you_notice_the_layers_of_', 'e.g. Look around you. Notice the layers of the forest \u2014 the tall canopy trees, the shrubs and ferns below, and the ground covered in moss and fallen logs. Find a spot to stand quietly for 60 seconds and observe \u2014 what do you see, hear, and smell?')}
                   rows={4}
                   className={styles.textarea}
                 />
@@ -915,7 +913,7 @@ export const ActivityBuilder = () => {
               <div className={styles.formGroup}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ background: '#e3f2fd', color: '#1565c0', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>INQUIRE</span>
+                    <span style={{ background: '#e3f2fd', color: '#1565c0', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>{t('components_teacher_enhancedactivitybuilder.inquire', 'INQUIRE')}</span>
                     Investigation instructions + capture prompts
                   </span>
                   <button
@@ -929,7 +927,7 @@ export const ActivityBuilder = () => {
                 <textarea
                   value={formData.inquiry_phase}
                   onChange={(e) => setFormData((p) => ({ ...p, inquiry_phase: e.target.value }))}
-                  placeholder="e.g. Choose one investigation question and use your capture tools to record evidence:&#10;&#10;1. DECOMPOSERS: Find a fallen log. Who or what is breaking it down? Photograph what you find.&#10;&#10;2. LAYERS: How many distinct layers can you identify in the forest? Photograph each layer."
+                  placeholder={t('components_teacher_enhancedactivitybuilder.placeholder_eg_choose_one_investigation_question_and', 'e.g. Choose one investigation question and use your capture tools to record evidence:&#10;&#10;1. DECOMPOSERS: Find a fallen log. Who or what is breaking it down? Photograph what you find.&#10;&#10;2. LAYERS: How many distinct layers can you identify in the forest? Photograph each layer.')}
                   rows={6}
                   className={styles.textarea}
                 />
@@ -939,7 +937,7 @@ export const ActivityBuilder = () => {
               <div className={styles.formGroup}>
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ background: '#fff3e0', color: '#e65100', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>REFLECT</span>
+                    <span style={{ background: '#fff3e0', color: '#e65100', borderRadius: 4, padding: '2px 8px', fontSize: 12, fontWeight: 700 }}>{t('components_teacher_enhancedactivitybuilder.reflect', 'REFLECT')}</span>
                     Closing reflection prompt
                   </span>
                   <button
@@ -953,7 +951,7 @@ export const ActivityBuilder = () => {
                 <textarea
                   value={formData.reflect_phase}
                   onChange={(e) => setFormData((p) => ({ ...p, reflect_phase: e.target.value }))}
-                  placeholder="e.g. Based on your investigation, answer: What would happen to this forest if one species disappeared entirely? Use specific examples from what you observed today."
+                  placeholder={t('components_teacher_enhancedactivitybuilder.placeholder_eg_based_on_your_investigation_answer_wh', 'e.g. Based on your investigation, answer: What would happen to this forest if one species disappeared entirely? Use specific examples from what you observed today.')}
                   rows={4}
                   className={styles.textarea}
                 />
@@ -1003,13 +1001,13 @@ export const ActivityBuilder = () => {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="rubricId">Rubric <span style={{fontWeight:'normal',color:'#888'}}>(optional)</span></label>
+                <label htmlFor="rubricId">Rubric <span style={{fontWeight:'normal',color:'#888'}}>{t('components_teacher_enhancedactivitybuilder.optional', '(optional)')}</span></label>
                 <select
                   id="rubricId"
                   value={formData.rubric_id ?? ''}
                   onChange={(e) => setFormData((p) => ({ ...p, rubric_id: e.target.value || null }))}
                   className={styles.select}>
-                  <option value="">— No rubric —</option>
+                  <option value="">{t('components_teacher_enhancedactivitybuilder.no_rubric', '— No rubric —')}</option>
                   {rubrics.map((r) => (
                     <option key={r.id} value={r.id}>{r.title}</option>
                   ))}
@@ -1130,19 +1128,19 @@ export const ActivityBuilder = () => {
                 {/* Orient phase preview */}
                 {formData.orient_phase && (
                   <div style={{ background: '#f1f8e9', borderRadius: 8, padding: '10px 12px', marginBottom: 8 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#558b2f', letterSpacing: 1, marginBottom: 4 }}>ORIENT — Arrive &amp; Observe</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#558b2f', letterSpacing: 1, marginBottom: 4 }}>{t('components_teacher_enhancedactivitybuilder.orient_arrive_amp_observe', 'ORIENT — Arrive &amp; Observe')}</div>
                     <p style={{ fontSize: 13, color: '#33691e', margin: 0, lineHeight: 1.5 }}>{formData.orient_phase}</p>
                   </div>
                 )}
 
                 {/* Inquiry phase preview + capture tools */}
                 <div style={{ background: '#e3f2fd', borderRadius: 8, padding: '10px 12px', marginBottom: 8 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#1565c0', letterSpacing: 1, marginBottom: 4 }}>INQUIRE — Observe &amp; Capture</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#1565c0', letterSpacing: 1, marginBottom: 4 }}>{t('components_teacher_enhancedactivitybuilder.inquire_observe_amp_capture', 'INQUIRE — Observe &amp; Capture')}</div>
                   {formData.inquiry_phase
                     ? <p style={{ fontSize: 13, color: '#0d47a1', margin: '0 0 10px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{formData.inquiry_phase}</p>
                     : <p style={{ fontSize: 13, color: '#90a4ae', margin: '0 0 10px', fontStyle: 'italic' }}>{t('components_teacher_enhancedactivitybuilder.no_inquiry_instructions_yet_write_them_i', 'No inquiry instructions yet — write them in the Learning tab.')}</p>
                   }
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#1565c0', letterSpacing: 1, marginBottom: 6 }}>CAPTURE TOOLS — available to students</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#1565c0', letterSpacing: 1, marginBottom: 6 }}>{t('components_teacher_enhancedactivitybuilder.capture_tools_available_to_students', 'CAPTURE TOOLS — available to students')}</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {([['📷', 'Photo'], ['🎬', 'Video'], ['🎤', 'Audio'], ['📝', 'Notes']] as [string, string][]).map(([icon, label]) => (
                       <div key={label} style={{
@@ -1159,7 +1157,7 @@ export const ActivityBuilder = () => {
                 {/* Reflect phase preview */}
                 {formData.reflect_phase && (
                   <div style={{ background: '#fff3e0', borderRadius: 8, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#e65100', letterSpacing: 1, marginBottom: 4 }}>REFLECT — Make Meaning</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#e65100', letterSpacing: 1, marginBottom: 4 }}>{t('components_teacher_enhancedactivitybuilder.reflect_make_meaning', 'REFLECT — Make Meaning')}</div>
                     <p style={{ fontSize: 13, color: '#bf360c', margin: 0, lineHeight: 1.5 }}>{formData.reflect_phase}</p>
                   </div>
                 )}
@@ -1168,9 +1166,7 @@ export const ActivityBuilder = () => {
               {/* Objectives */}
               {formData.learning_objectives.filter(Boolean).length > 0 && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 6 }}>
-                    LEARNING GOALS
-                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 6 }}>{t('components_teacher_enhancedactivitybuilder.learning_goals', 'LEARNING GOALS')}</div>
                   {formData.learning_objectives.filter(Boolean).map((obj, i) => (
                     <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, alignItems: 'flex-start' }}>
                       <span style={{ color: '#2e7d32', fontSize: 12, flexShrink: 0 }}>✓</span>
@@ -1183,9 +1179,7 @@ export const ActivityBuilder = () => {
               {/* Materials */}
               {formData.materials_needed.filter(Boolean).length > 0 && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 6 }}>
-                    BRING WITH YOU
-                  </div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 6 }}>{t('components_teacher_enhancedactivitybuilder.bring_with_you', 'BRING WITH YOU')}</div>
                   {formData.materials_needed.filter(Boolean).map((m, i) => (
                     <div key={i} style={{ fontSize: 13, color: '#444', marginBottom: 2 }}>• {m}</div>
                   ))}
@@ -1222,7 +1216,7 @@ export const ActivityBuilder = () => {
                 width: '100%', padding: '12px 0',
                 background: '#2e7d32', color: 'white', border: 'none',
                 borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: 'pointer'
-              }}>Start Activity</button>
+              }}>{t('components_teacher_enhancedactivitybuilder.start_activity', 'Start Activity')}</button>
             </div>
           </section>
         )}
@@ -1253,9 +1247,7 @@ export const ActivityBuilder = () => {
           <button
             onClick={handleCancel}
             className={styles.secondaryBtn}
-            disabled={isSaving}>
-            Cancel
-          </button>
+            disabled={isSaving}>{t('components_teacher_enhancedactivitybuilder.cancel', 'Cancel')}</button>
           <button
             onClick={handleSaveChanges}
             className={styles.primaryBtn}

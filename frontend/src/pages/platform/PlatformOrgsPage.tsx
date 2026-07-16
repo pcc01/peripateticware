@@ -78,30 +78,27 @@ export default function PlatformOrgsPage() {
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
           <input
             type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, slug, or email…"
+            placeholder={t('pages_platform_platformorgspage.placeholder_search_by_name_slug_or_email', 'Search by name, slug, or email…')}
             className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
-        <button type="submit" className="bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-800 transition">
-          Search
-        </button>
+        <button type="submit" className="bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-800 transition">{t('pages_platform_platformorgspage.search', 'Search')}</button>
       </form>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12 text-sm text-gray-400">
-            <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin mr-2" />Loading…
-          </div>
+            <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin mr-2" />{t('pages_platform_platformorgspage.loading', 'Loading…')}</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-100">
               <tr>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Tier</th>
-                <th className="px-4 py-3 text-left">Country</th>
-                <th className="px-4 py-3 text-right">Users</th>
-                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">{t('pages_platform_platformorgspage.name', 'Name')}</th>
+                <th className="px-4 py-3 text-left">{t('pages_platform_platformorgspage.tier', 'Tier')}</th>
+                <th className="px-4 py-3 text-left">{t('pages_platform_platformorgspage.country', 'Country')}</th>
+                <th className="px-4 py-3 text-right">{t('pages_platform_platformorgspage.users', 'Users')}</th>
+                <th className="px-4 py-3 text-left">{t('pages_platform_platformorgspage.status', 'Status')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -121,7 +118,7 @@ export default function PlatformOrgsPage() {
                   <td className="px-4 py-3 text-right text-gray-600">{o.user_count}</td>
                   <td className="px-4 py-3">
                     {o.is_suspended
-                      ? <span className="text-xs text-red-600 font-medium">Suspended</span>
+                      ? <span className="text-xs text-red-600 font-medium">{t('pages_platform_platformorgspage.suspended', 'Suspended')}</span>
                       : <span className="text-xs text-green-700 font-medium">{o.license_status}</span>
                     }
                   </td>
@@ -131,7 +128,7 @@ export default function PlatformOrgsPage() {
                 </tr>
               ))}
               {orgs.length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No organisations found.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">{t('pages_platform_platformorgspage.no_organisations_found', 'No organisations found.')}</td></tr>
               )}
             </tbody>
           </table>

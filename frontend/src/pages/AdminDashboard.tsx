@@ -140,7 +140,7 @@ export const AdminDashboard: React.FC = () => {
               className={styles.statValue}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
               onClick={() => navigate('/admin/users')}
-              title="View all users"
+              title={t('pages_admindashboard.title_view_all_users', 'View all users')}
             >{dashboardData.users_count}</div>
           </div>
           <div className={styles.statCard}>
@@ -149,7 +149,7 @@ export const AdminDashboard: React.FC = () => {
               className={styles.statValue}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
               onClick={() => navigate('/teacher/activities')}
-              title="View all activities"
+              title={t('pages_admindashboard.title_view_all_activities', 'View all activities')}
             >{dashboardData.activities_count}</div>
           </div>
           <div className={styles.statCard}>

@@ -227,16 +227,16 @@ export default function OrgAIConfigPage() {
           <h2 className="font-semibold text-gray-900">{t('pages_org_admin_orgaiconfigpage.anthropic_claude_api_key', 'Anthropic (Claude) API Key')}</h2>
         </div>
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-sm text-gray-500">Current key</span>
+          <span className="text-sm text-gray-500">{t('pages_org_admin_orgaiconfigpage.current_key', 'Current key')}</span>
           {config?.anthropic.has_key ? (
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">{config.anthropic.key_preview}</span>
               <button onClick={() => deleteKey('anthropic')} disabled={saving}
-                className="text-red-400 hover:text-red-600 disabled:opacity-40" title="Remove">
+                className="text-red-400 hover:text-red-600 disabled:opacity-40" title={t('pages_org_admin_orgaiconfigpage.title_remove', 'Remove')}>
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          ) : <span className="text-sm text-gray-400 italic">Not set</span>}
+          ) : <span className="text-sm text-gray-400 italic">{t('pages_org_admin_orgaiconfigpage.not_set', 'Not set')}</span>}
         </div>
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -257,7 +257,7 @@ export default function OrgAIConfigPage() {
         </div>
         <p className="text-xs text-gray-400">
           Get a key at <a href="https://console.anthropic.com/account/keys" target="_blank" rel="noreferrer"
-            className="text-purple-600 hover:underline">console.anthropic.com</a>. Stored encrypted.
+            className="text-purple-600 hover:underline">{t('pages_org_admin_orgaiconfigpage.consoleanthropiccom', 'console.anthropic.com')}</a>. Stored encrypted.
         </p>
       </section>
 
@@ -267,16 +267,16 @@ export default function OrgAIConfigPage() {
           <h2 className="font-semibold text-gray-900">{t('pages_org_admin_orgaiconfigpage.openai_api_key', 'OpenAI API Key')}</h2>
         </div>
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-sm text-gray-500">Current key</span>
+          <span className="text-sm text-gray-500">{t('pages_org_admin_orgaiconfigpage.current_key', 'Current key')}</span>
           {config?.openai.has_key ? (
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded">{config.openai.key_preview}</span>
               <button onClick={() => deleteKey('openai')} disabled={saving}
-                className="text-red-400 hover:text-red-600 disabled:opacity-40" title="Remove">
+                className="text-red-400 hover:text-red-600 disabled:opacity-40" title={t('pages_org_admin_orgaiconfigpage.title_remove', 'Remove')}>
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          ) : <span className="text-sm text-gray-400 italic">Not set</span>}
+          ) : <span className="text-sm text-gray-400 italic">{t('pages_org_admin_orgaiconfigpage.not_set', 'Not set')}</span>}
         </div>
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -297,7 +297,7 @@ export default function OrgAIConfigPage() {
         </div>
         <p className="text-xs text-gray-400">
           Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer"
-            className="text-amber-600 hover:underline">platform.openai.com</a>.
+            className="text-amber-600 hover:underline">{t('pages_org_admin_orgaiconfigpage.platformopenaicom', 'platform.openai.com')}</a>.
         </p>
       </section>
 
@@ -305,28 +305,26 @@ export default function OrgAIConfigPage() {
         <div className="flex items-center gap-2">
           <Server className="w-5 h-5 text-green-700" />
           <h2 className="font-semibold text-gray-900">{t('pages_org_admin_orgaiconfigpage.ollama_instance', 'Ollama Instance')}</h2>
-          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free</span>
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{t('pages_org_admin_orgaiconfigpage.free', 'Free')}</span>
         </div>
         <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-sm text-gray-500">Current URL</span>
+          <span className="text-sm text-gray-500">{t('pages_org_admin_orgaiconfigpage.current_url', 'Current URL')}</span>
           {config?.ollama.configured ? (
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono bg-gray-100 px-2 py-0.5 rounded text-green-700">{config.ollama.url}</span>
               <button onClick={deleteOllama} disabled={saving}
-                className="text-red-400 hover:text-red-600 disabled:opacity-40" title="Remove">
+                className="text-red-400 hover:text-red-600 disabled:opacity-40" title={t('pages_org_admin_orgaiconfigpage.title_remove', 'Remove')}>
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          ) : <span className="text-sm text-gray-400 italic">Using platform default</span>}
+          ) : <span className="text-sm text-gray-400 italic">{t('pages_org_admin_orgaiconfigpage.using_platform_default', 'Using platform default')}</span>}
         </div>
         <div className="flex gap-2">
           <input type="text" value={ollamaUrl} onChange={e => setOllamaUrl(e.target.value)}
             placeholder="http://192.168.1.50:11434"
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500" />
           <button onClick={saveOllama} disabled={saving || !ollamaUrl.trim()}
-            className="bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-40 transition">
-            Save
-          </button>
+            className="bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-40 transition">{t('pages_org_admin_orgaiconfigpage.save', 'Save')}</button>
         </div>
         <p className="text-xs text-gray-400">{t('pages_org_admin_orgaiconfigpage.must_be_reachable_from_the_peripateticwa', 'Must be reachable from the Peripateticware backend server.')}</p>
       </section>
@@ -355,7 +353,7 @@ export default function OrgAIConfigPage() {
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full text-white flex-shrink-0"
                     style={{ background: pl.color }}>{pl.label}</span>
                 ) : (
-                  <span className="text-xs text-gray-400 flex-shrink-0 italic">Platform default</span>
+                  <span className="text-xs text-gray-400 flex-shrink-0 italic">{t('pages_org_admin_orgaiconfigpage.platform_default', 'Platform default')}</span>
                 )}
               </div>
             );
@@ -366,7 +364,7 @@ export default function OrgAIConfigPage() {
           <p className="text-xs text-blue-700">
             Task routing is configured at signup. To change which provider handles a task area,{' '}
             <a href="mailto:hello@peripateticware.com?subject=AI routing change request"
-              className="font-semibold hover:underline">contact platform support</a>.
+              className="font-semibold hover:underline">{t('pages_org_admin_orgaiconfigpage.contact_platform_support', 'contact platform support')}</a>.
           </p>
         </div>
       </section>

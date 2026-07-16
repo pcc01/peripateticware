@@ -26,13 +26,14 @@ const LOCALES = [
   { code: 'he',    label: 'עברית' },
   { code: 'it',    label: 'Italiano' },
   { code: 'ja',    label: '日本語' },
+  { code: 'ko',    label: '한국어' },
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'tr',    label: 'Türkçe' },
   { code: 'zh',    label: '中文' },
 ]
 
 export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '', onChanged }) => {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   // Prefer exact match, then language-prefix match, then fall back to 'en'
   const activeCode =
@@ -49,7 +50,7 @@ export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '', 
     <select
       value={activeCode}
       onChange={handleChange}
-      aria-label="Select language"
+      aria-label={t('components_localeswitcher.aria_label_select_language', 'Select language')}
       className={`rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-800 min-w-[8rem] max-w-[12rem] flex-shrink-0
         focus:outline-none focus:ring-2 focus:ring-green-500
         dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600

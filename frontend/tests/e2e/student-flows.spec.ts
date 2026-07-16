@@ -362,3 +362,34 @@ test.describe('Student — Sidebar Navigation', () => {
     await expect(page).toHaveURL(/\/student\/journal/, { timeout: 8_000 });
   });
 });
+
+// ── 12. Parameterised Detail Routes ───────────────────────────────────────────
+// Detail/editor routes that take a resource :id. With a well-formed but
+// non-existent UUID they must render a graceful error/empty state — never a
+// raw TypeError or a login redirect — regardless of whether seed data exists.
+
+test.describe('Student — Parameterised Detail Routes', () => {
+  const FAKE_ID = '00000000-0000-0000-0000-000000000000';
+
+  const routes: Array<[string, string]> = [
+    ['Field note editor',   `/student/field-notes/${FAKE_ID}`],
+    ['Self project detail', `/student/self-projects/${FAKE_ID}`],
+    ['Peer project detail', `/student/peer-projects/${FAKE_ID}`],
+    ['Proposal form',       `/student/proposals/${FAKE_ID}`],
+    ['Reflection editor',   `/student/reflection/${FAKE_ID}`],
+    ['Activity detail',     `/student/activities/${FAKE_ID}`],
+    ['Session page',        `/session/${FAKE_ID}`],
+  ];
+
+  for (const [label, route] of routes) {
+    test(`${label} (${route}) loads without redirect or crash`, async ({ page }) => {
+      const errors = collectConsoleErrors(page);
+      await page.goto(route);
+      await expect(page).not.toHaveURL(/\/login/);
+      await expect(page.locator('body')).not.toBeEmpty();
+      await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
+      const typeErrors = errors.filter(e => e.includes('TypeError'));
+      expect(typeErrors, `No TypeErrors on ${route}`).toHaveLength(0);
+    });
+  }
+});

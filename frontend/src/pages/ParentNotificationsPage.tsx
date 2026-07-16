@@ -131,9 +131,7 @@ const ParentNotificationsPage: React.FC = () => {
             <button
               onClick={markAllRead}
               style={{ padding: '8px 14px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface)', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-muted)' }}
-            >
-              Mark all read
-            </button>
+            >{t('pages_parentnotificationspage.mark_all_read', 'Mark all read')}</button>
           )}
           <button
             onClick={fetchNotifications}

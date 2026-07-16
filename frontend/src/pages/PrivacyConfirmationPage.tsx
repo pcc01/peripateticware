@@ -141,9 +141,7 @@ export default function PrivacyConfirmationPage() {
               <span>{error}</span>
             </div>
           ) : jurisdictions.length === 0 ? (
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 mb-4">
-              No specific frameworks were detected for your location. Standard data protection practices apply.
-            </div>
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600 mb-4">{t('pages_privacyconfirmationpage.no_specific_frameworks_were_detected_for', 'No specific frameworks were detected for your location. Standard data protection practices apply.')}</div>
           ) : (
             <div className="space-y-3 mb-6">
               {jurisdictions.map(id => {

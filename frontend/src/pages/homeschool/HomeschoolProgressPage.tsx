@@ -84,7 +84,7 @@ export const HomeschoolProgressPage: React.FC = () => {
           </div>
 
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px' }}>
-            <div style={{ fontWeight: 600, marginBottom: 10 }}>Overall Progress</div>
+            <div style={{ fontWeight: 600, marginBottom: 10 }}>{t('pages_homeschool_homeschoolprogresspage.overall_progress', 'Overall Progress')}</div>
             <div style={{ background: 'var(--surface-alt)', borderRadius: 999, height: 12, overflow: 'hidden' }}>
               <div style={{ width: `${progress.overall_progress}%`, height: '100%', background: 'var(--primary)', borderRadius: 999, transition: 'width 0.5s' }} />
             </div>

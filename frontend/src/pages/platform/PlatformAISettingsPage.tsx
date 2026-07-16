@@ -123,7 +123,7 @@ export default function PlatformAISettingsPage() {
                       Active — {k.key_preview}
                     </span>
                   ) : (
-                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Not set</span>
+                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{t('pages_platform_platformaisettingspage.not_set', 'Not set')}</span>
                   )}
                 </div>
               </div>
@@ -139,15 +139,15 @@ export default function PlatformAISettingsPage() {
               onChange={e => setProvider(e.target.value)}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
             >
-              <option value="anthropic">Anthropic</option>
-              <option value="openai">OpenAI</option>
-              <option value="gemini">Gemini</option>
+              <option value="anthropic">{t('pages_platform_platformaisettingspage.anthropic', 'Anthropic')}</option>
+              <option value="openai">{t('pages_platform_platformaisettingspage.openai', 'OpenAI')}</option>
+              <option value="gemini">{t('pages_platform_platformaisettingspage.gemini', 'Gemini')}</option>
             </select>
 
             <div className="flex-1 relative">
               <input
                 type={showKey ? 'text' : 'password'}
-                placeholder="sk-ant-…"
+                placeholder={t('pages_platform_platformaisettingspage.placeholder_skant', 'sk-ant-…')}
                 value={newKey}
                 onChange={e => setNewKey(e.target.value)}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-400 pr-10"
@@ -205,17 +205,18 @@ export default function PlatformAISettingsPage() {
 }
 
 function OrgTable({ orgs, loading, emptyMsg }: { orgs: OrgRow[]; loading: boolean; emptyMsg: string }) {
+  const { t } = useTranslation('landing');
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
         <tr>
-          <th className="px-5 py-2 text-left">Org</th>
-          <th className="px-5 py-2 text-left">Tier</th>
+          <th className="px-5 py-2 text-left">{t('pages_platform_platformaisettingspage.org', 'Org')}</th>
+          <th className="px-5 py-2 text-left">{t('pages_platform_platformaisettingspage.tier', 'Tier')}</th>
           <th className="px-5 py-2"></th>
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-50">
-        {loading && <tr><td colSpan={3} className="px-5 py-6 text-center text-gray-400">Loading…</td></tr>}
+        {loading && <tr><td colSpan={3} className="px-5 py-6 text-center text-gray-400">{t('pages_platform_platformaisettingspage.loading', 'Loading…')}</td></tr>}
         {!loading && orgs.length === 0 && <tr><td colSpan={3} className="px-5 py-6 text-center text-gray-400">{emptyMsg}</td></tr>}
         {orgs.map(o => (
           <tr key={o.id} className="hover:bg-gray-50">

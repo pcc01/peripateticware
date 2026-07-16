@@ -72,37 +72,37 @@ export const HomeschoolChildrenPage: React.FC = () => {
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.full_name', 'Full name *')}</label>
               <input required value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))}
                 id="child-full-name"
-                aria-label="Child's full name"
+                aria-label={t('pages_homeschool_homeschoolchildrenpage.aria_label_childs_full_name', 'Child\'s full name')}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.email', 'Email *')}</label>
               <input required type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                 id="child-email"
-                aria-label="Child's email address"
+                aria-label={t('pages_homeschool_homeschoolchildrenpage.aria_label_childs_email_address', 'Child\'s email address')}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.password', 'Password *')}</label>
               <input required type="password" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                 id="child-password"
-                aria-label="Child's password"
+                aria-label={t('pages_homeschool_homeschoolchildrenpage.aria_label_childs_password', 'Child\'s password')}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.grade_level', 'Grade level')}</label>
               <input type="number" min={0} max={12} value={form.grade_level} onChange={e => setForm(p => ({ ...p, grade_level: parseInt(e.target.value) }))}
                 id="child-grade"
-                aria-label="Child's grade level (0-12)"
+                aria-label={t('pages_homeschool_homeschoolchildrenpage.aria_label_childs_grade_level_012', 'Child\'s grade level (0-12)')}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 5, fontSize: '0.85rem' }}>{t('pages_homeschool_homeschoolchildrenpage.age_band', 'Age band')}</label>
               <select value={form.age_band} onChange={e => setForm(p => ({ ...p, age_band: e.target.value }))}
                 style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }}>
-                <option value="k6">K–6 (Ages 5–12)</option>
-                <option value="m712">7–12 (Ages 12–17)</option>
-                <option value="h1318">13–18 (Ages 13–18)</option>
+                <option value="k6">{t('pages_homeschool_homeschoolchildrenpage.k6_ages_512', 'K–6 (Ages 5–12)')}</option>
+                <option value="m712">{t('pages_homeschool_homeschoolchildrenpage.712_ages_1217', '7–12 (Ages 12–17)')}</option>
+                <option value="h1318">{t('pages_homeschool_homeschoolchildrenpage.1318_ages_1318', '13–18 (Ages 13–18)')}</option>
               </select>
             </div>
           </div>
@@ -142,7 +142,7 @@ export const HomeschoolChildrenPage: React.FC = () => {
                 {c.email} · Grade {c.grade_level} · {AGE_BAND_LABELS[c.age_band] || c.age_band} · Added {fmtDate(c.created_at)}
               </div>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>View progress →</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolchildrenpage.view_progress', 'View progress →')}</span>
           </div>
         ))}
       </div>

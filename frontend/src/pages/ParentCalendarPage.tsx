@@ -183,7 +183,7 @@ const ParentCalendarPage: React.FC = () => {
               }}
             >
               {child.full_name}
-              {!child.verified && <span style={{ fontSize: '0.7rem', marginLeft: 6, opacity: 0.7 }}>(pending)</span>}
+              {!child.verified && <span style={{ fontSize: '0.7rem', marginLeft: 6, opacity: 0.7 }}>{t('pages_parentcalendarpage.pending', '(pending)')}</span>}
             </button>
           ))}
         </div>

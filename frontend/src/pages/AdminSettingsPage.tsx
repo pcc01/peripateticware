@@ -307,23 +307,21 @@ export const AdminSettingsPage = () => {
               <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>{t('pages_adminsettingspage.log_in_with_the_admin_panel_credentials_', 'Log in with the admin panel credentials to view and edit environment variables.')}</p>
               <input
                 type="text"
-                placeholder="Username"
+                placeholder={t('pages_adminsettingspage.placeholder_username', 'Username')}
                 value={adminLoginUsername}
                 onChange={(e) => setAdminLoginUsername(e.target.value)}
                 style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
               />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t('pages_adminsettingspage.placeholder_password', 'Password')}
                 value={adminLoginPassword}
                 onChange={(e) => setAdminLoginPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
                 style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
               />
               {adminLoginError && <p style={{ color: '#dc2626', fontSize: '0.8rem' }}>{adminLoginError}</p>}
-              <button onClick={handleAdminLogin} className={styles.primaryBtn}>
-                Unlock Env Panel
-              </button>
+              <button onClick={handleAdminLogin} className={styles.primaryBtn}>{t('pages_adminsettingspage.unlock_env_panel', 'Unlock Env Panel')}</button>
             </div>
           ) : (
             <div>
@@ -387,7 +385,7 @@ export const AdminSettingsPage = () => {
                     />
                     <input
                       type="text"
-                      placeholder="value"
+                      placeholder={t('pages_adminsettingspage.placeholder_value', 'value')}
                       value={newKeyValue}
                       onChange={e => setNewKeyValue(e.target.value)}
                       style={{ flex: '2 1 200px', padding: '7px 10px', borderRadius: 6, border: '1px solid #86efac', fontSize: '0.85rem' }}

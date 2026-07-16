@@ -163,13 +163,9 @@ export default function ReflectionEditorPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
-            📝 Field + Reflection
-          </span>
+          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">{t('pages_student_reflectioneditorpage.field_reflection', '📝 Field + Reflection')}</span>
           {item?.reflection_status === 'in_progress' && (
-            <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
-              Draft
-            </span>
+            <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">{t('pages_student_reflectioneditorpage.draft', 'Draft')}</span>
           )}
         </div>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -256,8 +252,8 @@ export default function ReflectionEditorPage() {
       <div className="flex items-center justify-between gap-4 bg-white border-t border-gray-200 pt-6">
         <div className="text-xs text-gray-400">
           {wordCount} words total
-          {saved && <span className="ml-2 text-green-600 font-medium">✓ Saved</span>}
-          {saving && <span className="ml-2 text-gray-400">Saving…</span>}
+          {saved && <span className="ml-2 text-green-600 font-medium">{t('pages_student_reflectioneditorpage.saved', '✓ Saved')}</span>}
+          {saving && <span className="ml-2 text-gray-400">{t('pages_student_reflectioneditorpage.saving', 'Saving…')}</span>}
         </div>
         <div className="flex gap-3">
           <button

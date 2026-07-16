@@ -275,7 +275,7 @@ const SessionPage: React.FC = () => {
             <ul className="space-y-2">
               {evidence.evidence && parseEvidence(typeof evidence.evidence === "string" ? evidence.evidence : undefined)?.key_concepts?.map((concept, idx) =>
             <li key={idx} className="flex items-start gap-2">
-                  <span className="text-color-primary font-bold">&#10003;</span>
+                  <span className="text-color-primary font-bold">{t('pages_sessionpage.10003', '&#10003;')}</span>
                   <p>{concept}</p>
                 </li>
             )}

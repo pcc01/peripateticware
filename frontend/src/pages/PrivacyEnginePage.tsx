@@ -164,7 +164,7 @@ export default function PrivacyEnginePage() {
         <div className="max-w-5xl mx-auto px-6 py-20">
           <div className="flex items-center gap-3 mb-6">
             <Shield className="w-10 h-10 text-green-200" />
-            <span className="text-green-200 text-sm font-semibold uppercase tracking-widest">Privacy Engine</span>
+            <span className="text-green-200 text-sm font-semibold uppercase tracking-widest">{t('pages_privacyenginepage.privacy_engine', 'Privacy Engine')}</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6" style={{ fontFamily: 'var(--font-head, "Lora", Georgia, serif)' }}>
             Compliance built in,<br />not bolted on
@@ -172,7 +172,7 @@ export default function PrivacyEnginePage() {
           <p className="text-green-100 text-lg max-w-2xl mb-8">{t('pages_privacyenginepage.peripateticwares_privacy_engine_enforces', 'Peripateticware\'s privacy engine enforces FERPA, COPPA, GDPR, and SOC 2 through a configurable rule system — so every data operation is compliant by default, regardless of which jurisdiction your school operates in.')}</p>
           {activeFrameworks.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              <span className="text-green-300 text-sm mr-2 self-center">Currently active:</span>
+              <span className="text-green-300 text-sm mr-2 self-center">{t('pages_privacyenginepage.currently_active', 'Currently active:')}</span>
               {activeFrameworks.map(f => (
                 <span key={f} className="px-3 py-1 bg-white/20 rounded-full text-sm font-medium">{f}</span>
               ))}
@@ -246,9 +246,7 @@ export default function PrivacyEnginePage() {
             <a
               href="mailto:hello@peripateticware.com"
               className="px-5 py-2.5 bg-white text-green-800 font-semibold rounded-lg hover:bg-green-50 transition text-sm"
-            >
-              Contact us
-            </a>
+            >{t('pages_privacyenginepage.contact_us', 'Contact us')}</a>
             <Link
               to="/privacy"
               className="px-5 py-2.5 border border-white/40 text-white font-semibold rounded-lg hover:bg-white/10 transition text-sm"

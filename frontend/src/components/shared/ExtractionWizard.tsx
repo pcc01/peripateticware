@@ -177,7 +177,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
   return (
     <div style={{ fontFamily: 'var(--font-body)', maxWidth: 780, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 500 }}>← Back</button>
+        <button onClick={onCancel} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 500 }}>{t('components_shared_extractionwizard.back', '← Back')}</button>
         <h1 style={{ fontFamily: 'var(--font-head)', margin: 0, flex: 1 }}>{title}</h1>
       </div>
 
@@ -218,28 +218,26 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
               </>
             ) : (
               <>
-                <div style={{ fontWeight: 600, color: 'var(--text)' }}>Drop a file here or click to browse</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>PDF or CSV · Max 10 MB</div>
+                <div style={{ fontWeight: 600, color: 'var(--text)' }}>{t('components_shared_extractionwizard.drop_a_file_here_or_click_to_browse', 'Drop a file here or click to browse')}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>{t('components_shared_extractionwizard.pdf_or_csv_max_10_mb', 'PDF or CSV · Max 10 MB')}</div>
               </>
             )}
           </div>
-          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx" aria-label="Upload file (PDF, CSV, or Excel)" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx" aria-label={t('components_shared_extractionwizard.aria_label_upload_file_pdf_csv_or_excel', 'Upload file (PDF, CSV, or Excel)')} style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
           {file && (
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.set_name', 'Set name')}</label>
               <input value={setName} onChange={e => setSetName(e.target.value)}
-              aria-label="Criteria set name"
+              aria-label={t('components_shared_extractionwizard.aria_label_criteria_set_name', 'Criteria set name')}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }} />
             </div>
           )}
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-            <button onClick={onCancel} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontWeight: 500 }}>Cancel</button>
+            <button onClick={onCancel} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontWeight: 500 }}>{t('components_shared_extractionwizard.cancel', 'Cancel')}</button>
             <button onClick={handleParse} disabled={!file}
-              style={{ padding: '10px 28px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 600, cursor: file ? 'pointer' : 'not-allowed', opacity: file ? 1 : 0.5 }}>
-              Parse Document →
-            </button>
+              style={{ padding: '10px 28px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 600, cursor: file ? 'pointer' : 'not-allowed', opacity: file ? 1 : 0.5 }}>{t('components_shared_extractionwizard.parse_document', 'Parse Document →')}</button>
           </div>
         </div>
       )}
@@ -269,7 +267,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Set name <span style={{ color: 'var(--error, red)' }}>*</span></label>
             <input value={setName} onChange={e => setSetName(e.target.value)}
-              aria-label="Criteria set name"
+              aria-label={t('components_shared_extractionwizard.aria_label_criteria_set_name', 'Criteria set name')}
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box', marginBottom: 12 }} />
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.description', 'Description')}</label>
             <textarea value={setDesc} onChange={e => setSetDesc(e.target.value)} rows={2}
@@ -278,14 +276,12 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h3 style={{ margin: 0 }}>Criteria ({criteria.length})</h3>
-            <button onClick={addCriterion} style={{ padding: '6px 16px', borderRadius: 8, border: '1px solid var(--primary)', color: 'var(--primary)', background: 'transparent', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>+ Add</button>
+            <button onClick={addCriterion} style={{ padding: '6px 16px', borderRadius: 8, border: '1px solid var(--primary)', color: 'var(--primary)', background: 'transparent', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>{t('components_shared_extractionwizard.add', '+ Add')}</button>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
             {criteria.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', background: 'var(--surface-alt)', borderRadius: 10 }}>
-                No criteria extracted. Try a different file or add them manually.
-              </div>
+              <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)', background: 'var(--surface-alt)', borderRadius: 10 }}>{t('components_shared_extractionwizard.no_criteria_extracted_try_a_different_fi', 'No criteria extracted. Try a different file or add them manually.')}</div>
             )}
             {criteria.map((c, i) => (
               <div key={c.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '16px' }}>

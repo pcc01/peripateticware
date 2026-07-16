@@ -91,13 +91,11 @@ const AristotelianPrompt: React.FC<AristotelianPromptProps> = ({
   return (
     <div className="rounded-xl border border-color-primary bg-color-bg-secondary p-4 mb-4">
       <div className="flex items-start justify-between gap-2 mb-1">
-        <span className="text-xs font-semibold uppercase tracking-wide text-color-primary opacity-70">
-          Observation prompt
-        </span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-color-primary opacity-70">{t('components_student_aristotelianprompt.observation_prompt', 'Observation prompt')}</span>
         <button
           onClick={fetchQuestion}
           disabled={loading}
-          title="Get a different question"
+          title={t('components_student_aristotelianprompt.title_get_a_different_question', 'Get a different question')}
           className="text-color-primary opacity-60 hover:opacity-100 text-sm transition-opacity"
         >
           {loading ? '…' : '↻'}

@@ -135,6 +135,7 @@ test.describe('Auth – Guards', () => {
     '/teacher',
     '/parent',
     '/admin',
+    '/homeschool',
   ];
 
   for (const route of protectedRoutes) {
@@ -143,6 +144,16 @@ test.describe('Auth – Guards', () => {
       await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
     });
   }
+
+  // /platform/* is NOT wrapped in <ProtectedRoute> — it uses its own PlatformShell
+  // gate (an operator secret prompt), so an unauthenticated visitor does NOT get
+  // redirected to /login client-side. Real authorization happens server-side on
+  // the API calls. This test documents that (intentionally) different behaviour.
+  test('/platform does not redirect to /login (uses its own operator-secret gate instead)', async ({ page }) => {
+    await page.goto('/platform');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('body')).not.toBeEmpty();
+  });
 });
 
 // ---------------------------------------------------------------------------

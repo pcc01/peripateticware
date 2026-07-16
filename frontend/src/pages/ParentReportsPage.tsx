@@ -227,7 +227,7 @@ const ParentReportsPage: React.FC = () => {
           </div>
 
           {loading && (
-            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Loading report…</div>
+            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>{t('pages_parentreportspage.loading_report', 'Loading report…')}</div>
           )}
 
           {!loading && report && view === 'weekly' && weekly && (
@@ -287,9 +287,7 @@ const ParentReportsPage: React.FC = () => {
               )}
 
               {weekly.activities_completed === 0 && weekly.total_hours === 0 && (
-                <div style={{ textAlign: 'center', padding: '32px 24px', color: 'var(--text-muted)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                  No activity this week. Check in with their teacher if unexpected.
-                </div>
+                <div style={{ textAlign: 'center', padding: '32px 24px', color: 'var(--text-muted)', borderRadius: 12, border: '1px solid var(--border)' }}>{t('pages_parentreportspage.no_activity_this_week_check_in_with_thei', 'No activity this week. Check in with their teacher if unexpected.')}</div>
               )}
             </>
           )}

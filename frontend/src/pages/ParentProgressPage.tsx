@@ -107,9 +107,7 @@ export const ParentProgressPage: React.FC = () => {
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👨‍👧</div>
             <h2 className="text-xl font-semibold text-gray-700 mb-2">{t('pages_parentprogresspage.no_children_linked_yet', 'No children linked yet')}</h2>
             <p className="text-gray-500 mb-4">{t('pages_parentprogresspage.link_your_childs_account_to_start_tracki', 'Link your child\'s account to start tracking their learning progress.')}</p>
-            <a href="/parent/link-child" className="px-5 py-2 rounded-lg text-white font-medium" style={{ background: 'var(--primary)' }}>
-              Link a child
-            </a>
+            <a href="/parent/link-child" className="px-5 py-2 rounded-lg text-white font-medium" style={{ background: 'var(--primary)' }}>{t('pages_parentprogresspage.link_a_child', 'Link a child')}</a>
           </div>
         ) : loading ? (
           <div className="flex justify-center items-center h-96">

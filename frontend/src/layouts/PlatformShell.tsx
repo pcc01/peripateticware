@@ -7,6 +7,7 @@ import { LogOut, ArrowLeft, LayoutDashboard, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
 import { getPlatformSecret, setPlatformSecret } from '@/utils/platformFetch';
+import { useTranslation } from 'react-i18next';
 
 const PLATFORM_NAV = [
   { path: '/platform',           label: 'Overview' },
@@ -23,6 +24,7 @@ const PLATFORM_NAV = [
  * here once per browser session and held in sessionStorage only.
  */
 function PlatformSecretGate({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation('landing');
   const [value, setValue] = useState('');
 
   const submit = (secret: string) => {
@@ -38,7 +40,7 @@ function PlatformSecretGate({ onDone }: { onDone: () => void }) {
       >
         <div className="flex items-center gap-2 mb-3">
           <KeyRound className="w-5 h-5 text-gray-500" />
-          <h1 className="text-sm font-semibold text-gray-800">Platform operator secret</h1>
+          <h1 className="text-sm font-semibold text-gray-800">{t('layouts_platformshell.platform_operator_secret', 'Platform operator secret')}</h1>
         </div>
         <p className="text-xs text-gray-500 mb-4">
           Enter the <code>PLATFORM_API_SECRET</code> for this environment. It is kept in this
@@ -49,15 +51,13 @@ function PlatformSecretGate({ onDone }: { onDone: () => void }) {
           autoFocus
           value={value}
           onChange={e => setValue(e.target.value)}
-          placeholder="Platform secret"
+          placeholder={t('layouts_platformshell.placeholder_platform_secret', 'Platform secret')}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gray-400"
         />
         <button
           type="submit"
           className="w-full bg-gray-900 text-white rounded-md py-2 text-sm font-medium hover:bg-gray-700 transition"
-        >
-          Continue
-        </button>
+        >{t('layouts_platformshell.continue', 'Continue')}</button>
         <button
           type="button"
           onClick={() => submit('')}
@@ -71,6 +71,7 @@ function PlatformSecretGate({ onDone }: { onDone: () => void }) {
 }
 
 export default function PlatformShell() {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuthStore();
@@ -89,19 +90,19 @@ export default function PlatformShell() {
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-3">
         {/* Back / dashboard */}
         {isRoot ? (
-          <Link to="/admin" title="Back to dashboard"
+          <Link to="/admin" title={t('layouts_platformshell.title_back_to_dashboard', 'Back to dashboard')}
             className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg transition">
             <LayoutDashboard className="w-5 h-5" />
           </Link>
         ) : (
-          <button onClick={() => navigate(-1)} title="Back"
+          <button onClick={() => navigate(-1)} title={t('layouts_platformshell.title_back', 'Back')}
             className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg transition">
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
 
         {/* Brand */}
-        <span className="text-sm font-semibold text-gray-700 mr-2">Platform Admin</span>
+        <span className="text-sm font-semibold text-gray-700 mr-2">{t('layouts_platformshell.platform_admin', 'Platform Admin')}</span>
 
         {/* Nav tabs */}
         <nav className="flex gap-1 flex-1">
@@ -125,7 +126,7 @@ export default function PlatformShell() {
         {/* Logout icon */}
         <button
           onClick={() => { logout(); navigate('/login'); }}
-          title="Sign out"
+          title={t('layouts_platformshell.title_sign_out', 'Sign out')}
           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition border border-transparent hover:border-red-200 ml-auto flex-shrink-0"
         >
           <LogOut className="w-5 h-5" />

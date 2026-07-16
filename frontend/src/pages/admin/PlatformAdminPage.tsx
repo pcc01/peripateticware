@@ -234,7 +234,7 @@ const OrgsTab: React.FC = () => {
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search name or email…"
+          placeholder={t('pages_admin_platformadminpage.placeholder_search_name_or_email', 'Search name or email…')}
           style={{
             flex: 1, padding: '7px 12px', borderRadius: 6,
             border: '1px solid var(--border, #e5e7eb)',
@@ -254,7 +254,7 @@ const OrgsTab: React.FC = () => {
             fontSize: 13,
           }}
         >
-          <option value="">All tiers</option>
+          <option value="">{t('pages_admin_platformadminpage.all_tiers', 'All tiers')}</option>
           {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
         <button
@@ -264,10 +264,10 @@ const OrgsTab: React.FC = () => {
             background: 'var(--primary, #4f46e5)', color: '#fff',
             cursor: 'pointer', fontSize: 13,
           }}
-        >↻ Refresh</button>
+        >{t('pages_admin_platformadminpage.refresh', '↻ Refresh')}</button>
       </div>
 
-      {loading && <div style={{ color: 'var(--text-muted)', padding: 20 }}>Loading…</div>}
+      {loading && <div style={{ color: 'var(--text-muted)', padding: 20 }}>{t('pages_admin_platformadminpage.loading', 'Loading…')}</div>}
       {error && <div style={{ color: '#ef4444', padding: 10 }}>{error}</div>}
 
       {!loading && !error && (
@@ -282,7 +282,7 @@ const OrgsTab: React.FC = () => {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: 20, color: 'var(--text-muted)', textAlign: 'center' }}>No organizations found</td></tr>
+                <tr><td colSpan={8} style={{ padding: 20, color: 'var(--text-muted)', textAlign: 'center' }}>{t('pages_admin_platformadminpage.no_organizations_found', 'No organizations found')}</td></tr>
               )}
               {filtered.map(org => (
                 <tr key={org.id} style={{ borderBottom: '1px solid var(--border, #f3f4f6)' }}>
@@ -301,10 +301,10 @@ const OrgsTab: React.FC = () => {
                   </td>
                   <td style={{ padding: '10px 10px' }}>
                     <div style={{ fontSize: 12 }}>
-                      <span title="Teachers">👩‍🏫 {org.teachers}</span>
+                      <span title={t('pages_admin_platformadminpage.title_teachers', 'Teachers')}>👩‍🏫 {org.teachers}</span>
                       {'  '}
-                      <span title="Students">🎒 {org.students}</span>
-                      {org.homeschool > 0 && <><br /><span title="Homeschool">🏠 {org.homeschool}</span></>}
+                      <span title={t('pages_admin_platformadminpage.title_students', 'Students')}>🎒 {org.students}</span>
+                      {org.homeschool > 0 && <><br /><span title={t('pages_admin_platformadminpage.title_homeschool', 'Homeschool')}>🏠 {org.homeschool}</span></>}
                     </div>
                   </td>
                   <td style={{ padding: '10px 10px', minWidth: 130 }}>
@@ -369,7 +369,7 @@ const OrgsTab: React.FC = () => {
             <input
               value={editReason}
               onChange={e => setEditReason(e.target.value)}
-              placeholder="e.g. Upgraded to school plan per invoice #123"
+              placeholder={t('pages_admin_platformadminpage.placeholder_eg_upgraded_to_school_plan_per_invoice_1', 'e.g. Upgraded to school plan per invoice #123')}
               style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', marginBottom: 16, boxSizing: 'border-box' }}
             />
 
@@ -417,7 +417,7 @@ const SpendTab: React.FC = () => {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div style={{ color: 'var(--text-muted)', padding: 20 }}>Loading…</div>
+  if (loading) return <div style={{ color: 'var(--text-muted)', padding: 20 }}>{t('pages_admin_platformadminpage.loading', 'Loading…')}</div>
   if (error) return <div style={{ color: '#ef4444', padding: 10 }}>{error}</div>
   if (!data) return null
 
@@ -443,9 +443,9 @@ const SpendTab: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Tier</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Orgs</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Cost</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.tier', 'Tier')}</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.orgs', 'Orgs')}</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.cost', 'Cost')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -471,9 +471,9 @@ const SpendTab: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Task</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Calls</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Cost</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.task', 'Task')}</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.calls', 'Calls')}</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.cost', 'Cost')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -500,9 +500,9 @@ const SpendTab: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                  <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Month</th>
-                  <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Active orgs</th>
-                  <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>Total spend</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.month', 'Month')}</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.active_orgs', 'Active orgs')}</th>
+                  <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pages_admin_platformadminpage.total_spend', 'Total spend')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -526,6 +526,7 @@ const SpendTab: React.FC = () => {
 // ── Audit log tab ─────────────────────────────────────────────────────────────
 
 const AuditTab: React.FC = () => {
+  const { t } = useTranslation('landing');
   const [log, setLog] = useState<AuditLog | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -556,7 +557,7 @@ const AuditTab: React.FC = () => {
 
   return (
     <div>
-      {loading && <div style={{ color: 'var(--text-muted)', padding: 20 }}>Loading…</div>}
+      {loading && <div style={{ color: 'var(--text-muted)', padding: 20 }}>{t('pages_admin_platformadminpage.loading', 'Loading…')}</div>}
       {error && <div style={{ color: '#ef4444', padding: 10 }}>{error}</div>}
 
       {!loading && log && (
@@ -575,7 +576,7 @@ const AuditTab: React.FC = () => {
             </thead>
             <tbody>
               {log.items.length === 0 && (
-                <tr><td colSpan={5} style={{ padding: 20, color: 'var(--text-muted)', textAlign: 'center' }}>No audit entries yet</td></tr>
+                <tr><td colSpan={5} style={{ padding: 20, color: 'var(--text-muted)', textAlign: 'center' }}>{t('pages_admin_platformadminpage.no_audit_entries_yet', 'No audit entries yet')}</td></tr>
               )}
               {log.items.map(entry => (
                 <tr key={entry.id} style={{ borderBottom: '1px solid var(--border, #f3f4f6)' }}>
@@ -633,6 +634,7 @@ const AuditTab: React.FC = () => {
 type Tab = 'orgs' | 'spend' | 'audit'
 
 const PlatformAdminPage: React.FC = () => {
+  const { t } = useTranslation('landing');
   const [tab, setTab] = useState<Tab>('orgs')
   const navigate = useNavigate()
 
@@ -662,13 +664,11 @@ const PlatformAdminPage: React.FC = () => {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0' }}>
             <div>
-              <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7, marginBottom: 2 }}>
-                Peripateticware
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>⚙ Platform Admin</div>
+              <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7, marginBottom: 2 }}>{t('pages_admin_platformadminpage.peripateticware', 'Peripateticware')}</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{t('pages_admin_platformadminpage.platform_admin', '⚙ Platform Admin')}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontSize: 12, opacity: 0.7 }}>admin@example.com</span>
+              <span style={{ fontSize: 12, opacity: 0.7 }}>{t('pages_admin_platformadminpage.adminexamplecom', 'admin@example.com')}</span>
               <button
                 onClick={() => navigate('/admin')}
                 style={{
@@ -682,7 +682,7 @@ const PlatformAdminPage: React.FC = () => {
                   padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.3)',
                   background: 'transparent', color: '#fff', cursor: 'pointer', fontSize: 12,
                 }}
-              >Sign out</button>
+              >{t('pages_admin_platformadminpage.sign_out', 'Sign out')}</button>
             </div>
           </div>
 

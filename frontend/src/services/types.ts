@@ -603,6 +603,7 @@ export type {
   SignupRequest,
   StudentDashboardData,
   SystemAnalytics,
+  TeacherActiveSession,
   TeacherClass,
   TeacherDashboardData,
   TeacherSubmission,

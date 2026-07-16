@@ -267,7 +267,7 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
               background: 'var(--bg)', color: 'var(--text)', fontSize: '0.9rem',
             }}
           >
-            <option value="">— Select your state —</option>
+            <option value="">{t('components_privacysetupwizard.select_your_state', '— Select your state —')}</option>
             {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           {usState === 'California' && (
@@ -280,7 +280,7 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
           <input
             value={country}
             onChange={e => setCountry(e.target.value.toUpperCase().slice(0, 2))}
-            placeholder="2-letter country code, e.g. DE, FR, GB"
+            placeholder={t('components_privacysetupwizard.placeholder_2letter_country_code_eg_de_fr_gb', '2-letter country code, e.g. DE, FR, GB')}
             maxLength={2}
             style={{
               width: '100%', padding: '0.6rem 0.75rem',
@@ -364,10 +364,7 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
         marginTop: '1.25rem', padding: '0.75rem 1rem',
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '0.4rem', fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5,
-      }}>
-        🔒 Student data is never sold or shared with advertisers. You can export or delete all
-        data at any time under Admin &gt; Privacy Configuration.
-      </div>
+      }}>{t('components_privacysetupwizard.student_data_is_never_sold_or_shared_wit', '🔒 Student data is never sold or shared with advertisers. You can export or delete all data at any time under Admin &gt; Privacy Configuration.')}</div>
     </div>
   );
 

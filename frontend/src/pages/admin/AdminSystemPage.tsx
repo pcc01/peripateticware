@@ -71,7 +71,7 @@ export const AdminSystemPage: React.FC = () => {
       </div>
 
       {/* Health */}
-      <Section title="System Health">
+      <Section title={t('pages_admin_adminsystempage.title_system_health', 'System Health')}>
         {health ? (
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', display: 'flex', gap: 32 }}>
             {Object.entries(health).map(([k, v]) => {
@@ -96,7 +96,7 @@ export const AdminSystemPage: React.FC = () => {
       {/* Env vars */}
       {loading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_admin_adminsystempage.loading_environment', 'Loading environment…')}</p>}
       {!loading && envData.length === 0 && (
-        <Section title="Environment Variables">
+        <Section title={t('pages_admin_adminsystempage.title_environment_variables', 'Environment Variables')}>
           <p style={{ color: 'var(--text-muted)' }}>No environment configuration available. Ensure the backend <code>/api/v1/admin/env</code> endpoint is wired up.</p>
         </Section>
       )}
@@ -130,17 +130,17 @@ export const AdminSystemPage: React.FC = () => {
       ))}
 
       {/* Add new config key */}
-      <Section title="Add Configuration Key">
+      <Section title={t('pages_admin_adminsystempage.title_add_configuration_key', 'Add Configuration Key')}>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '20px' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 16 }}>{t('pages_admin_adminsystempage.add_a_new_environment_key_stored_in_the_', 'Add a new environment key. Stored in the database and overrides .env on next request. A backend restart applies most settings.')}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="KEY_NAME" aria-label="Configuration key name"
+              <input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="KEY_NAME" aria-label={t('pages_admin_adminsystempage.aria_label_configuration_key_name', 'Configuration key name')}
                 style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.85rem' }} />
-              <input value={newVal} onChange={e => setNewVal(e.target.value)} placeholder="value" aria-label="Configuration value"
+              <input value={newVal} onChange={e => setNewVal(e.target.value)} placeholder={t('pages_admin_adminsystempage.placeholder_value', 'value')} aria-label={t('pages_admin_adminsystempage.aria_label_configuration_value', 'Configuration value')}
                 style={{ flex: 2, padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'monospace', fontSize: '0.85rem' }} />
             </div>
-            <input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Description (optional)" aria-label="Configuration description"
+            <input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder={t('pages_admin_adminsystempage.placeholder_description_optional', 'Description (optional)')} aria-label={t('pages_admin_adminsystempage.aria_label_configuration_description', 'Configuration description')}
               style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.82rem' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button onClick={handleAddKey} disabled={!newKey.trim() || addingKey}

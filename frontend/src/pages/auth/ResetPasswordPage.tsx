@@ -114,13 +114,13 @@ const ResetPasswordPage: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('pages_auth_resetpasswordpage.new_password', 'New password')}</label>
             <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
+              placeholder={t('pages_auth_resetpasswordpage.placeholder_min_8_characters', 'Min. 8 characters')}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('pages_auth_resetpasswordpage.confirm_password', 'Confirm password')}</label>
             <input type="password" required value={confirm} onChange={e => setConfirm(e.target.value)}
-              placeholder="Repeat password"
+              placeholder={t('pages_auth_resetpasswordpage.placeholder_repeat_password', 'Repeat password')}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
           </div>
           {errors.length > 0 && (

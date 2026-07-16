@@ -131,7 +131,7 @@ const CourseFieldworkTracker: React.FC<Props> = ({ activityId }) => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* Map — spans 2 cols */}
       <div className="lg:col-span-2">
-        <Card title="Fieldwork Locations">
+        <Card title={t('components_teacher_coursefieldworktracker.title_fieldwork_locations', 'Fieldwork Locations')}>
           <FieldMap
             center={center}
             zoom={12}

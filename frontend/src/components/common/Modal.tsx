@@ -9,6 +9,7 @@
 
 import React, { useEffect } from 'react'
 import { clsx } from 'clsx'
+import { useTranslation } from 'react-i18next';
 
 interface ModalProps {
   isOpen: boolean
@@ -29,6 +30,7 @@ const Modal: React.FC<ModalProps> = ({
   size = 'md',
   closeOnBackdropClick = true,
 }) => {
+  const { t } = useTranslation('landing');
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -105,7 +107,7 @@ const Modal: React.FC<ModalProps> = ({
                 'text-[var(--color-gray-500)]',
                 'hover:text-[var(--color-gray-700)]'
               )}
-              aria-label="Close modal"
+              aria-label={t('components_common_modal.aria_label_close_modal', 'Close modal')}
             >
               ✕
             </button>

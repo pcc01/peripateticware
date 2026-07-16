@@ -110,6 +110,7 @@ function SectionEditor({
   onDelete: () => void
   locked: boolean
 }) {
+  const { t } = useTranslation('landing');
   const meta = SECTION_META[section.type]
   const [collapsed, setCollapsed] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -159,7 +160,7 @@ function SectionEditor({
         {!locked && (
           <button
             onClick={onDelete}
-            title="Delete section"
+            title={t('components_student_extendedwritingpanel.title_delete_section', 'Delete section')}
             style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: 2, marginLeft: 4 }}
           >
             <Trash2 size={14} />
@@ -178,7 +179,7 @@ function SectionEditor({
         <div style={{ padding: 14 }}>
           {locked ? (
             <p style={{ fontSize: 14, lineHeight: 1.65, color: '#334155', whiteSpace: 'pre-wrap', margin: 0 }}>
-              {section.content || <span style={{ color: '#94a3b8' }}>(no content)</span>}
+              {section.content || <span style={{ color: '#94a3b8' }}>{t('components_student_extendedwritingpanel.no_content', '(no content)')}</span>}
             </p>
           ) : (
             <textarea

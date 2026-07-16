@@ -471,7 +471,7 @@ const ActivityManager = () => {
               <span className="ml-1 text-xs opacity-75">({compliance.issues.slice(0,2).join('; ')})</span>
             )}
             {compliance.status === 'review' && privacyConfirmed && (
-              <span className="ml-auto text-xs font-semibold text-green-700">Privacy settings confirmed ✓</span>
+              <span className="ml-auto text-xs font-semibold text-green-700">{t('components_teacher_activitymanager.privacy_settings_confirmed', 'Privacy settings confirmed ✓')}</span>
             )}
           </div>
 
@@ -486,7 +486,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, dataMinimization: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">This activity only collects data necessary for the educational purpose</span>
+                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.this_activity_only_collects_data_necessa', 'This activity only collects data necessary for the educational purpose')}</span>
               </label>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
@@ -495,7 +495,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, locationPurpose: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">Location data is used only to verify student presence at the activity site</span>
+                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.location_data_is_used_only_to_verify_stu', 'Location data is used only to verify student presence at the activity site')}</span>
               </label>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
@@ -504,7 +504,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, parentalConsent: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">Parental or guardian consent is in place where required by law</span>
+                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.parental_or_guardian_consent_is_in_place', 'Parental or guardian consent is in place where required by law')}</span>
               </label>
               <button
                 type="button"
@@ -585,13 +585,13 @@ const ActivityManager = () => {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.subject ? 'border-red-500' : 'border-gray-300'}`}>
                 <option value="Science">{t("landing:science", "Science")}</option>
                 <option value="Math">{t("landing:math", "Math")}</option>
-                <option value="Language">Language Arts</option>
+                <option value="Language">{t('components_teacher_activitymanager.language_arts', 'Language Arts')}</option>
                 <option value="History">{t("landing:history", "History")}</option>
                 <option value="Art">{t("landing:art", "Art")}</option>
                 <option value="PE">{t("landing:pe", "PE")}</option>
-                <option value="Social Studies">Social Studies</option>
-                <option value="Interdisciplinary">Interdisciplinary</option>
-                <option value="Other">Other</option>
+                <option value="Social Studies">{t('components_teacher_activitymanager.social_studies', 'Social Studies')}</option>
+                <option value="Interdisciplinary">{t('components_teacher_activitymanager.interdisciplinary', 'Interdisciplinary')}</option>
+                <option value="Other">{t('components_teacher_activitymanager.other', 'Other')}</option>
               </select>
               {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
             </div>
@@ -604,7 +604,7 @@ const ActivityManager = () => {
                 value={formData.location_name}
                 onChange={(e) => handleLocationNameChange(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Lincoln Park, City Museum…" />
+                placeholder={t('components_teacher_activitymanager.placeholder_eg_lincoln_park_city_museum', 'e.g., Lincoln Park, City Museum…')} />
               {geoStatus && <p className="text-xs text-blue-500 mt-1 italic">{geoStatus}</p>}
             </div>
           </div>
@@ -613,13 +613,13 @@ const ActivityManager = () => {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
-              <input type="number" step="0.0001" aria-label="Location latitude" value={formData.location_latitude}
+              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_latitude', 'Location latitude')} value={formData.location_latitude}
                 onChange={(e) => { const lat = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_latitude:lat})); handleLatLngChange(lat,formData.location_longitude); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="47.6839" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
-              <input type="number" step="0.0001" aria-label="Location longitude" value={formData.location_longitude}
+              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_longitude', 'Location longitude')} value={formData.location_longitude}
                 onChange={(e) => { const lng = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_longitude:lng})); handleLatLngChange(formData.location_latitude,lng); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>
@@ -948,7 +948,7 @@ const ActivityManager = () => {
                   <label className="block text-xs font-semibold text-gray-600 mb-1">{t('components_teacher_activitymanager.language', 'Language')}</label>
                   <input
                     type="text"
-                    placeholder="e.g. English"
+                    placeholder={t('components_teacher_activitymanager.placeholder_eg_english', 'e.g. English')}
                     value={formData.language ?? ''}
                     onChange={e => setFormData({ ...formData, language: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -973,7 +973,7 @@ const ActivityManager = () => {
                       onChange={e => setFormData({ ...formData, state_standard: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
-                      <option value="">None</option>
+                      <option value="">{t('components_teacher_activitymanager.none', 'None')}</option>
                       {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
                         'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
                         'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'].map(s => (
@@ -989,7 +989,7 @@ const ActivityManager = () => {
                     onChange={e => setFormData({ ...formData, discipline: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
-                    <option value="">None</option>
+                    <option value="">{t('components_teacher_activitymanager.none', 'None')}</option>
                     {['STEM','Humanities','Arts','Social Studies','Physical Education','Foreign Language','Computer Science','Career & Technical'].map(d => (
                       <option key={d} value={d}>{d}</option>
                     ))}
@@ -1002,13 +1002,13 @@ const ActivityManager = () => {
 
         {/* Rubric Picker */}
         <div className="border-b border-gray-200 pb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Attach Rubric <span className="text-gray-400 font-normal">(optional)</span></label>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Attach Rubric <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span></label>
           <select
             value={selectedRubricId}
             onChange={(e) => setSelectedRubricId(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">No rubric</option>
+            <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
             {rubrics.map((r) => (
               <option key={r.id} value={r.id}>{r.title}</option>
             ))}
@@ -1031,6 +1031,15 @@ const ActivityManager = () => {
               className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
               style={{ background: '#2e7d32', color: 'white', minWidth: 160 }}>
               📱 {t("landing:preview_as_student", "Preview as Student")}
+            </button>
+          )}
+          {isEditing && id && !location.pathname.startsWith('/homeschool') && (
+            <button
+              type="button"
+              onClick={() => navigate(`/teacher/activities/${id}/fieldwork`)}
+              className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
+              style={{ background: '#0066cc', color: 'white', minWidth: 140 }}>
+              🗺 {t('components_teacher_activitymanager.fieldwork_map', 'Fieldwork Map')}
             </button>
           )}
           <button
@@ -1070,7 +1079,7 @@ const ActivityManager = () => {
           }}>
             {/* Modal header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontWeight: 700, fontSize: 16 }}>👁 Student View Preview</span>
+              <span style={{ fontWeight: 700, fontSize: 16 }}>{t('components_teacher_activitymanager.student_view_preview', '👁 Student View Preview')}</span>
               <button
                 onClick={() => setShowQuickPreview(false)}
                 style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', lineHeight: 1, color: '#666' }}
@@ -1128,9 +1137,7 @@ const ActivityManager = () => {
               {/* Learning objectives */}
               {(formData.learning_objectives ?? []).filter(Boolean).length > 0 && (
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 5 }}>
-                    LEARNING GOALS
-                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 5 }}>{t('components_teacher_activitymanager.learning_goals', 'LEARNING GOALS')}</div>
                   {(formData.learning_objectives ?? []).filter(Boolean).slice(0, 3).map((obj, i) => (
                     <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 3, alignItems: 'flex-start' }}>
                       <span style={{ color: '#2e7d32', fontSize: 11, flexShrink: 0 }}>✓</span>
@@ -1143,9 +1150,7 @@ const ActivityManager = () => {
               {/* Materials */}
               {(formData.materials_needed ?? []).filter(Boolean).length > 0 && (
                 <div style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 5 }}>
-                    BRING WITH YOU
-                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#888', letterSpacing: 1, marginBottom: 5 }}>{t('components_teacher_activitymanager.bring_with_you', 'BRING WITH YOU')}</div>
                   {(formData.materials_needed ?? []).filter(Boolean).map((m, i) => (
                     <div key={i} style={{ fontSize: 12, color: '#444', marginBottom: 2 }}>• {m}</div>
                   ))}
@@ -1157,7 +1162,7 @@ const ActivityManager = () => {
                 width: '100%', marginTop: 16, padding: '10px 0',
                 background: '#2e7d32', color: 'white', border: 'none',
                 borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'not-allowed', opacity: 0.7,
-              }}>Start Activity</button>
+              }}>{t('components_teacher_activitymanager.start_activity', 'Start Activity')}</button>
 
               {/* Home indicator */}
               <div style={{ width: 60, height: 4, background: '#ccc', borderRadius: 4, margin: '14px auto 0' }} />

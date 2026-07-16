@@ -128,9 +128,7 @@ export const StudentActivitiesPage: React.FC = () => {
           <button
             onClick={clearError}
             className="ml-4 text-sm font-medium text-red-600 hover:underline"
-          >
-            Dismiss
-          </button>
+          >{t('pages_student_studentactivitiespage.dismiss', 'Dismiss')}</button>
         </div>
       )}
 
@@ -168,9 +166,7 @@ export const StudentActivitiesPage: React.FC = () => {
           <h2 className="text-lg font-semibold text-color-text-primary mb-4">
             {activities.length} {activities.length === 1 ? 'Activity' : 'Activities'}
             {loading && (
-              <span className="ml-2 text-sm font-normal text-color-text-secondary">
-                Refreshing...
-              </span>
+              <span className="ml-2 text-sm font-normal text-color-text-secondary">{t('pages_student_studentactivitiespage.refreshing', 'Refreshing...')}</span>
             )}
           </h2>
 

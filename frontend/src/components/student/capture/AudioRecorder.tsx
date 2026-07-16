@@ -221,23 +221,23 @@ export const AudioRecorder = ({
       {/* Controls */}
       <div style={styles.controls}>
         {recordingState === "idle" && (
-          <button onClick={startRecording} style={styles.recordBtn} aria-label="Start recording">
+          <button onClick={startRecording} style={styles.recordBtn} aria-label={t('components_student_capture_audiorecorder.aria_label_start_recording', 'Start recording')}>
             🎙️ {t("audioRecorder.record", "Record")}
           </button>
         )}
 
         {recordingState === "recording" && (
-          <button onClick={stopRecording} style={styles.stopBtn} aria-label="Stop recording">
+          <button onClick={stopRecording} style={styles.stopBtn} aria-label={t('components_student_capture_audiorecorder.aria_label_stop_recording', 'Stop recording')}>
             ⏹ {t("audioRecorder.stop", "Stop")}
           </button>
         )}
 
         {recordingState === "stopped" && (
           <>
-            <button onClick={handleKeep} style={styles.keepBtn} aria-label="Keep recording">
+            <button onClick={handleKeep} style={styles.keepBtn} aria-label={t('components_student_capture_audiorecorder.aria_label_keep_recording', 'Keep recording')}>
               ✅ {t("audioRecorder.keep", "Keep")}
             </button>
-            <button onClick={handleDiscard} style={styles.discardBtn} aria-label="Discard recording">
+            <button onClick={handleDiscard} style={styles.discardBtn} aria-label={t('components_student_capture_audiorecorder.aria_label_discard_recording', 'Discard recording')}>
               🗑 {t("audioRecorder.discard", "Discard")}
             </button>
           </>
@@ -357,6 +357,7 @@ export const AudioPlayer = ({
   knownDurationSeconds,
   showDownload = false,
 }: AudioPlayerProps) => {
+  const { t } = useTranslation('landing');
   const signedUrl = useSignedCaptureUrl(captureId);
   const effectiveSrc = captureId ? signedUrl : src;
   const audioRef           = useRef<HTMLAudioElement>(null);
@@ -429,7 +430,7 @@ export const AudioPlayer = ({
         value={currentTime}
         onChange={handleSeek}
         style={playerStyles.seekBar}
-        aria-label="Audio seek"
+        aria-label={t('components_student_capture_audiorecorder.aria_label_audio_seek', 'Audio seek')}
       />
 
       {/* Time display */}
@@ -444,14 +445,12 @@ export const AudioPlayer = ({
           {isPlaying ? "⏸" : "▶"}
         </button>
 
-        <button onClick={cycleSpeed} style={playerStyles.speedBtn} aria-label="Change playback speed">
+        <button onClick={cycleSpeed} style={playerStyles.speedBtn} aria-label={t('components_student_capture_audiorecorder.aria_label_change_playback_speed', 'Change playback speed')}>
           {speed}×
         </button>
 
         {showDownload && effectiveSrc && (
-          <a href={effectiveSrc} download="recording" style={playerStyles.downloadLink} aria-label="Download recording">
-            ⬇ Download
-          </a>
+          <a href={effectiveSrc} download="recording" style={playerStyles.downloadLink} aria-label={t('components_student_capture_audiorecorder.aria_label_download_recording', 'Download recording')}>{t('components_student_capture_audiorecorder.download', '⬇ Download')}</a>
         )}
       </div>
     </div>

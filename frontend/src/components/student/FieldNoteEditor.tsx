@@ -21,6 +21,7 @@ import type { FieldNote, FieldNoteCreate, AudioCaptureResult } from '../../types
  * URL instead of a JWT-in-query-string. Includes descriptive alt text (WCAG 1.1.1).
  */
 const CaptureThumb: React.FC<{ captureId: string; kind: 'photo' | 'video' }> = ({ captureId, kind }) => {
+  const { t } = useTranslation('landing');
   const src = useSignedCaptureUrl(captureId);
   if (!src) {
     return <div className="w-full h-24 bg-gray-100 animate-pulse" aria-hidden="true" />;
@@ -29,7 +30,7 @@ const CaptureThumb: React.FC<{ captureId: string; kind: 'photo' | 'video' }> = (
     return (
       <img
         src={src}
-        alt="Field note photo capture"
+        alt={t('components_student_fieldnoteeditor.alt_field_note_photo_capture', 'Field note photo capture')}
         className="w-full h-24 object-cover"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
@@ -41,7 +42,7 @@ const CaptureThumb: React.FC<{ captureId: string; kind: 'photo' | 'video' }> = (
       className="w-full h-24 object-cover"
       controls={false}
       muted
-      aria-label="Field note video capture"
+      aria-label={t('components_student_fieldnoteeditor.aria_label_field_note_video_capture', 'Field note video capture')}
     />
   );
 };
@@ -275,7 +276,7 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
           <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
             <FileText className="w-4 h-4 text-blue-500" />
             {t("landing:notes", "Write Your Notes")}
-            <span className="ml-1 font-normal text-gray-400 text-xs">(type what you observed)</span>
+            <span className="ml-1 font-normal text-gray-400 text-xs">{t('components_student_fieldnoteeditor.type_what_you_observed', '(type what you observed)')}</span>
           </label>
           {(() => {
             let isJson = false;
@@ -287,7 +288,7 @@ export const FieldNoteEditor: React.FC<FieldNoteEditorProps> = ({
             return isJson ? (
               // Already has extended sections \u2014 show original field note read-only
               <div className="w-full border border-gray-100 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600 min-h-[80px] whitespace-pre-wrap">
-                {fieldNoteText || <span className="text-gray-400 italic">No field notes captured yet.</span>}
+                {fieldNoteText || <span className="text-gray-400 italic">{t('components_student_fieldnoteeditor.no_field_notes_captured_yet', 'No field notes captured yet.')}</span>}
               </div>
             ) : (
               <textarea

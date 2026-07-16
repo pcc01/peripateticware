@@ -7,10 +7,12 @@
 // maintenance off (that surface is exempt from the 503).
 
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const RETRY_SECONDS = 60;
 
 export default function MaintenancePage() {
+  const { t } = useTranslation('landing');
   const [countdown, setCountdown] = useState(RETRY_SECONDS);
 
   useEffect(() => {
@@ -33,13 +35,8 @@ export default function MaintenancePage() {
     }}>
       <div style={{ maxWidth: '480px', textAlign: 'center' }}>
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🧭</div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text, #1f2937)', marginBottom: '0.75rem' }}>
-          Down for maintenance
-        </h1>
-        <p style={{ color: 'var(--text-muted, #6b7280)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
-          Peripateticware is briefly offline while we make improvements.
-          Your work is safe — we'll be back shortly.
-        </p>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text, #1f2937)', marginBottom: '0.75rem' }}>{t('pages_maintenancepage.down_for_maintenance', 'Down for maintenance')}</h1>
+        <p style={{ color: 'var(--text-muted, #6b7280)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{t('pages_maintenancepage.peripateticware_is_briefly_offline_while', 'Peripateticware is briefly offline while we make improvements. Your work is safe — we\'ll be back shortly.')}</p>
         <button
           onClick={() => { window.location.href = '/'; }}
           style={{

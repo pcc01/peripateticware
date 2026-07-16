@@ -63,9 +63,7 @@ export const CookiePolicyPage: React.FC = () => {
         <h2>{t('cookiepolicypage.contact', 'Contact')}</h2>
         <p>
           {t('cookiepolicypage.questions', 'Questions?')}{' '}
-          <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">
-            hello@peripateticware.com
-          </a>
+          <a href="mailto:hello@peripateticware.com" className="text-blue-600 underline">{t('pages_cookiepolicypage.helloperipateticwarecom', 'hello@peripateticware.com')}</a>
         </p>
       </main>
     </div>

@@ -18,6 +18,7 @@ function authHeader() {
 }
 
 const Stat: React.FC<{ label: string; value: string | number; sub?: string; color?: string; to?: string }> = ({ label, value, sub, color, to }) => {
+  const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const clickable = !!to;
   return (
@@ -30,7 +31,7 @@ const Stat: React.FC<{ label: string; value: string | number; sub?: string; colo
       <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{label}</div>
       <div style={{ fontSize: '2rem', fontWeight: 700, color: color || 'var(--text)', lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 6 }}>{sub}</div>}
-      {clickable && <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600, marginTop: 8 }}>View →</div>}
+      {clickable && <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 600, marginTop: 8 }}>{t('pages_admin_adminanalyticspage.view', 'View →')}</div>}
     </div>
   );
 };

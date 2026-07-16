@@ -104,11 +104,11 @@ export const HomeschoolSettingsPage: React.FC = () => {
         <h2 style={h2s}>{t('pages_homeschool_homeschoolsettingspage.account', 'Account')}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', fontSize: '0.9rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Name</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolsettingspage.name', 'Name')}</span>
             <span style={{ fontWeight: 600 }}>{user?.full_name || '—'}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '0.9rem' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Email</span>
+            <span style={{ color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolsettingspage.email', 'Email')}</span>
             <span style={{ fontWeight: 600 }}>{user?.email || '—'}</span>
           </div>
         </div>
@@ -132,13 +132,9 @@ export const HomeschoolSettingsPage: React.FC = () => {
         <h2 style={h2s}>{t('pages_homeschool_homeschoolsettingspage.privacy_amp_data', 'Privacy &amp; Data')}</h2>
 
         {orgGoverned ? (
-          <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#1e40af' }}>
-            🏫 Your privacy settings are managed by your co-op or organisation. Contact your administrator to make changes.
-          </div>
+          <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#1e40af' }}>{t('pages_homeschool_homeschoolsettingspage.your_privacy_settings_are_managed_by_you', '🏫 Your privacy settings are managed by your co-op or organisation. Contact your administrator to make changes.')}</div>
         ) : privacyConfigured === false && !privacyBannerDismissed ? (
-          <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#92400e' }}>
-            ⚠ You're using default privacy settings. Review and save below to confirm your configuration.
-          </div>
+          <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem', color: '#92400e' }}>{t('pages_homeschool_homeschoolsettingspage.youre_using_default_privacy_settings_rev', '⚠ You\'re using default privacy settings. Review and save below to confirm your configuration.')}</div>
         ) : null}
 
         <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 14 }}>{t('pages_homeschool_homeschoolsettingspage.as_a_homeschool_teacher_you_operate_outs', 'As a homeschool teacher you operate outside institutional FERPA requirements, but COPPA still applies to any child under 13.')}</p>

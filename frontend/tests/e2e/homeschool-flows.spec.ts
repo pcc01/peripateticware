@@ -189,4 +189,35 @@ test.describe('Homeschool – Rubrics', () => {
       page.getByRole('button', { name: /new rubric/i }).or(page.getByRole('link', { name: /new rubric/i })),
     ).toBeVisible({ timeout: 10_000 });
   });
+
+  test('/homeschool/rubrics/import loads without redirect', async ({ page }) => {
+    await page.goto('/homeschool/rubrics/import');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('main, form, h1, h2').first()).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('/homeschool/rubrics/new loads the rubric builder', async ({ page }) => {
+    await page.goto('/homeschool/rubrics/new');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('form, input, textarea, h1, h2').first()).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('/homeschool/rubrics/:id (unknown id) loads the builder without crash', async ({ page }) => {
+    await page.goto('/homeschool/rubrics/00000000-0000-0000-0000-000000000000');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
+    await expect(page.locator('form, input, textarea, h1, h2, main').first()).toBeVisible({ timeout: 10_000 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 12. Activity detail (parameterised — edit an existing activity)
+// ---------------------------------------------------------------------------
+test.describe('Homeschool – Activity Detail (parameterised)', () => {
+  test('/homeschool/activities/:id (unknown id) loads without redirect or crash', async ({ page }) => {
+    await page.goto('/homeschool/activities/00000000-0000-0000-0000-000000000000');
+    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.locator('body')).not.toContainText('Uncaught TypeError');
+    await expect(page.locator('form, input, textarea, h1, h2, main').first()).toBeVisible({ timeout: 10_000 });
+  });
 });

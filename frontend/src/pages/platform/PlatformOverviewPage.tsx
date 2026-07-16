@@ -87,7 +87,7 @@ export default function PlatformOverviewPage() {
         <div className="flex items-center gap-3">
           <Wrench className={`w-5 h-5 ${maintenance ? 'text-red-600' : 'text-gray-400'}`} />
           <div>
-            <p className="text-sm font-semibold text-gray-800">Maintenance mode</p>
+            <p className="text-sm font-semibold text-gray-800">{t('pages_platform_platformoverviewpage.maintenance_mode', 'Maintenance mode')}</p>
             <p className="text-xs text-gray-500">
               {maintenance === null
                 ? 'Status unavailable'
@@ -129,9 +129,9 @@ export default function PlatformOverviewPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
               <tr>
-                <th className="px-5 py-2 text-left">Org</th>
-                <th className="px-5 py-2 text-right">Tokens</th>
-                <th className="px-5 py-2 text-right">Cost</th>
+                <th className="px-5 py-2 text-left">{t('pages_platform_platformoverviewpage.org', 'Org')}</th>
+                <th className="px-5 py-2 text-right">{t('pages_platform_platformoverviewpage.tokens', 'Tokens')}</th>
+                <th className="px-5 py-2 text-right">{t('pages_platform_platformoverviewpage.cost', 'Cost')}</th>
                 <th className="px-5 py-2"></th>
               </tr>
             </thead>

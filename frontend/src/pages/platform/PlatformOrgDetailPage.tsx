@@ -102,7 +102,7 @@ export default function PlatformOrgDetailPage() {
           <p className="text-sm text-gray-500">{org.slug} · {org.type}</p>
         </div>
         {org.is_suspended && (
-          <span className="ml-auto text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">Suspended</span>
+          <span className="ml-auto text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">{t('pages_platform_platformorgdetailpage.suspended', 'Suspended')}</span>
         )}
       </div>
 

@@ -90,7 +90,7 @@ export const AdminClassesPage: React.FC = () => {
         </button>
       </div>
 
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search classes…" aria-label="Search classes"
+      <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('pages_admin_adminclassespage.placeholder_search_classes', 'Search classes…')} aria-label={t('pages_admin_adminclassespage.aria_label_search_classes', 'Search classes')}
         style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', marginBottom: 24, boxSizing: 'border-box' }} />
 
       {error && <p style={{ color: 'var(--error, #c0392b)' }}>{error}</p>}
@@ -140,7 +140,7 @@ export const AdminClassesPage: React.FC = () => {
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, fontSize: '0.9rem' }}>{t('pages_admin_adminclassespage.class_name', 'Class name *')}</label>
             <input
               value={newName} onChange={e => setNewName(e.target.value)} autoFocus
-              placeholder="e.g. Period 3 Biology"
+              placeholder={t('pages_admin_adminclassespage.placeholder_eg_period_3_biology', 'e.g. Period 3 Biology')}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', marginBottom: 16, boxSizing: 'border-box' }}
             />
 
@@ -149,7 +149,7 @@ export const AdminClassesPage: React.FC = () => {
                 <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, fontSize: '0.9rem' }}>{t('pages_admin_adminclassespage.grade_level', 'Grade level')}</label>
                 <input
                   type="number" min={1} max={12} value={newGrade} onChange={e => setNewGrade(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t('pages_admin_adminclassespage.placeholder_optional', 'Optional')}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }}
                 />
               </div>
@@ -157,7 +157,7 @@ export const AdminClassesPage: React.FC = () => {
                 <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, fontSize: '0.9rem' }}>{t('pages_admin_adminclassespage.subject', 'Subject')}</label>
                 <input
                   value={newSubject} onChange={e => setNewSubject(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t('pages_admin_adminclassespage.placeholder_optional', 'Optional')}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', boxSizing: 'border-box' }}
                 />
               </div>
@@ -171,9 +171,7 @@ export const AdminClassesPage: React.FC = () => {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button onClick={resetCreate} style={{ padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', fontWeight: 500 }}>
-                Cancel
-              </button>
+              <button onClick={resetCreate} style={{ padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', fontWeight: 500 }}>{t('pages_admin_adminclassespage.cancel', 'Cancel')}</button>
               <button
                 onClick={handleCreate} disabled={creating || !newName.trim()}
                 style={{ padding: '10px 18px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: '#fff',

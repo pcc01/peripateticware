@@ -56,7 +56,7 @@ const TeacherProposalReviewPage: React.FC = () => {
     }
   }
 
-  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>Loading…</div>
+  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teacherproposalreviewpage.loading', 'Loading…')}</div>
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -137,7 +137,7 @@ const TeacherProposalReviewPage: React.FC = () => {
                         rows={2}
                         value={feedbackMap[p.id] ?? ''}
                         onChange={e => setFeedbackMap(m => ({ ...m, [p.id]: e.target.value }))}
-                        placeholder="Optional for approval, required for rejection…"
+                        placeholder={t('pages_teacher_teacherproposalreviewpage.placeholder_optional_for_approval_required_for_rejec', 'Optional for approval, required for rejection…')}
                         className="w-full px-3 py-2 rounded-lg border text-sm resize-y"
                         style={{
                           background: 'var(--background)',

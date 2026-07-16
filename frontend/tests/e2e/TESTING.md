@@ -1,6 +1,6 @@
 # Peripateticware — E2E Test Suite
 
-**Last updated:** June 2026  
+**Last updated:** July 2026  
 **Runner:** Playwright · Chromium only  
 **Base URL:** `http://localhost:3000` (Docker stack)
 
@@ -55,19 +55,61 @@ by all spec files — no test re-logs in through the UI.
 
 ## Spec Files
 
-| File | Tests | Covers |
-|------|------:|--------|
-| `teacher-flows.spec.ts` | 49 | Dashboard, activities, rubrics, standards, shared library, classrooms, sidebar nav |
-| `targeted-flows.spec.ts` | 38 | Shared library empty/error state, rubric builder CRUD, standards import, privacy JSON |
-| `student-flows.spec.ts` | 36 | Dashboard, field notes, inquiry, progress, submissions |
-| `platform-flows.spec.ts` | 22 | Platform admin: users, orgs, analytics, system settings |
-| `parent-flows.spec.ts` | 20 | Dashboard, progress, link-child, notifications, sidebar nav |
-| `admin-flows.spec.ts` | 20 | Admin dashboard, standards, user management, privacy config |
-| `homeschool-flows.spec.ts` | 18 | Dashboard, portfolio, rubrics, curriculum |
-| `auth-flows.spec.ts` | 10 | Login/signup/forgot-password UI, guards, post-login redirect, logout |
-| `public-pages.spec.ts` | 4 | Landing, privacy, terms, cookies, footer links |
-| `smoke.spec.ts` | 1 | Always-passes canary |
-| **Total** | **218** | |
+| File | Covers |
+|------|--------|
+| `teacher-flows.spec.ts` | Dashboard, activities, rubrics, standards, shared library, classrooms, sidebar nav, **and parameterised detail routes** (project/:id, activity/:id, rubric/:id, student-preview, fieldwork, classroom/:id) |
+| `targeted-flows.spec.ts` | Shared library empty/error state, rubric builder CRUD, standards import, privacy JSON |
+| `student-flows.spec.ts` | Dashboard, field notes, inquiry, progress, submissions, **and parameterised detail routes** (field-notes/:id, self-projects/:id, peer-projects/:id, proposals/:id, reflection/:id, activities/:id, session/:id) |
+| `platform-flows.spec.ts` | Platform admin: overview, orgs (incl. org detail), usage, audit log, AI settings, navigation |
+| `parent-flows.spec.ts` | Dashboard, progress, features, link-child, notifications, coming-soon pages (messages/calendar/reports), settings, sidebar nav |
+| `admin-flows.spec.ts` | Admin dashboard, users, classes, analytics, system, privacy, logs, standards, AI config, rubrics (list/new/**:id**), curriculum import, help, settings |
+| `homeschool-flows.spec.ts` | Dashboard, welcome, children, progress, activities (list/new/**:id**), requirements, coverage, export, settings, rubrics (list/**import/new/:id**) |
+| `auth-flows.spec.ts` | Login/signup/forgot-password UI, guards (student/teacher/parent/admin/**homeschool**), **platform gate behaviour**, post-login redirect, logout |
+| `public-pages.spec.ts` | Landing, privacy, terms, cookies, privacy-engine, **about/origin, do-not-sell, licensing, request-beta, maintenance, verify-email-pending, reset-password, verify-email, privacy-confirmed, parent-consent/:token**, footer links, unknown-route handling |
+| `accessibility.spec.ts` | WCAG 2.1 A/AA (axe-core) on public pages: landing, login, signup, privacy, terms, do-not-sell, privacy-engine |
+| `smoke.spec.ts` | Always-passes canary |
+
+Bold text above marks coverage added in the July 2026 pass to close gaps between
+the route table in `App.tsx` and the spec files (see "Recently Added Coverage" below).
+
+---
+
+## Recently Added Coverage (July 2026)
+
+A route-by-route audit of `src/App.tsx` against the spec files turned up ~30 routes
+with no test coverage. All are now covered:
+
+- **Public pages** — `/about/origin`, `/do-not-sell` (incl. the CCPA opt-out form
+  submit), `/licensing`, `/request-beta`, `/maintenance`, `/verify-email-pending`
+  were added to `public-pages.spec.ts`. Token-driven pages (`/reset-password`,
+  `/verify-email`, `/privacy-confirmed`, `/parent-consent/:token`, including the
+  GPS-consent query-param mode) got their own `describe` blocks asserting a
+  graceful state with no token / a bogus token, since seeding a real signed token
+  isn't practical in E2E.
+- **Auth guards** — `/homeschool` was added to the redirect-to-`/login` guard loop
+  in `auth-flows.spec.ts`. `/platform` was *not* added to that loop — it uses its
+  own `PlatformShell` operator-secret gate rather than `<ProtectedRoute>`, so a
+  new test documents that (intentionally) different behaviour instead.
+- **Parameterised detail routes** — every route that takes a `:id` and previously
+  had zero coverage now has a "loads without redirect or crash" test using a
+  well-formed but non-existent UUID, matching the existing pattern used by
+  `platform-flows.spec.ts` (org detail) and `teacher-flows.spec.ts` (session
+  monitor):
+  - Teacher: `/teacher/projects/:id`, `/teacher/activities/:id`,
+    `/teacher/rubrics/:id`, `/teacher/activities/:id/student-preview`,
+    `/teacher/activities/:id/fieldwork`, `/teacher/classrooms/:id`
+  - Student: `/student/field-notes/:id`, `/student/self-projects/:id`,
+    `/student/peer-projects/:id`, `/student/proposals/:id`,
+    `/student/reflection/:id`, `/student/activities/:id`, `/session/:id`
+  - Admin: `/admin/rubrics/:id`
+  - Homeschool: `/homeschool/activities/:id`, `/homeschool/rubrics/:id`
+- **Homeschool rubrics** — `/homeschool/rubrics/import` and
+  `/homeschool/rubrics/new` had routes but no tests; added to
+  `homeschool-flows.spec.ts`.
+
+These are "does it render without crashing" tests, not full CRUD flows — creating
+real fixture data for each detail route is out of scope for this pass and is
+still tracked under "What to Test Next" below.
 
 ---
 
