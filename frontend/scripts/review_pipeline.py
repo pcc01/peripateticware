@@ -36,6 +36,9 @@ QA_DIR = FRONTEND_DIR / "qa"
 
 CRAWLER = SCRIPTS_DIR / "localization_qa_crawler.py"
 RETRANSLATOR = SCRIPTS_DIR / "retranslate_flagged.py"
+OFFLINE_REVIEWER = SCRIPTS_DIR / "qa_review_llamacpp.py"
+MT_RETRANSLATOR = SCRIPTS_DIR / "retranslate_mt.py"
+MT_FALLBACK = SCRIPTS_DIR / "mt_fallback.py"
 
 PROVIDERS = ["OLLAMA", "CLAUDE", "GEMINI", "DEEPL", "GOOGLE_TRANSLATE", "MICROSOFT"]
 
@@ -362,6 +365,236 @@ def flow_full_pipeline() -> None:
         sleep_windows_now(succeeded=retranslate_ok and confirm_ok)
 
 
+# ─── Offline (file-based) review + MT-fallback retranslate flows ───────────
+
+def flow_offline_review() -> None:
+    """Stage 1 of the improved loop: no live app, no Playwright, no Ollama —
+    reads locale files directly and scores everything with TowerInstruct via
+    llama-cpp-python. Writes a ranked retranslation_keys_<ts>.json with NO
+    cutoff (the cutoff is chosen later in the MT retranslate flow)."""
+    args: list[str] = []
+    locales = ask("Restrict to specific locales (comma-separated, blank = all)")
+    if locales:
+        args += ["--locales", locales]
+    namespaces = ask("Restrict to specific namespaces (comma-separated, blank = all)")
+    if namespaces:
+        args += ["--namespaces", namespaces]
+    max_keys = ask("Max model evaluations per locale (blank = no limit; use ~20 for a smoke test)")
+    if max_keys:
+        args += ["--max-keys", max_keys]
+    if ask_yes_no("Deterministic checks only (--no-llm, instant, no model needed)?", default=False):
+        args += ["--no-llm"]
+    sleep_after = ask_yes_no("Put this computer to sleep automatically when the review finishes?", default=False)
+
+    cmd = [sys.executable, str(OFFLINE_REVIEWER)] + args
+    print(f"\n$ {' '.join(cmd)}\n")
+    result = subprocess.run(cmd)
+
+    if sleep_after:
+        sleep_windows_now(succeeded=result.returncode == 0)
+
+
+def choose_ranked_report() -> Path | None:
+    reports = sorted(QA_DIR.glob("retranslation_keys_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not reports:
+        print("No ranked review reports found under frontend/qa/. Run the offline review first (menu option 4).")
+        return None
+    labels = [f"{p.name}  ({time.strftime('%Y-%m-%d %H:%M', time.localtime(p.stat().st_mtime))})" for p in reports]
+    choice = choose_from_list("Ranked report to retranslate from", labels, default_index=0)
+    return reports[labels.index(choice)]
+
+
+def flow_mt_retranslate() -> None:
+    """Stage 2+3: send keys below a score cutoff through the free-tier
+    Lara -> DeepL -> Microsoft chain and write back JSON + .xlf provenance.
+    The cutoff is chosen HERE — run this as many times as you like against
+    the same review report with different thresholds."""
+    # Show the free-tier ledger first so the threshold choice is informed.
+    subprocess.run([sys.executable, str(MT_FALLBACK), "--status"])
+
+    report_path = choose_ranked_report()
+    if not report_path:
+        return
+    threshold = ask("Score threshold — keys scoring BELOW this get retranslated", "80")
+    args = ["--report", str(report_path), "--score-threshold", threshold]
+
+    locales = ask("Restrict to specific locales (comma-separated, blank = all in report)")
+    if locales:
+        args += ["--locales", locales]
+    max_chars = ask("Cap this run's total source characters (blank = no cap)")
+    if max_chars:
+        args += ["--max-chars", max_chars]
+    if ask_yes_no("Include Lara? Its free tier is only 10,000 chars/month — best saved "
+                  "for small runs (Microsoft alone handles 2M/month)", default=False):
+        args += ["--use-lara"]
+    if ask_yes_no("Include DeepL in the chain? Its 500k allowance is ONE-TIME and never "
+                  "resets — it's held in reserve unless you say yes here", default=False):
+        args += ["--use-deepl"]
+    if ask_yes_no("Include keys the reviewer couldn't score (needs_review)?", default=False):
+        args += ["--include-unscored"]
+    if ask_yes_no("Skip updating .xlf provenance history (not recommended)?", default=False):
+        args += ["--no-xliff"]
+
+    if ask_yes_no("Preview with --dry-run first (budget forecast, no API calls, no writes)?", default=True):
+        cmd = [sys.executable, str(MT_RETRANSLATOR)] + args + ["--dry-run"]
+        print(f"\n$ {' '.join(cmd)}\n")
+        subprocess.run(cmd)
+        if not ask_yes_no("\nProceed with the real retranslation now?", default=False):
+            print("Skipped — no files were changed, no budget was spent.")
+            return
+
+    sleep_after = ask_yes_no("Put this computer to sleep automatically when retranslation finishes?", default=False)
+    cmd = [sys.executable, str(MT_RETRANSLATOR)] + args
+    print(f"\n$ {' '.join(cmd)}\n")
+    result = subprocess.run(cmd)
+
+    if sleep_after:
+        sleep_windows_now(succeeded=result.returncode == 0)
+
+
+# ─── Setup check ────────────────────────────────────────────────────────────
+
+def flow_check_setup() -> None:
+    """Answers 'is everything in place to run the new pipeline?' — which API
+    keys are set, which Python packages import, and the ledger state."""
+    import importlib.util
+    import os
+
+    print(f"\nPython being used for all stages: {sys.executable}")
+    print(f"  (llama-cpp-python was compiled for Python 3.12 — launch this menu with that interpreter)")
+
+    print("\nAPI credentials (environment variables):")
+    creds = [
+        ("LARA_ACCESS_KEY_ID", "Lara"), ("LARA_ACCESS_KEY_SECRET", "Lara"),
+        ("DEEPL_AUTH_KEY", "DeepL (opt-in only)"), ("MS_TRANSLATOR_KEY", "Microsoft"),
+        ("MS_TRANSLATOR_REGION", "Microsoft (defaults to 'global')"),
+    ]
+    for var, who in creds:
+        val = os.getenv(var)
+        shown = f"set ({val[:4]}...{val[-2:]})" if val and len(val) > 8 else ("set" if val else "NOT SET")
+        print(f"  {var:<24} {shown:<20} [{who}]")
+
+    print("\nPython packages:")
+    for pkg, pip_name, why in [("llama_cpp", "llama-cpp-python", "offline reviewer"),
+                               ("huggingface_hub", "huggingface_hub", "model download"),
+                               ("lara_sdk", "lara-sdk", "Lara engine"),
+                               ("deepl", "deepl", "DeepL engine"),
+                               ("requests", "requests", "Microsoft engine"),
+                               ("babel", "babel", "locale name resolution")]:
+        ok = importlib.util.find_spec(pkg) is not None
+        print(f"  {pkg:<18} {'OK' if ok else 'MISSING  (pip install ' + pip_name + ')':<45} [{why}]")
+
+    print("\nFree-tier usage ledger:")
+    subprocess.run([sys.executable, str(MT_FALLBACK), "--status"])
+    print("\nMissing credentials aren't fatal — that engine is skipped and the chain")
+    print("moves to the next one. Missing llama_cpp only blocks the offline review.")
+
+
+# ─── Full offline pipeline (chained) ────────────────────────────────────────
+
+def run_offline_review_capture(args: list[str]) -> Path | None:
+    """Runs the offline reviewer, echoing output live, and captures the
+    ranked-report path from its final 'Full ranked report written to' line."""
+    cmd = [sys.executable, str(OFFLINE_REVIEWER)] + args
+    print(f"\n$ {' '.join(cmd)}\n")
+    report_path: Path | None = None
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                             text=True, bufsize=1)
+    for line in proc.stdout:
+        print(line, end="")
+        m = re.search(r"report written to (.+)$", line.strip())
+        if m:
+            report_path = Path(m.group(1).strip())
+    proc.wait()
+    if proc.returncode != 0:
+        print(f"\nOffline review exited with code {proc.returncode}.")
+    if not report_path or not report_path.exists():
+        reports = sorted(QA_DIR.glob("retranslation_keys_*.json"), key=lambda p: p.stat().st_mtime)
+        report_path = reports[-1] if reports else None
+    return report_path
+
+
+def show_report_summary(report_path: Path) -> None:
+    """Prints the ranked report's worst rows + per-locale totals so the
+    threshold choice right after is an informed one."""
+    import json
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"(couldn't summarize report: {e})")
+        return
+    items = report.get("items", [])
+    print(f"\nReviewed {len(items)} key(s). Worst 15:")
+    print(f"  {'score':>5}  {'locale':<6} {'ns':<10} key / reasons")
+    for it in items[:15]:
+        score = it["score"] if it["score"] is not None else "n/a"
+        print(f"  {score!s:>5}  {it['locale']:<6} {it['namespace']:<10} {it['key']}  "
+              f"({','.join(it['reasons']) or 'evaluator'})")
+    print("\nHow many keys each cutoff would send to translation:")
+    for cutoff in (30, 50, 80, 95):
+        picked = [i for i in items if i["score"] is not None and i["score"] < cutoff]
+        chars = sum(len(i["source_en"]) for i in picked)
+        print(f"  --score-threshold {cutoff:>3}  ->  {len(picked):>5} key(s), {chars:>8,} source chars")
+    print(f"\nFull ranking: {report_path.with_suffix('.md')}")
+
+
+def flow_full_offline_pipeline() -> None:
+    """The whole improved loop, chained: offline review -> inspect ranking ->
+    choose cutoff -> budget forecast -> translate via the free-tier chain ->
+    sync locale files -> optional re-review of what changed."""
+    print("\n=== Stage 1/3: OFFLINE REVIEW (scores every key, no cutoff) ===")
+    review_args: list[str] = []
+    locales = ask("Restrict to specific locales (comma-separated, blank = all)")
+    if locales:
+        review_args += ["--locales", locales]
+    max_keys = ask("Max model evaluations per locale (blank = no limit; ~20 for a smoke test)")
+    if max_keys:
+        review_args += ["--max-keys", max_keys]
+    if ask_yes_no("Deterministic checks only (--no-llm, instant, no model)?", default=False):
+        review_args += ["--no-llm"]
+
+    reuse = None
+    reports = sorted(QA_DIR.glob("retranslation_keys_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if reports and ask_yes_no(f"A ranked report already exists ({reports[0].name}). "
+                              f"Skip the review and reuse it?", default=False):
+        reuse = reports[0]
+
+    report_path = reuse or run_offline_review_capture(review_args)
+    if not report_path:
+        print("No ranked report produced — stopping.")
+        return
+
+    print("\n=== Stage 2/3: CHOOSE CUTOFF & TRANSLATE (Lara -> Microsoft; DeepL opt-in) ===")
+    show_report_summary(report_path)
+    subprocess.run([sys.executable, str(MT_FALLBACK), "--status"])
+
+    threshold = ask("\nScore threshold — keys scoring BELOW this get retranslated", "80")
+    mt_args = ["--report", str(report_path), "--score-threshold", threshold]
+    if locales:
+        mt_args += ["--locales", locales]
+    if ask_yes_no("Include Lara? (only 10,000 free chars/month — Microsoft alone handles 2M)", default=False):
+        mt_args += ["--use-lara"]
+    if ask_yes_no("Include DeepL? Its 500k allowance is ONE-TIME and never resets", default=False):
+        mt_args += ["--use-deepl"]
+
+    print("\n--- Budget forecast (dry run, no API calls) ---")
+    subprocess.run([sys.executable, str(MT_RETRANSLATOR)] + mt_args + ["--dry-run"])
+    if not ask_yes_no("\nProceed with the real translation now?", default=False):
+        print("Stopped — no files changed, no budget spent. Re-run option 1 and reuse "
+              "the same report to try a different cutoff.")
+        return
+    result = subprocess.run([sys.executable, str(MT_RETRANSLATOR)] + mt_args)
+    if result.returncode != 0:
+        print("Translation stage failed — stopping before sync/re-review.")
+        return
+
+    print("\n=== Stage 3/3: SYNC & CONFIRM ===")
+    subprocess.run([sys.executable, str(SCRIPTS_DIR / "sync_locales.py")])
+    if ask_yes_no("Re-run the offline review on the same scope to confirm scores improved?", default=True):
+        run_offline_review_capture(review_args)
+    print("\nPipeline complete.")
+
+
 # ─── Main menu ──────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -372,19 +605,36 @@ def main() -> None:
 
     while True:
         print("\n" + "-" * 60)
-        print("  [1] Run REVIEW only (QA crawler)")
-        print("  [2] Run RETRANSLATE only (uses an existing report)")
-        print("  [3] Run FULL PIPELINE (review -> retranslate -> re-review to confirm)")
-        print("  [4] Exit")
-        choice = input("Choose an option [1-4]: ").strip()
+        print("  NEW PIPELINE (offline review + free-tier MT chain) — start here:")
+        print("  [1] FULL PIPELINE: review -> pick cutoff -> forecast -> translate -> sync -> confirm  [RECOMMENDED]")
+        print("  [2] Offline REVIEW only (scores every key, writes the ranked report)")
+        print("  [3] MT TRANSLATE only (uses an existing ranked report; cutoff chosen here)")
+        print("  [4] Show free-tier usage ledger")
+        print("  [5] Check setup (API keys, packages, ledger)")
+        print("  LEGACY (crawler-based, needs the live app + Ollama):")
+        print("  [6] Crawler REVIEW only")
+        print("  [7] Single-provider RETRANSLATE (from a crawler report)")
+        print("  [8] Crawler FULL PIPELINE (crawl -> retranslate -> re-crawl)")
+        print("  [9] Exit")
+        choice = input("Choose an option [1-9]: ").strip()
 
         if choice == "1":
-            flow_review_only()
+            flow_full_offline_pipeline()
         elif choice == "2":
-            flow_retranslate_only()
+            flow_offline_review()
         elif choice == "3":
+            flow_mt_retranslate()
+        elif choice == "4":
+            subprocess.run([sys.executable, str(MT_FALLBACK), "--status"])
+        elif choice == "5":
+            flow_check_setup()
+        elif choice == "6":
+            flow_review_only()
+        elif choice == "7":
+            flow_retranslate_only()
+        elif choice == "8":
             flow_full_pipeline()
-        elif choice == "4" or choice.lower() in ("q", "quit", "exit"):
+        elif choice == "9" or choice.lower() in ("q", "quit", "exit"):
             print("Bye.")
             return
         else:

@@ -148,6 +148,140 @@ DO_NOT_TRANSLATE_KEY_PATTERNS = [
     re.compile(r'^termspage\.'),
 ]
 
+# ─── Legal content lock (product decision, 2026-07, Paul) ───────────────────
+# ALL T&C / legal copy stays English in every locale FOR NOW — not just the
+# termspage. Matched as whole key segments (dot- or underscore-delimited) so
+# e.g. "footer.terms_link", "privacy.policy_title", "eula.section2" are all
+# locked, but unrelated words containing these fragments are not. When the
+# English-only policy is lifted, remove (or trim) this pattern and re-run the
+# review — the keys become translatable again automatically.
+LEGAL_DNT_KEY_RE = re.compile(
+    r'(^|[._])(termspage|terms|tos|legal|eula|policy|policies|agreement|clause|disclaimer)([._]|$)',
+    re.IGNORECASE)
+
+# ─── Latin / lorem-ipsum placeholder detection (by VALUE, not key) ──────────
+# Paul uses Latin filler wherever real content doesn't exist yet. Filler must
+# never be machine-translated (it would become fabricated-sounding content),
+# and it must not show up in QA reports as "untranslated". Detection is
+# content-based on the ENGLISH source: the moment a Latin string is replaced
+# with real English text, the key automatically becomes translatable — no
+# list to maintain. Vocabulary covers the classic lorem-ipsum corpus plus the
+# Cicero-derived filler most generators draw from; deliberately excludes
+# Latin words that are also common English ("in", "sit", "id", "et", ...).
+_LATIN_FILLER_WORDS = frozenset("""
+lorem ipsum dolor amet consectetur adipiscing elit eiusmod tempor incididunt
+labore dolore magna aliqua enim minim veniam quis nostrud exercitation ullamco
+laboris nisi aliquip commodo consequat duis aute irure reprehenderit voluptate
+velit esse cillum fugiat nulla pariatur excepteur sint occaecat cupidatat
+proident sunt culpa officia deserunt mollit anim laborum curabitur vestibulum
+sodales pellentesque habitant morbi tristique senectus netus malesuada fames
+turpis egestas vitae sapien ultricies luctus donec fringilla vulputate
+porttitor rhoncus dapibus felis euismod semper auctor neque penatibus magnis
+dis parturient montes nascetur ridiculus mus etiam ultrices posuere cubilia
+curae suspendisse potenti fusce faucibus scelerisque quam fermentum imperdiet
+praesent blandit lacinia erat venenatis viverra ornare quisque aliquam nunc
+lectus integer maecenas mauris natoque aenean ligula porta taciti sociosqu
+litora torquent conubia nostra inceptos himenaeos vivamus dictum placerat
+eleifend cras justo condimentum nibh sagittis gravida laoreet dictumst aliquet
+atque quibus omnis ipsa voluptas voluptatem quia numquam eius modi tempora
+aliquid quaerat beatae dicta explicabo nemo ipsam aspernatur odit fugit magni
+dolores ratione sequi nesciunt porro quisquam dolorem adipisci eos accusamus
+iusto dignissimos ducimus blanditiis praesentium voluptatum deleniti corrupti
+quos molestias excepturi occaecati provident similique mollitia animi dolorum
+fuga harum quidem rerum facilis expedita distinctio libero cumque impedit
+minus quod maxime placeat facere possimus assumenda repellendus temporibus
+quibusdam officiis debitis necessitatibus saepe eveniet voluptates repudiandae
+recusandae itaque earum tenetur sapiente delectus reiciendis voluptatibus
+maiores alias perferendis doloribus asperiores repellat sed perspiciatis unde
+iste natus accusantium doloremque laudantium totam aperiam eaque quae illo
+inventore veritatis quasi architecto nihil molestiae illum corporis suscipit
+laboriosam autem vel eum iure magnam consequuntur nequeporro quia
+""".split())
+
+
+def looks_like_latin_placeholder(text) -> bool:
+    """True when a source string is lorem-ipsum / Latin filler rather than
+    real English content. Needs at least two distinct-word hits AND 40% of
+    the words to be Latin filler, so an English sentence that happens to
+    mention 'Magna Carta' or 'lorem ipsum' in passing is not locked."""
+    if not isinstance(text, str):
+        return False
+    words = re.findall(r"[a-zA-Z]+", text.lower())
+    if len(words) < 2:
+        return False
+    hits = sum(1 for w in words if w in _LATIN_FILLER_WORDS)
+    return hits >= 2 and hits / len(words) >= 0.4
+
+
+# =====================================================================
+# UNICODE / CLDR CONVENTIONS — plural categories & capitalization
+# =====================================================================
+# i18next pluralizes via key suffixes (key_one, key_few, key_many, ...).
+# WHICH suffixes a locale needs is defined by CLDR plural rules and differs
+# per language (ar needs six forms; ja/zh/ko need only 'other'). babel ships
+# the CLDR data, so the requirement set is derived at runtime — no table to
+# maintain. A static fallback covers a babel-less environment.
+
+PLURAL_SUFFIX_RE = re.compile(r"_(zero|one|two|few|many|other)$")
+
+_STATIC_PLURAL_CATEGORIES = {
+    "ar": {"zero", "one", "two", "few", "many", "other"},
+    "he": {"one", "two", "many", "other"},
+    "ja": {"other"}, "ko": {"other"}, "zh": {"other"},
+    # everything else in this repo: one/other
+}
+
+
+def required_plural_categories(locale_code: str) -> set[str]:
+    """CLDR plural categories the locale must provide (always incl. 'other').
+    Uses babel's bundled CLDR data when available; falls back to a static map."""
+    try:
+        from babel import Locale as _BL
+        pf = _BL.parse(locale_code.replace("-", "_")).plural_form
+        return set(pf.rules.keys()) | {"other"}
+    except Exception:
+        base = locale_code.split("-")[0].lower()
+        return _STATIC_PLURAL_CATEGORIES.get(base, {"one", "other"})
+
+
+# Scripts without letter case — capitalization checks don't apply.
+_CASELESS_BASES = {"ja", "zh", "ko", "ar", "he"}
+# Languages whose convention is sentence case for headings/titles (copying
+# English Title Case into them is a CLDR-style-convention violation). German
+# is deliberately absent: its capitalized nouns look like title case to a
+# ratio check and are correct.
+_SENTENCE_CASE_BASES = {"fr", "es", "it", "pt", "tr", "nl", "pl", "ru", "cs", "sv", "da", "nb", "fi"}
+
+
+def cldr_capitalization_issues(src: str, tgt: str, locale_code: str) -> list[str]:
+    """Deterministic capitalization-convention checks:
+      - leading_case_mismatch: source starts upper, target starts lower (or
+        vice versa) in a caseful script;
+      - title_case_leakage: English Title Case copied into a language whose
+        convention is sentence case (>=3 words, >=75% capitalized in BOTH
+        source and target — proper-noun-heavy strings won't trip both)."""
+    base = locale_code.split("-")[0].lower()
+    if base in _CASELESS_BASES or not isinstance(tgt, str) or not tgt or not src:
+        return []
+    issues = []
+    s0, t0 = src.strip()[:1], tgt.strip()[:1]
+    if s0 and t0 and s0.isalpha() and t0.isalpha():
+        if s0.isupper() and t0.islower():
+            issues.append("leading_case_mismatch")
+        elif s0.islower() and t0.isupper():
+            issues.append("leading_case_mismatch")
+    if base in _SENTENCE_CASE_BASES:
+        def _title_ratio(text: str) -> tuple[int, float]:
+            words = [w for w in re.findall(r"[^\W\d_]+", text) if len(w) > 1]
+            if not words:
+                return 0, 0.0
+            return len(words), sum(1 for w in words if w[:1].isupper()) / len(words)
+        n_s, r_s = _title_ratio(src)
+        n_t, r_t = _title_ratio(tgt)
+        if n_s >= 3 and n_t >= 3 and r_s >= 0.75 and r_t >= 0.75:
+            issues.append("title_case_leakage")
+    return issues
+
 # Demo/placeholder emails (you@example.com, teacher@example.com, ...) and the
 # real contact address must be byte-for-byte identical in every locale.
 #
@@ -234,7 +368,14 @@ def is_do_not_translate(key: str, value: str) -> bool:
         return True
     if any(p.search(key) for p in DO_NOT_TRANSLATE_KEY_PATTERNS):
         return True
+    # Legal content: English-only in every locale for now (see LEGAL_DNT_KEY_RE).
+    if LEGAL_DNT_KEY_RE.search(key):
+        return True
     if isinstance(value, str) and DEMO_EMAIL_FULL_RE.match(value.strip()):
+        return True
+    # Latin filler = no real content yet; becomes translatable automatically
+    # once the English source is replaced with real text.
+    if looks_like_latin_placeholder(value):
         return True
     return False
 
@@ -522,7 +663,10 @@ class UniversalOrchestrator:
             f"CRITICAL RULES:\n"
             f"1. Preserve template variables (e.g. {{count}}, %s, $t(...)) exactly with no syntax alterations.\n"
             f"2. Provide ONLY the translated value string text. Never include Markdown fences, quotes, notes, formatting, or introductions.\n"
-            f"3. Do not append explanation copy or repeat the input key text framework back."
+            f"3. Do not append explanation copy or repeat the input key text framework back.\n"
+            f"4. Follow the target language's standard Unicode/CLDR capitalization conventions: "
+            f"use sentence case where the language customarily does (e.g. French, Spanish, Italian) "
+            f"instead of copying English Title Case, and apply locale-correct casing rules (e.g. Turkish dotted/dotless I)."
         )
 
     def get_method_string(self) -> str:

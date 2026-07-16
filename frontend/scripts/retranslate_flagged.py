@@ -214,12 +214,25 @@ def apply_xliff_overwrites(locale: str, updates: dict[str, dict], new_actor_labe
     records: previous translation (and which model produced it), the new
     translation (and which model — this run's), and why it was overwritten
     (the QA reason/evaluator note). `updates` is {key: {"en", "new_value",
-    "reason", "note"}} — only landing-namespace keys actually touched."""
+    "reason", "note"}} — only landing-namespace keys actually touched.
+
+    Per-key actor: an update record may also carry an "actor" of its own,
+    which then wins over `new_actor_label` for that key. A single
+    retranslate_mt.py run can legitimately span multiple engines (the
+    Lara -> DeepL -> Microsoft chain switches engines when a free-tier
+    budget runs out mid-run), so one label per run can no longer describe
+    every key. Callers that use one engine for the whole run (this script)
+    are unaffected — omitting "actor" preserves the old behavior exactly."""
     if not updates:
         return
 
     xlf_path = LOCALES_DIR / f"{locale}.xlf"
     en_flat = flatten_json(load_json(LOCALES_DIR / "en" / "landing.json"))
+    # Keys being created that have no EN counterpart (e.g. CLDR plural
+    # categories the target language needs but English doesn't, like ar's
+    # _few/_many) still get a trans-unit: seed their source from the update.
+    for k, meta in updates.items():
+        en_flat.setdefault(k, meta["en"])
     root_path = LOCALES_DIR / f"{locale}.json"
     target_flat = flatten_json(load_json(root_path).get("landing", {})) if root_path.exists() else {}
 
@@ -233,6 +246,7 @@ def apply_xliff_overwrites(locale: str, updates: dict[str, dict], new_actor_labe
         hist = historical.get(k, {})
         if k in updates:
             meta = updates[k]
+            key_actor = meta.get("actor") or new_actor_label
             old_version = hist.get("version", 0)
             new_version = old_version + 1
             old_actor = find_actor_for_version(global_prov, k, old_version) or (
@@ -240,7 +254,7 @@ def apply_xliff_overwrites(locale: str, updates: dict[str, dict], new_actor_labe
             )
 
             global_prov = build_or_update_prov_graph(
-                k, meta["en"], meta["new_value"], new_actor_label, ts, new_version, global_prov
+                k, meta["en"], meta["new_value"], key_actor, ts, new_version, global_prov
             )
             # Annotate the activity node build_or_update_prov_graph just added
             # with an explicit human-readable overwrite record.
@@ -255,7 +269,7 @@ def apply_xliff_overwrites(locale: str, updates: dict[str, dict], new_actor_labe
 
             meta_tracking[k] = {
                 "version": new_version,
-                "status": f"overwritten: [{old_actor}] -> [{new_actor_label}] (reason: {meta['reason']})",
+                "status": f"overwritten: [{old_actor}] -> [{key_actor}] (reason: {meta['reason']})",
             }
         else:
             meta_tracking[k] = {
