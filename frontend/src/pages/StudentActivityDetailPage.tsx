@@ -60,6 +60,7 @@ const StudentActivityDetailPage: React.FC = () => {
     addEvidence,
     addReflection,
     submitActivity,
+    submitGpsConsent,
   } = useStudent();
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -72,6 +73,11 @@ const StudentActivityDetailPage: React.FC = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [pageError, setPageError]         = useState<string | null>(null);
   const [feedback, setFeedback]           = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  // GPS self-consent (13+ students on GPS-enabled activities) — prompted
+  // once the field session actually starts, matching when the backend
+  // fires the parent-notification background task.
+  const [gpsConsentPending, setGpsConsentPending] = useState(false);
 
   // TTS
   const [speaking, setSpeaking] = useState(false);
@@ -116,10 +122,25 @@ const StudentActivityDetailPage: React.FC = () => {
       setSession({ session_id: s.session_id, status: s.status });
       setPhase('inquiry');
       loadEvidence(s.session_id);
+      if ((activity as any)?.discovery_location_gps_capture_enabled) {
+        setGpsConsentPending(true);
+      }
     } catch {
       setFeedback({ type: 'error', msg: 'Could not start session. Please try again.' });
     } finally {
       setSessionLoading(false);
+    }
+  };
+
+  // ── GPS self-consent (13+) ─────────────────────────────────────────────────
+  const handleGpsConsent = async (allow: boolean) => {
+    setGpsConsentPending(false);
+    if (allow && activityId) {
+      try {
+        await submitGpsConsent(activityId, true);
+      } catch {
+        // best-effort — don't block the session on a consent-log failure
+      }
     }
   };
 
@@ -254,6 +275,33 @@ const StudentActivityDetailPage: React.FC = () => {
 
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
+
+      {/* GPS consent modal — shown once when a GPS-enabled session starts */}
+      {gpsConsentPending && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="max-w-sm w-full mx-4 rounded-2xl p-6 shadow-xl bg-white">
+            <h2 className="text-lg font-bold mb-2 text-gray-900">Location Sharing</h2>
+            <p className="text-sm mb-4 text-gray-600">
+              Your teacher wants to see your location during this activity so they can track
+              fieldwork progress. Your location is only shared while the session is active.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleGpsConsent(true)}
+                className="flex-1 py-2 rounded-lg text-white font-medium bg-green-700 hover:bg-green-800"
+              >
+                Allow
+              </button>
+              <button
+                onClick={() => handleGpsConsent(false)}
+                className="flex-1 py-2 rounded-lg font-medium border border-gray-300 text-gray-900"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200">

@@ -494,18 +494,8 @@ async def get_session_events(
 
 
 # ── GPS Location-update helpers (used by student submission routes) ────────
-
-_CREATE_SESSION_EVENTS_DDL = """
-    CREATE TABLE IF NOT EXISTS session_events (
-        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        session_id  UUID NOT NULL,
-        student_id  UUID,
-        event_type  VARCHAR(50) NOT NULL,
-        phase       VARCHAR(30),
-        metadata    JSONB,
-        created_at  TIMESTAMP DEFAULT NOW()
-    )
-"""
+# NOTE: session_events table DDL lives in backend/startup.py (see
+# apply_student_phase7_migrations) — do not add inline CREATE TABLE here.
 
 async def _fire_location_event(
     db: AsyncSession,
@@ -546,18 +536,20 @@ async def _check_gps_consent(
     """Return True if active GPS-tracking consent exists for this student+activity."""
     if not activity_id:
         return False
+    import hashlib
+    student_id_hash = hashlib.sha256(str(student_id).encode()).hexdigest()
     try:
         result = await db.execute(
             text("""
                 SELECT consent_given FROM consent_logs
-                WHERE student_id_hash = encode(digest(:sid::text, 'sha256'), 'hex')
+                WHERE student_id_hash = :sid_hash
                   AND consent_type    = 'gps_tracking'
                   AND activity_id     = :aid::uuid
                   AND consent_given   = TRUE
                   AND (expires_at IS NULL OR expires_at > NOW())
                 LIMIT 1
             """),
-            {"sid": str(student_id), "aid": str(activity_id)},
+            {"sid_hash": student_id_hash, "aid": str(activity_id)},
         )
         row = result.fetchone()
         return row is not None

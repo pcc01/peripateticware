@@ -279,6 +279,9 @@ async def get_student_activity(
         solo_level=activity.solo_level,
         primary_framework=activity.primary_framework or "blooms",
         created_at=activity.created_at,
+        discovery_location_gps_capture_enabled=bool(
+            getattr(activity, "discovery_location_gps_capture_enabled", False)
+        ),
     )
 
 
@@ -320,13 +323,25 @@ async def _notify_parents_gps_consent(session_id: str, activity_id: str) -> None
                     f"?consent_type=gps&activity_id={activity_id}&student_id={student_id}"
                 )
                 try:
-                    from services.websocket_service import websocket_service, Notification
+                    from services.websocket_service import (
+                        websocket_service,
+                        Notification,
+                        NotificationType,
+                    )
+                    from datetime import datetime as _dt
+                    import uuid as _uuid
+
                     notif = Notification(
-                        user_id=parent_id,
-                        type="gps_consent_needed",
+                        id=f"gps_consent_{student_id}_{_uuid.uuid4().hex}",
+                        parent_id=parent_id,
+                        child_id=student_id,
+                        type=NotificationType.REMINDER,
                         title="GPS Consent Required",
-                        message="Your child's teacher started a GPS-enabled activity. Tap to review and consent.",
-                        data={"url": consent_url, "activity_id": activity_id},
+                        body=(
+                            "Your child's teacher started a GPS-enabled activity. "
+                            f"Tap to review and consent: {consent_url}"
+                        ),
+                        created_at=_dt.utcnow(),
                     )
                     await websocket_service.send_notification(notif)
                 except Exception as _ne:

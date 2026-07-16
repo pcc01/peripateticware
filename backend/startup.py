@@ -987,7 +987,16 @@ async def apply_student_phase7_migrations(engine) -> None:
         # GPS map infrastructure (Session 30)
         "CREATE TABLE IF NOT EXISTS session_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, student_id UUID, event_type VARCHAR(50) NOT NULL, phase VARCHAR(30), metadata JSONB, created_at TIMESTAMP DEFAULT NOW())",
         "CREATE TABLE IF NOT EXISTS consent_logs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), student_id_hash VARCHAR(256) NOT NULL, consent_type VARCHAR(50) NOT NULL, consent_given BOOLEAN NOT NULL DEFAULT FALSE, consent_method VARCHAR(50), activity_id UUID, created_at TIMESTAMP DEFAULT NOW(), expires_at TIMESTAMP)",
-        "ALTER TABLE consent_logs ADD CONSTRAINT IF NOT EXISTS uq_consent_logs_student_type_activity UNIQUE (student_id_hash, consent_type, activity_id)",
+        """
+        DO $$
+        BEGIN
+            ALTER TABLE consent_logs
+                ADD CONSTRAINT uq_consent_logs_student_type_activity
+                UNIQUE (student_id_hash, consent_type, activity_id);
+        EXCEPTION
+            WHEN duplicate_object THEN NULL;
+        END $$;
+        """,
     ]
     for _s in _stmts:
         try:

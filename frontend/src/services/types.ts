@@ -81,6 +81,9 @@ export interface Activity {
   curriculum_links?: string[]
   standards?: string[]
   teacher?: { id: string; name?: string; email?: string }
+  // GPS live-map feature: whether this activity prompts students for
+  // location-sharing self-consent (13+) at session start.
+  discovery_location_gps_capture_enabled?: boolean
 }
 
 export interface PhaseStatus {

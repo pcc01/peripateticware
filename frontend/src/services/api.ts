@@ -713,6 +713,13 @@ export function useStudent() {
     completeFieldPhase: (sessionId: string) =>
       axiosInstance.post(`/student/sessions/${sessionId}/complete-field`).then((r) => r.data),
 
+    // Record GPS-tracking self-consent (13+ students) for a GPS-enabled activity
+    submitGpsConsent: (activityId: string, consentGiven: boolean = true) =>
+      axiosInstance.post(`/student/consent/gps`, {
+        activity_id: activityId,
+        consent_given: consentGiven,
+      }).then((r) => r.data),
+
     getProgress: () => studentApi.getProgress(),
     getPendingReflections: () =>
       axiosInstance.get<Types.PendingReflectionItem[]>('/student/pending-reflection').then((r) => r.data),
