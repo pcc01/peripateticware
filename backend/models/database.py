@@ -1037,6 +1037,11 @@ class StudentFieldNote(Base):
     student_id      = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     self_project_id = Column(UUID(as_uuid=True), ForeignKey("student_self_projects.id"),
                              nullable=True, index=True)
+    # Set when the field note is captured during a live learning session — used
+    # to join against session_events / EvidenceCapture for the professor
+    # fieldwork map (GET /activities/{id}/fieldwork-locations). No FK
+    # constraint on the raw table; kept unconstrained here to match.
+    session_id      = Column(UUID(as_uuid=True), nullable=True, index=True)
 
     title       = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)

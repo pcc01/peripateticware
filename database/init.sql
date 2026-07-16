@@ -917,6 +917,12 @@ CREATE TABLE IF NOT EXISTS student_field_notes (
     id              UUID                   PRIMARY KEY DEFAULT uuid_generate_v4(),
     student_id      UUID                   NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     self_project_id UUID                   REFERENCES student_self_projects(id) ON DELETE SET NULL,
+    -- Set when the field note is captured during a live learning session —
+    -- joined against learning_sessions for the professor fieldwork map
+    -- (GET /activities/{id}/fieldwork-locations). Intentionally no FK: field
+    -- notes taken outside a session (most of them) leave this NULL, and we
+    -- don't want a dangling session_id to block deleting old sessions.
+    session_id      UUID,
     title           VARCHAR(255)           NOT NULL,
     description     TEXT,
     status          field_note_status_enum NOT NULL DEFAULT 'draft',
@@ -927,6 +933,7 @@ CREATE TABLE IF NOT EXISTS student_field_notes (
     updated_at      TIMESTAMP              NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_field_notes_student ON student_field_notes(student_id);
+CREATE INDEX IF NOT EXISTS idx_field_notes_session ON student_field_notes(session_id);
 
 -- FK deferred from activity_submissions (student_field_notes wasn't created yet)
 DO $$
