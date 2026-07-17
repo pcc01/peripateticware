@@ -124,6 +124,7 @@ async def lifespan(app: FastAPI):
         apply_rag_documents_table,
         seed_sample_activities,
         seed_demo_users,
+        seed_demo_admin_account,
         seed_test_accounts,
         seed_homeschool_demo,
         seed_homeschool_example_children,
@@ -177,19 +178,38 @@ async def lifespan(app: FastAPI):
     logger.info("Application ready")
 
     # SECURITY: demo/test seed accounts use published, well-known passwords
-    # (SecurePass123!, Test1234!, Demo@1234!) and include ADMIN-role accounts.
-    # These must NEVER be created outside development - gate strictly on
-    # ENVIRONMENT so a misconfigured prod box can't silently grow a backdoor
-    # admin account on every restart.
+    # (SecurePass123!, Test1234!, Demo@1234!). In development we seed
+    # everything, including ADMIN-role accounts (admin@example.com,
+    # admin@test.local, platform@test.local) and the @test.local E2E/Detox
+    # fixtures — none of that belongs on a real deployment.
+    #
+    # ENABLE_DEMO_SEED_ACCOUNTS is a separate, explicit opt-in for non-dev
+    # environments (e.g. a public beta site) that still wants the
+    # customer-facing "try it yourself" logins (teacher/student/parent/
+    # homeschool @example.com + the homeschool demo family). It deliberately
+    # does NOT run seed_demo_admin_account / seed_test_accounts /
+    # seed_test_classroom — a well-known ADMIN password or CI test accounts
+    # have no business being reachable on the public internet. Set
+    # ENABLE_DEMO_SEED_ACCOUNTS=true in that environment's .env to turn it on.
     if settings.ENVIRONMENT.lower() == "development":
         await seed_demo_users(engine)
+        await seed_demo_admin_account(engine)
         await seed_test_accounts(engine)
         await seed_homeschool_demo(engine)
         await seed_homeschool_example_children(engine)
         await seed_demo_classroom(engine)
         await seed_test_classroom(engine)
+    elif settings.ENABLE_DEMO_SEED_ACCOUNTS:
+        logger.info("ENABLE_DEMO_SEED_ACCOUNTS=true — seeding customer-facing demo accounts only (no admin, no @test.local)")
+        await seed_demo_users(engine)
+        await seed_homeschool_demo(engine)
+        await seed_homeschool_example_children(engine)
+        await seed_demo_classroom(engine)
     else:
-        logger.info("Skipping demo/test account seeding (ENVIRONMENT=%s)", settings.ENVIRONMENT)
+        logger.info(
+            "Skipping demo/test account seeding (ENVIRONMENT=%s, ENABLE_DEMO_SEED_ACCOUNTS=%s)",
+            settings.ENVIRONMENT, settings.ENABLE_DEMO_SEED_ACCOUNTS,
+        )
     await seed_compliance_frameworks(engine)
 
     try:

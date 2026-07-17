@@ -1124,7 +1124,19 @@ async def seed_sample_activities(engine) -> None:
 
 
 async def seed_demo_users(engine) -> None:
-    """Upsert 5 demo users with SecurePass123! (all roles)."""
+    """
+    Upsert the 4 customer-facing demo users with SecurePass123!
+    (homeschool/student/teacher/parent — no ADMIN row).
+
+    Split from the original 5-user version on 2026-07-17: Paul wants these
+    "try it yourself" logins live on production (peripateticware.com) so
+    prospective customers can explore each role, but explicitly chose NOT to
+    also seed admin@example.com there — a published, well-known password on
+    an ADMIN account is a real backdoor once it's live on the public
+    internet, not just a dev convenience. The admin row now lives in
+    seed_demo_admin_account(), which stays dev-only. See main.py's lifespan()
+    for the two different gates these run under.
+    """
     try:
         async with engine.begin() as conn:
             # bcrypt hash of "SecurePass123!"
@@ -1140,16 +1152,38 @@ async def seed_demo_users(engine) -> None:
                   ('teacher@example.com','teacher','Jane','Smith','Jane Smith',
                    :pw,'TEACHER',TRUE),
                   ('parent@example.com','parent','Margaret','Brown','Margaret Brown',
-                   :pw,'PARENT',TRUE),
-                  ('admin@example.com','admin','Paul','Admin','Paul Christopher Cerda',
-                   :pw,'ADMIN',TRUE)
+                   :pw,'PARENT',TRUE)
                 ON CONFLICT (email) DO UPDATE SET
                     hashed_password = EXCLUDED.hashed_password,
                     is_active       = TRUE
             """), {"pw": _PW})
-        logger.info("✅ Demo seed users ensured (passwords reset to SecurePass123!, is_active forced TRUE)")
+        logger.info("✅ Demo seed users ensured (homeschool/student/teacher/parent @example.com, SecurePass123!)")
     except Exception as e:
         logger.error(f"❌ Demo seed upsert FAILED — login with SecurePass123! will not work: {e}", exc_info=True)
+
+
+async def seed_demo_admin_account(engine) -> None:
+    """
+    Upsert admin@example.com (SecurePass123!) — split out of seed_demo_users()
+    so it can be gated separately (development only; never on the
+    ENABLE_DEMO_SEED_ACCOUNTS production opt-in). A published-password ADMIN
+    account has no place on a live, public site.
+    """
+    try:
+        async with engine.begin() as conn:
+            _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
+            await conn.execute(text("""
+                INSERT INTO users (email, username, first_name, last_name, full_name,
+                                   hashed_password, role, is_active)
+                VALUES ('admin@example.com','admin','Paul','Admin','Paul Christopher Cerda',
+                        :pw,'ADMIN',TRUE)
+                ON CONFLICT (email) DO UPDATE SET
+                    hashed_password = EXCLUDED.hashed_password,
+                    is_active       = TRUE
+            """), {"pw": _PW})
+        logger.info("✅ Demo admin account ensured (admin@example.com, SecurePass123!) — dev only")
+    except Exception as e:
+        logger.error(f"❌ Demo admin seed upsert FAILED: {e}", exc_info=True)
 
 
 async def seed_homeschool_example_children(engine) -> None:

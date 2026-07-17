@@ -17,6 +17,16 @@ class Settings(BaseSettings):
     APP_NAME: str = "Peripateticware"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    # Opt-in to seed the customer-facing demo accounts (teacher/student/parent/
+    # homeschool @example.com + the homeschool demo family) on a non-development
+    # environment, e.g. a public beta site that wants "try it yourself" logins.
+    # Deliberately separate from ENVIRONMENT: flipping ENVIRONMENT to
+    # "production" turns on real security hardening (locked API docs,
+    # fatal-on-boot checks for un-rotated secrets — see
+    # startup.py::check_config_warnings) that has nothing to do with whether
+    # you also want demo logins. Never seeds ADMIN-role accounts regardless of
+    # this flag — see seed_demo_admin_account(), which stays dev-only.
+    ENABLE_DEMO_SEED_ACCOUNTS: bool = os.getenv("ENABLE_DEMO_SEED_ACCOUNTS", "false").lower() == "true"
     
     # Database
     DATABASE_URL: str = os.getenv(
