@@ -281,10 +281,11 @@ class OpenStreetMapBackend(LocationBackend):
     
     async def _fetch_wikidata_id(self, location: LocationData) -> LocationData:
         """Fetch Wikidata ID from Wikipedia or by searching"""
-        if location.wikipedia_url:
-            # Extract title from Wikipedia URL
-            title = location.wikipedia_url.split("/wiki/")[-1]
-            
+        if location.name:
+            # Extract title from Wikipedia URL (if present; not used in the
+            # search-by-name call below, kept for parity with prior behavior)
+            title = location.wikipedia_url.split("/wiki/")[-1] if location.wikipedia_url else None
+
             try:
                 async with httpx.AsyncClient() as client:
                     # Query Wikidata for the page

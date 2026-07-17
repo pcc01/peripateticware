@@ -17,7 +17,7 @@ from core.database import get_db
 from core.config import settings
 from services.privacy_engine import get_privacy_checker
 from services.privacy_config_loader import PrivacyConfigurationLoader
-from services.multi_backend_location_service import get_location_service
+from services.multi_backend_location_service import get_location_service, LocationData
 from services.iapp_privacy_crawler import run_privacy_crawler, run_jurisdiction_crawl, get_supported_countries
 
 logger = logging.getLogger(__name__)
@@ -153,6 +153,7 @@ async def enrich_location(
     """
     try:
         from sqlalchemy import select as _sel
+        from datetime import datetime, timedelta
         from models.database import CachedLocation, EnrichedLocation as _EL
 
         # 1. Check cache
@@ -167,7 +168,15 @@ async def enrich_location(
             )
             enriched = er.scalar_one_or_none()
 
-        if enriched:
+        # TTL staleness check — an over-age row is treated as a cache miss so
+        # it gets re-fetched and refreshed below rather than served forever.
+        is_stale = False
+        if enriched and enriched.enriched_at:
+            age = datetime.utcnow() - enriched.enriched_at
+            if age > timedelta(hours=settings.LOCATION_CACHE_TTL_HOURS):
+                is_stale = True
+
+        if enriched and not is_stale:
             return {
                 "place_id": place_id,
                 "name": cached.name if cached else place_id,
@@ -178,33 +187,137 @@ async def enrich_location(
                 "image_url": enriched.image_url,
                 "enrichment_quality": enriched.enrichment_quality,
                 "source": enriched.enrichment_source,
+                "wikidata_id": enriched.wikidata_id,
+                "architect_or_artist": enriched.architect_or_artist,
+                "construction_date": enriched.construction_date,
+                "historical_significance": enriched.historical_significance,
+                "keywords": enriched.keywords or [],
             }
 
-        # 2. Cache miss — try Nominatim + Wikipedia (fire-and-forget, return stub)
-        import asyncio, httpx as _httpx
-        loc_name = place_id.replace("-", " ").title()
-        description = None
-        try:
-            async with _httpx.AsyncClient(timeout=5, headers={"User-Agent": "Peripateticware/1.0"}) as c:
-                wiki = await c.get(
-                    f"https://en.wikipedia.org/api/rest_v1/page/summary/{loc_name.replace(' ', '_')}"
-                )
-                if wiki.status_code == 200:
-                    description = wiki.json().get("extract", "")[:500]
-        except Exception:
-            pass
+        # 2. Cache miss (or stale) — reconstruct a LocationData and run the
+        # real MultiBackendLocationService enrichment pipeline (OSM tags ->
+        # Wikidata entity -> Wikipedia extract -> educational metadata).
+        service = get_location_service()
 
-        return {
+        if cached:
+            location = LocationData(
+                name=cached.name,
+                latitude=cached.latitude,
+                longitude=cached.longitude,
+                location_type=cached.location_type or "point_of_interest",
+                address=cached.address or "",
+                place_id=cached.place_id,
+                source=cached.source or "openstreetmap",
+            )
+        else:
+            # No CachedLocation row yet — synthesize a minimal LocationData
+            # from the slug. Must use source="openstreetmap": that's the only
+            # backend whose enrich_location() actually does the
+            # Wikidata/Wikipedia chain — "nominatim" is a no-op passthrough.
+            loc_name = place_id.replace("-", " ").title()
+            location = LocationData(
+                name=loc_name,
+                latitude=0.0,
+                longitude=0.0,
+                location_type="point_of_interest",
+                address="",
+                place_id=place_id,
+                source="openstreetmap",
+            )
+
+        enriched_location = await service.enrich_location(location, subject=subject)
+
+        # Simple populated-fields heuristic for enrichment_quality — not a
+        # hardcoded constant. LocationData has no enrichment_quality field.
+        quality_fields = [
+            enriched_location.description,
+            enriched_location.image_url,
+            enriched_location.wikidata_id,
+        ]
+        enrichment_quality = min(
+            sum(1 for f in quality_fields if f) / len(quality_fields), 1.0
+        )
+
+        response = {
             "place_id": place_id,
-            "name": loc_name,
-            "description": description,
-            "subjects": [subject] if subject else [],
-            "learning_opportunities": [],
-            "image_url": None,
-            "enrichment_quality": 0.3 if description else 0.0,
-            "source": "wikipedia_live" if description else "none",
+            "name": enriched_location.name,
+            "description": enriched_location.description,
+            "subjects": enriched_location.subjects or [],
+            "grade_levels": [],  # LocationData has no grade_levels source data
+            "learning_opportunities": enriched_location.learning_opportunities or [],
+            "image_url": enriched_location.image_url,
+            "enrichment_quality": enrichment_quality,
+            "source": enriched_location.source,
+            "wikidata_id": enriched_location.wikidata_id,
+            "architect_or_artist": enriched_location.architect_or_artist,
+            "construction_date": enriched_location.construction_date,
+            "historical_significance": enriched_location.historical_significance,
+            "keywords": enriched_location.keywords or [],
         }
-    
+
+        # 3. Cache write-back — mirrors inference.py::_write_inference_cache().
+        if settings.ENABLE_LOCATION_CACHE:
+            try:
+                if not cached:
+                    cached = CachedLocation(
+                        name=enriched_location.name,
+                        latitude=enriched_location.latitude,
+                        longitude=enriched_location.longitude,
+                        location_type=enriched_location.location_type,
+                        address=enriched_location.address,
+                        place_id=place_id,
+                        source=enriched_location.source,
+                    )
+                    db.add(cached)
+                    await db.flush()  # get cached.id before creating EnrichedLocation
+                else:
+                    cached.name = enriched_location.name
+                    cached.location_type = enriched_location.location_type
+                    cached.address = enriched_location.address
+                    cached.source = enriched_location.source
+
+                if enriched:
+                    # Stale row found earlier — refresh it in place rather
+                    # than inserting a second row (cached_location_id is
+                    # unique on EnrichedLocation).
+                    enriched.subjects = enriched_location.subjects or []
+                    enriched.keywords = enriched_location.keywords or []
+                    enriched.learning_opportunities = enriched_location.learning_opportunities or []
+                    enriched.description = enriched_location.description
+                    enriched.image_url = enriched_location.image_url
+                    enriched.wikipedia_url = enriched_location.wikipedia_url
+                    enriched.wikidata_id = enriched_location.wikidata_id
+                    enriched.architect_or_artist = enriched_location.architect_or_artist
+                    enriched.construction_date = enriched_location.construction_date
+                    enriched.historical_significance = enriched_location.historical_significance
+                    enriched.enrichment_source = enriched_location.source
+                    enriched.enrichment_quality = enrichment_quality
+                    enriched.enriched_at = datetime.utcnow()
+                else:
+                    new_enriched = _EL(
+                        cached_location_id=cached.id,
+                        subjects=enriched_location.subjects or [],
+                        keywords=enriched_location.keywords or [],
+                        learning_opportunities=enriched_location.learning_opportunities or [],
+                        description=enriched_location.description,
+                        image_url=enriched_location.image_url,
+                        wikipedia_url=enriched_location.wikipedia_url,
+                        wikidata_id=enriched_location.wikidata_id,
+                        architect_or_artist=enriched_location.architect_or_artist,
+                        construction_date=enriched_location.construction_date,
+                        historical_significance=enriched_location.historical_significance,
+                        enrichment_source=enriched_location.source,
+                        enrichment_quality=enrichment_quality,
+                    )
+                    db.add(new_enriched)
+
+                await db.commit()
+            except Exception as cache_err:
+                logger.warning(f"Location cache write failed (non-fatal): {cache_err}")
+                await db.rollback()
+
+        return response
+
     except Exception as e:
         logger.error(f"Error enriching location: {e}")
         raise HTTPException(

@@ -863,6 +863,7 @@ export const ActivityBuilder = () => {
                   <WikiLocationInfo
                     latitude={formData.location.latitude}
                     longitude={formData.location.longitude}
+                    subject={formData.subject}
                     onInfoLoaded={(info) => {
                       setFormData((prev) => ({
                         ...prev,

@@ -10,15 +10,23 @@ interface LocationInfo {
   features?: string[];
   historicalContext?: string;
   educationalValue?: string;
+  // Wikidata-sourced fields (backend /locations/{place_id}/enrich pipeline)
+  wikidataId?: string;
+  architectOrArtist?: string;
+  constructionDate?: string;
+  historicalSignificance?: string;
+  keywords?: string[];
+  learningOpportunities?: string[];
 }
 
 interface WikiLocationInfoProps {
   latitude: number;
   longitude: number;
+  subject?: string;
   onInfoLoaded: (info: LocationInfo) => void;
 }
 
-export const WikiLocationInfo = ({ latitude, longitude, onInfoLoaded }: WikiLocationInfoProps) => {
+export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }: WikiLocationInfoProps) => {
   const { t } = useTranslation('landing');
   
   
@@ -33,11 +41,84 @@ export const WikiLocationInfo = ({ latitude, longitude, onInfoLoaded }: WikiLoca
     fetchLocationInfo();
   }, [latitude, longitude]);
 
+  /**
+   * Primary path (Item 4): call the backend enrichment pipeline —
+   * POST /api/v1/locations/search to find a nearby indexed POI, then
+   * GET /api/v1/locations/{place_id}/enrich for Wikidata/Wikipedia-sourced
+   * educational metadata. Returns null (not an error) when /locations/search
+   * finds no nearby POI, so the caller can fall through to the client-side
+   * Nominatim/Wikipedia fallback below.
+   */
+  const fetchFromBackendPipeline = async (): Promise<LocationInfo | null> => {
+    const searchResponse = await fetch('/api/v1/locations/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude, longitude, radius_meters: 500 }),
+    });
+    if (!searchResponse.ok) {
+      throw new Error(`locations/search failed (${searchResponse.status})`);
+    }
+    const searchResults = await searchResponse.json();
+    if (!Array.isArray(searchResults) || searchResults.length === 0) {
+      return null;
+    }
+
+    const placeId = searchResults[0].place_id;
+    const subjectQuery = subject ? `?subject=${encodeURIComponent(subject)}` : '';
+    const enrichResponse = await fetch(
+      `/api/v1/locations/${encodeURIComponent(placeId)}/enrich${subjectQuery}`
+    );
+    if (!enrichResponse.ok) {
+      throw new Error(`locations/${placeId}/enrich failed (${enrichResponse.status})`);
+    }
+    const enrich = await enrichResponse.json();
+
+    const description =
+      enrich.description || `Location near ${enrich.name || searchResults[0].name || placeId}`;
+
+    const info: LocationInfo = {
+      name: enrich.name || searchResults[0].name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+      description,
+      // Repurposed: wikiId now sources from the Wikidata QID instead of a
+      // Wikipedia page title. Confirmed UI-only display state — never sent
+      // in the activity save payload — so this is a zero-risk change.
+      wikiId: enrich.wikidata_id || undefined,
+      type: searchResults[0].location_type || 'location',
+      features: extractFeatures(description),
+      wikidataId: enrich.wikidata_id || undefined,
+      architectOrArtist: enrich.architect_or_artist || undefined,
+      constructionDate: enrich.construction_date || undefined,
+      historicalSignificance: enrich.historical_significance || undefined,
+      keywords: enrich.keywords && enrich.keywords.length > 0 ? enrich.keywords : undefined,
+      learningOpportunities:
+        enrich.learning_opportunities && enrich.learning_opportunities.length > 0
+          ? enrich.learning_opportunities
+          : undefined,
+    };
+    return info;
+  };
+
   const fetchLocationInfo = async () => {
     setIsLoading(true);
     setError('');
 
     try {
+      // Primary: backend enrichment pipeline (Items 1-3). If it throws, fall
+      // through below to the client-side fallback rather than propagating.
+      try {
+        const backendInfo = await fetchFromBackendPipeline();
+        if (backendInfo) {
+          setLocationInfo(backendInfo);
+          onInfoLoaded(backendInfo);
+          return;
+        }
+        // backendInfo === null: /locations/search found no nearby POI —
+        // fall through to the client-side fallback below.
+      } catch (backendErr) {
+        console.warn('Backend location enrichment failed, falling back to client-side lookup:', backendErr);
+      }
+
+      // Fallback: client-side reverse-geocode (Nominatim) + Wikipedia geosearch
       // Step 1: Get location name from reverse geocoding
       const geoResponse = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
@@ -211,6 +292,49 @@ export const WikiLocationInfo = ({ latitude, longitude, onInfoLoaded }: WikiLoca
                   </span>
             )}
               </div>
+            </div>
+        }
+
+          {(locationInfo.architectOrArtist || locationInfo.constructionDate || locationInfo.historicalSignificance ||
+          (locationInfo.keywords && locationInfo.keywords.length > 0) || locationInfo.wikidataId) &&
+        <div className={styles.featuresSection}>
+              <h4>{t("landing:learn_about_this_place", "Learn about this place")}</h4>
+              {locationInfo.architectOrArtist &&
+          <div className={styles.coordinatePair}>
+                  <span className={styles.label}>{t("landing:wikilocationinfo.architect_or_artist", "Architect/Artist:")}</span>
+                  <span className={styles.value}>{locationInfo.architectOrArtist}</span>
+                </div>
+          }
+              {locationInfo.constructionDate &&
+          <div className={styles.coordinatePair}>
+                  <span className={styles.label}>{t("landing:wikilocationinfo.construction_date", "Constructed:")}</span>
+                  <span className={styles.value}>{locationInfo.constructionDate}</span>
+                </div>
+          }
+              {locationInfo.historicalSignificance &&
+          <div className={styles.coordinatePair}>
+                  <span className={styles.label}>{t("landing:wikilocationinfo.historical_significance", "Historical Significance:")}</span>
+                  <span className={styles.value}>{locationInfo.historicalSignificance}</span>
+                </div>
+          }
+              {locationInfo.keywords && locationInfo.keywords.length > 0 &&
+          <div className={styles.featuresList} style={{ marginTop: 8 }}>
+                  {locationInfo.keywords.map((keyword, index) =>
+            <span key={index} className={styles.featureTag}>
+                      {keyword}
+                    </span>
+            )}
+                </div>
+          }
+              {locationInfo.wikidataId &&
+          <a
+            href={`https://www.wikidata.org/wiki/${locationInfo.wikidataId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.mapLink}
+            style={{ display: 'inline-block', marginTop: 8 }}>{t("landing:view_on_wikidata", "View on Wikidata")}
+          </a>
+          }
             </div>
         }
 
