@@ -280,8 +280,10 @@ async def get_classroom(
 ):
     row = (await db.execute(text("""
         SELECT c.id, c.name, c.grade_level, c.subject, c.is_active,
-               c.org_id, c.teacher_id, c.created_at
+               c.org_id, c.teacher_id, c.created_at,
+               COALESCE(o.max_students_per_classroom, 30) AS max_students_per_classroom
         FROM   classrooms c
+        LEFT JOIN organizations o ON o.id = c.org_id
         WHERE  c.id = :cid AND c.teacher_id = :tid
     """), {"cid": classroom_id, "tid": str(current_user.id)})).first()
 
@@ -297,6 +299,8 @@ async def get_classroom(
         ORDER BY u.last_name, u.first_name
     """), {"cid": classroom_id})).mappings().all()
 
+    max_students_per_classroom = row[8]
+
     return {
         "id":            str(row[0]),
         "name":          row[1],
@@ -306,6 +310,12 @@ async def get_classroom(
         "org_id":        str(row[5]),
         "teacher_id":    str(row[6]),
         "created_at":    row[7].isoformat() if row[7] else None,
+        # student_count / max_students_per_classroom: TeacherClassroomPage's
+        # capacity arithmetic (atCapacity, capacityPct, "spots left") consumes
+        # these two fields directly — previously missing from this response,
+        # which produced NaN in the UI (silent bug, not a crash).
+        "student_count": len(students),
+        "max_students_per_classroom": max_students_per_classroom,
         "students": [
             {
                 "id":          str(s["id"]),

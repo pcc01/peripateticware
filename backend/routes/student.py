@@ -18,7 +18,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, UploadFile, File, Form
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
@@ -563,6 +563,66 @@ async def get_competencies(
         stmt = stmt.where(StudentCompetency.status == status)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+# ==============================================================================
+# ANNOUNCEMENTS (classroom-wide, teacher-initiated broadcasts)
+# ==============================================================================
+
+class StudentAnnouncementResponse(BaseModel):
+    id: str
+    classroom_id: str
+    classroom_name: str
+    teacher_id: str
+    teacher_name: str
+    title: str
+    body: str
+    created_at: str
+
+
+@router.get("/announcements", response_model=List[StudentAnnouncementResponse])
+async def get_student_announcements(
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Classroom-wide announcements for every classroom the CALLING student
+    (current_user.id) is enrolled in.
+
+    Security note: scoping comes entirely from classroom_students rows for
+    current_user.id — there is no client-supplied classroom_id, so a student
+    cannot request another classroom's announcements by guessing an id.
+    """
+    try:
+        rows = (await db.execute(text("""
+            SELECT a.id, a.classroom_id, c.name AS classroom_name,
+                   a.teacher_id, COALESCE(t.full_name, t.email) AS teacher_name,
+                   a.title, a.body, a.created_at
+            FROM classroom_announcements a
+            JOIN classrooms c ON c.id = a.classroom_id
+            JOIN classroom_students cs ON cs.classroom_id = a.classroom_id
+            JOIN users t ON t.id = a.teacher_id
+            WHERE cs.student_id = CAST(:sid AS uuid)
+            ORDER BY a.created_at DESC
+            LIMIT :lim
+        """), {"sid": str(current_user.id), "lim": limit})).mappings().all()
+
+        return [
+            StudentAnnouncementResponse(
+                id=str(r["id"]),
+                classroom_id=str(r["classroom_id"]),
+                classroom_name=r["classroom_name"],
+                teacher_id=str(r["teacher_id"]),
+                teacher_name=r["teacher_name"],
+                title=r["title"],
+                body=r["body"],
+                created_at=r["created_at"].isoformat() if r["created_at"] else datetime.utcnow().isoformat(),
+            )
+            for r in rows
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==============================================================================

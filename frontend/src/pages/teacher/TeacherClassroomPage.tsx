@@ -18,6 +18,7 @@ import InviteStudentsPanel from '@/components/teacher/InviteStudentsPanel';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
 import UpgradeCTA from '@/components/UpgradeCTA';
+import { getErrorMessage } from '@/utils/errorMessage';
 
 interface Student {
   id:          string;
@@ -80,7 +81,12 @@ export default function TeacherClassroomPage() {
       setEditGrade(cResp.data.grade_level ?? '');
       setEditSubject(cResp.data.subject ?? '');
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Failed to load classroom.');
+      // e.response.data.detail can be a structured object (e.g. upgrade-required
+      // or permission errors), not just a string. Rendering an object directly
+      // as a React child throws "Minified React error #31" and unmounts the
+      // whole app -- the blank-page symptom reported after creating a class
+      // and being routed here. Always coerce through getErrorMessage.
+      setError(getErrorMessage(e, 'Failed to load classroom.'));
     } finally {
       setLoading(false);
     }
@@ -113,7 +119,7 @@ export default function TeacherClassroomPage() {
       await apiClient.delete(`/classrooms/${classroomId}/students/${studentId}`);
       load();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Could not remove student.');
+      setError(getErrorMessage(e, 'Could not remove student.'));
     } finally {
       setRemovingId(null);
     }

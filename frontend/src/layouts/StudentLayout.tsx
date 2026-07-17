@@ -35,6 +35,7 @@ const StudentLayout: React.FC<Props> = ({ children }) => {
       label: t('nav.progress', 'Progress'),
       items: [
         { icon: '📈', label: 'How It Works',   path: '/student/how-it-works' },
+        { icon: '📅', label: t('nav.calendar', 'Calendar'), path: '/student/calendar' },
       ],
     },
     {

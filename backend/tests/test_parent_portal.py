@@ -198,6 +198,86 @@ async def test_reply_to_message_not_found(ctx):
 
 
 # ===========================================================================
+# 3b. POST /parent/messages/{id}/reply — 403 when caller is not a participant
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_reply_to_message_forbidden(ctx):
+    """POST /parent/messages/{id}/reply returns 403 when the calling user is
+    not the from_user_id or to_user_id on the original message (i.e. not a
+    participant in the conversation)."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    msg_id = str(uuid4())
+    conv_id = uuid4()
+    other_teacher_id = uuid4()
+    other_parent_id = uuid4()
+
+    # Row shape consumed positionally: orig[0]=conversation_id,
+    # orig[1]=from_user_id, orig[2]=to_user_id — neither matches ctx["parent"].id
+    orig_result = MagicMock()
+    orig_result.fetchone.return_value = (conv_id, other_teacher_id, other_parent_id)
+    db.execute.return_value = orig_result
+
+    resp = await client.post(
+        f"/api/v1/parent/messages/{msg_id}/reply",
+        json={"body": "Sneaky reply"},
+    )
+
+    assert resp.status_code == 403
+    assert "not authorized" in resp.json()["detail"].lower()
+    db.commit.assert_not_called()
+
+
+# ===========================================================================
+# 3c. POST /parent/messages/{id}/reply — 200 success when caller IS a participant
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_reply_to_message_success(ctx):
+    """POST /parent/messages/{id}/reply returns 200 and inserts a new reply
+    row when the calling user is a participant (to_user_id) on the original
+    message."""
+    client = ctx["client"]
+    db = ctx["db"]
+    parent = ctx["parent"]
+
+    msg_id = str(uuid4())
+    conv_id = uuid4()
+    teacher_id = uuid4()
+
+    orig_result = MagicMock()
+    # orig[1] = from_user_id (teacher), orig[2] = to_user_id (this parent)
+    orig_result.fetchone.return_value = (conv_id, teacher_id, parent.id)
+
+    insert_result = MagicMock()
+
+    db.execute.side_effect = [orig_result, insert_result]
+
+    resp = await client.post(
+        f"/api/v1/parent/messages/{msg_id}/reply",
+        json={"body": "Thanks for the update!"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["success"] is True
+    assert "reply_id" in body
+    assert "created_at" in body
+    db.commit.assert_called_once()
+
+    # Confirm the INSERT was executed with the reply body and correct
+    # from/to user ids (reply goes from this parent back to the teacher).
+    insert_call_args, insert_call_kwargs = db.execute.call_args_list[1]
+    params = insert_call_args[1]
+    assert params["body"] == "Thanks for the update!"
+    assert params["from_uid"] == str(parent.id)
+    assert params["to_uid"] == str(teacher_id)
+    assert params["conv_id"] == str(conv_id)
+
+
+# ===========================================================================
 # 4. GET /parent/notifications?unread_only=true — only returns unread rows
 # ===========================================================================
 

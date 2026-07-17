@@ -47,6 +47,13 @@ const TeacherLayout: React.FC<Props> = ({ children }) => {
       ],
     },
     {
+      label: 'Communication',
+      items: [
+        { icon: '📅', label: t('nav.calendar', 'Calendar'),   path: '/teacher/calendar' },
+        { icon: '💬', label: t('nav.messages', 'Messages'),   path: '/teacher/messages' },
+      ],
+    },
+    {
       label: 'Account',
       items: [
         { icon: '⚙️', label: t('nav.settings', 'Settings'), path: '/teacher/settings' },

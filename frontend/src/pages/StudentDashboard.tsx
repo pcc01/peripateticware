@@ -9,12 +9,25 @@ import { useTranslation } from 'react-i18next';
  * Displays: Progress, Projects, Activities, Upcoming Sessions
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudentStore } from '@/stores';
 import styles from './StudentDashboard.module.css';
 import { useAuthStore } from '@/stores/auth';
 import { PendingReflectionQueue } from '@/components/student/PendingReflectionQueue';
+import apiClient from '@/config/api';
+
+interface StudentAnnouncement {
+  id: string;
+  classroom_id: string;
+  classroom_name: string;
+  teacher_id: string;
+  teacher_name: string;
+  title: string;
+  body: string;
+  created_at: string;
+}
+
 export const StudentDashboard: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
@@ -29,6 +42,14 @@ export const StudentDashboard: React.FC = () => {
   } = useStudentStore();
 
   const { logout } = useAuthStore();
+
+  const [announcements, setAnnouncements] = useState<StudentAnnouncement[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/student/announcements', { params: { limit: 10 } })
+      .then(r => setAnnouncements(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setAnnouncements([]));
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -116,6 +137,33 @@ export const StudentDashboard: React.FC = () => {
           </div>
         </section>
       }
+
+      {/* Classroom Announcements — teacher-posted broadcasts for this student's classroom(s) */}
+      {announcements.length > 0 && (
+        <section className={styles.section} data-testid="student-announcements-section">
+          <div className={styles.sectionHeader}>
+            <h2>{t('landing:announcements', 'Announcements')}</h2>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {announcements.map(a => (
+              <div
+                key={a.id}
+                data-testid="student-announcement-item"
+                style={{
+                  padding: '14px 18px', background: 'var(--surface)', borderRadius: 10,
+                  border: '1px solid var(--border)', borderLeft: '4px solid #f59e0b',
+                }}
+              >
+                <div style={{ fontWeight: 700 }}>{a.title}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 2 }}>
+                  {a.classroom_name} · {a.teacher_name}
+                </div>
+                <div style={{ marginTop: 8, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{a.body}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Pending Reflection Queue — shown only when student has items */}
       <section className={styles.section}>

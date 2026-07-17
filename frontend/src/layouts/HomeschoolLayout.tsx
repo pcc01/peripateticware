@@ -20,6 +20,7 @@ const HomeschoolLayout: React.FC<Props> = ({ children }) => {
       items: [
         { icon: '👧', label: 'Children',         path: '/homeschool/children' },
         { icon: '📊', label: t('nav.progress', 'Progress'),          path: '/homeschool/progress' },
+        { icon: '📅', label: t('nav.calendar', 'Calendar'),          path: '/homeschool/calendar' },
       ],
     },
     {

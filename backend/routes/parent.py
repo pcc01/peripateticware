@@ -143,6 +143,20 @@ class MessageReplyRequest(BaseModel):
     body: str = Field(..., min_length=1, max_length=5000)
 
 
+class AnnouncementResponse(BaseModel):
+    """Classroom-wide announcement, as seen by a parent"""
+    id: str
+    classroom_id: str
+    classroom_name: str
+    teacher_id: str
+    teacher_name: str
+    child_id: str
+    child_name: str
+    title: str
+    body: str
+    created_at: str
+
+
 class NotificationResponse(BaseModel):
     """Notification response"""
     id: str
@@ -682,6 +696,58 @@ async def reply_to_message(
 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/announcements", response_model=List[AnnouncementResponse])
+async def get_parent_announcements(
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(_get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Classroom-wide announcements posted by teachers, for every classroom this
+    parent's linked children belong to.
+
+    Security note: scoping is entirely server-side, derived from
+    parent_child_links + classroom_students for the CALLING parent
+    (current_user.id) — there is no client-supplied classroom_id or
+    child_id on this endpoint, so a parent cannot request another family's
+    classroom's announcements by guessing an id.
+    """
+    try:
+        rows = (await db.execute(text("""
+            SELECT DISTINCT a.id, a.classroom_id, c.name AS classroom_name,
+                   a.teacher_id, COALESCE(t.full_name, t.email) AS teacher_name,
+                   cs.student_id AS child_id, COALESCE(s.full_name, s.email) AS child_name,
+                   a.title, a.body, a.created_at
+            FROM classroom_announcements a
+            JOIN classrooms c ON c.id = a.classroom_id
+            JOIN classroom_students cs ON cs.classroom_id = a.classroom_id
+            JOIN parent_child_links pcl ON pcl.child_id = cs.student_id
+            JOIN users t ON t.id = a.teacher_id
+            JOIN users s ON s.id = cs.student_id
+            WHERE pcl.parent_id = CAST(:pid AS uuid)
+            ORDER BY a.created_at DESC
+            LIMIT :lim
+        """), {"pid": str(current_user.id), "lim": limit})).mappings().all()
+
+        return [
+            AnnouncementResponse(
+                id=str(r["id"]),
+                classroom_id=str(r["classroom_id"]),
+                classroom_name=r["classroom_name"],
+                teacher_id=str(r["teacher_id"]),
+                teacher_name=r["teacher_name"],
+                child_id=str(r["child_id"]),
+                child_name=r["child_name"],
+                title=r["title"],
+                body=r["body"],
+                created_at=r["created_at"].isoformat() if r["created_at"] else datetime.utcnow().isoformat(),
+            )
+            for r in rows
+        ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

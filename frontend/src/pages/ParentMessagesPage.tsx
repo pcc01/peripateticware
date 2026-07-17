@@ -35,6 +35,19 @@ interface Message {
   conversation_id: string;
 }
 
+interface Announcement {
+  id: string;
+  classroom_id: string;
+  classroom_name: string;
+  teacher_id: string;
+  teacher_name: string;
+  child_id: string;
+  child_name: string;
+  title: string;
+  body: string;
+  created_at: string;
+}
+
 function timeAgo(iso: string): string {
   if (!iso) return '';
   const then = new Date(iso).getTime();
@@ -55,6 +68,10 @@ export const ParentMessagesPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
+
+  // Announcements
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
 
   // Reply state
   const [replyTo, setReplyTo] = useState<Message | null>(null);
@@ -86,6 +103,17 @@ export const ParentMessagesPage: React.FC = () => {
   }, [parentId]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
+
+  const fetchAnnouncements = useCallback(async () => {
+    try {
+      const r = await axios.get(`${API}/parent/announcements`, { headers: getAuth(), params: { limit: 20 } });
+      setAnnouncements(Array.isArray(r.data) ? r.data : []);
+    } catch (e: any) {
+      setAnnouncementsError(getErrorMessage(e, 'Could not load announcements'));
+    }
+  }, []);
+
+  useEffect(() => { fetchAnnouncements(); }, [fetchAnnouncements]);
 
   const openReply = (m: Message) => {
     setReplyTo(m);
@@ -121,6 +149,40 @@ export const ParentMessagesPage: React.FC = () => {
       <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
         {t('pages_parentmessagespage.subtitle', 'Messages from your child’s teachers. Reply to stay in touch.')}
       </p>
+
+      {announcements.length > 0 && (
+        <div data-testid="announcements-section" style={{ marginBottom: 28 }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 10 }}>
+            {t('pages_parentmessagespage.announcements_title', 'Classroom Announcements')}
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {announcements.map(a => (
+              <div
+                key={a.id}
+                data-testid="announcement-banner-item"
+                style={{
+                  padding: '14px 18px', background: 'var(--surface)', borderRadius: 10,
+                  border: '1px solid var(--border)', borderLeft: '4px solid #f59e0b',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ fontWeight: 700 }}>{a.title}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>{timeAgo(a.created_at)}</div>
+                </div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 2 }}>
+                  {a.classroom_name} · {a.teacher_name} · {a.child_name}
+                </div>
+                <div style={{ marginTop: 8, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{a.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {announcementsError && (
+        <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.85rem' }}>
+          {announcementsError}
+        </div>
+      )}
 
       {error && (
         <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: '0.9rem' }}>

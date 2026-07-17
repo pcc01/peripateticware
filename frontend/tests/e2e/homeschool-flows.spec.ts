@@ -56,6 +56,58 @@ test.describe('Homeschool – Welcome', () => {
     // Welcome page has no layout shell, so aside should NOT be present
     await expect(page.locator('h1, h2, p, button').first()).toBeVisible({ timeout: 10_000 });
   });
+
+  // Step 2 ("Your State") is supposed to persist the selection to
+  // localStorage['hs_state_code'] (see HomeschoolWelcomePage.tsx's
+  // handleStateSelect / LS_STATE_KEY) so HomeschoolRequirementsPage.tsx can
+  // read the same key on mount. It used to capture-and-discard the
+  // selection — this guards the persistence behavior directly.
+  test('selecting a state on Step 2 persists it to localStorage["hs_state_code"]', async ({ page }) => {
+    await page.route('**/api/v1/homeschool/children', (route) =>
+      route.fulfill({ status: 201, json: { id: 'child-1' } }));
+
+    await page.goto('/homeschool/welcome');
+    await expect(page.getByRole('heading', { name: /who are you teaching/i })).toBeVisible({ timeout: 10_000 });
+
+    // Step 0: give the wizard a valid child name so "Continue" advances
+    // instead of blocking on the "add at least one child" validation error.
+    await page.locator('input[placeholder="Child 1 name"]').fill('Ada');
+    await page.getByRole('button', { name: /^continue$/i }).click();
+
+    // Step 1: the state picker.
+    await expect(page.getByRole('heading', { name: /which state do you homeschool in/i }))
+      .toBeVisible({ timeout: 10_000 });
+
+    const stateSelect = page.locator('select');
+    await expect(stateSelect).toBeVisible();
+    await stateSelect.selectOption('CA');
+
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('hs_state_code')))
+      .toBe('CA');
+
+    // Persists across a reload — this is what HomeschoolRequirementsPage.tsx
+    // relies on to pre-fill the state on a later visit.
+    await page.reload();
+    expect(await page.evaluate(() => localStorage.getItem('hs_state_code'))).toBe('CA');
+  });
+
+  test('skipping the state picker (never selecting) does not write hs_state_code', async ({ page }) => {
+    await page.route('**/api/v1/homeschool/children', (route) =>
+      route.fulfill({ status: 201, json: { id: 'child-1' } }));
+
+    await page.goto('/homeschool/welcome');
+    await page.locator('input[placeholder="Child 1 name"]').fill('Grace');
+    await page.getByRole('button', { name: /^continue$/i }).click();
+
+    await expect(page.getByRole('heading', { name: /which state do you homeschool in/i }))
+      .toBeVisible({ timeout: 10_000 });
+
+    // Move straight to Step 3 without touching the select.
+    await page.getByRole('button', { name: /^continue$/i }).click();
+    await expect(page.getByRole('heading', { name: /you're all set/i })).toBeVisible({ timeout: 10_000 });
+
+    expect(await page.evaluate(() => localStorage.getItem('hs_state_code'))).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -48,6 +48,8 @@ import ActivityListPage from './pages/teacher/ActivityListPage'
 import SharedLibraryPage from './pages/teacher/SharedLibraryPage'
 import TeacherClassroomPage from './pages/teacher/TeacherClassroomPage'
 import TeacherClassroomsPage from './pages/teacher/TeacherClassroomsPage'
+import TeacherMessagesPage from './pages/teacher/TeacherMessagesPage'
+import TeacherCalendarPage from './pages/teacher/TeacherCalendarPage'
 import TeacherWelcomePage from './pages/teacher/TeacherWelcomePage'
 import ProjectsPage from './pages/teacher/ProjectsPage'
 import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
@@ -76,6 +78,7 @@ import TeacherSubmissionsPage from './pages/TeacherSubmissionsPage'
 import ProfessorFieldworkPage from './pages/teacher/ProfessorFieldworkPage'
 
 import StudentHowItWorksPage from './pages/student/StudentHowItWorksPage'
+import StudentCalendarPage from './pages/student/StudentCalendarPage'
 import SessionPage from './pages/SessionPage'
 import { StudentSettingsPage } from './pages/StudentSettingsPage'
 import FieldNotesListPage from './pages/student/FieldNotesListPage'
@@ -107,6 +110,7 @@ import HomeschoolProgressPage from './pages/homeschool/HomeschoolProgressPage'
 import HomeschoolRequirementsPage from './pages/homeschool/HomeschoolRequirementsPage'
 import HomeschoolCoveragePage from './pages/homeschool/HomeschoolCoveragePage'
 import HomeschoolExportPage from './pages/homeschool/HomeschoolExportPage'
+import HomeschoolCalendarPage from './pages/homeschool/HomeschoolCalendarPage'
 import HomeschoolSettingsPage from './pages/homeschool/HomeschoolSettingsPage'
 
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
@@ -370,6 +374,7 @@ const App: React.FC = () => {
           {/* STUDENT */}
           <Route path="/student" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentDashboard /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/how-it-works" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentHowItWorksPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/calendar" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentCalendarPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/settings" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentSettingsPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/field-notes" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNotesListPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/field-notes/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNoteEditorPage /></StudentLayout></ProtectedRoute>} />
@@ -412,6 +417,8 @@ const App: React.FC = () => {
           <Route path="/teacher/students" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherStudentsPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/classrooms" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherClassroomsPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/classrooms/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherClassroomPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/messages" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherMessagesPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/calendar" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TeacherCalendarPage /></TeacherLayout></ProtectedRoute>} />
 
           {/* PARENT */}
           <Route path="/parent" element={<ProtectedRoute requiredRole="parent"><ParentLayout><ParentDashboard /></ParentLayout></ProtectedRoute>} />
@@ -435,6 +442,7 @@ const App: React.FC = () => {
           <Route path="/homeschool/requirements" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolRequirementsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/coverage" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolCoveragePage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/export" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolExportPage /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/calendar" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolCalendarPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/rubrics" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/rubrics/import" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><RubricImportPage /></HomeschoolLayout></ProtectedRoute>} />

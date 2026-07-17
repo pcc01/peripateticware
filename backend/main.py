@@ -126,6 +126,7 @@ async def lifespan(app: FastAPI):
         seed_demo_users,
         seed_test_accounts,
         seed_homeschool_demo,
+        seed_homeschool_example_children,
         seed_demo_classroom,
         seed_test_classroom,
         seed_compliance_frameworks,
@@ -184,6 +185,7 @@ async def lifespan(app: FastAPI):
         await seed_demo_users(engine)
         await seed_test_accounts(engine)
         await seed_homeschool_demo(engine)
+        await seed_homeschool_example_children(engine)
         await seed_demo_classroom(engine)
         await seed_test_classroom(engine)
     else:
@@ -467,6 +469,18 @@ try:
     app.include_router(classrooms_router, prefix="/api/v1")      # router prefix="/classrooms"
 except Exception as e:
     print(f"Warning: could not register classrooms_router: {e}")
+
+try:
+    from routes.teacher_communication import router as teacher_communication_router
+    app.include_router(teacher_communication_router, prefix="/api/v1")   # router prefix="/teacher"
+except Exception as e:
+    print(f"Warning: could not register teacher_communication_router: {e}")
+
+try:
+    from routes.calendar import router as calendar_router
+    app.include_router(calendar_router, prefix="/api/v1")   # router prefix="/calendar"
+except Exception as e:
+    print(f"Warning: could not register calendar_router: {e}")
 
 try:
     from routes.projects import router as projects_router

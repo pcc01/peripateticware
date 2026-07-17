@@ -15,6 +15,7 @@ import React, { useState, useRef } from 'react';
 import { Link2, Mail, Upload, Copy, Check, AlertTriangle, X } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '@/utils/errorMessage';
 
 interface Invite {
   email:      string | null;
@@ -69,7 +70,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
       setResults(data.invites);
       onDone?.();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Failed to create invite link.');
+      setError(getErrorMessage(e, 'Failed to create invite link.'));
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
       setEmails('');
       onDone?.();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Failed to send invites.');
+      setError(getErrorMessage(e, 'Failed to send invites.'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +117,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
       setResults(data.invites);
       onDone?.();
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'CSV upload failed.');
+      setError(getErrorMessage(e, 'CSV upload failed.'));
     } finally {
       setLoading(false);
     }

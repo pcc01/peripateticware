@@ -123,6 +123,86 @@ test.describe('Teacher — Create Activity', () => {
   });
 });
 
+// ── 3b. Publish with jurisdiction-compliance check (regression guard) ──────────
+//
+// Backend regression: routes/activities.py's POST /check-compliance calls
+// `checker.load_from_db(db)` before evaluating compliance. If that call is
+// ever skipped/broken, the privacy_engine falls back to a state where every
+// activity reads as blocked, and teachers can never publish. This test
+// exercises the full ActivityManager submit path with a mocked
+// *successful* compliance check and asserts the "Create Activity" submit
+// actually completes (POST /api/v1/activities fires, page navigates away)
+// rather than silently doing nothing / staying blocked.
+
+test.describe('Teacher — Publish with compliance check succeeding', () => {
+  test('compliant status renders a green badge and does not block publish', async ({ page }) => {
+    await page.route('**/api/v1/activities/check-compliance', (route) =>
+      route.fulfill({ json: { status: 'compliant', issues: [], warnings: [] } }));
+    await page.route('**/api/v1/rubrics', (route) => route.fulfill({ json: { rubrics: [] } }));
+
+    let createCalled = false;
+    await page.route('**/api/v1/activities', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      createCalled = true;
+      await route.fulfill({
+        status: 201,
+        json: { id: 'new-activity-1', title: 'E2E Publish Test', status: 'published' },
+      });
+    });
+
+    await page.goto('/teacher/activities/new');
+    await page.locator('#title').fill('E2E Publish Test Activity');
+
+    // Compliance badge fires on a debounce after location/grade change — the
+    // effect runs on mount too, so just wait for the badge to appear.
+    await expect(page.getByText(/privacy compliant/i)).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /^create activity$/i }).click();
+
+    await expect.poll(() => createCalled, { timeout: 10_000 }).toBe(true);
+    // On success, ActivityManager navigates away from the create form.
+    await expect(page).toHaveURL(/\/teacher\/activities$/, { timeout: 10_000 });
+  });
+
+  test('"review" status shows the privacy confirmation panel, and confirming unblocks publish', async ({ page }) => {
+    await page.route('**/api/v1/activities/check-compliance', (route) =>
+      route.fulfill({
+        json: { status: 'review', issues: ['Student location data collected'], warnings: [] },
+      }));
+    await page.route('**/api/v1/rubrics', (route) => route.fulfill({ json: { rubrics: [] } }));
+
+    let createCalled = false;
+    let createBody: any = null;
+    await page.route('**/api/v1/activities', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      createCalled = true;
+      createBody = route.request().postDataJSON();
+      await route.fulfill({ status: 201, json: { id: 'new-activity-2', status: 'published' } });
+    });
+
+    await page.goto('/teacher/activities/new');
+    await page.locator('#title').fill('E2E Review Then Publish');
+
+    await expect(page.getByText(/privacy review needed/i)).toBeVisible({ timeout: 10_000 });
+
+    // Check all three confirmation boxes, then confirm.
+    const panelCheckboxes = page.locator('.space-y-3 input[type="checkbox"]');
+    const count = await panelCheckboxes.count();
+    for (let i = 0; i < count; i++) {
+      await panelCheckboxes.nth(i).check();
+    }
+    await page.getByRole('button', { name: /confirm privacy settings/i }).click();
+
+    await expect(page.getByText(/privacy settings confirmed/i)).toBeVisible({ timeout: 5_000 });
+
+    await page.getByRole('button', { name: /^create activity$/i }).click();
+
+    await expect.poll(() => createCalled, { timeout: 10_000 }).toBe(true);
+    expect(createBody).toMatchObject({ privacy_confirmed: true });
+    await expect(page).toHaveURL(/\/teacher\/activities$/, { timeout: 10_000 });
+  });
+});
+
 // ── 4. Submissions ────────────────────────────────────────────────────────────
 
 test.describe('Teacher — Submissions', () => {
@@ -224,6 +304,81 @@ test.describe('Teacher — Classrooms', () => {
     await expect(input).toBeVisible({ timeout: 5_000 });
     await page.getByRole('button', { name: /cancel/i }).click();
     await expect(input).not.toBeVisible({ timeout: 3_000 });
+  });
+
+  // Regression coverage for the "add a class → blank page" bug: FastAPI
+  // raises HTTPException(402, detail={code: 'UPGRADE_REQUIRED', ...}) — a
+  // structured OBJECT, not a string — when a teacher hits their license's
+  // classroom limit. Rendering that object directly as a React child throws
+  // "Minified React error #31" and unmounts the whole SPA to a blank
+  // <div id="root">. TeacherClassroomsPage.createClassroom() now routes the
+  // error through getErrorMessage()/a manual UPGRADE_REQUIRED branch instead
+  // of rendering the raw object — these tests assert the app shows a real,
+  // readable error message and stays interactive instead of going blank.
+  test('402 UPGRADE_REQUIRED response on create shows a readable error, not a blank page', async ({ page }) => {
+    await page.route('**/api/v1/classrooms', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 402,
+          json: {
+            detail: {
+              code: 'UPGRADE_REQUIRED',
+              feature: 'classroom_count',
+              required_tier: 'school',
+              current_tier: 'free',
+              limit: 1,
+              current: 1,
+            },
+          },
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.goto('/teacher/classrooms');
+    await page.getByRole('button', { name: /new classroom/i }).click();
+    await page.locator('input').first().fill('One Too Many');
+    await page.getByRole('button', { name: /^create$/i }).click();
+
+    // The page must NOT go blank — the classrooms heading (and the rest of
+    // the app chrome) stays mounted and visible.
+    await expect(page.getByRole('heading', { name: /classroom/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('body')).not.toBeEmpty();
+
+    // A real, human-readable error is shown — never "[object Object]" or a
+    // raw JSON blob, which is what an uncaught render crash / naive
+    // JSON.stringify fallback would produce.
+    await expect(page.getByText(/reached your plan.s classroom limit/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('[object Object]')).toHaveCount(0);
+
+    // The create form is still usable — proof the app didn't unmount.
+    await expect(page.locator('input').first()).toBeVisible();
+  });
+
+  // Same failure family, but a plain 500 with a non-string `detail` (e.g. a
+  // FastAPI validation-error-shaped body) — exercises the getErrorMessage()
+  // fallback path rather than the hand-rolled UPGRADE_REQUIRED branch.
+  test('500 response with a structured (non-string) detail on create still shows readable text', async ({ page }) => {
+    await page.route('**/api/v1/classrooms', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 500,
+          json: { detail: [{ msg: 'Unexpected server error', type: 'internal_error' }] },
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.goto('/teacher/classrooms');
+    await page.getByRole('button', { name: /new classroom/i }).click();
+    await page.locator('input').first().fill('Broken Backend Test');
+    await page.getByRole('button', { name: /^create$/i }).click();
+
+    await expect(page.getByRole('heading', { name: /classroom/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/unexpected server error/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('[object Object]')).toHaveCount(0);
   });
 });
 

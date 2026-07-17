@@ -17,6 +17,7 @@ TODO (backlog): Convert each _apply_*_migrations() call to a proper
 from sqlalchemy import text
 import asyncio
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -563,6 +564,50 @@ async def apply_core_schema_migrations(engine) -> None:
                 UNIQUE(parent_id, child_id)
             )
         """, "create homeschool_children")
+        # ── Calendar events ──────────────────────────────────────────────────
+        # Explicit teacher-created events (deadlines, field trips, holidays) that
+        # show up on the classroom calendar alongside auto-derived
+        # planned/completed activity dates. Every INSERT this app makes always
+        # supplies `id` explicitly (see routes/calendar.py) -- the DEFAULT here
+        # is just a safety net, not relied upon.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS classroom_events (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                classroom_id UUID NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+                created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                event_date DATE NOT NULL,
+                event_type VARCHAR(50) NOT NULL DEFAULT 'event',
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create classroom_events")
+        await _exec_safepoint(conn,
+            "CREATE INDEX IF NOT EXISTS idx_classroom_events_classroom ON classroom_events(classroom_id, event_date)"
+        )
+        # ── Classroom announcements ─────────────────────────────────────────
+        # Teacher-initiated broadcast posts visible to every student + parent
+        # associated with a classroom (e.g. "field trip Friday"). Distinct
+        # from classroom_events (calendar entries): announcements are a
+        # messaging concept, not a schedule concept, so they get their own
+        # table rather than overloading classroom_events. See
+        # routes/teacher_communication.py for create/list; routes/parent.py
+        # and routes/student.py for the parent/student-facing read side.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS classroom_announcements (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                classroom_id UUID NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+                teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(255) NOT NULL,
+                body TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create classroom_announcements")
+        await _exec_safepoint(conn,
+            "CREATE INDEX IF NOT EXISTS idx_classroom_announcements_classroom ON classroom_announcements(classroom_id, created_at DESC)"
+        )
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS activity_standards_map (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1105,6 +1150,80 @@ async def seed_demo_users(engine) -> None:
         logger.info("✅ Demo seed users ensured (passwords reset to SecurePass123!, is_active forced TRUE)")
     except Exception as e:
         logger.error(f"❌ Demo seed upsert FAILED — login with SecurePass123! will not work: {e}", exc_info=True)
+
+
+async def seed_homeschool_example_children(engine) -> None:
+    """
+    Link 2 children to the primary homeschool demo account (homeschool@example.com
+    / Sarah Rivera, SecurePass123!) created by seed_demo_users().
+
+    Bug: seed_demo_users() creates 'homeschool@example.com' as a bare HOMESCHOOL
+    user with no children at all -- the homeschool dashboard/UI is unusable
+    without at least one child. A *different* homeschool family
+    (homeschool.parent@demo.com / Laura Chen, Demo@1234!) is seeded separately
+    in seed_homeschool_demo() and does get children, which is why that one
+    worked while the more commonly-used @example.com / SecurePass123! account
+    did not. This fills in the missing link for the @example.com account.
+
+    UUIDs are generated in Python (not left to a DB-side DEFAULT) so this does
+    not depend on a specific Postgres UUID extension (uuid-ossp vs pgcrypto)
+    being installed -- homeschool_children.id has been seen created with
+    either gen_random_uuid() or uuid_generate_v4() depending on which DDL
+    path ran first, and relying on that default silently rolled back this
+    entire seed transaction (including the user rows) whenever the
+    installed extension didn't match.
+    """
+    try:
+        async with engine.begin() as conn:
+            _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
+
+            parent_row = (await conn.execute(text(
+                "SELECT id FROM users WHERE email = 'homeschool@example.com'"
+            ))).first()
+            if not parent_row:
+                logger.warning("⊘ homeschool@example.com not found — skipping child seed (run seed_demo_users first)")
+                return
+            parent_id = parent_row[0]
+
+            child_specs = [
+                ("noah.rivera@example.com", "hs_noah_rivera", "Noah", "Rivera", 4, "k6"),
+                ("ava.rivera@example.com",  "hs_ava_rivera",  "Ava",  "Rivera", 8, "m712"),
+            ]
+
+            for email, username, first, last, grade_level, age_band in child_specs:
+                child_id = uuid.uuid4()
+                result = await conn.execute(text("""
+                    INSERT INTO users (id, email, username, first_name, last_name, full_name,
+                                       hashed_password, role, is_active)
+                    VALUES (:id, :email, :username, :first, :last, :full, :pw, 'STUDENT', TRUE)
+                    ON CONFLICT (email) DO UPDATE SET is_active = TRUE
+                    RETURNING id
+                """), {
+                    "id": child_id, "email": email, "username": username,
+                    "first": first, "last": last, "full": f"{first} {last}", "pw": _PW,
+                })
+                # ON CONFLICT DO UPDATE ... RETURNING always returns a row (unlike
+                # DO NOTHING), so this gives us the real id whether inserted or
+                # already existing — no need for a second SELECT.
+                actual_child_id = result.first()[0]
+
+                await conn.execute(text("""
+                    INSERT INTO homeschool_children (id, parent_id, child_id, grade_level, age_band, created_at)
+                    VALUES (:id, :pid, :cid, :grade, :band, NOW())
+                    ON CONFLICT (parent_id, child_id) DO NOTHING
+                """), {
+                    "id": uuid.uuid4(), "pid": parent_id, "cid": actual_child_id,
+                    "grade": grade_level, "band": age_band,
+                })
+                await conn.execute(text("""
+                    INSERT INTO parent_child_links (parent_id, child_id, relationship)
+                    VALUES (:pid, :cid, 'guardian')
+                    ON CONFLICT (parent_id, child_id) DO NOTHING
+                """), {"pid": parent_id, "cid": actual_child_id})
+
+        logger.info("✅ homeschool@example.com now has 2 linked children (Noah & Ava Rivera)")
+    except Exception as e:
+        logger.error(f"❌ Homeschool example-account child seed FAILED: {e}", exc_info=True)
 
 
 async def seed_test_accounts(engine) -> None:
