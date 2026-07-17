@@ -91,7 +91,7 @@ async def _activity_events_for_students(
         FROM learning_sessions ls
         JOIN activities a ON a.id = ls.activity_id
         JOIN users u ON u.id = ls.user_id
-        WHERE ls.user_id = ANY(:sids::uuid[])
+        WHERE ls.user_id = ANY(CAST(:sids AS uuid[]))
           AND (
                 (ls.status = 'completed' AND ls.completed_at BETWEEN :start AND :end)
              OR (ls.status IN ('in_progress', 'paused') AND ls.created_at BETWEEN :start AND :end)
@@ -127,7 +127,7 @@ async def _classroom_events(
     rows = (await db.execute(text("""
         SELECT id, classroom_id, title, description, event_date, event_type
         FROM classroom_events
-        WHERE classroom_id = ANY(:cids::uuid[]) AND event_date BETWEEN :start AND :end
+        WHERE classroom_id = ANY(CAST(:cids AS uuid[])) AND event_date BETWEEN :start AND :end
         ORDER BY event_date
     """), {"cids": classroom_ids, "start": start_dt.date(), "end": end_dt.date()})).mappings().all()
 
