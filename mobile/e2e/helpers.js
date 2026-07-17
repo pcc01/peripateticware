@@ -11,6 +11,37 @@ const STUDENT_EMAIL = process.env.TEST_STUDENT_EMAIL;
 const STUDENT_PASSWORD = process.env.TEST_STUDENT_PASSWORD;
 
 /**
+ * On a fresh install (`launchApp({ delete: true })`), AuthGuard
+ * (app/_layout.tsx) now lands an unauthenticated device on the onboarding
+ * tour instead of straight to /login — see mobile/FEATURE_PLAN.md section
+ * 3.4. Detox can't pre-seed the app's AsyncStorage `@ppw_has_onboarded`
+ * flag before launch, so tests that need the login screen tap through the
+ * tour once instead. This is a no-op (returns immediately) if the device
+ * has already onboarded — e.g. `newInstance: false` relaunches, or a
+ * second call within the same test.
+ */
+async function completeOnboardingIfPresent() {
+  try {
+    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(3000);
+  } catch {
+    return; // Not on the splash screen — already past onboarding (or never delete:true'd).
+  }
+  await element(by.id('onboarding-splash-cta')).tap();
+  await waitFor(element(by.id('onboarding-name'))).toBeVisible().withTimeout(10000);
+  await element(by.id('onboarding-name-input')).typeText('Detox Tester');
+  await element(by.id('onboarding-name-cta')).tap();
+  await waitFor(element(by.id('onboarding-location'))).toBeVisible().withTimeout(10000);
+  // Skip rather than Allow — avoids a real OS location permission dialog
+  // blocking the test run (see maestro/flows/capture/12.1-note-capture.yaml's
+  // comment on why that dialog is worth avoiding when it isn't the point of
+  // the test).
+  await element(by.id('onboarding-location-skip')).tap();
+  await waitFor(element(by.id('onboarding-first-activity'))).toBeVisible().withTimeout(10000);
+  await element(by.id('onboarding-first-activity-open')).tap();
+  await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(10000);
+}
+
+/**
  * Logs in as the seeded Detox test student from the login screen and waits
  * for the post-login redirect to the Discover tab (see app/_layout.tsx
  * AuthGuard, which replaces the route to /(tabs) once `user` is set).
@@ -23,6 +54,7 @@ async function loginAsStudent() {
       '(see mobile/.env.test.example and backend/startup.py::seed_test_accounts).'
     );
   }
+  await completeOnboardingIfPresent();
   await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(15000);
   await element(by.id('email-input')).typeText(STUDENT_EMAIL);
   await element(by.id('password-input')).typeText(STUDENT_PASSWORD);
@@ -30,4 +62,4 @@ async function loginAsStudent() {
   await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(15000);
 }
 
-module.exports = { loginAsStudent, STUDENT_EMAIL, STUDENT_PASSWORD };
+module.exports = { loginAsStudent, completeOnboardingIfPresent, STUDENT_EMAIL, STUDENT_PASSWORD };

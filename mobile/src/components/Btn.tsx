@@ -10,9 +10,10 @@ interface BtnProps {
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
+  testID?: string;
 }
 
-export default function Btn({ label, onPress, theme, variant = 'primary', loading, disabled, style }: BtnProps) {
+export default function Btn({ label, onPress, theme, variant = 'primary', loading, disabled, style, testID }: BtnProps) {
   const minHeight = 44;
   const fontSize = 15;
 
@@ -30,6 +31,7 @@ export default function Btn({ label, onPress, theme, variant = 'primary', loadin
 
   return (
     <TouchableOpacity
+      testID={testID}
       onPress={onPress}
       activeOpacity={0.8}
       disabled={disabled || loading}

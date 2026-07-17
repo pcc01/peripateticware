@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivities, Activity } from '@/src/api/activities';
+import { t } from '@/src/i18n/t';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 import PeriSpeech from '@/src/components/PeriSpeech';
 
@@ -75,8 +76,13 @@ export default function DiscoverScreen() {
           <Text style={[styles.errorText, { color: theme.warn, fontFamily: theme.fontBody }]}>
             {error}
           </Text>
-          <TouchableOpacity onPress={load} style={[styles.retryBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}>
-            <Text style={[styles.retryLabel, { color: theme.accent, fontFamily: theme.fontBody }]}>Try again</Text>
+          <TouchableOpacity
+            onPress={load}
+            style={[styles.retryBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.tryAgain', 'Try again')}
+          >
+            <Text style={[styles.retryLabel, { color: theme.accent, fontFamily: theme.fontBody }]}>{t('common.tryAgain', 'Try again')}</Text>
           </TouchableOpacity>
         </View>
       ) : (

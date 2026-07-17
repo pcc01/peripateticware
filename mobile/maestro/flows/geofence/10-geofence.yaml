@@ -23,7 +23,12 @@ appId: com.peripateticware.app
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"
 - tapOn: "I'm oriented — begin inquiry"
-- assertVisible: "Observe & Capture"
+# extendedWaitUntil, not plain assertVisible (default 7s timeout) — see the
+# same assertion in maestro/flows/activity/4-6-activity-flow.yaml for why:
+# this specific point failed on API 24 in Session 18's run.
+- extendedWaitUntil:
+    visible: "Observe & Capture"
+    timeout: 20000
 
 # 10.1 — no warning while inside the activity radius
 - setLocation:
@@ -33,9 +38,19 @@ appId: com.peripateticware.app
     id: "geofence-toast"
 
 # 10.2/10.3 — shows a non-blocking toast when the student leaves the radius
+#
+# extendedWaitUntil here too — this was the other API-24-only failure in
+# Session 18's run. src/hooks/useGeofence.ts relies on
+# Location.watchPositionAsync's callback firing after setLocation changes
+# the mocked position; that callback's latency depends on the emulator's
+# location-provider implementation, which plausibly varies more on
+# Android 7.0/API 24 (oldest, least-accelerated device) than newer ones.
+# Hypothesis, not confirmed — needs a real run on that device to verify.
 - setLocation:
     latitude: 37.95
     longitude: -122.35
-- assertVisible:
-    id: "geofence-toast"
+- extendedWaitUntil:
+    visible:
+      id: "geofence-toast"
+    timeout: 20000
 - assertVisible: "Done capturing — reflect"

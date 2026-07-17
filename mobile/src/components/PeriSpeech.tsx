@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import CrowAvatar from './CrowAvatar';
 import type { Theme } from '@/src/theme/tokens';
 import { useSpeech } from '@/src/hooks/useSpeech';
+import { t } from '@/src/i18n/t';
 
 interface PeriSpeechProps {
   text: string;
@@ -45,7 +46,7 @@ export default function PeriSpeech({ text, theme, size = 44 }: PeriSpeechProps) 
             { backgroundColor: speaking ? theme.accentMuted : 'transparent', borderRadius: theme.radiusFull },
           ]}
           accessibilityRole="button"
-          accessibilityLabel={speaking ? 'Stop reading aloud' : 'Read aloud'}
+          accessibilityLabel={speaking ? t('perispeech.stopReading', 'Stop reading aloud') : t('perispeech.readAloud', 'Read aloud')}
           accessibilityState={{ selected: speaking }}
         >
           <Text style={[styles.speakerIcon, { color: speaking ? theme.accent : theme.textFaint }]}>

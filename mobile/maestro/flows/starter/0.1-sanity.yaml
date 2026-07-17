@@ -3,9 +3,14 @@
 # relying on "unauthenticated launch always lands on login" — but that only
 # holds if there's no persisted session. Using clearState here instead, so
 # this sanity check is reliable regardless of what ran before it.
+#
+# A clearState launch now lands on the onboarding tour first (see
+# mobile/FEATURE_PLAN.md section 3.4) — onboarding-skip.yaml taps through
+# it (no-op if not showing) before asserting login-screen.
 appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
+- runFlow: ../onboarding-skip.yaml
 - assertVisible:
     id: "login-screen"

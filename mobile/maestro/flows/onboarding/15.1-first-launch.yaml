@@ -1,0 +1,58 @@
+# First real test of the onboarding tour (app/(onboarding)/*) — previously
+# unreachable on a normal cold start (see mobile/FEATURE_PLAN.md section
+# 3.4 for the history). Now wired into AuthGuard: an unauthenticated +
+# never-onboarded launch lands here instead of /login.
+#
+# This flow walks the full tour end-to-end and asserts it lands on the real
+# login screen with the "has onboarded" flag now set. It does NOT log in —
+# that's covered separately by auth.test.js / 1.5-login-success.yaml —
+# because onboarding never creates an account (tour-then-login model: a
+# teacher or homeschool parent creates the real account in the web app).
+#
+# clearState: true is required here specifically (not just convention) —
+# without a truly fresh AsyncStorage, `@ppw_has_onboarded` could already be
+# set from a prior run and this flow would never see the splash screen.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "onboarding-splash"
+- tapOn:
+    id: "onboarding-splash-cta"
+
+- assertVisible:
+    id: "onboarding-name"
+- tapOn:
+    id: "onboarding-name-input"
+- inputText: "Maestro Tester"
+- tapOn:
+    id: "onboarding-name-cta"
+
+- assertVisible:
+    id: "onboarding-location"
+# Skip rather than Allow — avoids a real OS location permission dialog
+# blocking the run (see maestro/flows/capture/12.1-note-capture.yaml's
+# comment on why that dialog is worth avoiding when it isn't the point of
+# this flow).
+- tapOn:
+    id: "onboarding-location-skip"
+
+- assertVisible:
+    id: "onboarding-first-activity"
+- tapOn:
+    id: "onboarding-first-activity-open"
+
+# Tour-then-login: lands on the real login screen, not /(tabs).
+- assertVisible:
+    id: "login-screen"
+
+# Relaunching (still no login) should NOT show onboarding again — the
+# `@ppw_has_onboarded` flag set at the end of the tour persists across
+# launches, only the auth session doesn't.
+- launchApp:
+    clearState: false
+- assertVisible:
+    id: "login-screen"
+- assertNotVisible:
+    id: "onboarding-splash"

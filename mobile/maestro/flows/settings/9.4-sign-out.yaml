@@ -2,6 +2,13 @@
 # returns to the login screen". Uses Maestro's `index` selector to hit the
 # 2nd "Sign out" match (the native confirm-dialog's destructive button),
 # same disambiguation Detox needed via `.atIndex(1)`.
+#
+# Session 18's full-matrix run found this failing on API 30/24 only. Using
+# extendedWaitUntil (20s) instead of plain assertVisible (default 7s) for
+# the dialog button, matching the timeout bump made in settings.test.js's
+# equivalent — worth trying, not confirmed to be the whole story (could
+# also be a button-order/render-tree difference across Android versions;
+# needs a real run on those devices either way).
 appId: com.peripateticware.app
 ---
 - launchApp:
@@ -12,9 +19,11 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "settings-screen"
 - tapOn: "Sign out"
-- assertVisible:
-    text: "Sign out"
-    index: 1
+- extendedWaitUntil:
+    visible:
+      text: "Sign out"
+      index: 1
+    timeout: 20000
 - tapOn:
     text: "Sign out"
     index: 1

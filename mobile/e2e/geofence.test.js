@@ -43,7 +43,10 @@ describe('Geofence (Location-Based Guard)', () => {
     // app/activity/[id].tsx), so advance Brief -> Orient -> Inquiry first.
     await element(by.text("I'm ready — let's go")).tap();
     await element(by.text("I'm oriented — begin inquiry")).tap();
-    await expect(element(by.text('Observe & Capture'))).toBeVisible();
+    // waitFor, not plain expect() — same fix and same reasoning as
+    // activity-flow.test.js 4.4/4.5 (this is the identical assertion,
+    // also flagged failing on API 24 in Session 18's run).
+    await waitFor(element(by.text('Observe & Capture'))).toBeVisible().withTimeout(20000);
   });
 
   it('10.1 — no warning while inside the activity radius', async () => {

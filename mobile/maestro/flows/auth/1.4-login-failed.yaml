@@ -4,6 +4,7 @@ appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
+- runFlow: ../onboarding-skip.yaml
 - assertVisible:
     id: "login-screen"
 - tapOn:

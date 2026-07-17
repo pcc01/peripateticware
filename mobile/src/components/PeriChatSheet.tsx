@@ -10,6 +10,7 @@ import {
 import { Theme } from '@/src/theme/tokens';
 import CrowAvatar from '@/src/components/CrowAvatar';
 import { chatWithPeri, ChatMessage } from '@/src/api/inference';
+import { t } from '@/src/i18n/t';
 
 interface Props {
   visible: boolean;
@@ -26,7 +27,7 @@ interface DisplayMessage {
   content: string;
 }
 
-const PERI_GREETING = "I'm Peri. Ask me anything about the activity or what you're observing.";
+const PERI_GREETING = t('perichat.greeting', "I'm Peri. Ask me anything about the activity or what you're observing.");
 
 export default function PeriChatSheet({
   visible, onClose, theme,
@@ -74,7 +75,7 @@ export default function PeriChatSheet({
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: 'err', role: 'assistant', content: "I couldn't connect right now. Try again in a moment." },
+        { id: 'err', role: 'assistant', content: t('perichat.connectError', "I couldn't connect right now. Try again in a moment.") },
       ]);
     } finally {
       setLoading(false);
@@ -92,13 +93,13 @@ export default function PeriChatSheet({
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <CrowAvatar theme={theme} size={32} />
-          <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Ask Peri</Text>
+          <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('perichat.title', 'Ask Peri')}</Text>
           <TouchableOpacity
             testID="peri-chat-close"
             onPress={onClose}
             hitSlop={12}
             accessibilityRole="button"
-            accessibilityLabel="Close chat"
+            accessibilityLabel={t('perichat.closeChat', 'Close chat')}
           >
             <Text style={[styles.closeBtn, { color: theme.textMuted }]}>✕</Text>
           </TouchableOpacity>
@@ -151,7 +152,7 @@ export default function PeriChatSheet({
             }]}
             value={input}
             onChangeText={setInput}
-            placeholder="Ask a question…"
+            placeholder={t('perichat.inputPlaceholder', 'Ask a question…')}
             placeholderTextColor={theme.textFaint}
             onSubmitEditing={send}
             returnKeyType="send"
@@ -163,7 +164,7 @@ export default function PeriChatSheet({
             style={[styles.sendBtn, { backgroundColor: input.trim() ? theme.accent : theme.border, borderRadius: theme.radiusFull }]}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Send message"
+            accessibilityLabel={t('perichat.sendMessage', 'Send message')}
             accessibilityState={{ disabled: !input.trim() || loading }}
           >
             <Text style={styles.sendIcon}>↑</Text>

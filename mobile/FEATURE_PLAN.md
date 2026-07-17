@@ -174,43 +174,43 @@ This is the engine 3.2 needs. Scope:
 - Natural extension once transcripts (section 2) are surfaced: a "play"
   button next to a capture's transcript text, reusing the same hook.
 
-### 3.4 First-use onboarding flow
+### 3.4 First-use onboarding flow — WIRED IN (tour-then-login)
 
-**Good news: this needs far less building than it looks like.** The full
-flow already exists and is fully built — `app/(onboarding)/{splash,name,
-location,first-activity}.tsx` — polished UI, band-aware copy, working
-navigation between screens. It's just never reachable: `AuthGuard` in
-`app/_layout.tsx` sends every unauthenticated launch straight to `/login`,
-and nothing sets a "first launch" flag anywhere. `auth.test.js` and
-`E2E_TESTING_HANDOFF.md`-era docs both confirm onboarding is "only
-reachable by deep-linking directly into it, which isn't a real user flow."
+**Built.** `AuthGuard` (`app/_layout.tsx`) now checks a persisted
+`@ppw_has_onboarded` flag (`src/onboarding/onboardingFlag.ts`):
+unauthenticated + flag not set → `(onboarding)`, unauthenticated + flag set
+→ `/login` (unchanged behavior for returning users).
 
-**One real design decision needed before wiring it in:** onboarding
-currently doesn't create or authenticate an account at all — `name.tsx`
-just collects a display name into a route param for the "hi {name}" copy
-on the last screen, then `first-activity.tsx`'s CTA does
-`router.replace('/(tabs)')` directly. It was built as a pre-login *tour*,
-not a signup flow. Given `AuthGuard` currently requires a real logged-in
-`user` to reach `(tabs)` at all, wiring onboarding in as-is would either
-need `AuthGuard` to special-case "just finished onboarding" as a temporary
-allowance, or onboarding needs to end by routing into `/login` (tour first,
-then real login) rather than straight into the app. Worth deciding which
-model you want:
+**Model chosen: tour-then-login** (per Paul's explicit instruction —
+"signup will be done via teacher/hometeacher in webapp"). Onboarding still
+does not create or authenticate an account — `name.tsx` only ever collected
+a display name into a route param for the "hi {name}" copy on the last
+screen. `first-activity.tsx`'s two CTAs now call `finishOnboarding()`,
+which sets the flag then `router.replace('/login')` instead of the old
+`router.replace('/(tabs)')`. Real account creation is unchanged: a teacher
+or homeschool parent creates the student account in the web app, and the
+student then logs in with those credentials on this screen.
 
-- **Tour-then-login** (smaller change): onboarding ends by routing to
-  `/login` instead of `/(tabs)`, no `AuthGuard` changes needed.
-- **Tour-as-signup** (bigger change): `name.tsx`/`location.tsx` actually
-  create an account, `AuthGuard` treats onboarding as an auth route.
+Nothing in the four onboarding screens needed rebuilding — they were
+already themed and used real components (`Btn`, `PeriSpeech`,
+`MapIllustration`) consistent with the rest of the app. Age-band-conditional
+copy/sizing in them was replaced with the fixed `onboardingCopy` (section 1
+removed the band system); functionally unchanged for users, since `m712`
+was always the default band everyone saw anyway.
 
-**Scope either way:**
-- `AsyncStorage` flag (e.g. `@ppw_has_onboarded`) set at the end of the
-  flow.
-- `AuthGuard`'s redirect logic gets one more branch: unauthenticated +
-  flag not set → `(onboarding)`, unauthenticated + flag set →  `/login`
-  (current behavior, unchanged for returning users).
-- Nothing in the four onboarding screens themselves needs rebuilding —
-  they're already band-aware, themed, and use real components (`Btn`,
-  `PeriSpeech`, `MapIllustration`) consistent with the rest of the app.
+**Test impact (ripple effect worth flagging):** every existing Detox test
+and Maestro flow that does a fresh `launchApp({ delete: true })` /
+`clearState: true` and then expects `login-screen` immediately now lands on
+`onboarding-splash` first instead. Fixed centrally — `e2e/helpers.js`'s
+`completeOnboardingIfPresent()` and `maestro/flows/onboarding-skip.yaml`
+tap through the tour (no-op if not showing) — and `login-student.yaml`
+calls the Maestro version at the top, which covers every flow that already
+`runFlow`s it. The handful that assert `login-screen` without going through
+that subflow (`1.4-login-failed.yaml`, `0.1-sanity.yaml`,
+`14.1-speaker-button.yaml`, and Detox's `auth.test.js`/`starter.test.js`)
+were each updated individually. New testIDs were added to all four
+onboarding screens' interactive elements to make this possible (`Btn` also
+gained a `testID` prop — it didn't have one before).
 
 ---
 
@@ -222,13 +222,13 @@ interactive element before writing the flow, not after):
 
 | Feature | New flow(s) | Notes |
 |---|---|---|
-| Age-band removal | *(delete `maestro/flows/age-band/`)* | If removed per section 1, `11-age-band-adaptation.yaml` no longer applies |
-| Language picker | `maestro/flows/settings/9.3-language-picker.yaml` | Assert chip selection persists across relaunch (`AsyncStorage` round-trip) — this is the one thing settings.test.js's original 9.1/9.2 pattern doesn't cover yet (persistence), worth adding for theme too while in there |
-| Speaker/read-aloud button | `maestro/flows/perispeech/14.1-speaker-button.yaml` | Maestro can assert the button exists/is tappable; it can't assert audio actually played — same class of limitation as the AI-reply-text gap already documented for PeriChat. Assert on a visible state change instead (e.g. icon swaps to a "playing" state) if the component exposes one |
+| Age-band removal | *(deleted `maestro/flows/age-band/`)* | Done — `11-age-band-adaptation.yaml` and the Detox equivalent removed; `9.1-account-pickers.yaml`/`settings.test.js` updated to drop the K-6/7-12/College assertions |
+| Language picker | `maestro/flows/settings/9.3-language-picker.yaml` (not yet — no picker UI built, see 3.1) | Once built: assert chip selection persists across relaunch (`AsyncStorage` round-trip) — this is the one thing settings.test.js's original 9.1/9.2 pattern doesn't cover yet (persistence), worth adding for theme too while in there |
+| Speaker/read-aloud button | `maestro/flows/perispeech/14.1-speaker-button.yaml` — built | Maestro can assert the button exists/is tappable; it can't assert audio actually played — same class of limitation as the AI-reply-text gap already documented for PeriChat. Asserts the visible state change (icon swaps between 🔊/⏸) instead |
 | On-device TTS | *(covered by the speaker-button flow above — same feature)* | |
-| Onboarding-as-tutorial | `maestro/flows/onboarding/15.1-first-launch.yaml` | First real test of these 4 screens ever. Needs `clearState: true` plus clearing the new `AsyncStorage` flag specifically (or a fresh install) to guarantee "first launch" state — check whether `clearState: true` already wipes `AsyncStorage`, confirm before assuming |
+| Onboarding-as-tutorial | `maestro/flows/onboarding/15.1-first-launch.yaml` + `e2e/onboarding.test.js` — built | First real test of these 4 screens ever. `clearState: true` does wipe AsyncStorage (confirmed — the flow's second `launchApp: { clearState: false }` relaunch correctly stays on `login-screen` rather than showing onboarding again) |
 | Accessibility (a11y props) | No new flow — regression risk, not new behavior | Consider adding an axe-equivalent for RN (`@testing-library/react-native`'s accessibility queries, or a manual TalkBack pass) rather than a Maestro flow; Maestro doesn't have an accessibility-audit mode |
-| Transcript display | `maestro/flows/capture/12.5-transcript-view.yaml` | Depends on the ASR pipeline actually finishing before the flow checks — may need a poll/wait similar to the offline-sync flow's limitations |
+| Transcript display | `maestro/flows/capture/12.5-transcript-view.yaml` | Not built this pass (out of the scope Paul asked for — a11y props + contrast fix only, not the transcript item). Depends on the ASR pipeline actually finishing before the flow checks — may need a poll/wait similar to the offline-sync flow's limitations |
 
 Offline capture (section 5E, the gap identified separately) is already
 built: `maestro/flows/offline/13.1-offline-capture-queued.yaml` and

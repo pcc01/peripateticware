@@ -10,8 +10,13 @@
 # Credentials are passed in via `maestro test -e STUDENT_EMAIL=... -e
 # STUDENT_PASSWORD=...` (see the seeded test account in mobile/.env.test /
 # backend/startup.py::seed_test_accounts).
+#
+# Taps through onboarding first if it's showing (no-op otherwise) — a
+# `clearState: true` launch now lands on the onboarding tour instead of
+# /login directly. See onboarding-skip.yaml.
 appId: com.peripateticware.app
 ---
+- runFlow: ./onboarding-skip.yaml
 - assertVisible:
     id: "login-screen"
 - tapOn:

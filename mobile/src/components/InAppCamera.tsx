@@ -7,6 +7,7 @@ import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { Theme } from '@/src/theme/tokens';
+import { t } from '@/src/i18n/t';
 
 export interface CapturedFile {
   uri: string;
@@ -72,24 +73,26 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
           <View style={styles.permissionCenter}>
             <Text style={styles.permissionText}>
               {mode === 'photo'
-                ? 'Camera access is needed to take a photo.'
-                : 'Camera and microphone access are needed to record video.'}
+                ? t('camera.permission.photo', 'Camera access is needed to take a photo.')
+                : t('camera.permission.video', 'Camera and microphone access are needed to record video.')}
             </Text>
             <TouchableOpacity
               testID="camera-grant-permission"
               onPress={requestAll}
               style={[styles.permissionBtn, { backgroundColor: theme.accent, borderRadius: theme.radiusSm }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('camera.allowAccess', 'Allow access')}
             >
-              <Text style={[styles.permissionBtnLabel, { color: theme.accentText }]}>Allow access</Text>
+              <Text style={[styles.permissionBtnLabel, { color: theme.accentText }]}>{t('camera.allowAccess', 'Allow access')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               testID="camera-close"
               onPress={onClose}
               hitSlop={12}
               accessibilityRole="button"
-              accessibilityLabel="Cancel"
+              accessibilityLabel={t('common.cancel', 'Cancel')}
             >
-              <Text style={styles.cancelLink}>Cancel</Text>
+              <Text style={styles.cancelLink}>{t('common.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -108,13 +111,15 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                 onPress={onClose}
                 hitSlop={12}
                 accessibilityRole="button"
-                accessibilityLabel="Close camera"
+                accessibilityLabel={t('camera.closeCamera', 'Close camera')}
               >
                 <Text style={styles.closeIcon}>✕</Text>
               </TouchableOpacity>
               {mode === 'video' && (
                 <Text testID="camera-record-status" style={styles.recordStatus}>
-                  {recording ? `Recording ${recordingDuration}s — tap to stop` : 'Tap to start recording'}
+                  {recording
+                    ? t('capture.recordingStatus', 'Recording {{seconds}}s — tap to stop').replace('{{seconds}}', String(recordingDuration))
+                    : t('capture.tapToStart', 'Tap to start recording')}
                 </Text>
               )}
             </View>
@@ -126,14 +131,14 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                 // is a dead tap for both real users and Maestro (which has
                 // no way to wait on this internal JS state otherwise; it can
                 // only wait for the button to exist).
-                <Text testID="camera-loading" style={styles.recordStatus}>Starting camera…</Text>
+                <Text testID="camera-loading" style={styles.recordStatus}>{t('camera.starting', 'Starting camera…')}</Text>
               ) : mode === 'photo' ? (
                 <TouchableOpacity
                   testID="camera-shutter"
                   onPress={takePhoto}
                   style={styles.shutterOuter}
                   accessibilityRole="button"
-                  accessibilityLabel="Take photo"
+                  accessibilityLabel={t('camera.takePhoto', 'Take photo')}
                 >
                   <View style={styles.shutterInner} />
                 </TouchableOpacity>
@@ -143,7 +148,7 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                   onPress={recording ? stopRecording : startRecording}
                   style={[styles.shutterOuter, recording && { borderColor: theme.warn }]}
                   accessibilityRole="button"
-                  accessibilityLabel={recording ? 'Stop recording' : 'Start recording'}
+                  accessibilityLabel={recording ? t('capture.stopRecording', 'Stop recording') : t('capture.startRecording', 'Start recording')}
                   accessibilityState={{ selected: recording }}
                 >
                   <View style={[styles.shutterInner, recording ? styles.shutterInnerRecording : { backgroundColor: theme.warn }]} />

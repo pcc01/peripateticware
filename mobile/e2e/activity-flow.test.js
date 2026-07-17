@@ -33,7 +33,17 @@ describe('Activity Flow (Brief -> Orient -> Inquiry -> Reflect -> Submit)', () =
 
   it('4.4/4.5 — advances Orient -> Inquiry, showing the question + capture row', async () => {
     await element(by.text("I'm oriented — begin inquiry")).tap();
-    await expect(element(by.text('Observe & Capture'))).toBeVisible();
+    // Uses waitFor (not plain expect().toBeVisible(), which doesn't retry)
+    // — this specific assertion is the one Session 18's full-matrix run
+    // found failing on API 24 (Nexus_5X, the oldest/least-accelerated
+    // device), passing everywhere else. Plain expect() checks the current
+    // state once; if the Inquiry phase's heavier render (capture row,
+    // follow-up card, PeriSpeech/CrowAvatar SVG, useSpeech init) hasn't
+    // finished painting yet on a slow device, it fails immediately instead
+    // of retrying. Hypothesis, not confirmed — needs a real run on that
+    // device to verify this is actually the fix and not just a plausible
+    // explanation.
+    await waitFor(element(by.text('Observe & Capture'))).toBeVisible().withTimeout(20000);
   });
 
   it('4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet', async () => {

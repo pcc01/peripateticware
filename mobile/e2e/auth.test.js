@@ -1,12 +1,16 @@
-const { loginAsStudent } = require('./helpers');
+const { loginAsStudent, completeOnboardingIfPresent } = require('./helpers');
 
-// Covers MANUAL_TESTING_GUIDE.md section 1 "App Launch & Auth", items 1.4-1.6.
-// Items 1.1/1.2 (onboarding splash → name → location → first-activity) are NOT
-// covered here: app/_layout.tsx's AuthGuard sends any unauthenticated launch
-// straight to /login (see starter.test.js's comment), and nothing in the app
-// auto-triggers the (onboarding) route group on a normal cold start — it's
-// only reachable by deep-linking directly into it, which isn't a real user
-// flow. Skipping rather than fabricating a navigation path that doesn't exist.
+// Covers MANUAL_TESTING_GUIDE.md section 1 "App Launch & Auth", items 1.4-1.7.
+//
+// Items 1.1/1.2 (onboarding splash → name → location → first-activity) are
+// now covered by maestro/flows/onboarding/15.1-first-launch.yaml instead of
+// here: AuthGuard (app/_layout.tsx) now routes an unauthenticated + never-
+// onboarded launch into (onboarding) rather than straight to /login — see
+// mobile/FEATURE_PLAN.md section 3.4. `beforeEach` here uses `delete: true`
+// (fresh install), so every test below now lands on the onboarding splash
+// first, not /login — `completeOnboardingIfPresent()` (./helpers.js) taps
+// through the tour once per test to reach the login screen (Detox has no
+// way to pre-seed the app's AsyncStorage flag before launch).
 describe('App Launch & Auth', () => {
   beforeEach(async () => {
     // Fresh install each test so login/logout state doesn't leak between cases.
@@ -14,6 +18,7 @@ describe('App Launch & Auth', () => {
   });
 
   it('1.4 — shows a "Login failed" alert on wrong credentials and stays on login', async () => {
+    await completeOnboardingIfPresent();
     await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(15000);
     await element(by.id('email-input')).typeText('wrong-user@nowhere.test');
     await element(by.id('password-input')).typeText('DefinitelyWrong1');
@@ -42,6 +47,7 @@ describe('App Launch & Auth', () => {
   // actually played on-device — this only confirms the button exists, is
   // tappable, and its visible state (icon) flips between speak/playing.
   it('1.7 — PeriSpeech speaker button toggles between read-aloud states', async () => {
+    await completeOnboardingIfPresent();
     await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(15000);
     await expect(element(by.id('peri-speech-speaker'))).toBeVisible();
     await element(by.id('peri-speech-speaker')).tap();

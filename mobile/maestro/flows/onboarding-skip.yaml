@@ -1,0 +1,40 @@
+# maestro/flows/onboarding-skip.yaml
+#
+# Reusable subflow — taps through the first-launch onboarding tour if it's
+# currently showing. A `launchApp: { clearState: true }` now lands an
+# unauthenticated device on the onboarding splash instead of straight to
+# /login (AuthGuard in app/_layout.tsx routes unauthenticated + never-
+# onboarded launches there — see mobile/FEATURE_PLAN.md section 3.4). This
+# is a no-op if onboarding isn't visible (already onboarded this device, or
+# the caller didn't clearState), so it's safe to `runFlow` unconditionally
+# at the top of any flow that needs to reach /login or beyond.
+appId: com.peripateticware.app
+---
+- runFlow:
+    when:
+      visible:
+        id: "onboarding-splash"
+    commands:
+      - tapOn:
+          id: "onboarding-splash-cta"
+      - assertVisible:
+          id: "onboarding-name"
+      - tapOn:
+          id: "onboarding-name-input"
+      - inputText: "Maestro Tester"
+      - tapOn:
+          id: "onboarding-name-cta"
+      - assertVisible:
+          id: "onboarding-location"
+      # Skip rather than Allow — avoids a real OS location permission
+      # dialog blocking the run (see maestro/flows/capture/12.1-note-capture.yaml's
+      # comment on why that dialog is worth avoiding when it isn't the point
+      # of the flow).
+      - tapOn:
+          id: "onboarding-location-skip"
+      - assertVisible:
+          id: "onboarding-first-activity"
+      - tapOn:
+          id: "onboarding-first-activity-open"
+      - assertVisible:
+          id: "login-screen"

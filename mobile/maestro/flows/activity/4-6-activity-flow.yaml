@@ -27,8 +27,19 @@ appId: com.peripateticware.app
 - assertVisible: "I'm oriented — begin inquiry"
 
 # 4.4/4.5 — advances Orient -> Inquiry, showing the question + capture row
+#
+# Uses extendedWaitUntil (not plain assertVisible, default timeout 7s) —
+# this specific assertion is the one that failed on API 24
+# (Nexus_5X, the oldest/least-accelerated device in the matrix) in Session
+# 18's full-matrix run, and passed everywhere else. The phase transition
+# itself (setPhase('inquiry') in app/activity/[id].tsx) isn't gated on
+# anything async — this is a render/re-paint speed hypothesis, not a
+# confirmed root cause; needs a real run on that device to confirm this
+# actually fixes it rather than just theoretically explaining it.
 - tapOn: "I'm oriented — begin inquiry"
-- assertVisible: "Observe & Capture"
+- extendedWaitUntil:
+    visible: "Observe & Capture"
+    timeout: 20000
 
 # 4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet
 - tapOn: "💬 Ask Peri"

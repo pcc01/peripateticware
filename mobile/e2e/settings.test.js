@@ -49,7 +49,19 @@ describe('Settings Screen', () => {
     // assumes the destructive "Sign out" action is the 2nd Alert button in
     // render/tree order on both platforms. Flagging this for Paul to verify
     // on-device (Android AlertDialog vs iOS UIAlertController can differ).
-    await waitFor(element(by.text('Sign out')).atIndex(1)).toBeVisible().withTimeout(5000);
+    //
+    // Session 18's full-matrix run found this failing specifically on
+    // API 30/24 ("Element not found: Text matching regex: Sign out"),
+    // passing on API 35/33. One concrete, fixable thing found on review:
+    // this wait was only 5000ms — conspicuously shorter than every other
+    // timeout in this suite (10-20s) — while every other one already
+    // assumed native dialogs could take longer to render/animate on
+    // slower devices. Bumped to 15000ms. This alone may not be the full
+    // story if the real cause is button-order/render-tree differences
+    // across Android versions rather than pure timing (the comment above
+    // already flags that as unverified) — still needs a real run on those
+    // devices to confirm.
+    await waitFor(element(by.text('Sign out')).atIndex(1)).toBeVisible().withTimeout(15000);
     await element(by.text('Sign out')).atIndex(1).tap();
 
     await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(10000);
