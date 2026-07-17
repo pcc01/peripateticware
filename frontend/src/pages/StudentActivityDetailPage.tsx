@@ -122,7 +122,7 @@ const StudentActivityDetailPage: React.FC = () => {
       setSession({ session_id: s.session_id, status: s.status });
       setPhase('inquiry');
       loadEvidence(s.session_id);
-      if ((activity as any)?.discovery_location_gps_capture_enabled) {
+      if (activity?.discovery_location_gps_capture_enabled) {
         setGpsConsentPending(true);
       }
     } catch {

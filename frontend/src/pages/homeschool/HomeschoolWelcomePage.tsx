@@ -20,16 +20,25 @@ import { useTranslation } from 'react-i18next';
 import { PRODUCT_NAME } from '../../constants/brand';
 
 // ── US States list ────────────────────────────────────────────────────────────
-const US_STATES = [
-  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
-  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
-  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
-  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada',
-  'New Hampshire','New Jersey','New Mexico','New York','North Carolina',
-  'North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island',
-  'South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
-  'Virginia','Washington','West Virginia','Wisconsin','Wyoming',
+// [code, name] pairs — kept in sync with HomeschoolRequirementsPage.tsx's US_STATES
+// list so the state code selected here matches what that page reads from
+// localStorage (LS_STATE_KEY / 'hs_state_code').
+const US_STATES: [string, string][] = [
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
+  ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
+  ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
+  ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
+  ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
+  ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
+  ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+  ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+  ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
 ];
+
+// Same localStorage key HomeschoolRequirementsPage.tsx reads on mount (its
+// `stateCode` initial state is `localStorage.getItem(LS_STATE_KEY)`).
+const LS_STATE_KEY = 'hs_state_code';
 
 // ── Step indicators ───────────────────────────────────────────────────────────
 const STEPS = ['Add Children', 'Your State', 'First Activity'];
@@ -53,8 +62,18 @@ const HomeschoolWelcomePage: React.FC = () => {
     { name: '', grade: '1', age_band: 'k6' },
   ]);
 
-  // Step 2 state
+  // Step 2 state — 2-letter state code (e.g. 'CA'), matching
+  // HomeschoolRequirementsPage.tsx's stateCode / LS_STATE_KEY convention.
   const [selectedState, setSelectedState] = useState('');
+
+  const handleStateSelect = (code: string) => {
+    setSelectedState(code);
+    // Only persist a non-empty selection — never overwrite an existing
+    // hs_state_code with '' if the parent clears/skips this step.
+    if (code) {
+      try { localStorage.setItem(LS_STATE_KEY, code); } catch { /* ignore */ }
+    }
+  };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const addChild = () =>
@@ -247,7 +266,7 @@ const HomeschoolWelcomePage: React.FC = () => {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{t('pages_homeschool_homeschoolwelcomepage.this_helps_peripateticware_show_the_righ', 'This helps Peripateticware show the right state reporting requirements and standards sets. You can change this any time in Settings.')}</p>
               <select
                 value={selectedState}
-                onChange={e => setSelectedState(e.target.value)}
+                onChange={e => handleStateSelect(e.target.value)}
                 style={{
                   width: '100%', padding: '0.6rem 0.75rem',
                   border: '1px solid var(--border)', borderRadius: '0.35rem',
@@ -256,7 +275,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                 }}
               >
                 <option value="">{t('pages_homeschool_homeschoolwelcomepage.select_your_state_optional', '— Select your state (optional) —')}</option>
-                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                {US_STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
               </select>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolwelcomepage.35_us_states_require_homeschool_parents_', '35 US states require homeschool parents to keep learning records. Peripateticware generates the reports automatically from your activity log.')}</p>
             </div>

@@ -573,7 +573,7 @@ async def approve_regulation(
                      'REGULATION_APPROVED',
                      'jurisdiction',
                      'COMPLIANT',
-                     :jurisdictions::jsonb,
+                     CAST(:jurisdictions AS jsonb),
                      :notes)
             """), {
                 "jurisdictions": f'["{jurisdiction_code}"]',
@@ -623,7 +623,7 @@ async def _log_compliance_check(
                  'COMPLIANCE_CHECK',
                  'activity',
                  :status,
-                 :jurisdictions::jsonb,
+                 CAST(:jurisdictions AS jsonb),
                  :notes)
         """), {
             "status": "COMPLIANT" if is_compliant else "VIOLATION",

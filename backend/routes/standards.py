@@ -135,7 +135,7 @@ async def _index_standards_set_criteria(
                          content, metadata, embedding, owner_id)
                     VALUES
                         (:stype, :sid, :sname, :cidx,
-                         :content, :meta::jsonb, :emb::vector, :owner)
+                         :content, CAST(:meta AS jsonb), CAST(:emb AS vector), :owner)
                 """), {
                     "stype":   rag_source_type,
                     "sid":     set_id,

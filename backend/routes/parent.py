@@ -392,7 +392,7 @@ async def get_child_progress(
         # get_child_activities()/get_weekly_report() below. Without this any
         # logged-in parent could read any other family's child's progress.
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(status_code=403, detail="Not authorized to view this child's progress")
@@ -460,7 +460,7 @@ async def get_child_activities(
 
         # Verify authorization via parent_child_links
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized to view this child's activities")
@@ -472,7 +472,7 @@ async def get_child_activities(
                    COALESCE(a.estimated_duration_minutes, 60) AS duration
             FROM learning_sessions ls
             JOIN activities a ON a.id = ls.activity_id
-            WHERE ls.user_id = :cid::uuid AND ls.status = 'completed'
+            WHERE ls.user_id = CAST(:cid AS uuid) AND ls.status = 'completed'
             ORDER BY ls.updated_at DESC
             LIMIT :lim OFFSET :off
         """), {"cid": child_id, "lim": limit, "off": offset})).mappings().all()
@@ -514,7 +514,7 @@ async def get_weekly_report(
     try:
         # Verify child link
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized")
@@ -531,7 +531,7 @@ async def get_weekly_report(
         # Query real activity count for the week
         count_row = (await db.execute(text("""
             SELECT COUNT(*) FROM learning_sessions
-            WHERE user_id = :cid::uuid AND status = 'completed'
+            WHERE user_id = CAST(:cid AS uuid) AND status = 'completed'
               AND updated_at >= :ws AND updated_at < :we
         """), {"cid": child_id, "ws": week_start_date, "we": week_end_date})).fetchone()
         activities_completed = int(count_row[0]) if count_row else 0
@@ -567,7 +567,7 @@ async def get_monthly_report(
     try:
         # Verify child link
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = :pid::uuid AND child_id = :cid::uuid"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized")
@@ -583,7 +583,7 @@ async def get_monthly_report(
 
         count_row = (await db.execute(text("""
             SELECT COUNT(*) FROM learning_sessions
-            WHERE user_id = :cid::uuid AND status = 'completed'
+            WHERE user_id = CAST(:cid AS uuid) AND status = 'completed'
               AND updated_at >= :ms AND updated_at <= :me
         """), {"cid": child_id, "ms": month_start, "me": month_end})).fetchone()
         activities_completed = int(count_row[0]) if count_row else 0
@@ -657,7 +657,7 @@ async def reply_to_message(
     """Reply to a teacher message"""
     try:
         orig = (await db.execute(text(
-            "SELECT conversation_id, from_user_id, to_user_id FROM parent_messages WHERE id = :mid::uuid"
+            "SELECT conversation_id, from_user_id, to_user_id FROM parent_messages WHERE id = CAST(:mid AS uuid)"
         ), {"mid": message_id})).fetchone()
         if not orig:
             raise HTTPException(status_code=404, detail="Message not found")
@@ -672,7 +672,7 @@ async def reply_to_message(
         new_id = str(uuid4())
         await db.execute(text("""
             INSERT INTO parent_messages (id, from_user_id, to_user_id, subject, body, conversation_id)
-            VALUES (:id::uuid, :from_uid::uuid, :to_uid::uuid, 'Re: reply', :body, :conv_id::uuid)
+            VALUES (CAST(:id AS uuid), CAST(:from_uid AS uuid), CAST(:to_uid AS uuid), 'Re: reply', :body, CAST(:conv_id AS uuid))
         """), {
             "id": new_id, "from_uid": str(current_user.id),
             "to_uid": str(orig[1]), "body": request.body, "conv_id": str(orig[0])
@@ -741,7 +741,7 @@ async def mark_notification_as_read(
     try:
         await db.execute(text("""
             UPDATE notifications SET is_read = true, updated_at = NOW()
-            WHERE id = :nid::uuid AND user_id = :uid::uuid
+            WHERE id = CAST(:nid AS uuid) AND user_id = CAST(:uid AS uuid)
         """), {"nid": notification_id, "uid": str(current_user.id)})
 
         await db.commit()
@@ -763,7 +763,7 @@ async def get_settings(
     """Get parent settings"""
     try:
         row = (await db.execute(text(
-            "SELECT * FROM parent_settings WHERE parent_id = :pid::uuid"
+            "SELECT * FROM parent_settings WHERE parent_id = CAST(:pid AS uuid)"
         ), {"pid": str(current_user.id)})).mappings().fetchone()
         if not row:
             return SettingsResponse(parent_id=str(current_user.id))
@@ -791,7 +791,7 @@ async def update_settings(
         await db.execute(text("""
             INSERT INTO parent_settings
                 (parent_id, dark_mode, language, email_frequency, notifications_enabled, push_notifications_enabled)
-            VALUES (:pid::uuid, :dm, :lang, :freq, :notif, :push)
+            VALUES (CAST(:pid AS uuid), :dm, :lang, :freq, :notif, :push)
             ON CONFLICT (parent_id) DO UPDATE SET
                 dark_mode = EXCLUDED.dark_mode,
                 language = EXCLUDED.language,

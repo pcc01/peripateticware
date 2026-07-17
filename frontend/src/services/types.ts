@@ -61,10 +61,15 @@ export interface Activity {
   title: string
   description: string
   subject: string
-  grade_level?: string
-  location: string
-  status: 'active' | 'completed' | 'pending' | 'draft'
-  due_date: string
+  grade_level?: number
+  location?: string
+  // Teacher-domain activities use lat/lng/radius/name instead of a free-text location.
+  location_latitude?: number
+  location_longitude?: number
+  location_radius_meters?: number
+  location_name?: string
+  status: 'draft' | 'published' | 'archived' | 'active' | 'completed' | 'pending'
+  due_date?: string
   created_at: string
   updated_at: string
   teacher_id?: string
@@ -84,6 +89,29 @@ export interface Activity {
   // GPS live-map feature: whether this activity prompts students for
   // location-sharing self-consent (13+) at session start.
   discovery_location_gps_capture_enabled?: boolean
+  // Teacher-domain optional fields (from types/teacher.ts's former local Activity)
+  difficulty_level?: number
+  estimated_duration_minutes?: number
+  curriculum_unit_ids?: string[]
+  materials_needed?: string[]
+  learning_objectives?: string[]
+  resources?: string[]
+  is_shareable?: boolean
+  share_scope?: 'org' | 'all'
+  language?: string
+  state_standard?: string
+  discipline?: string
+  // Work Plan specified `activity_type?: string`; widened here to the same
+  // literal union as types/teacher.ts's `ActivityType` (duplicated inline to
+  // avoid a circular import) because ActivityManager.tsx:299 assigns
+  // `activity.activity_type` straight into a `CreateActivityInput` field typed
+  // as `ActivityType` — a plain `string` would break that existing assignment.
+  activity_type?: 'outdoor' | 'field_study' | 'inquiry' | 'discussion' | 'hands_on'
+    | 'virtual' | 'hybrid' | 'lab' | 'project'
+  // Not in the Work Plan's explicit field list, but present on the old
+  // types/teacher.ts local Activity and actively read (ActivityManager.tsx,
+  // ActivityPreview.tsx) — added here to avoid a regression from unification.
+  bloom_level?: string
 }
 
 export interface PhaseStatus {

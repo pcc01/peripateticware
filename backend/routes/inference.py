@@ -435,7 +435,7 @@ async def ingest_document(
                      content, metadata, embedding, owner_id)
                 VALUES
                     (:stype, :sid, :sname, :cidx,
-                     :content, :meta::jsonb, :emb::vector, :owner)
+                     :content, CAST(:meta AS jsonb), CAST(:emb AS vector), :owner)
             """), {
                 "stype":   request.source_type,
                 "sid":     request.source_id,
@@ -509,11 +509,11 @@ async def rag_retrieve(
                     chunk_index,
                     content,
                     metadata,
-                    1 - (embedding <=> :emb::vector) AS relevance_score
+                    1 - (embedding <=> CAST(:emb AS vector)) AS relevance_score
                 FROM rag_documents
                 WHERE embedding IS NOT NULL
                 {type_clause}
-                ORDER BY embedding <=> :emb::vector
+                ORDER BY embedding <=> CAST(:emb AS vector)
                 LIMIT :k
             """), {"emb": vec_literal, "k": top_k, "stype": source_type})).fetchall()
 
@@ -542,11 +542,11 @@ async def rag_retrieve(
                         subject,
                         grade_level,
                         raw_content,
-                        1 - (content_embedding <=> :emb::vector) AS relevance_score
+                        1 - (content_embedding <=> CAST(:emb AS vector)) AS relevance_score
                     FROM curriculum_units
                     WHERE content_embedding IS NOT NULL
                       AND is_active = TRUE
-                    ORDER BY content_embedding <=> :emb::vector
+                    ORDER BY content_embedding <=> CAST(:emb AS vector)
                     LIMIT :k
                 """), {"emb": vec_literal, "k": top_k})).fetchall()
 

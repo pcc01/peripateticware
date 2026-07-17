@@ -1,33 +1,7 @@
 // src/types/teacher.ts - UPDATED
-export interface Activity {
-  id: string
-  teacher_id: string
-  title: string
-  description: string
-  location_latitude: number
-  location_longitude: number
-  location_radius_meters: number
-  location_name: string
-  grade_level: number
-  subject: string
-  difficulty_level: number
-  estimated_duration_minutes: number
-  curriculum_unit_ids?: string[]
-  learning_objectives: string[]
-  materials_needed: string[]
-  resources: string[] // Keep as strings
-  status: 'draft' | 'published' | 'archived'
-  is_shareable: boolean
-  share_scope?: 'org' | 'all'
-  language?: string
-  state_standard?: string
-  discipline?: string
-  bloom_level?: string
-  activity_type?: ActivityType
-  created_at: string
-  updated_at: string
-  archived_at?: string
-}
+// Activity is canonical in services/types.ts — re-exported here so all
+// existing `import { Activity } from '@/types/teacher'` call sites keep working.
+export type { Activity } from '@/services/types'
 
 export interface ActivityFormData {
   title: string
@@ -186,6 +160,9 @@ export interface CreateActivityInput {
   state_standard?: string
   discipline?: string
   curriculum_unit_ids?: string[]
+  // GPS live-map feature: whether this activity prompts students for
+  // location-sharing self-consent (13+) at session start.
+  discovery_location_gps_capture_enabled?: boolean
 }
 
 export interface UpdateActivityInput extends Partial<CreateActivityInput> {}

@@ -309,7 +309,7 @@ async def _notify_parents_gps_consent(session_id: str, activity_id: str) -> None
                 JOIN classroom_students cs ON cs.student_id = ls.user_id
                 JOIN parent_child_links pcl ON pcl.child_id = ls.user_id
                 JOIN users              u  ON u.id  = ls.user_id
-                WHERE ls.id = :sid::uuid
+                WHERE ls.id = CAST(:sid AS uuid)
             """), {"sid": session_id})
             for row in rows.mappings().all():
                 # Only notify for under-13 / requires_parental_consent students
@@ -1295,7 +1295,7 @@ async def save_reflection(
             _text("""
                 INSERT INTO activity_submissions
                     (student_id, session_id, activity_id, field_phase_status)
-                VALUES (:uid, :sid::uuid, :aid::uuid, 'submitted')
+                VALUES (:uid, CAST(:sid AS uuid), CAST(:aid AS uuid), 'submitted')
                 ON CONFLICT (student_id, activity_id) DO UPDATE
                     SET field_phase_status = 'submitted',
                         updated_at = NOW()

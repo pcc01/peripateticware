@@ -190,7 +190,7 @@ async def generate_dpia(
         INSERT INTO privacy_impact_assessments
             (id, org_id, generated_by, version, jurisdictions, content, risk_level)
         VALUES
-            (:id, :oid, :uid, :ver, :jur::jsonb, :content::jsonb, :risk)
+            (:id, :oid, :uid, :ver, CAST(:jur AS jsonb), CAST(:content AS jsonb), :risk)
     """), {
         "id": str(dpia_id),
         "oid": str(org_id) if org_id else None,

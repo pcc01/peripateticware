@@ -421,7 +421,7 @@ async def log_session_event(
         result = await db.execute(
             text("""
                 INSERT INTO session_events (session_id, student_id, event_type, phase, metadata)
-                VALUES (:sid, :uid, :etype, :phase, :meta::jsonb)
+                VALUES (:sid, :uid, :etype, :phase, CAST(:meta AS jsonb))
                 RETURNING id, created_at
             """),
             {
@@ -480,7 +480,7 @@ async def get_session_events(
         where = "WHERE session_id = :sid"
         params: dict = {"sid": session_id}
         if since:
-            where += " AND created_at > :since::timestamp"
+            where += " AND created_at > CAST(:since AS timestamp)"
             params["since"] = since
         result = await db.execute(
             text(f"SELECT * FROM session_events {where} ORDER BY created_at ASC"),
@@ -510,7 +510,7 @@ async def _fire_location_event(
         await db.execute(
             text("""
                 INSERT INTO session_events (session_id, student_id, event_type, metadata)
-                VALUES (:sid, :uid, 'location_update', :meta::jsonb)
+                VALUES (:sid, :uid, 'location_update', CAST(:meta AS jsonb))
             """),
             {
                 "sid": str(session_id),

@@ -107,7 +107,7 @@ def _verify_paddle_signature(raw_body: bytes, signature_header: str) -> bool:
 async def _audit(db: AsyncSession, action: str, org_id: str | None, meta: dict):
     await db.execute(text("""
         INSERT INTO platform_audit_log (id, actor_user_id, action, target_org_id, metadata, created_at)
-        VALUES (:id, NULL, :action, :org_id, :meta::jsonb, NOW())
+        VALUES (:id, NULL, :action, :org_id, CAST(:meta AS jsonb), NOW())
     """), {
         "id":     str(uuid.uuid4()),
         "action": action,
