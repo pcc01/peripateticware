@@ -21,6 +21,7 @@ import { useStudent } from '@/services/api';
 import type { PendingReflectionItem } from '@/services/types';
 import { axiosInstance } from '@/services/api';
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '@/utils/errorMessage';
 
 // ── Section definitions ────────────────────────────────────────────────────────
 
@@ -129,7 +130,10 @@ export default function ReflectionEditorPage() {
       });
       navigate('/student', { state: { toast: 'Reflection submitted! Your teacher will review it.' } });
     } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Submission failed — please try again.');
+      // e.response.data.detail can be a structured object/array, not just a
+      // string — rendering it directly as a React child throws "Minified
+      // React error #31" and unmounts the app. Always coerce.
+      setError(getErrorMessage(e, 'Submission failed — please try again.'));
       setSub(false);
     }
   };

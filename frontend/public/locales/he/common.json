@@ -2,7 +2,7 @@
   "nav": {
     "activities": "פעילויות",
     "challenges": "תحدיות",
-    "settings": "\\u05E9\\u05DE\\u05D4\\u05EA\\u05DC\\u05DD",
+    "settings": "הגדרות",
     "new_activity": "מש העתטלבהעדקל",
     "library": "מש בקדריל תילהעדקל",
     "rubrics": "מש רבקדתהל",
@@ -12,9 +12,15 @@
     "students": "סטודנטים",
     "classrooms": "אולמות",
     "reports": "דוחות",
-    "calendar": "CALENDAR",
+    "calendar": "לוח שנה",
     "messages": "הודעות",
     "analytics": "אנליטיקה",
-    "audit": "יומן אודיט'}, {"
+    "audit": "יומן אודיט'}, {",
+    "ai_config": "ניתוב ומפתחות מבוססי בינה מלאכותית",
+    "notifications": "התראות",
+    "progress": "התקדמות",
+    "privacy": "פרטיות",
+    "billing": "חיוב",
+    "users": "משתמשים"
   }
 }

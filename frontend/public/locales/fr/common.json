@@ -14,6 +14,13 @@
     "calendar": "Calendrier",
     "notifications": "Lier votre enfant",
     "users": "Utilisateurs",
-    "analytics": " Parents"
+    "analytics": " Parents",
+    "ai_config": "Routage IA et clés",
+    "audit": "Journaux d'audit",
+    "settings": "Paramètres",
+    "students": "Étudiants",
+    "privacy": "Confidentialité",
+    "billing": "Facturation",
+    "messages": "Messages"
   }
 }

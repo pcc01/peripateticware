@@ -1,0 +1,49 @@
+feat: wire real Wikidata/OSM enrichment pipeline into /locations/enrich + UI
+
+Backend - GET /locations/{place_id}/enrich now uses the real pipeline:
+- privacy_locations.py: enrich_location() previously re-implemented a
+  thin, inline Wikipedia-only lookup, bypassing the richer
+  MultiBackendLocationService pipeline (OSM tags -> Wikidata entity ->
+  Wikipedia extract -> educational metadata) already used by a
+  different endpoint in the same file. Reconstructs a LocationData
+  (from a CachedLocation row if present, else a synthesized fallback
+  with source="openstreetmap" - "nominatim" would silently no-op) and
+  calls service.enrich_location(). Response additively gains
+  wikidata_id, architect_or_artist, construction_date,
+  historical_significance, keywords; enrichment_quality is now a
+  populated-fields heuristic instead of a hardcoded constant.
+- multi_backend_location_service.py: fixed a real bug in
+  _fetch_wikidata_id() - gated behind `if location.wikipedia_url`, but
+  the Wikidata search inside it queries by name, so the gate skipped
+  Wikidata lookup for the large majority of real locations (anything
+  without an explicit OSM wikipedia= tag, including 100% of this
+  endpoint's own fallback path). Gate now checks `location.name`.
+
+Backend - cache write-back (previously never happened):
+- privacy_locations.py: /enrich only ever read CachedLocation/
+  EnrichedLocation, never wrote to them - every request re-hit live
+  Wikipedia/Wikidata APIs forever. Now writes on cache miss (gated by
+  ENABLE_LOCATION_CACHE) and honors LOCATION_CACHE_TTL_HOURS on read
+  (stale rows refresh in place, no duplicate-row risk against the
+  unique cached_location_id constraint).
+
+Frontend - real UI consumer of the enrichment pipeline:
+- WikiLocationInfo.tsx (the existing "Location Information" panel in
+  the teacher/homeschool Activity Builder) now calls the backend
+  pipeline (/locations/search -> /locations/{id}/enrich) instead of
+  hitting Nominatim/Wikipedia directly from the browser. Old
+  client-side logic kept as a fallback for empty results or errors.
+  New fields (architect/artist, construction date, historical
+  significance, keyword chips, Wikidata link) render additively -
+  nothing existing removed or restructured.
+- EnhancedActivityBuilder.tsx: one-line subject={formData.subject}
+  prop addition to the existing <WikiLocationInfo> call site.
+
+Explicitly deferred this session (Paul's decision): merging Wikidata
+data into the AI activity-generation prompt (activity_generation_service.py) -
+separate, larger change touching a live AI call path, needs its own
+planning pass.
+
+Produced via the agents/ planning (2 cycles) -> developer -> test
+pipeline; full detail in WORK_TRACKING.md Session 41 (gitignored,
+local only).

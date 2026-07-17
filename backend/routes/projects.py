@@ -37,9 +37,9 @@ async def create_project(
     db: Session = Depends(get_db)
 ):
     """Create a new project"""
-    
+
     # Verify teacher role
-    if current_user.role.value != "teacher":
+    if current_user.role.value.upper() != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can create projects"
@@ -75,9 +75,9 @@ async def list_projects(
     db: Session = Depends(get_db)
 ):
     """List projects for current teacher"""
-    
+
     # Verify teacher role
-    if current_user.role.value != "teacher":
+    if current_user.role.value.upper() != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can view projects"

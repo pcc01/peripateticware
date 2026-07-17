@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "ai_config": "AI 路由与密钥",
+    "library": "共享库",
+    "notifications": "通知",
+    "new_activity": "新活动",
+    "submissions": "投稿",
+    "activities": "活动",
+    "classrooms": "教室",
+    "challenges": "挑战",
+    "audit": "审计日志",
+    "dashboard": "仪表盘",
+    "standards": "标准",
+    "analytics": "分析",
+    "calendar": "日历",
+    "settings": "设置",
+    "progress": "进展",
+    "messages": "消息",
+    "students": "学生",
+    "reports": "报告",
+    "rubrics": "评分标准",
+    "privacy": "隐私",
+    "billing": "账单",
+    "users": "用户"
+  }
+}

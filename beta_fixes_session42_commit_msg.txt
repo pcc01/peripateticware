@@ -1,0 +1,52 @@
+feat: wire real i18n into mobile (react-i18next), fix 2 reactivity bugs
+
+Mobile had zero i18n library despite web's mature react-i18next setup -
+t.ts was a literal English pass-through stub. Session 1 of a two-part
+plan: wire the library for real and extract genuine content; real
+non-English translated text is a separate, deliberate follow-up
+(Paul's decision: adapt frontend/scripts/translate_sync.py rather than
+a one-off pass).
+
+- package.json: added i18next, react-i18next. Did NOT add
+  expo-localization - device-locale auto-detection explicitly deferred.
+- src/i18n/index.ts (new): mobile-appropriate init - bundled static
+  JSON resources, no HttpBackend/LanguageDetector (browser-only),
+  AsyncStorage-based persistence, fallbackLng: 'en'.
+- src/i18n/t.ts: rewritten to call real i18n.t(key, {defaultValue:
+  fallback}) behind the exact same t(key, fallback) signature - zero
+  changes needed across any of the 86 real call sites in the app.
+- src/i18n/locales/en.json (new): 76 unique keys extracted from every
+  t(key, fallback) call site across 9 files, independently verified
+  key-by-key against source by the Test Agent (not just the developer's
+  self-report). capture.recordingStatus keeps the literal {{seconds}}
+  token verbatim (manually .replace()'d by callers, not native i18next
+  interpolation - intentionally not "fixed" into that).
+- src/i18n/locales/{es,fr,ar,ja,ko,pt-BR}.json (new): English-fallback
+  copies for now: real translated content is the follow-up.
+- app/_layout.tsx: side-effect import of the i18n init module before
+  first render.
+
+Real bugs fixed (found during planning, not just plumbing):
+- src/onboarding/copy.ts: onboardingCopy was a module-level const built
+  by calling t() at import time - would have frozen at whichever
+  language was active on first load and never updated on a language
+  switch. Converted to useOnboardingCopy() hook, called at render time
+  in all 4 onboarding screens that consume it.
+- app/(tabs)/settings.tsx: THEMES array had the identical bug - on the
+  same screen that hosts the language picker itself. Converted to a
+  useMemo keyed on the current i18next language. Settings' picker
+  onSelect now also calls i18n.changeLanguage(), not just its existing
+  AsyncStorage write.
+
+New bug found, NOT fixed this round (logged for follow-up):
+- src/components/PeriChatSheet.tsx:30 - PERI_GREETING has the same
+  module-scope t()-at-import-time bug, seeds the chat's initial
+  greeting. Outside this session's stated scope (plan only covered the
+  two sites above); needs its own small fix pass.
+
+Manual steps required before this does anything at runtime:
+  cd mobile && npm install
+  npx expo start -c
+
+Produced via the agents/ planning -> developer -> test pipeline; full
+detail in WORK_TRACKING.md Session 42 (gitignored, local only).

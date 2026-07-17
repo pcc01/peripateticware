@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "ai_config": "Roteamento e chaves de IA",
+    "library": "Biblioteca compartilhada",
+    "notifications": "Notificações",
+    "new_activity": "Nova atividade",
+    "submissions": "Inscrições",
+    "activities": "Atividades",
+    "classrooms": "Salas de aula",
+    "challenges": "Desafios",
+    "audit": "Registros de auditoria",
+    "dashboard": "Painel de controle",
+    "standards": "Normas",
+    "analytics": "Análise",
+    "calendar": "Calendário",
+    "settings": "Configurações",
+    "progress": "Progresso",
+    "messages": "Mensagens",
+    "students": "Alunos",
+    "reports": "Relatórios",
+    "rubrics": "Rubricas",
+    "privacy": "Privacidade",
+    "billing": "Faturamento",
+    "users": "Usuários"
+  }
+}

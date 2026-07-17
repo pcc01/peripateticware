@@ -1,0 +1,38 @@
+fix: unify Activity type, fix homeschool onboarding state picker, sweep :param::type SQL bug codebase-wide
+
+Activity type unification:
+- services/types.ts: widen canonical Activity to a superset covering
+  both the student and teacher domains (optional location/due_date,
+  location snapshot fields, widened status union, grade_level as
+  number, teacher-only fields folded in)
+- types/teacher.ts: remove duplicate local Activity interface, re-export
+  the canonical type instead; add discovery_location_gps_capture_enabled
+  to CreateActivityInput
+- StudentActivityDetailPage.tsx: remove the `as any` cast this split had
+  forced
+
+Homeschool onboarding wizard:
+- HomeschoolWelcomePage.tsx: Step 2's state picker now persists the
+  selection to localStorage['hs_state_code'], the same key
+  HomeschoolRequirementsPage.tsx already reads. Previously the picker
+  captured a selection and discarded it.
+
+:param::type SQLAlchemy bind-parameter bug (codebase-wide sweep):
+Rewrote 24 remaining occurrences of `:param::type` (bind parameter
+immediately followed by a Postgres cast, no space) to `CAST(:param AS
+type)` across 8 files. This pattern silently fails to bind and throws
+PostgresSyntaxError at request time only, not at import/syntax-check
+time. A prior session fixed 3 GPS-consent call sites; this sweep covers
+everything else in backend/routes/ (confirmed zero remaining via grep;
+backend/services/ also checked, clean).
+
+Files: backend/routes/{parent,student_activities,sessions,inference,
+standards,dpia,privacy_locations,paddle_webhook}.py
+
+parent.py (11 of the 24 occurrences, gates parent-to-child data access)
+has been runtime-verified against the live restarted backend: GET
+/parent/children, /progress, /activities, /reports/weekly,
+/reports/monthly, and /parent/settings all returned clean 200s.
+
+Produced via the agents/ planning -> developer -> test pipeline;
+full detail in WORK_TRACKING.md Session 37 (gitignored, local only).

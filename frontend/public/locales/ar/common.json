@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "ai_config": "توجيه الذكاء الاصطناعي والمفاتيح",
+    "library": "المكتبة المشتركة",
+    "notifications": "الإشعارات",
+    "new_activity": "نشاط جديد",
+    "submissions": "المشاركات",
+    "activities": "الأنشطة",
+    "classrooms": "الفصول الدراسية",
+    "challenges": "التحديات",
+    "audit": "سجلات التدقيق",
+    "dashboard": "لوحة التحكم",
+    "standards": "المعايير",
+    "analytics": "التحليلات",
+    "calendar": "التقويم",
+    "settings": "الإعدادات",
+    "progress": "التقدم",
+    "messages": "الرسائل",
+    "students": "الطلاب",
+    "reports": "التقارير",
+    "rubrics": "معايير التقييم",
+    "privacy": "الخصوصية",
+    "billing": "الفواتير",
+    "users": "المستخدمون"
+  }
+}

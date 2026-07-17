@@ -1,0 +1,1236 @@
+<?xml version="1.0" ?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="ko" datatype="plaintext" original="ko.json">
+    <header>
+      <meta-group category="w3c-prov-jsonld">
+        <meta type="provenance-graph">{
+  &quot;@context&quot;: {},
+  &quot;@graph&quot;: [
+    {
+      &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: MICROSOFT-Azure-Cognitive-v3-F0&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.dashboard-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.dashboard&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Dashboard&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.dashboard-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;대시보드&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.dashboard-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.dashboard&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.calendar-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.calendar&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Calendar&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.calendar-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;일정&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.calendar-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.calendar&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.activities-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.activities&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Activities&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.activities-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;활동&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.activities-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.activities&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.settings&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Settings&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.settings-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;설정&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.settings&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.progress-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.progress&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Progress&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.progress-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;진행 상황&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.progress-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.progress&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.messages&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Messages&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.messages-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;메시지&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.messages&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.notifications-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.notifications&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Notifications&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.notifications-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;알림&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.notifications-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.notifications&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.reports-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.reports&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Reports&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.reports-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;보고서&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.reports-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.reports&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.students&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Students&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.students-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;학생들&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.students&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.classrooms-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.classrooms&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Classrooms&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.classrooms-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;교실&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.classrooms-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.classrooms&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.rubrics-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.rubrics&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Rubrics&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.rubrics-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;평가 기준&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.rubrics-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.rubrics&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.standards-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.standards&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Standards&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.standards-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;표준&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.standards-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.standards&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.challenges-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.challenges&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Challenges&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.challenges-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;도전 과제&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.challenges-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.challenges&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.library-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.library&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Shared Library&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.library-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;공유 도서관&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.library-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.library&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.submissions-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.submissions&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Submissions&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.submissions-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;제출&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.submissions-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.submissions&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.users-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.users&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Users&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.users-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;사용자&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.users-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.users&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.analytics-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.analytics&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Analytics&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.analytics-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;분석&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.analytics-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.analytics&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Privacy&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.privacy-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;프라이버시&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.audit&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Audit Logs&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.audit-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;감사 기록&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.audit&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;AI Routing &amp; Keys&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.ai_config-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;AI 라우팅 및 키&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.billing&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Billing&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.billing-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;청구&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.billing&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.new_activity-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.new_activity&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;New Activity&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.new_activity-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;신규 활동&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.new_activity-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.new_activity&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: DEEPL-API-Free&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.dashboard-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.dashboard-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;대시보드&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.dashboard-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.dashboard&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.dashboard-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.calendar-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.calendar-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;달력&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.calendar-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.calendar&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.calendar-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.activities-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.activities-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;활동&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.activities-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.activities&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.activities-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.settings-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;설정&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.settings&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.settings-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.progress-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.progress-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;진행 상황&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.progress-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.progress&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.progress-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.messages-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;메시지&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.messages&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.messages-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.notifications-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.notifications-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;알림&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.notifications-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.notifications&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.notifications-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.reports-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.reports-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;보고서&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.reports-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.reports&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.reports-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.students-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;학생들&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.students&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.students-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.classrooms-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.classrooms-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;교실&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.classrooms-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.classrooms&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.classrooms-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.rubrics-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.rubrics-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;평가 기준&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.rubrics-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.rubrics&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.rubrics-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.standards-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.standards-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;표준&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.standards-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.standards&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.standards-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.challenges-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.challenges-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;과제&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.challenges-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.challenges&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.challenges-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.library-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.library-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;공유 라이브러리&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.library-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.library&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.library-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.submissions-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.submissions-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;제출물&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.submissions-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.submissions&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.submissions-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.users-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.users-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;사용자&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.users-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.users&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.users-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.analytics-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.analytics-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;분석&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.analytics-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.analytics&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.analytics-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.privacy-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;개인정보 보호&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.privacy-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.audit-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;감사 로그&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.audit&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.audit-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.ai_config-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;AI 라우팅 및 키&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.ai_config-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.billing-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;청구&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.billing&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.billing-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.new_activity-2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.922248+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.new_activity-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;새로운 활동&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.new_activity-2026-07-12T16:25:21.922248+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.new_activity&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.new_activity-v1&quot;
+      }
+    }
+  ]
+}</meta>
+      </meta-group>
+    </header>
+    <body>
+      <trans-unit id="nav.dashboard" approved="no">
+        <source>Dashboard</source>
+        <target>대시보드</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.calendar" approved="no">
+        <source>Calendar</source>
+        <target>달력</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.activities" approved="no">
+        <source>Activities</source>
+        <target>활동</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.settings" approved="no">
+        <source>Settings</source>
+        <target>설정</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.progress" approved="no">
+        <source>Progress</source>
+        <target>진행 상황</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.messages" approved="no">
+        <source>Messages</source>
+        <target>메시지</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.notifications" approved="no">
+        <source>Notifications</source>
+        <target>알림</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.reports" approved="no">
+        <source>Reports</source>
+        <target>보고서</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.students" approved="no">
+        <source>Students</source>
+        <target>학생들</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.classrooms" approved="no">
+        <source>Classrooms</source>
+        <target>교실</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.rubrics" approved="no">
+        <source>Rubrics</source>
+        <target>평가 기준</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.standards" approved="no">
+        <source>Standards</source>
+        <target>표준</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.challenges" approved="no">
+        <source>Challenges</source>
+        <target>과제</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.library" approved="no">
+        <source>Shared Library</source>
+        <target>공유 라이브러리</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.submissions" approved="no">
+        <source>Submissions</source>
+        <target>제출물</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.users" approved="no">
+        <source>Users</source>
+        <target>사용자</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.analytics" approved="no">
+        <source>Analytics</source>
+        <target>분석</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.privacy" approved="no">
+        <source>Privacy</source>
+        <target>개인정보 보호</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.audit" approved="no">
+        <source>Audit Logs</source>
+        <target>감사 로그</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.ai_config" approved="no">
+        <source>AI Routing &amp; Keys</source>
+        <target>AI 라우팅 및 키</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.billing" approved="no">
+        <source>Billing</source>
+        <target>청구</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.new_activity" approved="no">
+        <source>New Activity</source>
+        <target>새로운 활동</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

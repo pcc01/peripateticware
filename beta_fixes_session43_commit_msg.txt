@@ -1,0 +1,51 @@
+feat(mobile): first-use onboarding tour + Peri speaker/TTS button
+
+Pre-existing local work (not produced by the agents/ pipeline this
+round) — reviewed and verified via a full read-through of every
+touched file before committing. Implements 2 of the 4 items in
+mobile/FEATURE_PLAN.md's "reintroduced features" list.
+
+Onboarding tour (FEATURE_PLAN 3.4):
+- 4-screen first-use tour (splash -> name -> location -> first-activity)
+  gated on the @ppw_has_onboarded AsyncStorage flag. Tour-then-login
+  model: never creates an account itself, hands off to the real /login
+  screen once complete.
+- New Detox coverage (e2e/onboarding.test.js): walks the full tour,
+  lands on login unauthenticated, and confirms the tour does NOT
+  reappear on relaunch once the flag is set.
+- New Maestro coverage: onboarding/15.1-first-launch.yaml (same two
+  assertions) plus a reusable onboarding-skip.yaml subflow, now called
+  from login-student.yaml, auth/1.4-login-failed.yaml, and
+  starter/0.1-sanity.yaml so those flows still reach the login screen
+  reliably now that onboarding exists.
+- Btn.tsx gained a testID prop to support the new tour's Maestro/Detox
+  hooks.
+
+Speaker / read-aloud button (FEATURE_PLAN 3.2/3.3):
+- PeriSpeech.tsx: working speaker toggle (testID: peri-speech-speaker)
+  wired to useSpeech()/expo-speech, with accessibility label/state.
+- New Detox test (auth.test.js 1.7) and Maestro flow
+  (perispeech/14.1-speaker-button.yaml) - both intentionally limited to
+  asserting icon state, not actual audio, since neither tool can verify
+  sound played.
+
+Supporting/adjacent files verified complete, no substantive changes
+found beyond the above: InAppCamera.tsx, PeriChatSheet.tsx,
+app/(tabs)/index.tsx, e2e/{activity-flow,auth,geofence,helpers,
+settings,starter}.test.js, maestro/flows/{activity/4-6-activity-flow,
+geofence/10-geofence,settings/9.4-sign-out}.yaml.
+
+Known caveats, not fixed here (flagged for a follow-up, not blocking):
+- FEATURE_PLAN.md's accessibility audit section claims zero
+  accessibilityLabel/accessibilityRole usage anywhere in app/, but the
+  actual current files already have extensive accessibility props
+  throughout - the doc appears stale relative to the code, not the
+  other way around. Worth reconciling in a future pass.
+- geofence.test.js and settings/9.4-sign-out.yaml's timeout bump
+  (7s->20s) both explicitly flag their underlying fixes as unverified
+  hypotheses (iOS fbsimctl deprecation risk, Android permission-grant
+  reliability, API 24 Nexus 5X timing) - needs real on-device
+  confirmation, not just a code read.
+
+Full review detail in the repo-review doc from this session (not
+tracked in git, handed to Paul directly).

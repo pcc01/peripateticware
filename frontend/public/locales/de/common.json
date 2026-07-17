@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "ai_config": "KI-Routing & Schlüssel",
+    "library": "Gemeinsam genutzte Bibliothek",
+    "notifications": "Benachrichtigungen",
+    "new_activity": "Neue Aktivität",
+    "submissions": "Beiträge",
+    "activities": "Aktivitäten",
+    "classrooms": "Klassenzimmer",
+    "challenges": "Herausforderungen",
+    "audit": "Prüfprotokolle",
+    "dashboard": "Dashboard",
+    "analytics": "Analytik",
+    "calendar": "Kalender",
+    "settings": "Einstellungen",
+    "progress": "Fortschritt",
+    "messages": "Nachrichten",
+    "students": "Studierende",
+    "reports": "Berichte",
+    "rubrics": "Rubriken",
+    "privacy": "Datenschutz",
+    "billing": "Rechnungsstellung",
+    "users": "Benutzer",
+    "standards": "Normen"
+  }
+}

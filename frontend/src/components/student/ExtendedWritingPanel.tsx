@@ -20,6 +20,7 @@ import React, { useState, useCallback, useRef } from 'react'
 import { ChevronDown, ChevronUp, Loader2, Plus, Save, Trash2 } from 'lucide-react'
 import { fieldNoteApi } from '../../services/phase7Api'
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '../../utils/errorMessage'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -278,7 +279,10 @@ export const ExtendedWritingPanel: React.FC<ExtendedWritingPanelProps> = ({
       setSaveMsg('Saved ✓')
       setTimeout(() => setSaveMsg(null), 2500)
     } catch (e: any) {
-      setSaveMsg('Save failed — ' + (e?.response?.data?.detail ?? e?.message ?? 'try again'))
+      // getErrorMessage coerces structured detail payloads (objects/arrays)
+      // to a string — plain concatenation would otherwise render "[object
+      // Object]" when the backend returns a non-string `detail`.
+      setSaveMsg('Save failed — ' + getErrorMessage(e, 'try again'))
     } finally {
       setSaving(false)
     }

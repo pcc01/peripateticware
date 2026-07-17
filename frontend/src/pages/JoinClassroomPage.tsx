@@ -7,6 +7,7 @@ import { BookOpen, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '@/utils/errorMessage';
 
 interface InvitePreview {
   classroom_name: string;
@@ -43,7 +44,7 @@ export default function JoinClassroomPage() {
         setPreview(r.data);
         if (r.data.email_hint) setForm(f => ({ ...f, email: r.data.email_hint }));
       })
-      .catch(e => setPreErr(e?.response?.data?.detail ?? 'Invalid or expired invite link.'))
+      .catch(e => setPreErr(getErrorMessage(e, 'Invalid or expired invite link.')))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -80,7 +81,13 @@ export default function JoinClassroomPage() {
       setUser({ id: data.user_id, email: data.email || '', role: 'STUDENT', name: data.name || '' });
       navigate('/student', { replace: true });
     } catch (err: any) {
-      setFormErr(err?.response?.data?.detail ?? 'Something went wrong. Please try again.');
+      // err.response.data.detail can be a structured object/array (e.g. 422
+      // validation errors, or an upgrade-required payload) rather than a
+      // plain string. Rendering that directly as a React child throws
+      // "Minified React error #31" and unmounts the app — always coerce
+      // through getErrorMessage. See TeacherClassroomPage.tsx for the
+      // original instance of this bug.
+      setFormErr(getErrorMessage(err, 'Something went wrong. Please try again.'));
       setSub(false);
     }
   };

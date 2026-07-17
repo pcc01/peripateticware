@@ -1,0 +1,42 @@
+fix: AI inference 503 on provider down, 2 more RF-3 tests, privacy catalog db-mode flag, mobile journal captures
+
+AI inference (new bug, found this session):
+- provider.py: added ProviderUnavailableError, raised specifically on
+  httpx.ConnectError/ConnectTimeout/ReadTimeout in call_ollama and
+  call_claude (non-connectivity errors still raise plain RuntimeError,
+  unchanged behavior)
+- inference.py: threaded ProviderUnavailableError through
+  _call_ollama_inference, _call_claude_inference, _call_llm_inference,
+  and process_inquiry, which now returns a real 503 instead of a
+  fabricated 200 OK with an empty question when the provider is
+  unreachable
+
+RF-3 — 2 more legacy tests unskipped (3 of 6 total now):
+- test_rag.py: removed skip marker; fixed a real bug found during the
+  read-through (assertion checked for "95%" but _build_context_string
+  renders relevance as "95.00%" via .2% format spec)
+- test_password_reset_service.py: removed skip marker, no changes
+  needed, checked out clean against current service
+
+Privacy Catalog updater --db-mode flag:
+- privacy_rules_updater.py: added --db-mode/--db-url, gated so the
+  default JSON-file path is untouched. NOTE: save_regulations_to_db()
+  targets version/last_synced_at/change_log columns that don't
+  currently exist on privacy_regulation_catalog (confirmed against
+  the ORM model and migration) - fails loudly if run against the live
+  DB today, not silently. Needs a migration adding those 3 columns
+  before --db-mode is actually usable. Documented inline.
+
+Mobile — Journal captures list + transcript display (new feature):
+- captures.ts: fixed fetchCaptures to filter by activity_id instead of
+  the previously-ignored session_id param (real bug, never triggered
+  since nothing called this function before); added missing
+  transcript_language field to the Capture type
+- journal.tsx: new expandable captures section per entry, fetches
+  on-demand only (no N+1 on list load), shows capture type icon,
+  timestamp, and transcript text (audio/video only) or a plain
+  "Transcript pending..." placeholder
+
+Produced via the agents/ planning -> developer -> test pipeline
+(2 parallel developer tracks); full detail in WORK_TRACKING.md
+Session 39 (gitignored, local only).

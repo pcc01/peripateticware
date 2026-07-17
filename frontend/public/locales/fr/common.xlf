@@ -1,0 +1,465 @@
+<?xml version="1.0" ?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="fr.json">
+    <header>
+      <meta-group category="w3c-prov-jsonld">
+        <meta type="provenance-graph">{
+  &quot;@context&quot;: {},
+  &quot;@graph&quot;: [
+    {
+      &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: MICROSOFT-Azure-Cognitive-v3-F0&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.settings&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Settings&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.settings-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Décors&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.settings&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.students&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Students&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.students-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Étudiants&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.students&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Privacy&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.privacy-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Confidentialité&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.audit&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Audit Logs&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.audit-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Journaux d’audit&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.audit&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;AI Routing &amp; Keys&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.ai_config-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Routage et clés IA&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T15:19:55.649244+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3-F0&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;none (previously untranslated)&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.billing&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Billing&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.billing-v1&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Facturation&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T15:19:55.649244+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.billing&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: DEEPL-API-Free&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.settings-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Paramètres&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.settings-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.settings&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.settings-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;unknown model&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:source-nav.messages&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Messages&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.messages-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Messages&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.messages-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.messages&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.messages-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.students-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Étudiants&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.students-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.students&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.students-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.privacy-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Confidentialité&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.privacy-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.privacy&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.privacy-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.audit-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Journaux d'audit&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.audit-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.audit&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.audit-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.ai_config-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Routage IA et clés&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.ai_config-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.ai_config&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.ai_config-v1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-07-12T16:25:21.906233+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:DEEPL-API-Free&quot;
+      },
+      &quot;prov:overwroteTranslationBy&quot;: &quot;MICROSOFT-Azure-Cognitive-v3-F0&quot;,
+      &quot;prov:overwriteReason&quot;: &quot;qa_score=0: untranslated&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-nav.billing-v2&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Facturation&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-nav.billing-2026-07-12T16:25:21.906233+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-nav.billing&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-nav.billing-v1&quot;
+      }
+    }
+  ]
+}</meta>
+      </meta-group>
+    </header>
+    <body>
+      <trans-unit id="nav.dashboard" approved="no">
+        <source>Dashboard</source>
+        <target>Tableau de bord</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.calendar" approved="no">
+        <source>Calendar</source>
+        <target>Calendrier</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.activities" approved="no">
+        <source>Activities</source>
+        <target>Activit├ęs</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.settings" approved="no">
+        <source>Settings</source>
+        <target>Paramètres</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.progress" approved="no">
+        <source>Progress</source>
+        <target>Progression</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.messages" approved="no">
+        <source>Messages</source>
+        <target>Messages</target>
+        <note>Status: overwritten: [unknown model] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.notifications" approved="no">
+        <source>Notifications</source>
+        <target>Lier votre enfant</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.reports" approved="no">
+        <source>Reports</source>
+        <target>Rapports</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.students" approved="no">
+        <source>Students</source>
+        <target>Étudiants</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.classrooms" approved="no">
+        <source>Classrooms</source>
+        <target>Classes'}, {</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.rubrics" approved="no">
+        <source>Rubrics</source>
+        <target>Critères d'évaluation</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.standards" approved="no">
+        <source>Standards</source>
+        <target>Normes</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.challenges" approved="no">
+        <source>Challenges</source>
+        <target>D%C3%A9fis</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.library" approved="no">
+        <source>Shared Library</source>
+        <target>Bibliothèque partagée</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.submissions" approved="no">
+        <source>Submissions</source>
+        <target>Soumissions</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.users" approved="no">
+        <source>Users</source>
+        <target>Utilisateurs</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.analytics" approved="no">
+        <source>Analytics</source>
+        <target> Parents</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+      <trans-unit id="nav.privacy" approved="no">
+        <source>Privacy</source>
+        <target>Confidentialité</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.audit" approved="no">
+        <source>Audit Logs</source>
+        <target>Journaux d'audit</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.ai_config" approved="no">
+        <source>AI Routing &amp; Keys</source>
+        <target>Routage IA et clés</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.billing" approved="no">
+        <source>Billing</source>
+        <target>Facturation</target>
+        <note>Status: overwritten: [MICROSOFT-Azure-Cognitive-v3-F0] -&gt; [DEEPL-API-Free] (reason: qa_score=0: untranslated) | Version: 2</note>
+      </trans-unit>
+      <trans-unit id="nav.new_activity" approved="no">
+        <source>New Activity</source>
+        <target>Nouvelle activité</target>
+        <note>Status: pending_review | Version: 1</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

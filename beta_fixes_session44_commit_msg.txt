@@ -1,0 +1,48 @@
+feat: wire taxonomy classification + rubric alignment AI prompts
+
+Wires 2 of the 3 remaining unused functions in
+backend/services/prompt_library.py. build_standards_alignment_prompt()
+remains deferred - no existing frontend surface to plug it into yet
+(see WORK_TRACKING.md Session 44 for why).
+
+Real scaffolding found for this work, correcting an earlier session's
+"no call site exists" framing: org_ai_key.py's TASK_TYPES already
+pre-registers "rubric_mapping"/"taxonomy_mapping" as configurable AI
+task types (provisioned for, never finished), and RubricBuilder.tsx's
+existing 4-level criterion shape is an exact match for what
+build_rubric_alignment_prompt() returns.
+
+Taxonomy classification:
+- activities.py: new POST /api/v1/activities/classify-taxonomy, calls
+  build_taxonomy_classification_prompt(), never-raises/structured-error
+  pattern matching standards_parser.py's precedent.
+- ActivityManager.tsx: "Auto-classify" button next to the Cognitive
+  Taxonomy picker. Suggest-then-confirm only (Paul's explicit decision)
+  - the AI's suggested level shows as a dismissible chip and only
+  updates the dropdown on an explicit Accept click, never
+  automatically.
+
+Rubric alignment:
+- rubrics.py: new POST /rubrics/generate (-> /api/v1/rubrics/generate,
+  registered before /{rubric_id} to avoid the route-order shadowing
+  bug class this codebase has hit before). Calls
+  build_rubric_alignment_prompt() + SYSTEM_STANDARDS_ANALYST. Preview
+  only - never writes to the DB.
+- RubricBuilder.tsx: new self-contained "Generate with AI" panel
+  (Paul's decision: own input fields, no deep-link from the activity
+  editor this round). Generated criteria are always APPENDED to
+  existing criteria (Paul's decision, never replace), with a
+  non-blocking duplicate-name warning.
+
+Implementation note: both new endpoints use a direct ollama.chat() call
+instead of AIRouter().complete() - AIRouter.complete() has no
+temperature/max_tokens parameter (confirmed by reading all 609 lines of
+ai_router.py, independently re-confirmed by the Test Agent), and both
+prompts need specific low temperatures (0.10/0.30) for reliable JSON
+output. Trade-off: these two task types currently bypass the org-level
+budget/ledger tracking other AI task types get - moot today since
+Ollama is free, worth revisiting if Claude routing is wanted for these
+later.
+
+Produced via the agents/ planning -> developer -> test pipeline; full
+detail in WORK_TRACKING.md Session 44 (gitignored, local only).

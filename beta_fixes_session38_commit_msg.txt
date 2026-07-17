@@ -1,0 +1,54 @@
+fix: publish-compliance loader bug, BUG-23 dead routes, RF-3/RF-4, mobile language picker, test classroom
+
+Publish-compliance checker jurisdiction loading (new bug, found this session):
+- activities.py: PrivacyComplianceChecker.configurations was never
+  populated (load_from_db() defined but never called anywhere), so the
+  live "Publish an activity" endpoint's compliance check always
+  returned "No jurisdiction configured" and hard-blocked every publish,
+  contradicting its own documented fail-open design. Fixed both call
+  sites (publish_activity, check_activity_compliance_quick) to call
+  load_from_db(db) and pass settings.ACTIVE_JURISDICTION instead of
+  None; added a sentinel-issue filter so an unresolved jurisdiction
+  fails open while genuine compliance issues still block. Added the
+  missing db parameter to check_activity_compliance_quick.
+
+BUG-23 — route collision, dead code deleted:
+- privacy_locations.py: deleted the shadowed /privacy/check and
+  /privacy/jurisdictions handlers (both permanently unreachable behind
+  privacy.py's routes of the same path), their models, and orphaned
+  helpers (_log_compliance_check, _get_required_actions). The richer
+  engine method they wrapped is unaffected — activities.py already
+  calls it directly. privacy.py itself is untouched; upgrading its
+  live /check to the richer engine is deferred to a future session.
+
+RF-4 — field encryption (partial):
+- database.py: StudentCapture.file_path -> EncryptedString
+- compliance.py: ConsentRecord.granted_by -> EncryptedString
+- startup.py: matching ALTER TABLE ... TYPE VARCHAR widening DDL
+- scripts/encrypt_existing_data.py: backfill for both columns
+- MultimodalInput.raw_data (JSONB) left unencrypted — EncryptedString
+  doesn't round-trip JSON; would need a new EncryptedJSON type
+
+RF-3 — test_security.py unskipped and rewritten against current
+core/security.py; fixed a real bug in the test itself (expires_delta
+was passed positionally, silently binding to the wrong parameter).
+
+Mobile — language picker (persistence-only, per explicit decision):
+- app/(tabs)/settings.tsx: chip picker over SUPPORTED_LOCALES,
+  persists to AsyncStorage under LANGUAGE_STORAGE_KEY, mirrors the
+  existing theme picker's pattern. No translation library wired in —
+  UI + persistence only. Verified sign-out Alert button order
+  (9.4-sign-out) is already correct, no change needed there.
+
+Dead code: removed unused ComingSoonPage import from App.tsx.
+
+New — E2E test classroom (ad-hoc request):
+- startup.py: seed_test_classroom() enrolls student@test.local in a
+  classroom owned by teacher@test.local (new test-school org, kept
+  separate from demo-school), mirroring seed_demo_classroom()'s
+  pattern. Wired into main.py's startup sequence. Lets activities be
+  assigned to student@test.local through the normal teacher flow.
+
+Produced via the agents/ planning -> developer -> test pipeline
+(2 parallel developer tracks this round); full detail in
+WORK_TRACKING.md Session 38 (gitignored, local only).

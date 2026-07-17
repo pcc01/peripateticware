@@ -1,1 +1,26 @@
-{}
+{
+  "nav": {
+    "ai_config": "AI Yönlendirme ve Anahtarlar",
+    "library": "Paylaşımlı Kütüphane",
+    "notifications": "Bildirimler",
+    "new_activity": "Yeni Etkinlik",
+    "submissions": "Gönderimler",
+    "activities": "Etkinlikler",
+    "classrooms": "Sınıflar",
+    "challenges": "Zorluklar",
+    "audit": "Denetim Günlükleri",
+    "standards": "Standartlar",
+    "analytics": "Analitik",
+    "calendar": "Takvim",
+    "settings": "Ayarlar",
+    "progress": "İlerleme",
+    "messages": "Mesajlar",
+    "students": "Öğrenciler",
+    "reports": "Raporlar",
+    "rubrics": "Değerlendirme Ölçekleri",
+    "privacy": "Gizlilik",
+    "billing": "Faturalandırma",
+    "users": "Kullanıcılar",
+    "dashboard": "Kontrol Paneli"
+  }
+}

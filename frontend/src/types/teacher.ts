@@ -40,9 +40,13 @@ export interface Project {
   teacher_id: string
   title: string
   description: string
-  status: 'draft' | 'active' | 'completed'
+  grade_level: number
+  subject: string
+  duration_weeks: number
+  status: ProjectStatus
   start_date?: string
-  end_date?: string
+  end_date?: string | null
+  activities: ActivityListResponse[]
   created_at: string
   updated_at: string
 }

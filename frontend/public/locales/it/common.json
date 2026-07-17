@@ -13,6 +13,14 @@
     "notifications": "Collega tuo figlio",
     "users": "Utenti",
     "ai_config": "Routing e chiavi AI",
-    "audit": "Registri delle attività"
+    "audit": "Registri delle attività",
+    "submissions": "Contributi",
+    "analytics": "Analisi",
+    "calendar": "Calendario",
+    "progress": "Progressi",
+    "messages": "Messaggi",
+    "reports": "Rapporti",
+    "billing": "Fatturazione",
+    "privacy": "Privacy"
   }
 }

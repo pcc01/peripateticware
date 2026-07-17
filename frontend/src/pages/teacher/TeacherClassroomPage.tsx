@@ -54,7 +54,13 @@ interface Classroom {
 
 export default function TeacherClassroomPage() {
   const { t } = useTranslation('landing');
-  const { classroomId } = useParams<{ classroomId: string }>();
+  // Route is registered as /teacher/classrooms/:id (see App.tsx) -- useParams()
+  // only exposes keys matching the route pattern, so destructuring
+  // `classroomId` here was always undefined, and load()'s `if (!classroomId)
+  // return;` guard silently no-op'd forever, leaving the page stuck on its
+  // loading spinner (perceived as "blank page" since it never even reached
+  // the error state).
+  const { id: classroomId } = useParams<{ id: string }>();
   const navigate        = useNavigate();
 
   const [classroom,   setClassroom]   = useState<Classroom | null>(null);

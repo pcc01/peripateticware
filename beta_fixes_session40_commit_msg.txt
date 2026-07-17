@@ -1,0 +1,50 @@
+feat: wire prompt library into inference, standards, and activity generation
+
+Real student inquiries now get an instructive prompt (new bug found +
+fixed):
+- inference.py: process_inquiry() branches on InquiryRequest.input_text
+  (activity-builder callers, e.g. OllamaLessonSuggestions.tsx - unchanged,
+  verbatim prompt) vs .text (real students, InquiryInterface.tsx - was
+  previously sent to the LLM raw with zero persona/pedagogy framing).
+  The .text branch now builds a real prompt via
+  services/prompt_library.py::build_peri_prompt() with the SYSTEM_PERI
+  persona, temperature=0.65, num_predict=180/max_tokens=180. Threaded
+  system/temperature/num_predict/max_tokens through
+  _call_llm_inference/_call_claude_inference/_call_ollama_inference and
+  agents/provider.py::call_claude/call_ollama.
+- provider.py: added missing temperature/num_predict kwargs to
+  call_ollama() (bug caught during my own audit of a prior interrupted
+  agent run - inference.py was already passing these kwargs, but
+  call_ollama()'s signature never accepted them, which would have
+  crashed with TypeError on every real student inquiry). Falls back to
+  the original 0.2/4096 defaults when omitted - zero behavior change
+  for other callers.
+
+Standards/rubric extraction now uses the tuned library prompt:
+- standards_parser.py: deleted the ad hoc EXTRACTION_PROMPT f-string,
+  extract_criteria() now calls build_standards_extraction_prompt().
+  Error-handling/return-tuple contract unchanged.
+
+Backend activity generation now uses the tuned library prompt:
+- activity_generation_service.py: fixed a landmine the README's own
+  wiring instructions would have hit - curriculum_context is a
+  pre-formatted string, not a dict, so the call site now passes raw
+  bloom_level/dok_level/curriculum_titles instead. _build_generation_prompt()
+  delegates to build_activity_generation_prompt(). _parse_suggestions()
+  extended to keep the new prompt's richer output fields
+  (core_phenomenon, student_task, evidence_collected,
+  peri_opening_question) instead of discarding them.
+
+OllamaLessonSuggestions.tsx quality pass (Paul's choice: contained,
+Option B of 3 presented):
+- Ported the spirit of build_activity_prompt() (location-specificity,
+  concrete observable evidence, avoid vague language) into the
+  frontend's own buildPrompt() string. Output contract, parseSuggestions(),
+  and the suggestion-card UI untouched - zero UI/contract risk.
+
+Produced via the agents/ planning -> developer -> test pipeline (1
+developer track, resumed after an external API session-limit
+interruption mid-run - file states were independently audited via Read
+before continuing, not trusted from the interrupted agent's partial
+output); full detail in WORK_TRACKING.md Session 40 (gitignored, local
+only).

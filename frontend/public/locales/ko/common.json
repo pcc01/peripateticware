@@ -1,0 +1,26 @@
+{
+  "nav": {
+    "ai_config": "AI 라우팅 및 키",
+    "library": "공유 라이브러리",
+    "notifications": "알림",
+    "new_activity": "새로운 활동",
+    "submissions": "제출물",
+    "activities": "활동",
+    "classrooms": "교실",
+    "challenges": "과제",
+    "audit": "감사 로그",
+    "dashboard": "대시보드",
+    "standards": "표준",
+    "analytics": "분석",
+    "calendar": "달력",
+    "settings": "설정",
+    "progress": "진행 상황",
+    "messages": "메시지",
+    "students": "학생들",
+    "reports": "보고서",
+    "rubrics": "평가 기준",
+    "privacy": "개인정보 보호",
+    "billing": "청구",
+    "users": "사용자"
+  }
+}

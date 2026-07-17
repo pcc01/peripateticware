@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from '@/utils/errorMessage'
 
 const API_BASE = '/api/v1'
 
@@ -55,7 +56,11 @@ const ActivityListPage: React.FC = () => {
           : (res.data.items ?? res.data.activities ?? res.data.results ?? [])
         setActivities(data)
       } catch (err: any) {
-        const msg = err?.response?.data?.detail ?? err?.message ?? 'Failed to load activities'
+        // err.response.data.detail can be a structured object/array (FastAPI
+        // 422 validation errors, upgrade-required payloads, etc.) rather than
+        // a plain string — rendering that directly as a React child throws
+        // "Minified React error #31" and unmounts the app. Always coerce.
+        const msg = getErrorMessage(err, 'Failed to load activities')
         setError(msg)
         console.error('ActivityListPage fetch error:', err)
       } finally {
