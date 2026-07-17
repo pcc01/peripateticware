@@ -5,7 +5,6 @@
 """Tests for RAG pipeline functionality"""
 
 import pytest
-pytestmark = pytest.mark.skip(reason="Legacy test — imports deprecated API; superseded by current test suite")
 from services.rag_orchestrator import HaystackRAGPipeline, RAGOrchestrator
 import numpy as np
 
@@ -61,7 +60,12 @@ class TestHaystackRAGPipeline:
         
         assert "Document 1" in context
         assert "Document 2" in context
-        assert "95%" in context or "0.95" in context
+        # _build_context_string renders relevance via Python's ".2%" format
+        # spec, which turns 0.95 into "95.00%" — not "95%" and not the raw
+        # "0.95". The original assertion checked for either of those two
+        # substrings and would fail against current output; updated to match
+        # the actual rendered format.
+        assert "95.00%" in context
     
     def test_build_rag_prompt(self, pipeline):
         """Test RAG prompt building"""

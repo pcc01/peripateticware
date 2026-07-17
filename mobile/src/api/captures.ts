@@ -8,13 +8,15 @@ export interface Capture {
   capture_type: string;
   file_path?: string;
   transcript?: string | null;
+  transcript_confidence?: number | null;
+  transcript_language?: string | null;
   title?: string;
   description?: string;
   created_at: string;
 }
 
-export async function fetchCaptures(sessionId?: string): Promise<Capture[]> {
-  const qs = sessionId ? `?session_id=${sessionId}` : '';
+export async function fetchCaptures(activityId?: string): Promise<Capture[]> {
+  const qs = activityId ? `?activity_id=${activityId}` : '';
   const data = await apiFetch<{ captures: Capture[] } | Capture[]>(
     `/api/v1/student/captures${qs}`
   );

@@ -20,9 +20,19 @@ Options:
     --list                 Print a formatted table of all current regulations
     --log-level LEVEL      DEBUG / INFO / WARNING  (default: INFO)
     --force-update         Force fetch all sources even if recently checked
+    --db-mode              Read/write privacy_regulation_catalog via psycopg2
+                            instead of privacy_rules.json (requires --db-url
+                            or DATABASE_URL env var). NOTE: as of this
+                            writing, privacy_regulation_catalog does not yet
+                            have version/last_synced_at/change_log columns —
+                            see the --db-mode section of the source for
+                            details; a migration is required before this
+                            flag can be used against a live database.
+    --db-url URL            Postgres URL for --db-mode (or set DATABASE_URL)
 
 Dependencies (beyond stdlib):
     pip install requests beautifulsoup4 lxml
+    pip install psycopg2-binary   # only required when using --db-mode
 """
 
 from __future__ import annotations
@@ -1421,6 +1431,221 @@ def run_update(
 
 
 # ---------------------------------------------------------------------------
+# --db-mode: read/write privacy_regulation_catalog directly (sync psycopg2)
+# ---------------------------------------------------------------------------
+#
+# SCHEMA GAP (found during implementation, not assumed from the work-plan
+# doc — verified against models/compliance.py and
+# alembic/versions/20260618_privacy_regulation_catalog.py):
+#
+# The privacy_regulation_catalog table does NOT currently have `version`,
+# `last_synced_at`, or `change_log` columns. Those column names exist on a
+# *different* table — `compliance_rules` (the ComplianceRule model) — not
+# on privacy_regulation_catalog. save_regulations_to_db() below still
+# issues the UPDATE the work plan specified (those three columns), so the
+# failure mode against the live schema is a loud, specific
+# psycopg2.errors.UndefinedColumn — not a silent no-op or a guess at
+# different column names. A migration adding version/last_synced_at/
+# change_log to privacy_regulation_catalog is required before --db-mode
+# can be used against the real database. See this session's Change
+# Summary, "Manual Steps Required".
+
+
+def resolve_db_url(cli_db_url: Optional[str]) -> str:
+    """
+    Resolve the Postgres URL for --db-mode: --db-url wins, falling back to
+    the DATABASE_URL environment variable. Raises SystemExit with a clear,
+    specific message if neither is available — --db-mode must fail loudly,
+    never silently fall through to the JSON-file path.
+    """
+    db_url = cli_db_url or os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise SystemExit(
+            "--db-mode requires a database URL: pass --db-url or set the "
+            "DATABASE_URL environment variable. Neither was provided — aborting."
+        )
+    return db_url
+
+
+def load_regulations_from_db(db_url: str) -> List[Dict[str, Any]]:
+    """
+    Load active regulations from privacy_regulation_catalog via a
+    synchronous psycopg2 connection, adapted into the same dict shape
+    process_regulation()/detect_change_* expect (regulation_id, source_url,
+    source_type, version, effective_date).
+
+    Uses the columns that actually exist today (rule_id, short_name,
+    full_name, framework, source_url, effective_date, updated_at).
+    `regulation_id` is derived from rule_id (falling back to short_name)
+    since privacy_regulation_catalog has no dedicated regulation_id column
+    of its own. `version` is not stored on this table (see the SCHEMA GAP
+    note above) — regulations are loaded with a fixed placeholder "1.0.0"
+    so process_regulation() can still compute a bumped version for use in
+    save_regulations_to_db()'s UPDATE.
+    """
+    import psycopg2
+    import psycopg2.extras
+
+    regulations: List[Dict[str, Any]] = []
+    conn = psycopg2.connect(db_url)
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT id, rule_id, short_name, full_name, jurisdiction_code,
+                       framework, source_url, effective_date, updated_at
+                FROM privacy_regulation_catalog
+                WHERE is_active = TRUE
+            """)
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    for row in rows:
+        regulations.append({
+            "regulation_id": row["rule_id"] or row["short_name"],
+            "display_name": row["full_name"],
+            "framework": row["framework"],
+            "source_url": row["source_url"] or "",
+            "source_type": "html_scrape" if row["source_url"] else "manual",
+            "effective_date": row["effective_date"].isoformat() if row["effective_date"] else None,
+            "version": "1.0.0",  # placeholder — no version column on this table today
+            "_db_id": str(row["id"]),
+        })
+    return regulations
+
+
+def save_regulations_to_db(
+    db_url: str,
+    regulation_results: List[Dict[str, Any]],
+) -> None:
+    """
+    Persist updated version/last_synced_at/change_log back to
+    privacy_regulation_catalog for every regulation whose status was
+    "updated". Matches process_regulation()'s produced by regulation_id.
+
+    See the SCHEMA GAP note above this section: version, last_synced_at,
+    and change_log do not exist on privacy_regulation_catalog as of the
+    current migration. This UPDATE is written per the work plan's literal
+    spec so the exact columns a future migration needs are visible; it
+    will raise psycopg2.errors.UndefinedColumn against the live schema
+    until that migration lands. Do not run --db-mode against production
+    until then (RESTRICTED / migration work — Paul's call).
+    """
+    import psycopg2
+
+    updated = [r for r in regulation_results if r.get("status") == "updated"]
+    if not updated:
+        log.info("[db-mode] No regulations changed — nothing to write to privacy_regulation_catalog.")
+        return
+
+    conn = psycopg2.connect(db_url)
+    try:
+        with conn.cursor() as cur:
+            for result in updated:
+                change_log_entry = json.dumps({
+                    "timestamp": utcnow_iso(),
+                    "old_version": result.get("old_version"),
+                    "new_version": result.get("new_version"),
+                    "detail": result.get("detail"),
+                })
+                cur.execute(
+                    """
+                    UPDATE privacy_regulation_catalog
+                    SET version = %s,
+                        last_synced_at = %s,
+                        change_log = %s
+                    WHERE rule_id = %s OR short_name = %s
+                    """,
+                    (
+                        result.get("new_version"),
+                        utcnow_iso(),
+                        change_log_entry,
+                        result["regulation_id"],
+                        result["regulation_id"],
+                    ),
+                )
+        conn.commit()
+        log.info("[db-mode] Wrote %d updated regulation(s) to privacy_regulation_catalog", len(updated))
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def run_update_db_mode(
+    db_url: str,
+    dry_run: bool,
+    force_update: bool,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    --db-mode variant of run_update(): source regulations from
+    privacy_regulation_catalog instead of privacy_rules.json, run the same
+    fetch/change-detection logic, and write results back via
+    save_regulations_to_db() instead of save_rules_atomic().
+
+    Unknown-regulation handling and the JSON-only interactive flags
+    (--new-regulation / --resolve-regulation / --add-jurisdiction / --list)
+    are out of scope for --db-mode in this pass — those remain JSON-file
+    only, matching the work plan's narrow "add --db-mode to the updater"
+    scope rather than a full DB-mode reimplementation of every subcommand.
+    """
+    log.info("[db-mode] Loading regulations from privacy_regulation_catalog")
+    regulations = load_regulations_from_db(db_url)
+
+    session = build_session()
+    regulation_results: List[Dict[str, Any]] = []
+
+    for regulation in regulations:
+        if not force_update:
+            last_fetched = regulation.get("last_fetched")
+            if last_fetched:
+                try:
+                    last_dt = datetime.fromisoformat(last_fetched.replace("Z", "+00:00"))
+                    hours_since = (datetime.now(timezone.utc) - last_dt).total_seconds() / 3600
+                    if hours_since < 12:
+                        regulation_results.append({
+                            "regulation_id": regulation["regulation_id"],
+                            "status": "unchanged",
+                            "old_version": regulation.get("version"),
+                            "new_version": None,
+                            "detail": f"recently checked ({hours_since:.1f}h ago)",
+                            "found_date": None,
+                        })
+                        continue
+                except (ValueError, TypeError):
+                    pass
+
+        try:
+            result = process_regulation(regulation, session, dry_run)
+        except Exception as exc:  # noqa: BLE001
+            log.error(
+                "[db-mode] Unexpected error processing %s: %s",
+                regulation.get("regulation_id", "?"),
+                exc,
+                exc_info=True,
+            )
+            result = {
+                "regulation_id": regulation.get("regulation_id", "?"),
+                "status": "source_unavailable",
+                "old_version": regulation.get("version"),
+                "new_version": None,
+                "detail": f"unexpected_error: {exc}",
+                "found_date": None,
+            }
+        regulation_results.append(result)
+
+    unknown_results: List[Dict[str, Any]] = []  # unknown-regulation flow is JSON-only, see docstring
+
+    if not dry_run:
+        save_regulations_to_db(db_url, regulation_results)
+    else:
+        log.info("[db-mode] [DRY RUN] No changes written to the database.")
+
+    return regulation_results, unknown_results
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -1438,6 +1663,9 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
             "  --list                 Print a formatted table of all current regulations\n"
             "  --log-level LEVEL      DEBUG / INFO / WARNING (default: INFO)\n"
             "  --force-update         Force fetch all sources even if recently checked\n"
+            "  --db-mode              Read/write privacy_regulation_catalog via psycopg2\n"
+            "                         instead of privacy_rules.json\n"
+            "  --db-url URL           Postgres URL for --db-mode (or DATABASE_URL env var)\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
@@ -1484,6 +1712,25 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         action="store_true",
         help="Force fetch all sources even if recently checked",
     )
+    parser.add_argument(
+        "--db-mode",
+        action="store_true",
+        help=(
+            "Read regulations from and write updates to the "
+            "privacy_regulation_catalog table via psycopg2, instead of "
+            "privacy_rules.json. Requires --db-url or a DATABASE_URL "
+            "environment variable."
+        ),
+    )
+    parser.add_argument(
+        "--db-url",
+        default=None,
+        metavar="URL",
+        help=(
+            "Postgres connection URL for --db-mode. Falls back to the "
+            "DATABASE_URL environment variable if omitted."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -1496,6 +1743,33 @@ def main(argv: Optional[List[str]] = None) -> int:
     log = setup_logging(args.log_level)
 
     use_color = sys.stdout.isatty()
+
+    # --db-mode: entirely separate data path (privacy_regulation_catalog via
+    # psycopg2) — does not touch or require privacy_rules.json at all, so it
+    # must be handled before the rules_path.exists() check below, which only
+    # applies to the JSON-file code path.
+    if args.db_mode:
+        db_url = resolve_db_url(args.db_url)  # raises SystemExit if unresolvable — fails loudly
+        run_at = utcnow_iso()
+        if args.dry_run:
+            log.info("=== DRY RUN (db-mode) — no database rows will be modified ===")
+        try:
+            regulation_results, unknown_results = run_update_db_mode(
+                db_url=db_url,
+                dry_run=args.dry_run,
+                force_update=args.force_update,
+            )
+        except Exception as exc:  # noqa: BLE001 — surface any DB/connection error loudly
+            log.error("[db-mode] Update run failed: %s", exc, exc_info=True)
+            return 1
+
+        report = render_report(run_at, regulation_results, unknown_results, use_color)
+        print()
+        print(report)
+        print()
+        any_failed = any(r["status"] == "source_unavailable" for r in regulation_results)
+        return 1 if any_failed else 0
+
     rules_path = Path(args.rules_file).resolve()
 
     if not rules_path.exists():
