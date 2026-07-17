@@ -608,6 +608,53 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn,
             "CREATE INDEX IF NOT EXISTS idx_classroom_announcements_classroom ON classroom_announcements(classroom_id, created_at DESC)"
         )
+        # ── Parent/teacher 1:1 messaging ─────────────────────────────────────
+        # routes/teacher_communication.py (send/list/reply) and routes/parent.py
+        # (existing parent-side inbox) both read/write this table. It was only
+        # ever defined in alembic/versions/20260627_parent_portal_tables.py,
+        # which this app has never actually applied (schema here is bootstrapped
+        # from database/init.sql + these inline patches, not alembic -- see the
+        # TODO at the top of this file). Mirrored here so it self-heals on
+        # restart like every other table in this function.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS parent_messages (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                to_user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                subject      VARCHAR(500) NOT NULL,
+                body         TEXT NOT NULL,
+                conversation_id UUID NOT NULL DEFAULT gen_random_uuid(),
+                read_at      TIMESTAMP,
+                created_at   TIMESTAMP DEFAULT NOW(),
+                updated_at   TIMESTAMP DEFAULT NOW()
+            )
+        """, "create parent_messages")
+        await _exec_safepoint(conn,
+            "CREATE INDEX IF NOT EXISTS ix_parent_messages_to_user ON parent_messages(to_user_id, created_at DESC)"
+        )
+        await _exec_safepoint(conn,
+            "CREATE INDEX IF NOT EXISTS ix_parent_messages_conversation ON parent_messages(conversation_id)"
+        )
+        # notifications.type/related_child_id/action_url — same source (the
+        # unapplied 20260627 migration); routes/parent.py's notifications read
+        # path and routes/teacher_communication.py's notify-on-send both depend
+        # on these columns existing.
+        await _exec_safepoint(conn, "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'info'")
+        await _exec_safepoint(conn, "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS related_child_id UUID REFERENCES users(id)")
+        await _exec_safepoint(conn, "ALTER TABLE notifications ADD COLUMN IF NOT EXISTS action_url VARCHAR(500)")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS parent_settings (
+                id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                parent_id  UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                dark_mode  BOOLEAN DEFAULT false,
+                language   VARCHAR(10) DEFAULT 'en',
+                email_frequency          VARCHAR(20) DEFAULT 'weekly',
+                notifications_enabled    BOOLEAN DEFAULT true,
+                push_notifications_enabled BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create parent_settings")
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS activity_standards_map (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
