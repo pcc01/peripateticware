@@ -22,6 +22,7 @@ from services.audio_service import transcribe_audio
 from services.vision_service import analyze_image
 from services.embedding_service import embed_text, embed_texts
 from services.input_normalization_service import normalize_input
+from agents.provider import ProviderUnavailableError
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -197,7 +198,7 @@ async def process_inquiry(
         cur_ctx = request.curriculum_context or {}
         per_ctx = request.persona_context or {}
         location_name = loc_ctx.get("name") or loc_ctx.get("address") or ""
-        subject       = cur_ctx.get("subject", "")
+        subject       = cur_ctx.get("subject") or cur_ctx.get("topic", "")
         grade_level   = int(cur_ctx.get("grade_level") or per_ctx.get("grade_level") or 0)
         bloom_level   = cur_ctx.get("bloom_level") or per_ctx.get("bloom_level") or str(request.bloom_level or "")
 
@@ -241,8 +242,37 @@ async def process_inquiry(
             "persona": per_ctx,
         }
 
-        # Call LLM for inference — pass raw_text so provider can use it directly
-        response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text, model=request.model)
+        # ── Branch on which prompt-handling behavior this request wants ───────
+        # input_text carriers (OllamaLessonSuggestions.tsx / EnhancedActivityBuilder.tsx)
+        # pre-build a complete, self-contained prompt client-side and want it sent
+        # verbatim, with no persona/system message — behavior unchanged from today.
+        # Real student inquiries (InquiryInterface.tsx) send raw observation text via
+        # `text` only — that path never reached an instructive prompt before; build
+        # one now via build_peri_prompt() so Peri's questions are actually guided.
+        if request.input_text and request.input_text.strip():
+            response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text, model=request.model)
+        else:
+            from services.prompt_library import build_peri_prompt, SYSTEM_PERI
+            peri_prompt = build_peri_prompt(
+                location_name=loc_ctx.get("name") or loc_ctx.get("address") or "this location",
+                location_description=loc_ctx.get("description", ""),
+                subject=subject,
+                grade_level=grade_level,
+                bloom_level=bloom_level,
+                inquiry_stage=cur_ctx.get("inquiry_stage", "observe"),
+                student_observation=normalized_text,
+                learning_objectives=cur_ctx.get("learning_objectives", []),
+                prior_questions=per_ctx.get("prior_questions", []),
+            )
+            response = await _call_llm_inference(
+                inquiry,
+                explicit_prompt=peri_prompt,
+                model=request.model,
+                system=SYSTEM_PERI,
+                temperature=0.65,
+                num_predict=180,
+                max_tokens=180,
+            )
 
         # ── Write result to cache ─────────────────────────────────────────────
         try:
@@ -267,6 +297,12 @@ async def process_inquiry(
             confidence=response.get("confidence", 0.8)
         )
     
+    except ProviderUnavailableError as e:
+        logger.error(f"AI provider unavailable while processing inquiry: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI inference service is temporarily unavailable — please try again shortly."
+        )
     except Exception as e:
         logger.error(f"Error processing inquiry: {e}")
         raise HTTPException(
@@ -701,13 +737,28 @@ async def health_check():
 # HELPER FUNCTIONS - FULLY IMPLEMENTED
 # ============================================================================
 
-async def _call_llm_inference(inquiry: dict, explicit_prompt: str = "", model: Optional[str] = None) -> dict:
+async def _call_llm_inference(
+    inquiry: dict,
+    explicit_prompt: str = "",
+    model: Optional[str] = None,
+    system: Optional[str] = None,
+    temperature: Optional[float] = None,
+    num_predict: Optional[int] = None,
+    max_tokens: Optional[int] = None,
+) -> dict:
     """Call configured LLM (Ollama or Claude) for text generation.
 
-    If ``explicit_prompt`` is supplied (e.g. from OllamaLessonSuggestions) we
-    use it verbatim so the caller gets exactly the output they requested.
-    Otherwise we fall back to a generic Peri guiding-question prompt.
+    If ``explicit_prompt`` is supplied (e.g. from OllamaLessonSuggestions, or
+    the built Peri prompt from process_inquiry()'s real-student-inquiry
+    branch) we use it verbatim so the caller gets exactly the output they
+    requested. Otherwise we fall back to a generic Peri guiding-question
+    prompt (retained for callers that don't build their own prompt).
     ``model`` overrides the default OLLAMA_MODEL_TEXT when set.
+    ``system`` is threaded through to the provider as a leading system
+    message when set (only used by the Peri-question branch — activity-
+    builder callers pass no system message, unchanged from today).
+    ``temperature``/``num_predict`` (Ollama) and ``max_tokens`` (Claude) are
+    optional overrides; when omitted, the provider's current defaults apply.
     """
     try:
         if explicit_prompt and explicit_prompt.strip():
@@ -727,10 +778,15 @@ Keep it concise (1-2 sentences).
 
         # Route to appropriate provider
         if settings.LLM_PROVIDER.lower() == "claude":
-            return await _call_claude_inference(prompt)
+            return await _call_claude_inference(prompt, system=system, max_tokens=max_tokens)
         else:
-            return await _call_ollama_inference(prompt, model=model)
-    
+            return await _call_ollama_inference(
+                prompt, model=model, system=system,
+                temperature=temperature, num_predict=num_predict,
+            )
+
+    except ProviderUnavailableError:
+        raise
     except Exception as e:
         logger.error(f"Inference error: {e}")
         return {
@@ -740,14 +796,27 @@ Keep it concise (1-2 sentences).
         }
 
 
-async def _call_claude_inference(prompt: str) -> dict:
-    """Call Claude API for inference — delegates HTTP to agents/provider.py."""
+async def _call_claude_inference(
+    prompt: str,
+    system: Optional[str] = None,
+    max_tokens: Optional[int] = None,
+) -> dict:
+    """Call Claude API for inference — delegates HTTP to agents/provider.py.
+
+    ``system``, when set, is prepended as a leading system-role message —
+    agents/provider.py::call_claude() auto-extracts it into the Anthropic
+    API's top-level 'system' field. ``max_tokens`` overrides
+    settings.CLAUDE_MAX_TOKENS when supplied.
+    """
     try:
         from agents.provider import call_claude as _call_claude
+        messages = [{"role": "user", "content": prompt}]
+        if system:
+            messages = [{"role": "system", "content": system}] + messages
         question = await _call_claude(
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             model=settings.CLAUDE_MODEL,
-            max_tokens=settings.CLAUDE_MAX_TOKENS,
+            max_tokens=max_tokens or settings.CLAUDE_MAX_TOKENS,
             timeout=30,
         )
         logger.info(f"Claude inference successful - Model: {settings.CLAUDE_MODEL}")
@@ -759,20 +828,43 @@ async def _call_claude_inference(prompt: str) -> dict:
             ],
             "confidence": 0.90
         }
+    except ProviderUnavailableError:
+        raise
     except Exception as e:
         logger.error(f"Claude inference error: {e}")
         return {"question": "", "resources": [], "confidence": 0.0}
 
 
-async def _call_ollama_inference(prompt: str, model: Optional[str] = None) -> dict:
-    """Call Ollama API for inference — delegates HTTP to agents/provider.py."""
+async def _call_ollama_inference(
+    prompt: str,
+    model: Optional[str] = None,
+    system: Optional[str] = None,
+    temperature: Optional[float] = None,
+    num_predict: Optional[int] = None,
+) -> dict:
+    """Call Ollama API for inference — delegates HTTP to agents/provider.py.
+
+    ``system``, when set, is prepended as a leading system-role message —
+    Ollama's /api/chat natively accepts it. ``temperature``/``num_predict``
+    override agents/provider.py::call_ollama()'s defaults (0.2/4096) when
+    supplied; when omitted, behavior is unchanged from today.
+    """
     try:
         from agents.provider import call_ollama as _call_ollama
         resolved_model = model or settings.OLLAMA_MODEL_TEXT
+        messages = [{"role": "user", "content": prompt}]
+        if system:
+            messages = [{"role": "system", "content": system}] + messages
+        ollama_kwargs = {}
+        if temperature is not None:
+            ollama_kwargs["temperature"] = temperature
+        if num_predict is not None:
+            ollama_kwargs["num_predict"] = num_predict
         question = await _call_ollama(
-            messages=[{"role": "user", "content": prompt}],
+            messages=messages,
             model=resolved_model,
             timeout=60,
+            **ollama_kwargs,
         )
         logger.info(f"Ollama inference successful - Model: {resolved_model}")
         return {
@@ -783,6 +875,8 @@ async def _call_ollama_inference(prompt: str, model: Optional[str] = None) -> di
             ],
             "confidence": 0.85
         }
+    except ProviderUnavailableError:
+        raise
     except Exception as e:
         logger.error(f"Ollama inference error: {e}")
         return {"question": "", "resources": [], "confidence": 0.0}

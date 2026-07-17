@@ -120,8 +120,9 @@ export const OllamaLessonSuggestions = ({
   };
 
   const buildPrompt = () => {
+    const locationLabel = locationInfo || (latitude && longitude ? `coordinates ${latitude?.toFixed(4)}, ${longitude?.toFixed(4)}` : 'this location');
     const parts = [
-      `You are an expert outdoor and place-based education curriculum designer.`,
+      `You are an expert outdoor and place-based education curriculum designer. You design activities that are authentic and location-specific, treating the environment as the primary text rather than a backdrop.`,
       `Generate 4 specific, varied lesson activity suggestions based on the following context.`,
       '',
       `ACTIVITY TITLE: ${title}`,
@@ -137,15 +138,15 @@ export const OllamaLessonSuggestions = ({
       `COGNITIVE FRAMEWORK: ${txInfo.name}`,
       taxonomyLevel ? `TARGET LEVEL: ${taxonomyLevel}` : `TARGET LEVELS: vary across ${txInfo.levels.slice(0,3).join(', ')}`,
       '',
-      `For each suggestion provide:`,
+      `For each suggestion, leverage what is UNIQUE and OBSERVABLE at ${locationLabel} — not a generic activity that could happen anywhere. Provide:`,
       `1. A concise title (6-10 words)`,
       `2. ${txInfo.name} level (use one of: ${txInfo.levels.join(', ')})`,
-      `3. One sentence describing what students do`,
+      `3. One sentence describing what the student concretely does, naming a specific observable feature, evidence, or measurement they will collect — written with active verbs, first person where natural ("You will…"). Avoid vague language like "explore" or "investigate broadly".`,
       '',
       `Format each as:`,
       `1. [Title] (level: X) — [description]`,
       ``,
-      `Be specific to the location and subject. Vary the cognitive levels.`,
+      `Be concrete and specific to the location and subject. Vary the cognitive levels across the 4 suggestions.`,
     ].filter(Boolean).join('\n');
     return parts;
   };

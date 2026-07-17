@@ -32,26 +32,6 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
-EXTRACTION_PROMPT = """You are an expert at reading educational standards, rubrics, and curriculum documents.
-
-Extract ALL measurable criteria from the text below. For each criterion output a JSON object with:
-  - id: a short kebab-case unique identifier (no spaces, lowercase, e.g. "science-grade5-observation-1")
-  - name: a concise name (5 words max)
-  - description: what a student must demonstrate to meet this criterion (1-2 sentences)
-  - category: the subject area or domain this belongs to
-  - required: true if mandatory, false if optional
-  - weight: relative importance as a float (default 1.0, higher = more important)
-
-Return ONLY a valid JSON array of criterion objects. No commentary, no markdown fences, no explanation.
-If you cannot find any criteria, return an empty array [].
-
-Document text:
----
-{text}
----
-
-JSON array:"""
-
 
 async def extract_criteria(
     text: str,
@@ -80,7 +60,13 @@ async def extract_criteria(
     if len(text) > max_chars:
         logger.info("Document text truncated to %d chars for LLM extraction", max_chars)
 
-    prompt = EXTRACTION_PROMPT.format(text=truncated)
+    from services.prompt_library import build_standards_extraction_prompt
+    prompt = build_standards_extraction_prompt(
+        document_text=truncated,
+        document_type=set_type,
+        subject=name,
+        max_chars=max_chars,
+    )
     raw: str = ""
 
     try:

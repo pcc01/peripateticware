@@ -21,6 +21,16 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+class ProviderUnavailableError(RuntimeError):
+    """Raised when a provider (Ollama/Claude) cannot be reached at all —
+    connection refused/timed out — as distinct from a reachable provider
+    that returned a non-200 error response. Callers should surface this
+    distinctly (e.g. HTTP 503) rather than treating it like a generic
+    generation failure."""
+    pass
+
+
 # ---------------------------------------------------------------------------
 # Public adapters
 # ---------------------------------------------------------------------------
@@ -91,6 +101,9 @@ async def call_claude(
 
     except RuntimeError:
         raise
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as exc:
+        logger.error("Claude provider unreachable: %s", exc)
+        raise ProviderUnavailableError(f"Claude provider unreachable: {exc}") from exc
     except Exception as exc:
         logger.error("Claude HTTP error: %s", exc)
         raise RuntimeError(f"Claude HTTP error: {exc}") from exc
@@ -100,6 +113,8 @@ async def call_ollama(
     messages: list,
     model: Optional[str] = None,
     timeout: int = 120,
+    temperature: Optional[float] = None,
+    num_predict: Optional[int] = None,
 ) -> str:
     """
     Call Ollama /api/chat (messages format, not /api/generate).
@@ -108,6 +123,8 @@ async def call_ollama(
         messages: list of {"role": "system"|"user"|"assistant", "content": str}
         model: override model; defaults to settings.OLLAMA_MODEL_TEXT
         timeout: HTTP timeout seconds
+        temperature: override the default 0.2 (low-variance agent default)
+        num_predict: override the default 4096-token cap
 
     Returns:
         Generated text string.
@@ -127,8 +144,8 @@ async def call_ollama(
                     "messages": messages,
                     "stream": False,
                     "options": {
-                        "temperature": 0.2,  # agents prefer low variance
-                        "num_predict": 4096,
+                        "temperature": temperature if temperature is not None else 0.2,  # agents prefer low variance
+                        "num_predict": num_predict if num_predict is not None else 4096,
                     },
                 },
             )
@@ -145,6 +162,9 @@ async def call_ollama(
 
     except RuntimeError:
         raise
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout) as exc:
+        logger.error("Ollama provider unreachable: %s", exc)
+        raise ProviderUnavailableError(f"Ollama provider unreachable: {exc}") from exc
     except Exception as exc:
         logger.error("Ollama HTTP error: %s", exc)
         raise RuntimeError(f"Ollama HTTP error: {exc}") from exc

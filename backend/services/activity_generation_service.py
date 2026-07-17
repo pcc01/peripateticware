@@ -125,8 +125,9 @@ class ActivityGenerationService:
             
             # Step 3: Build prompt for LLM
             prompt = self._build_generation_prompt(
-                location_name, location_context, curriculum_context,
-                subject, grade_level, num_suggestions
+                location_name, location_context, subject, grade_level, num_suggestions,
+                bloom_level=bloom_level, dok_level=dok_level,
+                curriculum_titles=curriculum_titles,
             )
             
             # Step 4: Call LLM (Ollama or Claude)
@@ -219,77 +220,30 @@ class ActivityGenerationService:
         self,
         location_name: str,
         location_context: Dict[str, Any],
-        curriculum_context: str,
         subject: str,
         grade_level: int,
-        num_suggestions: int
+        num_suggestions: int,
+        bloom_level: Optional[int] = None,
+        dok_level: Optional[int] = None,
+        curriculum_titles: Optional[List[str]] = None,
     ) -> str:
         """Build the prompt for LLM activity generation"""
-        
-        wiki_extract = location_context.get("wikipedia", {}).get("extract", "")
-        geographic_features = location_context.get("geographic_features", {})
-        educational_value = location_context.get("educational_value", "")
-        
-        prompt = f"""You are an expert outdoor education curriculum designer creating field-based learning activities.
 
-LOCATION CONTEXT:
-Location: {location_name}
-Coordinates: {location_context.get('latitude', 'N/A')}, {location_context.get('longitude', 'N/A')}
-
-Wikipedia Context:
-{wiki_extract[:500]}...
-
-Geographic Features:
-{json.dumps(geographic_features, indent=2)}
-
-Educational Value:
-{educational_value}
-
-CURRICULUM REQUIREMENTS:
-{curriculum_context}
-
-TASK:
-Generate {num_suggestions} creative, field-based learning activities that:
-1. Leverage the specific geographic and historical context of {location_name}
-2. Align with the curriculum standards and subject
-3. Meet the specified taxonomy/cognitive level targets
-4. Are authentic and inquiry-based
-5. Use the location as an active learning environment (not just a backdrop)
-
-For EACH activity, provide:
-- Title (catchy, descriptive)
-- Description (2-3 sentences explaining the activity)
-- Learning Objectives (2-3 specific, measurable objectives)
-- Bloom's Level (1-6)
-- Marzano's Level (1-4)
-- DoK Level (1-4)
-- SOLO Level (1-5)
-- Estimated Duration (in minutes)
-- Materials Needed (list)
-- Activity Type (hands_on, inquiry, discussion, virtual, hybrid)
-- Reasoning (1-2 sentences explaining how it uses the location's context)
-
-Format your response as JSON array with objects containing these exact fields.
-Only respond with valid JSON, no preamble.
-
-Example format:
-[
-  {{
-    "title": "Activity Title",
-    "description": "Description here",
-    "learning_objectives": ["Objective 1", "Objective 2"],
-    "bloom_level": 4,
-    "marzano_level": 3,
-    "dok_level": 3,
-    "solo_level": 4,
-    "estimated_duration_minutes": 120,
-    "materials_needed": ["Material 1", "Material 2"],
-    "activity_type": "hands_on",
-    "reasoning": "How this uses the location..."
-  }}
-]
-"""
-        return prompt
+        from services.prompt_library import build_activity_generation_prompt
+        return build_activity_generation_prompt(
+            location_name=location_name,
+            location_description=location_context.get("educational_value", ""),
+            wikipedia_extract=location_context.get("wikipedia", {}).get("extract", ""),
+            subject=subject,
+            grade_level=grade_level,
+            taxonomy_levels={
+                "bloom_level": bloom_level or 4,
+                "dok_level": dok_level or 3,
+            },
+            learning_objectives=[],   # not currently collected by this service — no source data exists yet; empty list degrades gracefully, do not invent a source
+            curriculum_standards=curriculum_titles or [],
+            num_activities=num_suggestions,
+        )
     
     async def _generate_with_ollama(self, prompt: str) -> str:
         """Call Ollama for activity generation"""
@@ -382,6 +336,10 @@ Example format:
                     "materials_needed": suggestion.get("materials_needed", []),
                     "activity_type": suggestion.get("activity_type", "inquiry"),
                     "reasoning": suggestion.get("reasoning", ""),
+                    "core_phenomenon": suggestion.get("core_phenomenon", ""),
+                    "student_task": suggestion.get("student_task", ""),
+                    "evidence_collected": suggestion.get("evidence_collected", ""),
+                    "peri_opening_question": suggestion.get("peri_opening_question", ""),
                     "location_name": location_name
                 }
                 
