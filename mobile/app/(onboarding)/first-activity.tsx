@@ -6,7 +6,8 @@ import { View, Text, StyleSheet, useWindowDimensions, StatusBar } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { onboardingCopy as c } from '@/src/onboarding/copy';
+import { useOnboardingCopy } from '@/src/onboarding/copy';
+import { setHasOnboarded } from '@/src/onboarding/onboardingFlag';
 import { fetchActivities, Activity } from '@/src/api/activities';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -15,6 +16,7 @@ import Btn from '@/src/components/Btn';
 export default function FirstActivityScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
+  const c = useOnboardingCopy();
   const { name = '' } = useLocalSearchParams<{ name: string }>();
   const [firstActivity, setFirstActivity] = React.useState<Activity | null>(null);
 
@@ -22,8 +24,18 @@ export default function FirstActivityScreen() {
     fetchActivities().then((acts) => { if (acts.length > 0) setFirstActivity(acts[0]); }).catch(() => {});
   }, []);
 
+  // Tour-then-login (mobile/FEATURE_PLAN.md section 3.4): onboarding never
+  // created an account — it only ever collected a display name for
+  // on-screen copy. Ending the tour here means "mark it seen, then send
+  // the student to the real login screen" — a teacher or homeschool
+  // parent creates the actual account in the web app, unchanged by this.
+  const finishOnboarding = async () => {
+    await setHasOnboarded();
+    router.replace('/login');
+  };
+
   return (
-    <View style={[styles.root, { backgroundColor: theme.mapBase }]}>
+    <View testID="onboarding-first-activity" style={[styles.root, { backgroundColor: theme.mapBase }]}>
       <StatusBar barStyle={themeName === 'atmosphere' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
       <View style={StyleSheet.absoluteFill}>
         <MapIllustration theme={theme} themeName={themeName} width={width} height={height} />
@@ -69,13 +81,15 @@ export default function FirstActivityScreen() {
           </View>
 
           <Btn
+            testID="onboarding-first-activity-open"
             label={c.firstActivityCta}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={finishOnboarding}
             theme={theme}
           />
           <Btn
+            testID="onboarding-first-activity-browse"
             label={c.firstActivityBrowseCta}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={finishOnboarding}
             theme={theme}
             variant="secondary"
           />

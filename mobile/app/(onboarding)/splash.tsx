@@ -6,7 +6,7 @@ import { View, Text, StyleSheet, useWindowDimensions, StatusBar } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { onboardingCopy as c } from '@/src/onboarding/copy';
+import { useOnboardingCopy } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -14,9 +14,10 @@ import Btn from '@/src/components/Btn';
 export default function SplashScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
+  const c = useOnboardingCopy();
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.mapBase }]}>
+    <View testID="onboarding-splash" style={[styles.root, { backgroundColor: theme.mapBase }]}>
       <StatusBar barStyle={themeName === 'atmosphere' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
 
       <View style={StyleSheet.absoluteFill}>
@@ -35,7 +36,7 @@ export default function SplashScreen() {
           <Text style={[styles.wordmark, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
             PERIPATETICWARE
           </Text>
-          <Btn label={c.splashCta} onPress={() => router.push('/(onboarding)/name')} theme={theme} />
+          <Btn testID="onboarding-splash-cta" label={c.splashCta} onPress={() => router.push('/(onboarding)/name')} theme={theme} />
         </View>
       </SafeAreaView>
     </View>

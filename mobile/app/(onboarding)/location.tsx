@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { onboardingCopy as c } from '@/src/onboarding/copy';
+import { useOnboardingCopy } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -15,6 +15,7 @@ import Btn from '@/src/components/Btn';
 export default function LocationScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
+  const c = useOnboardingCopy();
   const { name } = useLocalSearchParams<{ name: string }>();
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +32,7 @@ export default function LocationScreen() {
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.mapBase }]}>
+    <View testID="onboarding-location" style={[styles.root, { backgroundColor: theme.mapBase }]}>
       <StatusBar barStyle={themeName === 'atmosphere' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
 
       <View style={[styles.mapPreview, { height: height * 0.45 }]}>
@@ -56,8 +57,8 @@ export default function LocationScreen() {
           <Text style={[styles.note, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
             {c.locationReassurance}
           </Text>
-          <Btn label={c.locationConfirmCta} onPress={handleAllow} theme={theme} loading={loading} />
-          <Btn label={c.locationSkipCta} onPress={advance} theme={theme} variant="secondary" />
+          <Btn testID="onboarding-location-allow" label={c.locationConfirmCta} onPress={handleAllow} theme={theme} loading={loading} />
+          <Btn testID="onboarding-location-skip" label={c.locationSkipCta} onPress={advance} theme={theme} variant="secondary" />
         </View>
       </SafeAreaView>
     </View>

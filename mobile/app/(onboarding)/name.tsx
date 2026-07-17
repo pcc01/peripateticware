@@ -6,7 +6,7 @@ import { View, TextInput, StyleSheet, useWindowDimensions, KeyboardAvoidingView,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { onboardingCopy as c } from '@/src/onboarding/copy';
+import { useOnboardingCopy } from '@/src/onboarding/copy';
 import MapIllustration from '@/src/components/MapIllustration';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
@@ -27,6 +27,7 @@ function ProgressDots({ theme, active }: { theme: any; active: number }) {
 export default function NameScreen() {
   const { width, height } = useWindowDimensions();
   const { theme, themeName } = useTheme();
+  const c = useOnboardingCopy();
   const [name, setName] = useState('');
   const canContinue = name.trim().length > 0;
 
@@ -37,7 +38,7 @@ export default function NameScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={[styles.root, { backgroundColor: theme.mapBase }]}>
+      <View testID="onboarding-name" style={[styles.root, { backgroundColor: theme.mapBase }]}>
         <StatusBar barStyle={themeName === 'atmosphere' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
         <View style={StyleSheet.absoluteFill}>
           <MapIllustration theme={theme} themeName={themeName} width={width} height={height} />
@@ -51,6 +52,7 @@ export default function NameScreen() {
           }]}>
             <PeriSpeech text={c.namePeriSpeech} theme={theme} size={40} />
             <TextInput
+              testID="onboarding-name-input"
               value={name}
               onChangeText={setName}
               placeholder={c.namePlaceholder}
@@ -68,7 +70,7 @@ export default function NameScreen() {
                 minHeight: 44,
               }]}
             />
-            <Btn label={c.nameCta} onPress={advance} theme={theme} disabled={!canContinue} />
+            <Btn testID="onboarding-name-cta" label={c.nameCta} onPress={advance} theme={theme} disabled={!canContinue} />
             <ProgressDots theme={theme} active={1} />
           </View>
         </SafeAreaView>

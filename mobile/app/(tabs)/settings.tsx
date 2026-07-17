@@ -1,31 +1,41 @@
 // app/(tabs)/settings.tsx — Theme picker + logout
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import { ThemeName } from '@/src/theme/tokens';
-import { t } from '@/src/i18n/t';
 import { SUPPORTED_LOCALES, LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
-
-const THEMES: { name: ThemeName; label: string; emoji: string; desc: string }[] = [
-  { name: 'fieldGuide',  label: t('settings.theme.fieldGuide.label', 'Field Guide'),  emoji: '🌿', desc: t('settings.theme.fieldGuide.desc', 'Warm parchment — classic field notebook') },
-  { name: 'terrain',     label: t('settings.theme.terrain.label', 'Terrain'),      emoji: '🪨', desc: t('settings.theme.terrain.desc', 'Crisp and sharp — topographic focus') },
-  { name: 'atmosphere',  label: t('settings.theme.atmosphere.label', 'Atmosphere'),   emoji: '🌌', desc: t('settings.theme.atmosphere.desc', 'Deep and dark — night sky clarity') },
-];
 
 export default function SettingsScreen() {
   const { theme, themeName, setTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { t, i18n: i18nInstance } = useTranslation();
   const [locale, setLocale] = useState<string>(DEFAULT_LOCALE);
 
-  // Persistence-only for now (mobile/FEATURE_PLAN.md §3.1 — Paul's decision:
-  // ship AsyncStorage persistence now, defer real translation library).
-  // Picking a language updates the selected chip and survives relaunch, but
-  // does not change any displayed text yet — `src/i18n/t.ts` stays a
-  // pass-through until a translation library is chosen.
+  // NOTE: THEMES used to be a module-level `const` built by calling t() once
+  // at import time — that froze the theme labels/descriptions at whichever
+  // language was active on first JS load and never updated on a runtime
+  // language switch (a real bug — see
+  // WORK_PLAN_20260718_MOBILE_I18N.md Priority 1 item 4), which was
+  // especially visible here since this is the very screen that hosts the
+  // language picker. Computing it inside the render body with useMemo,
+  // keyed on the current language (via useTranslation(), which subscribes
+  // this component to i18next's `languageChanged` event), fixes that.
+  const THEMES: { name: ThemeName; label: string; emoji: string; desc: string }[] = useMemo(() => [
+    { name: 'fieldGuide',  label: t('settings.theme.fieldGuide.label', 'Field Guide'),  emoji: '🌿', desc: t('settings.theme.fieldGuide.desc', 'Warm parchment — classic field notebook') },
+    { name: 'terrain',     label: t('settings.theme.terrain.label', 'Terrain'),      emoji: '🪨', desc: t('settings.theme.terrain.desc', 'Crisp and sharp — topographic focus') },
+    { name: 'atmosphere',  label: t('settings.theme.atmosphere.label', 'Atmosphere'),   emoji: '🌌', desc: t('settings.theme.atmosphere.desc', 'Deep and dark — night sky clarity') },
+  ], [i18nInstance.language]);
+
+  // Picking a language updates the selected chip, persists to AsyncStorage
+  // (survives relaunch), AND now also calls i18n.changeLanguage() so the
+  // change takes effect immediately without an app restart (Priority 2
+  // item 5 — previously this only wrote to AsyncStorage and the actual
+  // i18next language never changed until next cold boot).
   useEffect(() => {
     (async () => {
       const stored = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -36,6 +46,7 @@ export default function SettingsScreen() {
   const handleSelectLocale = async (code: string) => {
     setLocale(code);
     await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, code);
+    i18nInstance.changeLanguage(code);
   };
 
   const handleLogout = () => {
@@ -81,7 +92,9 @@ export default function SettingsScreen() {
           ))}
         </View>
 
-        {/* Language picker (persistence only — see FEATURE_PLAN.md §3.1) */}
+        {/* Language picker — persists to AsyncStorage and calls
+            i18n.changeLanguage() (see handleSelectLocale above), so
+            selecting a chip takes effect immediately, no restart needed. */}
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
           <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>LANGUAGE</Text>
           {SUPPORTED_LOCALES.map((opt) => (

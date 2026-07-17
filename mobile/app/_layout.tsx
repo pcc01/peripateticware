@@ -5,6 +5,11 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 
+// Side-effect import — initializes i18next (resources, fallback language,
+// AsyncStorage-persisted language restore) before anything else renders.
+// Must come before any component that calls t() or useTranslation().
+import '@/src/i18n';
+
 import { ThemeProvider } from '@/src/theme/ThemeContext';
 import { AuthProvider, useAuth } from '@/src/stores/AuthContext';
 import { initOfflineLayer } from '@/src/db/appInit';
