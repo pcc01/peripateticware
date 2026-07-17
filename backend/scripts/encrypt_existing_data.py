@@ -83,6 +83,66 @@ async def backfill_captures(db) -> int:
     return updated
 
 
+async def backfill_capture_file_paths(db) -> int:
+    """
+    RF-4: StudentCapture.file_path switched from plain VARCHAR(512) to
+    EncryptedString(512) (models/database.py). Encrypt any existing plaintext
+    file_path values in place — same idempotency caveat as backfill_users:
+    running this twice would double-encrypt a row. If this script grows a
+    second run, guard with a "looks like a Fernet token already" check before
+    re-encrypting (not done here to match the existing backfill_users/
+    backfill_captures pattern in this file, which has the same caveat).
+    """
+    rows = (await db.execute(text(
+        "SELECT id, file_path FROM student_captures WHERE file_path IS NOT NULL"
+    ))).fetchall()
+    updated = 0
+    skipped = 0
+    for row in rows:
+        cid, file_path = row
+        try:
+            enc_path = encrypt(file_path) if file_path else None
+            await db.execute(text("""
+                UPDATE student_captures
+                SET file_path = :file_path
+                WHERE id = :id
+            """), {"file_path": enc_path, "id": str(cid)})
+            updated += 1
+        except Exception as e:
+            logger.error("Failed to encrypt capture file_path %s: %s", cid, e)
+            skipped += 1
+    logger.info("Capture file_paths: encrypted %d/%d rows (%d skipped)", updated, len(rows), skipped)
+    return updated
+
+
+async def backfill_consent_granted_by(db) -> int:
+    """
+    RF-4: ConsentRecord.granted_by switched from plain VARCHAR(256) to
+    EncryptedString(256) (models/compliance.py). Encrypt any existing
+    plaintext granted_by values (email addresses) in place.
+    """
+    rows = (await db.execute(text(
+        "SELECT id, granted_by FROM consent_records WHERE granted_by IS NOT NULL"
+    ))).fetchall()
+    updated = 0
+    skipped = 0
+    for row in rows:
+        rid, granted_by = row
+        try:
+            enc_val = encrypt(granted_by) if granted_by else None
+            await db.execute(text("""
+                UPDATE consent_records
+                SET granted_by = :granted_by
+                WHERE id = :id
+            """), {"granted_by": enc_val, "id": str(rid)})
+            updated += 1
+        except Exception as e:
+            logger.error("Failed to encrypt consent_records.granted_by %s: %s", rid, e)
+            skipped += 1
+    logger.info("consent_records.granted_by: encrypted %d/%d rows (%d skipped)", updated, len(rows), skipped)
+    return updated
+
+
 async def main() -> None:
     if not _encryption_enabled:
         logger.error(
@@ -96,6 +156,8 @@ async def main() -> None:
     async with async_session_factory() as db:
         await backfill_users(db)
         await backfill_captures(db)
+        await backfill_capture_file_paths(db)
+        await backfill_consent_granted_by(db)
         await db.commit()
     logger.info("Backfill complete. All changes committed.")
 

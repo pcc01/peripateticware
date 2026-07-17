@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 # Demo classroom name used across several seed helpers
 _DEMO_CLASS_NAME = "Demo Class — Field Science"
 
+# E2E/Detox test classroom name — keeps @test.local test data separate from
+# the @example.com demo data seeded by seed_demo_classroom()
+_TEST_CLASS_NAME = "Test Class — E2E"
+
 
 async def _exec_safepoint(conn, sql: str, label: str | None = None) -> bool:
     """Execute one DDL/DML statement inside its own SAVEPOINT.
@@ -467,6 +471,14 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS granted_by VARCHAR(256)")
         await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS ip_hash VARCHAR(256)")
         await _exec_safepoint(conn, "ALTER TABLE consent_records ADD COLUMN IF NOT EXISTS user_agent_hash VARCHAR(256)")
+        # RF-4: ConsentRecord.granted_by (models/compliance.py) switched from a
+        # plain VARCHAR(256) to EncryptedString(256) — Fernet ciphertext (base64
+        # of version+timestamp+iv+padded-ciphertext+hmac) runs roughly 2.3x the
+        # plaintext length (see core/encryption.py's EncryptedString docstring:
+        # "ensure the column is wide enough, e.g. 600 for a 255-char field").
+        # Widen the physical column so encrypted values of a near-max-length
+        # plaintext don't 500 with "value too long for type character varying".
+        await _exec_safepoint(conn, "ALTER TABLE consent_records ALTER COLUMN granted_by TYPE VARCHAR(600)")
         # ── Multi-tenancy tables ───────────────────────────────────────────
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS organizations (
@@ -658,6 +670,14 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lon_enc VARCHAR(200)",
         ]:
             await _exec_safepoint(conn, _col)
+        # RF-4: StudentCapture.file_path switched from a plain VARCHAR(512) to
+        # EncryptedString(512) — Fernet ciphertext runs roughly 2.3x the
+        # plaintext length (see core/encryption.py's EncryptedString docstring:
+        # "ensure the column is wide enough, e.g. 600 for a 255-char field").
+        # Widen the physical column so encrypted values of a near-max-length
+        # (512-char) plaintext path/URL don't 500 with "value too long for
+        # type character varying".
+        await _exec_safepoint(conn, "ALTER TABLE student_captures ALTER COLUMN file_path TYPE VARCHAR(1200)")
         await _exec_safepoint(
             conn,
             "CREATE INDEX IF NOT EXISTS idx_student_captures_timestamp ON student_captures (captured_at)",
@@ -1348,6 +1368,59 @@ async def seed_demo_classroom(engine) -> None:
         logger.info("✅ Demo peer project seeded")
     except Exception as e:
         logger.warning(f"⊘ Demo peer project seed skipped: {e}")
+
+
+async def seed_test_classroom(engine) -> None:
+    """
+    E2E test classroom: teacher@test.local + student@test.local, enrolled
+    together the same way seed_demo_classroom() links the @example.com pair.
+
+    Kept as its own org ('test-school') rather than reusing 'demo-school' so
+    E2E/Detox test data stays cleanly separate from the @example.com demo
+    data — mirrors the existing separation between seed_demo_users() and
+    seed_test_accounts().
+
+    Once this classroom + enrollment exists, any published activity can be
+    assigned to student@test.local through the normal teacher UI/API using
+    teacher@test.local's account, since the student is already a member of
+    a classroom that account owns.
+    """
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("""
+                INSERT INTO organizations (slug, name, type, license_tier)
+                VALUES ('test-school', 'Test School', 'school', 'free')
+                ON CONFLICT (slug) DO NOTHING
+            """))
+            await conn.execute(text("""
+                INSERT INTO classrooms (name, grade_level, subject, teacher_id, org_id, is_active)
+                SELECT :cname, 5, 'Science', t.id, o.id, TRUE
+                FROM users t, organizations o
+                WHERE t.email = 'teacher@test.local' AND o.slug = 'test-school'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM classrooms c
+                      WHERE c.name = :cname AND c.teacher_id = t.id
+                  )
+            """), {"cname": _TEST_CLASS_NAME})
+            await conn.execute(text("""
+                INSERT INTO classroom_students (classroom_id, student_id)
+                SELECT c.id, s.id
+                FROM classrooms c, users s
+                WHERE c.name = :cname AND s.email = 'student@test.local'
+                ON CONFLICT (classroom_id, student_id) DO NOTHING
+            """), {"cname": _TEST_CLASS_NAME})
+            await conn.execute(text("""
+                INSERT INTO classes (teacher_id, name, grade_level, is_active)
+                SELECT t.id, :cname, 5, TRUE
+                FROM users t
+                WHERE t.email = 'teacher@test.local'
+                  AND NOT EXISTS (
+                      SELECT 1 FROM classes c WHERE c.name = :cname AND c.teacher_id = t.id
+                  )
+            """), {"cname": _TEST_CLASS_NAME})
+        logger.info("✅ Test classroom seeded (teacher@test.local + student@test.local)")
+    except Exception as e:
+        logger.warning(f"⊘ Test classroom seed skipped: {e}")
 
 
 async def seed_compliance_frameworks(engine) -> None:

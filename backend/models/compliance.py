@@ -28,6 +28,7 @@ from sqlalchemy import Boolean, Column, Date, DateTime, Integer, String, Text, U
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from core.database import Base
+from core.encryption import EncryptedString
 
 
 class ComplianceRule(Base):
@@ -117,7 +118,7 @@ class ConsentRecord(Base):
     consent_type    = Column(String(50),  nullable=False)
     data_categories = Column(JSONB,      nullable=False)
     granted_at      = Column(DateTime,   default=datetime.utcnow)
-    granted_by      = Column(String(256), nullable=True)
+    granted_by      = Column(EncryptedString(256), nullable=True)
     withdrawn_at    = Column(DateTime,   nullable=True)
     is_active       = Column(Boolean,    default=True, nullable=False)
     consent_version = Column(String(10), nullable=True)

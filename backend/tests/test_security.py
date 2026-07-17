@@ -5,7 +5,6 @@
 """Unit tests for authentication and security"""
 
 import pytest
-pytestmark = pytest.mark.skip(reason="Legacy test — imports deprecated API; superseded by current test suite")
 from datetime import datetime, timedelta
 from core.security import SecurityManager
 from jose import jwt
@@ -49,9 +48,24 @@ class TestSecurityManager:
         """Test JWT token creation with custom expiry"""
         data = {"sub": "test-user-id"}
         expires_delta = timedelta(hours=1)
-        token = SecurityManager.create_access_token(data, expires_delta)
-        
+        # NOTE: SecurityManager.create_access_token's signature is
+        # (data=None, user_id=None, expires_delta=None) — expires_delta is the
+        # THIRD positional parameter, not the second (user_id is). Calling
+        # this positionally (as the original pre-skip version of this test
+        # did) silently binds the timedelta to `user_id` instead, so the
+        # custom expiry was never actually exercised. Pass by keyword so the
+        # test verifies what it claims to.
+        token = SecurityManager.create_access_token(data, expires_delta=expires_delta)
+
         assert isinstance(token, str)
+        decoded = SecurityManager.verify_token(token)
+        assert decoded is not None
+        expire_ts = decoded.get("exp")
+        assert expire_ts is not None
+        actual_expiry = datetime.utcfromtimestamp(expire_ts)
+        expected_expiry = datetime.utcnow() + expires_delta
+        # Allow a few seconds of tolerance for test execution time.
+        assert abs((actual_expiry - expected_expiry).total_seconds()) < 5
     
     def test_verify_token_success(self):
         """Test token verification with valid token"""

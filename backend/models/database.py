@@ -514,7 +514,7 @@ class StudentCapture(Base):
         Enum(CaptureType, native_enum=False, values_callable=lambda e: [x.value for x in e]),
         nullable=False,
     )
-    file_path       = Column(String(512))
+    file_path       = Column(EncryptedString(512), nullable=True)
     file_size_bytes = Column(Integer)
     mime_type       = Column(String(100))
 

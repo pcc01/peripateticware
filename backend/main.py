@@ -127,6 +127,7 @@ async def lifespan(app: FastAPI):
         seed_test_accounts,
         seed_homeschool_demo,
         seed_demo_classroom,
+        seed_test_classroom,
         seed_compliance_frameworks,
         seed_ai_task_config_orm,
         check_config_warnings,
@@ -184,6 +185,7 @@ async def lifespan(app: FastAPI):
         await seed_test_accounts(engine)
         await seed_homeschool_demo(engine)
         await seed_demo_classroom(engine)
+        await seed_test_classroom(engine)
     else:
         logger.info("Skipping demo/test account seeding (ENVIRONMENT=%s)", settings.ENVIRONMENT)
     await seed_compliance_frameworks(engine)

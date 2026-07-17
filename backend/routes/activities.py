@@ -394,6 +394,7 @@ async def publish_activity(
     try:
         from services.privacy_engine import get_privacy_checker
         checker = get_privacy_checker()
+        await checker.load_from_db(db)
         grade = activity.grade_level or 9
         activity_data = {
             "data_collection": (
@@ -410,17 +411,33 @@ async def publish_activity(
             str(activity.id),
             activity_data,
             student_age_proxy,
-            None,
+            settings.ACTIVE_JURISDICTION,
         )
-        if not is_compliant and issues:
+        # Sentinel issues mean the checker could not determine which
+        # jurisdiction's rules to apply (no jurisdiction resolved, or the
+        # resolved jurisdiction isn't a known/seeded one) — that is not a
+        # real compliance violation. Filter them out before deciding whether
+        # to block, so an unresolved jurisdiction fails open (per this
+        # endpoint's own docstring) instead of hard-blocking every publish.
+        genuine_issues = [
+            i for i in issues
+            if str(i) != "No jurisdiction configured"
+            and not str(i).startswith("Unknown jurisdiction:")
+        ]
+        if genuine_issues:
             # Hard BLOCK — do not publish
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=(
                     "This activity cannot be published: data collection is "
                     "restricted in the selected jurisdiction. "
-                    f"Issues: {'; '.join(str(i) for i in issues)}"
+                    f"Issues: {'; '.join(str(i) for i in genuine_issues)}"
                 ),
+            )
+        elif issues and not genuine_issues:
+            logger.warning(
+                f"Privacy compliance check could not resolve a jurisdiction for "
+                f"activity {activity.id} — publishing without a compliance verdict"
             )
         if warnings:
             compliance_warnings = [str(w) for w in warnings]
@@ -1199,6 +1216,7 @@ class ComplianceCheckRequest(_BaseModel):
 async def check_activity_compliance_quick(
     payload: ComplianceCheckRequest,
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Lightweight compliance pre-check for the ActivityManager badge.
@@ -1207,21 +1225,31 @@ async def check_activity_compliance_quick(
     try:
         from services.privacy_engine import get_privacy_checker
         checker = get_privacy_checker()
+        await checker.load_from_db(db)
         activity_data = {
             "data_collection": payload.data_types or ["location"],
             "third_parties": [],
             "purpose": "educational",
         }
         is_compliant, issues, warnings = checker.check_activity_compliance(
-            "preview", activity_data, min(payload.grade_level + 5, 18), None
+            "preview", activity_data, min(payload.grade_level + 5, 18), settings.ACTIVE_JURISDICTION
         )
-        if not is_compliant:
-            badge = "blocked" if any("COPPA" in str(i) for i in issues) else "review"
+        # Sentinel issues ("No jurisdiction configured" / "Unknown jurisdiction: ...")
+        # mean the checker couldn't resolve which rules apply — not a real
+        # compliance violation. Filter them out before badging so an
+        # unresolved jurisdiction doesn't surface a misleading "review" badge.
+        genuine_issues = [
+            i for i in issues
+            if str(i) != "No jurisdiction configured"
+            and not str(i).startswith("Unknown jurisdiction:")
+        ]
+        if genuine_issues:
+            badge = "blocked" if any("COPPA" in str(i) for i in genuine_issues) else "review"
         elif warnings:
             badge = "review"
         else:
             badge = "compliant"
-        return {"status": badge, "issues": [str(i) for i in issues], "warnings": [str(w) for w in warnings]}
+        return {"status": badge, "issues": [str(i) for i in genuine_issues], "warnings": [str(w) for w in warnings]}
     except Exception as e:
         logger.debug(f"Compliance check error (non-fatal): {e}")
         return {"status": "unknown", "issues": [], "warnings": []}
