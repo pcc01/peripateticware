@@ -50,6 +50,26 @@ const RubricBuilder: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // ── Generate with AI (Priority 2 — build_rubric_alignment_prompt()) ─────────
+  // Self-contained panel: RubricBuilder is opened standalone (not activity-
+  // scoped), so this collects its own manual context fields rather than
+  // deep-linking from ActivityManager.tsx/EnhancedActivityBuilder.tsx this
+  // session (per Paul's decision). Generated criteria are always APPENDED to
+  // form.criteria — never replace what the teacher already entered.
+  const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [aiForm, setAiForm] = useState({
+    activity_title: '',
+    activity_description: '',
+    learning_objectives: '',
+    subject: '',
+    grade_level: 5,
+    taxonomy_type: 'blooms',
+    taxonomy_level: 'analyze',
+  })
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiWarning, setAiWarning] = useState<string | null>(null)
+
   useEffect(() => {
     if (isNew) return
     apiFetch<any>(`/rubrics/${id}`)
@@ -70,6 +90,60 @@ const RubricBuilder: React.FC = () => {
 
   const removeCriterion = (idx: number) =>
     setForm(f => ({ ...f, criteria: f.criteria.filter((_, i) => i !== idx) }))
+
+  const handleGenerateWithAI = async () => {
+    setAiLoading(true)
+    setAiError(null)
+    setAiWarning(null)
+    try {
+      const objectives = aiForm.learning_objectives
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean)
+      const existing = form.criteria
+        .filter(c => c.name.trim())
+        .map(c => ({ name: c.name }))
+
+      const data = await apiFetch<{ criteria: Criterion[]; error?: string | null }>('/rubrics/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          activity_title: aiForm.activity_title,
+          activity_description: aiForm.activity_description,
+          learning_objectives: objectives,
+          subject: aiForm.subject,
+          grade_level: aiForm.grade_level,
+          taxonomy_type: aiForm.taxonomy_type,
+          taxonomy_level: aiForm.taxonomy_level,
+          existing_rubric_criteria: existing.length ? existing : null,
+        }),
+      })
+
+      if (data.error) setAiError(data.error)
+
+      if (data.criteria && data.criteria.length > 0) {
+        // Light duplicate-name check — informational only. Per Paul's
+        // decision, generated criteria are appended regardless; nothing the
+        // teacher already entered is ever discarded.
+        const existingNames = new Set(
+          form.criteria.map(c => c.name.trim().toLowerCase()).filter(Boolean)
+        )
+        const duplicates = data.criteria.filter(c => existingNames.has(c.name.trim().toLowerCase()))
+        if (duplicates.length > 0) {
+          setAiWarning(
+            `${duplicates.length} generated criterion name(s) may duplicate ones you already added: ${duplicates.map(c => c.name).join(', ')}`
+          )
+        }
+        // APPEND — never replace/discard existing criteria.
+        setForm(f => ({ ...f, criteria: [...f.criteria, ...data.criteria] }))
+      } else if (!data.error) {
+        setAiError('The AI did not return any criteria. Try adding more detail above.')
+      }
+    } catch (e: any) {
+      setAiError(e.message || 'Failed to generate rubric criteria.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -124,6 +198,115 @@ const RubricBuilder: React.FC = () => {
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           />
         </div>
+      </div>
+
+      {/* Generate with AI — self-contained panel (no cross-page activity wiring this session) */}
+      <div className="rounded-xl border mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <button
+          type="button"
+          onClick={() => setAiPanelOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold"
+          style={{ color: 'var(--primary)' }}
+        >
+          <span>✨ {t('generate_with_ai', 'Generate with AI')}</span>
+          <span>{aiPanelOpen ? '▲' : '▼'}</span>
+        </button>
+        {aiPanelOpen && (
+          <div className="px-4 pb-4 space-y-3">
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {t('generate_with_ai_help', "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.")}
+            </p>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('activity_title', 'Activity title')}</label>
+              <input
+                className="w-full px-3 py-1.5 rounded border text-sm"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                value={aiForm.activity_title}
+                onChange={e => setAiForm(f => ({ ...f, activity_title: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('activity_description', 'Activity description')}</label>
+              <textarea
+                rows={2}
+                className="w-full px-3 py-1.5 rounded border text-sm"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                value={aiForm.activity_description}
+                onChange={e => setAiForm(f => ({ ...f, activity_description: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('learning_objectives_one_per_line', 'Learning objectives (one per line)')}</label>
+              <textarea
+                rows={3}
+                className="w-full px-3 py-1.5 rounded border text-sm"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                value={aiForm.learning_objectives}
+                onChange={e => setAiForm(f => ({ ...f, learning_objectives: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('subject', 'Subject')}</label>
+                <input
+                  className="w-full px-3 py-1.5 rounded border text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                  value={aiForm.subject}
+                  onChange={e => setAiForm(f => ({ ...f, subject: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('grade_level', 'Grade level')}</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  className="w-full px-3 py-1.5 rounded border text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                  value={aiForm.grade_level}
+                  onChange={e => setAiForm(f => ({ ...f, grade_level: parseInt(e.target.value) || 1 }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('taxonomy_type', 'Taxonomy type')}</label>
+                <select
+                  className="w-full px-3 py-1.5 rounded border text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                  value={aiForm.taxonomy_type}
+                  onChange={e => setAiForm(f => ({ ...f, taxonomy_type: e.target.value }))}
+                >
+                  <option value="blooms">Bloom's Revised</option>
+                  <option value="dok">DOK (Webb's)</option>
+                  <option value="solo">SOLO</option>
+                  <option value="marzano">Marzano's</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>{t('taxonomy_level', 'Taxonomy level')}</label>
+                <input
+                  className="w-full px-3 py-1.5 rounded border text-sm"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
+                  value={aiForm.taxonomy_level}
+                  onChange={e => setAiForm(f => ({ ...f, taxonomy_level: e.target.value }))}
+                  placeholder="e.g. analyze, dok3, relational, analysis"
+                />
+              </div>
+            </div>
+            {aiError && <div className="p-2 rounded bg-red-100 text-red-700 text-xs">{aiError}</div>}
+            {aiWarning && <div className="p-2 rounded bg-yellow-100 text-yellow-800 text-xs">{aiWarning}</div>}
+            <button
+              type="button"
+              onClick={handleGenerateWithAI}
+              disabled={aiLoading || (!aiForm.activity_title.trim() && !aiForm.activity_description.trim())}
+              className="w-full py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50"
+              style={{ background: 'var(--primary)' }}
+            >
+              {aiLoading ? t('generating', 'Generating…') : t('generate_criteria', 'Generate Criteria')}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Criteria */}

@@ -208,6 +208,14 @@ const ActivityManager = () => {
   const [geoStatus, setGeoStatus] = useState<string>('');
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [showQuickPreview, setShowQuickPreview] = useState(false);
+
+  // Auto-classify (Priority 1 — build_taxonomy_classification_prompt()):
+  // suggest-then-confirm only. The AI's suggested level is held here until
+  // the teacher explicitly clicks "Accept" — it never silently overwrites
+  // formData.bloom_level.
+  const [classifyLoading, setClassifyLoading] = useState(false);
+  const [classifyError, setClassifyError] = useState('');
+  const [taxonomySuggestion, setTaxonomySuggestion] = useState<{ value: string; label: string; rationale: string } | null>(null);
   const geoLatLngTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const geoNameTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -472,6 +480,66 @@ const ActivityManager = () => {
       ...formData,
       resources: formData.resources?.filter((_, i) => i !== index) || []
     });
+  };
+
+  // ── Auto-classify (Priority 1) ────────────────────────────────────────────
+  // Suggest-then-confirm: posts the most recently added learning objective
+  // (falling back to title + description) to the classify-taxonomy endpoint,
+  // then shows the result as a suggestion the teacher must explicitly accept.
+  const getClassifyText = (): string => {
+    const objectives = formData.learning_objectives || [];
+    if (objectives.length > 0) return objectives[objectives.length - 1];
+    return [formData.title, formData.description].filter(Boolean).join(' — ');
+  };
+
+  const handleAutoClassify = async () => {
+    const text = getClassifyText().trim();
+    if (!text) {
+      setClassifyError('Add a learning objective (or a title/description) before auto-classifying.');
+      return;
+    }
+    setClassifyLoading(true);
+    setClassifyError('');
+    setTaxonomySuggestion(null);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/v1/activities/classify-taxonomy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ text, classify_for: [taxonomyType] }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error || !data.result) {
+        setClassifyError(data.error || 'Auto-classify failed. Set the taxonomy manually.');
+        return;
+      }
+      const frameworkResult = data.result[taxonomyType];
+      if (!frameworkResult || typeof frameworkResult.level !== 'number') {
+        setClassifyError("The AI didn't return a level for this taxonomy. Set it manually.");
+        return;
+      }
+      const levels = TAXONOMIES[taxonomyType]?.levels || [];
+      const matched = levels[frameworkResult.level - 1];
+      if (!matched) {
+        setClassifyError('The AI suggested a level outside the expected range. Set it manually.');
+        return;
+      }
+      setTaxonomySuggestion({
+        value: matched.value,
+        label: matched.label,
+        rationale: frameworkResult.rationale || '',
+      });
+    } catch (err: any) {
+      setClassifyError('Auto-classify failed: ' + (err?.message || 'network error'));
+    } finally {
+      setClassifyLoading(false);
+    }
+  };
+
+  const acceptTaxonomySuggestion = () => {
+    if (!taxonomySuggestion) return;
+    setFormData(f => ({ ...f, bloom_level: taxonomySuggestion.value }));
+    setTaxonomySuggestion(null);
   };
 
   return (
@@ -803,7 +871,17 @@ const ActivityManager = () => {
 
             {/* Taxonomy — two-level picker */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700">{t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
+              <div className="flex items-center justify-between gap-2">
+                <label className="block text-sm font-semibold text-gray-700">{t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
+                <button
+                  type="button"
+                  onClick={handleAutoClassify}
+                  disabled={classifyLoading}
+                  className="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-semibold disabled:opacity-50 whitespace-nowrap"
+                >
+                  {classifyLoading ? 'Classifying…' : '✨ Auto-classify'}
+                </button>
+              </div>
               <select
                 value={taxonomyType}
                 onChange={(e) => {
@@ -812,6 +890,9 @@ const ActivityManager = () => {
                   // Reset bloom_level to first option of new taxonomy
                   const first = TAXONOMIES[t]?.levels[0]?.value ?? 'remember';
                   setFormData(f => ({ ...f, bloom_level: first }));
+                  // Suggestion was computed against the previous taxonomy — discard it.
+                  setTaxonomySuggestion(null);
+                  setClassifyError('');
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                 {Object.entries(TAXONOMIES).map(([key, tx]) => (
@@ -826,6 +907,31 @@ const ActivityManager = () => {
                   <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
                 ))}
               </select>
+              {classifyError && <p className="text-red-500 text-xs mt-1">{classifyError}</p>}
+              {taxonomySuggestion && (
+                <div className="mt-1 p-2 rounded-lg border border-indigo-200 bg-indigo-50 text-xs">
+                  <p className="text-indigo-800">
+                    <span className="font-semibold">AI suggests:</span> {taxonomySuggestion.label}
+                    {taxonomySuggestion.rationale && <span className="text-indigo-600"> — {taxonomySuggestion.rationale}</span>}
+                  </p>
+                  <div className="mt-1 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={acceptTaxonomySuggestion}
+                      className="px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTaxonomySuggestion(null)}
+                      className="px-2 py-0.5 rounded border border-indigo-300 text-indigo-700 hover:bg-indigo-100"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Duration */}

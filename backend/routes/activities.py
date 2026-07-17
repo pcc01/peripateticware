@@ -1256,6 +1256,124 @@ async def check_activity_compliance_quick(
 
 
 # ============================================================================
+# TAXONOMY CLASSIFICATION (Priority 1 — build_taxonomy_classification_prompt())
+# ============================================================================
+# Suggest-then-confirm only: this endpoint returns a SUGGESTED taxonomy level.
+# It never writes to the DB or mutates any activity. The teacher must
+# explicitly accept the suggestion in ActivityManager.tsx before it updates
+# the taxonomy dropdown.
+
+
+class TaxonomyClassifyRequest(_BaseModel):
+    text: str
+    classify_for: Optional[List[str]] = None
+
+
+class TaxonomyClassifyResponse(_BaseModel):
+    result: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+
+
+@router.post("/classify-taxonomy", response_model=TaxonomyClassifyResponse)
+async def classify_taxonomy(
+    payload: TaxonomyClassifyRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Suggest Bloom's / DOK / SOLO / Marzano taxonomy levels for a learning
+    objective or activity text.
+
+    Preview/suggest only — never writes to the DB. Never raises: on any
+    AI/parsing failure this returns {result: None, error: "..."} so the
+    teacher's existing taxonomy selection and text are never lost.
+
+    AI-call mechanism note: AIRouter.complete() (services/ai_router.py) only
+    accepts (task_type, prompt, db, entity_id, entity_type, system, org_id) —
+    it has no per-call temperature/max_tokens knob, and its own internal
+    Ollama call (_call_ollama) doesn't pass an `options` dict at all.
+    build_taxonomy_classification_prompt()'s docstring calls for a fixed,
+    low temperature (0.10) for deterministic structured output, so this
+    endpoint uses the standards_parser.py::extract_criteria() fallback
+    pattern instead: a direct ollama.chat() call with
+    options={"temperature": 0.10}. See CHANGE_SUMMARY_20260718_
+    PROMPT_LIBRARY_REMAINING.md for the full deviation note.
+    """
+    _require_teacher(current_user, "Only teachers can use AI taxonomy classification")
+
+    # NOTE: intentionally not named `text` — this module imports sqlalchemy's
+    # `text()` at module scope (`from sqlalchemy import select, func, text`),
+    # and shadowing it with a local variable of the same name in this
+    # function would be confusing/risky for future edits even though this
+    # function itself never calls the SQL text() helper.
+    input_text = (payload.text or "").strip()
+    if not input_text:
+        return TaxonomyClassifyResponse(result=None, error="No text provided to classify.")
+
+    from services.prompt_library import build_taxonomy_classification_prompt
+    prompt = build_taxonomy_classification_prompt(text=input_text, classify_for=payload.classify_for)
+
+    import json
+    import re
+
+    try:
+        from core.config import settings
+        import ollama as _ollama
+
+        model = settings.OLLAMA_MODEL_TEXT or "mistral"
+        try:
+            response = _ollama.chat(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                options={"temperature": 0.10},  # Low temp for structured output
+            )
+        except Exception as e:
+            logger.error(
+                "Ollama call failed during taxonomy classification (model=%s): %s",
+                model, e, exc_info=True,
+            )
+            return TaxonomyClassifyResponse(
+                result=None,
+                error=f"AI classification service unavailable ({type(e).__name__}: {e}). Set the taxonomy manually.",
+            )
+
+        raw = response["message"]["content"].strip()
+
+        # Strip markdown code fences if present
+        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
+        raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
+
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError as e:
+            logger.error("Taxonomy classification: LLM returned invalid JSON: %s | raw: %s", e, raw[:200])
+            return TaxonomyClassifyResponse(
+                result=None,
+                error="The AI's response wasn't valid structured data — try again, or set the taxonomy manually.",
+            )
+
+        if not isinstance(parsed, dict):
+            logger.error(
+                "Taxonomy classification: LLM did not return a JSON object (got %s) | raw: %s",
+                type(parsed).__name__, raw[:200],
+            )
+            return TaxonomyClassifyResponse(
+                result=None,
+                error="The AI didn't return the expected classification format. Set the taxonomy manually.",
+            )
+
+        logger.info("Taxonomy classification succeeded for user %s", current_user.id)
+        return TaxonomyClassifyResponse(result=parsed, error=None)
+
+    except Exception as e:
+        logger.error("Taxonomy classification failed unexpectedly: %s", e, exc_info=True)
+        return TaxonomyClassifyResponse(
+            result=None,
+            error=f"Classification failed unexpectedly ({type(e).__name__}: {e}). Set the taxonomy manually.",
+        )
+
+
+# ============================================================================
 # ACTIVITY MEDIA UPLOAD
 # ============================================================================
 

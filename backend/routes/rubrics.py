@@ -6,7 +6,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from uuid import UUID
 from datetime import datetime
 import logging
@@ -87,6 +87,178 @@ async def list_rubrics(
         .order_by(AssessmentRubric.created_at.desc())
     )
     return result.scalars().all()
+
+
+# ── AI-generated rubric criteria (Priority 2 — build_rubric_alignment_prompt()) ──
+# Preview/suggest endpoint only — never saves to the DB. Registered before the
+# "/{rubric_id}" parameterised routes per this repo's route-order convention
+# (see PROJECT_PROFILE.md "Routing quirks").
+
+_LEVEL_LABELS: Dict[int, str] = {4: "Exceeds", 3: "Meets", 2: "Approaching", 1: "Beginning"}
+
+
+class RubricGenerateRequest(BaseModel):
+    activity_title: str
+    activity_description: str
+    learning_objectives: List[str] = []
+    subject: str
+    grade_level: int
+    taxonomy_type: str = "blooms"
+    taxonomy_level: str = "analyze"
+    existing_rubric_criteria: Optional[List[Dict[str, Any]]] = None
+
+
+class GeneratedLevel(BaseModel):
+    score: int
+    label: str
+    description: str
+
+
+class GeneratedCriterion(BaseModel):
+    id: str
+    name: str
+    description: str
+    levels: List[GeneratedLevel]
+
+
+class RubricGenerateResponse(BaseModel):
+    criteria: List[GeneratedCriterion] = []
+    error: Optional[str] = None
+
+
+@router.post("/generate", response_model=RubricGenerateResponse)
+async def generate_rubric_criteria(
+    payload: RubricGenerateRequest,
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    AI-generate draft rubric criteria (4-level descriptors) from an activity's
+    title/description/objectives and taxonomy level.
+
+    Preview/suggest only — never writes to the DB. The teacher reviews the
+    returned criteria and, if satisfied, they are appended to the criteria
+    already in RubricBuilder.tsx's form (never replacing what's there), then
+    saved via the existing POST /rubrics create endpoint. Never raises: on
+    any AI/parsing failure this returns {criteria: [], error: "..."} so the
+    teacher can fall back to manual entry.
+
+    AI-call mechanism note: same as classify_taxonomy() in routes/activities.py
+    — AIRouter.complete() has no per-call temperature knob, and
+    build_rubric_alignment_prompt()'s docstring calls for temperature 0.30 /
+    max_tokens 1500. This endpoint uses a direct ollama.chat() call (the
+    standards_parser.py fallback pattern) instead of AIRouter, matching the
+    work plan's explicit fallback instruction. See
+    CHANGE_SUMMARY_20260718_PROMPT_LIBRARY_REMAINING.md for the deviation
+    note.
+    """
+    if not payload.activity_title.strip() and not payload.activity_description.strip():
+        return RubricGenerateResponse(
+            criteria=[],
+            error="Provide at least an activity title or description to generate a rubric.",
+        )
+
+    from services.prompt_library import build_rubric_alignment_prompt, SYSTEM_STANDARDS_ANALYST
+    prompt = build_rubric_alignment_prompt(
+        activity_title=payload.activity_title,
+        activity_description=payload.activity_description,
+        learning_objectives=payload.learning_objectives or [],
+        subject=payload.subject,
+        grade_level=payload.grade_level,
+        taxonomy_type=payload.taxonomy_type,
+        taxonomy_level=payload.taxonomy_level,
+        existing_rubric_criteria=payload.existing_rubric_criteria,
+    )
+
+    import json
+    import re
+    import uuid as _uuid
+
+    try:
+        from core.config import settings
+        import ollama as _ollama
+
+        model = settings.OLLAMA_MODEL_TEXT or "mistral"
+        try:
+            response = _ollama.chat(
+                model=model,
+                messages=[
+                    {"role": "system", "content": SYSTEM_STANDARDS_ANALYST},
+                    {"role": "user", "content": prompt},
+                ],
+                options={"temperature": 0.30},
+            )
+        except Exception as e:
+            logger.error(
+                "Ollama call failed during rubric generation (model=%s): %s",
+                model, e, exc_info=True,
+            )
+            return RubricGenerateResponse(
+                criteria=[],
+                error=f"AI rubric generation service unavailable ({type(e).__name__}: {e}). Add criteria manually.",
+            )
+
+        raw = response["message"]["content"].strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
+        raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
+
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError as e:
+            logger.error("Rubric generation: LLM returned invalid JSON: %s | raw: %s", e, raw[:200])
+            return RubricGenerateResponse(
+                criteria=[],
+                error="The AI's response wasn't valid structured data. Add criteria manually.",
+            )
+
+        if not isinstance(parsed, list):
+            logger.error(
+                "Rubric generation: LLM did not return a JSON array (got %s) | raw: %s",
+                type(parsed).__name__, raw[:200],
+            )
+            return RubricGenerateResponse(
+                criteria=[],
+                error="The AI didn't return a list of criteria as expected. Add criteria manually.",
+            )
+
+        cleaned: List[GeneratedCriterion] = []
+        for item in parsed:
+            if not isinstance(item, dict):
+                continue
+            levels_raw = item.get("levels") or {}
+            if not isinstance(levels_raw, dict):
+                levels_raw = {}
+            levels = [
+                GeneratedLevel(
+                    score=score,
+                    label=_LEVEL_LABELS[score],
+                    description=str(levels_raw.get(str(score), "")),
+                )
+                for score in (4, 3, 2, 1)
+            ]
+            cleaned.append(GeneratedCriterion(
+                id=str(_uuid.uuid4()),
+                name=str(item.get("name") or "Untitled Criterion")[:100],
+                description=str(item.get("description") or ""),
+                levels=levels,
+            ))
+
+        if not cleaned:
+            logger.info("Rubric generation: LLM returned zero usable criteria")
+            return RubricGenerateResponse(
+                criteria=[],
+                error="The AI processed the activity but didn't generate any criteria. Add criteria manually.",
+            )
+
+        logger.info("Rubric generation succeeded for user %s: %d criteria", current_user.id, len(cleaned))
+        return RubricGenerateResponse(criteria=cleaned, error=None)
+
+    except Exception as e:
+        logger.error("Rubric generation failed unexpectedly: %s", e, exc_info=True)
+        return RubricGenerateResponse(
+            criteria=[],
+            error=f"Rubric generation failed unexpectedly ({type(e).__name__}: {e}). Add criteria manually.",
+        )
 
 
 @router.get("/{rubric_id}", response_model=RubricResponse)
