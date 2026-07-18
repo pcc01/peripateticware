@@ -189,6 +189,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # iOS 27 — bleeding edge, best-effort. Xcode 27 is public preview
+          # (not GA) on GitHub-hosted runners as of writing, bundled
+          # alongside the stable Xcode on the same macos-latest image.
+          # xcode-version below is a best guess based on how prior betas
+          # were labeled ("27.0") — if setup-xcode can't find it, check
+          # https://github.com/actions/runner-images for the exact string
+          # currently installed on macos-latest and update this.
+          - ios-version: '27'
+            runner: macos-latest
+            device: iPhone 17
+            detox-config: ios.27.debug
+            xcode-version: '27.0'
+
           # iOS 26 — current baseline (~86 % adoption on recent devices)
           - ios-version: '26'
             runner: macos-latest

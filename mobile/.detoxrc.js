@@ -40,16 +40,31 @@ module.exports = {
       type: 'ios.app',
       binaryPath:
         'ios/build/Build/Products/Debug-iphonesimulator/Peripateticware.app',
+      // BUG (this is why every single iOS job failed with "Detox could not
+      // find your app at the given binary path"): this used to be
+      // `[...].join(' ')` over ALL these strings, which produces ONE shell
+      // command — "npx expo prebuild --platform ios --no-install xcodebuild
+      // -workspace ...". There's no `&&` between `--no-install` and
+      // `xcodebuild`, so `xcodebuild` and every flag after it were being
+      // passed as extra positional arguments to `expo prebuild` itself
+      // (which silently ignores what it doesn't recognize) — meaning
+      // xcodebuild NEVER ACTUALLY RAN. prebuild alone finishes in ~1s
+      // (matches the suspiciously fast "detox build" step every run),
+      // regenerates the native ios/ project, and that's it — no compiled
+      // .app ever gets produced. Fixed by chaining prebuild and xcodebuild
+      // as two separate commands with `&&`.
       build: [
         'npx expo prebuild --platform ios --no-install',
-        'xcodebuild',
-        '-workspace ios/Peripateticware.xcworkspace',
-        '-scheme Peripateticware',
-        '-configuration Debug',
-        '-sdk iphonesimulator',
-        '-derivedDataPath ios/build',
-        'CODE_SIGNING_ALLOWED=NO',
-      ].join(' '),
+        [
+          'xcodebuild',
+          '-workspace ios/Peripateticware.xcworkspace',
+          '-scheme Peripateticware',
+          '-configuration Debug',
+          '-sdk iphonesimulator',
+          '-derivedDataPath ios/build',
+          'CODE_SIGNING_ALLOWED=NO',
+        ].join(' '),
+      ].join(' && '),
     },
   },
 
@@ -104,6 +119,15 @@ module.exports = {
     // CI-only (require Xcode 16+/17+ — not available on the Ventura Intel Mac,
     // which is capped at Xcode 15.2 / iOS 17 SDK). Covered by GitHub-hosted
     // macOS runners in .github/workflows/mobile-e2e.yml instead.
+    //
+    // iOS 27 / Xcode 27 is in public preview on GitHub-hosted runners as of
+    // writing (not GA) — best-effort only. The exact Xcode version string
+    // in mobile-e2e.yml's ios-e2e matrix may need adjusting once run, since
+    // beta version identifiers shift between preview builds.
+    'simulator.ios27': {
+      type: 'ios.simulator',
+      device: { type: 'iPhone 17', os: 'iOS 27' },
+    },
     'simulator.ios26': {
       type: 'ios.simulator',
       device: { type: 'iPhone 16', os: 'iOS 26' },
@@ -158,6 +182,14 @@ module.exports = {
     },
 
     // ── iOS ───────────────────────────────────────────────────────────────
+    // iOS 27 — bleeding edge / best-effort only. Xcode 27 is in public
+    // preview on GitHub-hosted runners (not GA) as of writing; this leg may
+    // need its Xcode version string in mobile-e2e.yml re-checked/updated as
+    // the preview matures.
+    'ios.27.debug': {
+      device: 'simulator.ios27',
+      app: 'ios.debug',
+    },
     // iOS 26 — current baseline (~86 % of recent devices)
     // CI-ONLY: requires Xcode 17+ (iOS 26 SDK). The Ventura Intel Mac is
     // capped at Xcode 15.2 and cannot run this simulator locally — leave it
