@@ -36,7 +36,16 @@ jobs:
             android-version: '17 CinnamonBun'
             target: google_apis
             arch: x86_64
-            profile: Pixel 6
+            # avdmanager's built-in device list uses id-style names for Pixel
+            # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
+            # legacy Nexus entries, which really are registered under their
+            # display name ("Nexus 5X", used by the API 24 leg below, works
+            # as-is). Using the display name here failed every run with
+            # "Error: No device found matching --device Pixel 6." — this
+            # was also the real cause of the API 37 boot failure flagged in
+            # an earlier investigation as unconfirmed/acceleration-related;
+            # it wasn't a boot/image issue at all.
+            profile: pixel_6
             avd-name: Pixel_6_API_37
             detox-config: android.api37.debug
 
@@ -44,7 +53,16 @@ jobs:
             android-version: '15 VanillaIceCream'
             target: google_apis
             arch: x86_64
-            profile: Pixel 6
+            # avdmanager's built-in device list uses id-style names for Pixel
+            # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
+            # legacy Nexus entries, which really are registered under their
+            # display name ("Nexus 5X", used by the API 24 leg below, works
+            # as-is). Using the display name here failed every run with
+            # "Error: No device found matching --device Pixel 6." — this
+            # was also the real cause of the API 37 boot failure flagged in
+            # an earlier investigation as unconfirmed/acceleration-related;
+            # it wasn't a boot/image issue at all.
+            profile: pixel_6
             avd-name: Pixel_6_API_35
             detox-config: android.api35.debug
 
@@ -52,7 +70,16 @@ jobs:
             android-version: '13 Tiramisu'
             target: google_apis
             arch: x86_64
-            profile: Pixel 6
+            # avdmanager's built-in device list uses id-style names for Pixel
+            # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
+            # legacy Nexus entries, which really are registered under their
+            # display name ("Nexus 5X", used by the API 24 leg below, works
+            # as-is). Using the display name here failed every run with
+            # "Error: No device found matching --device Pixel 6." — this
+            # was also the real cause of the API 37 boot failure flagged in
+            # an earlier investigation as unconfirmed/acceleration-related;
+            # it wasn't a boot/image issue at all.
+            profile: pixel_6
             avd-name: Pixel_6_API_33
             detox-config: android.api33.debug
 
@@ -60,7 +87,8 @@ jobs:
             android-version: '11 R'
             target: google_apis
             arch: x86_64
-            profile: Pixel 4
+            # Same id-style-name fix as the pixel_6 entries above.
+            profile: pixel_4
             avd-name: Pixel_6_API_30
             detox-config: android.api30.debug
 
