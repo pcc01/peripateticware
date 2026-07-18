@@ -800,22 +800,53 @@ class WikipediaGeosearchBackend(LocationBackend):
     ) -> LocationData:
         """Enrich a Wikipedia-discovered place with Wikidata + full extract"""
 
-        # Wikipedia first: it gives us the real synopsis AND (via pageprops)
-        # the linked Wikidata QID in one request — no separate
-        # wbsearchentities name-search call needed in the common case, which
-        # cuts a full network round trip out of the critical path. Ordering
-        # is now safe regardless: enrich_with_wikidata() only fills in
-        # description as a fallback, never overwrites what Wikipedia already
-        # set, so this can't regress back to showing the terse one-liner.
+        # This method is reached via two different entry paths with
+        # different starting state, and both must end up with a Wikipedia
+        # synopsis whenever one exists:
+        #   A) Straight from search_nearby() in the same request —
+        #      wikipedia_url is already set (every WikipediaGeosearchBackend
+        #      result carries it), wikidata_id is not.
+        #   B) Reconstructed from the CachedLocation DB row by place_id (the
+        #      GET /locations/{place_id}/enrich cache-miss path, see
+        #      routes/privacy_locations.py) — CachedLocation has no
+        #      wikipedia_url column, so BOTH fields start unset and only the
+        #      name is known.
+        #
+        # Path B needs a Wikidata QID resolved by name first, so that
+        # enrich_with_wikidata's sitelinks cross-link can populate
+        # wikipedia_url — only then can Wikipedia be queried at all. Skipping
+        # straight to "if location.wikipedia_url" (as a prior version of this
+        # method did, for a modest perf win on Path A) silently no-ops on
+        # Path B: wikipedia_url never gets set, so the real synopsis is
+        # never fetched — regressing to Wikidata's terse one-line
+        # description, which is what broke Central Park Conservancy and the
+        # Lincoln Memorial (both reached via the /enrich cache-miss path).
+        wikidata_enriched = False
+        if not location.wikipedia_url and not location.wikidata_id:
+            location = await fetch_wikidata_id_by_name(location)
+            if location.wikidata_id:
+                location = await enrich_with_wikidata(location)
+                wikidata_enriched = True
+
+        # Path A (wikipedia_url already set) lands here directly; Path B
+        # lands here only if the block above successfully resolved a
+        # sitelinked Wikipedia article. Either way, this also picks up a
+        # Wikidata QID via pageprops in the same request when one wasn't
+        # already found, saving the separate name-search below.
         if location.wikipedia_url:
             location = await enrich_with_wikipedia(location)
 
-        # Fallback name-search only if Wikipedia's pageprops didn't already
-        # resolve a QID (e.g. the article has no Wikidata item linked).
-        if not location.wikidata_id:
-            location = await fetch_wikidata_id_by_name(location)
-        if location.wikidata_id:
-            location = await enrich_with_wikidata(location)
+        # Final fallback: still no QID (e.g. Path A where the article has no
+        # linked Wikidata item, or Path B where the name search above found
+        # nothing), or a QID was found but not yet enriched. Guarded by
+        # wikidata_enriched so Path B — which already fetched and enriched
+        # via the block above — doesn't pay for a second, redundant
+        # Special:EntityData round trip.
+        if not wikidata_enriched:
+            if not location.wikidata_id:
+                location = await fetch_wikidata_id_by_name(location)
+            if location.wikidata_id:
+                location = await enrich_with_wikidata(location)
 
         location = add_educational_metadata(location, subject)
 
