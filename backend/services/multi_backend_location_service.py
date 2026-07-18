@@ -142,7 +142,15 @@ class OpenStreetMapBackend(LocationBackend):
                 response = await client.post(
                     self.overpass_url,
                     data={"data": overpass_query},
-                    timeout=30,
+                    # The public Overpass instance has been intermittently
+                    # unreachable from this deployment ("All connection
+                    # attempts failed" — a connect-level failure, not a slow
+                    # response), likely rate-limiting/blocking after repeated
+                    # testing. A 30s timeout meant every single search paid
+                    # that full 30s tax before falling back to Wikipedia/
+                    # Nominatim. Fail fast instead — Overpass, when reachable,
+                    # responds in well under a second for a bbox this small.
+                    timeout=8,
                     # Overpass's public instance usage policy rejects requests
                     # with no/generic User-Agent — this call had none at all
                     # (unlike NominatimBackend below, which already sets one),
@@ -168,22 +176,22 @@ class OpenStreetMapBackend(LocationBackend):
         subject: Optional[str] = None
     ) -> LocationData:
         """Enrich OSM data with Wikidata/Wikipedia"""
-        
+
         # Get Wikidata ID from OSM tags if available
         if not location.wikidata_id:
-            location = await self._fetch_wikidata_id(location)
-        
+            location = await fetch_wikidata_id_by_name(location)
+
         # Fetch from Wikidata
         if location.wikidata_id:
-            location = await self._enrich_with_wikidata(location)
-        
+            location = await enrich_with_wikidata(location)
+
         # Fetch from Wikipedia
         if location.wikipedia_url:
-            location = await self._enrich_with_wikipedia(location)
-        
+            location = await enrich_with_wikipedia(location)
+
         # Add educational metadata
-        location = self._add_educational_metadata(location, subject)
-        
+        location = add_educational_metadata(location, subject)
+
         location.source = "openstreetmap"
         return location
     
@@ -342,217 +350,228 @@ class OpenStreetMapBackend(LocationBackend):
             return f"https://{lang}.wikipedia.org/wiki/{title}"
         return None
     
-    async def _fetch_wikidata_id(self, location: LocationData) -> LocationData:
-        """Fetch Wikidata ID from Wikipedia or by searching"""
-        if location.name:
-            # Extract title from Wikipedia URL (if present; not used in the
-            # search-by-name call below, kept for parity with prior behavior)
-            title = location.wikipedia_url.split("/wiki/")[-1] if location.wikipedia_url else None
 
-            try:
-                async with httpx.AsyncClient() as client:
-                    # Query Wikidata for the page
-                    response = await client.get(
-                        "https://www.wikidata.org/w/api.php",
-                        params={
-                            "action": "wbsearchentities",
-                            "search": location.name,
-                            "language": "en",
-                            "format": "json"
-                        },
-                        timeout=10
-                    )
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        if data.get("search"):
-                            location.wikidata_id = data["search"][0]["id"]
-            except Exception as e:
-                logger.warning(f"Could not fetch Wikidata ID: {e}")
-        
-        return location
-    
-    async def _enrich_with_wikidata(self, location: LocationData) -> LocationData:
-        """Fetch enrichment data from Wikidata"""
-        if not location.wikidata_id:
-            return location
-        
+# ─────────────────────────────────────────────────────────────────────────
+# Shared Wikidata/Wikipedia enrichment helpers
+#
+# Pulled out of OpenStreetMapBackend so WikipediaGeosearchBackend (below)
+# can reuse the exact same enrichment pipeline. OpenStreetMapBackend's job
+# was always split into two steps: Overpass finds a candidate POI (name +
+# maybe a wikidata tag), then these functions add the actual educational
+# content from Wikidata/Wikipedia. WikipediaGeosearchBackend does discovery
+# a different way (Wikipedia's own geosearch) but needs the same enrichment
+# step afterward, hence sharing this code instead of duplicating it.
+# ─────────────────────────────────────────────────────────────────────────
+
+async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
+    """Fetch Wikidata ID by searching Wikidata for the location's name"""
+    if location.name:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    "https://www.wikidata.org/wiki/Special:EntityData/{}.json".format(
-                        location.wikidata_id
-                    ),
-                    timeout=10
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    entity = data["entities"].get(location.wikidata_id, {})
-                    
-                    # Extract claims (statements)
-                    claims = entity.get("claims", {})
-                    
-                    # Get image
-                    if "P18" in claims:  # image
-                        try:
-                            image_title = claims["P18"][0]["mainsnak"]["datavalue"]["value"]
-                            location.image_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{image_title}"
-                        except:
-                            pass
-                    
-                    # Get description
-                    if "en" in entity.get("descriptions", {}):
-                        location.description = entity["descriptions"]["en"]["value"]
-                    
-                    # Get inception date
-                    if "P571" in claims:  # inception
-                        try:
-                            location.construction_date = claims["P571"][0]["mainsnak"]["datavalue"]["value"]["time"]
-                        except:
-                            pass
-                    
-                    # Get creator/artist. Falls back to "architect" (P84)
-                    # for buildings, since P170 (creator) is mostly used for
-                    # artworks. Either way this is a Wikidata *entity ID*
-                    # (e.g. "Q42"), not a name — resolve it to a human
-                    # -readable label below, otherwise the panel shows a raw
-                    # Q-code, which is exactly the kind of placeholder-
-                    # looking junk this was supposed to fix.
-                    creator_id = None
-                    for prop in ("P170", "P84"):
-                        if prop in claims:
-                            try:
-                                creator_id = claims[prop][0]["mainsnak"]["datavalue"]["value"]["id"]
-                                break
-                            except Exception:
-                                continue
-
-                    if creator_id:
-                        try:
-                            label_resp = await client.get(
-                                "https://www.wikidata.org/w/api.php",
-                                params={
-                                    "action": "wbgetentities",
-                                    "ids": creator_id,
-                                    "props": "labels",
-                                    "languages": "en",
-                                    "format": "json",
-                                },
-                                timeout=10,
-                            )
-                            if label_resp.status_code == 200:
-                                label_data = label_resp.json()
-                                label = (
-                                    label_data.get("entities", {})
-                                    .get(creator_id, {})
-                                    .get("labels", {})
-                                    .get("en", {})
-                                    .get("value")
-                                )
-                                location.architect_or_artist = label or creator_id
-                        except Exception:
-                            location.architect_or_artist = creator_id
-        
-        except Exception as e:
-            logger.warning(f"Error enriching with Wikidata: {e}")
-        
-        return location
-    
-    async def _enrich_with_wikipedia(self, location: LocationData) -> LocationData:
-        """Fetch enrichment from Wikipedia"""
-        if not location.wikipedia_url:
-            return location
-        
-        try:
-            # Extract page title
-            title = location.wikipedia_url.split("/wiki/")[-1]
-            
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    "https://en.wikipedia.org/w/api.php",
+                    "https://www.wikidata.org/w/api.php",
                     params={
-                        "action": "query",
-                        "titles": title,
-                        "prop": "extracts|pageimages",
-                        "exintro": True,
-                        "explaintext": True,
+                        "action": "wbsearchentities",
+                        "search": location.name,
+                        "language": "en",
                         "format": "json"
                     },
                     timeout=10
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
-                    pages = data.get("query", {}).get("pages", {})
-                    
-                    for page_id, page in pages.items():
-                        if page_id != "-1":
-                            if "extract" in page:
-                                location.description = page["extract"][:500]
-                            if "thumbnail" in page:
-                                location.image_url = page["thumbnail"]["source"]
-        
+                    if data.get("search"):
+                        location.wikidata_id = data["search"][0]["id"]
         except Exception as e:
-            logger.warning(f"Error enriching with Wikipedia: {e}")
-        
+            logger.warning(f"Could not fetch Wikidata ID: {e}")
+
+    return location
+
+
+async def enrich_with_wikidata(location: LocationData) -> LocationData:
+    """Fetch enrichment data from Wikidata"""
+    if not location.wikidata_id:
         return location
-    
-    def _add_educational_metadata(self, location: LocationData, subject: Optional[str]) -> LocationData:
-        """Add educational context based on location type and subject"""
-        
-        type_subjects = {
-            "museum": ["history", "art", "culture", "science"],
-            "historic": ["history", "culture", "social_studies"],
-            "monument": ["history", "civics", "social_studies"],
-            "artwork": ["art", "culture", "history"],
-            "statue": ["art", "history", "civics"],
-            "park": ["ecology", "biology", "environmental_science"],
-            "library": ["literature", "research", "information_literacy"],
-            "school": ["social_studies", "community"],
-            "university": ["higher_education", "research"],
-            "building": ["architecture", "history"],
-            "garden": ["ecology", "botany", "landscape_design"],
-        }
-        
-        location.subjects = type_subjects.get(location.location_type, ["social_studies", "history"])
-        
-        if subject and subject.lower() not in [s.lower() for s in location.subjects]:
-            location.subjects.append(subject)
-        
-        location.keywords = [location.location_type, location.name.lower()]
-        
-        # Add learning opportunities based on type
-        opportunities = {
-            "museum": [
-                "Observe and analyze artifacts",
-                "Learn about historical periods",
-                "Study curatorial methods"
-            ],
-            "historic": [
-                "Study historical context",
-                "Analyze primary sources",
-                "Understand cultural significance"
-            ],
-            "artwork": [
-                "Analyze artistic techniques",
-                "Study artist's context",
-                "Understand artistic movements"
-            ],
-            "park": [
-                "Observe ecosystems",
-                "Study biodiversity",
-                "Measure environmental data"
-            ],
-        }
-        
-        location.learning_opportunities = opportunities.get(location.location_type, [
-            "Observation and exploration",
-            "Research and discovery",
-            "Community engagement"
-        ])
-        
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://www.wikidata.org/wiki/Special:EntityData/{}.json".format(
+                    location.wikidata_id
+                ),
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                entity = data["entities"].get(location.wikidata_id, {})
+
+                # Extract claims (statements)
+                claims = entity.get("claims", {})
+
+                # Get image
+                if "P18" in claims:  # image
+                    try:
+                        image_title = claims["P18"][0]["mainsnak"]["datavalue"]["value"]
+                        location.image_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{image_title}"
+                    except:
+                        pass
+
+                # Get description
+                if "en" in entity.get("descriptions", {}):
+                    location.description = entity["descriptions"]["en"]["value"]
+
+                # Get inception date
+                if "P571" in claims:  # inception
+                    try:
+                        location.construction_date = claims["P571"][0]["mainsnak"]["datavalue"]["value"]["time"]
+                    except:
+                        pass
+
+                # Get creator/artist. Falls back to "architect" (P84)
+                # for buildings, since P170 (creator) is mostly used for
+                # artworks. Either way this is a Wikidata *entity ID*
+                # (e.g. "Q42"), not a name — resolve it to a human
+                # -readable label below, otherwise the panel shows a raw
+                # Q-code, which is exactly the kind of placeholder-
+                # looking junk this was supposed to fix.
+                creator_id = None
+                for prop in ("P170", "P84"):
+                    if prop in claims:
+                        try:
+                            creator_id = claims[prop][0]["mainsnak"]["datavalue"]["value"]["id"]
+                            break
+                        except Exception:
+                            continue
+
+                if creator_id:
+                    try:
+                        label_resp = await client.get(
+                            "https://www.wikidata.org/w/api.php",
+                            params={
+                                "action": "wbgetentities",
+                                "ids": creator_id,
+                                "props": "labels",
+                                "languages": "en",
+                                "format": "json",
+                            },
+                            timeout=10,
+                        )
+                        if label_resp.status_code == 200:
+                            label_data = label_resp.json()
+                            label = (
+                                label_data.get("entities", {})
+                                .get(creator_id, {})
+                                .get("labels", {})
+                                .get("en", {})
+                                .get("value")
+                            )
+                            location.architect_or_artist = label or creator_id
+                    except Exception:
+                        location.architect_or_artist = creator_id
+
+    except Exception as e:
+        logger.warning(f"Error enriching with Wikidata: {e}")
+
+    return location
+
+
+async def enrich_with_wikipedia(location: LocationData) -> LocationData:
+    """Fetch enrichment from Wikipedia"""
+    if not location.wikipedia_url:
         return location
+
+    try:
+        # Extract page title
+        title = location.wikipedia_url.split("/wiki/")[-1]
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://en.wikipedia.org/w/api.php",
+                params={
+                    "action": "query",
+                    "titles": title,
+                    "prop": "extracts|pageimages",
+                    "exintro": True,
+                    "explaintext": True,
+                    "format": "json"
+                },
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                pages = data.get("query", {}).get("pages", {})
+
+                for page_id, page in pages.items():
+                    if page_id != "-1":
+                        if "extract" in page:
+                            location.description = page["extract"][:500]
+                        if "thumbnail" in page:
+                            location.image_url = page["thumbnail"]["source"]
+
+    except Exception as e:
+        logger.warning(f"Error enriching with Wikipedia: {e}")
+
+    return location
+
+
+def add_educational_metadata(location: LocationData, subject: Optional[str]) -> LocationData:
+    """Add educational context based on location type and subject"""
+
+    type_subjects = {
+        "museum": ["history", "art", "culture", "science"],
+        "historic": ["history", "culture", "social_studies"],
+        "monument": ["history", "civics", "social_studies"],
+        "artwork": ["art", "culture", "history"],
+        "statue": ["art", "history", "civics"],
+        "park": ["ecology", "biology", "environmental_science"],
+        "library": ["literature", "research", "information_literacy"],
+        "school": ["social_studies", "community"],
+        "university": ["higher_education", "research"],
+        "building": ["architecture", "history"],
+        "garden": ["ecology", "botany", "landscape_design"],
+    }
+
+    location.subjects = type_subjects.get(location.location_type, ["social_studies", "history"])
+
+    if subject and subject.lower() not in [s.lower() for s in location.subjects]:
+        location.subjects.append(subject)
+
+    location.keywords = [location.location_type, location.name.lower()]
+
+    # Add learning opportunities based on type
+    opportunities = {
+        "museum": [
+            "Observe and analyze artifacts",
+            "Learn about historical periods",
+            "Study curatorial methods"
+        ],
+        "historic": [
+            "Study historical context",
+            "Analyze primary sources",
+            "Understand cultural significance"
+        ],
+        "artwork": [
+            "Analyze artistic techniques",
+            "Study artist's context",
+            "Understand artistic movements"
+        ],
+        "park": [
+            "Observe ecosystems",
+            "Study biodiversity",
+            "Measure environmental data"
+        ],
+    }
+
+    location.learning_opportunities = opportunities.get(location.location_type, [
+        "Observation and exploration",
+        "Research and discovery",
+        "Community engagement"
+    ])
+
+    return location
 
 
 class NominatimBackend(LocationBackend):
@@ -633,6 +652,119 @@ class NominatimBackend(LocationBackend):
         return location
 
 
+class WikipediaGeosearchBackend(LocationBackend):
+    """
+    Uses Wikipedia's own geosearch API to discover nearby places directly —
+    no dependency on Overpass/OSM at all.
+
+    Why this exists: the OSM pipeline above is a two-step process — Overpass
+    finds a candidate POI (by OSM tag: museum, park, etc.), and only *then*
+    do we look it up on Wikidata/Wikipedia for the actual educational
+    content. There was never a discovery path that used Wikipedia/Wikidata
+    directly to *find* nearby places — Wikidata/Wikipedia were only ever
+    used for enrichment after OSM found something. So when Overpass is slow,
+    rate-limited, or (as observed in this deployment) outright unreachable,
+    search falls all the way through to bare Nominatim, which has no
+    Wikidata link and therefore no real content to show.
+
+    Wikipedia's `list=geosearch` API finds real, named, documented places
+    near a coordinate directly (Wikimedia Foundation infrastructure — much
+    more reliably available than the community-run public Overpass
+    instance). This backend uses it as a second, independent discovery path,
+    then reuses the exact same Wikidata/Wikipedia enrichment pipeline as
+    OpenStreetMapBackend (see the shared helper functions above) so the
+    output shape is identical either way.
+    """
+
+    def __init__(self):
+        logger.info("WikipediaGeosearchBackend initialized")
+
+    async def search_nearby(
+        self,
+        latitude: float,
+        longitude: float,
+        radius_meters: int = 5000,
+        location_types: Optional[List[str]] = None,
+        query: Optional[str] = None
+    ) -> List[LocationData]:
+        """Search using Wikipedia's geosearch API (list=geosearch)"""
+
+        # Wikipedia's geosearch caps gsradius at 10,000 meters.
+        gsradius = min(radius_meters, 10000)
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://en.wikipedia.org/w/api.php",
+                    params={
+                        "action": "query",
+                        "list": "geosearch",
+                        "gscoord": f"{latitude}|{longitude}",
+                        "gsradius": gsradius,
+                        "gslimit": 20,
+                        "format": "json",
+                    },
+                    timeout=10,
+                    headers={"User-Agent": "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"},
+                )
+
+                if response.status_code != 200:
+                    logger.error(f"Wikipedia geosearch error: {response.status_code}")
+                    return []
+
+                data = response.json()
+                results = data.get("query", {}).get("geosearch", [])
+
+                locations = []
+                for r in results:
+                    title = r.get("title")
+                    if not title:
+                        continue
+                    locations.append(LocationData(
+                        name=title,
+                        latitude=r.get("lat", latitude),
+                        longitude=r.get("lon", longitude),
+                        location_type="point_of_interest",
+                        address="",
+                        # pageid is stable and unique — safer than slugifying
+                        # the title, which can contain characters place_id
+                        # lookups elsewhere don't expect.
+                        place_id=f"wikipedia_{r.get('pageid')}",
+                        wikipedia_url=f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                        source="wikipedia",
+                    ))
+
+                return locations[:20]
+
+        except Exception as e:
+            logger.error(f"Error querying Wikipedia geosearch: {e}")
+            return []
+
+    async def enrich_location(
+        self,
+        location: LocationData,
+        subject: Optional[str] = None
+    ) -> LocationData:
+        """Enrich a Wikipedia-discovered place with Wikidata + full extract"""
+
+        # The geosearch result already gives us a real Wikipedia page, so
+        # pull the full extract/image from it first...
+        if location.wikipedia_url:
+            location = await enrich_with_wikipedia(location)
+
+        # ...then cross-link to Wikidata (by name search, same as the OSM
+        # path) for structured fields like architect/construction date.
+        if not location.wikidata_id:
+            location = await fetch_wikidata_id_by_name(location)
+        if location.wikidata_id:
+            location = await enrich_with_wikidata(location)
+
+        location = add_educational_metadata(location, subject)
+
+        location.source = "wikipedia"
+        return location
+
+
 class MultiBackendLocationService:
     """
     Multi-backend location service
@@ -642,7 +774,12 @@ class MultiBackendLocationService:
     def __init__(self):
         backend_config = os.getenv(
             "LOCATION_BACKEND",
-            "openstreetmap,nominatim"  # Free defaults
+            # Try Overpass first (best when it's reachable — structured POI
+            # types), then Wikipedia geosearch (reliable, real enrichable
+            # places, no OSM dependency), then bare Nominatim geocoding as
+            # the last resort (name/address only, never enriched — this is
+            # what was producing the "placeholder" panels).
+            "openstreetmap,wikipedia,nominatim"  # Free defaults
         )
         
         self.backend_names = [b.strip() for b in backend_config.split(",")]
@@ -656,6 +793,7 @@ class MultiBackendLocationService:
         
         backend_classes = {
             "openstreetmap": OpenStreetMapBackend,
+            "wikipedia": WikipediaGeosearchBackend,
             "nominatim": NominatimBackend,
         }
         
