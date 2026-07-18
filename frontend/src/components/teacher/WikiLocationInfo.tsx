@@ -53,7 +53,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
    * finds no nearby POI, so the caller can fall through to the client-side
    * Nominatim/Wikipedia fallback below.
    */
-  const fetchFromBackendPipeline = async (): Promise<LocationInfo | null> => {
+  const fetchFromBackendPipeline = async (forceRefresh: boolean = false): Promise<LocationInfo | null> => {
     const searchResponse = await fetch('/api/v1/locations/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,9 +68,16 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
     }
 
     const placeId = searchResults[0].place_id;
-    const subjectQuery = subject ? `?subject=${encodeURIComponent(subject)}` : '';
+    const params = new URLSearchParams();
+    if (subject) params.set('subject', subject);
+    // Bypasses the backend's up-to-7-day enrichment cache. Without this,
+    // clicking "Refresh Information" for a place that was already enriched
+    // once just re-serves the same cached (possibly stale/thin) result —
+    // there was no way to actually force a fresh Wikidata/Wikipedia fetch.
+    if (forceRefresh) params.set('refresh', 'true');
+    const qs = params.toString();
     const enrichResponse = await fetch(
-      `/api/v1/locations/${encodeURIComponent(placeId)}/enrich${subjectQuery}`
+      `/api/v1/locations/${encodeURIComponent(placeId)}/enrich${qs ? `?${qs}` : ''}`
     );
     if (!enrichResponse.ok) {
       throw new Error(`locations/${placeId}/enrich failed (${enrichResponse.status})`);
@@ -113,7 +120,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
     return info;
   };
 
-  const fetchLocationInfo = async () => {
+  const fetchLocationInfo = async (forceRefresh: boolean = false) => {
     setIsLoading(true);
     setError('');
 
@@ -121,7 +128,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
       // Primary: backend enrichment pipeline (Items 1-3). If it throws, fall
       // through below to the client-side fallback rather than propagating.
       try {
-        const backendInfo = await fetchFromBackendPipeline();
+        const backendInfo = await fetchFromBackendPipeline(forceRefresh);
         if (backendInfo) {
           setLocationInfo(backendInfo);
           onInfoLoaded(backendInfo);
@@ -401,7 +408,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
           </div>
 
           <button
-          onClick={fetchLocationInfo}
+          onClick={() => fetchLocationInfo(true)}
           className={styles.refreshBtn}>{t("landing:refresh_information", "\uD83D\uDD04 Refresh Information")}
 
 

@@ -188,12 +188,21 @@ async def search_nearby_locations(
 async def enrich_location(
     place_id: str,
     subject: Optional[str] = None,
+    refresh: bool = False,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get educational enrichment for a specific location
-    
+
     Returns: learning opportunities, images, historical significance, etc.
+
+    `refresh=true` forces a live re-fetch, bypassing the (up to 7-day TTL)
+    cache. Without this, there was no way to get a fresh result for a
+    place that had already been enriched once — every enrichment-quality
+    fix made to the underlying pipeline stayed invisible for any
+    already-cached place_id until the TTL happened to expire, which is
+    exactly what made earlier fixes this session look like they "weren't
+    working" (the cached pre-fix row was still being served).
     """
     try:
         from sqlalchemy import select as _sel
@@ -214,8 +223,9 @@ async def enrich_location(
 
         # TTL staleness check — an over-age row is treated as a cache miss so
         # it gets re-fetched and refreshed below rather than served forever.
-        is_stale = False
-        if enriched and enriched.enriched_at:
+        # `refresh=true` forces the same treatment regardless of age.
+        is_stale = refresh
+        if enriched and enriched.enriched_at and not is_stale:
             age = datetime.utcnow() - enriched.enriched_at
             if age > timedelta(hours=settings.LOCATION_CACHE_TTL_HOURS):
                 is_stale = True
