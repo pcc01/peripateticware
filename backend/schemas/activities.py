@@ -223,6 +223,20 @@ class ActivityResponse(ActivityBase):
     # Media fields (teacher-uploaded)
     hero_image_url: Optional[str] = None
     attachments: List[dict] = []
+    # Overrides of ActivityBase's required fields — required is correct for
+    # ActivityCreate/ActivityUpdate (a teacher must set a real location to
+    # save an activity), but the location_* DB columns are nullable
+    # (activities.location_latitude/longitude/name — see startup.py's
+    # ALTER ... DROP NOT NULL) and some seeded/legacy rows genuinely have no
+    # location (e.g. the "Map Your Neighborhood" demo activity). Without this
+    # override, GET/PUT on any such activity 500s with a bare
+    # ResponseValidationError ("Input should be a valid number" /
+    # "Input should be a valid string") before the client ever sees a detail
+    # message — this was the second cause behind "activity not found or
+    # access denied" (the first was the None-list fields fixed above).
+    location_latitude: Optional[float] = None
+    location_longitude: Optional[float] = None
+    location_name: Optional[str] = None
 
     @field_validator('attachments', mode='before')
     @classmethod

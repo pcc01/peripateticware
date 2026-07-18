@@ -16,8 +16,10 @@ TODO (backlog): Convert each _apply_*_migrations() call to a proper
 
 from sqlalchemy import text
 import asyncio
+import json
 import logging
 import uuid
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -1186,6 +1188,118 @@ async def seed_sample_activities(engine) -> None:
         logger.info("✅ Seed activities ensured (3 sample activities)")
     except Exception as e:
         logger.warning(f"⊘ Sample activity seed skipped: {e}")
+
+
+async def seed_demo_fieldwork_submission(engine) -> None:
+    """Seed one fully "turned in" activity for student@example.com against
+    the 'Creek Habitat Study' sample activity — a learning_sessions row, an
+    evidence_captures row with a real GPS point, and a submitted
+    activity_submissions row.
+
+    Why: GET /activities/{id}/fieldwork-locations (the Fieldwork Map) and the
+    teacher Submissions page had no real data to render against — every demo
+    activity showed an empty state, so a teacher testing either page had no
+    way to confirm a genuine submission renders correctly end to end. This
+    mirrors the real submit flow in routes/student_activities.py::submit_activity
+    (session -> evidence -> submission) rather than faking a shortcut.
+
+    Depends on seed_sample_activities() (for the activity) and
+    seed_demo_users() (for student@example.com) having already run — must be
+    called after both, and only where student@example.com actually exists
+    (dev, or ENABLE_DEMO_SEED_ACCOUNTS).
+    """
+    try:
+        async with engine.begin() as conn:
+            student_row = (await conn.execute(text(
+                "SELECT id FROM users WHERE email = 'student@example.com'"
+            ))).fetchone()
+            activity_row = (await conn.execute(text(
+                "SELECT id FROM activities WHERE title = 'Creek Habitat Study' "
+                "AND status = 'published' LIMIT 1"
+            ))).fetchone()
+
+            if not student_row or not activity_row:
+                logger.info(
+                    "⊘ Demo fieldwork submission seed skipped "
+                    "(student@example.com or 'Creek Habitat Study' not found yet)"
+                )
+                return
+
+            student_id, activity_id = student_row[0], activity_row[0]
+
+            already_submitted = (await conn.execute(
+                text(
+                    "SELECT 1 FROM activity_submissions "
+                    "WHERE student_id = :sid AND activity_id = :aid "
+                    "AND submission_status = 'submitted'"
+                ),
+                {"sid": student_id, "aid": activity_id},
+            )).fetchone()
+            if already_submitted:
+                return
+
+            session_row = (await conn.execute(
+                text("""
+                    INSERT INTO learning_sessions (
+                        id, user_id, activity_id, title, latitude, longitude,
+                        location_name, is_active, status,
+                        created_at, updated_at, completed_at
+                    ) VALUES (
+                        gen_random_uuid(), :sid, :aid, 'Creek Habitat Study — Field Session',
+                        37.8716, -122.2727, 'Local creek or drainage channel',
+                        FALSE, 'completed',
+                        NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'
+                    )
+                    RETURNING id
+                """),
+                {"sid": student_id, "aid": activity_id},
+            )).fetchone()
+            session_id = session_row[0]
+
+            await conn.execute(
+                text("""
+                    INSERT INTO evidence_captures (
+                        id, session_id, student_id, activity_id, capture_type,
+                        title, description, learning_objectives, competencies,
+                        location_latitude, location_longitude, created_at
+                    ) VALUES (
+                        gen_random_uuid(), :session_id, :sid, :aid, 'photo',
+                        'Creek water sample', 'Clear water, moderate flow. Spotted water striders and a small school of minnows near the bank.',
+                        '[]'::jsonb, '[]'::jsonb,
+                        37.8716, -122.2727, NOW() - INTERVAL '2 days'
+                    )
+                """),
+                {"session_id": session_id, "sid": student_id, "aid": activity_id},
+            )
+
+            await conn.execute(
+                text("""
+                    INSERT INTO activity_submissions (
+                        id, student_id, activity_id, session_id, submission_status,
+                        compiled_evidence, submitted_at, created_at, updated_at
+                    ) VALUES (
+                        gen_random_uuid(), :sid, :aid, :session_id, 'submitted',
+                        :compiled, NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'
+                    )
+                """),
+                {
+                    "sid": student_id, "aid": activity_id, "session_id": session_id,
+                    "compiled": json.dumps({
+                        "captures": [{
+                            "title": "Creek water sample",
+                            "capture_type": "photo",
+                            "description": "Clear water, moderate flow. Spotted water striders and a small school of minnows near the bank.",
+                            "location_latitude": 37.8716,
+                            "location_longitude": -122.2727,
+                        }],
+                        "reflections": [],
+                        "submitted_at": datetime.utcnow().isoformat(),
+                    }),
+                },
+            )
+        logger.info("✅ Demo fieldwork submission seeded (student@example.com -> Creek Habitat Study, with GPS + submission)")
+    except Exception as e:
+        logger.warning(f"⊘ Demo fieldwork submission seed skipped: {e}")
 
 
 async def seed_demo_users(engine) -> None:

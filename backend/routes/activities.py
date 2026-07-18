@@ -7,7 +7,7 @@
 from pydantic import BaseModel as _BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, String
 from uuid import UUID
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
@@ -1745,11 +1745,11 @@ async def get_fieldwork_locations(
     # ── Query 1: EvidenceCapture (direct activity_id FK) ──────────────────
     ec_q = (
         select(
-            EvidenceCapture.student_id.cast(text("TEXT")).label("student_id"),
+            EvidenceCapture.student_id.cast(String).label("student_id"),
             _User.full_name.label("student_name"),
             EvidenceCapture.location_latitude.label("latitude"),
             EvidenceCapture.location_longitude.label("longitude"),
-            text("NULL").label("location_name"),
+            literal(None, type_=String).label("location_name"),
             EvidenceCapture.created_at.label("submitted_at"),
             EvidenceCapture.title.label("title"),
             literal("capture").label("type"),
@@ -1764,7 +1764,7 @@ async def get_fieldwork_locations(
     # ── Query 2: StudentFieldNote via session join ─────────────────────────
     fn_q = (
         select(
-            StudentFieldNote.student_id.cast(text("TEXT")).label("student_id"),
+            StudentFieldNote.student_id.cast(String).label("student_id"),
           
             _User.full_name.label("student_name"),
             StudentFieldNote.location_latitude.label("latitude"),

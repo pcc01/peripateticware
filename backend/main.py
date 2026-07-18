@@ -129,6 +129,7 @@ async def lifespan(app: FastAPI):
         seed_homeschool_demo,
         seed_homeschool_example_children,
         seed_demo_classroom,
+        seed_demo_fieldwork_submission,
         seed_test_classroom,
         seed_compliance_frameworks,
         seed_ai_task_config_orm,
@@ -219,6 +220,7 @@ async def lifespan(app: FastAPI):
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)
+            await seed_demo_fieldwork_submission(engine)
             await seed_test_classroom(engine)
         elif settings.ENABLE_DEMO_SEED_ACCOUNTS:
             logger.info("ENABLE_DEMO_SEED_ACCOUNTS=true — seeding customer-facing demo accounts only (no admin, no @test.local)")
@@ -226,6 +228,7 @@ async def lifespan(app: FastAPI):
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)
+            await seed_demo_fieldwork_submission(engine)
         else:
             logger.info(
                 "Skipping demo/test account seeding (ENVIRONMENT=%s, ENABLE_DEMO_SEED_ACCOUNTS=%s)",

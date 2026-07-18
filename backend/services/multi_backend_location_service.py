@@ -129,12 +129,27 @@ class OpenStreetMapBackend(LocationBackend):
         
         try:
             async with httpx.AsyncClient() as client:
+                # Sending the raw query via `content=` gives the request no
+                # (or the wrong) Content-Type, which Overpass rejects with
+                # "406 Not Acceptable" — every search silently fell through
+                # to the Nominatim backend as a result, and since Nominatim
+                # has no Wikidata link, the enrichment step never had a real
+                # POI to enrich, only ever synthesizing generic content.
+                # Overpass expects its query as a `data` form field (this is
+                # the documented way to POST — see overpass-api.de/api/interpreter);
+                # `data=` makes httpx send it as
+                # application/x-www-form-urlencoded, which Overpass accepts.
                 response = await client.post(
                     self.overpass_url,
-                    content=overpass_query,
-                    timeout=30
+                    data={"data": overpass_query},
+                    timeout=30,
+                    # Overpass's public instance usage policy rejects requests
+                    # with no/generic User-Agent — this call had none at all
+                    # (unlike NominatimBackend below, which already sets one),
+                    # which is the likely other half of the 406 behavior.
+                    headers={"User-Agent": "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"},
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
                     locations = self._parse_osm_response(data)
@@ -142,7 +157,7 @@ class OpenStreetMapBackend(LocationBackend):
                 else:
                     logger.error(f"Overpass API error: {response.status_code}")
                     return []
-                    
+
         except Exception as e:
             logger.error(f"Error querying Overpass API: {e}")
             return []

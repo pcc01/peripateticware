@@ -55,7 +55,15 @@ export const TeacherSubmissionsPage: React.FC = () => {
     : Array.isArray(submissionsData)
     ? (submissionsData as any[])
     : [];
-  const selectedSubmission = submissions.find((s: any) => s.id === selectedSubmissionId);
+  // Backend rows from GET /activities/teacher/submissions use `session_id`,
+  // not `id` — this page was written against a richer TeacherSubmission
+  // shape (evidence[], project_id, etc.) that this endpoint doesn't actually
+  // return (it's the same raw session-row shape used by the dashboard's
+  // Live Sessions list). Falling back to session_id keeps selection working;
+  // the missing evidence/phase/grading fields are a separate, deeper gap —
+  // this page's detail/review panel needs a dedicated richer endpoint to
+  // actually function, not just a null-guard.
+  const selectedSubmission = submissions.find((s: any) => (s.id ?? s.session_id) === selectedSubmissionId);
 
   const handleApprove = async () => {
     if (!selectedSubmissionId) return;
@@ -180,8 +188,8 @@ export const TeacherSubmissionsPage: React.FC = () => {
             <div className="space-y-4">
                 {submissions.map((submission: any) =>
               <div
-                key={submission.id}
-                onClick={() => setSelectedSubmissionId(submission.id)}
+                key={submission.id ?? submission.session_id}
+                onClick={() => setSelectedSubmissionId(submission.id ?? submission.session_id)}
                 className={`bg-white rounded-lg p-4 cursor-pointer border-l-4 transition ${
                 selectedSubmissionId === submission.id ?
                 'border-green-700 bg-green-50' :
@@ -201,7 +209,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                         </p>
                         <div className="mt-1"><PhaseBadge s={submission} /></div>
                         <p className="text-xs text-gray-500">{t("landing:submitted", "Submitted:")}
-                      {fmtDate(submission.submitted_at)}
+                      {fmtDate(submission.submitted_at ?? submission.started_at)}
                         </p>
                       </div>
 
@@ -216,7 +224,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                     <XCircle className="w-5 h-5 text-red-600" aria-label={t("landing:rejected", "Rejected")} />
                     }
                         <span className="text-sm font-medium text-gray-700 ml-2">
-                          {submission.evidence.length} {t('common.items', 'items')}
+                          {submission.evidence?.length ?? 0} {t('common.items', 'items')}
                         </span>
                       </div>
                     </div>
@@ -282,15 +290,20 @@ export const TeacherSubmissionsPage: React.FC = () => {
                 {/* Evidence */}
                 <div className="mb-6 pb-6 border-b">
                   <h3 className="font-medium text-gray-900 mb-3">
-                    {t('common.evidence', 'Evidence')} ({selectedSubmission.evidence.length})
+                    {t('common.evidence', 'Evidence')} ({(selectedSubmission.evidence ?? []).length})
                   </h3>
                   <div className="space-y-2">
-                    {selectedSubmission.evidence.map((e, i) =>
+                    {(selectedSubmission.evidence ?? []).map((e: any, i: number) =>
                   <div key={i} className="text-sm p-2 bg-gray-50 rounded">
                         <div className="font-medium text-gray-900">{e.title}</div>
                         <div className="text-xs text-gray-600">{e.type}</div>
                       </div>
                   )}
+                    {(!selectedSubmission.evidence || selectedSubmission.evidence.length === 0) && (
+                      <p className="text-xs text-gray-500">
+                        Evidence detail isn't available for this submission yet.
+                      </p>
+                    )}
                   </div>
                 </div>
 
