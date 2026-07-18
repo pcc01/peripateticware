@@ -103,7 +103,7 @@ async def search_nearby_locations(
     """
     try:
         service = get_location_service()
-        
+
         # Search for locations
         locations = await service.search_nearby(
             latitude=request.latitude,
@@ -112,7 +112,51 @@ async def search_nearby_locations(
             location_types=request.location_types,
             query=request.query
         )
-        
+
+        # Cache write-back — WITHOUT this, the real name/lat/lng/address a
+        # backend (e.g. Nominatim) just found here is thrown away: the
+        # follow-up GET /locations/{place_id}/enrich call (routes below)
+        # looks this place_id up in CachedLocation, finds nothing, and
+        # synthesizes a placeholder from the place_id slug itself (e.g.
+        # "nominatim_432316288" -> name "Nominatim 432316288", lat/lng 0,0),
+        # which is the garbage the WikiLocationInfo panel was showing. Write
+        # each result here so /enrich has real data to enrich against.
+        if settings.ENABLE_LOCATION_CACHE and locations:
+            from models.database import CachedLocation as _CL
+            from sqlalchemy import select as _sel2
+            for loc in locations:
+                try:
+                    existing = (await db.execute(
+                        _sel2(_CL).where(_CL.place_id == loc.place_id)
+                    )).scalar_one_or_none()
+                    if existing:
+                        existing.name = loc.name
+                        existing.latitude = loc.latitude
+                        existing.longitude = loc.longitude
+                        existing.location_type = loc.location_type
+                        existing.address = loc.address
+                        existing.source = loc.source
+                    else:
+                        db.add(_CL(
+                            name=loc.name,
+                            latitude=loc.latitude,
+                            longitude=loc.longitude,
+                            location_type=loc.location_type,
+                            address=loc.address,
+                            place_id=loc.place_id,
+                            source=loc.source,
+                            search_latitude=request.latitude,
+                            search_longitude=request.longitude,
+                            search_radius_meters=request.radius_meters,
+                        ))
+                except Exception as cache_err:
+                    logger.warning(f"Location cache write skipped for {loc.place_id}: {cache_err}")
+            try:
+                await db.commit()
+            except Exception as commit_err:
+                logger.warning(f"Location cache commit failed (non-fatal): {commit_err}")
+                await db.rollback()
+
         # Convert to response format
         responses = [
             LocationSearchResponse(
@@ -128,10 +172,10 @@ async def search_nearby_locations(
             )
             for loc in locations
         ]
-        
+
         logger.info(f"Found {len(responses)} locations")
         return responses
-    
+
     except Exception as e:
         logger.error(f"Error searching locations: {e}")
         raise HTTPException(

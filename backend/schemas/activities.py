@@ -127,6 +127,20 @@ class ActivityBase(BaseModel):
         filtered = [obj for obj in v if isinstance(obj, str) and len(obj.strip()) >= 3]
         return filtered or ["Complete the assigned outdoor learning activity."]
 
+    @field_validator('materials_needed', 'resources', 'curriculum_unit_ids', mode='before')
+    @classmethod
+    def _coerce_none_list(cls, v):
+        """These columns default to '[]'/'{}' at the DB level, but only when a
+        row's INSERT explicitly touches them — raw-SQL seed inserts (e.g.
+        startup.py's demo activity seed) that omit the column leave it NULL
+        for pre-existing rows. ActivityResponse serialization (GET/PUT
+        /activities/{id}) has no None-handling here, so any such activity
+        500s with a bare "Internal Server Error" the moment it's fetched.
+        Same failure class as this project's other raw-SQL-bypasses-ORM bugs
+        (EncryptedString, AsyncSession.query()) — coerce None to [] rather
+        than 500ing on activities nobody explicitly broke."""
+        return [] if v is None else v
+
     @field_validator('bloom_level', mode='before')
     @classmethod
     def _coerce_bloom(cls, v):
@@ -209,6 +223,12 @@ class ActivityResponse(ActivityBase):
     # Media fields (teacher-uploaded)
     hero_image_url: Optional[str] = None
     attachments: List[dict] = []
+
+    @field_validator('attachments', mode='before')
+    @classmethod
+    def _coerce_none_attachments(cls, v):
+        """Same NULL-vs-[] gap as ActivityBase._coerce_none_list above."""
+        return [] if v is None else v
 
     class Config:
         from_attributes = True
