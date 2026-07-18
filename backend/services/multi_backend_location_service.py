@@ -26,6 +26,13 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# Wikimedia (Wikidata + Wikipedia) API etiquette policy rejects requests with
+# no/generic User-Agent — same class of bug as the Overpass 406 fixed
+# earlier this session, just on a different host. Missing this header is
+# what made Wikidata enrichment 403 even on the rare cases Overpass *did*
+# successfully find a real POI: https://meta.wikimedia.org/wiki/User-Agent_policy
+WIKIMEDIA_USER_AGENT = "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"
+
 
 @dataclass
 class LocationData:
@@ -376,7 +383,8 @@ async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
                         "language": "en",
                         "format": "json"
                     },
-                    timeout=10
+                    timeout=10,
+                    headers={"User-Agent": WIKIMEDIA_USER_AGENT},
                 )
 
                 if response.status_code == 200:
@@ -400,7 +408,8 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
                 "https://www.wikidata.org/wiki/Special:EntityData/{}.json".format(
                     location.wikidata_id
                 ),
-                timeout=10
+                timeout=10,
+                headers={"User-Agent": WIKIMEDIA_USER_AGENT},
             )
 
             if response.status_code == 200:
@@ -457,6 +466,7 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
                                 "format": "json",
                             },
                             timeout=10,
+                            headers={"User-Agent": WIKIMEDIA_USER_AGENT},
                         )
                         if label_resp.status_code == 200:
                             label_data = label_resp.json()
@@ -497,7 +507,8 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
                     "explaintext": True,
                     "format": "json"
                 },
-                timeout=10
+                timeout=10,
+                headers={"User-Agent": WIKIMEDIA_USER_AGENT},
             )
 
             if response.status_code == 200:
