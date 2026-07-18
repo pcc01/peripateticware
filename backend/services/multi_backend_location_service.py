@@ -124,7 +124,7 @@ class OpenStreetMapBackend(LocationBackend):
         (
             {location_filters}
         );
-        out body;
+        out center;
         """
         
         try:
@@ -189,67 +189,102 @@ class OpenStreetMapBackend(LocationBackend):
     
     def _build_osm_filters(self, location_types: Optional[List[str]], query: Optional[str]) -> str:
         """Build Overpass API query filters"""
-        
+
         filters = []
-        
+
         # Default educational locations if no types specified
         if not location_types:
             location_types = [
                 "museum", "historic", "monument", "artwork",
                 "park", "library", "school", "university"
             ]
-        
-        # Map location types to OSM tags
+
+        # Map location types to OSM tag filters. NOTE: these are just the
+        # ["tag"="value"] part — the node/way/relation prefix is applied
+        # below for each, not baked in here.
+        #
+        # Real POIs are frequently mapped as ways or relations rather than
+        # nodes — parks, university/school campuses, and many museum
+        # buildings are almost always polygons (way/relation), not a single
+        # point. A node-only query silently matches zero results for these,
+        # which made search fall through to the bare Nominatim backend (no
+        # Wikidata link -> no enrichment -> placeholder-looking output) even
+        # though Overpass itself was responding successfully.
         type_mapping = {
-            "museum": 'node["tourism"="museum"]',
-            "historic": 'node["historic"]',
-            "monument": 'node["historic"="monument"]',
-            "artwork": 'node["artwork"]',
-            "park": 'node["leisure"="park"]',
-            "library": 'node["amenity"="library"]',
-            "school": 'node["amenity"="school"]',
-            "university": 'node["amenity"="university"]',
-            "statue": 'node["artwork_type"="statue"]',
-            "building": 'node["building:type"]',
-            "garden": 'node["leisure"="garden"]',
-            "memorial": 'node["historic"="memorial"]',
+            "museum": '["tourism"="museum"]',
+            "historic": '["historic"]',
+            "monument": '["historic"="monument"]',
+            "artwork": '["artwork"]',
+            "park": '["leisure"="park"]',
+            "library": '["amenity"="library"]',
+            "school": '["amenity"="school"]',
+            "university": '["amenity"="university"]',
+            "statue": '["artwork_type"="statue"]',
+            "building": '["building:type"]',
+            "garden": '["leisure"="garden"]',
+            "memorial": '["historic"="memorial"]',
         }
-        
+
         for loc_type in location_types:
-            if loc_type in type_mapping:
-                filters.append(type_mapping[loc_type])
-        
+            tag_filter = type_mapping.get(loc_type)
+            if tag_filter:
+                filters.append(f"node{tag_filter}")
+                filters.append(f"way{tag_filter}")
+                filters.append(f"relation{tag_filter}")
+
         # Add custom query if provided
         if query:
             filters.append(f'node["name"~"{query}"]')
-        
-        return ";".join(filters) if filters else 'node["tourism"]'
+            filters.append(f'way["name"~"{query}"]')
+
+        return ";".join(filters) if filters else 'node["tourism"];way["tourism"]'
     
     def _parse_osm_response(self, data: Dict) -> List[LocationData]:
         """Parse Overpass API response"""
         locations = []
-        
+
         for element in data.get("elements", []):
-            if element.get("type") == "node":
-                tags = element.get("tags", {})
-                
-                location = LocationData(
-                    name=tags.get("name", "Unnamed Location"),
-                    latitude=element.get("lat", 0),
-                    longitude=element.get("lon", 0),
-                    location_type=self._classify_osm_location(tags),
-                    address=self._build_osm_address(tags),
-                    place_id=f"osm_{element.get('id')}",
-                    description=tags.get("description", tags.get("name:en")),
-                    wikipedia_url=self._extract_wikipedia_url(tags),
-                    wikidata_id=tags.get("wikidata"),
-                    architect_or_artist=tags.get("architect", tags.get("artist")),
-                    construction_date=tags.get("start_date", tags.get("opening_date")),
-                    source="openstreetmap"
-                )
-                
-                locations.append(location)
-        
+            el_type = element.get("type")
+            if el_type not in ("node", "way", "relation"):
+                continue
+
+            tags = element.get("tags", {})
+            if not tags:
+                # Untagged elements (e.g. plain geometry nodes that make up
+                # a way) aren't real POIs — skip them.
+                continue
+
+            # Nodes carry lat/lon directly; with `out center;` ways and
+            # relations instead carry a computed "center" object. Without
+            # this branch, way/relation results (most parks, campuses, and
+            # many museum buildings) silently got lat=0, lon=0.
+            if el_type == "node":
+                lat = element.get("lat", 0)
+                lon = element.get("lon", 0)
+            else:
+                center = element.get("center", {})
+                lat = center.get("lat", 0)
+                lon = center.get("lon", 0)
+
+            location = LocationData(
+                name=tags.get("name", "Unnamed Location"),
+                latitude=lat,
+                longitude=lon,
+                location_type=self._classify_osm_location(tags),
+                address=self._build_osm_address(tags),
+                # Include element type in place_id — a way and a node can
+                # share the same numeric OSM id, so this avoids collisions.
+                place_id=f"osm_{el_type}_{element.get('id')}",
+                description=tags.get("description", tags.get("name:en")),
+                wikipedia_url=self._extract_wikipedia_url(tags),
+                wikidata_id=tags.get("wikidata"),
+                architect_or_artist=tags.get("architect", tags.get("artist")),
+                construction_date=tags.get("start_date", tags.get("opening_date")),
+                source="openstreetmap"
+            )
+
+            locations.append(location)
+
         return locations[:20]  # Limit to 20 results
     
     def _classify_osm_location(self, tags: Dict) -> str:
@@ -364,13 +399,47 @@ class OpenStreetMapBackend(LocationBackend):
                         except:
                             pass
                     
-                    # Get creator/artist
-                    if "P170" in claims:  # creator
+                    # Get creator/artist. Falls back to "architect" (P84)
+                    # for buildings, since P170 (creator) is mostly used for
+                    # artworks. Either way this is a Wikidata *entity ID*
+                    # (e.g. "Q42"), not a name — resolve it to a human
+                    # -readable label below, otherwise the panel shows a raw
+                    # Q-code, which is exactly the kind of placeholder-
+                    # looking junk this was supposed to fix.
+                    creator_id = None
+                    for prop in ("P170", "P84"):
+                        if prop in claims:
+                            try:
+                                creator_id = claims[prop][0]["mainsnak"]["datavalue"]["value"]["id"]
+                                break
+                            except Exception:
+                                continue
+
+                    if creator_id:
                         try:
-                            creator_id = claims["P170"][0]["mainsnak"]["datavalue"]["value"]["id"]
+                            label_resp = await client.get(
+                                "https://www.wikidata.org/w/api.php",
+                                params={
+                                    "action": "wbgetentities",
+                                    "ids": creator_id,
+                                    "props": "labels",
+                                    "languages": "en",
+                                    "format": "json",
+                                },
+                                timeout=10,
+                            )
+                            if label_resp.status_code == 200:
+                                label_data = label_resp.json()
+                                label = (
+                                    label_data.get("entities", {})
+                                    .get(creator_id, {})
+                                    .get("labels", {})
+                                    .get("en", {})
+                                    .get("value")
+                                )
+                                location.architect_or_artist = label or creator_id
+                        except Exception:
                             location.architect_or_artist = creator_id
-                        except:
-                            pass
         
         except Exception as e:
             logger.warning(f"Error enriching with Wikidata: {e}")

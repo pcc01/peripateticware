@@ -99,7 +99,7 @@ const SessionMonitor: React.FC<SessionMonitorProps> = ({ session }) => {
         {/* Recent Inquiries */}
         <Card title={t('teacher:monitoring.inquiriesCount')}>
           <div className="text-3xl font-bold text-color-primary mb-3">
-            {session.inquiry_log.length}
+            {session.inquiry_log?.length ?? 0}
           </div>
 
           {inquiries.length > 0 &&

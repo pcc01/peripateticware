@@ -41,11 +41,13 @@ class SessionResponse(BaseModel):
     session_id: str
     title: str
     curriculum_id: str
+    activity_id: Optional[str] = None
     status: str
     location: dict
+    inquiry_log: list = []
     created_at: str
     updated_at: str
-    
+
     class Config:
         from_attributes = True
 
@@ -189,17 +191,19 @@ async def get_session(
         return SessionResponse(
             session_id=str(session.id),
             title=session.title,
-            curriculum_id=str(session.curriculum_id),
+            curriculum_id=str(session.curriculum_id) if session.curriculum_id else "",
+            activity_id=str(session.activity_id) if session.activity_id else None,
             status=session.status,
             location={
                 "latitude": session.latitude,
                 "longitude": session.longitude,
                 "name": session.location_name
             },
+            inquiry_log=session.inquiry_log or [],
             created_at=session.created_at.isoformat(),
             updated_at=session.updated_at.isoformat()
         )
-    
+
     except HTTPException:
         raise
     except Exception as e:
