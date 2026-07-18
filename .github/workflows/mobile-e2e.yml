@@ -14,6 +14,10 @@ on:
     branches: [main, develop]
     paths:
       - 'mobile/**'
+  # Manual "Run workflow" button in the Actions tab — lets you trigger a run
+  # (e.g. just the iOS 26/18 jobs) on demand without needing a push/PR, which
+  # matters since those two configs can't be run locally on an Intel Mac.
+  workflow_dispatch: {}
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ANDROID — matrix across API 37 / 35 / 33 / 30 / 24
