@@ -277,14 +277,31 @@ async def apply_location_table_migrations(engine) -> None:
         # actually ran (i.e. the column didn't already exist as an array from
         # the CREATE TABLE), the column is now the wrong type and every read/
         # write through the ORM fails. Convert in place, but only when the
-        # column is actually jsonb today — a no-op (and harmless failed
-        # statement, caught by the per-statement try/except below) everywhere
-        # the column is already the correct array type.
+        # column is actually jsonb today — a no-op everywhere the column is
+        # already the correct array type.
+        #
+        # jsonb_array_elements_text() throws if the JSONB value isn't a JSON
+        # array (a scalar, an object, etc.) — and because ALTER COLUMN TYPE
+        # USING evaluates its expression against every row in one pass, a
+        # SINGLE row anywhere in the table with an unexpected shape aborts
+        # the entire conversion, permanently stranding the column on jsonb
+        # with no visible error (the per-statement try/except below only
+        # logged at DEBUG and never printed the actual exception, so this
+        # could fail silently forever). Guarded with jsonb_typeof() so every
+        # shape converts to *something* instead of throwing: arrays convert
+        # element-by-element, scalars become a single-element array, and
+        # anything else (object, or a value jsonb_typeof can't make sense
+        # of) falls back to empty rather than aborting the whole ALTER.
         """DO $$ BEGIN
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'subjects' AND data_type = 'jsonb') THEN
                 ALTER TABLE enriched_locations ALTER COLUMN subjects TYPE TEXT[] USING (
-                    CASE WHEN subjects IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(subjects)) END
+                    CASE
+                        WHEN subjects IS NULL THEN '{}'::TEXT[]
+                        WHEN jsonb_typeof(subjects) = 'array' THEN ARRAY(SELECT jsonb_array_elements_text(subjects))
+                        WHEN jsonb_typeof(subjects) = 'string' THEN ARRAY[subjects #>> '{}']
+                        ELSE '{}'::TEXT[]
+                    END
                 );
             END IF;
         END $$;""",
@@ -292,7 +309,15 @@ async def apply_location_table_migrations(engine) -> None:
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'grade_levels' AND data_type = 'jsonb') THEN
                 ALTER TABLE enriched_locations ALTER COLUMN grade_levels TYPE INTEGER[] USING (
-                    CASE WHEN grade_levels IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(grade_levels)::INTEGER) END
+                    CASE
+                        WHEN grade_levels IS NULL THEN '{}'::INTEGER[]
+                        WHEN jsonb_typeof(grade_levels) = 'array' THEN ARRAY(
+                            SELECT elem::INTEGER FROM jsonb_array_elements_text(grade_levels) AS elem
+                            WHERE elem ~ '^-?[0-9]+$'
+                        )
+                        WHEN jsonb_typeof(grade_levels) = 'number' THEN ARRAY[(grade_levels #>> '{}')::INTEGER]
+                        ELSE '{}'::INTEGER[]
+                    END
                 );
             END IF;
         END $$;""",
@@ -300,7 +325,12 @@ async def apply_location_table_migrations(engine) -> None:
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'learning_opportunities' AND data_type = 'jsonb') THEN
                 ALTER TABLE enriched_locations ALTER COLUMN learning_opportunities TYPE TEXT[] USING (
-                    CASE WHEN learning_opportunities IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(learning_opportunities)) END
+                    CASE
+                        WHEN learning_opportunities IS NULL THEN '{}'::TEXT[]
+                        WHEN jsonb_typeof(learning_opportunities) = 'array' THEN ARRAY(SELECT jsonb_array_elements_text(learning_opportunities))
+                        WHEN jsonb_typeof(learning_opportunities) = 'string' THEN ARRAY[learning_opportunities #>> '{}']
+                        ELSE '{}'::TEXT[]
+                    END
                 );
             END IF;
         END $$;""",
@@ -327,7 +357,20 @@ async def apply_location_table_migrations(engine) -> None:
             async with engine.begin() as _c:
                 await _c.execute(text(_stmt))
         except Exception as _e:
-            logger.debug(f"Migration skipped (already applied): {_stmt[:60]}…")
+            # Plain "ADD COLUMN IF NOT EXISTS" / "CREATE TABLE IF NOT EXISTS"
+            # statements "fail" constantly and harmlessly (column/table
+            # already exists) — DEBUG is right for those. The DO $$ type-
+            # conversion blocks above are a different story: a failure there
+            # silently strands enriched_locations on the wrong column type
+            # forever, with every enrichment write 500ing at runtime — and
+            # the previous version of this except clause didn't even print
+            # `_e`, so that failure mode was completely invisible in prod
+            # logs. Surface those specifically at WARNING with the real
+            # exception text.
+            if "ALTER COLUMN" in _stmt and " TYPE " in _stmt:
+                logger.warning(f"Location column type-conversion migration failed: {_e}\nStatement: {_stmt[:300]}")
+            else:
+                logger.debug(f"Migration skipped (already applied): {_stmt[:60]}… ({_e})")
     logger.info("✅ Location table migrations complete")
 
 
