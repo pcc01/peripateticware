@@ -237,7 +237,20 @@ class OpenStreetMapBackend(LocationBackend):
             filters.append(f'node["name"~"{query}"]')
             filters.append(f'way["name"~"{query}"]')
 
-        return ";".join(filters) if filters else 'node["tourism"];way["tourism"]'
+        # Every filter is a standalone Overpass QL statement and MUST end in
+        # its own ";" — including the last one. The previous
+        # `";".join(filters)` only put a ";" *between* items, so the final
+        # filter in the union block had no terminator before the closing
+        # ");", which is a hard Overpass syntax error. Once the earlier
+        # Content-Type/User-Agent fix let requests actually reach Overpass's
+        # parser, every real query started failing on this — Overpass
+        # returned a non-200 parse-error response, the code logged it and
+        # returned [], and search silently fell back to bare Nominatim again.
+        # That's the actual reason results kept coming back as placeholders
+        # even after the transport-level fix.
+        if not filters:
+            return 'node["tourism"];way["tourism"];'
+        return "".join(f"{f};" for f in filters)
     
     def _parse_osm_response(self, data: Dict) -> List[LocationData]:
         """Parse Overpass API response"""
