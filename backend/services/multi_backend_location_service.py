@@ -427,9 +427,27 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
                     except:
                         pass
 
-                # Get description
+                # Get description (short, one-line — Wikidata's own summary,
+                # e.g. "tower located on the Champ de Mars in Paris, France").
+                # This is a baseline; enrich_with_wikipedia() below overwrites
+                # it with the actual Wikipedia article's intro synopsis when
+                # one is found, which is what "points of interest about the
+                # location" (Paul's ask) actually means — several sentences
+                # of real background, not a one-line label.
                 if "en" in entity.get("descriptions", {}):
                     location.description = entity["descriptions"]["en"]["value"]
+
+                # Cross-link to the English Wikipedia article via Wikidata's
+                # own sitelinks. OSM tags frequently carry a wikidata= tag
+                # without a matching wikipedia= tag (or no tags at all, when
+                # we got here via the name-search fallback) — without this,
+                # location.wikipedia_url stays empty, enrich_with_wikipedia()
+                # never runs, and the panel is stuck showing only the short
+                # Wikidata description above instead of a real synopsis.
+                if not location.wikipedia_url:
+                    enwiki_title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
+                    if enwiki_title:
+                        location.wikipedia_url = f"https://en.wikipedia.org/wiki/{enwiki_title.replace(' ', '_')}"
 
                 # Get inception date
                 if "P571" in claims:  # inception
@@ -518,7 +536,14 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
                 for page_id, page in pages.items():
                     if page_id != "-1":
                         if "extract" in page:
-                            location.description = page["extract"][:500]
+                            # 500 chars was one clipped sentence — not what
+                            # "tell me interesting points about this place"
+                            # means. `exintro=True` already limits this to
+                            # just the lead section (before the first
+                            # heading), so it won't run away into the whole
+                            # article; 2000 chars comfortably fits a full
+                            # multi-sentence synopsis for most landmarks.
+                            location.description = page["extract"][:2000]
                         if "thumbnail" in page:
                             location.image_url = page["thumbnail"]["source"]
 
@@ -758,17 +783,19 @@ class WikipediaGeosearchBackend(LocationBackend):
     ) -> LocationData:
         """Enrich a Wikipedia-discovered place with Wikidata + full extract"""
 
-        # The geosearch result already gives us a real Wikipedia page, so
-        # pull the full extract/image from it first...
-        if location.wikipedia_url:
-            location = await enrich_with_wikipedia(location)
-
-        # ...then cross-link to Wikidata (by name search, same as the OSM
-        # path) for structured fields like architect/construction date.
+        # Order matters: Wikidata first (sets a short baseline description,
+        # plus architect/construction date/image), THEN Wikipedia (overwrites
+        # description with the real multi-sentence synopsis). This used to
+        # run the other way around, which meant the good Wikipedia extract
+        # got fetched first and then immediately clobbered by Wikidata's
+        # one-line description — silently discarding the actual synopsis.
         if not location.wikidata_id:
             location = await fetch_wikidata_id_by_name(location)
         if location.wikidata_id:
             location = await enrich_with_wikidata(location)
+
+        if location.wikipedia_url:
+            location = await enrich_with_wikipedia(location)
 
         location = add_educational_metadata(location, subject)
 
