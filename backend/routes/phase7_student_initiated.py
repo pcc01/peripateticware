@@ -411,6 +411,93 @@ async def submit_field_note_for_promotion(
     return _serialize_field_note(note)
 
 
+class FieldNoteCaptureLink(BaseModel):
+    capture_id: UUID
+    order: int = 0
+
+
+@router.post("/student/field-notes/{field_note_id}/captures")
+async def add_capture_to_field_note(
+    field_note_id: UUID,
+    body: FieldNoteCaptureLink,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Link an already-uploaded capture (photo/video/audio, from
+    POST /student/captures/upload) to a field note.
+
+    This endpoint was missing entirely — the frontend (FieldNoteEditor.tsx)
+    always called it after every capture upload, but with no matching route
+    it 404'd silently (caught and only surfaced as a generic error banner),
+    so the capture was uploaded and stored but never actually linked to the
+    note — it just never appeared, even though the upload itself "succeeded".
+    """
+    note = await _get_field_note_or_404(db, field_note_id, owner_id=current_user.id)
+    status_val = note.status.value if hasattr(note.status, "value") else str(note.status)
+    if status_val in ("submitted", "promoted"):
+        raise HTTPException(status_code=400, detail="Cannot edit a submitted or promoted field note")
+
+    # Verify the capture exists and belongs to this student
+    cap_result = await db.execute(
+        select(StudentCapture).where(
+            StudentCapture.id == body.capture_id,
+            StudentCapture.student_id == current_user.id,
+        )
+    )
+    if not cap_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Capture not found")
+
+    existing = await db.execute(
+        select(StudentFieldNoteCapture).where(
+            StudentFieldNoteCapture.field_note_id == field_note_id,
+            StudentFieldNoteCapture.capture_id == body.capture_id,
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Capture already linked to this field note")
+
+    db.add(StudentFieldNoteCapture(
+        id=uuid4(),
+        field_note_id=field_note_id,
+        capture_id=body.capture_id,
+        order=body.order,
+    ))
+    note.updated_at = _now()
+    await db.commit()
+
+    return _serialize_field_note(
+        await _get_field_note_or_404(db, field_note_id, owner_id=current_user.id)
+    )
+
+
+@router.delete("/student/field-notes/{field_note_id}/captures/{capture_id}", status_code=http_status.HTTP_204_NO_CONTENT)
+async def remove_capture_from_field_note(
+    field_note_id: UUID,
+    capture_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    note = await _get_field_note_or_404(db, field_note_id, owner_id=current_user.id)
+    status_val = note.status.value if hasattr(note.status, "value") else str(note.status)
+    if status_val in ("submitted", "promoted"):
+        raise HTTPException(status_code=400, detail="Cannot edit a submitted or promoted field note")
+
+    result = await db.execute(
+        select(StudentFieldNoteCapture).where(
+            StudentFieldNoteCapture.field_note_id == field_note_id,
+            StudentFieldNoteCapture.capture_id == capture_id,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(status_code=404, detail="Capture not linked to this field note")
+
+    await db.delete(link)
+    note.updated_at = _now()
+    await db.commit()
+
+
 # =============================================================================
 # FIELD NOTE ROUTES — TEACHER
 # =============================================================================

@@ -32,7 +32,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from core.security import SecurityManager
 from models.user import User
-from core.encryption import blind_index as _blind_index
+from core.encryption import blind_index as _blind_index, encrypt as _encrypt, decrypt as _decrypt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/homeschool", tags=["homeschool"])
@@ -131,8 +131,10 @@ async def list_children(
     return [
         {
             "id": str(r["id"]),
-            "email": r["email"],
-            "full_name": r["full_name"],
+            # u.email / u.full_name are EncryptedString columns — raw SQL bypasses
+            # the ORM TypeDecorator, so they must be decrypted explicitly here.
+            "email": _decrypt(r["email"]) if r["email"] else r["email"],
+            "full_name": _decrypt(r["full_name"]) if r["full_name"] else r["full_name"],
             "is_active": r["is_active"],
             "grade_level": r["grade_level"],
             "age_band": r["age_band"],
@@ -233,9 +235,12 @@ async def update_child(
         raise HTTPException(status_code=404, detail="Child not found")
 
     if body.full_name:
+        # full_name is an EncryptedString column — raw SQL bypasses the ORM
+        # TypeDecorator, so it must be encrypted explicitly before writing,
+        # otherwise this stores plaintext in a column meant to be ciphertext.
         await db.execute(
             text("UPDATE users SET full_name = :name WHERE id = :id"),
-            {"name": body.full_name, "id": child_id},
+            {"name": _encrypt(body.full_name), "id": child_id},
         )
     if body.grade_level is not None or body.age_band is not None:
         updates = {}
@@ -252,6 +257,37 @@ async def update_child(
         )
     await db.commit()
     return {"ok": True}
+
+
+@router.delete("/children/{child_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_child(
+    child_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Remove a child from this homeschool parent's account.
+
+    Unlinks the homeschool_children row only — same pattern as removing a
+    student from a classroom (routes/classrooms.py remove_student). The
+    child's underlying user account is not deleted, since it may have its
+    own learning history (sessions, field notes, captures, etc.) referencing
+    it by foreign key; unlinking is also reversible if removed by mistake.
+    """
+    _require_homeschool(current_user)
+
+    row = (await db.execute(
+        text("SELECT id FROM homeschool_children WHERE parent_id = :pid AND child_id = :cid"),
+        {"pid": current_user.id, "cid": child_id},
+    )).scalar_one_or_none()
+    if not row:
+        raise HTTPException(status_code=404, detail="Child not found")
+
+    await db.execute(
+        text("DELETE FROM homeschool_children WHERE parent_id = :pid AND child_id = :cid"),
+        {"pid": current_user.id, "cid": child_id},
+    )
+    await db.commit()
 
 
 @router.get("/children/{child_id}/progress")
@@ -537,10 +573,14 @@ async def _fetch_report_data(
         sub = s["subject"] or "General"
         subjects[sub] = subjects.get(sub, 0) + 1
 
+    # child_row[3] is u.full_name — an EncryptedString column read via raw SQL,
+    # so it must be decrypted explicitly before use.
+    _child_full_name = _decrypt(child_row[3]) if child_row[3] else child_row[3]
+
     return {
         "child":       {
             "id":         child_id,
-            "name":       child_row[3] or f"{child_row[1]} {child_row[2]}",
+            "name":       _child_full_name or f"{child_row[1]} {child_row[2]}",
             "first_name": child_row[1],
             "grade":      child_row[4],
             "age_band":   child_row[5],

@@ -1076,6 +1076,17 @@ async def apply_student_phase7_migrations(engine) -> None:
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_activity_id UUID",
         "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS promoted_at TIMESTAMPTZ",
+        # session_id: added to the ORM model (models/database.py StudentFieldNote,
+        # used by the professor fieldwork map / GET /activities/{id}/fieldwork-locations)
+        # and to database/init.sql for fresh installs, plus a proper Alembic
+        # migration (20260716_add_session_id_to_field_notes) — but this project's
+        # deploy path never actually runs `alembic upgrade`, only this self-healing
+        # block. Any DB created before this column existed (e.g. production) never
+        # got it, so every query touching student_field_notes — including the
+        # plain list/get endpoints, since SQLAlchemy selects all mapped columns —
+        # 500'd with "column session_id ... does not exist".
+        "ALTER TABLE student_field_notes ADD COLUMN IF NOT EXISTS session_id UUID",
+        "CREATE INDEX IF NOT EXISTS idx_field_notes_session ON student_field_notes (session_id)",
         "CREATE TABLE IF NOT EXISTS student_field_note_captures (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), field_note_id UUID NOT NULL REFERENCES student_field_notes(id) ON DELETE CASCADE, capture_id UUID NOT NULL REFERENCES student_captures(id) ON DELETE CASCADE, order_index INT DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(field_note_id, capture_id))",
         "ALTER TABLE student_field_note_captures RENAME COLUMN \"order\" TO order_index",
         "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",

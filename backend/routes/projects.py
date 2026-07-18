@@ -5,7 +5,8 @@
 """Project management endpoints"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List
@@ -30,11 +31,55 @@ router = APIRouter(
 )
 
 
+async def _load_project_with_activities(project_id: UUID, current_user: User, db: AsyncSession) -> Project:
+    """Fetch a project (with ownership check) and attach ordered activities.
+
+    Shared by get_project / add_activity_to_project / remove_activity_from_project /
+    reorder_activities so they all return the same fully-populated shape.
+    """
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found"
+        )
+
+    if project.teacher_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have access to this project"
+        )
+
+    # Load activities in order
+    pa_result = await db.execute(
+        select(ProjectActivity)
+        .where(ProjectActivity.project_id == project_id)
+        .order_by(ProjectActivity.order)
+    )
+    project_activities = pa_result.scalars().all()
+
+    activity_ids = [pa.activity_id for pa in project_activities]
+    if activity_ids:
+        act_result = await db.execute(select(Activity).where(Activity.id.in_(activity_ids)))
+        activities = act_result.scalars().all()
+    else:
+        activities = []
+
+    activity_map = {a.id: a for a in activities}
+    ordered_activities = [activity_map[pa.activity_id] for pa in project_activities if pa.activity_id in activity_map]
+
+    project.activities = ordered_activities
+
+    return project
+
+
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     project: ProjectCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Create a new project"""
 
@@ -44,7 +89,7 @@ async def create_project(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can create projects"
         )
-    
+
     # Create project
     db_project = Project(
         teacher_id=current_user.id,
@@ -57,11 +102,13 @@ async def create_project(
         end_date=project.end_date,
         status=ProjectStatus.PLANNING
     )
-    
+
     db.add(db_project)
-    db.commit()
-    db.refresh(db_project)
-    
+    await db.commit()
+    await db.refresh(db_project)
+
+    db_project.activities = []
+
     return db_project
 
 
@@ -72,7 +119,7 @@ async def list_projects(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """List projects for current teacher"""
 
@@ -82,40 +129,50 @@ async def list_projects(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can view projects"
         )
-    
-    # Build query
-    query = db.query(Project).filter(Project.teacher_id == current_user.id)
-    
-    # Apply filters
+
+    # Build base filter conditions (shared by count + page query)
+    conditions = [Project.teacher_id == current_user.id]
+
     if status_filter:
         try:
             status_enum = ProjectStatus(status_filter)
-            query = query.filter(Project.status == status_enum)
+            conditions.append(Project.status == status_enum)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid status: {status_filter}"
             )
-    
+
     if subject:
-        query = query.filter(Project.subject.ilike(f"%{subject}%"))
-    
+        conditions.append(Project.subject.ilike(f"%{subject}%"))
+
     # Count total
-    total = query.count()
-    
+    count_result = await db.execute(
+        select(func.count()).select_from(Project).where(*conditions)
+    )
+    total = count_result.scalar() or 0
+
     # Paginate
     offset = (page - 1) * page_size
-    projects = query.order_by(Project.created_at.desc()).offset(offset).limit(page_size).all()
-    
+    projects_result = await db.execute(
+        select(Project)
+        .where(*conditions)
+        .order_by(Project.created_at.desc())
+        .offset(offset)
+        .limit(page_size)
+    )
+    projects = projects_result.scalars().all()
+
     # Calculate total pages
     total_pages = (total + page_size - 1) // page_size
-    
+
     # Build response with activity counts
     items = []
     for p in projects:
-        activity_count = db.query(ProjectActivity).filter(
-            ProjectActivity.project_id == p.id
-        ).count()
+        count_result = await db.execute(
+            select(func.count()).select_from(ProjectActivity).where(ProjectActivity.project_id == p.id)
+        )
+        activity_count = count_result.scalar() or 0
         item_dict = {
             'id': p.id,
             'teacher_id': p.teacher_id,
@@ -132,7 +189,7 @@ async def list_projects(
             'updated_at': p.updated_at,
         }
         items.append(ProjectListResponse(**item_dict))
-    
+
     return PaginatedProjectResponse(
         items=items,
         total=total,
@@ -146,41 +203,10 @@ async def list_projects(
 async def get_project(
     project_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Get project details with activities"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
-    if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project not found"
-        )
-    
-    # Check ownership
-    if project.teacher_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this project"
-        )
-    
-    # Load activities in order
-    project_activities = db.query(ProjectActivity).filter(
-        ProjectActivity.project_id == project_id
-    ).order_by(ProjectActivity.order).all()
-    
-    # Get activities
-    activity_ids = [pa.activity_id for pa in project_activities]
-    activities = db.query(Activity).filter(Activity.id.in_(activity_ids)).all() if activity_ids else []
-    
-    # Sort activities by order
-    activity_map = {a.id: a for a in activities}
-    ordered_activities = [activity_map[pa.activity_id] for pa in project_activities if pa.activity_id in activity_map]
-    
-    project.activities = ordered_activities
-    
-    return project
+    return await _load_project_with_activities(project_id, current_user, db)
 
 
 @router.put("/{project_id}", response_model=ProjectResponse)
@@ -188,65 +214,67 @@ async def update_project(
     project_id: UUID,
     project_update: ProjectUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update a project"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
+
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
-    
+
     # Check ownership
     if project.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only edit your own projects"
         )
-    
+
     # Update fields
     update_data = project_update.dict(exclude_unset=True)
-    
+
     for field, value in update_data.items():
         setattr(project, field, value)
-    
+
     project.updated_at = datetime.utcnow()
-    
-    db.commit()
-    db.refresh(project)
-    
-    return project
+
+    await db.commit()
+    await db.refresh(project)
+
+    return await _load_project_with_activities(project_id, current_user, db)
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_project(
     project_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Delete a project (also unlinks activities)"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
+
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
-    
+
     # Check ownership
     if project.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only delete your own projects"
         )
-    
+
     # Delete project (cascade will handle project_activities)
-    db.delete(project)
-    db.commit()
+    await db.delete(project)
+    await db.commit()
 
 
 @router.post("/{project_id}/activities", response_model=ProjectResponse)
@@ -254,69 +282,74 @@ async def add_activity_to_project(
     project_id: UUID,
     link: ProjectActivityLink,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Add an activity to a project"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
+
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
-    
+
     # Check ownership
     if project.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only edit your own projects"
         )
-    
+
     # Check activity exists and belongs to teacher
-    activity = db.query(Activity).filter(Activity.id == link.activity_id).first()
-    
+    activity_result = await db.execute(select(Activity).where(Activity.id == link.activity_id))
+    activity = activity_result.scalar_one_or_none()
+
     if not activity:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Activity not found"
         )
-    
+
     if activity.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only add your own activities to projects"
         )
-    
+
     # Check if already linked
-    existing = db.query(ProjectActivity).filter(
-        ProjectActivity.project_id == project_id,
-        ProjectActivity.activity_id == link.activity_id
-    ).first()
-    
+    existing_result = await db.execute(
+        select(ProjectActivity).where(
+            ProjectActivity.project_id == project_id,
+            ProjectActivity.activity_id == link.activity_id
+        )
+    )
+    existing = existing_result.scalar_one_or_none()
+
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Activity already linked to this project"
         )
-    
+
     # Get next order
-    max_order = db.query(ProjectActivity).filter(
-        ProjectActivity.project_id == project_id
-    ).count()
-    
+    count_result = await db.execute(
+        select(func.count()).select_from(ProjectActivity).where(ProjectActivity.project_id == project_id)
+    )
+    max_order = count_result.scalar() or 0
+
     # Create association
     project_activity = ProjectActivity(
         project_id=project_id,
         activity_id=link.activity_id,
         order=link.order or max_order
     )
-    
+
     db.add(project_activity)
-    db.commit()
-    db.refresh(project)
-    
-    return get_project(project_id, current_user, db)
+    await db.commit()
+
+    return await _load_project_with_activities(project_id, current_user, db)
 
 
 @router.delete("/{project_id}/activities/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -324,39 +357,43 @@ async def remove_activity_from_project(
     project_id: UUID,
     activity_id: UUID,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Remove an activity from a project"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
+
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
-    
+
     # Check ownership
     if project.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only edit your own projects"
         )
-    
+
     # Find and delete association
-    project_activity = db.query(ProjectActivity).filter(
-        ProjectActivity.project_id == project_id,
-        ProjectActivity.activity_id == activity_id
-    ).first()
-    
+    pa_result = await db.execute(
+        select(ProjectActivity).where(
+            ProjectActivity.project_id == project_id,
+            ProjectActivity.activity_id == activity_id
+        )
+    )
+    project_activity = pa_result.scalar_one_or_none()
+
     if not project_activity:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Activity not linked to this project"
         )
-    
-    db.delete(project_activity)
-    db.commit()
+
+    await db.delete(project_activity)
+    await db.commit()
 
 
 @router.put("/{project_id}/reorder")
@@ -364,39 +401,41 @@ async def reorder_activities(
     project_id: UUID,
     reorder_request: dict,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """Reorder activities in a project"""
-    
-    project = db.query(Project).filter(Project.id == project_id).first()
-    
+
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
-    
+
     # Check ownership
     if project.teacher_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only edit your own projects"
         )
-    
+
     # Update order for each activity
     activities = reorder_request.get('activities', [])
-    
+
     for item in activities:
-        project_activity = db.query(ProjectActivity).filter(
-            ProjectActivity.project_id == project_id,
-            ProjectActivity.activity_id == UUID(str(item['id']))
-        ).first()
-        
+        pa_result = await db.execute(
+            select(ProjectActivity).where(
+                ProjectActivity.project_id == project_id,
+                ProjectActivity.activity_id == UUID(str(item['id']))
+            )
+        )
+        project_activity = pa_result.scalar_one_or_none()
+
         if project_activity:
             project_activity.order = item['order']
-    
-    db.commit()
-    
-    return get_project(project_id, current_user, db)
 
+    await db.commit()
 
+    return await _load_project_with_activities(project_id, current_user, db)

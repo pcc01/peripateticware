@@ -151,75 +151,99 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⊘ Redis cache unavailable at startup (non-fatal, fail-open): {e}")
 
-    db_ready = await init_db()
-
-    # Schema migrations (inline SQL patches — TODO: convert to Alembic migrations)
-    await apply_enum_and_core_column_migrations(engine)
-    await apply_location_table_migrations(engine)
-    await apply_agent_runs_table(engine)
-    await apply_parent_activity_submission_migrations(engine)
-    await apply_core_schema_migrations(engine)
-    await apply_billing_column_migrations(engine)
-    await apply_student_phase7_migrations(engine)
-    await apply_rag_documents_table(engine)
-
-    # Seed data
-    await seed_sample_activities(engine)
-
-    if not db_ready:
-        logger.error("Failed to initialize database")
-        raise RuntimeError("Database initialization failed")
-
-    logger.info(f"Database: {settings.DATABASE_URL.split('@')[-1]}")
-    logger.info(f"LLM Provider: {settings.LLM_PROVIDER}")
-    logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
-
-    check_config_warnings(settings)
-    logger.info("Application ready")
-
-    # SECURITY: demo/test seed accounts use published, well-known passwords
-    # (SecurePass123!, Test1234!, Demo@1234!). In development we seed
-    # everything, including ADMIN-role accounts (admin@example.com,
-    # admin@test.local, platform@test.local) and the @test.local E2E/Detox
-    # fixtures — none of that belongs on a real deployment.
+    # Serialize startup migrations/seeding across gunicorn workers.
     #
-    # ENABLE_DEMO_SEED_ACCOUNTS is a separate, explicit opt-in for non-dev
-    # environments (e.g. a public beta site) that still wants the
-    # customer-facing "try it yourself" logins (teacher/student/parent/
-    # homeschool @example.com + the homeschool demo family). It deliberately
-    # does NOT run seed_demo_admin_account / seed_test_accounts /
-    # seed_test_classroom — a well-known ADMIN password or CI test accounts
-    # have no business being reachable on the public internet. Set
-    # ENABLE_DEMO_SEED_ACCOUNTS=true in that environment's .env to turn it on.
-    if settings.ENVIRONMENT.lower() == "development":
-        await seed_demo_users(engine)
-        await seed_demo_admin_account(engine)
-        await seed_test_accounts(engine)
-        await seed_homeschool_demo(engine)
-        await seed_homeschool_example_children(engine)
-        await seed_demo_classroom(engine)
-        await seed_test_classroom(engine)
-    elif settings.ENABLE_DEMO_SEED_ACCOUNTS:
-        logger.info("ENABLE_DEMO_SEED_ACCOUNTS=true — seeding customer-facing demo accounts only (no admin, no @test.local)")
-        await seed_demo_users(engine)
-        await seed_homeschool_demo(engine)
-        await seed_homeschool_example_children(engine)
-        await seed_demo_classroom(engine)
-    else:
-        logger.info(
-            "Skipping demo/test account seeding (ENVIRONMENT=%s, ENABLE_DEMO_SEED_ACCOUNTS=%s)",
-            settings.ENVIRONMENT, settings.ENABLE_DEMO_SEED_ACCOUNTS,
-        )
-    await seed_compliance_frameworks(engine)
-
+    # Previously every worker (4 under gunicorn) ran this entire migration +
+    # seed sequence concurrently against the same Postgres instance — dozens
+    # of CREATE TABLE/INDEX IF NOT EXISTS statements plus bcrypt-hashing seed
+    # inserts, all racing. Individually each statement is idempotent, but
+    # running them 4x concurrently means 4x the DDL lock contention (and 4x
+    # the bcrypt CPU cost for seed accounts) during the exact window gunicorn
+    # is waiting on "Waiting for application startup" — under load this can
+    # stall workers for long enough that the proxy in front gives up and
+    # returns 502, which looks like the app is down even though it's just
+    # still starting.
+    #
+    # A Postgres session-level advisory lock makes only one worker do the
+    # actual work; the rest block briefly on the lock, then run through the
+    # same idempotent checks almost instantly once they acquire it (since
+    # everything already exists) instead of racing the first worker.
+    _STARTUP_LOCK_KEY = 87432110
+    _startup_lock_conn = await engine.connect()
+    await _startup_lock_conn.execute(text("SELECT pg_advisory_lock(:k)"), {"k": _STARTUP_LOCK_KEY})
     try:
-        from routes.questions import ensure_questions_table
-        await ensure_questions_table(engine)
-    except Exception as e:
-        logger.warning(f"Questions seed skipped: {e}")
+        db_ready = await init_db()
 
-    await seed_ai_task_config_orm(settings)
-    await start_background_tasks(async_session, settings)
+        # Schema migrations (inline SQL patches — TODO: convert to Alembic migrations)
+        await apply_enum_and_core_column_migrations(engine)
+        await apply_location_table_migrations(engine)
+        await apply_agent_runs_table(engine)
+        await apply_parent_activity_submission_migrations(engine)
+        await apply_core_schema_migrations(engine)
+        await apply_billing_column_migrations(engine)
+        await apply_student_phase7_migrations(engine)
+        await apply_rag_documents_table(engine)
+
+        # Seed data
+        await seed_sample_activities(engine)
+
+        if not db_ready:
+            logger.error("Failed to initialize database")
+            raise RuntimeError("Database initialization failed")
+
+        logger.info(f"Database: {settings.DATABASE_URL.split('@')[-1]}")
+        logger.info(f"LLM Provider: {settings.LLM_PROVIDER}")
+        logger.info(f"CORS Origins: {settings.CORS_ORIGINS}")
+
+        check_config_warnings(settings)
+        logger.info("Application ready")
+
+        # SECURITY: demo/test seed accounts use published, well-known passwords
+        # (SecurePass123!, Test1234!, Demo@1234!). In development we seed
+        # everything, including ADMIN-role accounts (admin@example.com,
+        # admin@test.local, platform@test.local) and the @test.local E2E/Detox
+        # fixtures — none of that belongs on a real deployment.
+        #
+        # ENABLE_DEMO_SEED_ACCOUNTS is a separate, explicit opt-in for non-dev
+        # environments (e.g. a public beta site) that still wants the
+        # customer-facing "try it yourself" logins (teacher/student/parent/
+        # homeschool @example.com + the homeschool demo family). It deliberately
+        # does NOT run seed_demo_admin_account / seed_test_accounts /
+        # seed_test_classroom — a well-known ADMIN password or CI test accounts
+        # have no business being reachable on the public internet. Set
+        # ENABLE_DEMO_SEED_ACCOUNTS=true in that environment's .env to turn it on.
+        if settings.ENVIRONMENT.lower() == "development":
+            await seed_demo_users(engine)
+            await seed_demo_admin_account(engine)
+            await seed_test_accounts(engine)
+            await seed_homeschool_demo(engine)
+            await seed_homeschool_example_children(engine)
+            await seed_demo_classroom(engine)
+            await seed_test_classroom(engine)
+        elif settings.ENABLE_DEMO_SEED_ACCOUNTS:
+            logger.info("ENABLE_DEMO_SEED_ACCOUNTS=true — seeding customer-facing demo accounts only (no admin, no @test.local)")
+            await seed_demo_users(engine)
+            await seed_homeschool_demo(engine)
+            await seed_homeschool_example_children(engine)
+            await seed_demo_classroom(engine)
+        else:
+            logger.info(
+                "Skipping demo/test account seeding (ENVIRONMENT=%s, ENABLE_DEMO_SEED_ACCOUNTS=%s)",
+                settings.ENVIRONMENT, settings.ENABLE_DEMO_SEED_ACCOUNTS,
+            )
+        await seed_compliance_frameworks(engine)
+
+        try:
+            from routes.questions import ensure_questions_table
+            await ensure_questions_table(engine)
+        except Exception as e:
+            logger.warning(f"Questions seed skipped: {e}")
+
+        await seed_ai_task_config_orm(settings)
+        await start_background_tasks(async_session, settings)
+    finally:
+        await _startup_lock_conn.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": _STARTUP_LOCK_KEY})
+        await _startup_lock_conn.close()
 
     yield
 

@@ -13,6 +13,7 @@ import { Camera, FileText, Loader2, MapPin, Mic, Send, Share2, X } from 'lucide-
 import { fieldNoteApi } from '../../services/phase7Api';
 import { apiClient } from '../../config/api';
 import { AudioCapture } from './AudioCapture';
+import { parseDoc } from './ExtendedWritingPanel';
 import { useSignedCaptureUrl } from '../../hooks/useSignedCaptureUrl';
 import type { FieldNote, FieldNoteCreate, AudioCaptureResult } from '../../types/phase7';
 
@@ -672,8 +673,8 @@ export const FieldNoteList: React.FC<FieldNoteListProps> = ({
                     {STATUS_LABELS[note.status] || note.status}
                   </span>
                 </div>
-                {note.description && (
-                  <p className="text-xs text-gray-400 truncate">{note.description}</p>
+                {parseDoc(note.description).field_note && (
+                  <p className="text-xs text-gray-400 truncate">{parseDoc(note.description).field_note}</p>
                 )}
                 <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                   {note.location_name && (

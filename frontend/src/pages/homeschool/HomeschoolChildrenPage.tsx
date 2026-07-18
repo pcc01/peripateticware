@@ -22,6 +22,7 @@ export const HomeschoolChildrenPage: React.FC = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', password: '', grade_level: 1, age_band: 'k6' });
   const [saving, setSaving] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -53,6 +54,25 @@ export const HomeschoolChildrenPage: React.FC = () => {
       load();
     } catch (e: any) { setError(e.message); }
     finally { setSaving(false); }
+  };
+
+  const handleRemove = async (child: Child, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const label = child.full_name || child.email;
+    if (!window.confirm(`Remove ${label} from your account? This won't delete their account or learning history — you can add them back later.`)) {
+      return;
+    }
+    setRemovingId(child.id);
+    setError(null);
+    try {
+      const r = await fetch(`/api/v1/homeschool/children/${child.id}`, { method: 'DELETE', headers: authHeader() });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        throw new Error(d.detail || 'Failed to remove child');
+      }
+      setChildren(prev => prev.filter(c => c.id !== child.id));
+    } catch (e: any) { setError(e.message); }
+    finally { setRemovingId(null); }
   };
 
   return (
@@ -143,6 +163,18 @@ export const HomeschoolChildrenPage: React.FC = () => {
               </div>
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolchildrenpage.view_progress', 'View progress →')}</span>
+            <button
+              onClick={e => handleRemove(c, e)}
+              disabled={removingId === c.id}
+              title={t('pages_homeschool_homeschoolchildrenpage.remove_child', 'Remove child')}
+              aria-label={`Remove ${c.full_name || c.email}`}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', color: '#be123c',
+                fontSize: '0.75rem', padding: '4px 8px', opacity: removingId === c.id ? 0.5 : 1,
+              }}
+            >
+              {removingId === c.id ? t('pages_homeschool_homeschoolchildrenpage.removing', 'Removing…') : t('pages_homeschool_homeschoolchildrenpage.remove', 'Remove')}
+            </button>
           </div>
         ))}
       </div>

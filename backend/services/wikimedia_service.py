@@ -12,7 +12,7 @@ import logging
 import hashlib
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class WikimediaLocationService:
         latitude: float,
         longitude: float,
         location_name: str,
-        db: Session = None,
+        db: AsyncSession = None,
         use_cache: bool = True
     ) -> Dict[str, Any]:
         """
@@ -89,9 +89,10 @@ class WikimediaLocationService:
                 location_hash = cls.create_location_hash(latitude, longitude)
                 from models.assessment import LocationContext
                 
-                cached = db.query(LocationContext).filter(
-                    LocationContext.location_hash == location_hash
-                ).first()
+                cache_result = await db.execute(
+                    select(LocationContext).where(LocationContext.location_hash == location_hash)
+                )
+                cached = cache_result.scalar_one_or_none()
                 
                 if cached and cached.cache_valid_until and cached.cache_valid_until > datetime.utcnow():
                     logger.info(f"Cache hit for {location_name}")
@@ -408,7 +409,7 @@ class WikimediaLocationService:
     
     @staticmethod
     async def _cache_location_context(
-        db: Session,
+        db: AsyncSession,
         latitude: float,
         longitude: float,
         location_name: str,
@@ -438,12 +439,12 @@ class WikimediaLocationService:
             )
             
             db.add(cached)
-            db.commit()
+            await db.commit()
             logger.info(f"Cached location context for {location_name}")
-        
+
         except Exception as e:
             logger.error(f"Error caching location context: {e}")
-            db.rollback()
+            await db.rollback()
 
 
 # Helper function for routes
@@ -451,7 +452,7 @@ async def get_location_context_for_activity(
     latitude: float,
     longitude: float,
     location_name: str,
-    db: Session = None
+    db: AsyncSession = None
 ) -> Dict[str, Any]:
     """Convenience function for routes"""
     service = WikimediaLocationService()

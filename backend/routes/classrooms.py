@@ -44,7 +44,9 @@ from core.config import settings
 from core.database import get_db
 from core.dependencies import get_current_user
 from core.security import SecurityManager
+from core.encryption import decrypt as _decrypt, blind_index as _blind_index
 from models import User
+from models.database import Notification
 from services.email_service import send_classroom_invite_email, send_parent_consent_email
 
 logger = logging.getLogger(__name__)
@@ -542,7 +544,9 @@ async def list_invites(
             "status":           r["status"],
             "expires_at":       r["expires_at"].isoformat() if r["expires_at"] else None,
             "created_at":       r["created_at"].isoformat() if r["created_at"] else None,
-            "accepted_by_name": r["accepted_by_name"],
+            # u.full_name is an EncryptedString column — raw SQL bypasses the
+            # ORM TypeDecorator, so it must be decrypted explicitly here.
+            "accepted_by_name": _decrypt(r["accepted_by_name"]) if r["accepted_by_name"] else r["accepted_by_name"],
             "join_url":         f"/join/{r['token']}",
         }
         for r in invites
@@ -906,3 +910,151 @@ async def add_student(
     """), {"mid": str(uuid4()), "oid": org_id, "uid": body.student_id})
     await db.commit()
     return {"success": True, "classroom_id": classroom_id, "student_id": body.student_id}
+
+
+class AddStudentByEmailRequest(BaseModel):
+    email: EmailStr
+
+
+@router.post("/{classroom_id}/students/by-email", status_code=201)
+async def add_student_by_email(
+    classroom_id: str,
+    body: AddStudentByEmailRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Add a student to a classroom by email address — this is a lookup + direct
+    enroll, NOT the "send an invite email" flow (see create_invites above).
+
+    - If the email matches an existing STUDENT account: enroll them directly
+      and send an in-app notification. No email is sent.
+    - If no account exists with that email: there's nothing to enroll or
+      notify in-app, so fall back to the ordinary invite-by-email flow
+      (pending invite row + invite email) so the teacher's action still
+      results in the student being able to join.
+    """
+    row = (await db.execute(text("""
+        SELECT c.id, c.org_id, c.name AS classroom_name, o.name AS org_name
+        FROM classrooms c
+        JOIN organizations o ON o.id = c.org_id
+        WHERE c.id = :cid AND c.teacher_id = :tid
+    """), {"cid": classroom_id, "tid": str(current_user.id)})).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Classroom not found")
+
+    org_id         = str(row[1])
+    classroom_name = row[2] or "your class"
+    org_name       = row[3] or "Peripateticware"
+
+    # email is an EncryptedString column — look up via the HMAC blind index,
+    # not a raw comparison/ILIKE (ciphertext varies per encryption, even for
+    # the same plaintext, so it can't be matched directly).
+    existing = (await db.execute(
+        select(User).where(User.email_index == _blind_index(body.email))
+    )).scalar_one_or_none()
+
+    if existing and (existing.role or "").upper() == "STUDENT":
+        already = (await db.execute(text(
+            "SELECT 1 FROM classroom_students WHERE classroom_id = :cid AND student_id = :sid"
+        ), {"cid": classroom_id, "sid": str(existing.id)})).first()
+        if already:
+            raise HTTPException(status_code=409, detail="This student is already in the classroom")
+
+        # Enforce class size limit (same gate as add_student by-ID above)
+        current_count = (await db.execute(text(
+            "SELECT COUNT(*) FROM classroom_students WHERE classroom_id = :cid"
+        ), {"cid": classroom_id})).scalar() or 0
+        cap = (await db.execute(text(
+            "SELECT max_students_per_classroom FROM organizations WHERE id = :oid"
+        ), {"oid": org_id})).scalar() or 30
+        if current_count >= cap:
+            seat_tier = (await db.execute(
+                text("SELECT license_tier FROM organizations WHERE id = :oid"),
+                {"oid": org_id},
+            )).scalar() or "free"
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "code":          "UPGRADE_REQUIRED",
+                    "feature":       "student_seats",
+                    "required_tier": "school",
+                    "current_tier":  seat_tier,
+                    "limit":         cap,
+                    "current":       current_count,
+                },
+            )
+
+        await db.execute(text("""
+            INSERT INTO classroom_students (classroom_id, student_id, enrolled_at)
+            VALUES (:cid, :sid, NOW())
+            ON CONFLICT (classroom_id, student_id) DO NOTHING
+        """), {"cid": classroom_id, "sid": str(existing.id)})
+        await db.execute(text("""
+            INSERT INTO organization_members (id, org_id, user_id, role, joined_at)
+            VALUES (:mid, :oid, :uid, 'member', NOW())
+            ON CONFLICT (org_id, user_id) DO NOTHING
+        """), {"mid": str(uuid4()), "oid": org_id, "uid": str(existing.id)})
+
+        db.add(Notification(
+            id=uuid4(),
+            user_id=existing.id,
+            title="Added to a classroom",
+            message=f"You've been added to {classroom_name}.",
+        ))
+
+        await db.commit()
+        return {
+            "matched":      True,
+            "enrolled":     True,
+            "student_id":   str(existing.id),
+            "student_name": existing.full_name,
+            "email":        body.email,
+        }
+
+    # No matching student account — fall back to the invite-by-email flow.
+    teacher_name = (
+        current_user.full_name
+        or f"{current_user.first_name or ''} {current_user.last_name or ''}".strip()
+        or "Your teacher"
+    )
+    expires   = _invite_expires()
+    token     = secrets.token_urlsafe(32)
+    invite_id = str(uuid4())
+    await db.execute(text("""
+        INSERT INTO classroom_invitations
+            (id, classroom_id, org_id, created_by, email, token, status, expires_at, created_at)
+        VALUES
+            (:id, :cid, :oid, :by, :email, :token, 'pending', :exp, NOW())
+    """), {
+        "id":    invite_id,
+        "cid":   classroom_id,
+        "oid":   org_id,
+        "by":    str(current_user.id),
+        "email": body.email,
+        "token": token,
+        "exp":   expires,
+    })
+    await db.commit()
+
+    join_url = f"{settings.FRONTEND_URL}/join/{token}"
+    try:
+        await send_classroom_invite_email(
+            body.email,
+            teacher_name=teacher_name,
+            classroom_name=classroom_name,
+            org_name=org_name,
+            join_url=join_url,
+        )
+    except Exception as e:
+        logger.warning(f"Invite email failed for {body.email}: {e}")
+
+    return {
+        "matched":    False,
+        "enrolled":   False,
+        "invited":    True,
+        "email":      body.email,
+        "token":      token,
+        "join_url":   f"/join/{token}",
+        "expires_at": expires.isoformat(),
+    }

@@ -36,6 +36,7 @@ export const TeacherStudentsPage: React.FC = () => {
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteOk, setInviteOk] = useState(false);
+  const [inviteEnrolled, setInviteEnrolled] = useState(false);
 
   useEffect(() => {
     fetch('/api/v1/activities/teacher/students', { headers: authHeader() })
@@ -63,6 +64,7 @@ export const TeacherStudentsPage: React.FC = () => {
     setInviteEmail('');
     setInviteError(null);
     setInviteOk(false);
+    setInviteEnrolled(false);
   };
 
   const handleInvite = async () => {
@@ -71,19 +73,25 @@ export const TeacherStudentsPage: React.FC = () => {
     setInviting(true);
     setInviteError(null);
     try {
-      const res = await fetch(`/api/v1/classrooms/${selectedClass}/invites`, {
+      // Lookup + direct-enroll by email: if this address already has a
+      // student account, they're added to the class immediately and
+      // notified in-app (no email sent). Only falls back to sending an
+      // invite email when there's no matching account to add.
+      const res = await fetch(`/api/v1/classrooms/${selectedClass}/students/by-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader() },
-        body: JSON.stringify({ emails: [inviteEmail.trim()] }),
+        body: JSON.stringify({ email: inviteEmail.trim().toLowerCase() }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error(d.detail || `Invite failed (${res.status})`);
+        throw new Error(d.detail || `Add failed (${res.status})`);
       }
+      const data = await res.json();
+      setInviteEnrolled(!!data.enrolled);
       setInviteOk(true);
       setInviteEmail('');
     } catch (e: any) {
-      setInviteError(e?.message || 'Could not send invite.');
+      setInviteError(e?.message || 'Could not add student.');
     } finally {
       setInviting(false);
     }
@@ -103,7 +111,7 @@ export const TeacherStudentsPage: React.FC = () => {
           onClick={openInvite}
           style={{ marginLeft: 'auto', padding: '10px 18px', borderRadius: 8, border: 'none',
                    background: 'var(--primary)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-        >{t('pages_teacher_teacherstudentspage.invite_student', '+ Invite Student')}</button>
+        >{t('pages_teacher_teacherstudentspage.invite_student', '+ Add Student')}</button>
       </div>
 
       <input
@@ -168,7 +176,10 @@ export const TeacherStudentsPage: React.FC = () => {
             onClick={e => e.stopPropagation()}
             style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 440, maxWidth: '92vw' }}
           >
-            <h2 style={{ margin: '0 0 16px', fontFamily: 'var(--font-head)' }}>{t('pages_teacher_teacherstudentspage.invite_a_student', 'Invite a Student')}</h2>
+            <h2 style={{ margin: '0 0 16px', fontFamily: 'var(--font-head)' }}>{t('pages_teacher_teacherstudentspage.add_a_student', 'Add a Student')}</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: -8, marginBottom: 16 }}>
+              {t('pages_teacher_teacherstudentspage.add_by_email_hint', 'If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.')}
+            </p>
 
             {classrooms.length === 0 ? (
               <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('pages_teacher_teacherstudentspage.you_dont_have_any_classes_yet_create_a_c', 'You don’t have any classes yet. Create a class first, then invite students to it.')}</p>
@@ -193,7 +204,11 @@ export const TeacherStudentsPage: React.FC = () => {
 
             {inviteOk && (
               <div style={{ background: '#dcfce7', border: '1px solid #86efac', color: '#166534',
-                            borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>{t('pages_teacher_teacherstudentspage.invitation_sent_the_student_will_get_an_', 'Invitation sent. The student will get an email with a join link.')}</div>
+                            borderRadius: 8, padding: '8px 12px', marginBottom: 16, fontSize: '0.85rem' }}>
+                {inviteEnrolled
+                  ? t('pages_teacher_teacherstudentspage.student_added', 'Student added to the class and notified in-app.')
+                  : t('pages_teacher_teacherstudentspage.invitation_sent_the_student_will_get_an_', 'No account found for that email — an invite email was sent instead.')}
+              </div>
             )}
             {inviteError && (
               <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', color: '#be123c',
@@ -212,7 +227,7 @@ export const TeacherStudentsPage: React.FC = () => {
                   style={{ padding: '10px 18px', borderRadius: 8, border: 'none', background: 'var(--primary)', color: '#fff',
                            fontWeight: 600, cursor: inviting ? 'wait' : 'pointer', opacity: inviting || !inviteEmail.trim() ? 0.6 : 1 }}
                 >
-                  {inviting ? 'Sending…' : 'Send Invite'}
+                  {inviting ? 'Adding…' : 'Add Student'}
                 </button>
               )}
             </div>

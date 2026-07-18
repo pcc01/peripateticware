@@ -5,14 +5,17 @@
  * InviteStudentsPanel
  *
  * Used inside the classroom detail / management page.
- * Three invite paths:
+ * Four invite paths:
  *   1. Open link — copy a link anyone can use (no email needed)
- *   2. Email invites — enter one or more emails, send individually
- *   3. CSV upload — upload a spreadsheet of student emails for bulk invites
+ *   2. Add by email — look up an existing student account by email and
+ *      enroll them directly (in-app notification, no email sent); falls
+ *      back to a normal invite email only if no account matches
+ *   3. Email invites — enter one or more emails, always sends invite emails
+ *   4. CSV upload — upload a spreadsheet of student emails for bulk invites
  */
 
 import React, { useState, useRef } from 'react';
-import { Link2, Mail, Upload, Copy, Check, AlertTriangle, X } from 'lucide-react';
+import { Link2, Mail, Upload, Copy, Check, AlertTriangle, X, UserPlus } from 'lucide-react';
 import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '@/utils/errorMessage';
@@ -25,6 +28,14 @@ interface Invite {
   status?:    string;
 }
 
+interface AddByEmailResult {
+  matched:      boolean;
+  enrolled:     boolean;
+  invited?:     boolean;
+  student_name?: string | null;
+  email:        string;
+}
+
 interface Props {
   classroomId: string;
   onDone?: () => void;  // called after any successful invite batch
@@ -32,13 +43,18 @@ interface Props {
 
 export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab]             = useState<'link' | 'email' | 'csv'>('link');
+  const [tab, setTab]             = useState<'link' | 'add' | 'email' | 'csv'>('link');
   const [emails, setEmails]       = useState('');
   const [loading, setLoading]     = useState(false);
   const [results, setResults]     = useState<Invite[] | null>(null);
   const [error, setError]         = useState('');
   const [copied, setCopied]       = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [addEmail, setAddEmail]     = useState('');
+  const [addLoading, setAddLoading] = useState(false);
+  const [addResult, setAddResult]   = useState<AddByEmailResult | null>(null);
+  const [addError, setAddError]     = useState('');
 
   const baseUrl = window.location.origin;
 
@@ -76,6 +92,27 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
     }
   };
 
+  const addByEmail = async () => {
+    const email = addEmail.trim().toLowerCase();
+    if (!email.includes('@')) {
+      setAddError('Please enter a valid email address.');
+      return;
+    }
+    setAddLoading(true);
+    setAddError('');
+    setAddResult(null);
+    try {
+      const { data } = await apiClient.post(`/classrooms/${classroomId}/students/by-email`, { email });
+      setAddResult(data);
+      setAddEmail('');
+      onDone?.();
+    } catch (e: any) {
+      setAddError(getErrorMessage(e, 'Failed to add student.'));
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   const sendEmailInvites = async () => {
     const list = emails
       .split(/[\n,;]/)
@@ -110,7 +147,7 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
     fd.append('file', file);
     try {
       const { data } = await apiClient.post(
-        `/api/v1/classrooms/${classroomId}/invites/bulk-csv`,
+        `/classrooms/${classroomId}/invites/bulk-csv`,
         fd,
         { headers: { 'Content-Type': 'multipart/form-data' } },
       );
@@ -130,13 +167,14 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
       {/* Tabs */}
       <div className="flex gap-1 mb-5 bg-gray-100 rounded-lg p-1">
         {([
-          { key: 'link',  icon: Link2,   label: 'Open Link' },
-          { key: 'email', icon: Mail,    label: 'By Email' },
-          { key: 'csv',   icon: Upload,  label: 'CSV Upload' },
+          { key: 'link',  icon: Link2,    label: 'Open Link' },
+          { key: 'add',   icon: UserPlus, label: 'Add by Email' },
+          { key: 'email', icon: Mail,     label: 'Invite by Email' },
+          { key: 'csv',   icon: Upload,   label: 'CSV Upload' },
         ] as const).map(({ key, icon: Icon, label }) => (
           <button
             key={key}
-            onClick={() => { setTab(key); setResults(null); setError(''); }}
+            onClick={() => { setTab(key); setResults(null); setError(''); setAddResult(null); setAddError(''); }}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-sm font-medium transition ${
               tab === key
                 ? 'bg-white text-gray-900 shadow-sm'
@@ -188,6 +226,52 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
               >
                 <X className="w-3 h-3" /> Generate new link
               </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add by Email tab */}
+      {tab === 'add' && (
+        <div>
+          <p className="text-sm text-gray-500 mb-4">
+            Already know the student's email? Enter it here. If they already have an account,
+            they're added to this classroom right away and notified in-app — no email is sent.
+            If there's no account yet, an invite email goes out instead.
+          </p>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="email"
+              value={addEmail}
+              onChange={e => setAddEmail(e.target.value)}
+              placeholder="student@email.com"
+              onKeyDown={e => { if (e.key === 'Enter' && !addLoading) addByEmail(); }}
+              className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              onClick={addByEmail}
+              disabled={addLoading || !addEmail.trim()}
+              className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg text-sm font-semibold disabled:opacity-50 whitespace-nowrap"
+            >
+              {addLoading ? 'Adding…' : 'Add Student'}
+            </button>
+          </div>
+
+          {addError && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3 mb-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700">{addError}</p>
+            </div>
+          )}
+
+          {addResult && (
+            <div className={`rounded-lg p-3 text-sm ${
+              addResult.enrolled ? 'bg-green-50 border border-green-200 text-green-800'
+                                  : 'bg-amber-50 border border-amber-200 text-amber-800'
+            }`}>
+              {addResult.enrolled
+                ? `${addResult.student_name || addResult.email} was added to the classroom and notified in-app.`
+                : `No existing account found for ${addResult.email} — an invite email was sent instead.`}
             </div>
           )}
         </div>

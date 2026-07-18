@@ -16,6 +16,7 @@ import logging
 from core.database import get_db
 from core.config import settings
 from core.dependencies import get_current_user, get_current_teacher
+from core.encryption import decrypt as _decrypt
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.assessment import TAXONOMY_DESCRIPTIONS
 from schemas.activities import (
@@ -872,7 +873,9 @@ async def teacher_submissions(
             "session_id": str(r["session_id"]),
             "student_id": str(r["student_id"]),
             "student_name": f"{r['first_name']} {r['last_name']}",
-            "student_email": r["student_email"],
+            # u.email is an EncryptedString column — raw SQL bypasses the ORM
+            # TypeDecorator, so it must be decrypted here.
+            "student_email": _decrypt(r["student_email"]) if r["student_email"] else r["student_email"],
             "activity_id": str(r["activity_id"]),
             "activity_title": r["activity_title"],
             "status": r["status"],
@@ -905,10 +908,12 @@ async def teacher_students(
     return [
         {
             "id": str(s["id"]),
-            "email": s["email"],
+            # u.email / u.full_name are EncryptedString columns — raw SQL
+            # bypasses the ORM TypeDecorator, so they must be decrypted here.
+            "email": _decrypt(s["email"]) if s["email"] else s["email"],
             "first_name": s["first_name"],
             "last_name": s["last_name"],
-            "full_name": s["full_name"],
+            "full_name": _decrypt(s["full_name"]) if s["full_name"] else s["full_name"],
             "role": s["role"],
             "is_active": s["is_active"],
         }
@@ -1643,7 +1648,10 @@ async def get_shared_library(
             share_scope=r[10] or "org",
             language=r[11], state_standard=r[12], discipline=r[13],
             created_at=r[14],
-            author_name=r[15], author_org=r[16],
+            # author_name is COALESCE(u.full_name, u.email) — both are
+            # EncryptedString columns read via raw SQL, so whichever one
+            # COALESCE picked still needs decrypting.
+            author_name=(_decrypt(r[15]) if r[15] else r[15]), author_org=r[16],
         )
         for r in rows
     ]

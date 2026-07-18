@@ -6,8 +6,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import uuid
@@ -228,27 +227,38 @@ async def get_curriculum_unit(
 
 
 @router.get("/units")
-def list_curriculum_units_paginated(
+async def list_curriculum_units_paginated(
     subject: Optional[str] = None,
     grade_level: Optional[int] = None,
     page: int = 1,
     page_size: int = 50,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """List curriculum units with pagination (for activity mapping)"""
     try:
-        query = db.query(CurriculumUnit).filter(CurriculumUnit.is_active == True)
-        
+        conditions = [CurriculumUnit.is_active == True]
+
         if subject:
-            query = query.filter(CurriculumUnit.subject.ilike(f"%{subject}%"))
+            conditions.append(CurriculumUnit.subject.ilike(f"%{subject}%"))
         if grade_level:
-            query = query.filter(CurriculumUnit.grade_level == grade_level)
-        
-        total = query.count()
+            conditions.append(CurriculumUnit.grade_level == grade_level)
+
+        count_result = await db.execute(
+            select(func.count()).select_from(CurriculumUnit).where(*conditions)
+        )
+        total = count_result.scalar() or 0
+
         offset = (page - 1) * page_size
-        units = query.order_by(CurriculumUnit.title).offset(offset).limit(page_size).all()
-        
+        units_result = await db.execute(
+            select(CurriculumUnit)
+            .where(*conditions)
+            .order_by(CurriculumUnit.title)
+            .offset(offset)
+            .limit(page_size)
+        )
+        units = units_result.scalars().all()
+
         total_pages = (total + page_size - 1) // page_size
         
         return {
@@ -391,7 +401,7 @@ async def get_standards_alignment(
 async def get_location_context(
     request: LocationContextRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get location context from Wikimedia (Wikipedia + Wikidata)
@@ -435,7 +445,7 @@ async def get_location_context(
 async def generate_activity_suggestions(
     request: ActivityGenerationRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Generate activity suggestions using:

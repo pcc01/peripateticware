@@ -19,8 +19,17 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { fieldNoteApi } from '../../services/phase7Api'
+import { parseDoc } from '../../components/student/ExtendedWritingPanel'
 import type { FieldNoteListItem } from '../../types/phase7'
 import { useTranslation } from 'react-i18next';
+
+// Field notes edited in the "extended writing" panel store structured JSON in
+// `description` ({v:2, field_note, sections}) rather than plain text — see
+// ExtendedWritingPanel.tsx. Any place that shows description as a preview
+// snippet must unwrap it first, or it shows the raw JSON string to the user.
+function previewText(description: string | null | undefined): string {
+  return parseDoc(description).field_note || ''
+}
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
   draft:                 { bg: '#f1f5f9', text: '#64748b',  label: 'Draft' },
@@ -181,9 +190,9 @@ const StudentJournalPage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      {note.description && (
+                      {previewText(note.description) && (
                         <p className="text-sm mt-1 truncate" style={{ color: 'var(--text-muted)' }}>
-                          {note.description}
+                          {previewText(note.description)}
                         </p>
                       )}
                     </div>

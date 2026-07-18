@@ -349,7 +349,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
       try {
         // âœ… Verify token is still valid by fetching user profile
-        const response = await fetch('/auth/me', {
+        const response = await fetch('/api/v1/auth/me', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
