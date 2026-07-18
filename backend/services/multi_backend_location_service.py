@@ -17,6 +17,7 @@ Configurable via LOCATION_BACKEND environment variable
 
 from typing import Dict, List, Optional, Any, Literal
 from dataclasses import dataclass
+import asyncio
 import logging
 import httpx
 from datetime import datetime
@@ -153,11 +154,15 @@ class OpenStreetMapBackend(LocationBackend):
                     # unreachable from this deployment ("All connection
                     # attempts failed" — a connect-level failure, not a slow
                     # response), likely rate-limiting/blocking after repeated
-                    # testing. A 30s timeout meant every single search paid
-                    # that full 30s tax before falling back to Wikipedia/
-                    # Nominatim. Fail fast instead — Overpass, when reachable,
-                    # responds in well under a second for a bbox this small.
-                    timeout=8,
+                    # testing. Search now runs all backends concurrently
+                    # (see MultiBackendLocationService.search_nearby), so
+                    # this timeout is the effective floor on total search
+                    # latency whenever Overpass is unreachable — Overpass,
+                    # when reachable, responds in well under a second for a
+                    # bbox this small, so 5s is still generous for the
+                    # success case while capping the failure case tighter
+                    # than the previous 8s (itself already cut from 30s).
+                    timeout=5,
                     # Overpass's public instance usage policy rejects requests
                     # with no/generic User-Agent — this call had none at all
                     # (unlike NominatimBackend below, which already sets one),
@@ -429,12 +434,12 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
 
                 # Get description (short, one-line — Wikidata's own summary,
                 # e.g. "tower located on the Champ de Mars in Paris, France").
-                # This is a baseline; enrich_with_wikipedia() below overwrites
-                # it with the actual Wikipedia article's intro synopsis when
-                # one is found, which is what "points of interest about the
-                # location" (Paul's ask) actually means — several sentences
-                # of real background, not a one-line label.
-                if "en" in entity.get("descriptions", {}):
+                # Only used as a fallback when nothing better is set yet —
+                # enrich_with_wikipedia's full article synopsis is what
+                # "points of interest about the location" actually means,
+                # and must never get clobbered by this one-liner regardless
+                # of which function happens to run first.
+                if not location.description and "en" in entity.get("descriptions", {}):
                     location.description = entity["descriptions"]["en"]["value"]
 
                 # Cross-link to the English Wikipedia article via Wikidata's
@@ -520,7 +525,15 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
                 params={
                     "action": "query",
                     "titles": title,
-                    "prop": "extracts|pageimages",
+                    # pageprops added so we can pull the linked Wikidata QID
+                    # (wikibase_item) from this same response — previously a
+                    # separate wbsearchentities round trip to Wikidata was
+                    # always made afterward to find it by name-matching,
+                    # which is both slower (one more network hop in the
+                    # critical path) and less reliable (name search can
+                    # match the wrong entity). One fewer sequential request
+                    # when this succeeds.
+                    "prop": "extracts|pageimages|pageprops",
                     "exintro": True,
                     "explaintext": True,
                     "format": "json"
@@ -546,6 +559,10 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
                             location.description = page["extract"][:2000]
                         if "thumbnail" in page:
                             location.image_url = page["thumbnail"]["source"]
+                        if not location.wikidata_id:
+                            qid = page.get("pageprops", {}).get("wikibase_item")
+                            if qid:
+                                location.wikidata_id = qid
 
     except Exception as e:
         logger.warning(f"Error enriching with Wikipedia: {e}")
@@ -783,19 +800,22 @@ class WikipediaGeosearchBackend(LocationBackend):
     ) -> LocationData:
         """Enrich a Wikipedia-discovered place with Wikidata + full extract"""
 
-        # Order matters: Wikidata first (sets a short baseline description,
-        # plus architect/construction date/image), THEN Wikipedia (overwrites
-        # description with the real multi-sentence synopsis). This used to
-        # run the other way around, which meant the good Wikipedia extract
-        # got fetched first and then immediately clobbered by Wikidata's
-        # one-line description — silently discarding the actual synopsis.
+        # Wikipedia first: it gives us the real synopsis AND (via pageprops)
+        # the linked Wikidata QID in one request — no separate
+        # wbsearchentities name-search call needed in the common case, which
+        # cuts a full network round trip out of the critical path. Ordering
+        # is now safe regardless: enrich_with_wikidata() only fills in
+        # description as a fallback, never overwrites what Wikipedia already
+        # set, so this can't regress back to showing the terse one-liner.
+        if location.wikipedia_url:
+            location = await enrich_with_wikipedia(location)
+
+        # Fallback name-search only if Wikipedia's pageprops didn't already
+        # resolve a QID (e.g. the article has no Wikidata item linked).
         if not location.wikidata_id:
             location = await fetch_wikidata_id_by_name(location)
         if location.wikidata_id:
             location = await enrich_with_wikidata(location)
-
-        if location.wikipedia_url:
-            location = await enrich_with_wikipedia(location)
 
         location = add_educational_metadata(location, subject)
 
@@ -852,26 +872,43 @@ class MultiBackendLocationService:
         location_types: Optional[List[str]] = None,
         query: Optional[str] = None
     ) -> List[LocationData]:
-        """Search using first available backend"""
-        
-        for backend_name in self.backend_names:
-            if backend_name not in self.backends:
-                continue
-            
-            try:
-                logger.info(f"Searching with {backend_name} backend")
-                locations = await self.backends[backend_name].search_nearby(
+        """
+        Search all configured backends concurrently, then pick a result by
+        LOCATION_BACKEND priority order.
+
+        This used to try backends strictly one at a time, `await`-ing each in
+        turn — when the first (Overpass) was slow or unreachable, every
+        single search paid its FULL timeout before Wikipedia/Nominatim even
+        started, even though those don't depend on Overpass's outcome at
+        all. That serial wait was the main source of "it loads slowly."
+        Running them concurrently bounds total latency to the slowest
+        backend instead of the sum of all of them, while keeping the exact
+        same priority behavior (prefer Overpass's results when available).
+        """
+        active_names = [n for n in self.backend_names if n in self.backends]
+        if not active_names:
+            logger.warning("No backends available for search")
+            return []
+
+        results = await asyncio.gather(
+            *[
+                self.backends[name].search_nearby(
                     latitude, longitude, radius_meters, location_types, query
                 )
-                
-                if locations:
-                    return locations
-            
-            except Exception as e:
-                logger.warning(f"Error with {backend_name} backend: {e}")
+                for name in active_names
+            ],
+            return_exceptions=True,
+        )
+
+        for name, result in zip(active_names, results):
+            if isinstance(result, Exception):
+                logger.warning(f"Error with {name} backend: {result}")
                 continue
-        
-        logger.warning("No backends available for search")
+            if result:
+                logger.info(f"Using results from {name} backend ({len(result)} found)")
+                return result
+
+        logger.warning("No backends returned results")
         return []
     
     async def enrich_location(
