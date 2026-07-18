@@ -27,10 +27,50 @@ interface WikiLocationInfoProps {
   latitude: number;
   longitude: number;
   subject?: string;
+  // The name the teacher actually typed into the "Location Name" field
+  // (e.g. "Burke Museum of Natural History and Culture"). Used to pick the
+  // matching result out of /locations/search instead of blindly taking
+  // whichever place happens to be geographically first/closest — which,
+  // for a landmark with several smaller POIs inside or right next to it
+  // (a museum's on-site restaurant, a park's memorial, etc.), is often the
+  // wrong place entirely. Optional: falls back to the previous
+  // closest-result behavior when not provided.
+  locationName?: string;
   onInfoLoaded: (info: LocationInfo) => void;
 }
 
-export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }: WikiLocationInfoProps) => {
+// Picks the /locations/search result that actually matches what the teacher
+// typed, rather than assuming index 0 (nearest by distance) is the intended
+// place. Nearest-by-distance breaks down whenever a smaller POI (a cafe, a
+// statue, a parking lot) is geographically closer to the pinned coordinates
+// than the landmark itself.
+const pickBestMatch = (results: any[], targetName?: string): any => {
+  if (!targetName || !targetName.trim() || results.length === 0) {
+    return results[0];
+  }
+  const norm = (s: string) => (s || '').toLowerCase().trim().replace(/[^\w\s]/g, '');
+  const target = norm(targetName);
+  if (!target) return results[0];
+
+  const exact = results.find((r) => norm(r.name) === target);
+  if (exact) return exact;
+
+  // Either name containing the other handles both a teacher typing a
+  // shortened name ("Burke Museum") and the index having a longer official
+  // name ("Burke Museum of Natural History and Culture"), or vice versa.
+  const contains = results.find((r) => {
+    const rn = norm(r.name);
+    return rn && (rn.includes(target) || target.includes(rn));
+  });
+  if (contains) return contains;
+
+  // No name match at all (teacher hasn't typed a name yet, or the indexed
+  // place uses an entirely different name) — fall back to the prior
+  // closest-result behavior rather than guessing further.
+  return results[0];
+};
+
+export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, onInfoLoaded }: WikiLocationInfoProps) => {
   const { t } = useTranslation('landing');
   
   
@@ -67,7 +107,8 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
       return null;
     }
 
-    const placeId = searchResults[0].place_id;
+    const target = pickBestMatch(searchResults, locationName);
+    const placeId = target.place_id;
     const params = new URLSearchParams();
     if (subject) params.set('subject', subject);
     // Bypasses the backend's up-to-7-day enrichment cache. Without this,
@@ -85,26 +126,27 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
     const enrich = await enrichResponse.json();
 
     const description =
-      enrich.description || `Location near ${enrich.name || searchResults[0].name || placeId}`;
+      enrich.description || `Location near ${enrich.name || target.name || placeId}`;
 
     // /locations/search returns up to 20 real nearby places in one call —
-    // only the first was ever surfaced (as the single enriched location
-    // above). Surface the rest as a "what else is nearby" list instead of
-    // discarding them; no extra network calls needed since this data was
-    // already fetched.
+    // only the matched one is enriched above. Surface the rest (excluding
+    // whichever one was matched/enriched, by place_id rather than a fixed
+    // index — the match is no longer guaranteed to be index 0) as a "what
+    // else is nearby" list instead of discarding them; no extra network
+    // calls needed since this data was already fetched.
     const nearbyPoints = searchResults
-      .slice(1, 9)
-      .filter((r: any) => r.name)
+      .filter((r: any) => r.place_id !== placeId && r.name)
+      .slice(0, 8)
       .map((r: any) => ({ name: r.name, type: r.location_type || 'location' }));
 
     const info: LocationInfo = {
-      name: enrich.name || searchResults[0].name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+      name: enrich.name || target.name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
       description,
       // Repurposed: wikiId now sources from the Wikidata QID instead of a
       // Wikipedia page title. Confirmed UI-only display state — never sent
       // in the activity save payload — so this is a zero-risk change.
       wikiId: enrich.wikidata_id || undefined,
-      type: searchResults[0].location_type || 'location',
+      type: target.location_type || 'location',
       features: extractFeatures(description),
       wikidataId: enrich.wikidata_id || undefined,
       architectOrArtist: enrich.architect_or_artist || undefined,

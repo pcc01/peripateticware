@@ -864,6 +864,7 @@ export const ActivityBuilder = () => {
                     latitude={formData.location.latitude}
                     longitude={formData.location.longitude}
                     subject={formData.subject}
+                    locationName={formData.location.address}
                     onInfoLoaded={(info) => {
                       setFormData((prev) => ({
                         ...prev,

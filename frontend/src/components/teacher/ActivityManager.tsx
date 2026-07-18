@@ -747,6 +747,7 @@ const ActivityManager = () => {
                   latitude={formData.location_latitude}
                   longitude={formData.location_longitude}
                   subject={formData.subject}
+                  locationName={formData.location_name}
                   onInfoLoaded={(info) => {
                     setFormData(f => ({
                       ...f,
