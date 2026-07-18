@@ -23,9 +23,18 @@ module.exports = {
       binaryPath: 'android/app/build/outputs/apk/release/app-release.apk',
       // --no-daemon: run Gradle in-process so stale long-lived daemons can't
       // accumulate JIT memory and OOM after hours of emulator sessions.
+      // Invoked via `sh` (not a bare `./gradlew`) on non-Windows: gradlew's
+      // executable bit was lost somewhere along the way (git shows it
+      // tracked as mode 100644, not 100755 — a common casualty of edits/
+      // checkouts on a Windows machine, where core.filemode is false and
+      // git never notices the bit is missing). `sh ./gradlew` runs the
+      // script through the shell interpreter directly, so it works
+      // regardless of the file's exec bit — this is what actually broke
+      // `detox build` on the GitHub-hosted Linux runners ("Permission
+      // denied"), since Linux (unlike Windows) enforces it.
       build: process.platform === 'win32'
         ? 'cd android && gradlew.bat --no-daemon assembleRelease assembleAndroidTest'
-        : 'cd android && ./gradlew --no-daemon assembleRelease assembleAndroidTest',
+        : 'cd android && sh ./gradlew --no-daemon assembleRelease assembleAndroidTest',
     },
     'ios.debug': {
       type: 'ios.app',
