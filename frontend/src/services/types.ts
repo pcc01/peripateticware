@@ -112,6 +112,13 @@ export interface Activity {
   // types/teacher.ts local Activity and actively read (ActivityManager.tsx,
   // ActivityPreview.tsx) — added here to avoid a regression from unification.
   bloom_level?: string
+  // Structured Wikidata/Wikipedia place enrichment, captured by the teacher
+  // builder's WikiLocationInfo panel and saved with the activity. Ships in
+  // the same GET .../activities/{id} payload so the student "Background Info"
+  // link works with no extra network call — including with no signal in the
+  // field, as long as the activity page already loaded once.
+  location_wiki_data?: Record<string, any> | null
+  location_info?: string
 }
 
 export interface PhaseStatus {

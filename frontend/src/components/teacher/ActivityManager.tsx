@@ -9,6 +9,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions } from './OllamaLessonSuggestions';
+import { WikiLocationInfo } from './WikiLocationInfo';
 
 // ── Backend-payload normalization ─────────────────────────────────────────────
 // The backend expects bloom_level as an integer (1-6) and activity_type as one of
@@ -117,6 +118,11 @@ const ActivityManager = () => {
   const [showLocationTools, setShowLocationTools] = useState(false);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
+
+  // Wikidata/Wikipedia place background info — shown to the teacher while
+  // building the activity (to spur ideas) and saved onto the activity itself
+  // so students can read it offline later. See WikiLocationInfo.tsx.
+  const [showWikiInfo, setShowWikiInfo] = useState(false);
 
   const TAXONOMIES: Record<string, { label: string; levels: { value: string; label: string }[] }> = {
     blooms: {
@@ -310,6 +316,8 @@ const ActivityManager = () => {
           language: activity.language ?? '',
           state_standard: activity.state_standard ?? '',
           discipline: activity.discipline ?? '',
+          location_wiki_data: activity.location_wiki_data ?? null,
+          location_info: activity.location_info ?? '',
         });
       }).
       catch((err) => {
@@ -721,6 +729,35 @@ const ActivityManager = () => {
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>
           </div>
+
+          {/* Wiki location background info — helps the teacher come up with
+              ideas for the activity, and gets saved onto formData below so
+              students can read it offline later (see location_wiki_data). */}
+          {formData.location_latitude && formData.location_longitude && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={() => setShowWikiInfo(v => !v)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium mb-3"
+              >
+                {showWikiInfo ? '▼' : '▶'} 📖 Background Info About This Location
+              </button>
+              {showWikiInfo && (
+                <WikiLocationInfo
+                  latitude={formData.location_latitude}
+                  longitude={formData.location_longitude}
+                  subject={formData.subject}
+                  onInfoLoaded={(info) => {
+                    setFormData(f => ({
+                      ...f,
+                      location_wiki_data: info,
+                      location_info: info.description || '',
+                    }));
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           {/* GPS live tracking toggle */}
           <button

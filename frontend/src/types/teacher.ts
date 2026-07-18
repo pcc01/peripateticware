@@ -167,6 +167,10 @@ export interface CreateActivityInput {
   // GPS live-map feature: whether this activity prompts students for
   // location-sharing self-consent (13+) at session start.
   discovery_location_gps_capture_enabled?: boolean
+  // Structured Wikidata/Wikipedia place enrichment captured while setting the
+  // location — saved with the activity so students can see it offline later.
+  location_wiki_data?: Record<string, any> | null
+  location_info?: string
 }
 
 export interface UpdateActivityInput extends Partial<CreateActivityInput> {}

@@ -272,6 +272,7 @@ async def get_student_activity(
         teacher=ActivityTeacher(name=teacher_name),
         phases=phases,
         location_info=activity.location_info,
+        location_wiki_data=getattr(activity, "location_wiki_data", None),
         resources=activity.resources or [],
         suggested_lessons=activity.suggested_lessons or [],
         marzano_level=activity.marzano_level,

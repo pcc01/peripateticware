@@ -72,6 +72,11 @@ class StudentActivityDetail(StudentActivitySummary):
     """
     location_info:     Optional[str]           = None
     location:          Optional[str]           = None   # alias of location_name for frontend
+    # Structured Wikidata/Wikipedia place enrichment the teacher captured while
+    # building this activity — shipped in this same payload so the student's
+    # "Background Info" link works with no network call, even with no signal
+    # at the field location. See models/database.py Activity.location_wiki_data.
+    location_wiki_data: Optional[dict]          = None
     due_date:          Optional[str]           = None   # ISO string
     teacher:           Optional[ActivityTeacher] = None
     phases:            Optional[ActivityPhases]  = None

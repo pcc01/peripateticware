@@ -249,6 +249,11 @@ class Activity(Base):
     # WikiLocation data
     location_info = Column(Text, nullable=True)
     location_context_id = Column(UUID(as_uuid=True), nullable=True)
+    # Structured Wikidata/Wikipedia place enrichment (see startup.py's
+    # apply_* migration for this column for the full rationale) — the
+    # teacher-facing WikiLocationInfo payload, saved as-is so students can
+    # read it offline once the activity detail page has loaded.
+    location_wiki_data = Column(JSONB, nullable=True)
 
     # =========================================================================
     # PHASE 5 ADDITIONS: Privacy & Location tracking

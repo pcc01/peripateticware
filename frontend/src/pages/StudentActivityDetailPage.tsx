@@ -17,7 +17,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Clock, BookOpen, Camera, FileText, Mic, CheckCircle, ChevronRight, Loader2, AlertCircle, Upload, Volume2 } from 'lucide-react';
+import { MapPin, Clock, BookOpen, Camera, FileText, Mic, CheckCircle, ChevronRight, Loader2, AlertCircle, Upload, Volume2, Info, X } from 'lucide-react';
 import { useStudent } from '@/services/api';
 import type { Activity, EvidenceCapture } from '@/services/types';
 import { fmtDate } from '@/utils/date';
@@ -78,6 +78,12 @@ const StudentActivityDetailPage: React.FC = () => {
   // once the field session actually starts, matching when the backend
   // fires the parent-notification background task.
   const [gpsConsentPending, setGpsConsentPending] = useState(false);
+
+  // Background Info panel — rendered from `activity.location_wiki_data`,
+  // which was already fetched as part of the initial getActivityDetail()
+  // call above. Toggling this never triggers a network request, so it
+  // keeps working even if the student has no signal at the field location.
+  const [showBackgroundInfo, setShowBackgroundInfo] = useState(false);
 
   // TTS
   const [speaking, setSpeaking] = useState(false);
@@ -303,6 +309,89 @@ const StudentActivityDetailPage: React.FC = () => {
         </div>
       )}
 
+      {/* Background Info panel — built from data already loaded on this page
+          (no network call here), so it works with no signal in the field. */}
+      {showBackgroundInfo && (() => {
+        const wiki = (activity as any).location_wiki_data as Record<string, any> | null | undefined;
+        const description = wiki?.description || (activity as any).location_info || '';
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="max-w-md w-full max-h-[85vh] overflow-y-auto rounded-2xl p-6 shadow-xl bg-white">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Info className="w-5 h-5 text-blue-600" />
+                  {wiki?.name || (activity as any).location || 'Background Info'}
+                </h2>
+                <button onClick={() => setShowBackgroundInfo(false)} className="text-gray-400 hover:text-gray-700 flex-shrink-0">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {description && (
+                <p className="text-sm text-gray-700 leading-relaxed mb-4">{description}</p>
+              )}
+
+              {wiki?.features?.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Notable Features</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {wiki.features.map((f: string, i: number) => (
+                      <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(wiki?.architectOrArtist || wiki?.constructionDate || wiki?.historicalSignificance) && (
+                <div className="mb-4 space-y-1.5 text-sm">
+                  {wiki?.architectOrArtist && (
+                    <p><span className="font-semibold text-gray-600">Architect/Artist:</span> <span className="text-gray-800">{wiki.architectOrArtist}</span></p>
+                  )}
+                  {wiki?.constructionDate && (
+                    <p><span className="font-semibold text-gray-600">Constructed:</span> <span className="text-gray-800">{wiki.constructionDate}</span></p>
+                  )}
+                  {wiki?.historicalSignificance && (
+                    <p><span className="font-semibold text-gray-600">Historical Significance:</span> <span className="text-gray-800">{wiki.historicalSignificance}</span></p>
+                  )}
+                </div>
+              )}
+
+              {wiki?.keywords?.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {wiki.keywords.map((k: string, i: number) => (
+                      <span key={i} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">{k}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {wiki?.learningOpportunities?.length > 0 && (
+                <div className="mb-2 bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-700 mb-1.5">Learning Opportunities</p>
+                  <ul className="space-y-1">
+                    {wiki.learningOpportunities.map((lo: string, i: number) => (
+                      <li key={i} className="text-sm text-green-800 flex gap-1.5"><span className="text-green-400">•</span>{lo}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!description && !wiki?.features?.length && !wiki?.learningOpportunities?.length && (
+                <p className="text-sm text-gray-500">No background info was saved for this location.</p>
+              )}
+
+              <button
+                onClick={() => setShowBackgroundInfo(false)}
+                className="mt-4 w-full py-2 rounded-lg font-medium border border-gray-300 text-gray-900"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-5">
@@ -333,6 +422,15 @@ const StudentActivityDetailPage: React.FC = () => {
                 <Clock className="w-4 h-4 text-purple-600" />
                 {(activity as any).estimated_duration_minutes} min
               </span>
+            )}
+            {((activity as any).location_wiki_data || (activity as any).location_info) && (
+              <button
+                onClick={() => setShowBackgroundInfo(true)}
+                className="flex items-center gap-1.5 text-blue-700 hover:text-blue-900 font-medium"
+              >
+                <Info className="w-4 h-4" />
+                Background Info
+              </button>
             )}
           </div>
         </div>

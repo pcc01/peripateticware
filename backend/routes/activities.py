@@ -111,6 +111,7 @@ async def create_activity(
         # ActivityBuilder fields
         assessment_type=getattr(activity, "assessment_type", "formative"),
         location_info=getattr(activity, "location_info", None),
+        location_wiki_data=getattr(activity, "location_wiki_data", None),
         suggested_lessons=getattr(activity, "suggested_lessons", []),
         activity_type=ActivityType(activity.activity_type.value),
         is_shareable=activity.is_shareable,

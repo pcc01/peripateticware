@@ -41,6 +41,8 @@ const ActivityListPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [publishingId, setPublishingId] = useState<string | number | null>(null)
+  const [publishErrors, setPublishErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -73,6 +75,29 @@ const ActivityListPage: React.FC = () => {
   const filtered = activities.filter(a =>
     a.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Backend already has a working POST /activities/{id}/publish endpoint
+  // (runs a privacy-compliance check, then sets status='published') — it was
+  // just never called from any real UI. This is what makes an activity show
+  // up in the Shared Library, since that query requires status='published'.
+  const handlePublish = async (activity: Activity, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPublishingId(activity.id)
+    setPublishErrors(prev => { const next = { ...prev }; delete next[String(activity.id)]; return next })
+    try {
+      await axios.post(`${API_BASE}/activities/${activity.id}/publish`, {}, {
+        headers: getAuthHeader(),
+      })
+      setActivities(prev => prev.map(a =>
+        a.id === activity.id ? { ...a, status: 'published' } : a
+      ))
+    } catch (err: any) {
+      const msg = getErrorMessage(err, 'Failed to publish activity')
+      setPublishErrors(prev => ({ ...prev, [String(activity.id)]: msg }))
+    } finally {
+      setPublishingId(null)
+    }
+  }
 
   const statusBadge = (status: Activity['status']) => {
     const styles: Record<string, React.CSSProperties> = {
@@ -215,8 +240,29 @@ const ActivityListPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div style={{ marginLeft: '16px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ marginLeft: '16px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {statusBadge(activity.status)}
+                {(activity.status === 'draft' || activity.status === 'archived') && (
+                  <button
+                    onClick={e => handlePublish(activity, e)}
+                    disabled={publishingId === activity.id}
+                    title="Publish — makes this activity visible to students and eligible for the Shared Library"
+                    style={{
+                      background: publishingId === activity.id ? '#9ca3af' : '#4a7c59',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '4px 10px',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      cursor: publishingId === activity.id ? 'default' : 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {publishingId === activity.id ? 'Publishing…' : '📣 Publish'}
+                  </button>
+                )}
                 {!isHomeschool && (
                   <button
                     onClick={e => {
@@ -257,6 +303,20 @@ const ActivityListPage: React.FC = () => {
                 >
                   👁 Student View
                 </button>
+              </div>
+              {publishErrors[String(activity.id)] && (
+                <div
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    fontSize: '0.72rem',
+                    color: '#991b1b',
+                    maxWidth: '220px',
+                    textAlign: 'right',
+                  }}
+                >
+                  {publishErrors[String(activity.id)]}
+                </div>
+              )}
               </div>
             </div>
           ))}

@@ -111,6 +111,13 @@ class ActivityBase(BaseModel):
     inquiry_phase: Optional[str] = Field(None, description="Inquiry phase instructions/prompts shown during the activity")
     reflect_phase: Optional[str] = Field(None, description="Reflect phase prompt shown after the activity")
 
+    # ── Wikidata/Wikipedia place enrichment ─────────────────────────────────────
+    # Captured by the teacher builder's WikiLocationInfo panel when the location
+    # is set, saved with the activity so students can read it offline in the
+    # field (no network round-trip at click-time — it ships in the same
+    # GET .../activities/{id} payload the app already loaded).
+    location_wiki_data: Optional[dict] = Field(None, description="Structured Wikidata/Wikipedia place info (name, description, architect/artist, construction date, historical significance, keywords, learning opportunities, wikidata_id)")
+
     @field_validator('learning_objectives', mode='before')
     @classmethod
     def validate_objectives(cls, v):
@@ -166,6 +173,7 @@ class ActivityUpdate(BaseModel):
     orient_phase: Optional[str] = None
     inquiry_phase: Optional[str] = None
     reflect_phase: Optional[str] = None
+    location_wiki_data: Optional[dict] = None
 
     @field_validator('learning_objectives', mode='before')
     @classmethod

@@ -124,6 +124,13 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS enriched_location_id UUID")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_address VARCHAR(512)")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_info TEXT")
+        # Structured Wikidata/Wikipedia place enrichment (name, description, type,
+        # features, architect/artist, construction date, historical significance,
+        # keywords, learning opportunities, wikidata_id) — captured by the teacher
+        # builder's WikiLocationInfo panel and saved with the activity so students
+        # can read it offline in the field (no signal required at click-time,
+        # since it ships in the same GET /student/activities/{id} payload).
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_wiki_data JSONB")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS suggested_lessons JSONB")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS wiki_location_id VARCHAR(255)")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS location_source VARCHAR(50)")
