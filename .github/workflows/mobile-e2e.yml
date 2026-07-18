@@ -122,7 +122,21 @@ jobs:
           profile: ${{ matrix.profile }}
           avd-name: ${{ matrix.avd-name }}
           working-directory: mobile
-          script: detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing
+          # The emulator is torn down by this action's own internal steps as
+          # soon as `script` returns, before the next workflow step ever
+          # runs — so a logcat dump has to happen HERE, inside this script,
+          # on failure, or the device is already gone by the time we'd try
+          # to grab it. "Detox can't seem to connect to the test app(s)!"
+          # gives no indication of *why* (crash vs. hang vs. Detox native
+          # module misconfigured); a full logcat is the only way to see if
+          # the app actually crashed on launch.
+          script: |
+            mkdir -p artifacts
+            if ! detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing; then
+              echo "=== Detox test failed — dumping full logcat for diagnosis ==="
+              adb logcat -d > artifacts/logcat.txt
+              exit 1
+            fi
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
