@@ -244,6 +244,66 @@ async def apply_location_table_migrations(engine) -> None:
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS enrichment_quality FLOAT DEFAULT 0.0",
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS enrichment_source VARCHAR(100)",
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS usage_count INTEGER DEFAULT 0",
+        # The rest of the EnrichedLocation ORM model's columns (models/database.py)
+        # were never added here. On any environment where enriched_locations was
+        # first created by database/init.sql's older, differently-shaped table
+        # (place_name/place_type/enrichment_data JSONB blob design — no
+        # `keywords` column at all) rather than the CREATE TABLE IF NOT EXISTS
+        # above, this CREATE is a no-op and the table is permanently missing
+        # every one of these columns. The very first SELECT the ORM issues
+        # against this table (the enrich_location cache-check query) lists
+        # every mapped column, so it 500s with UndefinedColumnError on
+        # `keywords` before ever reaching real enrichment logic — this is what
+        # made "Learn about this place" / student background info never load
+        # anything in production, on every single search, unconditionally.
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS keywords TEXT[] DEFAULT '{}'",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS wikipedia_url VARCHAR(512)",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS wikidata_id VARCHAR(100)",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS architect_or_artist VARCHAR(255)",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS construction_date VARCHAR(100)",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS historical_significance TEXT",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS best_for_subjects TEXT[] DEFAULT '{}'",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS safety_considerations TEXT[] DEFAULT '{}'",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS accessibility JSONB DEFAULT '{}'",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS nearby_attractions TEXT[] DEFAULT '{}'",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS enriched_at TIMESTAMP DEFAULT NOW()",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS teacher_rating FLOAT",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS last_used TIMESTAMP",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS created_lessons INTEGER DEFAULT 0",
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS cached_location_id UUID",
+        # `subjects`/`grade_levels`/`learning_opportunities` were healed above
+        # as JSONB, but the ORM model declares them ARRAY(String)/ARRAY(Integer)
+        # (native Postgres TEXT[]/INTEGER[]) — on any DB where those ALTERs
+        # actually ran (i.e. the column didn't already exist as an array from
+        # the CREATE TABLE), the column is now the wrong type and every read/
+        # write through the ORM fails. Convert in place, but only when the
+        # column is actually jsonb today — a no-op (and harmless failed
+        # statement, caught by the per-statement try/except below) everywhere
+        # the column is already the correct array type.
+        """DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_name = 'enriched_locations' AND column_name = 'subjects' AND data_type = 'jsonb') THEN
+                ALTER TABLE enriched_locations ALTER COLUMN subjects TYPE TEXT[] USING (
+                    CASE WHEN subjects IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(subjects)) END
+                );
+            END IF;
+        END $$;""",
+        """DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_name = 'enriched_locations' AND column_name = 'grade_levels' AND data_type = 'jsonb') THEN
+                ALTER TABLE enriched_locations ALTER COLUMN grade_levels TYPE INTEGER[] USING (
+                    CASE WHEN grade_levels IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(grade_levels)::INTEGER) END
+                );
+            END IF;
+        END $$;""",
+        """DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM information_schema.columns
+                       WHERE table_name = 'enriched_locations' AND column_name = 'learning_opportunities' AND data_type = 'jsonb') THEN
+                ALTER TABLE enriched_locations ALTER COLUMN learning_opportunities TYPE TEXT[] USING (
+                    CASE WHEN learning_opportunities IS NULL THEN NULL ELSE ARRAY(SELECT jsonb_array_elements_text(learning_opportunities)) END
+                );
+            END IF;
+        END $$;""",
         "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS captured_at TIMESTAMP DEFAULT NOW()",
         """CREATE TABLE IF NOT EXISTS location_search_history (
             id             UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
