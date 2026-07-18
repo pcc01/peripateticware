@@ -76,6 +76,19 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # The frontend container (docker-compose.yml) bind-mounts ./frontend:/app
+      # and its Dockerfile never switches off the default root user before
+      # `CMD ["npm", "run", "dev", ...]`. Once "Build and start the stack"
+      # above starts that container, root-owned entries can end up inside the
+      # shared ./frontend directory on the runner's own filesystem (observed:
+      # frontend/node_modules/@alloc owned by root) — so the very next step,
+      # `npm ci` running directly on the runner as the non-root `runner` user,
+      # fails with EACCES trying to mkdir inside it. Reclaiming ownership here,
+      # right before npm ci runs, fixes it without touching the Docker image's
+      # user model (which local dev / other tooling may depend on).
+      - name: Fix frontend/ ownership (Docker's root writes into the bind mount)
+        run: sudo chown -R "$(id -u):$(id -g)" frontend
+
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
