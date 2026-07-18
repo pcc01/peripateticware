@@ -17,6 +17,10 @@ interface LocationInfo {
   historicalSignificance?: string;
   keywords?: string[];
   learningOpportunities?: string[];
+  // Other real, named places /locations/search found in the same radius —
+  // previously discarded entirely (only searchResults[0] was ever used),
+  // even though the backend was already finding up to 20 of these per call.
+  nearbyPoints?: { name: string; type: string }[];
 }
 
 interface WikiLocationInfoProps {
@@ -76,6 +80,16 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
     const description =
       enrich.description || `Location near ${enrich.name || searchResults[0].name || placeId}`;
 
+    // /locations/search returns up to 20 real nearby places in one call —
+    // only the first was ever surfaced (as the single enriched location
+    // above). Surface the rest as a "what else is nearby" list instead of
+    // discarding them; no extra network calls needed since this data was
+    // already fetched.
+    const nearbyPoints = searchResults
+      .slice(1, 9)
+      .filter((r: any) => r.name)
+      .map((r: any) => ({ name: r.name, type: r.location_type || 'location' }));
+
     const info: LocationInfo = {
       name: enrich.name || searchResults[0].name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
       description,
@@ -94,6 +108,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
         enrich.learning_opportunities && enrich.learning_opportunities.length > 0
           ? enrich.learning_opportunities
           : undefined,
+      nearbyPoints: nearbyPoints.length > 0 ? nearbyPoints : undefined,
     };
     return info;
   };
@@ -338,6 +353,18 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
             </div>
         }
 
+          {locationInfo.nearbyPoints && locationInfo.nearbyPoints.length > 0 &&
+        <div className={styles.featuresSection}>
+              <h4>{t("landing:nearby_points_of_interest", "🗺️ Nearby Points of Interest")}</h4>
+              {locationInfo.nearbyPoints.map((poi, index) =>
+            <div key={index} className={styles.coordinatePair}>
+                  <span className={styles.label}>{poi.name}</span>
+                  <span className={styles.value}>{poi.type}</span>
+                </div>
+            )}
+            </div>
+        }
+
           <div className={styles.educationalSection}>
             <h4>{t("landing:educational_opportunities", "\uD83D\uDCDA Educational Opportunities")}</h4>
             <ul className={styles.suggestionsUl}>
@@ -368,7 +395,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, onInfoLoaded }:
 
           <div className={styles.info}>
             <p>
-              💡 <strong>{t("landing:teaching_tip", "Teaching Tip:")}</strong>{t("landing:use_this_location_information_to_create_", "Use this location information to create \n              place-based learning activities that connect student inquiry to real-world contexts.")}
+              💡 <strong>{t("landing:teaching_tip", "Teaching Tip:")}</strong> {t("landing:use_this_location_information_to_create_", "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.")}
 
           </p>
           </div>

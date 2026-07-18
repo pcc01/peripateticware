@@ -377,6 +377,20 @@ const StudentActivityDetailPage: React.FC = () => {
                 </div>
               )}
 
+              {wiki?.nearbyPoints?.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Nearby Points of Interest</p>
+                  <ul className="space-y-1">
+                    {wiki.nearbyPoints.map((poi: { name: string; type: string }, i: number) => (
+                      <li key={i} className="text-sm text-gray-700 flex justify-between gap-2">
+                        <span>{poi.name}</span>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{poi.type}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {!description && !wiki?.features?.length && !wiki?.learningOpportunities?.length && (
                 <p className="text-sm text-gray-500">No background info was saved for this location.</p>
               )}
