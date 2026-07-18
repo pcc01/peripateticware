@@ -155,8 +155,6 @@ mobile/*.swp
 mobile/*.swo
 mobile/*~
 
-# Dependencies (Mobile)
-mobile/package-lock.json
 # DOCS
 docs/BETA_SIGNUP_SETUP.md
 docs/FEATURE_GATE_AUDIT.md
