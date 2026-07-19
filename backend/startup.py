@@ -20,6 +20,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
+from core.encryption import blind_index
 
 logger = logging.getLogger(__name__)
 
@@ -1423,22 +1424,41 @@ async def seed_demo_users(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "SecurePass123!"
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"
+            # BUG (found while debugging why every seeded demo/test account got
+            # 401 "Invalid email/id or password" on a fresh database): this raw
+            # SQL INSERT bypasses the ORM entirely, so it never populated
+            # email_index. routes/auth.py's login ALWAYS looks up by
+            # `User.email_index == blind_index(email)` — never by the plain
+            # `email` column — so a row with email_index left NULL can never
+            # be found at login, no matter how correct its password hash is.
+            # This never surfaced locally because these accounts, once
+            # created via the real signup flow (which does set email_index),
+            # persist in a long-lived local dev DB; a fresh CI database hits
+            # this raw INSERT for the first time and exposes it. Computing
+            # email_index here so every seeded row is actually loginable.
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
                 VALUES
-                  ('homeschool@example.com','homeschool','Sarah','Rivera','Sarah Rivera',
+                  ('homeschool@example.com',:ei_hs,'homeschool','Sarah','Rivera','Sarah Rivera',
                    :pw,'HOMESCHOOL',TRUE),
-                  ('student@example.com','student','Alex','Johnson','Alex Johnson',
+                  ('student@example.com',:ei_student,'student','Alex','Johnson','Alex Johnson',
                    :pw,'STUDENT',TRUE),
-                  ('teacher@example.com','teacher','Jane','Smith','Jane Smith',
+                  ('teacher@example.com',:ei_teacher,'teacher','Jane','Smith','Jane Smith',
                    :pw,'TEACHER',TRUE),
-                  ('parent@example.com','parent','Margaret','Brown','Margaret Brown',
+                  ('parent@example.com',:ei_parent,'parent','Margaret','Brown','Margaret Brown',
                    :pw,'PARENT',TRUE)
                 ON CONFLICT (email) DO UPDATE SET
                     hashed_password = EXCLUDED.hashed_password,
+                    email_index     = EXCLUDED.email_index,
                     is_active       = TRUE
-            """), {"pw": _PW})
+            """), {
+                "pw": _PW,
+                "ei_hs":      blind_index("homeschool@example.com"),
+                "ei_student": blind_index("student@example.com"),
+                "ei_teacher": blind_index("teacher@example.com"),
+                "ei_parent":  blind_index("parent@example.com"),
+            })
         logger.info("✅ Demo seed users ensured (homeschool/student/teacher/parent @example.com, SecurePass123!)")
     except Exception as e:
         logger.error(f"❌ Demo seed upsert FAILED — login with SecurePass123! will not work: {e}", exc_info=True)
@@ -1454,15 +1474,18 @@ async def seed_demo_admin_account(engine) -> None:
     try:
         async with engine.begin() as conn:
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
+            # See the email_index note in seed_demo_users() above — same bug,
+            # same fix.
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('admin@example.com','admin','Paul','Admin','Paul Christopher Cerda',
+                VALUES ('admin@example.com',:ei,'admin','Paul','Admin','Paul Christopher Cerda',
                         :pw,'ADMIN',TRUE)
                 ON CONFLICT (email) DO UPDATE SET
                     hashed_password = EXCLUDED.hashed_password,
+                    email_index     = EXCLUDED.email_index,
                     is_active       = TRUE
-            """), {"pw": _PW})
+            """), {"pw": _PW, "ei": blind_index("admin@example.com")})
         logger.info("✅ Demo admin account ensured (admin@example.com, SecurePass123!) — dev only")
     except Exception as e:
         logger.error(f"❌ Demo admin seed upsert FAILED: {e}", exc_info=True)
@@ -1508,14 +1531,15 @@ async def seed_homeschool_example_children(engine) -> None:
 
             for email, username, first, last, grade_level, age_band in child_specs:
                 child_id = uuid.uuid4()
+                # Same email_index bug as seed_demo_users() above.
                 result = await conn.execute(text("""
-                    INSERT INTO users (id, email, username, first_name, last_name, full_name,
+                    INSERT INTO users (id, email, email_index, username, first_name, last_name, full_name,
                                        hashed_password, role, is_active)
-                    VALUES (:id, :email, :username, :first, :last, :full, :pw, 'STUDENT', TRUE)
-                    ON CONFLICT (email) DO UPDATE SET is_active = TRUE
+                    VALUES (:id, :email, :ei, :username, :first, :last, :full, :pw, 'STUDENT', TRUE)
+                    ON CONFLICT (email) DO UPDATE SET is_active = TRUE, email_index = EXCLUDED.email_index
                     RETURNING id
                 """), {
-                    "id": child_id, "email": email, "username": username,
+                    "id": child_id, "email": email, "ei": blind_index(email), "username": username,
                     "first": first, "last": last, "full": f"{first} {last}", "pw": _PW,
                 })
                 # ON CONFLICT DO UPDATE ... RETURNING always returns a row (unlike
@@ -1548,26 +1572,38 @@ async def seed_test_accounts(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "Test1234!"
             _TEST_PW = "$2b$12$9x4KrIaTK6Ihpc/00eDlUuJIcXim7VUT0Ob9X/PQRdvvF4IxcAk7m"
+            # Same email_index bug as seed_demo_users() above — these are the
+            # accounts mobile/e2e.js Detox and Maestro suites log in as, so
+            # this alone would have blocked every mobile E2E run on a fresh DB.
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
                 VALUES
-                  ('student@test.local','test_student','Test','Student','Test Student',
+                  ('student@test.local',:ei_student,'test_student','Test','Student','Test Student',
                    :pw,'STUDENT',TRUE),
-                  ('teacher@test.local','test_teacher','Test','Teacher','Test Teacher',
+                  ('teacher@test.local',:ei_teacher,'test_teacher','Test','Teacher','Test Teacher',
                    :pw,'TEACHER',TRUE),
-                  ('parent@test.local','test_parent','Test','Parent','Test Parent',
+                  ('parent@test.local',:ei_parent,'test_parent','Test','Parent','Test Parent',
                    :pw,'PARENT',TRUE),
-                  ('admin@test.local','test_admin','Test','Admin','Test Admin',
+                  ('admin@test.local',:ei_admin,'test_admin','Test','Admin','Test Admin',
                    :pw,'ADMIN',TRUE),
-                  ('homeschool@test.local','test_homeschool','Test','Homeschool','Test Homeschool',
+                  ('homeschool@test.local',:ei_hs,'test_homeschool','Test','Homeschool','Test Homeschool',
                    :pw,'HOMESCHOOL',TRUE),
-                  ('platform@test.local','test_platform','Test','Platform','Test Platform',
+                  ('platform@test.local',:ei_platform,'test_platform','Test','Platform','Test Platform',
                    :pw,'ADMIN',TRUE)
                 ON CONFLICT (email) DO UPDATE SET
                     hashed_password = EXCLUDED.hashed_password,
+                    email_index     = EXCLUDED.email_index,
                     is_active       = TRUE
-            """), {"pw": _TEST_PW})
+            """), {
+                "pw": _TEST_PW,
+                "ei_student": blind_index("student@test.local"),
+                "ei_teacher": blind_index("teacher@test.local"),
+                "ei_parent":  blind_index("parent@test.local"),
+                "ei_admin":   blind_index("admin@test.local"),
+                "ei_hs":      blind_index("homeschool@test.local"),
+                "ei_platform": blind_index("platform@test.local"),
+            })
         logger.info("✅ E2E test seed accounts ensured (student/teacher/parent/admin/homeschool/platform @test.local)")
     except Exception as e:
         logger.warning(f"⊘ Detox test seed upsert skipped: {e}")
@@ -1579,27 +1615,28 @@ async def seed_homeschool_demo(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "Demo@1234!"
             _DEMO_PW = "$2b$12$KwGO4zE1S5Xar9BFJJoaZuXsMZqbqvy38/wzm/T1ELjNE96Tq6sbC"
+            # Same email_index bug as seed_demo_users() above.
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('homeschool.parent@demo.com','hs_parent','Laura','Chen','Laura Chen',
+                VALUES ('homeschool.parent@demo.com',:ei,'hs_parent','Laura','Chen','Laura Chen',
                         :pw, 'HOMESCHOOL', TRUE)
-                ON CONFLICT (email) DO NOTHING
-            """), {"pw": _DEMO_PW})
+                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "ei": blind_index("homeschool.parent@demo.com")})
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('hs.child1@demo.com','hs_child1','Emma','Chen','Emma Chen',
+                VALUES ('hs.child1@demo.com',:ei,'hs_child1','Emma','Chen','Emma Chen',
                         :pw, 'STUDENT', TRUE)
-                ON CONFLICT (email) DO NOTHING
-            """), {"pw": _DEMO_PW})
+                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "ei": blind_index("hs.child1@demo.com")})
             await conn.execute(text("""
-                INSERT INTO users (email, username, first_name, last_name, full_name,
+                INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('hs.child2@demo.com','hs_child2','Liam','Chen','Liam Chen',
+                VALUES ('hs.child2@demo.com',:ei,'hs_child2','Liam','Chen','Liam Chen',
                         :pw, 'STUDENT', TRUE)
-                ON CONFLICT (email) DO NOTHING
-            """), {"pw": _DEMO_PW})
+                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "ei": blind_index("hs.child2@demo.com")})
             await conn.execute(text("""
                 INSERT INTO homeschool_children (parent_id, child_id, grade_level, age_band)
                 SELECT p.id, c.id,
