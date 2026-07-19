@@ -132,9 +132,14 @@ module.exports = {
       type: 'ios.simulator',
       device: { type: 'iPhone 16', os: 'iOS 26' },
     },
+    // iPhone 15 doesn't exist as a provisioned simulator device for this
+    // runner's iOS 18 runtimes at all (confirmed via `simctl list devices`
+    // on CI — only iPhone 16 family + iPhone SE (3rd generation) are
+    // present under iOS 18.5/18.6). Matches mobile-e2e.yml's ios-e2e
+    // matrix device for the iOS 18 leg — keep both in sync.
     'simulator.ios18': {
       type: 'ios.simulator',
-      device: { type: 'iPhone 15', os: 'iOS 18' },
+      device: { type: 'iPhone 16', os: 'iOS 18' },
     },
     // Locally-runnable on the Ventura Intel Mac (Xcode 15.2 ships iOS 17 SDK).
     'simulator.ios17': {

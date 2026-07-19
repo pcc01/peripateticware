@@ -173,13 +173,17 @@ jobs:
           # gives no indication of *why* (crash vs. hang vs. Detox native
           # module misconfigured); a full logcat is the only way to see if
           # the app actually crashed on launch.
-          script: |
-            mkdir -p artifacts
-            if ! detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing; then
-              echo "=== Detox test failed — dumping full logcat for diagnosis ==="
-              adb logcat -d > artifacts/logcat.txt
-              exit 1
-            fi
+          #
+          # BUG: this used to be a multi-line `script: |` block with an
+          # if/then/fi. This action does NOT run a multi-line script value as
+          # one continuous shell script — the log showed each line invoked as
+          # its OWN separate `sh -c "<line>"` call ("/usr/bin/sh -c mkdir -p
+          # artifacts" then, separately, "/usr/bin/sh -c if ! detox test
+          # ...; then"), so the `if` never saw its matching `fi` in the same
+          # invocation ("Syntax error: end of file unexpected (expecting
+          # \"fi\")"). Collapsed to one single physical line using &&/|| so
+          # it can't be split across invocations.
+          script: mkdir -p artifacts && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
@@ -222,10 +226,16 @@ jobs:
             detox-config: ios.26.debug
             xcode-version: latest-stable
 
-          # iOS 18 — primary fallback for users who skip the latest update
+          # iOS 18 — primary fallback for users who skip the latest update.
+          # device confirmed via the actual "No simulator found" dump from
+          # this runner: macos-15's iOS 18.5/18.6 runtimes only provision
+          # iPhone 16 family + iPhone SE (3rd generation) simulators — no
+          # iPhone 15 device exists here at all, regardless of the OS
+          # version match being correct. Switched to iPhone 16 (also update
+          # the matching simulator.ios18 device in mobile/.detoxrc.js).
           - ios-version: '18'
             runner: macos-15
-            device: iPhone 15
+            device: iPhone 16
             detox-config: ios.18.debug
             xcode-version: '16'
 
