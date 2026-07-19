@@ -197,7 +197,9 @@ jobs:
           retention-days: 14
 
 # ──────────────────────────────────────────────────────────────────────────────
-# iOS — matrix across iOS 26 / 18 / 16
+# iOS — matrix across iOS 26 / 18 (iOS 16/17 floor tests are LOCAL-only —
+# see mobile/.detoxrc.js's ios.16.debug/ios.17.debug comments and the removed
+# entry below for why).
 # ──────────────────────────────────────────────────────────────────────────────
   ios-e2e:
     name: iOS ${{ matrix.ios-version }} (${{ matrix.device }})
@@ -219,10 +221,19 @@ jobs:
           # https://github.com/actions/runner-images for availability) and
           # fill in the real xcode-version string from that image's readme.
           #
-          # iOS 26 — current baseline (~86 % adoption on recent devices)
+          # iOS 26 — current baseline (~86 % adoption on recent devices).
+          # device was iPhone 16, confirmed broken via a "No simulator found"
+          # dump: macos-latest rolled forward to Xcode 26.6, whose iOS
+          # 26.2/26.4/26.5 runtimes only provision the iPhone 17 lineup +
+          # iPhone 16e — the plain iPhone 16/16 Plus/16 Pro/16 Pro Max are
+          # gone. Since macos-latest is a moving target, this device pin can
+          # break again the same way whenever GitHub next rolls the image's
+          # device catalog forward — if it does, re-check via the same
+          # "No simulator found... Available devices:" dump this job
+          # produces on failure.
           - ios-version: '26'
             runner: macos-latest
-            device: iPhone 16
+            device: iPhone 17
             detox-config: ios.26.debug
             xcode-version: latest-stable
 
@@ -239,12 +250,20 @@ jobs:
             detox-config: ios.18.debug
             xcode-version: '16'
 
-          # iOS 16 — floor (last version for iPhone 8 / iPhone X legacy hardware)
-          - ios-version: '16'
-            runner: macos-14
-            device: iPhone 8
-            detox-config: ios.16.debug
-            xcode-version: '15'
+          # iOS 16 — REMOVED. Confirmed via an actual CI failure that this leg
+          # is structurally impossible, not a device-pin typo like the iOS
+          # 18/26 fixes above: getting an iOS 16 simulator runtime requires
+          # xcode-version '15' (Xcode 15.4), but this project's React Native
+          # version refuses to even generate a Podfile below Xcode 16.1
+          # ("React Native requires XCode >= 16.1. Found 15.4. Invalid
+          # `Podfile` file: Please upgrade XCode."). No Xcode release
+          # satisfies both "ships an iOS 16 runtime" and "is >= 16.1" — Apple
+          # dropped iOS 16 from the bundled runtime list once Xcode crossed
+          # that line. mobile/.detoxrc.js already anticipated this: its
+          # ios.16.debug/ios.17.debug configs are commented "LOCAL: runnable
+          # on the Ventura Intel Mac" specifically because they were never
+          # meant to run on a CI image. Left those configs in place for local
+          # use; just not running them here.
 
     steps:
       - uses: actions/checkout@v4
