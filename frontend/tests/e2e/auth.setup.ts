@@ -4,6 +4,15 @@
  *
  * Uses direct API calls (not UI login) for reliability.
  * The Vite proxy rewrites /auth/* → /api/v1/auth/* on the backend.
+ *
+ * Env var fallbacks below use `||`, not `??`. Found in CI: e2e.yml passes
+ * TEST_TEACHER_EMAIL/TEST_PARENT_EMAIL as `${{ secrets.X }}` — for any
+ * persona whose secret was never actually configured in the repo, GitHub
+ * resolves that to an EMPTY STRING, not an absent var. `??` only falls back
+ * on null/undefined, so `'' ?? 'teacher@example.com'` stayed `''`, sending
+ * an empty email to the login API ("Must provide either email or id"). `||`
+ * treats empty string as falsy too, so it actually falls back to the
+ * default regardless of whether the secret exists, is unset, or is empty.
  */
 import { test as setup, expect, type Page } from '@playwright/test';
 import path from 'path';
@@ -60,36 +69,36 @@ async function loginAs(
 
 setup('authenticate as teacher', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_TEACHER_EMAIL    ?? 'teacher@example.com',
-    process.env.TEST_TEACHER_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_TEACHER_EMAIL    || 'teacher@example.com',
+    process.env.TEST_TEACHER_PASSWORD || 'SecurePass123!',
     TEACHER_FILE);
 });
 
 setup('authenticate as student', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_STUDENT_EMAIL    ?? 'student@example.com',
-    process.env.TEST_STUDENT_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_STUDENT_EMAIL    || 'student@example.com',
+    process.env.TEST_STUDENT_PASSWORD || 'SecurePass123!',
     STUDENT_FILE);
 });
 
 setup('authenticate as parent', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_PARENT_EMAIL    ?? 'parent@example.com',
-    process.env.TEST_PARENT_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_PARENT_EMAIL    || 'parent@example.com',
+    process.env.TEST_PARENT_PASSWORD || 'SecurePass123!',
     PARENT_FILE);
 });
 
 setup('authenticate as admin', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_ADMIN_EMAIL    ?? 'admin@example.com',
-    process.env.TEST_ADMIN_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_ADMIN_EMAIL    || 'admin@example.com',
+    process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!',
     ADMIN_FILE);
 });
 
 setup('authenticate as homeschool', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_HOMESCHOOL_EMAIL    ?? 'homeschool@example.com',
-    process.env.TEST_HOMESCHOOL_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_HOMESCHOOL_EMAIL    || 'homeschool@example.com',
+    process.env.TEST_HOMESCHOOL_PASSWORD || 'SecurePass123!',
     HOMESCHOOL_FILE);
   // Mark onboarding as dismissed so tests land on the dashboard, not the welcome wizard.
   await page.goto('/', { waitUntil: 'domcontentloaded' });
@@ -99,7 +108,7 @@ setup('authenticate as homeschool', async ({ page }) => {
 
 setup('authenticate as platform admin', async ({ page }) => {
   await loginAs(page,
-    process.env.TEST_PLATFORM_EMAIL    ?? 'admin@example.com',
-    process.env.TEST_PLATFORM_PASSWORD ?? 'SecurePass123!',
+    process.env.TEST_PLATFORM_EMAIL    || 'admin@example.com',
+    process.env.TEST_PLATFORM_PASSWORD || 'SecurePass123!',
     PLATFORM_FILE);
 });
