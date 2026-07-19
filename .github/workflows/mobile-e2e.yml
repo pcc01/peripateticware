@@ -272,8 +272,25 @@ jobs:
         run: detox build -c ${{ matrix.detox-config }}
 
       - name: Boot iOS simulator
+        # `simctl list devices available`'s plain-text output puts the OS
+        # version on its own header line ("-- iOS 26.0 --") and each device
+        # on separate lines below it — never both on the same line. The old
+        # `grep "$device" | grep "iOS $version"` required a single line to
+        # match both, which never happens, so $UDID always came back empty
+        # and `simctl boot ""` failed every run. Using the JSON output and
+        # jq to actually walk the runtime → device structure fixes this for
+        # real, matching on the device name within whichever runtime key
+        # contains the target major iOS version (runtime keys look like
+        # "com.apple.CoreSimulator.SimRuntime.iOS-26-0" — dashes, not dots).
         run: |
-          UDID=$(xcrun simctl list devices available | grep "${{ matrix.device }}" | grep "iOS ${{ matrix.ios-version }}" | head -1 | grep -E -o '[0-9A-F-]{36}')
+          UDID=$(xcrun simctl list devices available --json | \
+            jq -r --arg os "iOS-${{ matrix.ios-version }}" --arg dev "${{ matrix.device }}" \
+            '.devices | to_entries[] | select(.key | contains($os)) | .value[] | select(.name == $dev) | .udid' | head -1)
+          if [ -z "$UDID" ]; then
+            echo "No simulator found matching device '${{ matrix.device }}' on iOS ${{ matrix.ios-version }}. Available devices:"
+            xcrun simctl list devices available
+            exit 1
+          fi
           xcrun simctl boot "$UDID"
           echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
 
