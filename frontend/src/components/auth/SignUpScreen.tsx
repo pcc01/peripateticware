@@ -351,8 +351,14 @@ export default function SignupScreen({
 
                 {/* Country */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">{t('components_auth_signupscreen.country', 'Country')}</label>
+                  {/* axe/WCAG: visible <label> text alone doesn't give a <select>
+                      an accessible name unless it's programmatically associated
+                      via htmlFor/id — axe flagged this as "Select element must
+                      have an accessible name" (critical) since there was no
+                      such association before. */}
+                  <label htmlFor="signup-country" className="block text-xs font-medium text-gray-700 mb-1">{t('components_auth_signupscreen.country', 'Country')}</label>
                   <select
+                    id="signup-country"
                     value={countryCode}
                     onChange={e => setCountryCode(e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"

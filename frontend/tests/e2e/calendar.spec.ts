@@ -27,6 +27,16 @@ const __dirname = path.dirname(__filename);
 const today = new Date();
 const todayISO = today.toISOString().slice(0, 10);
 
+// Used by the locale-aware grid tests below. ParentCalendarPage only renders
+// <MonthCalendar> (the thing with the weekday header cells these tests
+// assert on) once a child is selected — selectedChildId is only ever set
+// from the parent/children response (see ParentCalendarPage.tsx's effect:
+// `if (list.length > 0) setSelectedChildId(list[0].id)`). Mocking
+// parent/children as `[]` means the page renders its "link a child" empty
+// state instead of the calendar grid, so the header cells this test is
+// looking for never exist — not a locale bug, a test-mock bug.
+const TEST_CHILD = { id: 'child-1', full_name: 'Ada Lovelace', verified: true };
+
 // ── Parent calendar ─────────────────────────────────────────────────────────
 
 test.describe('Parent — Calendar', () => {
@@ -118,7 +128,7 @@ test.describe('Calendar — Locale-aware grid (CLDR/ICU)', () => {
 
   test('English (en) locale starts the week on Sunday', async ({ page }) => {
     await page.addInitScript(() => window.localStorage.setItem('i18nextLng', 'en'));
-    await page.route('**/api/v1/parent/children**', (route) => route.fulfill({ json: [] }));
+    await page.route('**/api/v1/parent/children**', (route) => route.fulfill({ json: [TEST_CHILD] }));
     await page.route('**/api/v1/calendar/events**', (route) => route.fulfill({ json: [] }));
 
     await page.goto('/parent/calendar');
@@ -131,7 +141,7 @@ test.describe('Calendar — Locale-aware grid (CLDR/ICU)', () => {
 
   test('French (fr) locale starts the week on Monday, not Sunday', async ({ page }) => {
     await page.addInitScript(() => window.localStorage.setItem('i18nextLng', 'fr'));
-    await page.route('**/api/v1/parent/children**', (route) => route.fulfill({ json: [] }));
+    await page.route('**/api/v1/parent/children**', (route) => route.fulfill({ json: [TEST_CHILD] }));
     await page.route('**/api/v1/calendar/events**', (route) => route.fulfill({ json: [] }));
 
     await page.goto('/parent/calendar');

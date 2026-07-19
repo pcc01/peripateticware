@@ -249,7 +249,15 @@ const ActivityManager = () => {
       const newDesc = f.description?.trim() ? f.description + '\n\n' + draft : draft;
       return { ...f, title: newTitle, description: newDesc };
     });
-    setShowAISuggestions(false);
+    // BUG: this used to unconditionally close the panel on every selection
+    // (setShowAISuggestions(false)) — but OllamaLessonSuggestions tracks
+    // selection as a Set and toggles individual cards (handleSelect adds/
+    // removes from `selected` and flips each card's own "✓ Added to
+    // description" indicator), clearly designed for picking more than one
+    // suggestion in a sitting. Closing the whole panel after the first click
+    // both defeated that and hid the per-card confirmation text the moment
+    // it would've shown. The panel now only closes via the explicit
+    // "Hide"/"Ask Peri" toggle button (line ~842) instead.
   };
 
   // Reverse geocode when lat/lng change (debounced 800 ms)

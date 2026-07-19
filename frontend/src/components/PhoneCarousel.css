@@ -82,7 +82,7 @@
 .placeholder-text {
   font-size: 10px;
   font-weight: 600;
-  color: #7a6f5e;
+  color: #6b6150; /* was #7a6f5e — 4.06:1 against .carousel-placeholder's #dceedd bg, failed WCAG AA (needs 4.5:1); #6b6150 gives 5.02:1. Same fix already applied to mobile's fieldGuide theme (src/theme/tokens.ts) — this is the web copy of the same color that never got it. */
   text-align: center;
   padding: 0 8px;
 }
@@ -105,7 +105,7 @@
 
 .carousel-subtitle {
   font-size: 10px;
-  color: #7a6f5e;
+  color: #6b6150; /* was #7a6f5e — 4.06:1 against .carousel-placeholder's #dceedd bg, failed WCAG AA (needs 4.5:1); #6b6150 gives 5.02:1. Same fix already applied to mobile's fieldGuide theme (src/theme/tokens.ts) — this is the web copy of the same color that never got it. */
   margin: 0 0 8px 0;
 }
 
@@ -195,7 +195,7 @@
 
 .carousel-counter {
   font-size: 12px;
-  color: #7a6f5e;
+  color: #6b6150; /* was #7a6f5e — 4.06:1 against .carousel-placeholder's #dceedd bg, failed WCAG AA (needs 4.5:1); #6b6150 gives 5.02:1. Same fix already applied to mobile's fieldGuide theme (src/theme/tokens.ts) — this is the web copy of the same color that never got it. */
   font-weight: 600;
   min-width: 50px;
   text-align: center;
