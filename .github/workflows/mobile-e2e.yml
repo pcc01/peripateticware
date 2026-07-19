@@ -20,7 +20,8 @@ on:
   workflow_dispatch: {}
 
 # ──────────────────────────────────────────────────────────────────────────────
-# ANDROID — matrix across API 37 / 35 / 33 / 30 / 24
+# ANDROID — matrix across API 35 / 33 / 30 / 24 (API 37 — Android 17 — is
+# DISABLED below; no released SDK platform for it yet)
 # ──────────────────────────────────────────────────────────────────────────────
 jobs:
   android-e2e:
@@ -32,22 +33,23 @@ jobs:
       fail-fast: false          # keep other API levels running if one fails
       matrix:
         include:
-          - api-level: 37
-            android-version: '17 CinnamonBun'
-            target: google_apis
-            arch: x86_64
-            # avdmanager's built-in device list uses id-style names for Pixel
-            # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
-            # legacy Nexus entries, which really are registered under their
-            # display name ("Nexus 5X", used by the API 24 leg below, works
-            # as-is). Using the display name here failed every run with
-            # "Error: No device found matching --device Pixel 6." — this
-            # was also the real cause of the API 37 boot failure flagged in
-            # an earlier investigation as unconfirmed/acceleration-related;
-            # it wasn't a boot/image issue at all.
-            profile: pixel_6
-            avd-name: Pixel_6_API_37
-            detox-config: android.api37.debug
+          # API 37 — Android 17 "CinnamonBun" — DISABLED. Confirmed via a real
+          # run's "Install Android SDK" step: sdkmanager can't find
+          # 'platforms;android-37' (or the matching system image) in any
+          # channel — Android 17 has no released SDK platform yet, same class
+          # of "not actually available yet" issue as the iOS 27 leg above
+          # (Xcode 27 in mobile-e2e.yml's ios-e2e job). Re-add this entry once
+          # Google actually ships an API 37 platform/system-image — check via
+          # `sdkmanager --list` or https://developer.android.com/studio/releases/platforms
+          # for availability first.
+          #
+          # - api-level: 37
+          #   android-version: '17 CinnamonBun'
+          #   target: google_apis
+          #   arch: x86_64
+          #   profile: pixel_6
+          #   avd-name: Pixel_6_API_37
+          #   detox-config: android.api37.debug
 
           - api-level: 35
             android-version: '15 VanillaIceCream'
@@ -312,6 +314,16 @@ jobs:
       - name: Build iOS app for testing
         working-directory: mobile
         run: detox build -c ${{ matrix.detox-config }}
+
+      - name: Install applesimutils
+        # Detox's iOS test runner shells out to `applesimutils` (a Homebrew
+        # CLI wrapper it uses to manage simulators) — it's not preinstalled
+        # on GitHub-hosted macOS runners, so every `detox test` invocation
+        # fails immediately with "applesimutils: command not found" unless
+        # it's installed explicitly first.
+        run: |
+          brew tap wix/brew
+          brew install applesimutils
 
       - name: Boot iOS simulator
         # `simctl list devices available`'s plain-text output puts the OS

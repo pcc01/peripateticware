@@ -3,6 +3,7 @@ package com.peripateticware.app
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
 import com.wix.detox.Detox
+import com.wix.detox.config.DetoxConfig
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,6 +27,21 @@ class DetoxTest {
 
     @Test
     fun runDetoxTests() {
-        Detox.runTests(activityTestRule)
+        // Full Android matrix (API 24/30/33/35) confirmed via logcat: every single
+        // device.launchApp() call throws
+        // "com.wix.detox.common.DetoxErrors$DetoxRuntimeException: Waited for the
+        // new RN-context for too long! (60 seconds)" — DetoxConfig.rnContextLoadTimeoutSec's
+        // hardcoded 60s default, tripped on every relaunch on these 2-vCPU/headless/
+        // swiftshader-rendered CI emulators. That single instrumentation-level failure is
+        // what cascades into every later Detox action reporting "Detox can't seem to
+        // connect to the test app(s)!" for the rest of the run — not an app crash, and not
+        // related to the release/export:embed build (RNMarker timings in the same logcat
+        // show the actual RN context + JS bundle load completing in under a second once it
+        // starts; the 60s ceiling is just too tight for how long this CI hardware takes to
+        // get there). Raised per Detox's own suggested fix ("consider applying a custom
+        // Detox runtime-config in DetoxTest.runTests()").
+        val config = DetoxConfig()
+        config.rnContextLoadTimeoutSec = 180
+        Detox.runTests(activityTestRule, config)
     }
 }
