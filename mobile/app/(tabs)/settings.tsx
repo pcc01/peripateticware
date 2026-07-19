@@ -25,10 +25,23 @@ export default function SettingsScreen() {
   // language picker. Computing it inside the render body with useMemo,
   // keyed on the current language (via useTranslation(), which subscribes
   // this component to i18next's `languageChanged` event), fixes that.
-  const THEMES: { name: ThemeName; label: string; emoji: string; desc: string }[] = useMemo(() => [
-    { name: 'fieldGuide',  label: t('settings.theme.fieldGuide.label', 'Field Guide'),  emoji: '🌿', desc: t('settings.theme.fieldGuide.desc', 'Warm parchment — classic field notebook') },
-    { name: 'terrain',     label: t('settings.theme.terrain.label', 'Terrain'),      emoji: '🪨', desc: t('settings.theme.terrain.desc', 'Crisp and sharp — topographic focus') },
-    { name: 'atmosphere',  label: t('settings.theme.atmosphere.label', 'Atmosphere'),   emoji: '🌌', desc: t('settings.theme.atmosphere.desc', 'Deep and dark — night sky clarity') },
+  // `renderLang` is a test-only regression marker for e2e/settings.test.js
+  // 9.5 (and maestro/flows/settings/9.5-theme-labels-language-reactivity.yaml):
+  // every locale JSON file currently ships byte-identical English-fallback
+  // copy (see 9.3's comment above), so opt.label/opt.desc can't be used to
+  // prove this useMemo actually recomputed on a language switch — the
+  // string would read the same either way. renderLang is built inside the
+  // SAME memoized array as label/desc, so it's frozen exactly when they
+  // would be frozen (i.e. it reproduces the pre-fix bug if someone
+  // reintroduces a module-level THEMES const) and fresh exactly when they
+  // would be fresh. Surfaced via testID below so Detox/Maestro can assert
+  // on it without relying on translated text content that doesn't exist
+  // yet. Safe to remove this field (and go back to asserting opt.label
+  // directly) once real per-locale translations land.
+  const THEMES: { name: ThemeName; label: string; emoji: string; desc: string; renderLang: string }[] = useMemo(() => [
+    { name: 'fieldGuide',  label: t('settings.theme.fieldGuide.label', 'Field Guide'),  emoji: '🌿', desc: t('settings.theme.fieldGuide.desc', 'Warm parchment — classic field notebook'), renderLang: i18nInstance.language },
+    { name: 'terrain',     label: t('settings.theme.terrain.label', 'Terrain'),      emoji: '🪨', desc: t('settings.theme.terrain.desc', 'Crisp and sharp — topographic focus'), renderLang: i18nInstance.language },
+    { name: 'atmosphere',  label: t('settings.theme.atmosphere.label', 'Atmosphere'),   emoji: '🌌', desc: t('settings.theme.atmosphere.desc', 'Deep and dark — night sky clarity'), renderLang: i18nInstance.language },
   ], [i18nInstance.language]);
 
   // Picking a language updates the selected chip, persists to AsyncStorage
@@ -76,6 +89,7 @@ export default function SettingsScreen() {
           {THEMES.map((opt) => (
             <TouchableOpacity
               key={opt.name}
+              testID={`theme-option-${opt.name}-${opt.renderLang}`}
               onPress={() => setTheme(opt.name)}
               style={[styles.optionRow, { borderColor: themeName === opt.name ? theme.accent : theme.border, borderRadius: theme.radiusSm, backgroundColor: themeName === opt.name ? theme.accentMuted : theme.surfaceAlt }]}
               accessibilityRole="radio"

@@ -1,0 +1,33 @@
+# Mirrors e2e/settings.test.js "9.5 — switching language actually
+# re-renders the THEME labels (not frozen from first load)" — a
+# regression test for the bug fixed in 6fa7fe9 ("feat: wire real i18n
+# into mobile (react-i18next), fix 2 reactivity bugs"). THEMES used to be
+# a module-level `const` built by calling t() once at import time, so it
+# never updated on a runtime language switch even though the language
+# picker's own checkmark did (see 9.3's Detox test).
+#
+# CAVEAT (see settings.test.js's file-level comment): every locale JSON
+# file currently ships byte-identical English-fallback copy, so there is
+# no translated text to assert on yet. Instead this checks
+# `theme-option-<name>-<lang>`, a testID built from a `renderLang` marker
+# inside THEMES's own memoized array (see app/(tabs)/settings.tsx) — it
+# only flips from "-en" to "-es" if THEMES actually recomputed in
+# response to the language switch, which is exactly what the bug broke.
+appId: com.peripateticware.app
+---
+- launchApp:
+    clearState: true
+- runFlow: ../login-student.yaml
+- tapOn:
+    id: "tab-settings"
+- assertVisible:
+    id: "settings-screen"
+- assertVisible:
+    id: "theme-option-fieldGuide-en"
+- tapOn: "Español"
+- assertVisible:
+    id: "theme-option-fieldGuide-es"
+- assertNotVisible:
+    id: "theme-option-fieldGuide-en"
+- assertVisible:
+    id: "settings-screen"

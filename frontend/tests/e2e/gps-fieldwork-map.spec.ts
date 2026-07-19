@@ -22,6 +22,19 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function collectConsoleErrors(page: Page) {
+  const errors: string[] = [];
+  page.on('console', msg => {
+    if (msg.type() === 'error') {
+      const text = msg.text();
+      if (!text.includes('favicon') && !text.includes('chrome-extension') && !text.includes('net::ERR')) {
+        errors.push(text);
+      }
+    }
+  });
+  return errors;
+}
+
 const FAKE_SESSION_ID  = '11111111-1111-1111-1111-111111111111';
 const FAKE_ACTIVITY_ID = '22222222-2222-2222-2222-222222222222';
 const STUDENT_A = '33333333-3333-3333-3333-333333333333';
@@ -73,6 +86,28 @@ test.describe('Teacher — Fieldwork Map link on Session Monitor', () => {
 
     await expect(page.locator('main, .container').first()).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole('button', { name: /fieldwork map/i })).toHaveCount(0);
+  });
+
+  // Regression guard: SessionMonitor.tsx used to read `session.inquiry_log.length`
+  // unguarded, which threw a TypeError and blanked the panel whenever the
+  // backend response omitted the field entirely (as opposed to sending an
+  // empty array). Fixed to `session.inquiry_log?.length ?? 0`, and the
+  // backend now always includes the field — this test guards the frontend
+  // fix directly against a response that omits it, independent of whether
+  // the backend regresses too.
+  test('inquiries count renders 0 (no crash) when inquiry_log is missing from the API response entirely', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    const { inquiry_log, ...sessionWithoutInquiryLog } = baseSession();
+    await mockSessionMonitorApis(page, sessionWithoutInquiryLog);
+
+    await page.goto(`/teacher/sessions/${FAKE_SESSION_ID}/monitor`);
+
+    // The inquiries count is the only element on the page styled
+    // .text-3xl.font-bold — it must render "0", not crash the panel.
+    await expect(page.locator('.text-3xl.font-bold').first()).toHaveText('0', { timeout: 10_000 });
+
+    const typeErrors = errors.filter(e => e.includes('TypeError'));
+    expect(typeErrors, 'No TypeErrors when inquiry_log is missing from the session response').toHaveLength(0);
   });
 });
 
@@ -307,5 +342,55 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
 
     await expect.poll(() => consentBody, { timeout: 10_000 }).not.toBeNull();
     expect(consentBody).toMatchObject({ activity_id: NEW_ACTIVITY_ID, consent_given: true });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// Teacher (non-homeschool) — GPS toggle at activity creation
+//
+// Only the homeschool self-consent branch (above) had coverage. The plain
+// teacher/org path — ActivityManager.tsx only posts
+// discovery_location_gps_capture_enabled and never shows/fires the
+// homeschool self-consent checkbox or POST /parent/consent/gps, since that
+// consent flow is homeschool-only (the parent IS the account holder there;
+// org/school students go through the async per-student consent flow
+// instead) — had none.
+// ─────────────────────────────────────────────────────────────────────────
+
+test.describe('Teacher — GPS toggle (non-homeschool path)', () => {
+  test.use({ storageState: path.join(__dirname, '.auth/teacher.json') });
+
+  test('enabling GPS tracking posts discovery_location_gps_capture_enabled and never calls /parent/consent/gps', async ({ page }) => {
+    await page.route('**/api/v1/activities/check-compliance', (route) =>
+      route.fulfill({ json: { status: 'compliant', issues: [], warnings: [] } }));
+    await page.route('**/api/v1/rubrics', (route) => route.fulfill({ json: { rubrics: [] } }));
+
+    let createBody: any = null;
+    let parentConsentCalled = false;
+    await page.route('**/api/v1/activities', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      createBody = route.request().postDataJSON();
+      await route.fulfill({ status: 201, json: { id: 'teacher-gps-activity-1', status: 'draft' } });
+    });
+    await page.route('**/api/v1/parent/consent/gps', async (route) => {
+      parentConsentCalled = true;
+      await route.fulfill({ status: 201, json: { recorded: true } });
+    });
+
+    await page.goto('/teacher/activities/new');
+    await page.locator('#title').fill('E2E Teacher GPS Fieldtrip');
+
+    await page.getByRole('button', { name: /location/i }).click();
+    await page.getByText(/enable live gps tracking/i).click();
+
+    // The homeschool self-consent checkbox must never appear for a plain
+    // teacher/org account.
+    await expect(page.getByText(/i consent to gps location capture for my child/i)).toHaveCount(0);
+
+    await page.getByRole('button', { name: /^create activity$/i }).click();
+
+    await expect.poll(() => createBody, { timeout: 10_000 }).not.toBeNull();
+    expect(createBody).toMatchObject({ discovery_location_gps_capture_enabled: true });
+    expect(parentConsentCalled).toBe(false);
   });
 });

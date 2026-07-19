@@ -86,6 +86,105 @@ test.describe('Teacher — Activities List', () => {
     await btn.first().click();
     await expect(page).toHaveURL(/\/teacher\/activities\/new/, { timeout: 8_000 });
   });
+
+  // The inline "Publish" button (draft/archived rows only) calls
+  // POST /activities/:id/publish — the backend endpoint already existed but
+  // was never wired up to any UI until now. No prior test referenced
+  // "Publish" anywhere in this suite.
+  test('"Publish" button publishes a draft activity and updates its status badge', async ({ page }) => {
+    const DRAFT_ID = 'draft-activity-1';
+    await page.route('**/api/v1/activities', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: [{ id: DRAFT_ID, title: 'Unpublished Wetlands Study', status: 'draft', subject: 'Science' }],
+      });
+    });
+
+    let publishCalled = false;
+    await page.route(`**/api/v1/activities/${DRAFT_ID}/publish`, async (route) => {
+      publishCalled = true;
+      await new Promise((r) => setTimeout(r, 600));
+      await route.fulfill({ status: 200, json: { status: 'published' } });
+    });
+
+    await page.goto('/teacher/activities');
+    await expect(page.getByText('Unpublished Wetlands Study')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('draft')).toBeVisible();
+
+    const publishBtn = page.getByRole('button', { name: /publish/i });
+    await expect(publishBtn).toBeVisible();
+    await publishBtn.click();
+
+    // In-flight: button flips to a disabled "Publishing…" state.
+    await expect(page.getByRole('button', { name: /publishing/i })).toBeDisabled({ timeout: 3_000 });
+
+    await expect.poll(() => publishCalled, { timeout: 10_000 }).toBe(true);
+    await expect(page.getByText('published')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /publish/i })).toHaveCount(0);
+  });
+
+  // Regression coverage: the backend used to 500 when an activity row had an
+  // explicit `null` (rather than an empty array or an absent key) in a
+  // list-typed column. This asserts the frontend list page — which doesn't
+  // even read these fields directly — never throws when they're present.
+  test('renders without crashing when an activity row has explicit null list-typed fields', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.route('**/api/v1/activities', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: [
+          {
+            id: 'null-fields-activity',
+            title: 'Null Columns Regression Activity',
+            status: 'draft',
+            subject: 'Science',
+            points_of_interest: null,
+            tags: null,
+            learning_objectives: null,
+          },
+        ],
+      });
+    });
+
+    await page.goto('/teacher/activities');
+    await expect(page.getByText('Null Columns Regression Activity')).toBeVisible({ timeout: 10_000 });
+    const typeErrors = errors.filter(e => e.includes('TypeError'));
+    expect(typeErrors, 'No TypeErrors rendering activities with null list-typed fields').toHaveLength(0);
+  });
+});
+
+// ── 2b. Homeschool Activities List (reuses ActivityListPage) ─────────────────
+// /homeschool/activities routes to the exact same ActivityListPage component
+// as /teacher/activities (see pages/teacher/ActivityListPage.tsx), just
+// under HomeschoolLayout with the "Fieldwork Map" per-row button hidden.
+
+test.describe('Homeschool — Activities List resilience (null list-typed fields)', () => {
+  test.use({ storageState: path.join(__dirname, '.auth/homeschool.json') });
+
+  test('renders without crashing when an activity row has explicit null list-typed fields', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.route('**/api/v1/activities', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: [
+          {
+            id: 'null-fields-activity-hs',
+            title: 'Homeschool Null Columns Regression Activity',
+            status: 'archived',
+            subject: 'Science',
+            points_of_interest: null,
+            tags: null,
+            learning_objectives: null,
+          },
+        ],
+      });
+    });
+
+    await page.goto('/homeschool/activities');
+    await expect(page.getByText('Homeschool Null Columns Regression Activity')).toBeVisible({ timeout: 10_000 });
+    const typeErrors = errors.filter(e => e.includes('TypeError'));
+    expect(typeErrors, 'No TypeErrors rendering homeschool activities with null list-typed fields').toHaveLength(0);
+  });
 });
 
 // ── 3. Create Activity ────────────────────────────────────────────────────────
@@ -231,6 +330,45 @@ test.describe('Teacher — Submissions', () => {
     await page.goto('/teacher/submissions');
     await expect(page.getByRole('button', { name: /pending review/i })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole('button', { name: /approved/i })).toBeVisible();
+  });
+
+  // Regression coverage: GET /activities/teacher/submissions actually
+  // returns raw session rows (session_id, started_at, no evidence[]), not
+  // the richer TeacherSubmission shape (id, submitted_at, evidence.length)
+  // this page was originally written against. Fixed with `?? ` fallbacks
+  // throughout (submission.id ?? submission.session_id,
+  // submitted_at ?? started_at, evidence?.length ?? 0). This test supplies
+  // the REAL row shape and asserts it renders (and is clickable) without
+  // throwing, instead of the richer shape every other test here uses.
+  test('renders the real session-row shape (session_id, started_at, no evidence[]) without crashing', async ({ page }) => {
+    const errors = collectConsoleErrors(page);
+    await page.route('**/api/v1/activities/teacher/submissions**', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: [
+          {
+            session_id: '99999999-9999-9999-9999-999999999999',
+            activity_id: 'activity-1',
+            activity_title: 'Riverbank Survey',
+            student_name: 'Ada Lovelace',
+            started_at: new Date().toISOString(),
+            status: 'active',
+          },
+        ],
+      });
+    });
+
+    await page.goto('/teacher/submissions');
+    await expect(page.getByRole('heading', { name: /submissions/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Ada Lovelace')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Riverbank Survey')).toBeVisible();
+    await expect(page.getByText(/0\s*items/i)).toBeVisible();
+
+    await page.getByText('Ada Lovelace').click();
+    await expect(page.getByText(/submission details/i)).toBeVisible({ timeout: 5_000 });
+
+    const typeErrors = errors.filter(e => e.includes('TypeError'));
+    expect(typeErrors, 'No TypeErrors on the real submission-row shape').toHaveLength(0);
   });
 });
 
@@ -380,6 +518,50 @@ test.describe('Teacher — Classrooms', () => {
     await expect(page.getByText(/unexpected server error/i)).toBeVisible({ timeout: 5_000 });
     await expect(page.getByText('[object Object]')).toHaveCount(0);
   });
+
+  // Regression coverage for a useParams() key mismatch: the route is
+  // registered as /teacher/classrooms/:id (not :classroomId), so
+  // TeacherClassroomPage.tsx destructuring `classroomId` directly from
+  // useParams() was always undefined, and load()'s `if (!classroomId)
+  // return;` guard silently no-op'd forever — the page never even reached
+  // an error state, just spun forever (perceived as "blank page"). Fixed by
+  // destructuring `const { id: classroomId } = useParams<{ id: string }>()`.
+  // Unlike the "Parameterised Detail Routes" smoke test below (which only
+  // asserts body-not-empty/no-TypeError — a permanently spinning loader
+  // satisfies both), this asserts real, specific loaded content actually
+  // appears.
+  test('classroom detail page loads real content (name heading, roster) — not stuck on a spinner', async ({ page }) => {
+    const CLASSROOM_ID = '77777777-7777-7777-7777-777777777777';
+    await page.route(`**/api/v1/classrooms/${CLASSROOM_ID}`, (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: {
+          id: CLASSROOM_ID,
+          name: 'Room 12 — Earth Science',
+          grade_level: 7,
+          subject: 'Science',
+          is_active: true,
+          org_id: 'org-1',
+          teacher_id: 'teacher-1',
+          student_count: 2,
+          max_students_per_classroom: 30,
+          students: [
+            { id: 's1', email: 'ada@example.com', name: 'Ada Lovelace', enrolled_at: new Date().toISOString() },
+            { id: 's2', email: 'grace@example.com', name: 'Grace Hopper', enrolled_at: new Date().toISOString() },
+          ],
+          created_at: new Date().toISOString(),
+        },
+      });
+    });
+    await page.route(`**/api/v1/classrooms/${CLASSROOM_ID}/invites`, (route) => route.fulfill({ json: [] }));
+
+    await page.goto(`/teacher/classrooms/${CLASSROOM_ID}`);
+
+    await expect(page.getByRole('heading', { name: 'Room 12 — Earth Science' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Enrolled Students')).toBeVisible();
+    await expect(page.getByText('2 / 30 students')).toBeVisible();
+    await expect(page.getByText('Ada Lovelace')).toBeVisible();
+  });
 });
 
 // ── 8. Students ───────────────────────────────────────────────────────────────
@@ -400,6 +582,57 @@ test.describe('Teacher — Students', () => {
     await page.goto('/teacher/students');
     await expect(page.locator('input[placeholder*="earch" i]').first()).toBeVisible({ timeout: 10_000 });
   });
+
+  // Regression coverage: InviteStudentsPanel.tsx / TeacherStudentsPage.tsx
+  // fixed a PII decryption/display bug — student name/email were rendering
+  // as ciphertext or "[object Object]" instead of plaintext. Prior tests
+  // here only ever checked the heading/search-input render, never the
+  // actual roster row content.
+  test('renders the real plaintext student name and email from the roster API', async ({ page }) => {
+    await page.route('**/api/v1/activities/teacher/students', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({
+        json: [
+          { id: 'student-pii-1', email: 'ada.lovelace@example.com', full_name: 'Ada Lovelace', first_name: 'Ada', last_name: 'Lovelace', is_active: true },
+        ],
+      });
+    });
+
+    await page.goto('/teacher/students');
+    await expect(page.getByText('Ada Lovelace')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('ada.lovelace@example.com')).toBeVisible();
+    await expect(page.getByText('[object Object]')).toHaveCount(0);
+  });
+
+  // The "+ Add Student" button was only ever checked for presence — never
+  // actually submitted. This exercises the full add-by-email flow: it looks
+  // up the email against existing accounts and either enrolls-and-notifies
+  // in-app, or (tested separately in InviteStudentsPanel's own component,
+  // not duplicated here) falls back to an email invite.
+  test('add-student-by-email flow submits and shows a success confirmation', async ({ page }) => {
+    await page.route('**/api/v1/activities/teacher/students', (route) => route.fulfill({ json: [] }));
+    await page.route('**/api/v1/classrooms', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      return route.fulfill({ json: [{ id: 'classroom-1', name: 'Room 12' }] });
+    });
+
+    let inviteBody: any = null;
+    await page.route('**/api/v1/classrooms/classroom-1/students/by-email', async (route) => {
+      inviteBody = route.request().postDataJSON();
+      await route.fulfill({ json: { matched: true, enrolled: true, student_name: 'New Student', email: inviteBody.email } });
+    });
+
+    await page.goto('/teacher/students');
+    await page.getByRole('button', { name: /\+ add student/i }).click();
+
+    await expect(page.getByRole('heading', { name: /add a student/i })).toBeVisible({ timeout: 10_000 });
+    await page.locator('input[type="email"]').fill('new.student@example.com');
+    await page.getByRole('button', { name: /^add student$/i }).click();
+
+    await expect(page.getByText(/added to the class and notified in-app/i)).toBeVisible({ timeout: 10_000 });
+    await expect.poll(() => inviteBody, { timeout: 10_000 }).not.toBeNull();
+    expect(inviteBody).toMatchObject({ email: 'new.student@example.com' });
+  });
 });
 
 // ── 9. Projects ───────────────────────────────────────────────────────────────
@@ -417,6 +650,71 @@ test.describe('Teacher — Projects', () => {
     const hasBtn = await page.getByRole('button', { name: /new project/i }).isVisible({ timeout: 5_000 }).catch(() => false);
     const hasContent = await page.locator('main').isVisible({ timeout: 3_000 }).catch(() => false);
     expect(hasBtn || hasContent).toBe(true);
+  });
+});
+
+// ── 9b. Project create/detail/edit flow ───────────────────────────────────────
+// The list-page tests above only ever checked for the heading and the "New
+// Project" button — never that creating, viewing, or editing a project
+// actually round-trips through the backend. GET/POST/PUT all live under
+// /api/v1/teacher/projects (a different path family from /api/v1/activities).
+
+test.describe('Teacher — Project create/detail/edit', () => {
+  test('creating a project navigates to its detail page, and editing persists changes', async ({ page }) => {
+    const NEW_PROJECT_ID = '88888888-8888-8888-8888-888888888888';
+    const createdProject = {
+      id: NEW_PROJECT_ID,
+      title: 'River Watershed Study',
+      description: 'A semester-long investigation of the local watershed and its ecosystem.',
+      subject: 'Science',
+      grade_level: 6,
+      duration_weeks: 8,
+      status: 'planning',
+      activity_count: 0,
+      start_date: new Date().toISOString(),
+      end_date: null,
+      activities: [],
+    };
+
+    await page.route('**/api/v1/teacher/projects', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback();
+      return route.fulfill({ status: 201, json: createdProject });
+    });
+
+    let lastPutBody: any = null;
+    await page.route(`**/api/v1/teacher/projects/${NEW_PROJECT_ID}`, async (route) => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        return route.fulfill({ json: lastPutBody ? { ...createdProject, ...lastPutBody } : createdProject });
+      }
+      if (method === 'PUT') {
+        lastPutBody = route.request().postDataJSON();
+        return route.fulfill({ json: { ...createdProject, ...lastPutBody } });
+      }
+      return route.fallback();
+    });
+
+    await page.goto('/teacher/projects');
+    await page.getByRole('button', { name: /new project/i }).click();
+    await expect(page).toHaveURL(/\/teacher\/projects\/new/, { timeout: 8_000 });
+
+    await page.locator('input[name="title"]').fill('River Watershed Study');
+    await page.locator('textarea[name="description"]').fill('A semester-long investigation of the local watershed and its ecosystem.');
+    await page.locator('select[name="subject"]').selectOption('Science');
+
+    await page.getByRole('button', { name: /^create project$/i }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/teacher/projects/${NEW_PROJECT_ID}$`), { timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'River Watershed Study' })).toBeVisible({ timeout: 10_000 });
+
+    // Edit — ProjectDetailPage reuses ProjectBuilder inline (no separate route).
+    await page.getByRole('button', { name: /edit project/i }).click();
+    const titleInput = page.locator('input[name="title"]');
+    await titleInput.fill('River Watershed Study (Updated)');
+    await page.getByRole('button', { name: /^update project$/i }).click();
+
+    await expect(page.getByRole('heading', { name: 'River Watershed Study (Updated)' })).toBeVisible({ timeout: 10_000 });
+    expect(lastPutBody).toMatchObject({ title: 'River Watershed Study (Updated)' });
   });
 });
 

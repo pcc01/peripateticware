@@ -1,7 +1,9 @@
 const { loginAsStudent, STUDENT_EMAIL } = require('./helpers');
 
 // Covers MANUAL_TESTING_GUIDE.md section 9 "Settings Screen", items
-// 9.1/9.2/9.3/9.4.
+// 9.1/9.2/9.3/9.4. 9.5 is not in that guide — it's a regression test added
+// for the i18n reactivity fix in commit 6fa7fe9 (see its own comment
+// below).
 //
 // 9.3 (change language) was previously SKIPPED with a comment claiming
 // "there is no language picker in app/(tabs)/settings.tsx" — that's no
@@ -135,5 +137,46 @@ describe('Settings Screen', () => {
     await element(by.text('Sign out')).atIndex(1).tap();
 
     await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(10000);
+  });
+
+  it('9.5 — switching language actually re-renders the THEME labels (not frozen from first load)', async () => {
+    // Regression test for the bug fixed in 6fa7fe9 ("feat: wire real i18n
+    // into mobile (react-i18next), fix 2 reactivity bugs"): THEMES used to
+    // be a module-level `const` built by calling t() once, at import time
+    // — that froze the theme labels/descriptions at whichever language was
+    // active the first time settings.tsx loaded, and they never updated on
+    // a runtime language switch even though the language picker's own
+    // checkmark (tested in 9.3 above) updated correctly. Fixed via a
+    // useMemo keyed on i18n.language — see app/(tabs)/settings.tsx.
+    //
+    // CAVEAT (see the file-level comment above, and 9.3): every locale
+    // JSON file currently ships byte-identical English-fallback copy, so
+    // there is no translated *text* to diff between languages yet —
+    // asserting on the visible "Field Guide" label's literal content would
+    // pass whether or not THEMES actually recomputed. Instead this asserts
+    // against `renderLang`, a marker built inside THEMES's own memoized
+    // array (same recompute path as label/desc, see settings.tsx) and
+    // surfaced via testID `theme-option-<name>-<lang>`. It changes iff
+    // THEMES actually recomputes in response to i18n.language — exactly
+    // what the bug broke — so it would still fail under the old
+    // module-level-const version even though the label text looks
+    // identical. Upgrade this to also assert opt.label's literal text
+    // once real per-locale translations land.
+    await expect(element(by.id('theme-option-fieldGuide-en'))).toExist();
+
+    await element(by.label('Español language')).tap();
+    await expect(
+      element(by.text('✓').withAncestor(by.label('Español language')))
+    ).toBeVisible();
+
+    // THEMES recomputed for the new language: same row (same key/name),
+    // new renderLang suffix. Under the pre-fix bug this testID would still
+    // read "-en" here, frozen from first load, and both assertions below
+    // would fail.
+    await expect(element(by.id('theme-option-fieldGuide-es'))).toExist();
+    await expect(element(by.id('theme-option-fieldGuide-en'))).not.toExist();
+
+    // Screen survives the re-render — same "doesn't crash" bar as 9.2/9.3.
+    await expect(element(by.id('settings-screen'))).toBeVisible();
   });
 });
