@@ -321,9 +321,16 @@ jobs:
         # on GitHub-hosted macOS runners, so every `detox test` invocation
         # fails immediately with "applesimutils: command not found" unless
         # it's installed explicitly first.
+        #
+        # Installing by short name ("applesimutils") failed on Homebrew
+        # >= 6.0.0 with "Refusing to load formula wix/brew/applesimutils
+        # from untrusted tap wix/brew" — non-official taps now require
+        # explicit trust (docs.brew.sh/Tap-Trust). Installing the
+        # fully-qualified name (user/repo/formula) auto-trusts just that
+        # one formula without granting blanket trust to the whole tap.
         run: |
           brew tap wix/brew
-          brew install applesimutils
+          brew install wix/brew/applesimutils
 
       - name: Boot iOS simulator
         # `simctl list devices available`'s plain-text output puts the OS
