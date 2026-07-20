@@ -690,33 +690,36 @@ async def verify_email(
     """
     Activate account from the link emailed after signup.
     Frontend: GET /verify-email?token=<signed_token>
-    On success redirect to /login?verified=1
+
+    Returns JSON — this is called via `fetch()` from the SPA's VerifyEmailPage,
+    not navigated to directly, so it must NOT redirect. A 3xx here gets
+    silently followed by fetch and previously made every outcome (success,
+    expired, invalid) look like success to the frontend.
     """
     from services.signed_url import SignedURL, SignedURLError, SignedURLExpired
-    from fastapi.responses import RedirectResponse
-    from core.config import settings as _settings
+    from fastapi.responses import JSONResponse
 
     try:
         data = await SignedURL.validate(token, purpose="email_verification", consume=True)
     except SignedURLExpired:
-        return RedirectResponse(f"{_settings.FRONTEND_URL}/login?error=link_expired")
+        return JSONResponse(status_code=410, content={"detail": "Verification link expired"})
     except SignedURLError:
-        return RedirectResponse(f"{_settings.FRONTEND_URL}/login?error=invalid_link")
+        return JSONResponse(status_code=400, content={"detail": "Invalid verification link"})
 
     import uuid as _uuid
     try:
         user_id = _uuid.UUID(data["user_id"])
     except (KeyError, ValueError):
-        return RedirectResponse(f"{_settings.FRONTEND_URL}/login?error=invalid_link")
+        return JSONResponse(status_code=400, content={"detail": "Invalid verification link"})
 
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
-        return RedirectResponse(f"{_settings.FRONTEND_URL}/login?error=invalid_link")
+        return JSONResponse(status_code=400, content={"detail": "Invalid verification link"})
 
     if user.is_active:
-        # Already verified — just send them to login
-        return RedirectResponse(f"{_settings.FRONTEND_URL}/login?verified=1")
+        # Already verified — treat as success so a re-click of an old link is harmless
+        return JSONResponse(status_code=200, content={"email": user.email, "message": "Already verified"})
 
     user.is_active = True
     await db.commit()
@@ -728,7 +731,7 @@ async def verify_email(
     except Exception as _e:
         logger.warning("Welcome email failed: %s", _e)
 
-    return RedirectResponse(f"{_settings.FRONTEND_URL}/login?verified=1")
+    return JSONResponse(status_code=200, content={"email": user.email, "message": "Email verified"})
 
 
 @router.post("/resend-verification")
