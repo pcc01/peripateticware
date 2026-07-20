@@ -22,7 +22,19 @@ const STUDENT_PASSWORD = process.env.TEST_STUDENT_PASSWORD;
  */
 async function completeOnboardingIfPresent() {
   try {
-    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(3000);
+    // 45s, not a quick probe: cold app launch on GitHub-hosted macOS CI
+    // runners has measured >15s to first paint (Font.loadAsync's ~5s
+    // escape-hatch timeout plus RootLayout/AuthGuard's AsyncStorage checks
+    // plus general CI resource headroom, all slower here than on a local
+    // dev Mac) — onboarding.test.js's direct 15000ms waits for this same
+    // testID were still timing out. A short probe here doesn't "fail fast
+    // when already onboarded" so much as false-negative on a fresh install
+    // that just hasn't finished its cold launch yet, which then cascades
+    // into every caller's login-screen wait failing too (that's the actual
+    // failure signature seen in CI: helpers.js's login-screen wait timing
+    // out, not this one, because this one gave up first and silently
+    // returned).
+    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(45000);
   } catch {
     return; // Not on the splash screen — already past onboarding (or never delete:true'd).
   }
@@ -55,11 +67,11 @@ async function loginAsStudent() {
     );
   }
   await completeOnboardingIfPresent();
-  await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(15000);
+  await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(30000);
   await element(by.id('email-input')).typeText(STUDENT_EMAIL);
   await element(by.id('password-input')).typeText(STUDENT_PASSWORD);
   await element(by.text('Sign in')).tap();
-  await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(15000);
+  await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(30000);
 }
 
 module.exports = { loginAsStudent, completeOnboardingIfPresent, STUDENT_EMAIL, STUDENT_PASSWORD };

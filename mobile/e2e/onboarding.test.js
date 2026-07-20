@@ -10,7 +10,12 @@ describe('Onboarding tour', () => {
     // straight past the splash screen this test needs to see.
     await device.launchApp({ delete: true, newInstance: true });
 
-    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(15000);
+    // 45s — see the matching comment in e2e/helpers.js's
+    // completeOnboardingIfPresent(). This exact wait (15000ms) was observed
+    // timing out in CI even though it's the very first screen after launch
+    // with no network dependency of its own — cold launch on the CI
+    // runner is measurably slower than 15s.
+    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(45000);
     await element(by.id('onboarding-splash-cta')).tap();
 
     await waitFor(element(by.id('onboarding-name'))).toBeVisible().withTimeout(10000);
@@ -30,7 +35,7 @@ describe('Onboarding tour', () => {
 
   it('15.2 — does not show onboarding again after it has been completed once', async () => {
     await device.launchApp({ delete: true, newInstance: true });
-    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(45000);
     await element(by.id('onboarding-splash-cta')).tap();
     await waitFor(element(by.id('onboarding-name'))).toBeVisible().withTimeout(10000);
     await element(by.id('onboarding-name-input')).typeText('Detox Tester');
@@ -43,8 +48,10 @@ describe('Onboarding tour', () => {
 
     // Relaunch without deleting state — the onboarded flag persists even
     // though there's no logged-in session, so this should go straight to
-    // /login, not back through onboarding.
+    // /login, not back through onboarding. Still a fresh process
+    // (newInstance: true), so subject to the same cold-launch cost as
+    // above — same 45s allowance.
     await device.launchApp({ newInstance: true, delete: false });
-    await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(45000);
   });
 });
