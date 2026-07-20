@@ -286,7 +286,7 @@ jobs:
           # just hung. This tunnels the device's localhost:8000 to the
           # runner's localhost:8000 over ADB instead (works regardless of
           # network backend), matching EXPO_PUBLIC_API_URL above.
-          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
+          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
@@ -531,7 +531,14 @@ jobs:
 
       - name: Run Detox tests
         working-directory: mobile
-        run: detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing
+        # --loglevel verbose: 45s timeouts on onboarding-splash (a static,
+        # network-free screen) are still failing, which rules out plain
+        # cold-launch slowness — something is either actually crashing/
+        # hanging, or Detox's iOS sync mechanism is false-positive "busy"
+        # on an otherwise-fine UI. Verbose mode dumps the view hierarchy on
+        # every failed match, which is the only way to tell those apart
+        # from the log instead of guessing.
+        run: detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
