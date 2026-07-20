@@ -62,13 +62,34 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
   return data.display_name ?? '';
 }
 
+// OSM classes that are almost never what a teacher means when they type a
+// landmark name — a trail, ridge, or waterway that happens to contain the
+// query as a name token (e.g. "Skookum Peak/Louvre Bootpath" for a search on
+// "Louvre") ranks ahead of the real landmark ("Musée du Louvre" in Paris,
+// whose actual OSM name tag doesn't literally contain the bare word
+// "Louvre") if you only look at result[0] of a limit=1 query. Pulling a few
+// candidates and deprioritizing these classes fixes that without needing a
+// country/viewbox bias, which we don't have for landmarks that could be
+// anywhere in the world.
+const MINOR_GEOCODE_CLASSES = new Set(['highway', 'natural', 'waterway', 'boundary']);
+
+function pickBestGeocodeMatch(results: any[]): any {
+  const majorCandidates = results.filter((r) => !MINOR_GEOCODE_CLASSES.has(r.class));
+  const pool = majorCandidates.length ? majorCandidates : results;
+  // Nominatim already returns importance-ranked results, but re-sort
+  // explicitly rather than assuming — importance is the best available signal
+  // for "this is the famous/notable thing" vs. "this is a local footpath".
+  return pool.slice().sort((a, b) => (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0))[0];
+}
+
 async function forwardGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`;
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=5`;
   const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
   if (!res.ok) return null;
   const data = await res.json();
   if (!data.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  const best = pickBestGeocodeMatch(data);
+  return { lat: parseFloat(best.lat), lng: parseFloat(best.lon) };
 }
 
 const ActivityManager = () => {
@@ -279,6 +300,12 @@ const ActivityManager = () => {
       if (name) {
         setFormData(f => ({ ...f, location_name: name }));
         setGeoStatus('');
+        // Auto-expand Background Info once real coordinates resolve to a real
+        // place. Restores the "synopsis just appears" feel the 0,0-default
+        // fix (see location_latitude/longitude above) took away — that fix
+        // only stopped the panel from firing on the fake default, it was
+        // never meant to add an extra required click for real locations.
+        setShowWikiInfo(true);
       } else {
         setGeoStatus('');
       }
@@ -297,6 +324,9 @@ const ActivityManager = () => {
         if (coords) {
           setFormData(f => ({ ...f, location_latitude: coords.lat, location_longitude: coords.lng }));
           setGeoStatus('');
+          // Same as the reverse-geocode path above — surface the synopsis
+          // automatically now that we have a real place, no manual click needed.
+          setShowWikiInfo(true);
         } else {
           // No match from Nominatim — leave lat/lng untouched (still 0,0 / whatever
           // was there before) rather than silently keeping stale coordinates from

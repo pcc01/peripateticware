@@ -41,6 +41,32 @@ const ACTIVITY_TYPE_MAP: Record<string, string> = {
   'discovery': 'inquiry',
 };
 
+// OSM classes that are almost never what a teacher means when they type a
+// landmark name — see forwardGeocodeBest() below.
+const MINOR_GEOCODE_CLASSES = new Set(['highway', 'natural', 'waterway', 'boundary']);
+
+// Nominatim's limit=1 blindly trusts result[0], but its name-token matching
+// can rank a minor OSM feature that happens to contain the query as a
+// substring (e.g. a trail named "...Louvre Bootpath") above the real
+// landmark, whose actual OSM name tag ("Musée du Louvre") doesn't literally
+// contain the bare word being searched. Pulling a few candidates and
+// deprioritizing minor feature classes fixes that without needing a
+// country/viewbox bias we don't have for landmarks that could be anywhere.
+async function forwardGeocodeBest(query: string): Promise<{ lat: number; lon: number } | null> {
+  const r = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`,
+    { headers: { 'Accept-Language': 'en' } }
+  );
+  const data = await r.json();
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const majorCandidates = data.filter((r: any) => !MINOR_GEOCODE_CLASSES.has(r.class));
+  const pool = majorCandidates.length ? majorCandidates : data;
+  const best = pool.slice().sort(
+    (a: any, b: any) => (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0)
+  )[0];
+  return { lat: parseFloat(best.lat), lon: parseFloat(best.lon) };
+}
+
 async function apiPost(path: string, body: object, token: string | null) {
   const res = await fetch(path, {
     method: 'POST',
@@ -736,15 +762,11 @@ export const ActivityBuilder = () => {
                     const addr = (formData.location.address || '').trim();
                     if (!addr) return;
                     try {
-                      const r = await fetch(
-                        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`,
-                        { headers: { 'Accept-Language': 'en' } }
-                      );
-                      const data = await r.json();
-                      if (data[0]) {
+                      const best = await forwardGeocodeBest(addr);
+                      if (best) {
                         setFormData((prev) => ({
                           ...prev,
-                          location: { ...prev.location, latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) }
+                          location: { ...prev.location, latitude: best.lat, longitude: best.lon }
                         }));
                       }
                     } catch {}
