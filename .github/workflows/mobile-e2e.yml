@@ -219,12 +219,22 @@ jobs:
         working-directory: mobile
         run: detox build -c ${{ matrix.detox-config }}
         env:
-          # 10.0.2.2 is the Android emulator's fixed alias for the host
-          # machine's loopback interface — that's where the backend started
-          # above is actually listening. EXPO_PUBLIC_* vars are inlined into
-          # the JS bundle at build time (see src/api/client.ts's resolution
-          # order comment), so this has to be set here, not at test-run time.
-          EXPO_PUBLIC_API_URL: http://10.0.2.2:8000
+          # NOT 10.0.2.2 — that's the classic QEMU/SLIRP alias for the host's
+          # loopback, but reactivecircus/android-emulator-runner's emulator
+          # here boots with virtio-wifi/netsim networking (visible in its own
+          # boot log: "androidboot.qemu.virtiowifi=1", "Successfully
+          # initialized netsim WiFi"), which doesn't reliably honor that
+          # alias — every backend call hung exactly like the "no backend at
+          # all" failure this was supposed to fix. `adb reverse tcp:8000
+          # tcp:8000` (added to the emulator-runner script below) tunnels the
+          # device's localhost:8000 to the host's localhost:8000 over ADB
+          # instead, which works regardless of the emulator's network
+          # backend — so the app needs to be built to actually call
+          # localhost:8000, matching the iOS job below. EXPO_PUBLIC_* vars
+          # are inlined into the JS bundle at build time (see
+          # src/api/client.ts's resolution order comment), so this has to be
+          # set here, not at test-run time.
+          EXPO_PUBLIC_API_URL: http://localhost:8000
 
       - name: Wait for backend health
         run: |
@@ -267,7 +277,16 @@ jobs:
           # invocation ("Syntax error: end of file unexpected (expecting
           # \"fi\")"). Collapsed to one single physical line using &&/|| so
           # it can't be split across invocations.
-          script: mkdir -p artifacts && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
+          #
+          # `adb reverse tcp:8000 tcp:8000`: this emulator boots with
+          # virtio-wifi/netsim networking (see its own boot log —
+          # "androidboot.qemu.virtiowifi=1", "Successfully initialized
+          # netsim WiFi"), which doesn't reliably honor the classic
+          # 10.0.2.2 host-loopback alias — the app's calls to the backend
+          # just hung. This tunnels the device's localhost:8000 to the
+          # runner's localhost:8000 over ADB instead (works regardless of
+          # network backend), matching EXPO_PUBLIC_API_URL above.
+          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
