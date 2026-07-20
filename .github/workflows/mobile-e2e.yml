@@ -29,6 +29,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
 
+    # Real backend for the E2E login/activity flows below. mobile-e2e.yml
+    # never started one — the app fell back to app.json's baked-in
+    # 10.0.2.2:8000 (Android emulator's loopback to the host), which had
+    # nothing listening, so every login call just hung until Detox's sync
+    # watchdog gave up ("The app has not responded to the network requests
+    # below..."). ubuntu-latest supports Docker/`services:` fine, so this
+    # mirrors backend-tests.yml's postgres+redis service containers exactly.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     strategy:
       fail-fast: false          # keep other API levels running if one fails
       matrix:
@@ -140,6 +171,36 @@ jobs:
       - name: Install Detox CLI
         run: npm install -g detox-cli
 
+      - name: Setup Python 3.12 (for backend)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      # Backgrounded so it comes up in parallel with the APK/emulator build
+      # steps below instead of costing its own dedicated wait. ENVIRONMENT=
+      # development makes the app self-provision its schema (inline
+      # idempotent migrations in startup.py — no `alembic upgrade` needed,
+      # same as backend-tests.yml/docker-compose.yml) and auto-seed the
+      # student@test.local / Test1234! account e2e/helpers.js's
+      # loginAsStudent() expects. "Wait for backend health" below is the
+      # actual sync point.
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+          echo "Backend starting (PID $!)"
+        env:
+          DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          ENVIRONMENT: development
+
       - name: Enable KVM (Android emulator acceleration)
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -157,6 +218,27 @@ jobs:
       - name: Build APK for testing
         working-directory: mobile
         run: detox build -c ${{ matrix.detox-config }}
+        env:
+          # 10.0.2.2 is the Android emulator's fixed alias for the host
+          # machine's loopback interface — that's where the backend started
+          # above is actually listening. EXPO_PUBLIC_* vars are inlined into
+          # the JS bundle at build time (see src/api/client.ts's resolution
+          # order comment), so this has to be set here, not at test-run time.
+          EXPO_PUBLIC_API_URL: http://10.0.2.2:8000
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8000/health > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/60)"
+            sleep 2
+          done
+          echo "Backend did not become healthy in time"
+          cat backend/backend.log
+          exit 1
 
       - name: Run Android AVD + Detox tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -289,6 +371,57 @@ jobs:
       - name: Install Detox CLI
         run: npm install -g detox-cli
 
+      # Same "no backend was ever started" gap as the Android job — same fix,
+      # different mechanics. GitHub-hosted macOS runners don't support
+      # Docker/`services:` (no nested virtualization), so this can't reuse
+      # the postgres/redis service containers the Android job above uses.
+      # Homebrew + a plain backgrounded uvicorn process sidesteps that
+      # entirely instead of fighting it.
+      - name: Setup Python 3.12 (for backend)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install Postgres + Redis (Homebrew)
+        run: brew install postgresql@16 pgvector redis
+
+      - name: Start Postgres + Redis, create test_db
+        run: |
+          brew services start postgresql@16
+          brew services start redis
+          PG_BIN="$(brew --prefix postgresql@16)/bin"
+          for i in $(seq 1 30); do
+            "$PG_BIN/pg_isready" -h localhost -p 5432 && break
+            echo "Waiting for Postgres... ($i/30)"
+            sleep 2
+          done
+          "$PG_BIN/createuser" -s test_user
+          "$PG_BIN/psql" -d postgres -c "ALTER USER test_user WITH PASSWORD 'test_password';"
+          "$PG_BIN/createdb" -O test_user test_db
+          # Best-effort: startup.py's own migrations tolerate a missing
+          # vector extension (wrapped in a try/except-style SAVEPOINT, same
+          # as database/init.sql's DO block) so this isn't fatal if it fails.
+          "$PG_BIN/psql" -d test_db -c "CREATE EXTENSION IF NOT EXISTS vector;" || true
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      # Backgrounded — see the matching comment in the Android job above.
+      # "Wait for backend health" later in this job is the actual sync point.
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+          echo "Backend starting (PID $!)"
+        env:
+          DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key
+          ENVIRONMENT: development
+
       - name: Setup Ruby + Bundler (pinned CocoaPods via mobile/Gemfile)
         uses: ruby/setup-ruby@v1
         with:
@@ -314,6 +447,14 @@ jobs:
       - name: Build iOS app for testing
         working-directory: mobile
         run: detox build -c ${{ matrix.detox-config }}
+        env:
+          # Unlike the Android emulator, the iOS Simulator shares the Mac
+          # host's network directly — localhost:8000 reaches the backend
+          # started above (10.0.2.2, which app.json falls back to, is an
+          # Android-only alias and isn't a routable address here at all).
+          # EXPO_PUBLIC_* vars are inlined into the JS bundle at build time,
+          # so this has to be set here, not at test-run time.
+          EXPO_PUBLIC_API_URL: http://localhost:8000
 
       - name: Install applesimutils
         # Detox's iOS test runner shells out to `applesimutils` (a Homebrew
@@ -354,6 +495,20 @@ jobs:
           fi
           xcrun simctl boot "$UDID"
           echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8000/health > /dev/null; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/60)"
+            sleep 2
+          done
+          echo "Backend did not become healthy in time"
+          cat backend/backend.log
+          exit 1
 
       - name: Run Detox tests
         working-directory: mobile

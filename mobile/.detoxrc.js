@@ -124,13 +124,28 @@ module.exports = {
     // writing (not GA) — best-effort only. The exact Xcode version string
     // in mobile-e2e.yml's ios-e2e matrix may need adjusting once run, since
     // beta version identifiers shift between preview builds.
+    // Device queries below match on `type` only, not `os`. Pinning an exact
+    // `os` string (e.g. "iOS 18") broke every CI run with "Failed to find a
+    // device by type = ... and by OS = ..." — GitHub-hosted runners provision
+    // point releases (18.5/18.6, 26.2/26.4/26.5, ...) that don't match a bare
+    // major-version string, and that patch version drifts over time as
+    // GitHub rolls runner images forward (same moving-target problem already
+    // called out for the device name below). Detox's own error hint says the
+    // same thing: "advised only to specify a device type... and avoid
+    // explicit search by OS version." Each runner/local Mac only has one iOS
+    // runtime relevant to a given device type, so dropping `os` is
+    // unambiguous.
     'simulator.ios27': {
       type: 'ios.simulator',
-      device: { type: 'iPhone 17', os: 'iOS 27' },
+      device: { type: 'iPhone 17' },
     },
+    // macos-latest's Xcode 26.6 rolled its device catalog forward to the
+    // iPhone 17 lineup — plain iPhone 16/16 Plus/16 Pro/16 Pro Max are no
+    // longer provisioned for iOS 26.x (only iPhone 16e survives). Matches
+    // mobile-e2e.yml's ios-e2e matrix device for the iOS 26 leg.
     'simulator.ios26': {
       type: 'ios.simulator',
-      device: { type: 'iPhone 16', os: 'iOS 26' },
+      device: { type: 'iPhone 17' },
     },
     // iPhone 15 doesn't exist as a provisioned simulator device for this
     // runner's iOS 18 runtimes at all (confirmed via `simctl list devices`
@@ -139,17 +154,17 @@ module.exports = {
     // matrix device for the iOS 18 leg — keep both in sync.
     'simulator.ios18': {
       type: 'ios.simulator',
-      device: { type: 'iPhone 16', os: 'iOS 18' },
+      device: { type: 'iPhone 16' },
     },
     // Locally-runnable on the Ventura Intel Mac (Xcode 15.2 ships iOS 17 SDK).
     'simulator.ios17': {
       type: 'ios.simulator',
-      device: { type: 'iPhone 15', os: 'iOS 17' },
+      device: { type: 'iPhone 15' },
     },
     'simulator.ios16': {
       // iPhone 8 is the flagship legacy device for iOS 16 floor testing
       type: 'ios.simulator',
-      device: { type: 'iPhone 8', os: 'iOS 16' },
+      device: { type: 'iPhone 8' },
     },
   },
 
