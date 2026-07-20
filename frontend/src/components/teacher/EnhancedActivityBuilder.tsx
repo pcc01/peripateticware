@@ -50,9 +50,42 @@ const MINOR_GEOCODE_CLASSES = new Set(['highway', 'natural', 'waterway', 'bounda
 // substring (e.g. a trail named "...Louvre Bootpath") above the real
 // landmark, whose actual OSM name tag ("Musée du Louvre") doesn't literally
 // contain the bare word being searched. Pulling a few candidates and
-// deprioritizing minor feature classes fixes that without needing a
-// country/viewbox bias we don't have for landmarks that could be anywhere.
+// deprioritizing minor feature classes helps, but only if the real landmark
+// is even among those first few results — for a bare famous name it often
+// isn't. Wikipedia's own search ranking doesn't have that problem (it
+// reliably surfaces the "Louvre" museum article over an obscure trail), and
+// most landmark articles are geo-tagged with real coordinates. Try Wikipedia
+// first; fall back to the re-ranked Nominatim search for places without a
+// Wikipedia article (addresses, small local parks, etc.).
+async function wikipediaGeocode(name: string): Promise<{ lat: number; lon: number } | null> {
+  try {
+    const searchRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&srlimit=1&format=json&origin=*`
+    );
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json();
+    const title = searchData?.query?.search?.[0]?.title;
+    if (!title) return null;
+
+    const coordRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=coordinates&format=json&origin=*`
+    );
+    if (!coordRes.ok) return null;
+    const coordData = await coordRes.json();
+    const pages = coordData?.query?.pages;
+    const page = pages ? (Object.values(pages)[0] as any) : null;
+    const coord = page?.coordinates?.[0];
+    if (!coord || typeof coord.lat !== 'number' || typeof coord.lon !== 'number') return null;
+    return { lat: coord.lat, lon: coord.lon };
+  } catch {
+    return null;
+  }
+}
+
 async function forwardGeocodeBest(query: string): Promise<{ lat: number; lon: number } | null> {
+  const wiki = await wikipediaGeocode(query);
+  if (wiki) return wiki;
+
   const r = await fetch(
     `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`,
     { headers: { 'Accept-Language': 'en' } }

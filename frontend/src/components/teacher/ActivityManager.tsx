@@ -82,7 +82,45 @@ function pickBestGeocodeMatch(results: any[]): any {
   return pool.slice().sort((a, b) => (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0))[0];
 }
 
+// Re-ranking Nominatim's top few results (below) only helps when the real
+// landmark is IN that narrow candidate window to begin with. For a bare,
+// famous name ("Louvre") Nominatim's raw name-token matching can rank
+// several incidental OSM features above it well past limit=5 — re-sorting
+// the same 5 results does nothing if the museum isn't among them. Wikipedia's
+// own search ranking has no such problem (it reliably surfaces the famous
+// "Louvre" article over an obscure trail with the word in its name), and
+// most landmark articles are geo-tagged with real coordinates via
+// prop=coordinates — so try that first, and only fall back to Nominatim for
+// addresses/places that don't have a Wikipedia article.
+async function wikipediaGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const searchRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&srlimit=1&format=json&origin=*`
+    );
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json();
+    const title = searchData?.query?.search?.[0]?.title;
+    if (!title) return null;
+
+    const coordRes = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=coordinates&format=json&origin=*`
+    );
+    if (!coordRes.ok) return null;
+    const coordData = await coordRes.json();
+    const pages = coordData?.query?.pages;
+    const page = pages ? (Object.values(pages)[0] as any) : null;
+    const coord = page?.coordinates?.[0];
+    if (!coord || typeof coord.lat !== 'number' || typeof coord.lon !== 'number') return null;
+    return { lat: coord.lat, lng: coord.lon };
+  } catch {
+    return null;
+  }
+}
+
 async function forwardGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
+  const wiki = await wikipediaGeocode(name);
+  if (wiki) return wiki;
+
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=5`;
   const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
   if (!res.ok) return null;
