@@ -91,8 +91,17 @@ const ActivityManager = () => {
     grade_level: 5,
     subject: 'Science',
     difficulty_level: 3,
-    location_latitude: 47.6839,
-    location_longitude: -122.3081,
+    // 0 is treated as "not set yet" by every consumer below (the WikiLocationInfo
+    // panel gate at line ~744 and the /locations/search trigger it drives both
+    // check `location_latitude && location_longitude` truthiness). This used to
+    // default to a real place (47.6839, -122.3081 — Seattle), which meant any
+    // teacher who typed a location name but whose forward-geocode hadn't
+    // resolved yet (slow network, Nominatim rate-limit, typo) got real-looking
+    // — but wrong — search results for Seattle instead of an empty/pending
+    // state. 0,0 (Null Island) is never a real POI, so the panel just stays
+    // hidden until real coordinates come back.
+    location_latitude: 0,
+    location_longitude: 0,
     location_radius_meters: 500,
     location_name: '',
     estimated_duration_minutes: 45,
@@ -283,12 +292,21 @@ const ActivityManager = () => {
     if (name.length < 4) return;
     geoNameTimer.current = setTimeout(async () => {
       setGeoStatus('Finding coordinates…');
-      const coords = await forwardGeocode(name);
-      if (coords) {
-        setFormData(f => ({ ...f, location_latitude: coords.lat, location_longitude: coords.lng }));
-        setGeoStatus('');
-      } else {
-        setGeoStatus('');
+      try {
+        const coords = await forwardGeocode(name);
+        if (coords) {
+          setFormData(f => ({ ...f, location_latitude: coords.lat, location_longitude: coords.lng }));
+          setGeoStatus('');
+        } else {
+          // No match from Nominatim — leave lat/lng untouched (still 0,0 / whatever
+          // was there before) rather than silently keeping stale coordinates from
+          // a previous search. Tell the teacher so they know to enter coords
+          // manually instead of unknowingly saving the wrong place.
+          setGeoStatus('Could not find that location — try a more specific name or enter coordinates manually.');
+        }
+      } catch (err) {
+        console.warn('Forward geocode failed:', err);
+        setGeoStatus('Could not look up that location — try a more specific name or enter coordinates manually.');
       }
     }, 1000);
   };
@@ -726,13 +744,13 @@ const ActivityManager = () => {
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
-              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_latitude', 'Location latitude')} value={formData.location_latitude}
+              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_latitude', 'Location latitude')} value={formData.location_latitude || ''}
                 onChange={(e) => { const lat = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_latitude:lat})); handleLatLngChange(lat,formData.location_longitude); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="47.6839" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
-              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_longitude', 'Location longitude')} value={formData.location_longitude}
+              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_longitude', 'Location longitude')} value={formData.location_longitude || ''}
                 onChange={(e) => { const lng = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_longitude:lng})); handleLatLngChange(formData.location_latitude,lng); }}
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>
