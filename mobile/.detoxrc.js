@@ -39,7 +39,7 @@ module.exports = {
     'ios.debug': {
       type: 'ios.app',
       binaryPath:
-        'ios/build/Build/Products/Debug-iphonesimulator/Peripateticware.app',
+        'ios/build/Build/Products/Release-iphonesimulator/Peripateticware.app',
       // BUG (this is why every single iOS job failed with "Detox could not
       // find your app at the given binary path"): this used to be
       // `[...].join(' ')` over ALL these strings, which produces ONE shell
@@ -53,13 +53,25 @@ module.exports = {
       // regenerates the native ios/ project, and that's it — no compiled
       // .app ever gets produced. Fixed by chaining prebuild and xcodebuild
       // as two separate commands with `&&`.
+      //
+      // BUG #2 (found via a real run's view-hierarchy dump: every test
+      // red-boxed with "No script URL provided. Make sure the packager is
+      // running or you have embedded a JS bundle..."): `-configuration
+      // Debug` builds skip RN's "Bundle React Native code and images" phase
+      // by design — a Debug build expects a live Metro server, and CI never
+      // starts one. `android.debug` above hit this exact class of bug first
+      // and fixed it by building `assembleRelease` so Gradle embeds the JS;
+      // this config just never got the matching fix. `-configuration
+      // Release` embeds the JS bundle the same way (CODE_SIGNING_ALLOWED=NO
+      // already covers unsigned Release builds for the simulator, so no
+      // other change is needed).
       build: [
         'npx expo prebuild --platform ios --no-install',
         [
           'xcodebuild',
           '-workspace ios/Peripateticware.xcworkspace',
           '-scheme Peripateticware',
-          '-configuration Debug',
+          '-configuration Release',
           '-sdk iphonesimulator',
           '-derivedDataPath ios/build',
           'CODE_SIGNING_ALLOWED=NO',
