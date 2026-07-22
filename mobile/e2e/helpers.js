@@ -11,6 +11,29 @@ const STUDENT_EMAIL = process.env.TEST_STUDENT_EMAIL;
 const STUDENT_PASSWORD = process.env.TEST_STUDENT_PASSWORD;
 
 /**
+ * Resolves with whichever of `ids` becomes visible first (each waited on
+ * concurrently, not in series — a serial "try id1 with its own timeout,
+ * then try id2" would need up to the sum of both timeouts to notice id2
+ * was actually already there). Rejects only if none of them show up within
+ * `timeout`.
+ */
+function waitForFirstVisible(ids, timeout) {
+  return new Promise((resolve, reject) => {
+    let pending = ids.length;
+    let lastError;
+    ids.forEach((id) => {
+      waitFor(element(by.id(id))).toBeVisible().withTimeout(timeout)
+        .then(() => resolve(id))
+        .catch((err) => {
+          lastError = err;
+          pending -= 1;
+          if (pending === 0) reject(lastError);
+        });
+    });
+  });
+}
+
+/**
  * On a fresh install (`launchApp({ delete: true })`), AuthGuard
  * (app/_layout.tsx) now lands an unauthenticated device on the onboarding
  * tour instead of straight to /login — see mobile/FEATURE_PLAN.md section
@@ -21,23 +44,30 @@ const STUDENT_PASSWORD = process.env.TEST_STUDENT_PASSWORD;
  * second call within the same test.
  */
 async function completeOnboardingIfPresent() {
+  // 75s, not a quick probe: cold app launch on GitHub-hosted CI runners
+  // (Android emulators especially) has measured 50s+ to first paint
+  // (Font.loadAsync's ~5s escape-hatch timeout plus RootLayout/AuthGuard's
+  // AsyncStorage checks plus general CI resource headroom, all slower here
+  // than on a local dev machine).
+  //
+  // This used to be a plain `waitFor(onboarding-splash).withTimeout(45000)`
+  // wrapped in try/catch-and-return-on-timeout, on the theory that a
+  // timeout meant "already past onboarding". That's a race, not a check:
+  // a slow-but-still-coming cold launch also times out, and the catch
+  // swallowed that identically to "not on this screen", silently returning
+  // and leaving every caller's own login-screen wait to fail instead (that
+  // was the actual failure signature in CI — a login-screen timeout, not
+  // an onboarding-splash one, because this bailed first). Racing both
+  // possible outcomes concurrently removes the ambiguity: whichever one is
+  // real wins as soon as it appears, instead of guessing after a fixed
+  // deadline.
+  let first;
   try {
-    // 45s, not a quick probe: cold app launch on GitHub-hosted macOS CI
-    // runners has measured >15s to first paint (Font.loadAsync's ~5s
-    // escape-hatch timeout plus RootLayout/AuthGuard's AsyncStorage checks
-    // plus general CI resource headroom, all slower here than on a local
-    // dev Mac) — onboarding.test.js's direct 15000ms waits for this same
-    // testID were still timing out. A short probe here doesn't "fail fast
-    // when already onboarded" so much as false-negative on a fresh install
-    // that just hasn't finished its cold launch yet, which then cascades
-    // into every caller's login-screen wait failing too (that's the actual
-    // failure signature seen in CI: helpers.js's login-screen wait timing
-    // out, not this one, because this one gave up first and silently
-    // returned).
-    await waitFor(element(by.id('onboarding-splash'))).toBeVisible().withTimeout(45000);
+    first = await waitForFirstVisible(['onboarding-splash', 'login-screen'], 75000);
   } catch {
-    return; // Not on the splash screen — already past onboarding (or never delete:true'd).
+    return; // Neither appeared — let the caller's own login-screen wait surface the real error.
   }
+  if (first === 'login-screen') return; // Already onboarded — nothing to do.
   await element(by.id('onboarding-splash-cta')).tap();
   await waitFor(element(by.id('onboarding-name'))).toBeVisible().withTimeout(10000);
   await element(by.id('onboarding-name-input')).typeText('Detox Tester');

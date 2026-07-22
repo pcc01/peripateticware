@@ -43,8 +43,17 @@ jobs:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
           POSTGRES_DB: test_db
+        # -U test_user: bare `pg_isready` has no default user, so it falls
+        # back to the OS user running the check inside the container (root,
+        # on a GitHub-hosted runner) — Postgres logs a real connection
+        # attempt for that and rejects it every 10s for the container's
+        # whole lifetime ("FATAL: role \"root\" does not exist"), which
+        # spams backend.log without affecting the health check's result
+        # (pg_isready only needs the server to respond, auth outcome
+        # notwithstanding). Matches docker-compose.yml's postgres
+        # healthcheck, which already specifies -U.
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U test_user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
