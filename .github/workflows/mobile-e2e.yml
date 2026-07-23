@@ -229,21 +229,6 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ hashFiles('android/**/*.gradle*') }}-${{ matrix.api-level }}
 
-      # DIAGNOSTIC (temporary): every Mobile E2E run so far (48/48) has
-      # failed or been cancelled, and Android's own logcat shows the app
-      # itself never crashes, ANRs, or freezes (near-zero Choreographer
-      # frame-skip warnings) — yet Detox's sync with it never resolves
-      # regardless of timeout length, on both platforms. mobile/app.json
-      # and this same gradle.properties both have newArchEnabled: true
-      # (React Native 0.81's Fabric/TurboModules/Bridgeless mode), which
-      # Detox's synchronization layer has known, still-evolving
-      # compatibility gaps with. Flipping it off for e2e only (this working
-      # copy only — never committed) isolates whether that's the actual
-      # blocker before considering any bigger change.
-      - name: 'DIAGNOSTIC: disable New Architecture for this e2e build only'
-        working-directory: mobile/android
-        run: sed -i 's/newArchEnabled=true/newArchEnabled=false/' gradle.properties
-
       - name: Build APK for testing
         working-directory: mobile
         run: detox build -c ${{ matrix.detox-config }}
@@ -495,16 +480,6 @@ jobs:
           path: mobile/ios/Pods
           key: pods-${{ hashFiles('mobile/ios/Podfile.lock') }}-${{ matrix.ios-version }}
           restore-keys: pods-
-
-      # DIAGNOSTIC (temporary): see the matching comment on the Android job's
-      # equivalent step. `expo prebuild` below reads this value from
-      # app.json to configure the generated Xcode project, so the override
-      # has to land before prebuild runs. Working-copy edit only — never
-      # committed back — and expo prebuild regenerates ios/ from scratch
-      # every run anyway, so nothing here persists past this job.
-      - name: 'DIAGNOSTIC: disable New Architecture for this e2e build only'
-        working-directory: mobile
-        run: jq '.expo.newArchEnabled = false' app.json > app.json.tmp && mv app.json.tmp app.json
 
       - name: Generate native iOS project (Expo prebuild)
         working-directory: mobile
