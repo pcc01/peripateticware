@@ -11,26 +11,29 @@ const STUDENT_EMAIL = process.env.TEST_STUDENT_EMAIL;
 const STUDENT_PASSWORD = process.env.TEST_STUDENT_PASSWORD;
 
 /**
- * Resolves with whichever of `ids` becomes visible first (each waited on
- * concurrently, not in series — a serial "try id1 with its own timeout,
- * then try id2" would need up to the sum of both timeouts to notice id2
- * was actually already there). Rejects only if none of them show up within
- * `timeout`.
+ * Resolves with whichever of `ids` becomes visible first, within `timeout`
+ * overall. Polls each id in turn with a short per-attempt timeout rather
+ * than firing one `waitFor` per id concurrently — Detox only tolerates one
+ * in-flight expectation/action at a time and throws "Detox has detected
+ * multiple interactions taking place simultaneously" if two `waitFor(...)
+ * .toBeVisible()` calls are ever pending at once (confirmed in CI: it broke
+ * every remaining test in the run, not just this one, once that error hit).
+ * Rejects only if none of `ids` show up before the overall deadline.
  */
-function waitForFirstVisible(ids, timeout) {
-  return new Promise((resolve, reject) => {
-    let pending = ids.length;
-    let lastError;
-    ids.forEach((id) => {
-      waitFor(element(by.id(id))).toBeVisible().withTimeout(timeout)
-        .then(() => resolve(id))
-        .catch((err) => {
-          lastError = err;
-          pending -= 1;
-          if (pending === 0) reject(lastError);
-        });
-    });
-  });
+async function waitForFirstVisible(ids, timeout) {
+  const deadline = Date.now() + timeout;
+  const pollTimeout = 2000; // granularity for switching between candidates, not a real per-id budget
+  do {
+    for (const id of ids) {
+      try {
+        await waitFor(element(by.id(id))).toBeVisible().withTimeout(pollTimeout);
+        return id;
+      } catch {
+        // Not this one yet — try the next candidate.
+      }
+    }
+  } while (Date.now() < deadline);
+  throw new Error(`None of [${ids.join(', ')}] became visible within ${timeout}ms`);
 }
 
 /**
@@ -57,10 +60,11 @@ async function completeOnboardingIfPresent() {
   // swallowed that identically to "not on this screen", silently returning
   // and leaving every caller's own login-screen wait to fail instead (that
   // was the actual failure signature in CI — a login-screen timeout, not
-  // an onboarding-splash one, because this bailed first). Racing both
-  // possible outcomes concurrently removes the ambiguity: whichever one is
-  // real wins as soon as it appears, instead of guessing after a fixed
-  // deadline.
+  // an onboarding-splash one, because this bailed first).
+  // waitForFirstVisible() polls for both possible outcomes instead of
+  // guessing off one fixed deadline, whichever is real wins as soon as it
+  // appears — but only ever one at a time, per its own comment: Detox
+  // rejects a *concurrent* waitFor of both ids outright.
   let first;
   try {
     first = await waitForFirstVisible(['onboarding-splash', 'login-screen'], 75000);
