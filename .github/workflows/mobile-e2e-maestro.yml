@@ -158,6 +158,28 @@ jobs:
         working-directory: backend
         run: pip install -r requirements.txt
 
+      # BUG (found via a real Maestro run): the Postgres service container
+      # below never gets database/init.sql run against it. That file (and
+      # its docker-entrypoint-initdb.d mount in docker-compose.yml) is the
+      # ONLY thing that CREATEs users/activities/etc. — startup.py's inline
+      # "migrations" only ever ALTER TABLE those, assuming they already
+      # exist. A service container can't just mount init.sql the way
+      # docker-compose.yml does either: GitHub Actions creates service
+      # containers during "Initialize containers", which runs BEFORE
+      # actions/checkout — the file wouldn't exist in $GITHUB_WORKSPACE yet
+      # at that point. Loading it explicitly here, after checkout, once
+      # Postgres is already up (the job scheduler already waited for its
+      # health check to pass before running any step), sidesteps that
+      # ordering problem. Confirmed as the actual cause of every real
+      # Maestro test failure so far: Postgres logs showed `relation "users"
+      # does not exist` continuously through the whole run, and the app's
+      # own login screen surfaced it as "Login failed due to server error"
+      # for a perfectly valid seeded test account.
+      - name: Load database schema (database/init.sql)
+        run: |
+          command -v psql >/dev/null || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+          PGPASSWORD=test_password psql -h localhost -U test_user -d test_db -f database/init.sql
+
       # Backgrounded — see the matching comment in mobile-e2e.yml.
       - name: Start backend server
         working-directory: backend
@@ -319,6 +341,11 @@ jobs:
           "$PG_BIN/psql" -d postgres -c "ALTER USER test_user WITH PASSWORD 'test_password';"
           "$PG_BIN/createdb" -O test_user test_db
           "$PG_BIN/psql" -d test_db -c "CREATE EXTENSION IF NOT EXISTS vector;" || true
+          # See the matching comment on the Android job's "Load database
+          # schema" step — database/init.sql is the only thing that
+          # actually CREATEs users/activities/etc.; startup.py's inline
+          # migrations only ALTER them, assuming they already exist.
+          "$PG_BIN/psql" -h localhost -U test_user -d test_db -f database/init.sql
 
       - name: Install backend dependencies
         working-directory: backend

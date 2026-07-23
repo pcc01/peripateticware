@@ -196,11 +196,29 @@ jobs:
         working-directory: backend
         run: pip install -r requirements.txt
 
+      # BUG (found via a real Maestro e2e run — see mobile-e2e-maestro.yml's
+      # matching comment for the full story): "self-provision its schema"
+      # below was never actually true for the foundational tables.
+      # startup.py's inline migrations only ALTER TABLE users/activities/
+      # etc., assuming they already exist — the only thing that actually
+      # CREATEs them is database/init.sql (docker-compose.yml mounts it as
+      # a docker-entrypoint-initdb.d script; this job's plain Postgres
+      # service container never gets it run at all). Loading it explicitly
+      # here, after checkout, once Postgres is already healthy (the job
+      # scheduler already waited for that before running any step) —
+      # mounting it as a service-container volume wouldn't work, since
+      # "Initialize containers" runs before actions/checkout, before the
+      # file exists in $GITHUB_WORKSPACE.
+      - name: Load database schema (database/init.sql)
+        run: |
+          command -v psql >/dev/null || (sudo apt-get update && sudo apt-get install -y postgresql-client)
+          PGPASSWORD=test_password psql -h localhost -U test_user -d test_db -f database/init.sql
+
       # Backgrounded so it comes up in parallel with the APK/emulator build
       # steps below instead of costing its own dedicated wait. ENVIRONMENT=
-      # development makes the app self-provision its schema (inline
-      # idempotent migrations in startup.py — no `alembic upgrade` needed,
-      # same as backend-tests.yml/docker-compose.yml) and auto-seed the
+      # development makes the app self-provision the REST of its schema
+      # (inline idempotent migrations in startup.py, on top of the
+      # foundational tables loaded above) and auto-seed the
       # student@test.local / Test1234! account e2e/helpers.js's
       # loginAsStudent() expects. "Wait for backend health" below is the
       # actual sync point.
@@ -449,6 +467,11 @@ jobs:
           # vector extension (wrapped in a try/except-style SAVEPOINT, same
           # as database/init.sql's DO block) so this isn't fatal if it fails.
           "$PG_BIN/psql" -d test_db -c "CREATE EXTENSION IF NOT EXISTS vector;" || true
+          # See the matching "Load database schema" comment on the Android
+          # job above — database/init.sql is the only thing that actually
+          # CREATEs users/activities/etc.; startup.py's inline migrations
+          # only ALTER them, assuming they already exist.
+          "$PG_BIN/psql" -h localhost -U test_user -d test_db -f database/init.sql
 
       - name: Install backend dependencies
         working-directory: backend
