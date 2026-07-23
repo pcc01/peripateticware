@@ -43,17 +43,22 @@ jobs:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
           POSTGRES_DB: test_db
-        # -U test_user: bare `pg_isready` has no default user, so it falls
-        # back to the OS user running the check inside the container (root,
-        # on a GitHub-hosted runner) — Postgres logs a real connection
-        # attempt for that and rejects it every 10s for the container's
-        # whole lifetime ("FATAL: role \"root\" does not exist"), which
-        # spams backend.log without affecting the health check's result
-        # (pg_isready only needs the server to respond, auth outcome
-        # notwithstanding). Matches docker-compose.yml's postgres
-        # healthcheck, which already specifies -U.
+        # -U test_user -d test_db: bare `pg_isready` has no default user, so
+        # it falls back to the OS user running the check inside the
+        # container (root, on a GitHub-hosted runner) — Postgres logs a real
+        # connection attempt for that and rejects it every 10s for the
+        # container's whole lifetime ("FATAL: role \"root\" does not
+        # exist"), which spams backend.log without affecting the health
+        # check's result (pg_isready only needs the server to respond, auth
+        # outcome notwithstanding). BUG (found via a real run): -U alone
+        # isn't enough either — with no -d, libpq defaults to a database
+        # named after the user ("test_user"), which doesn't exist (the real
+        # one is "test_db" per POSTGRES_DB above), so that first fix just
+        # swapped one FATAL-every-10s spam ("role root") for another
+        # ("database test_user does not exist"). Matches docker-compose.
+        # yml's postgres healthcheck, which already specifies both.
         options: >-
-          --health-cmd "pg_isready -U test_user"
+          --health-cmd "pg_isready -U test_user -d test_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -277,6 +282,18 @@ jobs:
           # module misconfigured); a full logcat is the only way to see if
           # the app actually crashed on launch.
           #
+          # BUG (found via a real run): an on-failure-only `adb logcat -d`
+          # dump (the previous approach here) never actually ran — every
+          # observed CI failure has been the *job* getting killed at its own
+          # wall-clock timeout-minutes, not `detox test` exiting on its own
+          # with a real non-zero code, so the `||` branch that would have
+          # dumped logcat never fired; the emulator (and its log buffer)
+          # were just gone once the job got cancelled. Streaming `adb
+          # logcat` continuously to a file in the background from before
+          # `detox test` even starts means the file already has everything
+          # up to the moment of cancellation, with no dependency on a clean
+          # exit ever happening.
+          #
           # BUG: this used to be a multi-line `script: |` block with an
           # if/then/fi. This action does NOT run a multi-line script value as
           # one continuous shell script — the log showed each line invoked as
@@ -295,7 +312,7 @@ jobs:
           # just hung. This tunnels the device's localhost:8000 to the
           # runner's localhost:8000 over ADB instead (works regardless of
           # network backend), matching EXPO_PUBLIC_API_URL above.
-          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && (detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose || { echo "=== Detox test failed — dumping full logcat for diagnosis ==="; adb logcat -d > artifacts/logcat.txt; exit 1; })
+          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && (nohup adb logcat > artifacts/logcat.txt 2>&1 &) && detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}

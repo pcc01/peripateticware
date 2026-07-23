@@ -35,11 +35,14 @@ jobs:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
           POSTGRES_DB: test_db
-        # -U test_user: see the matching comment in mobile-e2e.yml — bare
-        # `pg_isready` defaults to the OS user (root) and spams backend.log
-        # with "FATAL: role \"root\" does not exist" every 10s otherwise.
+        # -U test_user -d test_db: see the matching comment in
+        # mobile-e2e.yml — bare `pg_isready` defaults to the OS user (root)
+        # and spams backend.log with "FATAL: role \"root\" does not exist"
+        # every 10s otherwise; -U alone isn't enough either, since with no
+        # -d it defaults to a database named after the user, which doesn't
+        # exist (the real one is "test_db").
         options: >-
-          --health-cmd "pg_isready -U test_user"
+          --health-cmd "pg_isready -U test_user -d test_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
