@@ -43,7 +43,15 @@ jobs:
   android-maestro:
     name: Android Maestro ${{ matrix.android-version }} (API ${{ matrix.api-level }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60, not 30: this workflow's first-ever run showed "Build APK for
+    # testing" alone taking 22m19s on a completely cold Gradle cache (no
+    # dependencies downloaded yet, unlike mobile-e2e.yml's Detox job which
+    # has weeks of warm cache) — that alone blew past a 30-minute budget
+    # before the emulator ever booted. Local runs of the actual Maestro
+    # suite are 8-9.5 minutes total, so 60 leaves generous room for a cold
+    # build plus boot plus tests without approaching Detox-workflow-scale
+    # timeouts.
+    timeout-minutes: 60
 
     services:
       postgres:
@@ -242,7 +250,12 @@ jobs:
   ios-maestro:
     name: iOS Maestro ${{ matrix.ios-version }} (${{ matrix.device }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    # 60, not 45: same cold-cache story as the Android job's timeout
+    # comment — this workflow's first-ever run took ~16 minutes just for
+    # "Build iOS app for testing" on a cold CocoaPods cache, leaving little
+    # margin in a 45-minute budget once boot + backend wait + the actual
+    # Maestro suite (8-9.5 minutes locally) are added on top.
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
