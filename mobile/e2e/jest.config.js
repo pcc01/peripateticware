@@ -15,7 +15,16 @@ try {
 module.exports = {
   rootDir: '..',
   testMatch: ['<rootDir>/e2e/**/*.test.{js,ts}'],
-  testTimeout: 120000,
+  // 120000 wasn't enough headroom: cold app launch on a loaded CI runner has
+  // been measured up to ~100s to first paint on its own (see e2e/helpers.js's
+  // completeOnboardingIfPresent() comment), and that wait shares the same
+  // single per-hook/per-test clock as everything else in a beforeAll/
+  // beforeEach that also logs in afterward — 100s of cold-launch wait left
+  // under 20s for the rest of the hook, which then failed on ITS OWN
+  // timeout instead of the intended assertion. 300000 leaves real margin
+  // above the worst cold-launch case actually observed in CI, not just the
+  // typical one.
+  testTimeout: 300000,
   maxWorkers: 1,
   globalSetup: 'detox/runners/jest/globalSetup',
   globalTeardown: 'detox/runners/jest/globalTeardown',

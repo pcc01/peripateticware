@@ -47,11 +47,15 @@ async function waitForFirstVisible(ids, timeout) {
  * second call within the same test.
  */
 async function completeOnboardingIfPresent() {
-  // 75s, not a quick probe: cold app launch on GitHub-hosted CI runners
-  // (Android emulators especially) has measured 50s+ to first paint
+  // 180s, not a quick probe: cold app launch on GitHub-hosted CI runners
+  // has been measured up to ~100s to first paint under real CI load
   // (Font.loadAsync's ~5s escape-hatch timeout plus RootLayout/AuthGuard's
   // AsyncStorage checks plus general CI resource headroom, all slower here
-  // than on a local dev machine).
+  // than on a local dev machine, and apparently load-dependent — 45s
+  // wasn't enough, then 75s wasn't either). This used to be tuned tight
+  // against jest.config.js's testTimeout; that's backwards — testTimeout
+  // (see its own comment) is now sized to leave slack *after* this, not
+  // the other way around.
   //
   // This used to be a plain `waitFor(onboarding-splash).withTimeout(45000)`
   // wrapped in try/catch-and-return-on-timeout, on the theory that a
@@ -67,7 +71,7 @@ async function completeOnboardingIfPresent() {
   // rejects a *concurrent* waitFor of both ids outright.
   let first;
   try {
-    first = await waitForFirstVisible(['onboarding-splash', 'login-screen'], 75000);
+    first = await waitForFirstVisible(['onboarding-splash', 'login-screen'], 180000);
   } catch {
     return; // Neither appeared — let the caller's own login-screen wait surface the real error.
   }
