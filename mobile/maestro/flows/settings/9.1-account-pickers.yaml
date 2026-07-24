@@ -12,6 +12,14 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "settings-screen"
 - assertVisible: "${STUDENT_EMAIL}"
-- assertVisible: "Field Guide"
+# extendedWaitUntil, not plain assertVisible — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
+# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
+# not slow rendering (this same "Field Guide"/"Terrain" pair timed out
+# in a real CI run despite the screen's own testID and the email text
+# right above them asserting fine).
+- extendedWaitUntil:
+    visible: "Field Guide"
+    timeout: 20000
 - assertVisible: "Terrain"
 - assertVisible: "Atmosphere"

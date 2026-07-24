@@ -38,6 +38,13 @@ appId: com.peripateticware.app
     latitude: 37.8716
     longitude: -122.2727
 - runFlow: ../login-student.yaml
+# extendedWaitUntil, not plain tapOn — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
+# is a Maestro/XCTest accessibility-tree reliability gap after the
+# Discover tab mounts post-login, not slow data loading.
+- extendedWaitUntil:
+    visible: "Creek Habitat Study"
+    timeout: 20000
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"

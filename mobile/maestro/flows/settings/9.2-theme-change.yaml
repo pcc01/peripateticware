@@ -9,6 +9,13 @@ appId: com.peripateticware.app
     id: "tab-settings"
 - assertVisible:
     id: "settings-screen"
+# extendedWaitUntil, not plain tapOn — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
+# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
+# not slow rendering.
+- extendedWaitUntil:
+    visible: "Terrain"
+    timeout: 20000
 - tapOn: "Terrain"
 - assertVisible:
     id: "settings-screen"

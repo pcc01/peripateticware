@@ -26,7 +26,14 @@ appId: com.peripateticware.app
 - runFlow: ../login-student.yaml
 
 # 3.4 — activity cards show title, subject/duration, and location
-- assertVisible: "Creek Habitat Study"
+#
+# extendedWaitUntil, not plain assertVisible — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
+# is a Maestro/XCTest accessibility-tree reliability gap after the
+# Discover tab mounts post-login, not slow data loading.
+- extendedWaitUntil:
+    visible: "Creek Habitat Study"
+    timeout: 20000
 - assertVisible: ".*Local creek or drainage channel.*"
 
 # 3.1 — pull to refresh reloads the activity list

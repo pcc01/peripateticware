@@ -24,6 +24,13 @@ appId: com.peripateticware.app
     id: "settings-screen"
 - assertVisible:
     id: "theme-option-fieldGuide-en"
+# extendedWaitUntil, not plain tapOn — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
+# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
+# not slow rendering.
+- extendedWaitUntil:
+    visible: "Español"
+    timeout: 20000
 - tapOn: "Español"
 - assertVisible:
     id: "theme-option-fieldGuide-es"

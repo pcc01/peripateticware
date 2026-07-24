@@ -13,6 +13,19 @@ appId: com.peripateticware.app
 - launchApp:
     clearState: true
 - runFlow: ../login-student.yaml
+# extendedWaitUntil, not plain tapOn (default ~17s timeout, and even that
+# wasn't enough): a real CI run's on-screen diagnostic proved the activity
+# list data loads and renders correctly well within that window (confirmed
+# via a debug indicator + the failure screenshot showing "Creek Habitat
+# Study" plainly visible) — this is a Maestro/XCTest accessibility-tree
+# query reliability gap after the Discover tab first mounts post-login,
+# not an app bug. Same root cause suspected behind 9.1/9.2/9.4/9.5's
+# similarly-timed-out "visible but not found" failures elsewhere in this
+# suite (confirmed NOT an accessibilityLabel issue either — settings.tsx's
+# Sign Out button already has one and still failed the same way).
+- extendedWaitUntil:
+    visible: "Creek Habitat Study"
+    timeout: 20000
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"
