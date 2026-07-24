@@ -90,7 +90,13 @@ function AuthGuard() {
 
     if (!user && !inAuth) {
       router.replace(hasOnboarded ? '/login' : '/(onboarding)');
-    } else if (user && inLogin) {
+    } else if (user && inAuth) {
+      // Not just inLogin: (onboarding) and (tabs) both register an index
+      // route at "/", and on a cold launch with a restored session (e.g.
+      // reopening the app after it was backgrounded/killed) the router's
+      // structural default for "/" can land on (onboarding) regardless of
+      // hasOnboarded — this branch was only catching the login case, so an
+      // already-authenticated user landing in onboarding got stuck there.
       router.replace('/(tabs)');
     }
   }, [user, isLoading, hasOnboarded, segments]);
