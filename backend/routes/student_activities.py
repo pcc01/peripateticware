@@ -628,7 +628,7 @@ async def _save_file(upload: UploadFile, session_id: UUID) -> tuple[str, int]:
     if not settings.CF_R2_ACCOUNT_ID:
         # Dev fallback: write to local volume
         import os
-        upload_dir = f"/app/uploads/sessions/{session_id}"
+        upload_dir = f"{settings.UPLOAD_DIR}/sessions/{session_id}"
         os.makedirs(upload_dir, exist_ok=True)
         dest = f"{upload_dir}/{safe_name}"
         with open(dest, "wb") as fh:

@@ -20,6 +20,7 @@ from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from core.database import get_db
 from core.dependencies import get_current_user
 from models.database import (
@@ -991,7 +992,7 @@ async def add_capture_to_response(
             detail="Unsupported file type. Allowed: JPEG, PNG, WEBP, HEIC, GIF.",
         )
 
-    upload_dir = "/app/uploads/peer_project_responses"
+    upload_dir = f"{settings.UPLOAD_DIR}/peer_project_responses"
     os.makedirs(upload_dir, exist_ok=True)
     filename = f"{uuid4()}{ext}"  # server-generated name only
     filepath = os.path.join(upload_dir, filename)

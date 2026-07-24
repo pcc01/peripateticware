@@ -134,7 +134,7 @@ class PortfolioResponse(BaseModel):
 # ==============================================================================
 
 def _upload_dir() -> Path:
-    return Path(getattr(settings, "UPLOAD_DIR", "/app/uploads"))
+    return Path(settings.UPLOAD_DIR)
 
 
 def _unique_filename(original: str) -> str:

@@ -44,6 +44,16 @@ class Settings(BaseSettings):
     CF_R2_SECRET_ACCESS_KEY: str = os.getenv("CF_R2_SECRET_ACCESS_KEY", "")
     CF_R2_BUCKET_NAME: str = os.getenv("CF_R2_BUCKET_NAME", "peripateticware-uploads")
     CF_R2_PUBLIC_URL: str = os.getenv("CF_R2_PUBLIC_URL", "")  # e.g. https://pub-xxx.r2.dev
+    # Local-disk fallback for student captures (routes/student.py's
+    # upload_capture) when R2 isn't configured. "/app/uploads" is only a
+    # real, writable path inside the Docker image (docker-compose.yml mounts
+    # a volume there) — it was never an actual Settings field before, so
+    # routes/student.py's getattr(settings, "UPLOAD_DIR", "/app/uploads")
+    # always silently fell through to that hardcoded default in every
+    # environment, Docker or not. Anywhere the backend runs directly
+    # (bare uvicorn, e.g. CI or local dev outside Docker), "/app" doesn't
+    # exist and isn't creatable without root, so every capture upload 500'd.
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "/app/uploads")
     # ── LLM Provider Selection (legacy — per-task routing now via ai_task_config table) ──
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "ollama")
 

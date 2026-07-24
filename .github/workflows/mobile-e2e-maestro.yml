@@ -191,6 +191,16 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
           ENVIRONMENT: development
+          # Every capture-upload flow (12.x) 500'd on a real CI run:
+          # routes/student.py's local-disk fallback (used whenever
+          # CF_R2_ACCOUNT_ID isn't set, true here) defaulted to /app/uploads
+          # unconditionally — a real path only inside the Docker image
+          # (docker-compose.yml mounts a volume there); the backend here
+          # runs directly via uvicorn with no container, and /app doesn't
+          # exist and can't be created without root. UPLOAD_DIR is now a
+          # real Settings field (core/config.py); this points it somewhere
+          # actually writable, relative to this step's own working-directory.
+          UPLOAD_DIR: ./uploads
 
       - name: Enable KVM (Android emulator acceleration)
         run: |
@@ -370,6 +380,16 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           SECRET_KEY: test-secret-key
           ENVIRONMENT: development
+          # Every capture-upload flow (12.x) 500'd on a real CI run:
+          # routes/student.py's local-disk fallback (used whenever
+          # CF_R2_ACCOUNT_ID isn't set, true here) defaulted to /app/uploads
+          # unconditionally — a real path only inside the Docker image
+          # (docker-compose.yml mounts a volume there); the backend here
+          # runs directly via uvicorn with no container, and /app doesn't
+          # exist and can't be created without root. UPLOAD_DIR is now a
+          # real Settings field (core/config.py); this points it somewhere
+          # actually writable, relative to this step's own working-directory.
+          UPLOAD_DIR: ./uploads
 
       - name: Setup Ruby + Bundler (pinned CocoaPods via mobile/Gemfile)
         uses: ruby/setup-ruby@v1

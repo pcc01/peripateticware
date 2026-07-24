@@ -1394,7 +1394,7 @@ async def _save_activity_file(upload: UploadFile, activity_id: UUID) -> tuple[st
     file_size = len(file_bytes)
 
     if not settings.CF_R2_ACCOUNT_ID:
-        upload_dir = f"/app/uploads/activities/{activity_id}"
+        upload_dir = f"{settings.UPLOAD_DIR}/activities/{activity_id}"
         os.makedirs(upload_dir, exist_ok=True)
         dest = f"{upload_dir}/{safe_name}"
         with open(dest, "wb") as fh:
