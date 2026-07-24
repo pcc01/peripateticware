@@ -259,20 +259,58 @@ jobs:
           # `adb reverse tcp:8000 tcp:8000`: see the matching comment in
           # mobile-e2e.yml — this emulator's virtio-wifi/netsim networking
           # doesn't reliably honor the classic 10.0.2.2 host-loopback alias.
-          # `maestro/flows/*/`: maestro's own folder scan is non-recursive,
-          # so each flow subfolder has to be passed explicitly rather than
-          # pointing at maestro/flows/ itself (which would only pick up the
-          # loose reusable subflows — login-student.yaml, onboarding-skip.
-          # yaml — sitting at that root, not the real suites in
-          # subdirectories). The trailing `; EXIT=$?; cp ...; exit $EXIT`
-          # captures Maestro's real exit code before copying its own
-          # auto-saved failure screenshots into the uploaded artifacts, so a
-          # real test failure still fails the step even though the copy
-          # itself always "succeeds". No LOCATION_PERMISSION env var — the
-          # affected flows now grant it via a platform-gated launchApp block
-          # (see maestro/flows/capture/12.1-note-capture.yaml's header for
-          # why `-e`-substitution wasn't reliable enough for this one).
-          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && adb install -r android/app/build/outputs/apk/release/app-release.apk && (nohup adb logcat > artifacts/logcat.txt 2>&1 &) && (maestro test maestro/flows/*/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit.xml; EXIT=$?; cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null; exit $EXIT)
+          # No LOCATION_PERMISSION env var — the affected flows now grant it
+          # via a platform-gated launchApp block (see
+          # maestro/flows/capture/12.1-note-capture.yaml's header for why
+          # `-e`-substitution wasn't reliable enough for this one).
+          #
+          # Two `maestro test` invocations, not one `maestro/flows/*/` —
+          # each subfolder still has to be passed explicitly either way
+          # (Maestro's own folder scan is non-recursive, so pointing at
+          # maestro/flows/ itself would only pick up the loose reusable
+          # subflows sitting at that root — login-student.yaml,
+          # onboarding-skip.yaml — not the real suites in subdirectories).
+          # Splitting into two shorter sessions is a real fix, not just an
+          # organizational change: a real CI run's raw log showed the whole
+          # step going silent mid-flow (no Maestro output at all for the
+          # rest of the run) with
+          # `maestro.android.DeviceServerDiedException: Device server died
+          # during 'disableLocationUpdates' (connection age 629325ms)`; a
+          # separate run hit the same dead-silence pattern with
+          # `IOException: Command failed (host:transport:emulator-5554):
+          # device 'emulator-5554' not found` instead. Different exact
+          # symptom, same shape — the emulator/Maestro session becomes
+          # unstable after sustained load (~10-13 minutes across all 22
+          # flows, including several minutes of audio/video/camera capture
+          # and repeated GPS mocking) and everything after that point fails
+          # instantly with no real error, not because of anything wrong in
+          # those specific flows. Roughly halving the flows per session
+          # roughly halves the odds of hitting whatever threshold this is.
+          # Capture (heaviest: audio/video/photo recording) and settings
+          # (second-heaviest: 4 flows) are deliberately in separate shards
+          # so neither session concentrates all the load; geofence (the
+          # flow whose own location-mocking triggered the
+          # disableLocationUpdates crash above) is shard 1 specifically so
+          # it's reached well before the ~10-13 minute mark instead of near
+          # the end of a single 22-flow run.
+          #
+          # The trailing `|| EXIT=1` (rather than letting a mid-script
+          # failure short-circuit) and cp of Maestro's own auto-saved
+          # failure screenshots into the uploaded artifacts happen once at
+          # the end for both shards combined, so a failure in shard 1
+          # doesn't skip running (or reporting) shard 2.
+          script: |
+            mkdir -p artifacts
+            adb reverse tcp:8000 tcp:8000
+            adb install -r android/app/build/outputs/apk/release/app-release.apk
+            nohup adb logcat > artifacts/logcat.txt 2>&1 &
+            EXIT=0
+            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ \
+              -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml || EXIT=1
+            maestro test maestro/flows/navigation/ maestro/flows/offline/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
+              -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml || EXIT=1
+            cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
+            exit $EXIT
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
