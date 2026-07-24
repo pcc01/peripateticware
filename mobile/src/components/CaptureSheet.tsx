@@ -187,7 +187,7 @@ export default function CaptureSheet({
               style={[styles.recordBtn, { backgroundColor: recording ? theme.warn : theme.accent, borderRadius: 999 }]}
               accessibilityRole="button"
               accessibilityLabel={recording ? t('capture.stopRecording', 'Stop recording') : t('capture.startRecording', 'Start recording')}
-              accessibilityState={{ selected: recording }}
+              accessibilityState={{ selected: !!recording }}
             >
               <Text style={styles.recordIcon}>{recording ? '⏹' : '🎤'}</Text>
             </TouchableOpacity>
