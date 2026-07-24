@@ -181,7 +181,12 @@ test.describe('Teacher — Messages', () => {
     await page.getByTestId('tab-messages').click();
     await page.getByTestId('conversation-item').click();
 
-    await expect(page.getByText('Jordan Ada')).toBeVisible({ timeout: 10_000 });
+    // getByRole('heading', ...), not getByText: the thread's message list
+    // also attributes a bubble to the same contact ("Jordan Ada · just
+    // now"), so a bare getByText('Jordan Ada') hits Playwright's strict-mode
+    // multiple-match error. The heading is what actually confirms the
+    // right conversation thread opened.
+    await expect(page.getByRole('heading', { name: 'Jordan Ada' })).toBeVisible({ timeout: 10_000 });
     await page.getByTestId('reply-body-input').fill('Yes — graded and returned today.');
     await page.getByTestId('send-reply-button').click();
 

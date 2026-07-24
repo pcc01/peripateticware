@@ -355,10 +355,16 @@ test.describe('Admin — Privacy Config', () => {
 
   test('four framework badges are shown (FERPA, COPPA, CCPA, GDPR)', async ({ page }) => {
     await page.goto('/admin/privacy');
-    await expect(page.getByText('FERPA')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('COPPA')).toBeVisible({ timeout: 5_000 });
-    await expect(page.getByText('CCPA')).toBeVisible({ timeout: 5_000 });
-    await expect(page.getByText('GDPR')).toBeVisible({ timeout: 5_000 });
+    // .first(): each acronym also appears in prose elsewhere on this page
+    // (e.g. the Active Jurisdictions empty-state copy says "...activate
+    // FERPA, COPPA, GDPR, or CCPA..."), so a bare getByText hits Playwright's
+    // strict-mode multiple-match error. The framework-toggle badge grid
+    // renders first in DOM order, so .first() reliably targets the actual
+    // badge rather than the prose mention.
+    await expect(page.getByText('FERPA').first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('COPPA').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('CCPA').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('GDPR').first()).toBeVisible({ timeout: 5_000 });
   });
 
   test('Active Jurisdictions section is present', async ({ page }) => {
