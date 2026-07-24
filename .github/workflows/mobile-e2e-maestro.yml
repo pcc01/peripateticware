@@ -252,8 +252,10 @@ jobs:
           # captures Maestro's real exit code before copying its own
           # auto-saved failure screenshots into the uploaded artifacts, so a
           # real test failure still fails the step even though the copy
-          # itself always "succeeds".
-          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && adb install -r android/app/build/outputs/apk/release/app-release.apk && (nohup adb logcat > artifacts/logcat.txt 2>&1 &) && (maestro test maestro/flows/*/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit.xml; EXIT=$?; cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null; exit $EXIT)
+          # itself always "succeeds". LOCATION_PERMISSION=allow: Android's
+          # location permission is a plain allow/deny (unlike iOS's granular
+          # always/inuse/never/unset — see the iOS job's matching comment).
+          script: mkdir -p artifacts && adb reverse tcp:8000 tcp:8000 && adb install -r android/app/build/outputs/apk/release/app-release.apk && (nohup adb logcat > artifacts/logcat.txt 2>&1 &) && (maestro test maestro/flows/*/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" -e LOCATION_PERMISSION=allow --format junit --output artifacts/junit.xml; EXIT=$?; cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null; exit $EXIT)
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
@@ -436,8 +438,14 @@ jobs:
           mkdir -p artifacts
           xcrun simctl install "$SIMULATOR_UDID" ios/build/Build/Products/Release-iphonesimulator/Peripateticware.app
           set +e
+          # LOCATION_PERMISSION=inuse: iOS's location permission is granular
+          # (always/inuse/never/unset), not the plain allow/deny most other
+          # permissions use — "allow" is rejected outright here (see
+          # maestro#1458 and the matching comment in the affected flow
+          # files, e.g. maestro/flows/capture/12.1-note-capture.yaml).
           maestro --device "$SIMULATOR_UDID" test maestro/flows/*/ \
             -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
+            -e LOCATION_PERMISSION=inuse \
             --format junit --output artifacts/junit.xml
           EXIT=$?
           cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null

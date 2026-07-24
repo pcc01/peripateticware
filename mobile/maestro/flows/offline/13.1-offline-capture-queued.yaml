@@ -22,7 +22,7 @@ appId: com.peripateticware.app
 - launchApp:
     clearState: true
     permissions:
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

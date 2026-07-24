@@ -3,17 +3,21 @@
 # -122.2727, location_radius_meters=500 — backend/startup.py seed default).
 #
 # FIRST USE of Maestro's setLocation/permissions commands in this suite —
-# same caveat the Detox version flagged: the `permissions.location: allow`
-# grant must actually take on the Android emulator for
+# same caveat the Detox version flagged: the `permissions.location` grant
+# must actually take on the device for
 # src/hooks/useGeofence.ts's requestForegroundPermissionsAsync() to
 # succeed, or the watcher never starts and the geofence-toast assertions
 # below will time out. Verify on-device before trusting this in CI.
+# ${LOCATION_PERMISSION}, not a literal value: Android's location
+# permission is a plain allow/deny, but iOS's is granular (always/inuse/
+# never/unset) and rejects "allow" outright (see maestro#1458). Each
+# platform's CI job passes the right value via `-e LOCATION_PERMISSION=...`.
 appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
     permissions:
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - setLocation:
     latitude: 37.8716
     longitude: -122.2727

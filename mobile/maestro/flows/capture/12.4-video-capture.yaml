@@ -12,7 +12,7 @@ appId: com.peripateticware.app
     permissions:
       camera: allow
       microphone: allow
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

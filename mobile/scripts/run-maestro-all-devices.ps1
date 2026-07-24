@@ -398,9 +398,14 @@ foreach ($row in $matrix) {
 
         Write-Host "  Running Maestro suite ..." -ForegroundColor DarkGray
         try {
+            # LOCATION_PERMISSION=allow: Android-only script, so the plain
+            # allow/deny value is correct here — iOS's location permission
+            # is granular (always/inuse/never/unset) and needs "inuse"
+            # instead (see the CI workflow's matching comment).
             & maestro test @flowFolders `
                 -e STUDENT_EMAIL=$StudentEmail `
                 -e STUDENT_PASSWORD=$StudentPassword `
+                -e LOCATION_PERMISSION=allow `
                 --format junit --output $junitPath `
                 2>&1 | Tee-Object -FilePath (Join-Path $reportDir "console.log")
             if ($LASTEXITCODE -eq 0) { $testOk = $true }

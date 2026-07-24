@@ -5,17 +5,22 @@
 # note/video mode picker) is now reachable via the real capture-btn-*
 # buttons instead of the stub.
 #
-# permissions.location: allow — every flow that reaches the Inquiry phase
-# (not just the geofence flow) triggers useGeofence's location permission
+# permissions.location — every flow that reaches the Inquiry phase (not
+# just the geofence flow) triggers useGeofence's location permission
 # request, which pops a blocking native dialog if not pre-granted. Found
 # this the hard way: without it, this flow (and 12.2/12.4) failed with the
 # OS location dialog covering the screen and eating taps meant for the app.
+# ${LOCATION_PERMISSION}, not a literal value: Android's location permission
+# is a plain allow/deny, but iOS's is granular (always/inuse/never/unset)
+# and rejects "allow" outright ("wrong argument value 'allow' was provided
+# for 'location' permission" — see maestro#1458). Each platform's CI job
+# passes the right value via `-e LOCATION_PERMISSION=...`.
 appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
     permissions:
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

@@ -8,7 +8,7 @@ appId: com.peripateticware.app
     clearState: true
     permissions:
       microphone: allow
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

@@ -8,16 +8,17 @@
 # `permissions.camera: allow` grant in this suite; the emulator's virtual
 # camera produces a synthetic test-pattern image, which is fine for
 # exercising the capture pipeline but isn't a real photo.
-# permissions.location: allow — Inquiry phase triggers a geofence
+# permissions.location — Inquiry phase triggers a geofence
 # location-permission dialog regardless of what the test is actually
-# about; see 12.1-note-capture.yaml header for how this was found.
+# about; see 12.1-note-capture.yaml header for how this was found, and for
+# why it's ${LOCATION_PERMISSION} rather than a literal value.
 appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
     permissions:
       camera: allow
-      location: allow
+      location: ${LOCATION_PERMISSION}
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:
