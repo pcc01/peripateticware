@@ -460,7 +460,7 @@ async def generate_activity_suggestions(
     """
     
     # Verify teacher role
-    if current_user.role.value != "teacher":
+    if current_user.role.upper() != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can generate activities"

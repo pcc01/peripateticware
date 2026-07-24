@@ -84,7 +84,7 @@ async def create_project(
     """Create a new project"""
 
     # Verify teacher role
-    if current_user.role.value.upper() != "TEACHER":
+    if current_user.role.upper() != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can create projects"
@@ -124,7 +124,7 @@ async def list_projects(
     """List projects for current teacher"""
 
     # Verify teacher role
-    if current_user.role.value.upper() != "TEACHER":
+    if current_user.role.upper() != "TEACHER":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers can view projects"
