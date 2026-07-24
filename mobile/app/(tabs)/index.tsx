@@ -26,18 +26,27 @@ export default function DiscoverScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // TEMP DIAGNOSTIC (remove once the iOS "activities never load" CI bug is
+  // root-caused): iOS Release builds don't surface console.log to any
+  // captured CI log, so this on-screen indicator is the only way to see
+  // which phase load() actually reached in a failure screenshot.
+  const [debugPhase, setDebugPhase] = useState('not-started');
 
   const load = useCallback(async () => {
+    setDebugPhase('started');
     try {
       setError(null);
       const data = await fetchActivities();
+      setDebugPhase(`settled-ok:${data.length}`);
       setActivities(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load activities');
+      const msg = e instanceof Error ? e.message : 'Could not load activities';
+      setDebugPhase(`settled-error:${msg}`);
+      setError(msg);
     }
   }, []);
 
-  useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+  useEffect(() => { setDebugPhase('effect-fired'); load().finally(() => setLoading(false)); }, [load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -55,6 +64,7 @@ export default function DiscoverScreen() {
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
           Discover
         </Text>
+        <Text testID="debug-load-phase" style={{ fontSize: 9, color: '#999' }}>{debugPhase}</Text>
       </View>
 
       {!isOnline && (
