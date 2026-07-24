@@ -211,11 +211,17 @@ jobs:
       # a running Metro server) — just assembleRelease, no
       # assembleAndroidTest, since Maestro doesn't need the Detox
       # instrumentation/test APK at all.
+      # 127.0.0.1, not localhost — see the iOS job's matching comment: a
+      # real iOS run's device log showed NSURLSession racing "localhost"'s
+      # IPv6 (::1) and IPv4 resolutions, getting an instant Connection
+      # refused on ::1 (uvicorn only binds 0.0.0.0/IPv4) before falling
+      # back. No confirmed evidence of the same on Android, but pinning the
+      # IP here too costs nothing and rules it out.
       - name: Build APK for testing
         working-directory: mobile/android
         run: sh ./gradlew --no-daemon assembleRelease
         env:
-          EXPO_PUBLIC_API_URL: http://localhost:8000
+          EXPO_PUBLIC_API_URL: http://127.0.0.1:8000
 
       - name: Wait for backend health
         run: |
@@ -390,6 +396,19 @@ jobs:
       # Same Release build Detox used (embeds the JS bundle so the app never
       # depends on a running Metro server — see .detoxrc.js's ios.debug
       # comment for the full history of why Debug doesn't work here).
+      # 127.0.0.1, not localhost: a real CI run's device-simulator.log
+      # showed the root cause behind nearly every flaky iOS Maestro
+      # failure (12.x capture flows' "Creek Habitat Study" not found,
+      # 9.1/9.2/9.4/9.5, etc. — different symptoms, same cause). Every
+      # single network request from the app logged an instant "Connection
+      # refused" on ::1:8000 (IPv6 loopback) — NSURLSession races
+      # "localhost"'s IPv6 and IPv4 resolutions (Happy Eyeballs), and
+      # uvicorn only binds 0.0.0.0 (IPv4), so ::1 always refuses. The
+      # eventual IPv4 fallback still works, but not before adding several
+      # seconds of latency per request — enough to blow past Maestro's
+      # ~17s default command timeout on a screen whose content depends on
+      # 2-3 sequential API calls. Using the literal IPv4 address skips the
+      # IPv6 attempt (and the refusal) entirely.
       - name: Build iOS app for testing
         working-directory: mobile
         run: |
@@ -400,7 +419,7 @@ jobs:
             -derivedDataPath ios/build \
             CODE_SIGNING_ALLOWED=NO
         env:
-          EXPO_PUBLIC_API_URL: http://localhost:8000
+          EXPO_PUBLIC_API_URL: http://127.0.0.1:8000
 
       # Same JSON+jq UDID lookup as mobile-e2e.yml's Detox job — see its
       # matching comment for why a plain grep on `simctl list devices`
