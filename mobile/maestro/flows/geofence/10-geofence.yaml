@@ -43,6 +43,13 @@ appId: com.peripateticware.app
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"
 - tapOn: "I'm oriented — begin inquiry"
+# Optional dismiss for the OS location dialog — a real CI run screenshotted
+# it covering "Observe & Capture" on a different flow (see
+# maestro/flows/capture/12.1-note-capture.yaml's header): the permissions
+# pre-grant above doesn't reliably suppress it.
+- tapOn:
+    text: "While using the app"
+    optional: true
 # extendedWaitUntil, not plain assertVisible (default 7s timeout) — see the
 # same assertion in maestro/flows/activity/4-6-activity-flow.yaml for why:
 # this specific point failed on API 24 in Session 18's run.

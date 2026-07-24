@@ -44,6 +44,12 @@ appId: com.peripateticware.app
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"
 - tapOn: "I'm oriented — begin inquiry"
+# Optional dismiss for the OS location dialog — see 12.1-note-capture.yaml
+# header: the permissions pre-grant doesn't reliably suppress it, and a real
+# CI run screenshotted it covering "Observe & Capture".
+- tapOn:
+    text: "While using the app"
+    optional: true
 - assertVisible: "Observe & Capture"
 
 - tapOn:

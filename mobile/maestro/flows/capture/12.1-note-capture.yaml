@@ -43,6 +43,16 @@ appId: com.peripateticware.app
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"
 - tapOn: "I'm oriented — begin inquiry"
+# A real CI run screenshotted the OS location dialog ("Allow Peripateticware
+# to access this device's location?") sitting on top of "Observe & Capture",
+# fully obscuring it from the accessibility tree Maestro queries — the
+# Android permissions pre-grant above doesn't reliably suppress this
+# specific dialog, so useGeofence's requestForegroundPermissionsAsync()
+# (fired on entering Inquiry) still shows it. optional: true so this is a
+# no-op on runs where the dialog doesn't appear.
+- tapOn:
+    text: "While using the app"
+    optional: true
 - assertVisible: "Observe & Capture"
 
 - tapOn:
