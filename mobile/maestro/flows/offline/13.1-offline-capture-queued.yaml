@@ -17,12 +17,27 @@
 # 52-91), so exercising it via the simplest capture type (text note, no
 # camera/mic permission dance) is sufficient; which capture type triggers it
 # is incidental to what's being tested here.
+# Two platform-gated launchApp blocks, not one `${LOCATION_PERMISSION}`
+# value — see 12.1-note-capture.yaml header: env substitution doesn't reach
+# launchApp's permissions map on iOS.
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: true
-    permissions:
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

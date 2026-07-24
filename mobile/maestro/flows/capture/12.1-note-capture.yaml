@@ -10,17 +10,33 @@
 # request, which pops a blocking native dialog if not pre-granted. Found
 # this the hard way: without it, this flow (and 12.2/12.4) failed with the
 # OS location dialog covering the screen and eating taps meant for the app.
-# ${LOCATION_PERMISSION}, not a literal value: Android's location permission
-# is a plain allow/deny, but iOS's is granular (always/inuse/never/unset)
-# and rejects "allow" outright ("wrong argument value 'allow' was provided
-# for 'location' permission" — see maestro#1458). Each platform's CI job
-# passes the right value via `-e LOCATION_PERMISSION=...`.
+# Two platform-specific launchApp blocks, not one `${LOCATION_PERMISSION}`
+# value: Android's location permission is a plain allow/deny, but iOS's is
+# granular (always/inuse/never/unset) and rejects "allow" outright (see
+# maestro#1458) — so far so parameterizable. But a real CI run proved `-e`
+# substitution itself doesn't happen inside launchApp's permissions map on
+# iOS (it reached the device as the literal string "${LOCATION_PERMISSION}",
+# failing permission validation), while the same substitution works fine
+# there on Android. Hence two literal blocks gated by `when: platform`
+# instead of one interpolated value.
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: true
-    permissions:
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

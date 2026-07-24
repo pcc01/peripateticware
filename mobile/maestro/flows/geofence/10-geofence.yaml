@@ -8,16 +8,32 @@
 # src/hooks/useGeofence.ts's requestForegroundPermissionsAsync() to
 # succeed, or the watcher never starts and the geofence-toast assertions
 # below will time out. Verify on-device before trusting this in CI.
-# ${LOCATION_PERMISSION}, not a literal value: Android's location
-# permission is a plain allow/deny, but iOS's is granular (always/inuse/
-# never/unset) and rejects "allow" outright (see maestro#1458). Each
-# platform's CI job passes the right value via `-e LOCATION_PERMISSION=...`.
+# Two platform-gated launchApp blocks, not one `${LOCATION_PERMISSION}`
+# value: Android's location permission is a plain allow/deny, but iOS's is
+# granular (always/inuse/never/unset) and rejects "allow" outright (see
+# maestro#1458) — so far so parameterizable, but a real CI run proved `-e`
+# substitution doesn't actually reach launchApp's permissions map on iOS
+# (the device saw the literal string "${LOCATION_PERMISSION}" and rejected
+# it), while the same substitution works fine there on Android. Hence two
+# literal blocks gated by `when: platform` instead.
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: true
-    permissions:
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
 - setLocation:
     latitude: 37.8716
     longitude: -122.2727

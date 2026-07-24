@@ -69,7 +69,7 @@ try {
     Write-Host "-- Running 13.1-offline-capture-queued.yaml -------------------" -ForegroundColor Yellow
     $flow1Ok = $false
     try {
-        & maestro test maestro\flows\offline\13.1-offline-capture-queued.yaml -e STUDENT_EMAIL=student@test.local -e STUDENT_PASSWORD=Test1234! -e LOCATION_PERMISSION=allow
+        & maestro test maestro\flows\offline\13.1-offline-capture-queued.yaml -e STUDENT_EMAIL=student@test.local -e STUDENT_PASSWORD=Test1234!
         if ($LASTEXITCODE -eq 0) { $flow1Ok = $true }
     } catch {
         Write-Host "  13.1 reported an error: $_" -ForegroundColor Red
@@ -89,7 +89,7 @@ try {
     Write-Host "-- Running 13.2-offline-capture-syncs.yaml --------------------" -ForegroundColor Yellow
     $flow2Ok = $false
     try {
-        & maestro test maestro\flows\offline\13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL=student@test.local -e STUDENT_PASSWORD=Test1234! -e LOCATION_PERMISSION=allow
+        & maestro test maestro\flows\offline\13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL=student@test.local -e STUDENT_PASSWORD=Test1234!
         if ($LASTEXITCODE -eq 0) { $flow2Ok = $true }
     } catch {
         Write-Host "  13.2 reported an error: $_" -ForegroundColor Red

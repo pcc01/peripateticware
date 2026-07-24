@@ -1,14 +1,29 @@
 # New coverage — see 12.1-note-capture.yaml header for context on why this
-# wasn't testable before this session, and for why permissions.location is
-# required here too (Inquiry phase triggers a geofence location-permission
-# dialog regardless of what the test is actually about).
+# wasn't testable before this session, why permissions.location is required
+# here too (Inquiry phase triggers a geofence location-permission dialog
+# regardless of what the test is actually about), and why it's two
+# platform-gated launchApp blocks rather than one `${LOCATION_PERMISSION}`
+# value (env substitution doesn't reach launchApp's permissions map on iOS).
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: true
-    permissions:
-      microphone: allow
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            microphone: allow
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            microphone: allow
+            location: inuse
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

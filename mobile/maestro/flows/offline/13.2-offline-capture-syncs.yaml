@@ -20,12 +20,27 @@
 # useConnectivity polls every 15s (see the `setInterval(check, 15_000)`),
 # so the wrapper script waits at least that long after re-enabling the
 # network before running this flow.
+# Two platform-gated launchApp blocks, not one `${LOCATION_PERMISSION}`
+# value — see 12.1-note-capture.yaml header: env substitution doesn't reach
+# launchApp's permissions map on iOS.
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: false
-    permissions:
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: false
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: false
+          permissions:
+            location: inuse
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:

@@ -5,14 +5,33 @@
 # by expo-camera's CameraView.recordAsync()/stopRecording(). Backend
 # already supported "video" as a capture_type (backend/models/database.py
 # CaptureType enum), so no backend change was needed.
+# permissions.location — Inquiry phase triggers a geofence
+# location-permission dialog regardless of what the test is actually about;
+# see 12.1-note-capture.yaml header for why it's two platform-gated
+# launchApp blocks rather than one `${LOCATION_PERMISSION}` value (env
+# substitution doesn't reach launchApp's permissions map on iOS).
 appId: com.peripateticware.app
 ---
-- launchApp:
-    clearState: true
-    permissions:
-      camera: allow
-      microphone: allow
-      location: ${LOCATION_PERMISSION}
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            camera: allow
+            microphone: allow
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            camera: allow
+            microphone: allow
+            location: inuse
 - runFlow: ../login-student.yaml
 - tapOn: "Creek Habitat Study"
 - assertVisible:
