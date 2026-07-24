@@ -185,9 +185,6 @@ async def lifespan(app: FastAPI):
         await apply_student_phase7_migrations(engine)
         await apply_rag_documents_table(engine)
 
-        # Seed data
-        await seed_sample_activities(engine)
-
         if not db_ready:
             logger.error("Failed to initialize database")
             raise RuntimeError("Database initialization failed")
@@ -217,6 +214,20 @@ async def lifespan(app: FastAPI):
             await seed_demo_users(engine)
             await seed_demo_admin_account(engine)
             await seed_test_accounts(engine)
+            # BUG (found via a real Maestro e2e run — every flow expecting
+            # the "Creek Habitat Study" sample activity failed with "element
+            # not found"): this used to run unconditionally near the top of
+            # startup, before ANY user existed. seed_sample_activities()
+            # looks up `SELECT id FROM users WHERE role = 'TEACHER'` to own
+            # each activity it inserts — with no teacher yet, that INSERT
+            # fails (activities.teacher_id is NOT NULL) and gets silently
+            # swallowed by its own try/except, so the 3 sample activities
+            # never actually got created on ANY fresh database, not just CI.
+            # Needs a teacher, which seed_test_accounts (teacher@test.local)
+            # just created — and must run before seed_demo_fieldwork_
+            # submission below, which explicitly depends on the "Creek
+            # Habitat Study" activity existing.
+            await seed_sample_activities(engine)
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)
@@ -225,6 +236,10 @@ async def lifespan(app: FastAPI):
         elif settings.ENABLE_DEMO_SEED_ACCOUNTS:
             logger.info("ENABLE_DEMO_SEED_ACCOUNTS=true — seeding customer-facing demo accounts only (no admin, no @test.local)")
             await seed_demo_users(engine)
+            # See the matching comment in the development branch above —
+            # needs a teacher (from seed_demo_users) and must run before
+            # seed_demo_fieldwork_submission below.
+            await seed_sample_activities(engine)
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)
