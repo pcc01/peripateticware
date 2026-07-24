@@ -435,6 +435,18 @@ const ActivityManager = () => {
       newErrors.title = 'Title must be less than 200 characters';
     }
 
+    if (!formData.description?.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = 'Description must be at least 10 characters';
+    } else if (formData.description.length > 5000) {
+      newErrors.description = 'Description must be less than 5000 characters';
+    }
+
+    if (!formData.location_name?.trim()) {
+      newErrors.location_name = 'Location name is required';
+    }
+
     if (!formData.subject) {
       newErrors.subject = 'Subject is required';
     }
@@ -757,15 +769,18 @@ const ActivityManager = () => {
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.description", "Description")}
-
+              <span className="text-red-500">*</span>
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.description ? 'border-red-500' : 'border-gray-300'}`
+              }
               placeholder={t("landing:enter_activity_description", "Enter activity description")}
               rows={4} />
-            
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            <p className="text-gray-500 text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
           </div>
         </div>
 
@@ -797,13 +812,18 @@ const ActivityManager = () => {
 
             {/* Location Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:location_name", "Location Name")}</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:location_name", "Location Name")}
+                <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={formData.location_name}
                 onChange={(e) => handleLocationNameChange(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.location_name ? 'border-red-500' : 'border-gray-300'}`
+                }
                 placeholder={t('components_teacher_activitymanager.placeholder_eg_lincoln_park_city_museum', 'e.g., Lincoln Park, City Museum…')} />
+              {errors.location_name && <p className="text-red-500 text-sm mt-1">{errors.location_name}</p>}
               {geoStatus && <p className="text-xs text-blue-500 mt-1 italic">{geoStatus}</p>}
             </div>
           </div>

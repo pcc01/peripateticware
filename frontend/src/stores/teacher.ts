@@ -25,8 +25,37 @@ async function apiFetch<T>(
     },
   })
   if (!res.ok) {
-    const detail = await res.text()
-    throw new Error(detail || res.statusText)
+    const text = await res.text()
+    let message = res.statusText || `Request failed (${res.status})`
+    if (text) {
+      try {
+        const body = JSON.parse(text)
+        if (typeof body?.detail === 'string') {
+          // Plain FastAPI HTTPException — already human-readable.
+          message = body.detail
+        } else if (Array.isArray(body?.detail)) {
+          // Pydantic 422 validation errors: [{ loc: [...], msg, type }, ...].
+          // Surfacing this array's raw JSON (the old behavior) dumped things
+          // like {"detail":[{"type":"string_too_short","loc":["body",
+          // "description"],"msg":"String should have at least 10
+          // characters",...}]} straight into the UI. Turn each entry into
+          // "<field>: <message>" instead.
+          const formatted = body.detail
+            .map((e: any) => {
+              const field = Array.isArray(e?.loc) ? e.loc[e.loc.length - 1] : e?.loc
+              return field && typeof field === 'string' ? `${field}: ${e.msg}` : e.msg
+            })
+            .filter(Boolean)
+          if (formatted.length) message = formatted.join('; ')
+        } else if (text) {
+          message = text
+        }
+      } catch {
+        // Body wasn't JSON — fall back to the raw text.
+        message = text
+      }
+    }
+    throw new Error(message)
   }
   if (res.status === 204) return undefined as unknown as T
   return res.json()
