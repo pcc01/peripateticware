@@ -163,9 +163,11 @@ class Settings(BaseSettings):
     # ware.com forwards to) can silently deduplicate mail that looks
     # self-sent (confirmed via a real Cloudflare Email Routing notice).
     # Comma-separated -- confirmed pcerda@outlook.com receives the report
-    # correctly; admin+privacy@outlook.com added alongside it (not instead)
-    # to test "+" subaddressing without losing the already-working channel.
-    PRIVACY_REPORT_CC_EMAIL: str = os.getenv("PRIVACY_REPORT_CC_EMAIL", "pcerda@outlook.com,admin+privacy@outlook.com")
+    # correctly; admin+privacy@gmail.com added alongside it (not instead) to
+    # test whether "+" subaddressing on the actual Gmail account that
+    # admin@peripateticware.com forwards to (the one exhibiting the
+    # self-send dedup behavior per Cloudflare's notice) evades that dedup.
+    PRIVACY_REPORT_CC_EMAIL: str = os.getenv("PRIVACY_REPORT_CC_EMAIL", "pcerda@outlook.com,admin+privacy@gmail.com")
 
     # ── Phase 5: Location Service ─────────────────────────────────────────────
     LOCATION_BACKEND_STR: str = os.getenv("LOCATION_BACKEND", "openstreetmap,nominatim,wikidata,wikipedia")
