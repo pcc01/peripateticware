@@ -181,17 +181,24 @@ def derive_jurisdiction_ids(
         ids.append('gdpr_eu')
 
     else:
-        # No blanket default here — countries with a real known law (~147 of
-        # the ~199 outside the explicit map above, per the IAPP data loaded
-        # into privacy_source_registry) fall through to the catalog-match /
-        # discovery pipeline in resolve_jurisdictions() so they resolve to
-        # their ACTUAL law, not a generic label. The ~52 countries IAPP
-        # confirmed have no privacy law at all are seeded directly into
+        # No baseline entry here at all -- COPPA is a US federal law and has
+        # no business attaching to Japan, Kenya, Thailand, etc. just because
+        # has_under_13 is true (this used to append 'coppa_us' unconditionally
+        # here too, which is wrong on its own AND meant resolve_jurisdictions()'s
+        # "resolved" dict was never empty for ANY unmapped country whenever the
+        # near-default has_under_13=True was passed -- so the catalog-match /
+        # discovery gap path below never fired for anything outside the
+        # explicit map above; every non-EU/non-mapped country silently got
+        # "COPPA" instead of its real law). Countries with a real known law
+        # (~147 of the ~199 outside the explicit map above, per the IAPP data
+        # loaded into privacy_source_registry) now correctly fall through to
+        # the catalog-match / discovery pipeline in resolve_jurisdictions() so
+        # they resolve to their ACTUAL law. The ~52 countries IAPP confirmed
+        # have no privacy law at all are seeded directly into
         # privacy_regulation_catalog's gdpr_eu row (see
-        # scripts/seed_no_legislation_countries_to_gdpr.py) so they're
-        # caught by the catalog-match layer before ever reaching discovery.
-        if has_under_13:
-            ids.append('coppa_us')
+        # scripts/seed_no_legislation_countries_to_gdpr.py) so they're caught
+        # by the catalog-match layer before ever reaching discovery.
+        pass
 
     seen: set = set()
     return [x for x in ids if not (x in seen or seen.add(x))]  # type: ignore[func-returns-value]

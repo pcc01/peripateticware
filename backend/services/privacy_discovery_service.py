@@ -11,9 +11,10 @@ country/subdivision/region has no match in the federal-level baseline map
 nor in privacy_regulation_catalog. Also re-invoked by the monthly auto-renew
 job (backend/startup.py) for previously-discovered, non-adapter-backed entries.
 
-Resolution order (never left empty-handed — always returns *something*,
+Resolution order (normally never left empty-handed — returns *something*,
 even a conservative placeholder, rather than leaving an org with no
-protections at all):
+protections at all -- except when the country-consistency guard below
+rejects a result, where "nothing" is safer than confidently wrong content):
 
   1. iapp_privacy_crawler's existing ~24 curated PrivacySource adapters
      (rich, hand-maintained baseline_rule content) — reused as-is via
@@ -30,6 +31,19 @@ Tiers 2 and 3 both produce discovery_method='ai_search_synthesis',
 is_verified=False unconditionally — pending human/legal review, per design.
 Nothing here ever raises; any failure returns None and the resolver simply
 falls back to whatever the federal baseline already produced.
+
+Country-consistency guard: tier-3 recall-only synthesis (fires whenever the
+official source page is unreachable, which is common — many government
+sites 403 automated fetches) can drift onto the wrong country entirely.
+Observed in testing: a Nigeria lookup came back describing US federal
+student-privacy law (FERPA/COPPA) with no mention of Nigeria at all. That's
+worse than "no data" -- it's confidently wrong content that would otherwise
+land in compliance_rules with auto_load=True. _country_name_matches() checks
+the model's self-reported "country_name" against the requested country_code
+via pycountry; a mismatch is a hard rejection (nothing is stored, not even
+as an unverified placeholder) plus an immediate one-off email to the admin
+via _flag_country_mismatch(), separate from the monthly report, so a human
+can fix the source link or investigate promptly.
 """
 
 from __future__ import annotations
@@ -39,15 +53,74 @@ import logging
 import re
 from typing import Any, Dict, Optional
 
+import pycountry
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
 _REQUIRED_AI_KEYS = (
-    "law_exists", "confidence", "framework", "short_name", "full_name", "summary",
+    "country_name", "law_exists", "confidence", "framework", "short_name", "full_name", "summary",
     "max_retention_days", "encryption_required",
 )
+
+
+def _country_name_matches(country_code: str, claimed_name: str) -> bool:
+    """
+    True if claimed_name (the model's self-reported "which country is this
+    about") plausibly refers to country_code. Uses pycountry's fuzzy search
+    rather than exact string match since models phrase names loosely
+    ("South Korea" vs "Korea, Republic of").
+    """
+    if not claimed_name:
+        return False
+    try:
+        matches = pycountry.countries.search_fuzzy(claimed_name)
+    except LookupError:
+        return False
+    return any(m.alpha_2 == country_code.upper() for m in matches)
+
+
+async def _flag_country_mismatch(
+    country_code: str, location_desc: str, ai_json: Dict[str, Any],
+) -> None:
+    """
+    Immediate one-off admin email for a rejected AI discovery result --
+    distinct from the monthly auto-renew report, since this is a same-run
+    "something is actively broken, look now" signal (usually a dead/blocked
+    source_url pushing the model onto recall-only, where it then drifted to
+    a different country) rather than a routine monthly summary item.
+    Never raises -- a notification failure shouldn't break discovery.
+    """
+    try:
+        from core.config import settings
+        from services.email_service import send_notification
+
+        primary = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
+        cc_list = [c.strip() for c in getattr(settings, "PRIVACY_REPORT_CC_EMAIL", "").split(",") if c.strip()]
+        recipients = [r for r in [primary, *cc_list] if r]
+        if not recipients:
+            return
+
+        subject = f"Privacy discovery rejected — country mismatch for {country_code}"
+        body_html = f"""
+            <h2>AI discovery rejected — country mismatch</h2>
+            <p>Requested: <strong>{location_desc}</strong> (expected country: {country_code})</p>
+            <p>The model's response claimed to be about: <strong>{ai_json.get('country_name', '(none given)')}</strong></p>
+            <p>Nothing was stored -- this org still has no jurisdiction on file for this location.
+               This usually means the official source URL for {country_code} is unreachable
+               (many government sites block automated fetches), pushing the model onto
+               recall-only synthesis, where it drifted onto a different country's law instead
+               of honestly reporting it doesn't know {country_code}'s.</p>
+            <p><strong>Suggested next step:</strong> find and add a working official source URL
+               for {country_code} to privacy_source_registry (or a curated PrivacySource adapter
+               in iapp_privacy_crawler.py) so future lookups have real source text to work from
+               instead of falling back to recall-only.</p>
+            <p>Raw model response: <code>{json.dumps(ai_json)}</code></p>
+        """
+        await send_notification(", ".join(recipients), subject, body_html)
+    except Exception as exc:
+        logger.error(f"[privacy_discovery] Failed to send country-mismatch flag for {country_code}: {exc}", exc_info=True)
 
 
 async def _lookup_source_registry(db: AsyncSession, country_code: str) -> Optional[Dict[str, Any]]:
@@ -140,6 +213,15 @@ async def _synthesize_and_store(
 
     ai_json = await _call_ai_synthesis(db, location_desc, country_code, source_text)
     if ai_json is None:
+        return None
+
+    if not _country_name_matches(country_code, ai_json.get("country_name", "")):
+        logger.warning(
+            f"[privacy_discovery] Country mismatch for {location_desc}: model claimed "
+            f"'{ai_json.get('country_name')}', expected {country_code}. Rejecting -- "
+            f"nothing stored, admin flagged."
+        )
+        await _flag_country_mismatch(country_code, location_desc, ai_json)
         return None
 
     jurisdiction_id = _build_jurisdiction_id(ai_json["framework"], country_code, subdivision_code)

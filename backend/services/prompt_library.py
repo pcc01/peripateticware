@@ -668,6 +668,7 @@ generic child-safety-conscious defaults (do not invent a law that doesn't exist)
 
 Return ONLY a single valid JSON object with exactly these fields:
 {{
+  "country_name": "the common English name of the country you researched -- e.g. 'Nigeria', not 'the United States' -- this MUST be {country_code}, used to catch you drifting to a different country's law",
   "law_exists": true | false,
   "confidence": "high" | "medium" | "low",
   "framework": "short lowercase slug, e.g. 'gdpr', 'coppa', 'custom' if no established name",
@@ -691,5 +692,9 @@ CRITICAL RULES
 • Err conservative on booleans when uncertain (false for *_allowed fields, true for encryption_required)
   — a K-12 platform should default to MORE protective, not less.
 • Do not fabricate a specific law name or citation you are not reasonably confident exists.
+• Stay on the requested country. If you find yourself describing US, EU, or any other country's law
+  instead of {country_code}'s, stop and either find {country_code}'s actual law or honestly report
+  law_exists=false for {country_code} -- never substitute a different country's law as if it were
+  {country_code}'s.
 
 JSON OBJECT:"""
