@@ -60,9 +60,18 @@ $env:ANDROID_SERIAL = $Serial
 
 try {
     Write-Host ""
-    Write-Host "-- Disabling network (wifi + mobile data) --------------------" -ForegroundColor Yellow
+    Write-Host "-- Disabling network (wifi + mobile data + airplane mode) -----" -ForegroundColor Yellow
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "wifi", "disable") | Out-Null
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "data", "disable") | Out-Null
+    # svc wifi/data alone weren't enough on a real CI run against a
+    # netsim-backed x86_64 emulator (androidboot.qemu.virtiowifi=1 in the
+    # boot log) — that transport sits below the WifiManager layer `svc
+    # wifi` toggles, so the app still saw itself as online. Airplane mode
+    # is enforced by ConnectivityManager itself, above any one radio's
+    # manager, so it's the more reliable cut. See the CI workflow's
+    # matching comment (.github/workflows/mobile-e2e-maestro.yml).
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "settings", "put", "global", "airplane_mode_on", "1") | Out-Null
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "am", "broadcast", "-a", "android.intent.action.AIRPLANE_MODE", "--ez", "state", "true") | Out-Null
     Start-Sleep -Seconds 3
 
     Write-Host ""
@@ -77,6 +86,8 @@ try {
 
     Write-Host ""
     Write-Host "-- Re-enabling network -----------------------------------------" -ForegroundColor Yellow
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "settings", "put", "global", "airplane_mode_on", "0") | Out-Null
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "am", "broadcast", "-a", "android.intent.action.AIRPLANE_MODE", "--ez", "state", "false") | Out-Null
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "wifi", "enable") | Out-Null
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "data", "enable") | Out-Null
 
@@ -108,6 +119,8 @@ try {
     # to discover an hour later on an unrelated task.
     Write-Host ""
     Write-Host "-- Ensuring network is back on (cleanup) -----------------------" -ForegroundColor DarkGray
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "settings", "put", "global", "airplane_mode_on", "0") | Out-Null
+    Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "am", "broadcast", "-a", "android.intent.action.AIRPLANE_MODE", "--ez", "state", "false") | Out-Null
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "wifi", "enable") | Out-Null
     Invoke-Quiet -Exe $adb -CmdArgs @("-s", $Serial, "shell", "svc", "data", "enable") | Out-Null
     Remove-Item Env:\ANDROID_SERIAL -ErrorAction SilentlyContinue

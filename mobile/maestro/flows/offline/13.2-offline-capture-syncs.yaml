@@ -41,7 +41,18 @@ appId: com.peripateticware.app
           clearState: false
           permissions:
             location: inuse
-- runFlow: ../login-student.yaml
+# Not `runFlow: ../login-student.yaml` — that subflow's first step asserts
+# login-screen is visible, which assumes we're starting logged out. This
+# flow launches with `clearState: false` specifically to keep the session
+# 13.1 already created, so the app restores that session on launch and
+# AuthGuard (app/_layout.tsx) redirects straight past login into (tabs) —
+# login-screen never appears, which is exactly why this flow was failing
+# immediately ("Assertion is false: id: login-screen is visible") before
+# ever reaching the offline-sync assertions below. Mirrors how
+# auth/1.6-persist-session.yaml (relaunch after login, clearState: false)
+# asserts discover-screen directly instead of re-running the login flow.
+- assertVisible:
+    id: "discover-screen"
 # extendedWaitUntil, not plain tapOn — see
 # maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
 # is a Maestro/XCTest accessibility-tree reliability gap after the

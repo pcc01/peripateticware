@@ -1,14 +1,20 @@
 # Mirrors e2e/settings.test.js "9.4 — Sign Out clears the session and
-# returns to the login screen". Uses Maestro's `index` selector to hit the
-# 2nd "Sign out" match (the native confirm-dialog's destructive button),
-# same disambiguation Detox needed via `.atIndex(1)`.
+# returns to the login screen".
 #
-# Session 18's full-matrix run found this failing on API 30/24 only. Using
-# extendedWaitUntil (20s) instead of plain assertVisible (default 7s) for
-# the dialog button, matching the timeout bump made in settings.test.js's
-# equivalent — worth trying, not confirmed to be the whole story (could
-# also be a button-order/render-tree difference across Android versions;
-# needs a real run on those devices either way).
+# Previously used Maestro's `index` selector to hit what was assumed to be
+# the 2nd "Sign out" match (the native confirm-dialog's destructive
+# button), mirroring the `.atIndex(1)` disambiguation Detox needed. That
+# assumed only 2 elements share the text "Sign out": this screen's own
+# button and the dialog's button. There are actually 3 — settings.tsx's
+# handleLogout() passes the SAME i18n key (settings.signOut.title) as both
+# the Alert's title AND its destructive button label. So `index: 1` (the
+# 2nd match) was landing on the dialog's TITLE text, not the button —
+# tapping inert text, leaving the dialog open, which is why this
+# consistently failed on every platform (not just API 30/24 as first
+# guessed) at the final login-screen assertion. Anchoring on `below:` the
+# confirm message ("Are you sure?", unique text) instead of a positional
+# index selects the actual button regardless of how many "Sign out" texts
+# exist elsewhere on screen.
 appId: com.peripateticware.app
 ---
 - launchApp:
@@ -33,12 +39,10 @@ appId: com.peripateticware.app
     timeout: 20000
 - tapOn: "Sign out"
 - extendedWaitUntil:
-    visible:
-      text: "Sign out"
-      index: 1
+    visible: "Are you sure?"
     timeout: 20000
 - tapOn:
     text: "Sign out"
-    index: 1
+    below: "Are you sure?"
 - assertVisible:
     id: "login-screen"

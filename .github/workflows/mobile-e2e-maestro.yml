@@ -328,6 +328,22 @@ jobs:
           # script's — the 20s covers useConnectivity's 15s poll interval
           # so 13.2 doesn't check for the synced state before the app has
           # even noticed it's back online.
+          #
+          # `svc wifi disable` + `svc data disable` alone still weren't
+          # enough on a real CI run — 13.1 still failed with "📵 Saved
+          # offline" never appearing, i.e. CaptureSheet.tsx's
+          # Network.getNetworkStateAsync() still reported online. This
+          # AVD's boot log shows `Successfully initialized netsim WiFi` /
+          # `androidboot.qemu.virtiowifi=1` — the newer netsim-backed
+          # virtual WiFi transport some emulator images use sits below the
+          # WifiManager layer that `svc wifi` toggles, so the framework can
+          # report "disabled" while the underlying virtio-wifi link keeps
+          # forwarding traffic. Airplane mode is enforced higher up (by
+          # ConnectivityManager itself, not a single radio's manager), so
+          # it's the more reliable way to actually cut connectivity on
+          # these images — added alongside (not instead of) the svc calls
+          # since it costs nothing and covers real devices where airplane
+          # mode's broadcast timing can lag.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
@@ -335,8 +351,10 @@ jobs:
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
             maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
             maestro test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
-            adb shell svc wifi disable; adb shell svc data disable; sleep 3
+            adb shell svc wifi disable; adb shell svc data disable
+            adb shell settings put global airplane_mode_on 1; adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true; sleep 3
             maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-3.xml; echo $? > /tmp/shard3_exit
+            adb shell settings put global airplane_mode_on 0; adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false
             adb shell svc wifi enable; adb shell svc data enable; sleep 20
             maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-4.xml; echo $? > /tmp/shard4_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
@@ -551,7 +569,23 @@ jobs:
           # (see maestro/flows/capture/12.1-note-capture.yaml's header), so
           # the affected flows now grant it via a platform-gated launchApp
           # block instead.
-          maestro --device "$SIMULATOR_UDID" test maestro/flows/*/ \
+          #
+          # Explicit folder list, not maestro/flows/*/ — deliberately
+          # excludes maestro/flows/offline/. Those two flows need real OS
+          # network toggling around them (see the Android job's matching
+          # comment); the Android job does that via `adb shell svc
+          # wifi/data disable` + airplane mode. There's no `adb` on iOS,
+          # and no equivalent already wired up here for the simulator (a
+          # host-level toggle like disabling the runner's network
+          # interface is both unverified and risky — it could also take
+          # out the backend health check and every other flow's requests,
+          # since the simulator shares the runner's host network stack).
+          # Previously offline/ was silently included in the `*/` glob
+          # with no toggle at all, so 13.1 always ran online — "📵 Saved
+          # offline" could never appear, the same false failure the
+          # Android job fixed separately. Skipping instead of guessing at
+          # an unverified iOS network-cut mechanism.
+          maestro --device "$SIMULATOR_UDID" test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
             -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
             --format junit --output artifacts/junit.xml
           EXIT=$?
