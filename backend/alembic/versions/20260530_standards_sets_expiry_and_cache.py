@@ -42,18 +42,29 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('standards_sets',
-        sa.Column('source_checksum', sa.String(64), nullable=True))
+    conn = op.get_bind()
 
-    op.add_column('standards_sets',
-        sa.Column('processing_status', sa.String(20), nullable=False,
-                  server_default='complete'))
+    def _col_exists(table: str, col: str) -> bool:
+        return bool(conn.execute(sa.text(
+            "SELECT 1 FROM information_schema.columns WHERE table_name=:t AND column_name=:c"
+        ), {"t": table, "c": col}).fetchone())
 
-    op.add_column('standards_sets',
-        sa.Column('last_processed_at', sa.TIMESTAMP(), nullable=True))
+    if not _col_exists('standards_sets', 'source_checksum'):
+        op.add_column('standards_sets',
+            sa.Column('source_checksum', sa.String(64), nullable=True))
 
-    op.add_column('standards_sets',
-        sa.Column('valid_until', sa.Date(), nullable=True))
+    if not _col_exists('standards_sets', 'processing_status'):
+        op.add_column('standards_sets',
+            sa.Column('processing_status', sa.String(20), nullable=False,
+                      server_default='complete'))
+
+    if not _col_exists('standards_sets', 'last_processed_at'):
+        op.add_column('standards_sets',
+            sa.Column('last_processed_at', sa.TIMESTAMP(), nullable=True))
+
+    if not _col_exists('standards_sets', 'valid_until'):
+        op.add_column('standards_sets',
+            sa.Column('valid_until', sa.Date(), nullable=True))
 
     # Back-fill sensible defaults for existing rows
     op.execute(sa.text("""

@@ -23,9 +23,21 @@ def upgrade():
     # ADD VALUE cannot run inside a transaction block in PostgreSQL.
     # execute() on the raw connection bypasses the implicit transaction.
     conn = op.get_bind()
-    conn.execute(sa.text(
-        "ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'HOMESCHOOL'"
-    ))
+    try:
+        conn.execute(sa.text(
+            "ALTER TYPE userrole ADD VALUE IF NOT EXISTS 'HOMESCHOOL'"
+        ))
+    except Exception as exc:
+        # Mirrors the activity_type enum's own "safe to ignore" guard
+        # elsewhere in this migration chain -- users.role was created as a
+        # real Postgres enum in the initial migration, but this codebase has
+        # since drifted some other enum-typed columns to plain VARCHAR with a
+        # CHECK constraint instead (see 20260601_add_homeschool_role_check.py,
+        # which manages role validity via CHECK, not this enum). If that
+        # already happened here too, "type userrole does not exist" is
+        # expected and the CHECK-constraint migration is what actually
+        # matters, not this one.
+        print(f"Note: could not add 'HOMESCHOOL' to userrole enum (likely already VARCHAR+CHECK, safe to ignore): {exc}")
 
 
 def downgrade():

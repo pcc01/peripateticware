@@ -106,8 +106,10 @@ def upgrade() -> None:
             sa.Column('created_at',  sa.DateTime(timezone=True),
                       nullable=False, server_default=sa.text('NOW()')),
         )
-    op.create_index('idx_audit_actor_created', 'platform_audit_log', ['actor_id', 'created_at'])
-    op.create_index('idx_audit_target',        'platform_audit_log', ['target_type', 'target_id'])
+    if not _index_exists('idx_audit_actor_created'):
+        op.create_index('idx_audit_actor_created', 'platform_audit_log', ['actor_id', 'created_at'])
+    if not _index_exists('idx_audit_target'):
+        op.create_index('idx_audit_target',        'platform_audit_log', ['target_type', 'target_id'])
 
 
 def downgrade() -> None:

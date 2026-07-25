@@ -20,29 +20,46 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 
 def upgrade():
-    op.create_table(
-        'agent_runs',
-        sa.Column('id', UUID(as_uuid=True), primary_key=True),
-        sa.Column('agent_name', sa.String(100), nullable=False),
-        sa.Column('provider', sa.String(20), nullable=False),
-        sa.Column('model', sa.String(120), nullable=False),
-        sa.Column('user_id', UUID(as_uuid=True), nullable=True),
-        sa.Column('subject_type', sa.String(60), nullable=True),
-        sa.Column('subject_id', UUID(as_uuid=True), nullable=True),
-        sa.Column('input_summary', sa.Text(), nullable=True),
-        sa.Column('output_ref', sa.String(255), nullable=True),
-        sa.Column('confidence', sa.Float(), nullable=True),
-        sa.Column('latency_ms', sa.Integer(), nullable=True),
-        sa.Column('token_usage', JSONB(), nullable=True),
-        sa.Column('status', sa.String(20), nullable=False, server_default='success'),
-        sa.Column('error', sa.Text(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
-    )
+    conn = op.get_bind()
 
-    op.create_index('ix_agent_runs_agent_name', 'agent_runs', ['agent_name'])
-    op.create_index('ix_agent_runs_user_id',    'agent_runs', ['user_id'])
-    op.create_index('ix_agent_runs_subject_id', 'agent_runs', ['subject_id'])
-    op.create_index('ix_agent_runs_created_at', 'agent_runs', ['created_at'])
+    def _table_exists(table: str) -> bool:
+        return bool(conn.execute(sa.text(
+            "SELECT 1 FROM information_schema.tables WHERE table_name=:t"
+        ), {"t": table}).fetchone())
+
+    def _index_exists(name: str) -> bool:
+        return bool(conn.execute(sa.text(
+            "SELECT 1 FROM pg_indexes WHERE indexname=:i"
+        ), {"i": name}).fetchone())
+
+    if not _table_exists('agent_runs'):
+        op.create_table(
+            'agent_runs',
+            sa.Column('id', UUID(as_uuid=True), primary_key=True),
+            sa.Column('agent_name', sa.String(100), nullable=False),
+            sa.Column('provider', sa.String(20), nullable=False),
+            sa.Column('model', sa.String(120), nullable=False),
+            sa.Column('user_id', UUID(as_uuid=True), nullable=True),
+            sa.Column('subject_type', sa.String(60), nullable=True),
+            sa.Column('subject_id', UUID(as_uuid=True), nullable=True),
+            sa.Column('input_summary', sa.Text(), nullable=True),
+            sa.Column('output_ref', sa.String(255), nullable=True),
+            sa.Column('confidence', sa.Float(), nullable=True),
+            sa.Column('latency_ms', sa.Integer(), nullable=True),
+            sa.Column('token_usage', JSONB(), nullable=True),
+            sa.Column('status', sa.String(20), nullable=False, server_default='success'),
+            sa.Column('error', sa.Text(), nullable=True),
+            sa.Column('created_at', sa.DateTime(), server_default=sa.func.now()),
+        )
+
+    if not _index_exists('ix_agent_runs_agent_name'):
+        op.create_index('ix_agent_runs_agent_name', 'agent_runs', ['agent_name'])
+    if not _index_exists('ix_agent_runs_user_id'):
+        op.create_index('ix_agent_runs_user_id',    'agent_runs', ['user_id'])
+    if not _index_exists('ix_agent_runs_subject_id'):
+        op.create_index('ix_agent_runs_subject_id', 'agent_runs', ['subject_id'])
+    if not _index_exists('ix_agent_runs_created_at'):
+        op.create_index('ix_agent_runs_created_at', 'agent_runs', ['created_at'])
 
 
 def downgrade():

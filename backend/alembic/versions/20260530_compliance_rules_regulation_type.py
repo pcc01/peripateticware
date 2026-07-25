@@ -37,20 +37,37 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column('compliance_rules',
-        sa.Column('regulation_type', sa.String(20), nullable=False, server_default='privacy'))
+    conn = op.get_bind()
 
-    op.add_column('compliance_rules',
-        sa.Column('ai_student_permitted', sa.Boolean(), nullable=False, server_default=sa.text('TRUE')))
+    def _col_exists(table: str, col: str) -> bool:
+        return bool(conn.execute(sa.text(
+            "SELECT 1 FROM information_schema.columns WHERE table_name=:t AND column_name=:c"
+        ), {"t": table, "c": col}).fetchone())
 
-    op.add_column('compliance_rules',
-        sa.Column('ai_teacher_permitted', sa.Boolean(), nullable=False, server_default=sa.text('TRUE')))
+    def _index_exists(name: str) -> bool:
+        return bool(conn.execute(sa.text(
+            "SELECT 1 FROM pg_indexes WHERE indexname=:i"
+        ), {"i": name}).fetchone())
 
-    op.create_index('idx_compliance_rules_type',
-        'compliance_rules', ['regulation_type'])
+    if not _col_exists('compliance_rules', 'regulation_type'):
+        op.add_column('compliance_rules',
+            sa.Column('regulation_type', sa.String(20), nullable=False, server_default='privacy'))
 
-    op.create_index('idx_compliance_rules_jurisdiction_type',
-        'compliance_rules', ['jurisdiction', 'regulation_type'])
+    if not _col_exists('compliance_rules', 'ai_student_permitted'):
+        op.add_column('compliance_rules',
+            sa.Column('ai_student_permitted', sa.Boolean(), nullable=False, server_default=sa.text('TRUE')))
+
+    if not _col_exists('compliance_rules', 'ai_teacher_permitted'):
+        op.add_column('compliance_rules',
+            sa.Column('ai_teacher_permitted', sa.Boolean(), nullable=False, server_default=sa.text('TRUE')))
+
+    if not _index_exists('idx_compliance_rules_type'):
+        op.create_index('idx_compliance_rules_type',
+            'compliance_rules', ['regulation_type'])
+
+    if not _index_exists('idx_compliance_rules_jurisdiction_type'):
+        op.create_index('idx_compliance_rules_jurisdiction_type',
+            'compliance_rules', ['jurisdiction', 'regulation_type'])
 
     # Back-fill: all existing rows are privacy rules
     op.execute(sa.text(
