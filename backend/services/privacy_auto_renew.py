@@ -109,52 +109,65 @@ async def check_no_legislation_countries_for_updates(db: AsyncSession) -> Dict[s
     """
     Monthly re-check of the ~51 countries seeded by
     scripts/seed_no_legislation_countries_to_gdpr.py as having no privacy law
-    at all (currently defaulted to gdpr_eu). If one has since enacted a real
-    law, "promotes" it: runs full discovery to create a proper catalog/
-    ComplianceRule entry for that country specifically, removes it from the
-    shared gdpr_eu row's country_codes (so it stops silently defaulting to
-    GDPR), and flips has_no_known_legislation off. Countries where nothing's
-    changed just get fetched_at touched, same "last checked" honesty as
-    run_catalog_auto_renew() above.
+    at all (currently defaulted to gdpr_eu).
+
+    Does NOT write to compliance_rules/privacy_regulation_catalog/the shared
+    gdpr_eu row directly -- an AI finding "yes, a law now exists" only ever
+    creates a PrivacyPromotionProposal (status='proposed'). Nothing takes
+    effect until an admin reviews the monthly report and explicitly approves
+    via scripts/apply_promotion.py. This replaces an earlier design that
+    auto-applied on a strict is-True/high-confidence check; a human review
+    is a stronger safety net than any confidence threshold, especially given
+    local/Ollama models don't always return law_exists as a real JSON
+    boolean (observed "law_exists": "low" in testing).
+
+    Returns a summary dict PLUS "proposals": the list of newly created
+    proposals this run, for the caller to build the monthly report email
+    from -- see send_monthly_no_legislation_report() below.
     """
     from sqlalchemy import select
-    from models.compliance import PrivacySourceRegistry
-    from services.privacy_discovery_service import _call_ai_synthesis, _location_desc, discover_and_store_jurisdiction
+    from models.compliance import PrivacySourceRegistry, PrivacyPromotionProposal
 
     rows = (await db.execute(
         select(PrivacySourceRegistry).where(PrivacySourceRegistry.has_no_known_legislation == True)  # noqa: E712
     )).scalars().all()
 
-    summary = {"checked": 0, "promoted": 0, "still_no_law": 0, "check_failed": 0}
+    summary = {"checked": 0, "proposed": 0, "still_no_law": 0, "check_failed": 0}
+    proposals: List[Dict[str, Any]] = []
 
     for row in rows:
         summary["checked"] += 1
         try:
+            from services.privacy_discovery_service import _call_ai_synthesis, _location_desc
+
             location_desc = _location_desc(row.country_code, None, None)
             ai_json = await _call_ai_synthesis(db, location_desc, row.country_code, source_text="")
 
-            promoted = False
-            # Strict `is True`, not truthy: local/Ollama models don't always
-            # honor "return a JSON boolean" and can emit a stray string
-            # (observed in testing: "law_exists": "low" instead of a real
-            # boolean) -- a plain truthy check would treat any such non-empty
-            # string as "yes, promote," which is exactly backwards.
-            if ai_json and ai_json.get("law_exists") is True and ai_json.get("confidence") == "high":
-                # Re-run through the real pipeline (its own AI call re-validates
-                # against the canonical schema) rather than trusting this
-                # lighter check's JSON directly for what gets stored.
-                result = await discover_and_store_jurisdiction(db, country_code=row.country_code)
-                if result:
-                    await _remove_country_from_gdpr_default(db, row.country_code)
-                    row.has_no_known_legislation = False
-                    promoted = True
-                    summary["promoted"] += 1
-                    logger.info(
-                        f"[privacy_auto_renew] Promoted {row.country_code} out of the GDPR "
-                        f"default -- real law found: {result.get('jurisdiction_id')}"
-                    )
+            found_candidate = bool(
+                ai_json and ai_json.get("law_exists") is True and ai_json.get("confidence") == "high"
+            )
 
-            if not promoted:
+            if found_candidate:
+                proposal = PrivacyPromotionProposal(
+                    country_code=row.country_code,
+                    country_name=row.country_name,
+                    ai_findings=ai_json,
+                    status="proposed",
+                )
+                db.add(proposal)
+                summary["proposed"] += 1
+                proposals.append({
+                    "country_code": row.country_code,
+                    "country_name": row.country_name,
+                    "short_name": ai_json.get("short_name"),
+                    "full_name": ai_json.get("full_name"),
+                    "summary": ai_json.get("summary"),
+                })
+                logger.info(
+                    f"[privacy_auto_renew] Proposal created for {row.country_code} -- "
+                    f"AI found a possible law: {ai_json.get('short_name')}"
+                )
+            else:
                 summary["still_no_law"] += 1
 
             row.fetched_at = datetime.utcnow()
@@ -168,4 +181,55 @@ async def check_no_legislation_countries_for_updates(db: AsyncSession) -> Dict[s
             )
 
     logger.info(f"[privacy_auto_renew] No-law country recheck complete: {summary}")
-    return summary
+    return {**summary, "proposals": proposals}
+
+
+async def send_monthly_no_legislation_report(
+    catalog_summary: Dict[str, Any],
+    no_law_summary: Dict[str, Any],
+) -> None:
+    """
+    Emails (or, with EMAIL_DRY_RUN=true, just logs) a summary of this month's
+    auto-renew run to ADMIN_EMAIL -- both the catalog re-check and the
+    no-legislation-country re-check, including any new proposals awaiting
+    approval. Never raises; a report-send failure shouldn't affect the
+    scheduled job's own success/failure state.
+    """
+    from core.config import settings
+    from services.email_service import send_notification
+
+    proposals = no_law_summary.get("proposals", [])
+    proposals_html = "".join(
+        f"<li><strong>{p['country_code']}</strong> ({p['country_name']}): "
+        f"{p.get('short_name') or 'unnamed law'} — {p.get('summary') or 'no summary'}</li>"
+        for p in proposals
+    ) or "<li>None this month.</li>"
+
+    subject = (
+        f"Privacy auto-renew report — {len(proposals)} new proposal(s) awaiting approval"
+        if proposals else "Privacy auto-renew report — no changes"
+    )
+    body_html = f"""
+        <h2>Monthly privacy jurisdiction auto-renew</h2>
+        <h3>Catalog re-check</h3>
+        <p>{catalog_summary}</p>
+        <h3>No-legislation country re-check</h3>
+        <p>Checked: {no_law_summary.get('checked', 0)},
+           still no law: {no_law_summary.get('still_no_law', 0)},
+           check failed: {no_law_summary.get('check_failed', 0)},
+           <strong>new proposals: {len(proposals)}</strong></p>
+        <h3>Proposals awaiting approval</h3>
+        <p>Nothing has been changed automatically. Review each proposal and, if it looks
+           correct, approve it with:<br>
+           <code>docker exec peripateticware-backend python scripts/apply_promotion.py &lt;country_code&gt;</code></p>
+        <ul>{proposals_html}</ul>
+    """
+
+    try:
+        recipient = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
+        if recipient:
+            await send_notification(recipient, subject, body_html)
+        else:
+            logger.warning("[privacy_auto_renew] No ADMIN_EMAIL/EMAIL_FROM configured — report not sent")
+    except Exception as exc:
+        logger.error(f"[privacy_auto_renew] Failed to send monthly report: {exc}", exc_info=True)

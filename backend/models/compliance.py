@@ -207,6 +207,32 @@ class PrivacySourceRegistry(Base):
         return "<PrivacySourceRegistry {}>".format(self.country_code)
 
 
+class PrivacyPromotionProposal(Base):
+    """
+    A monthly no-legislation recheck's finding that a country may now have a
+    real privacy law -- requires explicit admin approval (see
+    scripts/apply_promotion.py) before anything is actually written to
+    compliance_rules/privacy_regulation_catalog/the shared gdpr_eu row.
+    """
+
+    __tablename__ = "privacy_promotion_proposals"
+
+    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    country_code  = Column(String(4),   nullable=False, index=True)
+    country_name  = Column(String(200), nullable=True)
+    ai_findings   = Column(JSONB,       nullable=False)
+    status        = Column(String(20), nullable=False, default='proposed', index=True)
+    reviewed_by   = Column(String(200), nullable=True)
+    reviewed_at   = Column(DateTime,    nullable=True)
+    applied_at    = Column(DateTime,    nullable=True)
+    resulting_jurisdiction_id = Column(String(100), nullable=True)
+    created_at    = Column(DateTime, server_default="NOW()", nullable=False)
+    updated_at    = Column(DateTime, server_default="NOW()", nullable=False)
+
+    def __repr__(self) -> str:
+        return "<PrivacyPromotionProposal {} status={}>".format(self.country_code, self.status)
+
+
 class SchoolRegulationAssignment(Base):
     """Which catalog regulations have been assigned to a school/org."""
 

@@ -2175,19 +2175,25 @@ async def start_background_tasks(async_session, settings) -> None:
     if _scheduler is not None and getattr(settings, "PRIVACY_AUTO_RENEW_ENABLED", False):
         try:
             from apscheduler.triggers.cron import CronTrigger
-            from services.privacy_auto_renew import run_catalog_auto_renew, check_no_legislation_countries_for_updates
+            from services.privacy_auto_renew import (
+                run_catalog_auto_renew, check_no_legislation_countries_for_updates,
+                send_monthly_no_legislation_report,
+            )
             from core.database import get_session_factory
 
             async def _run_privacy_auto_renew_job():
+                catalog_summary = {}
+                no_law_summary = {}
                 async with get_session_factory()() as _db:
                     try:
-                        await run_catalog_auto_renew(_db)
+                        catalog_summary = await run_catalog_auto_renew(_db)
                     except Exception as _exc:
                         logger.error(f"Scheduled privacy catalog auto-renew failed: {_exc}")
                     try:
-                        await check_no_legislation_countries_for_updates(_db)
+                        no_law_summary = await check_no_legislation_countries_for_updates(_db)
                     except Exception as _exc:
                         logger.error(f"Scheduled no-legislation country recheck failed: {_exc}")
+                await send_monthly_no_legislation_report(catalog_summary, no_law_summary)
 
             _cron = settings.PRIVACY_AUTO_RENEW_SCHEDULE.split()
             _scheduler.add_job(
