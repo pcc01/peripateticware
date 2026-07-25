@@ -56,6 +56,16 @@ def upgrade() -> None:
 
     # Migrate the column: cast old enum → text → new enum
     # (PostgreSQL won't let you ALTER COLUMN type directly between enums)
+    #
+    # DROP DEFAULT first: whatever default this column currently carries
+    # (e.g. a plain-text 'inquiry' from the original table creation) can't be
+    # auto-cast to the new enum type by ALTER COLUMN TYPE, and Postgres
+    # rejects the whole statement with "default ... cannot be cast
+    # automatically" if a default is still attached. Re-added below with an
+    # explicit cast once the column is actually the enum type.
+    op.execute(sa.text("""
+        ALTER TABLE activities ALTER COLUMN activity_type DROP DEFAULT;
+    """))
     op.execute(sa.text("""
         ALTER TABLE activities
             ALTER COLUMN activity_type
@@ -71,6 +81,9 @@ def upgrade() -> None:
                     ELSE 'inquiry'::activity_type
                 END
             );
+    """))
+    op.execute(sa.text("""
+        ALTER TABLE activities ALTER COLUMN activity_type SET DEFAULT 'inquiry'::activity_type;
     """))
 
     # Drop the old enum (safe now that the column no longer uses it)
@@ -98,11 +111,18 @@ def upgrade() -> None:
         $$;
     """))
 
+    # Same DROP DEFAULT / SET DEFAULT need as activity_type above.
+    op.execute(sa.text("""
+        ALTER TABLE activities ALTER COLUMN status DROP DEFAULT;
+    """))
     op.execute(sa.text("""
         ALTER TABLE activities
             ALTER COLUMN status
             TYPE activity_status
             USING (lower(status::text)::activity_status);
+    """))
+    op.execute(sa.text("""
+        ALTER TABLE activities ALTER COLUMN status SET DEFAULT 'draft'::activity_status;
     """))
 
     op.execute(sa.text("""
