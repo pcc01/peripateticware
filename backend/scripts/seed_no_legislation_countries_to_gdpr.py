@@ -67,11 +67,13 @@ async def main():
     no_law = [e for e in entries if e.get("has_no_known_legislation")]
 
     codes: list[str] = []
+    resolved_entries: list[dict] = []
     unresolved: list[str] = []
     for e in no_law:
         cc = resolve_country_code(e["country_name"])
         if cc:
             codes.append(cc)
+            resolved_entries.append({**e, "country_code": cc})
         else:
             unresolved.append(e["country_name"])
 
@@ -133,6 +135,44 @@ async def main():
             print(f"Created gdpr_eu catalog row with {len(codes)} country codes")
 
         await db.commit()
+
+        # ── Per-country tracking rows in privacy_source_registry ────────────────
+        # Distinct from the shared gdpr_eu catalog row above (which is what
+        # actually drives resolution): these give the monthly auto-renew job
+        # something to re-check per country, so a country that later enacts a
+        # real law gets "promoted" out of the GDPR default instead of silently
+        # defaulting to GDPR forever. source_url stays NULL -- there's no
+        # official source to fetch since none exists yet, and a NULL
+        # source_url is already correctly treated as "nothing here" by
+        # privacy_discovery_service._lookup_source_registry, so these rows
+        # don't affect normal resolution at all.
+        inserted, updated = 0, 0
+        for e in resolved_entries:
+            cc = e["country_code"]
+            existing_row = (await db.execute(
+                text("SELECT id FROM privacy_source_registry WHERE country_code = :cc"),
+                {"cc": cc},
+            )).first()
+            if existing_row:
+                await db.execute(text("""
+                    UPDATE privacy_source_registry
+                    SET has_no_known_legislation = TRUE, fetched_at = :now, updated_at = :now
+                    WHERE country_code = :cc
+                """), {"cc": cc, "now": now})
+                updated += 1
+            else:
+                await db.execute(text("""
+                    INSERT INTO privacy_source_registry
+                        (id, country_code, country_name, has_no_known_legislation,
+                         is_verified, fetched_at, notes, created_at, updated_at)
+                    VALUES
+                        (gen_random_uuid(), :cc, :name, TRUE,
+                         TRUE, :now, 'No known legislation per user-supplied IAPP directory export, 2026-07-25',
+                         :now, :now)
+                """), {"cc": cc, "name": e["country_name"], "now": now})
+                inserted += 1
+        await db.commit()
+        print(f"privacy_source_registry tracking rows: {inserted} inserted, {updated} updated")
 
 
 if __name__ == "__main__":

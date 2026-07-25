@@ -197,6 +197,7 @@ class PrivacySourceRegistry(Base):
     iapp_detail_url = Column(String(1000), nullable=True)
     framework_guess = Column(String(50),  nullable=True)
     is_verified     = Column(Boolean,     nullable=False, default=False)
+    has_no_known_legislation = Column(Boolean, nullable=False, default=False)
     fetched_at      = Column(DateTime,    nullable=True)
     notes           = Column(Text,        nullable=True)
     created_at      = Column(DateTime,    server_default="NOW()", nullable=False)
