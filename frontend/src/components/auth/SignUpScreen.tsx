@@ -81,9 +81,11 @@ export default function SignupScreen({
   // ── Teaching Context state (sprint 2E) ────────────────────────────────────
   const geoHint = useGeoHint();
   const [countryCode, setCountryCode]         = useState<string>('');
+  const [otherCountryCode, setOtherCountryCode] = useState<string>('');
   const [subdivisionCode, setSubdivisionCode] = useState<string>('');
   const [hasUnder13, setHasUnder13]           = useState<boolean>(true);
   const [orgTypeV2, setOrgTypeV2]             = useState<string>('');
+  const effectiveCountryCode = countryCode === 'OTHER' ? otherCountryCode.toUpperCase().slice(0, 2) : countryCode;
 
   // Pre-fill country from geo hint when it loads
   useEffect(() => {
@@ -128,8 +130,8 @@ export default function SignupScreen({
           ? schoolName.trim()
           : undefined,
         // Teaching Context fields
-        country_code:     countryCode || undefined,
-        subdivision_code: toSubdivisionCode(countryCode, subdivisionCode),
+        country_code:     effectiveCountryCode || undefined,
+        subdivision_code: toSubdivisionCode(effectiveCountryCode, subdivisionCode),
         has_under_13:     showTeachingContext ? hasUnder13 : undefined,
         org_type_v2:      orgTypeV2 || undefined,
         ip_country_hint:  geoHint.countryCode || undefined,
@@ -372,17 +374,34 @@ export default function SignupScreen({
                   </select>
                 </div>
 
+                {countryCode === 'OTHER' && (
+                  <div>
+                    <label htmlFor="signup-other-country" className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('components_auth_signupscreen.country_code', '2-letter country code')}
+                    </label>
+                    <input
+                      id="signup-other-country"
+                      type="text"
+                      value={otherCountryCode}
+                      onChange={e => setOtherCountryCode(e.target.value.toUpperCase().slice(0, 2))}
+                      placeholder={t('components_auth_signupscreen.country_code_placeholder', 'e.g. DE, FR, GB')}
+                      maxLength={2}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                    />
+                  </div>
+                )}
+
                 {/* State/Province — only for countries where it's meaningful
                     (mirrors backend/routes/geo.py's SUBDIVISION_SUPPORT), so a
                     state-specific privacy law (e.g. a US state's) can actually
                     be matched at signup instead of subdivision_code always
                     being sent as undefined. */}
-                {SUBDIVISION_SUPPORT.has(countryCode) && (
+                {SUBDIVISION_SUPPORT.has(effectiveCountryCode) && (
                   <div>
                     <label htmlFor="signup-subdivision" className="block text-xs font-medium text-gray-700 mb-1">
                       {t('components_auth_signupscreen.state_province', 'State / Province')}
                     </label>
-                    {countryCode === 'US' ? (
+                    {effectiveCountryCode === 'US' ? (
                       <select
                         id="signup-subdivision"
                         value={subdivisionCode}

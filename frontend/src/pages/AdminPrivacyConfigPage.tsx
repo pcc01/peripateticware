@@ -58,6 +58,7 @@ const EMPTY_RULE = `{
 function QuickSetupByLocationCard() {
   const { t } = useTranslation('landing')
   const [country, setCountry] = useState('')
+  const [otherCountryCode, setOtherCountryCode] = useState('')
   const [subdivision, setSubdivision] = useState('')
   const [region, setRegion] = useState('')
   const [hasUnder13, setHasUnder13] = useState(true)
@@ -67,17 +68,19 @@ function QuickSetupByLocationCard() {
     jurisdiction_id: string; is_verified: boolean; short_name?: string; full_name?: string
   }> | null>(null)
 
+  const effectiveCountry = country === 'OTHER' ? otherCountryCode.toUpperCase().slice(0, 2) : country
+
   const resolve = async () => {
-    if (!country) return
+    if (!effectiveCountry || effectiveCountry.length !== 2) return
     setLoading(true)
     setError(null)
     try {
-      const subdivisionCode = country === 'US'
+      const subdivisionCode = effectiveCountry === 'US'
         ? toSubdivisionCode('US', subdivision)
-        : (SUBDIVISION_SUPPORT.has(country) && subdivision ? `${country}-${subdivision}` : undefined)
+        : (SUBDIVISION_SUPPORT.has(effectiveCountry) && subdivision ? `${effectiveCountry}-${subdivision}` : undefined)
 
       const resp = await apiClient.post('/privacy/jurisdictions/resolve', {
-        country_code: country,
+        country_code: effectiveCountry,
         subdivision_code: subdivisionCode,
         region: region || undefined,
         has_under_13: hasUnder13,
@@ -112,10 +115,23 @@ function QuickSetupByLocationCard() {
           </select>
         </label>
 
-        {SUBDIVISION_SUPPORT.has(country) && (
+        {country === 'OTHER' && (
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.85rem', color: '#444' }}>
+            2-letter country code
+            <input
+              value={otherCountryCode}
+              onChange={e => setOtherCountryCode(e.target.value.toUpperCase().slice(0, 2))}
+              placeholder="e.g. DE, FR, GB"
+              maxLength={2}
+              style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
+            />
+          </label>
+        )}
+
+        {SUBDIVISION_SUPPORT.has(effectiveCountry) && (
           <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.85rem', color: '#444' }}>
             State / Province
-            {country === 'US' ? (
+            {effectiveCountry === 'US' ? (
               <select
                 value={subdivision}
                 onChange={e => setSubdivision(e.target.value)}
@@ -153,11 +169,11 @@ function QuickSetupByLocationCard() {
 
       <button
         onClick={resolve}
-        disabled={!country || loading}
+        disabled={effectiveCountry.length !== 2 || loading}
         style={{
           background: '#4a7c59', color: '#fff', border: 'none', borderRadius: 8,
-          padding: '0.5rem 1.2rem', cursor: !country || loading ? 'not-allowed' : 'pointer',
-          fontSize: '0.9rem', opacity: !country || loading ? 0.6 : 1,
+          padding: '0.5rem 1.2rem', cursor: effectiveCountry.length !== 2 || loading ? 'not-allowed' : 'pointer',
+          fontSize: '0.9rem', opacity: effectiveCountry.length !== 2 || loading ? 0.6 : 1,
         }}
       >
         {loading ? 'Resolving…' : 'Resolve & Apply'}
