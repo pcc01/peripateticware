@@ -150,8 +150,19 @@ class Settings(BaseSettings):
     # ── Privacy jurisdiction catalog auto-renew (self-service resolver) ─────
     # Off by default -- opt in once the discovery pipeline's AI cost/accuracy
     # profile has been reviewed. Default cron: 1st of month, 03:00 UTC.
-    PRIVACY_AUTO_RENEW_ENABLED: bool = os.getenv("PRIVACY_AUTO_RENEW_ENABLED", "false").lower() == "true"
+    # Defaults to on: promotions require explicit admin approval (see
+    # scripts/apply_promotion.py) before anything is written, so the worst
+    # case of running unattended is an email you can ignore -- not a silent
+    # bad DB change. Verified end-to-end (real Ollama run + full approval
+    # path) before flipping this default.
+    PRIVACY_AUTO_RENEW_ENABLED: bool = os.getenv("PRIVACY_AUTO_RENEW_ENABLED", "true").lower() == "true"
     PRIVACY_AUTO_RENEW_SCHEDULE: str = os.getenv("PRIVACY_AUTO_RENEW_SCHEDULE", "0 3 1 * *")
+    # Extra recipient for the monthly privacy auto-renew report, alongside
+    # ADMIN_EMAIL -- a genuinely separate mail provider, not just a second
+    # address on the same inbox, since Gmail (or whatever admin@peripatetic
+    # ware.com forwards to) can silently deduplicate mail that looks
+    # self-sent (confirmed via a real Cloudflare Email Routing notice).
+    PRIVACY_REPORT_CC_EMAIL: str = os.getenv("PRIVACY_REPORT_CC_EMAIL", "pcerda@outlook.com")
 
     # ── Phase 5: Location Service ─────────────────────────────────────────────
     LOCATION_BACKEND_STR: str = os.getenv("LOCATION_BACKEND", "openstreetmap,nominatim,wikidata,wikipedia")

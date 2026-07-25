@@ -226,10 +226,17 @@ async def send_monthly_no_legislation_report(
     """
 
     try:
-        recipient = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
-        if recipient:
-            await send_notification(recipient, subject, body_html)
+        primary = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
+        cc = getattr(settings, "PRIVACY_REPORT_CC_EMAIL", "")
+        # Send to genuinely different mail providers, not just different
+        # addresses — confirmed via a real Cloudflare Email Routing notice
+        # that Gmail (or whatever ADMIN_EMAIL forwards to) can silently
+        # deduplicate mail sent from the same underlying account, so a
+        # report sent only there can go missing with no visible error.
+        recipients = [r for r in (primary, cc) if r]
+        if recipients:
+            await send_notification(", ".join(recipients), subject, body_html)
         else:
-            logger.warning("[privacy_auto_renew] No ADMIN_EMAIL/EMAIL_FROM configured — report not sent")
+            logger.warning("[privacy_auto_renew] No ADMIN_EMAIL/EMAIL_FROM/PRIVACY_REPORT_CC_EMAIL configured — report not sent")
     except Exception as exc:
         logger.error(f"[privacy_auto_renew] Failed to send monthly report: {exc}", exc_info=True)
