@@ -312,15 +312,35 @@ jobs:
           # into shard 2 and the artifacts copy regardless of shard 1's
           # real result, while still recording that real result in a file
           # for the final line to check.
+          # `maestro/flows/offline/` is deliberately excluded from both
+          # shards above and run separately below: 13.1/13.2's own header
+          # comments already document that they need real OS network
+          # toggling around them (`adb shell svc wifi/data disable` before
+          # 13.1, re-enable before 13.2 — Maestro YAML has no way to do
+          # this itself), the same thing
+          # scripts/run-offline-capture-test.ps1 does for local runs. This
+          # was previously just folded into the general sweep with no
+          # network toggle at all, so the app was always online and the
+          # OFFLINE-queue branch (the entire point of 13.1) could never
+          # actually trigger — "📵 Saved offline" was never going to
+          # appear no matter how long anything waited. Timing/sleeps here
+          # (3s after disabling, 20s after re-enabling) mirror that
+          # script's — the 20s covers useConnectivity's 15s poll interval
+          # so 13.2 doesn't check for the synced state before the app has
+          # even noticed it's back online.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
             maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
-            maestro test maestro/flows/navigation/ maestro/flows/offline/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
+            maestro test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
+            adb shell svc wifi disable; adb shell svc data disable; sleep 3
+            maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-3.xml; echo $? > /tmp/shard3_exit
+            adb shell svc wifi enable; adb shell svc data enable; sleep 20
+            maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-4.xml; echo $? > /tmp/shard4_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0
+            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0 -a "$(cat /tmp/shard3_exit)" = 0 -a "$(cat /tmp/shard4_exit)" = 0
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
