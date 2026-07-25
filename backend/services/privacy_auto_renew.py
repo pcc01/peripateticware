@@ -228,8 +228,9 @@ async def send_monthly_no_legislation_report(
     try:
         primary = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
         # Comma-separated -- confirmed pcerda@outlook.com receives this
-        # correctly; other addresses can be added alongside it (e.g. to test
-        # "+" subaddressing) without ever dropping the confirmed-working one.
+        # reliably; ADMIN_EMAIL itself is confirmed to arrive too, just with
+        # a delay (Gmail-side dedup/threading, not a hard drop), so it stays
+        # as primary rather than needing a same-provider "+" alias workaround.
         cc_list = [c.strip() for c in getattr(settings, "PRIVACY_REPORT_CC_EMAIL", "").split(",") if c.strip()]
         recipients = [r for r in [primary, *cc_list] if r]
         if recipients:

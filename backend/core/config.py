@@ -162,12 +162,13 @@ class Settings(BaseSettings):
     # address on the same inbox, since Gmail (or whatever admin@peripatetic
     # ware.com forwards to) can silently deduplicate mail that looks
     # self-sent (confirmed via a real Cloudflare Email Routing notice).
-    # Comma-separated -- confirmed pcerda@outlook.com receives the report
-    # correctly; admin+privacy@gmail.com added alongside it (not instead) to
-    # test whether "+" subaddressing on the actual Gmail account that
-    # admin@peripateticware.com forwards to (the one exhibiting the
-    # self-send dedup behavior per Cloudflare's notice) evades that dedup.
-    PRIVACY_REPORT_CC_EMAIL: str = os.getenv("PRIVACY_REPORT_CC_EMAIL", "pcerda@outlook.com,admin+privacy@gmail.com")
+    # Comma-separated. admin+privacy@gmail.com was tried and dropped -- not a
+    # real mailbox (an implausible literal Gmail username), so it was never
+    # a valid test of the dedup theory. The actual finding: ADMIN_EMAIL
+    # (admin@peripateticware.com) isn't dropped after all, just delayed --
+    # Gmail's dedup/threading apparently holds it rather than discarding it.
+    # pcerda@outlook.com stays as the reliable, no-delay fallback.
+    PRIVACY_REPORT_CC_EMAIL: str = os.getenv("PRIVACY_REPORT_CC_EMAIL", "pcerda@outlook.com")
 
     # ── Phase 5: Location Service ─────────────────────────────────────────────
     LOCATION_BACKEND_STR: str = os.getenv("LOCATION_BACKEND", "openstreetmap,nominatim,wikidata,wikipedia")
