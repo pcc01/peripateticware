@@ -227,13 +227,11 @@ async def send_monthly_no_legislation_report(
 
     try:
         primary = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
-        cc = getattr(settings, "PRIVACY_REPORT_CC_EMAIL", "")
-        # Send to genuinely different mail providers, not just different
-        # addresses — confirmed via a real Cloudflare Email Routing notice
-        # that Gmail (or whatever ADMIN_EMAIL forwards to) can silently
-        # deduplicate mail sent from the same underlying account, so a
-        # report sent only there can go missing with no visible error.
-        recipients = [r for r in (primary, cc) if r]
+        # Comma-separated -- confirmed pcerda@outlook.com receives this
+        # correctly; other addresses can be added alongside it (e.g. to test
+        # "+" subaddressing) without ever dropping the confirmed-working one.
+        cc_list = [c.strip() for c in getattr(settings, "PRIVACY_REPORT_CC_EMAIL", "").split(",") if c.strip()]
+        recipients = [r for r in [primary, *cc_list] if r]
         if recipients:
             await send_notification(", ".join(recipients), subject, body_html)
         else:
