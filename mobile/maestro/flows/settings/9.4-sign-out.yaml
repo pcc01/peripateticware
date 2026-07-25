@@ -18,14 +18,18 @@ appId: com.peripateticware.app
     id: "tab-settings"
 - assertVisible:
     id: "settings-screen"
-# extendedWaitUntil, not plain tapOn, for this first tap too — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
-# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
-# not slow rendering (confirmed via a real CI failure at exactly this
-# tap — settings.tsx's Sign Out button already has a proper
-# accessibilityLabel, ruling out a missing-label explanation).
-- extendedWaitUntil:
-    visible: "Sign out"
+# scrollUntilVisible, not extendedWaitUntil, for this first tap: a real
+# CI failure screenshot proved this one is a genuinely different bug from
+# the Field Guide/Terrain/Español "visible but not found" mystery
+# elsewhere in this suite (see 9.1/9.2/9.5's matching comments) — the
+# Sign Out button is simply scrolled below the visible viewport on this
+# screen (below the Theme and Language sections), not a Maestro
+# accessibility-tree gap. settings.tsx's Sign Out button already has a
+# correct accessibilityLabel, which is what first suggested it belonged
+# with the other mystery before this screenshot separated it out.
+- scrollUntilVisible:
+    element: "Sign out"
+    direction: DOWN
     timeout: 20000
 - tapOn: "Sign out"
 - extendedWaitUntil:

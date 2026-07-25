@@ -9,16 +9,22 @@ appId: com.peripateticware.app
     id: "tab-settings"
 - assertVisible:
     id: "settings-screen"
-# extendedWaitUntil, not plain tapOn — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
-# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
-# not slow rendering.
+# Wildcarded `.*Terrain.*`/`.*Atmosphere.*`, not a bare exact match —
+# see maestro/flows/settings/9.1-account-pickers.yaml's matching comment:
+# these theme options carry accessibilityRole="radio" + a combined
+# accessibilityLabel ("Terrain theme. Crisp and sharp — topographic
+# focus", not just "Terrain"), which is the only text iOS's accessibility
+# tree exposes at that node once the radio has its own label. Maestro's
+# plain-text tapOn/assertVisible do a full-string match, not a substring
+# search, so the bare label never matched. (Not a timing issue — a real
+# CI failure screenshot showed the text visible immediately; kept
+# extendedWaitUntil anyway as a harmless safety net.)
 - extendedWaitUntil:
-    visible: "Terrain"
+    visible: ".*Terrain.*"
     timeout: 20000
-- tapOn: "Terrain"
+- tapOn: ".*Terrain.*"
 - assertVisible:
     id: "settings-screen"
-- tapOn: "Atmosphere"
+- tapOn: ".*Atmosphere.*"
 - assertVisible:
     id: "settings-screen"

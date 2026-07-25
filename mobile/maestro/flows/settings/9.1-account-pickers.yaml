@@ -12,14 +12,21 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "settings-screen"
 - assertVisible: "${STUDENT_EMAIL}"
-# extendedWaitUntil, not plain assertVisible — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
-# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
-# not slow rendering (this same "Field Guide"/"Terrain" pair timed out
-# in a real CI run despite the screen's own testID and the email text
-# right above them asserting fine).
+# Wildcarded `.*Field Guide.*` etc, not a bare exact match — the actual
+# root cause (found via screenshot: the text IS visible immediately, so
+# a longer extendedWaitUntil timeout never helped, despite looking like
+# the same class of bug as maestro/flows/activity/4-6-activity-flow.yaml's
+# post-transition timing issue). settings.tsx's theme options carry
+# accessibilityRole="radio" + an explicit combined accessibilityLabel
+# ("Field Guide theme. Warm parchment — classic field notebook", not
+# just "Field Guide") — once a radio element has its own label, iOS's
+# accessibility tree stops separately exposing its nested Text children,
+# so the only queryable node here is the FULL combined label. Maestro's
+# plain-text match is a full-string regex, not a substring search (see
+# maestro/flows/discover/3-discover-screen.yaml's matching comment), so
+# a bare "Field Guide" never matched "Field Guide theme. ...".
 - extendedWaitUntil:
-    visible: "Field Guide"
+    visible: ".*Field Guide.*"
     timeout: 20000
-- assertVisible: "Terrain"
-- assertVisible: "Atmosphere"
+- assertVisible: ".*Terrain.*"
+- assertVisible: ".*Atmosphere.*"

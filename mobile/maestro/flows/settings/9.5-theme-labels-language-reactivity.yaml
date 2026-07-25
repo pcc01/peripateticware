@@ -24,14 +24,19 @@ appId: com.peripateticware.app
     id: "settings-screen"
 - assertVisible:
     id: "theme-option-fieldGuide-en"
-# extendedWaitUntil, not plain tapOn — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: a
-# Maestro/XCTest accessibility-tree reliability gap after a tab switch,
-# not slow rendering.
+# Wildcarded `.*Español.*`, not a bare exact match — see
+# maestro/flows/settings/9.1-account-pickers.yaml's matching comment:
+# language options carry accessibilityRole="radio" + a combined
+# accessibilityLabel ("Español language", not just "Español"), the only
+# text iOS's accessibility tree exposes at that node once the radio has
+# its own label. Maestro's plain-text tapOn does a full-string match, not
+# a substring search, so the bare label never matched. (Not a timing
+# issue — a real CI failure screenshot showed the text visible
+# immediately; kept extendedWaitUntil anyway as a harmless safety net.)
 - extendedWaitUntil:
-    visible: "Español"
+    visible: ".*Español.*"
     timeout: 20000
-- tapOn: "Español"
+- tapOn: ".*Español.*"
 - assertVisible:
     id: "theme-option-fieldGuide-es"
 - assertNotVisible:
