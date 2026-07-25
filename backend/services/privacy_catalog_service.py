@@ -52,6 +52,7 @@ def _catalog_to_dict(row: PrivacyRegulationCatalog) -> dict:
         "short_name":       row.short_name,
         "full_name":        row.full_name,
         "jurisdiction_code": row.jurisdiction_code,
+        "subdivision_code": row.subdivision_code,
         "region":           row.region,
         "country_codes":    row.country_codes,
         "framework":        row.framework,
@@ -66,6 +67,9 @@ def _catalog_to_dict(row: PrivacyRegulationCatalog) -> dict:
         "added_by_user_id": str(row.added_by_user_id) if row.added_by_user_id else None,
         "added_by_role":    row.added_by_role,
         "is_active":        row.is_active,
+        "is_verified":      row.is_verified,
+        "discovery_method": row.discovery_method,
+        "last_synced_at":   row.last_synced_at.isoformat() if row.last_synced_at else None,
         "created_at":       row.created_at.isoformat() if row.created_at else None,
         "updated_at":       row.updated_at.isoformat() if row.updated_at else None,
     }
@@ -141,6 +145,65 @@ async def list_catalog(
     return rows
 
 
+async def find_catalog_matches(
+    db: AsyncSession,
+    country_code: str | None,
+    subdivision_code: str | None = None,
+    region_text: str | None = None,
+) -> list[dict]:
+    """
+    Precise matches for the jurisdiction resolver (privacy_jurisdiction_resolver.py) —
+    distinct from list_catalog()'s fuzzy browse-page filtering. A row matches when:
+      - country_code is in the row's country_codes list (or the row has no
+        country_codes at all, treated as country-agnostic), AND
+      - subdivision_code is an exact match to the row's subdivision_code, OR the
+        row has no subdivision_code (country/global-level rule), OR no
+        subdivision_code was given to search with, AND
+      - if region_text is given, it's a case-insensitive substring match against
+        the row's region (skipped entirely if region_text is not provided).
+    """
+    rows = await list_catalog(db)
+    cc = (country_code or "").upper()
+    sub = (subdivision_code or "").upper()
+    region_lower = (region_text or "").lower()
+
+    matches = []
+    for r in rows:
+        row_countries = [c.upper() for c in (r.get("country_codes") or [])]
+        if row_countries and cc and cc not in row_countries:
+            continue
+        row_sub = (r.get("subdivision_code") or "").upper()
+        if row_sub and sub and row_sub != sub:
+            continue
+        if region_text:
+            if not r.get("region") or region_lower not in r["region"].lower():
+                continue
+        matches.append(r)
+    return matches
+
+
+async def get_catalog_entry_by_code(db: AsyncSession, jurisdiction_code: str) -> dict | None:
+    """Return a single active catalog entry by jurisdiction_code, or None."""
+    stmt = select(PrivacyRegulationCatalog).where(
+        PrivacyRegulationCatalog.jurisdiction_code == jurisdiction_code,
+        PrivacyRegulationCatalog.is_active == True,
+    )
+    result = await db.execute(stmt)
+    row = result.scalars().first()
+    return _catalog_to_dict(row) if row else None
+
+
+async def touch_last_synced(db: AsyncSession, catalog_id: str) -> None:
+    """Update last_synced_at to now — called by the auto-renew job after a no-op check."""
+    stmt = select(PrivacyRegulationCatalog).where(PrivacyRegulationCatalog.id == uuid.UUID(catalog_id))
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if row:
+        row.last_synced_at = datetime.utcnow()
+        await db.commit()
+        await invalidate_catalog_cache()
+
+
 async def get_catalog_entry(db: AsyncSession, catalog_id: str) -> dict | None:
     """Return a single catalog entry by ID, or None if not found."""
     try:
@@ -171,6 +234,7 @@ async def add_catalog_entry(
         short_name=data["short_name"],
         full_name=data["full_name"],
         jurisdiction_code=data["jurisdiction_code"],
+        subdivision_code=data.get("subdivision_code"),
         framework=data.get("framework", "custom").lower(),
         region=data.get("region"),
         country_codes=data.get("country_codes"),
@@ -186,6 +250,9 @@ async def add_catalog_entry(
         added_by_user_id=uuid.UUID(added_by_user_id) if added_by_user_id else None,
         added_by_role=added_by_role,
         is_active=True,
+        is_verified=bool(data.get("is_verified", True)),
+        discovery_method=data.get("discovery_method"),
+        last_synced_at=data.get("last_synced_at"),
     )
     db.add(new_entry)
     await db.commit()

@@ -57,6 +57,7 @@ aiosmtplib==3.0.1
 anthropic==0.28.0
 ollama==0.6.2
 httpx==0.27.0
+pycountry==26.2.16   # ISO 3166 country name<->code resolution (privacy jurisdiction resolver, IAPP directory loader)
 
 # ============================================================================
 # AUDIO PROCESSING (Phase 6)

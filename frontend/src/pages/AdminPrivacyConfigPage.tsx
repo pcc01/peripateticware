@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiClient from '@/config/api'
 import { useTranslation } from 'react-i18next';
+import { COUNTRIES, US_STATES, SUBDIVISION_SUPPORT, toSubdivisionCode } from '@/constants/geo'
 
 interface JurisdictionRow {
   rule_id: string
@@ -47,6 +48,158 @@ const EMPTY_RULE = `{
   "student_targeting_allowed": false,
   "version": "1.0"
 }`
+
+// Reuses the same self-service resolver teachers use (POST /privacy/jurisdictions/resolve),
+// but for an admin managing a whole institutional org — the endpoint already
+// permits ADMIN role regardless of org-ownership (see routes/privacy.py).
+// Unlike the teacher wizard, this is meant to be re-run any time (adding a
+// new campus's location, correcting a wrong auto-detection, etc.), not just
+// once at onboarding — admins keep full override capability per design.
+function QuickSetupByLocationCard() {
+  const { t } = useTranslation('landing')
+  const [country, setCountry] = useState('')
+  const [subdivision, setSubdivision] = useState('')
+  const [region, setRegion] = useState('')
+  const [hasUnder13, setHasUnder13] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resolved, setResolved] = useState<Array<{
+    jurisdiction_id: string; is_verified: boolean; short_name?: string; full_name?: string
+  }> | null>(null)
+
+  const resolve = async () => {
+    if (!country) return
+    setLoading(true)
+    setError(null)
+    try {
+      const subdivisionCode = country === 'US'
+        ? toSubdivisionCode('US', subdivision)
+        : (SUBDIVISION_SUPPORT.has(country) && subdivision ? `${country}-${subdivision}` : undefined)
+
+      const resp = await apiClient.post('/privacy/jurisdictions/resolve', {
+        country_code: country,
+        subdivision_code: subdivisionCode,
+        region: region || undefined,
+        has_under_13: hasUnder13,
+      })
+      setResolved(resp.data?.resolved ?? [])
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail
+      setError(typeof detail === 'string' ? detail : 'Could not resolve jurisdictions for that location.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,.08)', padding: '1.5rem', marginBottom: '2rem' }}>
+      <h2 style={{ margin: '0 0 4px', color: '#2d4a3e', fontSize: '1.1rem' }}>{t('adminprivacyconfigpage.quick_setup_by_location', 'Quick Setup by Location')}</h2>
+      <p style={{ margin: '0 0 1.2rem', color: '#666', fontSize: '0.85rem' }}>
+        {t('adminprivacyconfigpage.quick_setup_desc', 'For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically.')}
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 12 }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.85rem', color: '#444' }}>
+          Country
+          <select
+            value={country}
+            onChange={e => { setCountry(e.target.value); setSubdivision('') }}
+            style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
+          >
+            <option value="">— Select —</option>
+            {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+            <option value="OTHER">Other (enter 2-letter code below)</option>
+          </select>
+        </label>
+
+        {SUBDIVISION_SUPPORT.has(country) && (
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.85rem', color: '#444' }}>
+            State / Province
+            {country === 'US' ? (
+              <select
+                value={subdivision}
+                onChange={e => setSubdivision(e.target.value)}
+                style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
+              >
+                <option value="">— Select —</option>
+                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            ) : (
+              <input
+                value={subdivision}
+                onChange={e => setSubdivision(e.target.value)}
+                placeholder="e.g. Ontario, Bavaria"
+                style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
+              />
+            )}
+          </label>
+        )}
+
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.85rem', color: '#444' }}>
+          Region (optional)
+          <input
+            value={region}
+            onChange={e => setRegion(e.target.value)}
+            placeholder="District or local law"
+            style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
+          />
+        </label>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: '#444', marginTop: 20 }}>
+          <input type="checkbox" checked={hasUnder13} onChange={e => setHasUnder13(e.target.checked)} />
+          Has under-13 students
+        </label>
+      </div>
+
+      <button
+        onClick={resolve}
+        disabled={!country || loading}
+        style={{
+          background: '#4a7c59', color: '#fff', border: 'none', borderRadius: 8,
+          padding: '0.5rem 1.2rem', cursor: !country || loading ? 'not-allowed' : 'pointer',
+          fontSize: '0.9rem', opacity: !country || loading ? 0.6 : 1,
+        }}
+      >
+        {loading ? 'Resolving…' : 'Resolve & Apply'}
+      </button>
+
+      {error && <p style={{ color: '#c0392b', fontSize: '0.85rem', marginTop: 10 }}>{error}</p>}
+
+      {resolved && (
+        <div style={{ marginTop: 14 }}>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: 8 }}>
+            Applied to your organization (admins can remove any of these below in "Active Jurisdictions",
+            or override with a custom rule via the form further down):
+          </p>
+          {resolved.length === 0 ? (
+            <p style={{ fontSize: '0.85rem', color: '#888' }}>No jurisdiction found for that location yet — the system will note this for future discovery.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {resolved.map(r => (
+                <div
+                  key={r.jurisdiction_id}
+                  style={{
+                    display: 'grid', gridTemplateColumns: '20px auto 1fr auto', alignItems: 'center',
+                    gap: 8, fontSize: '0.85rem', width: '100%',
+                  }}
+                >
+                  <input type="checkbox" checked readOnly style={{ margin: 0 }} />
+                  <strong style={{ whiteSpace: 'nowrap' }}>{r.short_name || r.jurisdiction_id}</strong>
+                  <span style={{ color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.full_name}</span>
+                  {!r.is_verified && (
+                    <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: 4, padding: '0.05rem 0.4rem', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
+                      pending review
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function AdminPrivacyConfigPage() {
   const { t } = useTranslation('landing');
@@ -283,6 +436,8 @@ export default function AdminPrivacyConfigPage() {
           })}
         </div>
       </div>
+
+      <QuickSetupByLocationCard />
 
       {/* Active Jurisdictions */}
       <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,.08)', padding: '1.5rem', marginBottom: '2rem' }}>

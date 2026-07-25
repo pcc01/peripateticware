@@ -2164,6 +2164,43 @@ async def start_background_tasks(async_session, settings) -> None:
     else:
         logger.info("⊘ Privacy crawler disabled (IAPP_CRAWLER_ENABLED=false) — not scheduled")
 
+    # ── Privacy jurisdiction catalog auto-renew ───────────────────────────────
+    # Re-checks previously-discovered (non-adapter) catalog entries for updates.
+    # Distinct from the crawler job above: that one refreshes the ~24 curated
+    # PrivacySource adapters; this one re-runs discovery for anything sourced
+    # from privacy_source_registry or AI recall-only synthesis, so a country's
+    # law that changes after it was first auto-discovered doesn't go stale
+    # forever. Off by default (PRIVACY_AUTO_RENEW_ENABLED=false) — same
+    # opt-in convention as the crawler above.
+    if _scheduler is not None and getattr(settings, "PRIVACY_AUTO_RENEW_ENABLED", False):
+        try:
+            from apscheduler.triggers.cron import CronTrigger
+            from services.privacy_auto_renew import run_catalog_auto_renew
+            from core.database import get_session_factory
+
+            async def _run_privacy_auto_renew_job():
+                async with get_session_factory()() as _db:
+                    try:
+                        await run_catalog_auto_renew(_db)
+                    except Exception as _exc:
+                        logger.error(f"Scheduled privacy catalog auto-renew failed: {_exc}")
+
+            _cron = settings.PRIVACY_AUTO_RENEW_SCHEDULE.split()
+            _scheduler.add_job(
+                _run_privacy_auto_renew_job,
+                CronTrigger(
+                    minute=_cron[0], hour=_cron[1], day=_cron[2],
+                    month=_cron[3], day_of_week=_cron[4],
+                ),
+                id="privacy_catalog_auto_renew",
+                replace_existing=True,
+            )
+            logger.info("✅ Privacy catalog auto-renew scheduled (%s)", settings.PRIVACY_AUTO_RENEW_SCHEDULE)
+        except Exception as e:
+            logger.warning(f"⊘ Privacy catalog auto-renew job not added: {e}")
+    else:
+        logger.info("⊘ Privacy catalog auto-renew disabled (PRIVACY_AUTO_RENEW_ENABLED=false) — not scheduled")
+
     # Start the shared scheduler — without this call, none of the job groups
     # registered above (retention cleanup, AI batch, budget monitor,
     # privacy crawler) ever run.

@@ -14,6 +14,7 @@ import { useGeoHint } from '../../hooks/useGeoHint';
 import type { UserRole } from '@/config/constants';
 import { SyntheticEvent } from 'react';
 import { PRODUCT_NAME } from '../../constants/brand';
+import { COUNTRIES, US_STATES, SUBDIVISION_SUPPORT, toSubdivisionCode } from '../../constants/geo';
 
 const signupSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -128,7 +129,7 @@ export default function SignupScreen({
           : undefined,
         // Teaching Context fields
         country_code:     countryCode || undefined,
-        subdivision_code: subdivisionCode || undefined,
+        subdivision_code: toSubdivisionCode(countryCode, subdivisionCode),
         has_under_13:     showTeachingContext ? hasUnder13 : undefined,
         org_type_v2:      orgTypeV2 || undefined,
         ip_country_hint:  geoHint.countryCode || undefined,
@@ -360,22 +361,49 @@ export default function SignupScreen({
                   <select
                     id="signup-country"
                     value={countryCode}
-                    onChange={e => setCountryCode(e.target.value)}
+                    onChange={e => { setCountryCode(e.target.value); setSubdivisionCode(''); }}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                   >
                     <option value="">{t('components_auth_signupscreen.select_country', 'Select country')}</option>
-                    <option value="US">{t('components_auth_signupscreen.united_states', '🇺🇸 United States')}</option>
-                    <option value="GB">{t('components_auth_signupscreen.united_kingdom', '🇬🇧 United Kingdom')}</option>
-                    <option value="CA">{t('components_auth_signupscreen.canada', '🇨🇦 Canada')}</option>
-                    <option value="AU">{t('components_auth_signupscreen.australia', '🇦🇺 Australia')}</option>
-                    <option value="DE">{t('components_auth_signupscreen.germany', '🇩🇪 Germany')}</option>
-                    <option value="FR">{t('components_auth_signupscreen.france', '🇫🇷 France')}</option>
-                    <option value="NL">{t('components_auth_signupscreen.netherlands', '🇳🇱 Netherlands')}</option>
-                    <option value="BR">{t('components_auth_signupscreen.brazil', '🇧🇷 Brazil')}</option>
-                    <option value="SG">{t('components_auth_signupscreen.singapore', '🇸🇬 Singapore')}</option>
+                    {COUNTRIES.map(c => (
+                      <option key={c.code} value={c.code}>{c.label}</option>
+                    ))}
                     <option value="OTHER">{t('components_auth_signupscreen.other', '🌍 Other')}</option>
                   </select>
                 </div>
+
+                {/* State/Province — only for countries where it's meaningful
+                    (mirrors backend/routes/geo.py's SUBDIVISION_SUPPORT), so a
+                    state-specific privacy law (e.g. a US state's) can actually
+                    be matched at signup instead of subdivision_code always
+                    being sent as undefined. */}
+                {SUBDIVISION_SUPPORT.has(countryCode) && (
+                  <div>
+                    <label htmlFor="signup-subdivision" className="block text-xs font-medium text-gray-700 mb-1">
+                      {t('components_auth_signupscreen.state_province', 'State / Province')}
+                    </label>
+                    {countryCode === 'US' ? (
+                      <select
+                        id="signup-subdivision"
+                        value={subdivisionCode}
+                        onChange={e => setSubdivisionCode(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                      >
+                        <option value="">{t('components_auth_signupscreen.select_state', '— Select state —')}</option>
+                        {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        id="signup-subdivision"
+                        type="text"
+                        value={subdivisionCode}
+                        onChange={e => setSubdivisionCode(e.target.value)}
+                        placeholder={t('components_auth_signupscreen.province_placeholder', 'e.g. Ontario, São Paulo, Bavaria')}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                      />
+                    )}
+                  </div>
+                )}
 
                 {/* Under-13 question */}
                 <div>

@@ -1329,3 +1329,138 @@ async def get_current_notices(
             for r in rows
         ],
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Self-service jurisdiction resolver
+# POST /jurisdictions/resolve         — solo teacher/homeschool or admin
+# POST /jurisdictions/request-review  — any teacher, routes to the right admin
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ResolveJurisdictionRequest(BaseModel):
+    country_code:     str
+    subdivision_code: Optional[str] = None
+    region:           Optional[str] = None
+    has_under_13:     bool = True
+
+
+@router.post("/jurisdictions/resolve")
+async def resolve_jurisdictions_endpoint(
+    body:         ResolveJurisdictionRequest,
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    Self-service "where are you teaching" picker. Resolves applicable privacy
+    jurisdictions from location + age-band inputs (federal baseline + catalog
+    matches + on-demand discovery for anything not yet known) and merges the
+    result into the caller's org's privacy_jurisdiction_ids.
+
+    Permission: the org OWNER of a solo/homeschool account, or an ADMIN of an
+    institutional org. A non-owner teacher member of an institutional org
+    gets a 403 — their admin controls this for the whole org (see
+    /jurisdictions/request-review for their escape hatch).
+    """
+    from services.privacy_jurisdiction_resolver import (
+        resolve_jurisdictions, is_org_owner, get_org_type, org_exists, merge_jurisdiction_ids,
+    )
+
+    role_upper = (current_user.role or "").upper()
+    if role_upper not in ("TEACHER", "HOMESCHOOL", "ADMIN"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only teachers, homeschool educators, or admins can configure privacy jurisdictions",
+        )
+    if not current_user.org_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No organization associated with this account")
+
+    org_id = str(current_user.org_id)
+
+    if role_upper != "ADMIN":
+        if not await is_org_owner(db, org_id, str(current_user.id)):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your school administrator manages privacy settings for your organization. "
+                       "Use the review-request option if something looks wrong.",
+            )
+
+    if not await org_exists(db, org_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Organization not found")
+    org_type = await get_org_type(db, org_id)
+    is_school = (org_type or "") in ("school", "district", "enterprise")
+
+    resolved = await resolve_jurisdictions(
+        db,
+        country_code=body.country_code,
+        subdivision_code=body.subdivision_code,
+        region=body.region,
+        has_under_13=body.has_under_13,
+        is_school=is_school,
+    )
+
+    new_ids = {r["jurisdiction_id"] for r in resolved if r.get("jurisdiction_id")}
+    merged_ids = await merge_jurisdiction_ids(db, org_id, new_ids)
+    await db.commit()
+
+    return {"resolved": resolved, "org_jurisdiction_ids": merged_ids}
+
+
+class RequestReviewBody(BaseModel):
+    reason: str
+
+
+@router.post("/jurisdictions/request-review")
+async def request_jurisdiction_review(
+    body:         RequestReviewBody,
+    db:           AsyncSession = Depends(get_db),
+    current_user: User         = Depends(get_current_user),
+):
+    """
+    'Something not right?' escape hatch for teachers who disagree with an
+    auto-applied jurisdiction but shouldn't self-override (see decision #3 in
+    the plan — solo teachers aren't privacy experts). Routes to the org's own
+    admin(s) for institutional orgs, or the site operator for solo/homeschool
+    accounts. Never raises to the caller on notification failure.
+    """
+    from sqlalchemy import text as _text
+    from services.email_service import send_notification
+    from core.config import settings
+
+    recipients: List[str] = []
+    org_id = str(current_user.org_id) if current_user.org_id else None
+
+    if org_id:
+        org_row = (await db.execute(
+            _text("SELECT org_type_v2 FROM organizations WHERE id = :oid"), {"oid": org_id}
+        )).first()
+        is_institutional = org_row is not None and (org_row[0] or "") in ("school", "district", "enterprise")
+        if is_institutional:
+            admin_rows = (await db.execute(
+                _text("""
+                    SELECT u.email FROM organization_members om
+                    JOIN users u ON u.id = om.user_id
+                    WHERE om.org_id = :oid AND om.role IN ('owner', 'admin')
+                """),
+                {"oid": org_id},
+            )).fetchall()
+            recipients = [r[0] for r in admin_rows if r[0]]
+
+    if not recipients:
+        fallback = getattr(settings, "ADMIN_EMAIL", "") or getattr(settings, "EMAIL_FROM", "")
+        if fallback:
+            recipients = [fallback]
+
+    subject = "Privacy jurisdiction review requested"
+    body_html = (
+        f"<p><strong>{current_user.email}</strong> requested a review of their "
+        f"organization's auto-applied privacy jurisdiction(s).</p>"
+        f"<p><strong>Reason given:</strong> {body.reason}</p>"
+    )
+
+    for to in recipients:
+        try:
+            await send_notification(to, subject, body_html)
+        except Exception as exc:
+            logger.warning(f"Failed to notify {to} of privacy jurisdiction review request: {exc}")
+
+    return {"status": "submitted", "notified": len(recipients)}

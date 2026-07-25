@@ -736,7 +736,11 @@ def _fingerprint(rule_definition: Dict[str, Any]) -> str:
 
 
 def _rule_id(source: PrivacySource, version: str) -> str:
-    return f"{source.jurisdiction}:{source.source_id}:{version}"
+    # compliance_rules.rule_id is a genuine UUID column (confirmed against the
+    # live schema) -- a colon-joined "jurisdiction:source_id:version" string
+    # was never a valid value here; nothing else parses this ID's structure
+    # (grepped for rule_id.split usage -- none found), so a plain UUID is safe.
+    return str(uuid.uuid4())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -870,7 +874,12 @@ async def _upsert_rule(
         regulation_id         = source.source_id,
         version               = version,
         jurisdiction          = source.jurisdiction,
-        effective_date        = datetime.now(timezone.utc),
+        # effective_date / rule_audit_log.timestamp are "timestamp without time
+        # zone" columns in the live schema -- a tz-aware datetime.now(timezone.utc)
+        # makes asyncpg's codec raise a naive/aware subtraction DataError deep in
+        # its own internals. Use utcnow() (naive) instead, same convention the
+        # rest of this codebase already follows for these column types.
+        effective_date        = datetime.utcnow(),
         rule_definition       = rule_definition,
         created_by            = "privacy_crawler",
         previous_version_id   = prev_id,
@@ -885,18 +894,20 @@ async def _upsert_rule(
 
     # Write immutable audit log entry
     db.add(RuleAuditLog(
-        id             = str(uuid.uuid4()),
-        rule_id        = new_rule_id,
-        jurisdiction   = source.jurisdiction,
-        action         = "crawler_upsert",
-        actor          = "privacy_crawler",
-        details        = json.dumps({
+        id                  = uuid.uuid4(),
+        rule_id             = new_rule_id,
+        action              = "crawler_upsert",
+        actor_id            = "privacy_crawler",
+        actor_role          = "system",
+        jurisdiction_ids    = [source.jurisdiction],
+        compliance_status   = "COMPLIANT",
+        notes               = json.dumps({
             "source_url":  source.url,
             "version":     version,
             "auto_loaded": auto_load,
             "change_log":  change_log,
         }),
-        created_at     = datetime.now(timezone.utc),
+        timestamp           = datetime.utcnow(),
     ))
 
     await db.commit()

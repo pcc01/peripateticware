@@ -36,7 +36,13 @@ class ComplianceRule(Base):
 
     __tablename__ = "compliance_rules"
 
-    rule_id             = Column(String(256), primary_key=True)
+    # rule_id / previous_version_id are genuinely UUID-typed in the live DB
+    # (confirmed via information_schema against the running Postgres instance)
+    # -- previously declared String(256) here, which mismatched the real
+    # column type and caused a DatatypeMismatchError on ANY insert through
+    # this ORM model (both POST /privacy/rules and the crawler's _upsert_rule
+    # were affected; neither had ever been runtime-exercised before).
+    rule_id             = Column(UUID(as_uuid=True), primary_key=True)
     regulation_id       = Column(String(256), nullable=False)
     version             = Column(String(10),  nullable=False)
     jurisdiction        = Column(String(50),  nullable=False, index=True)
@@ -45,7 +51,7 @@ class ComplianceRule(Base):
     rule_definition     = Column(JSONB,       nullable=False)
     created_by          = Column(String(100), default="system")
     created_at          = Column(DateTime,    default=datetime.utcnow)
-    previous_version_id = Column(String(256), nullable=True)
+    previous_version_id = Column(UUID(as_uuid=True), nullable=True)
     change_log          = Column(Text,        nullable=True)
     is_active           = Column(Boolean,     default=True,  nullable=False)
     audit_hash          = Column(String(256), nullable=True)
@@ -145,6 +151,7 @@ class PrivacyRegulationCatalog(Base):
     short_name        = Column(String(100), nullable=False)
     full_name         = Column(String(500), nullable=False)
     jurisdiction_code = Column(String(50),  nullable=False)
+    subdivision_code  = Column(String(10),  nullable=True)
     region            = Column(String(100), nullable=True)
     country_codes     = Column(JSONB,       nullable=True)
     framework         = Column(String(50),  nullable=False)
@@ -159,11 +166,44 @@ class PrivacyRegulationCatalog(Base):
     added_by_user_id  = Column(UUID(as_uuid=True), nullable=True)
     added_by_role     = Column(String(20),  nullable=True)
     is_active         = Column(Boolean,     nullable=False, default=True)
+    is_verified       = Column(Boolean,     nullable=False, default=True)
+    discovery_method  = Column(String(20),  nullable=True)
+    last_synced_at    = Column(DateTime,    nullable=True)
     created_at        = Column(DateTime,    server_default="NOW()", nullable=False)
     updated_at        = Column(DateTime,    server_default="NOW()", nullable=False)
 
     def __repr__(self) -> str:
         return "<PrivacyRegulationCatalog {} ({})>".format(self.short_name, self.jurisdiction_code)
+
+
+class PrivacySourceRegistry(Base):
+    """
+    Country -> official regulator/law source-pointer reference, populated by a
+    one-time bulk pull (not an ongoing crawl). Used by privacy_discovery_service.py's
+    Tier-2 lookup before falling back to general search+AI-recall discovery.
+    """
+
+    __tablename__ = "privacy_source_registry"
+    __table_args__ = (
+        UniqueConstraint('country_code', name='uq_source_registry_country'),
+    )
+
+    id              = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    country_code    = Column(String(4),   nullable=False)
+    country_name    = Column(String(200), nullable=True)
+    regulator_name  = Column(String(300), nullable=True)
+    law_name        = Column(String(300), nullable=True)
+    source_url      = Column(String(1000), nullable=True)
+    iapp_detail_url = Column(String(1000), nullable=True)
+    framework_guess = Column(String(50),  nullable=True)
+    is_verified     = Column(Boolean,     nullable=False, default=False)
+    fetched_at      = Column(DateTime,    nullable=True)
+    notes           = Column(Text,        nullable=True)
+    created_at      = Column(DateTime,    server_default="NOW()", nullable=False)
+    updated_at      = Column(DateTime,    server_default="NOW()", nullable=False)
+
+    def __repr__(self) -> str:
+        return "<PrivacySourceRegistry {}>".format(self.country_code)
 
 
 class SchoolRegulationAssignment(Base):

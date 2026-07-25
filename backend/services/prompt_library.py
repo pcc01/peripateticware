@@ -604,3 +604,92 @@ For each aligned standard return:
 Return ONLY a valid JSON array, ordered by alignment_strength (primary first). No preamble.
 
 JSON ARRAY:"""
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# PRIVACY JURISDICTION DISCOVERY
+# (services/privacy_discovery_service.py — self-service jurisdiction resolver)
+# ──────────────────────────────────────────────────────────────────────────────
+
+def build_privacy_jurisdiction_discovery_prompt(
+    *,
+    location_desc: str,
+    country_code: str,
+    source_text: str = "",
+    validation_errors: str = "",
+) -> str:
+    """
+    Synthesize a structured student-data-privacy rule summary for a
+    country/state/region that has no existing config file, compliance_rule,
+    or catalog entry.
+
+    Temperature: 0.1  (deterministic extraction, not creativity)
+    Max tokens: 1500
+    Returns a single JSON object (not an array).
+
+    If source_text is empty, the model must rely on its own training
+    knowledge (recall-only) rather than a fetched page — callers should treat
+    that result with lower confidence (is_verified=false regardless of the
+    model's own "confidence" field).
+
+    Pass validation_errors (from a prior failed schemas.privacy_rule.PrivacyRule
+    validation attempt) to retry once with the exact field errors fed back in.
+    """
+    source_block = (
+        f"SOURCE TEXT (fetched from an official government/regulator page):\n---\n{source_text[:8000]}\n---\n"
+        if source_text else
+        "No source page text is available — answer from your own general knowledge of this "
+        "jurisdiction's student-data-privacy and children's-online-privacy law, if any exists. "
+        "If you are not confident a specific law exists, say so honestly via a low confidence "
+        "value rather than inventing one.\n"
+    )
+
+    retry_block = (
+        f"\nYOUR PREVIOUS ANSWER FAILED VALIDATION with these errors — fix them exactly:\n{validation_errors}\n"
+        if validation_errors else ""
+    )
+
+    return f"""You are helping a K-12 education platform determine what student-data-privacy and
+children's-online-privacy protections apply for a teacher located in: {location_desc}
+(ISO 3166-1 alpha-2 country code: {country_code}).
+
+Interpret {country_code} strictly as an ISO 3166-1 alpha-2 code, not a colloquial abbreviation —
+double-check against a well-known confusable before answering (e.g. "SV" is El Salvador, not
+"St. Vincent"; "CD" is DR Congo, not Chad; "GE" is Georgia, not Germany). If you are not fully
+certain which country a two-letter code refers to, say so via a low confidence value rather than
+guessing.
+
+{source_block}
+{retry_block}
+TASK
+Determine whether a relevant national or subnational student-data-privacy / children's-online-privacy
+law exists for this location. If one exists, summarize it. If none exists, say so and fall back to
+generic child-safety-conscious defaults (do not invent a law that doesn't exist).
+
+Return ONLY a single valid JSON object with exactly these fields:
+{{
+  "law_exists": true | false,
+  "confidence": "high" | "medium" | "low",
+  "framework": "short lowercase slug, e.g. 'gdpr', 'coppa', 'custom' if no established name",
+  "short_name": "e.g. 'LGPD' or 'No dedicated law found'",
+  "full_name": "official law name, or a plain description if none exists",
+  "summary": "1-3 sentences a non-lawyer teacher can understand",
+  "key_requirements": ["short bullet", "short bullet", "..."],
+  "age_threshold": integer or null — the age under which parental consent is specifically required, if any,
+  "max_retention_days": integer — a reasonable data-retention cap; use 365 if unknown,
+  "encryption_required": true | false,
+  "student_data_sharing_allowed": true | false — can student data be shared with third parties by default,
+  "student_monitoring_allowed": true | false,
+  "student_profiling_allowed": true | false,
+  "student_targeting_allowed": true | false — behavioral advertising targeting minors,
+  "requires_privacy_impact_assessment": true | false,
+  "requires_data_protection_officer": true | false
+}}
+
+CRITICAL RULES
+• Return ONLY the JSON object. No markdown fences, no commentary.
+• Err conservative on booleans when uncertain (false for *_allowed fields, true for encryption_required)
+  — a K-12 platform should default to MORE protective, not less.
+• Do not fabricate a specific law name or citation you are not reasonably confident exists.
+
+JSON OBJECT:"""

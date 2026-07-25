@@ -1,0 +1,1882 @@
+[
+  {
+    "country_name": "Afghanistan",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Åland Islands",
+    "regulator_name": "Datainspektionen Åland",
+    "regulator_url": "https://www.di.ax/",
+    "law_name": "DPA Legislation page",
+    "law_url": "https://www-di-ax.translate.goog/lagstiftning-och-vagledning?_x_tr_sl=sv&_x_tr_tl=en&_x_tr_hl=en&_x_tr_pto=sc",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Albania",
+    "regulator_name": "Komisioneri për të Drejtën e Informimit dhe Mbrojtjen e të Dhënave Personale",
+    "regulator_url": "https://www.idp.al/",
+    "law_name": "Law on the Protection of Personal Data No. 9887 of 10 March 2008",
+    "law_url": "https://idp.al/wp-content/uploads/2024/01/LDP_english_version_amended_2014-1.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Algeria",
+    "regulator_name": "Autorité Nationale de Protection des Données à caractère Personnel",
+    "regulator_url": "https://anpdp.dz/fr/accueil/",
+    "law_name": "Law No. 18-07 of 25 Ramadhan 1439 Corresponding to June 10, 2018 Relating to the Protection of Individuals in the Processing of Personal Data",
+    "law_url": "https://www.joradp.dz/FTP/JO-FRANCAIS/2018/F2018034.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "American Samoa",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Andorra",
+    "regulator_name": "Agència Andorrana de Protecció de Dades",
+    "regulator_url": "https://www.apda.ad/",
+    "law_name": "Law 12/2024, of 15 July, amending Law 29/2021, of 28 October, on the protection of personal data",
+    "law_url": "https://www.bopa.ad/Documents/Detall?doc=CGL_2024_07_19_11_32_35",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Angola",
+    "regulator_name": "Agência de Proteção de Dados",
+    "regulator_url": "https://apd.ao/ao/",
+    "law_name": "Law No. 22/11 on the Protection of Personal Data",
+    "law_url": "https://www.rapdp.org/sites/default/files/2021-07/Angolan%20Personal%20Data%20Protection%20Legislation%20-%20Law%2022_11%20of%2017th%20June_0.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Anguilla",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Antigua and Barbuda",
+    "regulator_name": "The Information Commissioner",
+    "regulator_url": "https://ab.gov.ag/detail_page.php?page=20",
+    "law_name": "Data Protection Act (Law No. 10-13)",
+    "law_url": "http://laws.gov.ag/wp-content/uploads/2019/02/a2013-10.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Argentina",
+    "regulator_name": "Agencia de Acceso a la Información Pública",
+    "regulator_url": "https://www.argentina.gob.ar/aaip",
+    "law_name": "Protection of Personal Data Law 25.326",
+    "law_url": "https://www.argentina.gob.ar/normativa/nacional/ley-25326-64790/actualizacion",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Armenia",
+    "regulator_name": "Personal Data Protection Agency",
+    "regulator_url": "https://www.moj.am/en/structures/view/structure/32",
+    "law_name": "Law on the Protection of Personal Data No. 49-ZR (2015)",
+    "law_url": "http://www.foi.am/u_files/file/Personaldataprotectionlaw_ENG.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Aruba",
+    "regulator_name": "Ministry of Justice",
+    "regulator_url": "https://www.gobierno.aw/en/ministry-of-justice-integration-and-public-transport",
+    "law_name": "Personal Data Registration National Ordinance",
+    "law_url": "https://cuatro.sim-cdn.nl/arubaoverheid2858bd/uploads/ab2011no.37.pdf?cb=VPTvcx59",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Australia",
+    "regulator_name": "Office of the Australian Information Commissioner",
+    "regulator_url": "https://www.oaic.gov.au/",
+    "law_name": "Privacy Act 1988 (Cth) No. 119 1998 and Australian Privacy Principles (\"APPs\") + sectoral state coverage",
+    "law_url": "https://www.legislation.gov.au/Series/C2004A03712",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Austria",
+    "regulator_name": "Österreichische Datenschutzbehörde",
+    "regulator_url": "https://data-protection-authority.gv.at/",
+    "law_name": "Federal Act concerning the Protection of Personal Data",
+    "law_url": "https://www.ris.bka.gv.at/Dokumente/Erv/ERV_1999_1_165/ERV_1999_1_165.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Azerbaijan",
+    "regulator_name": "Ministry of Digital Development and Transport",
+    "regulator_url": "https://mincom.gov.az/en",
+    "law_name": "Law on Personal Information (May 2010)",
+    "law_url": "https://mincom.gov.az/storage/pages/376/998-iiiq-ferdi-melumatlar-haqqinda.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bahamas",
+    "regulator_name": "Office of the Data Protection Commissioner",
+    "regulator_url": "https://www.dataprotection.gov.bs/",
+    "law_name": "Data Protection (Privacy of Personal Information) Act (\"DPA\")",
+    "law_url": "https://laws.bahamas.gov.bs/cms/images/LEGISLATION/PRINCIPAL/2003/2003-0003/2003-0003.pdf?zoom_highlight=Police+act",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bahrain",
+    "regulator_name": "Personal Data Protection Authority",
+    "regulator_url": "http://www.pdp.gov.bh/en/index.html",
+    "law_name": "Law No. 30 of 2018 - Personal Data Protection (\"PDPL\")",
+    "law_url": "http://www.pdp.gov.bh/en/regulations.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bangladesh",
+    "regulator_name": "National Data Governance and Interoperability Authority",
+    "regulator_url": "https://dsa.gov.bd/",
+    "law_name": "Personal Data Protection Ordinance, 2025 (draft)",
+    "law_url": "https://bcc.gov.bd/sites/default/files/files/bcc.portal.gov.bd/notices/fab09ab5_bbc2_48be_8df7_1ad8c425b6d6/2025-05-13-06-35-1c64a2d41ea656769ddd832a36b74f0e.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Barbados",
+    "regulator_name": "Data Protection Commission",
+    "regulator_url": "https://www.gov.bb/Departments/data-protection-commissioner",
+    "law_name": "Data Protection Act (\"Act\")",
+    "law_url": "https://oag.gov.bb/attachments/Data%20Protection%20Act,%202019-29.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Belarus",
+    "regulator_name": "National Personal Data Protection Center",
+    "regulator_url": "https://cpd.by/en/about-center/",
+    "law_name": "Law on Personal Data Protection No. 99-Z (2021)",
+    "law_url": "https://cpd.by/en/national-regulation/the-belarusian-data-protection-act/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Belgium",
+    "regulator_name": "Autorité De Protection Des Données",
+    "regulator_url": "https://www.dataprotectionauthority.be/citizen",
+    "law_name": "Act of 3 December 2017 Establishing the Data Protection Authority, Act of 30 July 2018 on the Protection of Natural Persons with Regard to the Processing of Personal Data",
+    "law_url": "https://www.dataprotectionauthority.be/publications/act-of-30-july-2018.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Belize",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act of 2021 (\"Act\")",
+    "law_url": "https://www.nationalassembly.gov.bz/wp-content/uploads/2021/12/Act-No-45-of-2021-Data-Protection-Act.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Benin",
+    "regulator_name": "L'Autorité de Protection des Données à caractère Personnel",
+    "regulator_url": "https://service.apdp.bj/",
+    "law_name": "Law No. 2009-09 of May 22, 2009 Dealing with the Protection of Personally Identifiable Information (Law No. 2009-09)",
+    "law_url": "https://sgg.gouv.bj/doc/loi-2009-09/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bermuda",
+    "regulator_name": "Office of the Privacy Commissioner for Bermuda",
+    "regulator_url": "https://www.privacy.bm/about-us",
+    "law_name": "Personal Information Protection Act 2016",
+    "law_url": "https://www.gov.bm/sites/default/files/Personal-Information-Protection-Act-2016.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bhutan",
+    "regulator_name": "Bhutan Information Communication and Media Authority",
+    "regulator_url": "https://www.bicma.gov.bt/",
+    "law_name": "ICM Act of Bhutan (2018)",
+    "law_url": "https://www.bicma.gov.bt/data/publications/act/BICM_Act_2018_English.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bolivia (Plurinational State of)",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Bonaire, Sint Eustatius and Saba",
+    "regulator_name": "Commissie toezicht bescherming persoonsgegevens",
+    "regulator_url": "https://cbpbes.com/en/",
+    "law_name": "BES Personal Data Protection Act",
+    "law_url": "https://cbpbes.com/wp-content/uploads/2019/08/WBP-BES-.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Botswana",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act, 2024 – Act No. 18 of 2024",
+    "law_url": "https://itlawco.com/focus-areas/data-protection-and-privacy/data-protection-act-18-of-2024-botswana/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Brazil",
+    "regulator_name": "Autoridade Nacional de Proteção de Dados",
+    "regulator_url": "https://www.gov.br/anpd/pt-br",
+    "law_name": "Brazilian Data Protection Law (\"LGPD\"), Federal Law no. 13,709/2018",
+    "law_url": "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/L13709.htm",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "British Virgin Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act of 2021",
+    "law_url": "https://eservices.gov.vg/gazette/sites/eservices.gov.vg.gazette/files/newattachments/Act%20No.%203%20of%202021-Data%20Protection%20Act%2C%202021.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Brunei Darussalam",
+    "regulator_name": "Authority for Info-communications Technology Industry of Brunei Darussalam (AITI)",
+    "regulator_url": "https://www.aiti.gov.bn/",
+    "law_name": "Personal Data Protection Order, 2025",
+    "law_url": "https://pdp.aiti.gov.bn/media/tndpduml/s-1_2025-e.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Bulgaria",
+    "regulator_name": "Commission for Personal Data Protection",
+    "regulator_url": "https://www.cpdp.bg/en/",
+    "law_name": "The Protection of Personal Data Act 2002",
+    "law_url": "https://cpdp.bg/en/legislation/personal-data-protection-act/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Burkina Faso",
+    "regulator_name": "Commission de l'Informatique et des Libertes",
+    "regulator_url": "https://www.cil.bf/",
+    "law_name": "Act No. 001-2021/AN of 30 March 2021 (\"the 2021 Act\")",
+    "law_url": "https://www.afapdp.org/wp-content/uploads/2021/06/Decret-2021-0276-promulguant-la-loi-n001-2021-du-30-mars-2021-portant-protection-des-personnes-a-legart-du-traitement-des-donnees-a-caratere-personnel.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Burundi",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Cabo Verde",
+    "regulator_name": "Comissão Nacional de Protecção de Dados",
+    "regulator_url": "https://www.cnpd.cv/",
+    "law_name": "Law 133-V-2001 on the Protection of Personal Data (as amended by Law No. 41/VIII/2013 - General Legal Regime for the Protection of Personal Data of Individuals (only available in Portuguese here) and Law No. 121/IX/2021 of 17 March 2021",
+    "law_url": "https://www.cnpd.cv/leis/Lei%20121.IX.2021%20altera%C3%A7%C3%A3o%20Lei%2041.VIII.2013.pdfhttps://www.cnpd.cv/wp-content/uploads/2025/03/Lei-121.IX_.2021-alteracao-Lei-41.VIII_.2013.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Cambodia",
+    "regulator_name": "Ministry of Post and Telecommunications",
+    "regulator_url": "https://mptc.gov.kh/",
+    "law_name": "Draft Law on Personal Data Protection",
+    "law_url": "https://dgcbriefings.substack.com/p/cambodia-draft-law-on-personal-data",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Cameroon",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law No. 2024/017 - Personal Data Protection Act",
+    "law_url": "https://www.prc.cm/en/multimedia/documents/10271-law-n-2024-017-of-23-12-2024-web",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Canada",
+    "regulator_name": "Office of Privacy Commissioner",
+    "regulator_url": "https://www.priv.gc.ca/en/",
+    "law_name": "Personal Information Protection and Electronic Documents Act 2000 (\"PIPEDA\")",
+    "law_url": "https://laws-lois.justice.gc.ca/PDF/P-8.6.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Cayman Islands",
+    "regulator_name": "Office of the Ombudsman",
+    "regulator_url": "https://ombudsman.ky/data-protection",
+    "law_name": "Data Protection Act",
+    "law_url": "https://ombudsman.ky/images/pdf/laws_regs/Data_Protection_Act_2021_Rev.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Central African Republic",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Chad",
+    "regulator_name": "Agence Nationale de Sécurité Informatique et de Certification Électronique",
+    "regulator_url": "https://www.ansice.td/",
+    "law_name": "Law No. 007/PR/2015 on Protection of Personal Data",
+    "law_url": "https://ansice.td/assets/documents/loi_07.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Chile",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law on the Protection of Personal Data No. 21.719",
+    "law_url": "https://www.diariooficial.interior.gob.cl/publicaciones/2024/12/13/44023/01/2583630.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "China",
+    "regulator_name": "Cyberspace Administration of China",
+    "regulator_url": "https://www.cac.gov.cn/",
+    "law_name": "Personal Information Protection Law, 2021 (\"PIPL\")",
+    "law_url": "http://en.npc.gov.cn.cdurl.cn/2021-12/29/c_694559.htm",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Colombia",
+    "regulator_name": "Superintendencia de Industria y Comercio",
+    "regulator_url": "https://www.sic.gov.co/",
+    "law_name": "Statutory Law 1581 of 2012 (\"Personal Data Protection Law\")",
+    "law_url": "https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=49981",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Comoros",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Costa Rica",
+    "regulator_name": "Agencia de Protección de Datos de los Habitantes",
+    "regulator_url": "http://www.prodhab.go.cr/",
+    "law_name": "Law No. 8968 (Law on the Protection of Persons Regarding the Processing of their Personal Data)",
+    "law_url": "http://www.pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_texto_completo.aspx?param1=NRTC&nValor1=1&nValor2=70975&nValor3=85989&strTipM=TC%20http://www.pgrweb.go.cr/scij/Busqueda/Normativa/Normas/nrm_texto_completo.aspx?param1=NRTC&nValor1=1&nValor2=74352&nValor3=106487&strTipM=TC",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Côte d’Ivoire",
+    "regulator_name": "Autirite de Regulation des Telecomunications de Cote d'Ivoire",
+    "regulator_url": "https://www.artci.ci/",
+    "law_name": "Law 2013-450 on the Protection of Personal Data",
+    "law_url": "https://www.artci.ci/images/stories/pdf-english/lois_english/loi_2013_450_english.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Croatia",
+    "regulator_name": "Agencika za zaŝtitu osobnih podataka",
+    "regulator_url": "https://azop.hr/",
+    "law_name": "Law on the Implementation of the General Data Protection Regulation 2018",
+    "law_url": "https://narodne-novine.nn.hr/clanci/sluzbeni/2018_05_42_805.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Cuba",
+    "regulator_name": "Ministerio de Justicia",
+    "regulator_url": "https://www.minjus.gob.cu/es",
+    "law_name": "Law 149/2022 on Personal Data Protection",
+    "law_url": "https://www.gacetaoficial.gob.cu/sites/default/files/goc-2022-o90_0.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Curaçao",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Ordinance",
+    "law_url": "https://btnp.org/wp-content/uploads/2019/03/Landsverordening_Bescherming_Persoonsgegevens___AB_2010__no._84_.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Cyprus",
+    "regulator_name": "Office of the Commissioner for the Protection of Personal Data",
+    "regulator_url": "https://www.dataprotection.gov.cy/dataprotection/dataprotection.nsf/home_el/home_el?opendocument",
+    "law_name": "Law 125(I) of 2018 Providing for the Protection of Natural Persons with regard to the Processing of Personal Data and for the Free Movement of Such Data",
+    "law_url": "https://www.dataprotection.gov.cy/dataprotection/dataprotection.nsf/All/2B53605103DCE4A4C225826300362211",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Czechia",
+    "regulator_name": "Úřad pro ochranu osobních údajů",
+    "regulator_url": "https://uoou.gov.cz/en",
+    "law_name": "Act No. 110/2019 Coll. on Personal Data Processing (the Act)",
+    "law_url": "https://uoou.gov.cz/media/act-no-110-2019-coll.pdf%EF%BB%BF",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Democratic People's Republic of Korea",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Democratic Republic of the Congo",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Digital Code Law No. 23/10",
+    "law_url": "https://clinregs.niaid.nih.gov/sites/default/files/documents/DRC/DigiCode_GoogleTranslation.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Denmark",
+    "regulator_name": "Datatilsynet",
+    "regulator_url": "https://www.datatilsynet.dk/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.datatilsynet.dk/english/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Diego Garcia",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Djibouti",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Dominica",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Dominican Republic",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law No. 172-13 on the Comprehensive Protection of Personal Data Contained in Archives, Public Registries, Databases or Other Technical Means of Data Processing Used for Reporting, Whether Public or Private (2013)",
+    "law_url": "https://presidencia.gob.do/sites/default/files/statics/transparencia/marco-legal/leyes/Ley-172-13.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Ecuador",
+    "regulator_name": "Superintendencia de Protección de Datos Personales (SPDP)",
+    "regulator_url": "https://spdp.gob.ec/",
+    "law_name": "Ley Organica de Proteccion de Datos Personales (\"Personal Data Protection Law\")",
+    "law_url": "https://www.asambleanacional.gob.ec/sites/default/files/private/asambleanacional/filesasambleanacionalnameuid-29/Leyes%202013-2017/920-lmoreno/ro-459-5to-sup-26-05-2021.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Egypt",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law 151/2020 on the Protection of Personal Data",
+    "law_url": "https://www.dataguidance.com/sites/default/files/egypt_data_protection_law.pdfhttps://www.acc.com/sites/default/files/program-materials/upload/Data%20Protection%20Law%20-%20Egypt%20-%20EN%20-%20MBH.PDF",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "El Salvador",
+    "regulator_name": "Agencia de Ciberseguridad del Estado (ACE)",
+    "regulator_url": "https://agenciadeciberseguridad.gob.sv/",
+    "law_name": "Ley de Proteccion de Datos Personales",
+    "law_url": "https://www.asamblea.gob.sv/sites/default/files/documents/dictamenes/735C8568-ED94-4125-99CB-2474D2507CED.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Equatorial Guinea",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Eritrea",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Estonia",
+    "regulator_name": "Andmekaitse Inspektsioon",
+    "regulator_url": "https://www.aki.ee/en",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.aki.ee/en/guidelines-legislation/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Eswatini (Swaziland)",
+    "regulator_name": "Eswatini Communications Commission",
+    "regulator_url": "https://www.esccom.org.sz/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.esccom.org.sz/legislation/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Ethiopia",
+    "regulator_name": "Ethiopian Communications Authority",
+    "regulator_url": "https://eca.et/",
+    "law_name": "Personal Data Protection Proclamation No. 1321/2024",
+    "law_url": "https://eca.et/wp-content/uploads/2024/10/personal_data_protection_proclamation_No_1321_2024.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Faroe Islands",
+    "regulator_name": "Dátueftirlitið",
+    "regulator_url": "https://www.dat.fo/english/",
+    "law_name": "Act No. 80 of 7 June 2020 on the Protection of Personal Data",
+    "law_url": "https://dat.cdn.fo/savn/opccxh1q/act-on-the-protection-of-personal-data-data-protection-act-act-no-80-on-the-7-june-2020.pdf?s=npz6Af6yDTe-q09LB1mBPmpL3_E",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Fiji",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Finland",
+    "regulator_name": "Tietosuojavaltuutetun toimisto",
+    "regulator_url": "https://tietosuoja.fi/en/home",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://tietosuoja.fi/en/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "France",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "DPA National Framework Page",
+    "law_url": "https://www.cnil.fr/fr/cadre-national",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "French Guiana",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "French Polynesia",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "French Southern Territories",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Gabon",
+    "regulator_name": "L'Autorité pour la Protection des Données Personnelles et de la Vie Privée",
+    "regulator_url": "https://www.apdpvp.ga/",
+    "law_name": "Law No. 025/2023 of 09/07/2023 amending Law No. 001/2011 of September 25, 2011, on the protection of personal data",
+    "law_url": "https://www.afapdp.org/wp-content/uploads/2012/01/Gabon-Loi-relative-%C3%A0-la-protection-des-donn%C3%A9es-personnelles-du-4-mai-20112.pdfhttps://www.apdpvp.ga/wp-content/uploads/2025/01/Gabon-Loi-025-2023-du-12-juillet-2023-portant-modification-de-la-loi-001-2011-du-25-septembre-relative-a-la-protection-des-donnees-a-caractere-personnel.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Gambia (Republic of The)",
+    "regulator_name": "Gambia Public Utilities Regulatory Authority ('PURA')",
+    "regulator_url": "https://pura.gm/",
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Georgia",
+    "regulator_name": "Personal Data Protection Service",
+    "regulator_url": "https://personaldata.ge/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://pdps.ge/ka/content/958/LEGISLATION",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Germany",
+    "regulator_name": "Die Bundesbeauftragte für den Datenschutz und die Informationsfreiheit",
+    "regulator_url": "https://www.bfdi.bund.de/DE/Home/home_node.html",
+    "law_name": "Federal Data Protection Act of 30 June 2017",
+    "law_url": "https://www.gesetze-im-internet.de/englisch_bdsg/englisch_bdsg.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Ghana",
+    "regulator_name": "Data Protection Commission",
+    "regulator_url": "https://dataprotection.org.gh/",
+    "law_name": "DPA Compliance Page",
+    "law_url": "https://dataprotection.org.gh/compliance/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Gibraltar",
+    "regulator_name": "Gibraltar Regulatory Authority",
+    "regulator_url": "https://www.gra.gi/data-protection",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.gra.gi/index.php/data-protection/legislation/acts-regs",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Greece",
+    "regulator_name": "Hellenic Data Protection Authority",
+    "regulator_url": "https://www.dpa.gr/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.dpa.gr/en/enimerwtiko/legal_framework/personal_data",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Greenland",
+    "regulator_name": "Datatilsynet (Danish DPA)",
+    "regulator_url": "https://www.datatilsynet.dk/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.datatilsynet.dk/hvad-siger-reglerne/lovgivninghttps://www.datatilsynet.dk/english/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Grenada",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Grenada Data Protection Act, No. 1 of 2023 (\"GDPA\")",
+    "law_url": "https://grenadaparliament.gd/wp-content/uploads/2023/03/Data-Protection-Bill-2023-8-3-23-with-HOR-amendments-Final.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Guadeloupe",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Guam",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Guatemala",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Guernsey",
+    "regulator_name": "The Office of the Data Protection Authority",
+    "regulator_url": "https://odpa.gg/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.odpa.gg/information-hub/the-law/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Guinea",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "DPA Laws and Ordinances Page",
+    "law_url": "https://www.arpt.gov.gn/lois-et-ordonnances/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Guinea-Bissau",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Guyana",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act No. 18/2023",
+    "law_url": "https://www.parliament.gov.gy/publications/acts-of-parliament/dataprotectionact18of2023",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Haiti",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Heard Island and McDonald Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Honduras",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Hong Kong",
+    "regulator_name": "Office of the Privacy Commissioner for Personal Data (PCPD)",
+    "regulator_url": "https://www.pcpd.org.hk/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.pcpd.org.hk/english/data_privacy_law/ordinance_at_a_Glance/ordinance.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Hungary",
+    "regulator_name": "Nemzeti Adatvédelmi és Információszabadság Hatóság",
+    "regulator_url": "https://www.naih.hu/",
+    "law_name": "Act CXII of 2011 on the Right to Informational Self-determination and on the Freedom of Information, as amended by Act XXXVIII of 2018",
+    "law_url": "https://www.naih.hu/files/Privacy_Act-CXII-of-2011_EN_201310.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Iceland",
+    "regulator_name": "Personu Vernd",
+    "regulator_url": "https://www.personuvernd.is/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.personuvernd.is/log-og-reglur/log-um-personuvernd",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "India",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Digital Personal Data Protection Act, 2023 (\"DPDPA\")",
+    "law_url": "https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Indonesia",
+    "regulator_name": "Minister of Communications and Digital",
+    "regulator_url": "https://www.komdigi.go.id/",
+    "law_name": "Law No. 27 of 2022 regarding Personal Data Protection (\"PDPL\")",
+    "law_url": "https://peraturan.bpk.go.id/Home/Download/224884/UU%20Nomor%2027%20Tahun%202022.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Iran (Islamic Republic of)",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Iraq",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Ireland",
+    "regulator_name": "Data Protection Commission",
+    "regulator_url": "https://www.dataprotection.ie/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.dataprotection.ie/en/who-we-are/data-protection-legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Isle of Man",
+    "regulator_name": "Barrantagh Fysseree",
+    "regulator_url": "https://www.inforights.im/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.inforights.im/organisations/data-protection-law-2018/legislation-and-case-law/the-legislation/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Israel",
+    "regulator_name": "Privacy Protection Authority",
+    "regulator_url": "https://www.gov.il/en/departments/the_privacy_protection_authority/govil-landing-page",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.gov.il/en/departments/legalInfo/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Italy",
+    "regulator_name": "Garante per la protezione dei dati personali",
+    "regulator_url": "https://www.garanteprivacy.it/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.garanteprivacy.it/codice",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Jamaica",
+    "regulator_name": "Office of the Information Commissioner",
+    "regulator_url": "https://www.mset.gov.jm/oic/",
+    "law_name": "Data Protection Act, 2020",
+    "law_url": "https://japarliament.gov.jm/attachments/article/339/The%20Data%20Protection%20Act,%202020.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Japan",
+    "regulator_name": "Personal Information Protection Commission",
+    "regulator_url": "https://www.ppc.go.jp/en/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.ppc.go.jp/en/legal/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Jersey",
+    "regulator_name": "Jersey Office of the Information Commissioner",
+    "regulator_url": "https://jerseyoic.org/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://jerseyoic.org/dp-foi-laws/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Jordan",
+    "regulator_name": "Personal Data Protection Directorate",
+    "regulator_url": "https://www.modee.gov.jo/EN/Pages/False",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.modee.gov.jo/Ar/List/%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D8%A7%D8%AA_%D9%88%D8%A7%D9%84%D8%B3%D9%8A%D8%A7%D8%B3%D8%A7%D8%AA",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kazakhstan",
+    "regulator_name": "Ministry of Artificial Intelligence and Digital Development",
+    "regulator_url": "https://www.gov.kz/memleket/entities/mdai",
+    "law_name": "Law No. 94-V on Personal Data and its Protection of 21 May 2013",
+    "law_url": "https://adilet.zan.kz/eng/docs/Z1300000094#:~:text=The%20Law%20of%20the%20Republic,94%2DV.&text=This%20Law%20regulates%20the%20public,and%20protection%20of%20personal%20data.",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kenya",
+    "regulator_name": "Office of the Data Protection Commissioner",
+    "regulator_url": "https://www.odpc.go.ke/",
+    "law_name": "Data Protection Act of 2019 and the Data Protection Regulations of 2021",
+    "law_url": "http://kenyalaw.org/kl/fileadmin/pdfdownloads/Acts/2019/TheDataProtectionAct__No24of2019.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kiribati",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "An Act to Provide and Regulate the Processing of Personal Data (Draft Bill)",
+    "law_url": "https://www.mict.gov.ki/sites/default/files/publications/Data%20Protection%20Bill%202025.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kosovo",
+    "regulator_name": "Agjencia për Informim dhe Privatësi",
+    "regulator_url": "https://aip.rks-gov.net/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://aip.rks-gov.net/mbrojtja-e-te-dhenave-personale/mbrojtja-e-te-dhenave-personale/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kuwait",
+    "regulator_name": "Communication and Information Technology Regulatory Authority",
+    "regulator_url": "https://www.citra.gov.kw/sites/En/Pages/Home.aspx",
+    "law_name": "Data Privacy Protection Regulation",
+    "law_url": "https://www.citra.gov.kw/sites/en/LegalReferences/Data_Privacy_Protection_Regulation.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Kyrgyzstan",
+    "regulator_name": "Personal Data Protection Agency under the Cabinet of Ministers of the Kyrgyz Republic",
+    "regulator_url": "https://dpa.gov.kg/ky",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://dpa.gov.kg/en/npa/category/npa_localacts",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Lao People’s Democratic Republic",
+    "regulator_name": "Ministry of Technology and Communication",
+    "regulator_url": "https://mtc.gov.la/#",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://mtc.gov.la/index.php?r=site/contents&id=4",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Latvia",
+    "regulator_name": "Datu Valsts Inspekcija",
+    "regulator_url": "https://www.dvi.gov.lv/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.dvi.gov.lv/lv/nacionalie-normativie-akti",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Lebanon",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law No. 81 of 10 October 2018 on Electronic Transaction and Personal Data",
+    "law_url": "https://www.bdl.gov.lb/CB%20Com/Laws%20And%20Regulations/Laws/Law_81_AR%C2%A72572_1.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Lesotho",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act of 2011",
+    "law_url": "https://commons.laws.africa/akn/ls/act/2012/5/eng@2012-02-22.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Liberia",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Libya",
+    "regulator_name": "National Information Security and Safety Authority",
+    "regulator_url": "https://nissa.gov.ly/en/",
+    "law_name": "Law No. 6 of 2022 concerning Electronic Transactions",
+    "law_url": "https://lawsociety.ly/en/legislation/law-no-6-of-2022-concerning-electronic-transactions/#Chapter_Seven_Protection_of_Personal_Data",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Liechtenstein",
+    "regulator_name": "Datenschutzstelle Fürstentum Liechtenstein",
+    "regulator_url": "https://www.datenschutzstelle.li/",
+    "law_name": "DPA National Laws Page",
+    "law_url": "https://www.datenschutzstelle.li/rechtsgrundlagen/nationale-gesetze",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Lithuania",
+    "regulator_name": "Valstybinė duomenų apsaugos inspekcija",
+    "regulator_url": "https://vdai.lrv.lt/en/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://vdai.lrv.lt/en/legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Luxembourg",
+    "regulator_name": "Commission Nationale Pour La Protection Des Données (CNPD)",
+    "regulator_url": "https://cnpd.public.lu/fr.html",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://cnpd.public.lu/en/legislation.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Macau",
+    "regulator_name": "Personal Data Protection Bureau",
+    "regulator_url": "https://www.dspdp.gov.mo/",
+    "law_name": "Personal Data Protection Act",
+    "law_url": "https://www.dspdp.gov.mo/file/Laws%20and%20Regulations/%E5%80%8B%E4%BA%BA%E8%B3%87%E6%96%99%E4%BF%9D%E8%AD%B7%E6%B3%95_EN.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Madagascar",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law No. 2014-038 on the Protection of Personal Data",
+    "law_url": "http://www.afapdp.org/wp-content/uploads/2015/01/Madagascar-L-2014-038-du-09-01-15-sur-la-protection-des-donn%C3%A9es-%C3%A0-caract%C3%A8re-personnel.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Malawi",
+    "regulator_name": "Malawi Communications Regulatory Authority (MACRA)",
+    "regulator_url": "https://macra.mw/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://macra.mw/rules-regulations/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Malaysia",
+    "regulator_name": "Jabatan Perlindungan Data Peribadi",
+    "regulator_url": "https://www.pdp.gov.my/jpdpv2/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.pdp.gov.my/ppdpv1/en/akta/pdp-act-2010-en/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Maldives",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Mali",
+    "regulator_name": "Autorité de Protection des Données à caractère Personnel du Mali (APDP)",
+    "regulator_url": "https://apdp.ml/",
+    "law_name": "DPA Texts and Decisions",
+    "law_url": "https://apdp.ml/textes-et-decisions",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Malta",
+    "regulator_name": "Office of the Information and Data Protection Commissioner",
+    "regulator_url": "https://idpc.org.mt/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://idpc.org.mt/for-organisations/legislation/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Marshall Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Martinique",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mauritania",
+    "regulator_name": "Personal Data Protection Authority",
+    "regulator_url": "https://www.apd.mr/fr/",
+    "law_name": "Law No. 2017-020",
+    "law_url": "https://mtnima.gov.mr/sites/default/files/imp1fr-2.pdfhttps://www.apd.mr/fr/lois/DPA%20Legislation%20Page",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mauritius",
+    "regulator_name": "Data Protection Office",
+    "regulator_url": "https://dataprotection.govmu.org/",
+    "law_name": "The Data Protection Act 2017",
+    "law_url": "https://dataprotection.govmu.org/Documents/DPA_2017_updated.pdf?csf=1&e=0rlrffhttps://dataprotection.govmu.org/Pages/The%20Law/Data-Protection-Act-2017.aspx",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mayotte",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mexico",
+    "regulator_name": "El Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI)",
+    "regulator_url": "https://home.inai.org.mx/",
+    "law_name": "DPA Regulations Page",
+    "law_url": "https://home.inai.org.mx/?page_id=1870&mat=p",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Micronesia (Federated States of)",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Monaco",
+    "regulator_name": "Personal Data Protection Authority (APDP)",
+    "regulator_url": "https://apdp.mc/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.ccin.mc/en/legislation/laws/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mongolia",
+    "regulator_name": "Ministry of Digital Development and Communications",
+    "regulator_url": "https://mddc.gov.mn/eng/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://mddc.gov.mn/eng/%d1%85%d1%83%d1%83%d0%bb%d1%8c-%d1%8d%d1%80%d1%85-%d0%b7%d2%af%d0%b9/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Montenegro",
+    "regulator_name": "Agencija za zaštitu ličnih podataka",
+    "regulator_url": "http://www.azlp.me/en/home",
+    "law_name": "DPA Regulations Page",
+    "law_url": "https://www.azlp.me/en/regulations",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Montserrat",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Morocco",
+    "regulator_name": "General Directorate of Information Systems Security",
+    "regulator_url": "https://www.dgssi.gov.ma/en",
+    "law_name": "Law No. 09-08",
+    "law_url": "https://www.cndp.ma/loi-09-08/https://www.dgssi.gov.ma/sites/default/files/legislative/brochure/2024-07/law%2009-08%20in%20french.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Mozambique",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Myanmar",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Namibia",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Bill, 2021 (Draft)",
+    "law_url": "https://action-namibia.org/wp-content/uploads/2022/10/Data-Protection-Draft-Bill-March-2022....pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Nauru",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Nepal",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "The Privacy Act, 2075 (2018)",
+    "law_url": "https://www.lawcommission.gov.np/en/wp-content/uploads/2019/07/The-Privacy-Act-2075-2018.pdfhttps://lawcommission.gov.np/content/12261/12261-the-privacy-act-2075/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Netherlands (Kingdom of the)",
+    "regulator_name": "Autoriteit Persoonsgegevens",
+    "regulator_url": "https://autoriteitpersoonsgegevens.nl/en",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "New Caledonia",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "New Zealand",
+    "regulator_name": "Office of the Privacy Commissioner of New Zealand (OPC)",
+    "regulator_url": "https://www.privacy.org.nz/",
+    "law_name": "Privacy Act 2020",
+    "law_url": "https://www.privacy.org.nz/privacy-act-2020/privacy-principles/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Nicaragua",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law on Personal Data Protection No. 787",
+    "law_url": "http://legislacion.asamblea.gob.ni/normaweb.nsf/9e314815a08d4a6206257265005d21f9/e5d37e9b4827fc06062579ed0076ce1d",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Niger",
+    "regulator_name": "La Haute Autorité de Protection des Données à caractère Personnel (HAPDP)",
+    "regulator_url": "https://www.hapdp.ne/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.hapdp.ne/legislation-nationale",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Nigeria",
+    "regulator_name": "Nigeria Data Protection Commission",
+    "regulator_url": "https://ndpc.gov.ng/",
+    "law_name": "DPA Legislation and Resources Page",
+    "law_url": "https://ndpc.gov.ng/Home/resources",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Niue",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "North Macedonia",
+    "regulator_name": "Personal Data Protection Agency",
+    "regulator_url": "https://azlp.mk/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://azlp.mk/azlp/propisi-i-dokumenti/domasni_propisi/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Northern Mariana Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Norway",
+    "regulator_name": "Datatilsynet",
+    "regulator_url": "https://www.datatilsynet.no/en/",
+    "law_name": "DPA Regulations Page",
+    "law_url": "https://www.datatilsynet.no/en/regulations-and-tools/regulations/https://www.datatilsynet.no/en/regulations-and-tools/regulations/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Oman",
+    "regulator_name": "Ministry of Transport, Communications and Information Technology",
+    "regulator_url": "https://www.mtcit.gov.om/ITAPortal/ITA/default.aspx",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.mtcit.gov.om/ITAPortal/Pages/Page.aspx?NID=1980&PID=7491&LID=299",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Pakistan",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Palau",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Palestinian Territories",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Panama",
+    "regulator_name": "Autoridad Nacional de Transparencia y Acceso a la Información (ANTAI)",
+    "regulator_url": "http://www.antai.gob.pa/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.antai.gob.pa/legislacion/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Papua New Guinea",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Paraguay",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Personal Data Protection Bill (Draft)",
+    "law_url": "https://www.tedic.org/wp-content/uploads/2024/07/Ley-PdP-Ultima-version-Coalicion-julio-2024.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Peru",
+    "regulator_name": "Autoridad Nacional de Protección de Datos Personales (ANDP)",
+    "regulator_url": "https://www.gob.pe/anpd",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.gob.pe/institucion/anpd/normas-legales",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Philippines",
+    "regulator_name": "National Privacy Commission",
+    "regulator_url": "https://privacy.gov.ph/",
+    "law_name": "Data Privacy Act",
+    "law_url": "https://privacy.gov.ph/the-data-privacy-act-and-its-irr/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Poland",
+    "regulator_name": "Urzad Ochrony Danych Osobowych",
+    "regulator_url": "https://uodo.gov.pl/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://uodo.gov.pl/en/480",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Portugal",
+    "regulator_name": "Comissão Nacional de Proteção de Dados",
+    "regulator_url": "https://www.cnpd.pt/",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Puerto Rico",
+    "regulator_name": "Departamento de Asuntos del Consumidor (DACO)",
+    "regulator_url": "https://www.daco.pr.gov/",
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Qatar",
+    "regulator_name": "National Cyber Governance and Assurance Affairs",
+    "regulator_url": "https://assurance.ncsa.gov.qa/en",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://assurance.ncsa.gov.qa/en/library/privacy?csrt=17356728339519142158",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Republic of Korea",
+    "regulator_name": "Personal Information Protection Commission (PIPC)",
+    "regulator_url": "https://www.pipc.go.kr/eng/index.do",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.pipc.go.kr/eng/user/lgp/law/lawsRegulations.do",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Republic of Moldova",
+    "regulator_name": "Centrul Naţional pentru Protecţia Datelor cu Caracter Personal al Republica Moldova (CNPDCP)",
+    "regulator_url": "https://datepersonale.md/en/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://datepersonale.md/en/legislation/national-legislation/law/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Republic of the Congo",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law 29-2019 on the Protection of Personal Data",
+    "law_url": "https://www.sgg.cg/JO/2019/congo-jo-2019-45.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Réunion",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Romania",
+    "regulator_name": "Autoritatea Naţională de Supraveghere a Prelucrării Datelor cu Caracter Personal",
+    "regulator_url": "http://www.dataprotection.ro/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.dataprotection.ro/?page=legislatie_primara&lang=ro",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Russian Federation",
+    "regulator_name": "Roskomnadzor",
+    "regulator_url": "https://rkn.gov.ru/",
+    "law_name": "Federal Law of 27 July 2006 No. 152-FZ on Personal Data",
+    "law_url": "https://base.garant.ru/512148567/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Rwanda",
+    "regulator_name": "Data Protection Office",
+    "regulator_url": "https://dpo.gov.rw/",
+    "law_name": "Law No 058/2021 - Protection of Personal Data and Privacy Law",
+    "law_url": "https://dpo.gov.rw/dpp-law/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Barthélemy",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Kitts and Nevis",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act 2018 (not yet in force.)",
+    "law_url": "https://www.theinformationcollective.com/dpl/st-kitts-data-protection-act",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Lucia",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Privacy and Data Protection Act",
+    "law_url": "https://www.govt.lc/privacy-data-prot",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Martin",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Pierre and Miquelon",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saint Vincent and the Grenadines",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Samoa",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "San Marino",
+    "regulator_name": "Autorità Garante per la Protezione dei Dati Personali",
+    "regulator_url": "https://garanteprivacy.sm/pub1/garante/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://garanteprivacy.sm/pub1/garante/normativa-e-regolamenti.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "São Tomé and Príncipe",
+    "regulator_name": "Agência Nacional de Protecção de Dados Pessoais (ANPDP)",
+    "regulator_url": "https://www.anpdp.st/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.anpdp.st/https://anpdp.st/#/pt-PT/0/EXT/form/EXTMC6/SHOW",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Saudi Arabia",
+    "regulator_name": "Saudi Data & Artificial Intelligence Authority",
+    "regulator_url": "https://sdaia.gov.sa/ar/default.aspx",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://sdaia.gov.sa/en/SDAIA/about/Pages/RegulationsAndPolicies.aspx",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Senegal",
+    "regulator_name": "Commission de Protection de Donnees Personelles (CDP)",
+    "regulator_url": "https://www.cdp.sn/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.cdp.sn/legislation/textes-legislatifs",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Serbia",
+    "regulator_name": "Commissioner for Information of Public Importance and Personal Data Protection (Poverenik)",
+    "regulator_url": "https://www.poverenik.rs/en/home.html",
+    "law_name": "Law on Protection of Personal Data",
+    "law_url": "https://www.poverenik.rs/images/stories/dokumentacija-nova/zakon-o-zastiti-podataka-o-licnosti_en.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Seychelles",
+    "regulator_name": "Information Commission of Seychelles",
+    "regulator_url": "https://www.infocom.sc/",
+    "law_name": "Data Protection Act, 2023",
+    "law_url": "https://www.gazette.sc/sites/default/files/2023-12/Act%2024%20-%202023%20-%20Data%20Protection%20Act%202023.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Sierra Leone",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Singapore",
+    "regulator_name": "Personal Data Protection Commission",
+    "regulator_url": "https://www.pdpc.gov.sg/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.pdpc.gov.sg/overview-of-pdpa/the-legislation",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Sint Maarten",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "National Ordinance for the Protection of Personal Data",
+    "law_url": "https://www.dataguidance.com/sites/default/files/05.11.20_sint_maarten_data_protection_act.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Slovakia",
+    "regulator_name": "Úrad na ochranu osobných údajov Slovenskej republiky",
+    "regulator_url": "https://dataprotection.gov.sk/sk/urad/o-nas/?csrt=1461281679238818619",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://dataprotection.gov.sk/sk/legislativa-metodiky/legislativa-judikatura/?csrt=1461281679238818619",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Slovenia",
+    "regulator_name": "Informacijski pooblaščenec",
+    "regulator_url": "https://www.ip-rs.si/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.ip-rs.si/zakonodaja/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Solomon Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Somalia",
+    "regulator_name": "Somali Data Protection Authority (DPA)",
+    "regulator_url": "https://dpa.gov.so/",
+    "law_name": "Law No. 005 of 2023 Data Protection Act",
+    "law_url": "https://moct.gov.so/en/wp-content/uploads/2023/07/Somalia-Data-Protection-Act-2.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "South Africa",
+    "regulator_name": "Information Regulator",
+    "regulator_url": "https://inforegulator.org.za/",
+    "law_name": "The Protection of Personal Information Act, (Act 4 of 2013)",
+    "law_url": "https://www.gov.za/documents/protection-personal-information-act",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "South Georgia and the South Sandwich Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "South Sudan",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Spain",
+    "regulator_name": "Agencia Española de Protección de Datos (AEPD)",
+    "regulator_url": "http://www.agpd.es/portalwebAGPD/index-ides-idphp.php",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.aepd.es/es/informes-y-resoluciones/normativa-y-circulares",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Sri Lanka",
+    "regulator_name": "The Data Protection Authority of Sri Lanka",
+    "regulator_url": "https://www.dpa.gov.lk/",
+    "law_name": "Personal Data Protection Act No. 9 of 2022",
+    "law_url": "https://www.parliament.lk/uploads/acts/gbills/english/6242.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Sudan",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Suriname",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Svalbard and Jan Mayen",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Sweden",
+    "regulator_name": "Integritetsskyddsmyndigheten (IMY)",
+    "regulator_url": "https://www.imy.se/",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Switzerland",
+    "regulator_name": "Préposé fédéral à la protection des données et à la transparence (PFPDT)",
+    "regulator_url": "https://www.edoeb.admin.ch/edoeb/en/home.html",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.edoeb.admin.ch/edoeb/en/home/datenschutz/grundlagen.html",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Syrian Arab Republic",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Taiwan",
+    "regulator_name": "National Development Council",
+    "regulator_url": "https://www.ndc.gov.tw/en/Content_List.aspx?n=F01BA39CDAD39B01",
+    "law_name": "Personal Data Protection Act",
+    "law_url": "https://theme.ndc.gov.tw/lawout/EngLawContent.aspx?lan=E&id=89",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Tajikistan",
+    "regulator_name": "Communication Service under the Government of the Republic of Tajikistan",
+    "regulator_url": "https://khadamotialoqa.tj/en/main/https://cs.gov.tj/en/main/",
+    "law_name": "Law of 3 August 2018 No.1537 on Protection of Personal Data",
+    "law_url": "https://cis-legislation.com/document.fwx?rgn=108952",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Thailand",
+    "regulator_name": "Personal Data Protection Committee",
+    "regulator_url": "https://www.mdes.go.th/mission/82",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.mdes.go.th/mission/detail/2319-%E0%B8%81%E0%B8%8E%E0%B8%AB%E0%B8%A1%E0%B8%B2%E0%B8%A2%E0%B8%84%E0%B8%B8%E0%B9%89%E0%B8%A1%E0%B8%84%E0%B8%A3%E0%B8%AD%E0%B8%87%E0%B8%82%E0%B9%89%E0%B8%AD%E0%B8%A1%E0%B8%B9%E0%B8%A5%E0%B8%AA%E0%B9%88%E0%B8%A7%E0%B8%99%E0%B8%9A%E0%B8%B8%E0%B8%84%E0%B8%84%E0%B8%A5",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Timor-Leste",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Togo",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Law No. 2019-014",
+    "law_url": "https://jo.gouv.tg/sites/default/files/JO/JOS_29_10_2019-64E%20ANNEE-N%C2%B026%20TER.pdf#page=1",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Tonga",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Trinidad and Tobago",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Data Protection Act, 2011",
+    "law_url": "https://rgd.legalaffairs.gov.tt/laws2/Alphabetical_List/lawspdfs/22.04.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Tunisia",
+    "regulator_name": "Instance Nationale De Protection Des Données Personnelles (INPDP)",
+    "regulator_url": "https://www.inpdp.tn/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.inpdp.tn/textes.xhtml",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Türkiye",
+    "regulator_name": "Kişisel Verileri Koruma Kurumu",
+    "regulator_url": "https://www.kvkk.gov.tr/",
+    "law_name": "Law on Protection of Personal Data No. 6698",
+    "law_url": "https://www.kvkk.gov.tr/Icerik/6649/Personal-Data-Protection-Law",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Turkmenistan",
+    "regulator_name": "Regulator - The Cabinet of Ministers of Turkmenistan",
+    "regulator_url": "https://www.turkmenistan.gov.tm/tk",
+    "law_name": "Law of Turkmenistan No.519-V ‘On Information about Private Life and its Protection’ (the ‘Data Protection Law’)",
+    "law_url": "https://natlex.ilo.org/dyn/natlex2/r/natlex/fe/details?p3_isn=107056",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Turks and Caicos Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Uganda",
+    "regulator_name": "Personal Data Protection Office",
+    "regulator_url": "https://pdpo.go.ug/home",
+    "law_name": "Data Protection and Privacy Act 2019",
+    "law_url": "https://ict.go.ug/wp-content/uploads/2019/03/Data-Protection-and-Privacy-Act-2019.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Ukraine",
+    "regulator_name": "The Ukraine Parliamentary Commissioner for Human Rights",
+    "regulator_url": "https://ombudsman.gov.ua/en/zahist-personalnih-danih",
+    "law_name": "Personal Data Protection Law",
+    "law_url": "https://zakon.rada.gov.ua/laws/show/en/2297-17#Text",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "United Arab Emirates",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": "Government Privacy Legislation Page",
+    "law_url": "https://u.ae/en/about-the-uae/digital-uae/data/data-protection-laws",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "United Kingdom of Great Britain and Northern Ireland",
+    "regulator_name": "Information Commissioner's Office",
+    "regulator_url": "https://ico.org.uk/",
+    "law_name": "Data Protection Act 2018",
+    "law_url": "https://www.legislation.gov.uk/ukpga/2018/12/contents",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "United Republic of Tanzania",
+    "regulator_name": "Utangulizi Tume Ya Ulinzi Wa Taarifa Binafsi",
+    "regulator_url": "https://www.pdpc.go.tz/en/#",
+    "law_name": "The Personal Data Protection Act, 2022",
+    "law_url": "https://www.pdpc.go.tz/media/media/THE_PERSONAL_DATA_PROTECTION_ACT.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "United States of America",
+    "regulator_name": "Federal Trade Commission",
+    "regulator_url": "https://www.ftc.gov/",
+    "law_name": "US Federal Privacy Legislation Tracker",
+    "law_url": "https://iapp.org/resources/article/us-federal-privacy-legislation-tracker/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Uruguay",
+    "regulator_name": "Unidad Reguladora y de Control de Datos Personales",
+    "regulator_url": "https://www.gub.uy/unidad-reguladora-control-datos-personales/",
+    "law_name": "Law No. 18.331 on the Protection of Personal Data and the Habeas Data Action 2008",
+    "law_url": "https://www.impo.com.uy/bases/leyes/18331-2008",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "US Virgin Islands",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Vanuatu",
+    "regulator_name": "CERT Vanuatu",
+    "regulator_url": "https://cert.gov.vu/index.php",
+    "law_name": "Data Protection and Privacy Act No. 13 of 2024",
+    "law_url": "https://digital.gov.vu/images/Docs/legislation/Data_Protection_and_Privacy_Act_No13_of_2024-EN.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Vatican City",
+    "regulator_name": "The Pontifical Commission",
+    "regulator_url": "https://www.vaticanstate.va/en/",
+    "law_name": "Regolamento Generale sulla protezione dei Dati personali",
+    "law_url": "https://www.vaticanstate.va/phocadownload/leggi-decreti/normativa-generale/N.%20DCLVII.pdf",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Venezuela, Bolivarian Republic of",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Vietnam",
+    "regulator_name": "Ministry of Public Security",
+    "regulator_url": "https://en.bocongan.gov.vn/",
+    "law_name": "Law on Personal Data Protection (PDPL)",
+    "law_url": "https://thuvienphapluat.vn/van-ban/EN/Cong-nghe-thong-tin/Decree-No-13-2023-ND-CP-dated-April-17-2023-on-protection-of-personal-data/564343/tieng-anh.aspx",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Wallis and Futuna",
+    "regulator_name": "Comission nationale de l'informatique et des libertes",
+    "regulator_url": "https://www.cnil.fr/en/home",
+    "law_name": "GDPR",
+    "law_url": "https://gdpr-info.eu/",
+    "has_no_known_legislation": false
+  },
+  {
+    "country_name": "Western Sahara",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Yemen",
+    "regulator_name": null,
+    "regulator_url": null,
+    "law_name": null,
+    "law_url": null,
+    "has_no_known_legislation": true
+  },
+  {
+    "country_name": "Zimbabwe",
+    "regulator_name": "Postal and Telecommunications Regulatory Authority of Zimbabwe",
+    "regulator_url": "https://www.potraz.gov.zw/",
+    "law_name": "DPA Legislation Page",
+    "law_url": "https://www.potraz.gov.zw/?page_id=1678",
+    "has_no_known_legislation": false
+  }
+]

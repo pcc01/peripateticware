@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "description": "Country -> official regulator/law reference, used by privacy_discovery_service.py as a Tier-2 lookup (after the rich iapp_privacy_crawler.py adapters, before falling back to general search+recall synthesis). Hand-curated ONCE from publicly known official government/regulator sites, using IAPP's Global Privacy Directory (https://iapp.org/resources/global-privacy-directory) as a one-time reference for which jurisdictions to prioritize -- this file is a static reference the app reads locally; nothing in this codebase fetches IAPP itself on an ongoing basis. All fetching this file drives targets the official URLs listed below, not IAPP.",
+    "coverage": "Starting set only -- the ~24 richer adapters in iapp_privacy_crawler.py take priority and are not duplicated here. Countries not covered fall through to general search+AI-recall discovery (privacy_discovery_service.discover_and_store_jurisdiction), which is expected and safe -- those results are flagged is_verified=false for review.",
+    "last_curated": "2026-07-25",
+    "needs_periodic_human_review": true,
+    "superseded_by": "This file was the one-time seed for the privacy_source_registry DB table (migration 20260725_privacy_source_registry.py) -- privacy_discovery_service.py's Tier-2 lookup now queries that table at runtime, not this file. Kept here as the historical record of the original 22-country seed; grow the DB table directly (batched curation) rather than re-editing this file."
+  },
+  "sources": {
+    "JP": {"regulator_name": "Personal Information Protection Commission (Japan)", "framework": "appi", "source_url": "https://www.ppc.go.jp/en/"},
+    "KR": {"regulator_name": "Personal Information Protection Commission (South Korea)", "framework": "pipa", "source_url": "https://www.pipc.go.kr/eng/"},
+    "NZ": {"regulator_name": "Office of the Privacy Commissioner (New Zealand)", "framework": "privacy_act_nz", "source_url": "https://www.privacy.org.nz/"},
+    "CH": {"regulator_name": "Federal Data Protection and Information Commissioner (Switzerland)", "framework": "fadp", "source_url": "https://www.edoeb.admin.ch/en"},
+    "IL": {"regulator_name": "Privacy Protection Authority (Israel)", "framework": "ppl_il", "source_url": "https://www.gov.il/en/departments/the_privacy_protection_authority"},
+    "CO": {"regulator_name": "Superintendencia de Industria y Comercio (Colombia)", "framework": "ley_1581_co", "source_url": "https://www.sic.gov.co/proteccion-de-datos-personales"},
+    "IN": {"regulator_name": "Ministry of Electronics and IT (India) -- Digital Personal Data Protection Act", "framework": "dpdp_in", "source_url": "https://www.meity.gov.in/data-protection-framework"},
+    "TH": {"regulator_name": "Personal Data Protection Committee (Thailand)", "framework": "pdpa_th", "source_url": "https://www.pdpc.or.th/en/"},
+    "PH": {"regulator_name": "National Privacy Commission (Philippines)", "framework": "dpa_ph", "source_url": "https://privacy.gov.ph/"},
+    "ID": {"regulator_name": "Ministry of Communication and Informatics (Indonesia) -- Personal Data Protection Law", "framework": "uu_pdp_id", "source_url": "https://www.kominfo.go.id/"},
+    "TR": {"regulator_name": "Kişisel Verileri Koruma Kurumu / Personal Data Protection Authority (Türkiye)", "framework": "kvkk_tr", "source_url": "https://www.kvkk.gov.tr/"},
+    "AE": {"regulator_name": "UAE Data Office", "framework": "uae_dp", "source_url": "https://u.ae/en/about-the-uae/digital-uae/data/data-protection"},
+    "NG": {"regulator_name": "Nigeria Data Protection Commission", "framework": "ndpa_ng", "source_url": "https://ndpc.gov.ng/"},
+    "KE": {"regulator_name": "Office of the Data Protection Commissioner (Kenya)", "framework": "dpa_ke", "source_url": "https://www.odpc.go.ke/"},
+    "CL": {"regulator_name": "Consejo para la Transparencia / data protection reform (Chile)", "framework": "ley_19628_cl", "source_url": "https://www.consejotransparencia.cl/"},
+    "PE": {"regulator_name": "Autoridad Nacional de Protección de Datos Personales (Peru)", "framework": "ley_29733_pe", "source_url": "https://www.gob.pe/anpd"},
+    "UY": {"regulator_name": "Unidad Reguladora y de Control de Datos Personales (Uruguay)", "framework": "ley_18331_uy", "source_url": "https://www.gub.uy/unidad-reguladora-control-datos-personales/"},
+    "CN": {"regulator_name": "Cyberspace Administration of China -- Personal Information Protection Law", "framework": "pipl_cn", "source_url": "http://www.cac.gov.cn/"},
+    "VN": {"regulator_name": "Ministry of Public Security (Vietnam) -- Personal Data Protection Decree", "framework": "pdpd_vn", "source_url": "https://mps.gov.vn/"},
+    "SA": {"regulator_name": "Saudi Data and Artificial Intelligence Authority (SDAIA) -- Personal Data Protection Law", "framework": "pdpl_sa", "source_url": "https://sdaia.gov.sa/en"},
+    "QA": {"regulator_name": "National Cyber Security Agency (Qatar) -- Personal Data Privacy Protection Law", "framework": "pdppl_qa", "source_url": "https://www.ncsa.gov.qa/en"},
+    "EG": {"regulator_name": "Personal Data Protection Center (Egypt)", "framework": "pdpl_eg", "source_url": "https://pdpc.gov.eg/"}
+  }
+}

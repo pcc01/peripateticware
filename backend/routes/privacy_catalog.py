@@ -189,7 +189,19 @@ async def assign_regulation(
     db:           AsyncSession   = Depends(get_db),
     current_user: User           = Depends(get_current_user),
 ):
-    """Assign a catalog regulation to the current user (or their org)."""
+    """
+    Assign a catalog regulation to the current user (or their org).
+
+    Beyond the existing catalog-bookkeeping write (school_regulation_assignments /
+    user_regulation_assignments — kept as-is, still useful for browsing/tracking),
+    this now ALSO merges the entry's jurisdiction_code into the org's real
+    organizations.privacy_jurisdiction_ids — the field actual enforcement reads —
+    so assigning here has a real effect, not just a cosmetic one. Institutional-org
+    members who aren't the owner/admin still get the catalog bookkeeping (their
+    personal reading-list view), but the enforcement-affecting merge is skipped
+    with a note, matching the same "your admin controls this" rule the web
+    /jurisdictions/resolve endpoint enforces.
+    """
     _require_admin_or_teacher(current_user)
     org_id = _resolve_org_id(current_user)
     try:
@@ -202,6 +214,25 @@ async def assign_regulation(
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    result["enforcement_updated"] = False
+    if org_id:
+        from services.privacy_jurisdiction_resolver import is_org_owner, is_institutional_org, merge_jurisdiction_ids
+
+        role_upper = (current_user.role or "").upper()
+        allowed = role_upper == "ADMIN" or await is_org_owner(db, org_id, str(current_user.id))
+        if allowed:
+            entry = await privacy_catalog_service.get_catalog_entry(db, catalog_id)
+            if entry and entry.get("jurisdiction_code"):
+                await merge_jurisdiction_ids(db, org_id, {entry["jurisdiction_code"]})
+                await db.commit()
+                result["enforcement_updated"] = True
+        elif await is_institutional_org(db, org_id):
+            result["note"] = (
+                "Saved to your personal reading list. Your school administrator "
+                "manages which protections actually apply to your organization."
+            )
+
     return result
 
 

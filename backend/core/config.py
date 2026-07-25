@@ -147,6 +147,12 @@ class Settings(BaseSettings):
     IAPP_CRAWLER_SCHEDULE: str = os.getenv("IAPP_CRAWLER_SCHEDULE", "0 2 * * 0")
     IAPP_CRAWLER_SOURCES_STR: str = os.getenv("IAPP_CRAWLER_SOURCES", "iapp,gdpr.eu,ico.org.uk")
 
+    # ── Privacy jurisdiction catalog auto-renew (self-service resolver) ─────
+    # Off by default -- opt in once the discovery pipeline's AI cost/accuracy
+    # profile has been reviewed. Default cron: 1st of month, 03:00 UTC.
+    PRIVACY_AUTO_RENEW_ENABLED: bool = os.getenv("PRIVACY_AUTO_RENEW_ENABLED", "false").lower() == "true"
+    PRIVACY_AUTO_RENEW_SCHEDULE: str = os.getenv("PRIVACY_AUTO_RENEW_SCHEDULE", "0 3 1 * *")
+
     # ── Phase 5: Location Service ─────────────────────────────────────────────
     LOCATION_BACKEND_STR: str = os.getenv("LOCATION_BACKEND", "openstreetmap,nominatim,wikidata,wikipedia")
     GOOGLE_MAPS_API_KEY: str = os.getenv("GOOGLE_MAPS_API_KEY", "")

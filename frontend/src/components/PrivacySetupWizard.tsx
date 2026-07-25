@@ -15,29 +15,21 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '@/config/api';
 import { useTranslation } from 'react-i18next';
+import { EU_COUNTRIES, US_STATES, SUBDIVISION_SUPPORT, toSubdivisionCode } from '../constants/geo';
 
-const API = import.meta.env.VITE_API_URL || '/api/v1';
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-
-const EU_COUNTRIES = [
-  'AT','BE','BG','CY','CZ','DE','DK','EE','ES','FI',
-  'FR','GR','HR','HU','IE','IT','LT','LU','LV','MT',
-  'NL','PL','PT','RO','SE','SI','SK',
-];
-
-const US_STATES = [
-  'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
-  'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
-  'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
-  'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada',
-  'New Hampshire','New Jersey','New Mexico','New York','North Carolina',
-  'North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island',
-  'South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont',
-  'Virginia','Washington','West Virginia','Wisconsin','Wyoming',
-];
+// Human-readable display metadata for resolved jurisdiction_ids, mirroring
+// PrivacyConfirmationPage.tsx's JURISDICTION_META — kept small/duplicated
+// rather than shared, since this wizard only needs a fallback label, not the
+// full descriptive copy that page shows post-signup.
+const JURISDICTION_LABELS: Record<string, { label: string; desc: string; color: string }> = {
+  ferpa_us:        { label: 'FERPA', desc: 'Family Educational Rights and Privacy Act — US school records', color: '#0369a1' },
+  coppa_us:        { label: 'COPPA', desc: "Children's Online Privacy Protection Act — applies to under-13", color: '#7c3aed' },
+  ccpa_california: { label: 'CCPA',  desc: 'California Consumer Privacy Act — applies to California residents', color: '#b45309' },
+  gdpr_eu:         { label: 'GDPR',  desc: 'EU General Data Protection Regulation — applies to EU/EEA students', color: '#047857' },
+};
+const FALLBACK_JURISDICTION_COLOR = '#4b5563';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -57,15 +49,6 @@ interface Props {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-const fw = (label: string, desc: string, color: string) => ({ label, desc, color });
-
-const FRAMEWORKS = {
-  FERPA:  fw('FERPA',  'Family Educational Rights and Privacy Act — US school records',       '#0369a1'),
-  COPPA:  fw('COPPA',  "Children's Online Privacy Protection Act — applies to under-13",      '#7c3aed'),
-  CCPA:   fw('CCPA',   'California Consumer Privacy Act — applies to California residents',   '#b45309'),
-  GDPR:   fw('GDPR',   'EU General Data Protection Regulation — applies to EU/EEA students', '#047857'),
-};
 
 const Badge: React.FC<{ label: string; desc: string; color: string }> = ({ label, desc, color }) => (
   <div style={{
@@ -121,6 +104,7 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
   // Geo state
   const [country,     setCountry]     = useState('US');
   const [usState,     setUsState]     = useState(prefilledState || '');
+  const [region,      setRegion]      = useState('');  // optional 3rd tier: district/city/local law
   const [isUS,        setIsUS]        = useState(true);
   const [geoLoading,  setGeoLoading]  = useState(true);
   const [geoDetected, setGeoDetected] = useState('');  // human-readable detected location
@@ -134,6 +118,18 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
   const [step,   setStep]   = useState(0);
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
+  const [resolvedJurisdictions, setResolvedJurisdictions] = useState<
+    Array<{ jurisdiction_id: string; is_verified: boolean; short_name?: string; full_name?: string }>
+  >([]);
+  const [saved, setSaved] = useState(false);
+
+  // "Something not right?" — per the product decision that solo teachers
+  // aren't privacy experts and shouldn't self-override an auto-applied
+  // jurisdiction; this is their escape hatch instead of a toggle.
+  const [showReviewForm,    setShowReviewForm]    = useState(false);
+  const [reviewReason,      setReviewReason]      = useState('');
+  const [reviewSubmitting,  setReviewSubmitting]  = useState(false);
+  const [reviewSubmitted,   setReviewSubmitted]   = useState(false);
 
   // ── IP geolocation ──────────────────────────────────────────────────────────
 
@@ -178,22 +174,51 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
   };
 
   // ── Save ────────────────────────────────────────────────────────────────────
+  // Calls the real resolver (backend/routes/privacy.py's
+  // POST /jurisdictions/resolve) instead of the old /privacy/setup endpoint,
+  // which never existed — every previous submission silently 404'd and the
+  // wizard never actually saved a jurisdiction for anyone.
 
   const save = async () => {
     setSaving(true);
     setError(null);
     try {
-      await axios.post(`${API}/privacy/setup`, {
-        ...result,
-        home_state:   isUS ? usState : '',
-        home_country: country,
-        has_under_13: hasUnder13,
-        role:         userRole,
+      const subdivisionCode = isUS
+        ? toSubdivisionCode('US', usState)
+        : (SUBDIVISION_SUPPORT.has(country) && usState ? `${country}-${usState}` : undefined);
+
+      const resp = await apiClient.post('/privacy/jurisdictions/resolve', {
+        country_code:     isUS ? 'US' : country,
+        subdivision_code: subdivisionCode,
+        region:           region || undefined,
+        has_under_13:     hasUnder13 !== 'no',
       });
-      onComplete(result);
-    } catch {
-      setError('Could not save privacy settings — you can try again or configure them later in Settings.');
+      setResolvedJurisdictions(resp.data?.resolved ?? []);
+      setSaved(true);
       setSaving(false);
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
+      setError(
+        typeof detail === 'string'
+          ? detail
+          : 'Could not save privacy settings — you can try again or configure them later in Settings.'
+      );
+      setSaving(false);
+    }
+  };
+
+  const submitReviewRequest = async () => {
+    setReviewSubmitting(true);
+    try {
+      await apiClient.post('/privacy/jurisdictions/request-review', { reason: reviewReason });
+      setReviewSubmitted(true);
+      setShowReviewForm(false);
+    } catch {
+      // non-blocking — the request itself failing shouldn't trap the user in the wizard
+      setReviewSubmitted(true);
+      setShowReviewForm(false);
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -292,8 +317,48 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
           {EU_COUNTRIES.includes(country) && (
             <p style={{ marginTop: '0.5rem', fontSize: '0.78rem', color: '#047857', lineHeight: 1.4 }}>{t('components_privacysetupwizard.eu_country_gdpr_applies_your_platform_ad', '🇪🇺 EU country — GDPR applies. Your platform administrator will need to enable it.')}</p>
           )}
+          {SUBDIVISION_SUPPORT.has(country) && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+                {t('components_privacysetupwizard.state_province', 'State / Province')}
+              </label>
+              <input
+                value={usState}
+                onChange={e => setUsState(e.target.value)}
+                placeholder={t('components_privacysetupwizard.province_placeholder', 'e.g. Ontario, São Paulo, Bavaria')}
+                style={{
+                  width: '100%', padding: '0.6rem 0.75rem',
+                  border: '1px solid var(--border)', borderRadius: '0.35rem',
+                  background: 'var(--bg)', color: 'var(--text)', fontSize: '0.9rem',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          )}
         </div>
       )}
+
+      {/* Region — optional 3rd tier, for anything more specific than state/
+          province (a district, city, or local ordinance the teacher already
+          knows applies). Feeds the resolver's fuzzy region-text catalog
+          match; it's not required for the baseline country/state resolution
+          to work. */}
+      <div style={{ marginTop: '0.9rem' }}>
+        <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+          {t('components_privacysetupwizard.region_optional', 'Region (optional)')}
+        </label>
+        <input
+          value={region}
+          onChange={e => setRegion(e.target.value)}
+          placeholder={t('components_privacysetupwizard.region_placeholder', 'A specific district or local law, if you know of one')}
+          style={{
+            width: '100%', padding: '0.6rem 0.75rem',
+            border: '1px solid var(--border)', borderRadius: '0.35rem',
+            background: 'var(--bg)', color: 'var(--text)', fontSize: '0.9rem',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -371,16 +436,19 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
   // ── Step 3: Summary ─────────────────────────────────────────────────────────
 
   const SummaryStep = () => {
-  const { t } = useTranslation('landing');
-    const active: Array<keyof typeof FRAMEWORKS> = [];
-    if (ferpa)   active.push('FERPA');
-    if (coppa)   active.push('COPPA');
-    if (isCalif) active.push('CCPA');
-    if (isEU)    active.push('GDPR');
+    const { t } = useTranslation('landing');
 
     const locationStr = isUS
       ? (usState ? `${usState}, US` : 'United States')
       : (country || 'outside the US');
+
+    // Before "Apply my settings" is clicked: a preview of what's LIKELY to
+    // apply, computed client-side from the quiz answers alone.
+    const previewActive: Array<keyof typeof JURISDICTION_LABELS> = [];
+    if (ferpa)   previewActive.push('ferpa_us');
+    if (coppa)   previewActive.push('coppa_us');
+    if (isCalif) previewActive.push('ccpa_california');
+    if (isEU)    previewActive.push('gdpr_eu');
 
     return (
       <div>
@@ -394,35 +462,104 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
           </p>
         </div>
 
-        {active.length > 0 ? (
+        {!saved ? (
+          previewActive.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{t('components_privacysetupwizard.frameworks_likely_to_apply', 'Frameworks likely to apply (confirmed once you apply your settings):')}</p>
+              {previewActive.map(key => (
+                <Badge key={key} {...JURISDICTION_LABELS[key]} />
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('components_privacysetupwizard.no_specific_frameworks_are_preselected_b', 'No specific frameworks are pre-selected based on your answers — the system will check for anything applicable to your location once you apply your settings.')}</p>
+          )
+        ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{t('components_privacysetupwizard.frameworks_now_active_on_your_account', 'Frameworks now active on your account:')}</p>
-            {active.map(key => (
-              <Badge key={key} {...FRAMEWORKS[key]} />
-            ))}
-          </div>
-        ) : (
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{t('components_privacysetupwizard.no_specific_frameworks_are_preselected_b', 'No specific frameworks are pre-selected based on your answers. You can enable them any time in Settings.')}</p>
-        )}
+            {resolvedJurisdictions.length > 0 ? resolvedJurisdictions.map(r => {
+              const meta = JURISDICTION_LABELS[r.jurisdiction_id];
+              return (
+                <div key={r.jurisdiction_id}>
+                  <Badge
+                    label={meta?.label ?? r.short_name ?? r.jurisdiction_id}
+                    desc={meta?.desc ?? r.full_name ?? ''}
+                    color={meta?.color ?? FALLBACK_JURISDICTION_COLOR}
+                  />
+                  {!r.is_verified && (
+                    <p style={{ fontSize: '0.72rem', color: '#92400e', margin: '0.2rem 0 0 0.9rem' }}>
+                      {t('components_privacysetupwizard.auto_discovered_pending_review', 'Auto-discovered — pending legal review, applied conservatively in the meantime.')}
+                    </p>
+                  )}
+                </div>
+              );
+            }) : (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('components_privacysetupwizard.no_specific_frameworks_found', 'No specific framework was found for your location — general child-safety-conscious defaults apply.')}</p>
+            )}
 
-        {(isCalif || isEU) && (
-          <div style={{
-            padding: '0.65rem 0.9rem', borderRadius: '0.4rem',
-            background: '#fffbeb', border: '1px solid #fbbf24',
-            fontSize: '0.78rem', color: '#92400e', lineHeight: 1.5, marginBottom: '1rem',
-          }}>
-            ⚠ {isCalif ? 'CCPA' : ''}
-            {isCalif && isEU ? ' and ' : ''}
-            {isEU ? 'GDPR' : ''} require a platform-level activation by your administrator.
-            Your location has been noted — ask your admin to enable the relevant framework in
-            Admin &gt; Privacy Configuration.
+            {/* Read-only by design: solo teachers aren't expected to be privacy
+                experts, so this doesn't offer a self-service override toggle —
+                only a way to flag it for a human to look at. */}
+            {!reviewSubmitted ? (
+              !showReviewForm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowReviewForm(true)}
+                  style={{
+                    alignSelf: 'flex-start', marginTop: '0.4rem', background: 'none', border: 'none',
+                    color: 'var(--primary)', fontSize: '0.8rem', textDecoration: 'underline', cursor: 'pointer', padding: 0,
+                  }}
+                >
+                  {t('components_privacysetupwizard.something_not_right', "Something not right? Let us know")}
+                </button>
+              ) : (
+                <div style={{ marginTop: '0.5rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '0.4rem' }}>
+                  <textarea
+                    value={reviewReason}
+                    onChange={e => setReviewReason(e.target.value)}
+                    placeholder={t('components_privacysetupwizard.review_reason_placeholder', "What looks wrong? We'll route this to the right person to review.")}
+                    rows={3}
+                    style={{
+                      width: '100%', padding: '0.5rem 0.6rem', border: '1px solid var(--border)',
+                      borderRadius: '0.35rem', background: 'var(--bg)', color: 'var(--text)',
+                      fontSize: '0.85rem', boxSizing: 'border-box', resize: 'vertical',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={submitReviewRequest}
+                      disabled={!reviewReason.trim() || reviewSubmitting}
+                      style={{
+                        padding: '0.4rem 0.9rem', borderRadius: '0.35rem', border: 'none',
+                        background: 'var(--primary)', color: '#fff', fontSize: '0.8rem',
+                        cursor: reviewReason.trim() ? 'pointer' : 'not-allowed',
+                        opacity: reviewReason.trim() ? 1 : 0.6,
+                      }}
+                    >
+                      {reviewSubmitting ? 'Sending…' : 'Send'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowReviewForm(false)}
+                      style={{ padding: '0.4rem 0.9rem', borderRadius: '0.35rem', border: 'none', background: 'none', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : (
+              <p style={{ fontSize: '0.8rem', color: 'var(--primary)', marginTop: '0.4rem' }}>
+                {t('components_privacysetupwizard.review_submitted', 'Thanks — sent for review.')}
+              </p>
+            )}
           </div>
         )}
 
         <div style={{
           padding: '0.65rem 0.9rem', borderRadius: '0.4rem',
           background: 'var(--surface)', border: '1px solid var(--border)',
-          fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5,
+          fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, marginTop: '1rem',
         }}>
           AI analysis: <strong>{aiEnabled ? 'enabled' : 'disabled'}</strong> ·{' '}
           Anonymised data sharing: <strong>{dataSharing ? 'enabled' : 'disabled'}</strong>
@@ -444,7 +581,15 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
     return true;
   };
 
-  const nextLabel = step === TOTAL_STEPS - 1 ? (saving ? 'Saving…' : 'Confirm & continue') : 'Next';
+  const isLastStep = step === TOTAL_STEPS - 1;
+  const nextLabel = !isLastStep
+    ? 'Next'
+    : saved
+      ? 'Done'
+      : (saving ? 'Applying…' : 'Apply my settings');
+  const handleAdvance = !isLastStep
+    ? () => setStep(s => s + 1)
+    : (saved ? () => onComplete(result) : save);
 
   // ── Outer card ──────────────────────────────────────────────────────────────
 
@@ -479,7 +624,7 @@ const PrivacySetupWizard: React.FC<Props> = ({ userRole, prefilledState, onCompl
 
         <button
           type="button"
-          onClick={step === TOTAL_STEPS - 1 ? save : () => setStep(s => s + 1)}
+          onClick={handleAdvance}
           disabled={!canAdvance() || saving}
           style={{
             padding: '0.6rem 1.5rem', borderRadius: '0.4rem',
