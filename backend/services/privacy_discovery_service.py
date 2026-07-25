@@ -194,10 +194,16 @@ async def _synthesize_and_store(
         version_xpath="",
         check_interval_days=30,
     )
-    await _upsert_rule(
+    new_rule_id = await _upsert_rule(
         db, source, dict(rule_definition), version="1.0",
         change_log="AI-discovered — pending human/legal review", auto_load=True,
     )
+    # _upsert_rule fingerprint-compares against the current active rule and
+    # returns None when nothing actually changed -- this is the only reliable
+    # signal for "did this jurisdiction's legal content change on re-check",
+    # distinct from "did we successfully re-run the pipeline" (which is true
+    # on every call, changed or not).
+    content_changed = new_rule_id is not None
 
     # ── Mirror into the catalog (idempotent) ───────────────────────────────────
     from services.privacy_catalog_service import get_catalog_entry_by_code, add_catalog_entry
@@ -210,6 +216,7 @@ async def _synthesize_and_store(
             "discovery_method": existing.get("discovery_method", "ai_search_synthesis"),
             "short_name":       existing.get("short_name"),
             "full_name":        existing.get("full_name"),
+            "content_changed":  content_changed,
         }
 
     catalog_row = await add_catalog_entry(
@@ -238,6 +245,7 @@ async def _synthesize_and_store(
         "discovery_method": "ai_search_synthesis",
         "short_name":       catalog_row.get("short_name"),
         "full_name":        catalog_row.get("full_name"),
+        "content_changed":  content_changed,
     }
 
 
@@ -289,6 +297,7 @@ async def discover_and_store_jurisdiction(
                     "discovery_method": "crawler_adapter",
                     "short_name":       existing.get("short_name"),
                     "full_name":        existing.get("full_name"),
+                    "content_changed":  crawl_result.get("status") == "updated",
                 }
 
         # ── Tier 2: curated official-source registry (DB, grown via batch pulls) ──

@@ -16,11 +16,16 @@ Two tiers of re-check, matched to how much trust each row already carries:
     discover_and_store_jurisdiction() pipeline. Its underlying _upsert_rule()
     fingerprint-compares against the current ComplianceRule and only bumps
     the version if the content genuinely changed -- calling this on an
-    unchanged jurisdiction is a safe no-op, not a spurious rewrite.
+    unchanged jurisdiction is a safe no-op, not a spurious rewrite. Whether
+    a real change happened is surfaced back up (discover_and_store_
+    jurisdiction()'s "content_changed" key) and collected into this run's
+    "changed_jurisdictions" list, not just counted -- the monthly report
+    needs to name which jurisdictions actually changed, not just how many.
   - discovery_method in ('seed', 'admin_manual', 'crawler_adapter') (human-
     vetted or already covered by the weekly crawler): just verify source_url
     is still reachable and log a warning if not; content isn't re-synthesized
-    since a human already authored/approved it.
+    since a human already authored/approved it -- so "url_reachable" here is
+    a weaker claim than "content_changed" above, not an equivalent no-op.
 
 Every row gets last_synced_at touched regardless, so the catalog UI can show
 "last checked" honestly.
@@ -44,7 +49,14 @@ async def run_catalog_auto_renew(db: AsyncSession) -> Dict[str, Any]:
     from services.iapp_privacy_crawler import _fetch_page
 
     rows: List[dict] = await list_catalog(db)
-    summary = {"checked": 0, "resynthesized": 0, "unreachable": 0, "skipped": 0}
+    summary = {"checked": 0, "rechecked_no_change": 0, "content_changed": 0,
+               "url_reachable": 0, "unreachable": 0, "skipped": 0}
+    # Per-jurisdiction detail for anything discover_and_store_jurisdiction()
+    # reports as a real content change (fingerprint mismatch against the
+    # previous ComplianceRule version, not just "we re-ran the pipeline") --
+    # this is what the monthly report surfaces, distinct from the no-op
+    # re-checks that also happen every run.
+    changed: List[Dict[str, Any]] = []
 
     for row in rows:
         summary["checked"] += 1
@@ -57,14 +69,28 @@ async def run_catalog_auto_renew(db: AsyncSession) -> Dict[str, Any]:
                 if not country_codes:
                     summary["skipped"] += 1
                     continue
-                await discover_and_store_jurisdiction(
+                result = await discover_and_store_jurisdiction(
                     db,
                     country_code=country_codes[0],
                     subdivision_code=row.get("subdivision_code"),
                     region=row.get("region"),
                 )
-                summary["resynthesized"] += 1
+                if result and result.get("content_changed"):
+                    summary["content_changed"] += 1
+                    changed.append({
+                        "jurisdiction_code": row.get("jurisdiction_code"),
+                        "country_codes":     country_codes,
+                        "short_name":        result.get("short_name") or row.get("short_name"),
+                        "full_name":         result.get("full_name") or row.get("full_name"),
+                        "discovery_method":  discovery_method,
+                    })
+                else:
+                    summary["rechecked_no_change"] += 1
             elif row.get("source_url"):
+                # Reachability only -- these rows are seed/admin_manual/crawler_adapter
+                # content a human already authored or the separate weekly
+                # IAPP crawler already diffs, so we don't re-synthesize over it here;
+                # "url_reachable" is not the same claim as "content unchanged".
                 page = await _fetch_page(row["source_url"])
                 if page is None:
                     summary["unreachable"] += 1
@@ -72,6 +98,8 @@ async def run_catalog_auto_renew(db: AsyncSession) -> Dict[str, Any]:
                         f"[privacy_auto_renew] {row.get('jurisdiction_code')}'s source_url "
                         f"is no longer reachable: {row['source_url']}"
                     )
+                else:
+                    summary["url_reachable"] += 1
             else:
                 summary["skipped"] += 1
 
@@ -85,7 +113,7 @@ async def run_catalog_auto_renew(db: AsyncSession) -> Dict[str, Any]:
             )
 
     logger.info(f"[privacy_auto_renew] Monthly renew complete: {summary}")
-    return summary
+    return {**summary, "changed_jurisdictions": changed}
 
 
 async def _remove_country_from_gdpr_default(db: AsyncSession, country_code: str) -> None:
@@ -190,7 +218,9 @@ async def send_monthly_no_legislation_report(
 ) -> None:
     """
     Emails (or, with EMAIL_DRY_RUN=true, just logs) a summary of this month's
-    auto-renew run to ADMIN_EMAIL -- both the catalog re-check and the
+    auto-renew run to ADMIN_EMAIL -- the catalog re-check (including any
+    jurisdiction whose legal content was actually re-synthesized differently
+    from what's on file, not just "we re-checked it"), and the
     no-legislation-country re-check, including any new proposals awaiting
     approval. Never raises; a report-send failure shouldn't affect the
     scheduled job's own success/failure state.
@@ -205,14 +235,39 @@ async def send_monthly_no_legislation_report(
         for p in proposals
     ) or "<li>None this month.</li>"
 
+    changed = catalog_summary.get("changed_jurisdictions", [])
+    changed_html = "".join(
+        f"<li><strong>{', '.join(c.get('country_codes') or [])}</strong> "
+        f"({c.get('jurisdiction_code')}): {c.get('short_name') or 'unnamed'} — "
+        f"content changed on re-check and a new version was stored and applied.</li>"
+        for c in changed
+    ) or "<li>None this month.</li>"
+
+    subject_bits = []
+    if proposals:
+        subject_bits.append(f"{len(proposals)} new proposal(s)")
+    if changed:
+        subject_bits.append(f"{len(changed)} jurisdiction(s) with legal changes")
     subject = (
-        f"Privacy auto-renew report — {len(proposals)} new proposal(s) awaiting approval"
-        if proposals else "Privacy auto-renew report — no changes"
+        f"Privacy auto-renew report — {' + '.join(subject_bits)}"
+        if subject_bits else "Privacy auto-renew report — no changes"
     )
     body_html = f"""
         <h2>Monthly privacy jurisdiction auto-renew</h2>
         <h3>Catalog re-check</h3>
-        <p>{catalog_summary}</p>
+        <p>Checked: {catalog_summary.get('checked', 0)},
+           re-checked no change: {catalog_summary.get('rechecked_no_change', 0)},
+           <strong>content changed: {catalog_summary.get('content_changed', 0)}</strong>,
+           source URL unreachable: {catalog_summary.get('unreachable', 0)},
+           skipped: {catalog_summary.get('skipped', 0)}</p>
+        <h3>Jurisdictions with detected legal changes</h3>
+        <p>These are AI-discovered/synthesized jurisdictions (<code>discovery_method=ai_search_synthesis</code>)
+           where this month's re-check produced content that actually differs from the version on
+           file — a new <code>compliance_rules</code> version was already stored and applied
+           (these entries stay flagged <code>is_verified=false</code> pending your review; this
+           isn't gated behind an approval step the way no-legislation promotions are, so review
+           promptly if anything looks off):</p>
+        <ul>{changed_html}</ul>
         <h3>No-legislation country re-check</h3>
         <p>Checked: {no_law_summary.get('checked', 0)},
            still no law: {no_law_summary.get('still_no_law', 0)},
