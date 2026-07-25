@@ -181,6 +181,15 @@ def derive_jurisdiction_ids(
         ids.append('gdpr_eu')
 
     else:
+        # No blanket default here — countries with a real known law (~147 of
+        # the ~199 outside the explicit map above, per the IAPP data loaded
+        # into privacy_source_registry) fall through to the catalog-match /
+        # discovery pipeline in resolve_jurisdictions() so they resolve to
+        # their ACTUAL law, not a generic label. The ~52 countries IAPP
+        # confirmed have no privacy law at all are seeded directly into
+        # privacy_regulation_catalog's gdpr_eu row (see
+        # scripts/seed_no_legislation_countries_to_gdpr.py) so they're
+        # caught by the catalog-match layer before ever reaching discovery.
         if has_under_13:
             ids.append('coppa_us')
 
