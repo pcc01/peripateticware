@@ -98,6 +98,15 @@ function AuthGuard() {
       // hasOnboarded — this branch was only catching the login case, so an
       // already-authenticated user landing in onboarding got stuck there.
       router.replace('/(tabs)');
+    } else if (!user && inOnboarding && hasOnboarded) {
+      // Symmetric case of the one above: the same "/" route ambiguity can
+      // land an unauthenticated-but-already-onboarded user (e.g. after
+      // signing out, or relaunching post-tour without logging in) back on
+      // the onboarding splash instead of login. Confirmed via a real CI
+      // failure — maestro/flows/onboarding/15.1-first-launch.yaml's
+      // relaunch-without-login step got stuck re-showing onboarding
+      // despite @ppw_has_onboarded already being true.
+      router.replace('/login');
     }
   }, [user, isLoading, hasOnboarded, segments]);
 
