@@ -294,23 +294,33 @@ jobs:
           # it's reached well before the ~10-13 minute mark instead of near
           # the end of a single 22-flow run.
           #
-          # The trailing `|| EXIT=1` (rather than letting a mid-script
-          # failure short-circuit) and cp of Maestro's own auto-saved
-          # failure screenshots into the uploaded artifacts happen once at
-          # the end for both shards combined, so a failure in shard 1
-          # doesn't skip running (or reporting) shard 2.
+          # This action's `script:` field runs each line of the block as
+          # its own separate shell invocation, chained so an earlier
+          # non-zero exit skips every later line entirely — confirmed the
+          # hard way: a first attempt at this split used a trailing `\`
+          # to wrap the long `maestro test ...` line, which doesn't work
+          # as a line continuation here (each line is independent), so
+          # Maestro received a literal stray `\` as a flow-path argument,
+          # failed instantly on "Flow path does not exist", and every line
+          # after it — the second shard, the artifacts copy, all of it —
+          # never ran. Fixed by keeping each `maestro test` invocation on
+          # one physical line (no continuation), and by appending
+          # `; echo $? > /tmp/shard*_exit` to each — since a line's own
+          # reported exit status is whatever its LAST subcommand returns,
+          # this makes the line always look like it succeeded (echo/
+          # redirect essentially never fails) so the chain keeps going
+          # into shard 2 and the artifacts copy regardless of shard 1's
+          # real result, while still recording that real result in a file
+          # for the final line to check.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
-            EXIT=0
-            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ \
-              -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml || EXIT=1
-            maestro test maestro/flows/navigation/ maestro/flows/offline/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
-              -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml || EXIT=1
+            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
+            maestro test maestro/flows/navigation/ maestro/flows/offline/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-            exit $EXIT
+            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
