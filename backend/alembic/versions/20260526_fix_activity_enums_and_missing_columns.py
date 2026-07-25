@@ -137,37 +137,34 @@ def upgrade() -> None:
 
     # =========================================================================
     # STEP 3: Add columns present in database.py but missing from migrations
+    # IF NOT EXISTS: main.py's own startup DDL (this repo's primary migration
+    # mechanism per THREAD_HANDOFF.md -- Alembic is secondary) already adds
+    # these same columns idempotently on every container boot, so a database
+    # that's been running the app at all before this migration ever gets a
+    # chance to run will already have them. Plain op.add_column() has no
+    # built-in guard and fails with DuplicateColumn in exactly that case
+    # (confirmed against a real production DB).
     # =========================================================================
 
-    op.add_column('activities', sa.Column(
-        'assessment_type',
-        sa.String(50),
-        server_default='formative',
-        nullable=True,
-        comment='Assessment type: formative, summative, portfolio, etc.'
-    ))
+    op.execute(sa.text("""
+        ALTER TABLE activities ADD COLUMN IF NOT EXISTS
+            assessment_type VARCHAR(50) DEFAULT 'formative';
+    """))
 
-    op.add_column('activities', sa.Column(
-        'is_shareable',
-        sa.Boolean(),
-        server_default='false',
-        nullable=False,
-        comment='Whether this activity can be shared with other teachers'
-    ))
+    op.execute(sa.text("""
+        ALTER TABLE activities ADD COLUMN IF NOT EXISTS
+            is_shareable BOOLEAN NOT NULL DEFAULT false;
+    """))
 
-    op.add_column('activities', sa.Column(
-        'suggested_lessons',
-        postgresql.JSONB(),
-        nullable=True,
-        comment='AI-generated or manually added lesson suggestions'
-    ))
+    op.execute(sa.text("""
+        ALTER TABLE activities ADD COLUMN IF NOT EXISTS
+            suggested_lessons JSONB;
+    """))
 
-    op.add_column('activities', sa.Column(
-        'location_info',
-        sa.Text(),
-        nullable=True,
-        comment='Cached WikiLocation info text for this activity location'
-    ))
+    op.execute(sa.text("""
+        ALTER TABLE activities ADD COLUMN IF NOT EXISTS
+            location_info TEXT;
+    """))
 
     # =========================================================================
     # STEP 4: Add user columns missing from initial migration
