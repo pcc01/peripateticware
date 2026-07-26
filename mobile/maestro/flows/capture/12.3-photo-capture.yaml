@@ -63,9 +63,16 @@ appId: com.peripateticware.app
     id: "capture-mode-photo"
 - assertVisible:
     id: "in-app-camera"
-# camera-shutter only renders once InAppCamera's onCameraReady fires
-# (see the component's `!ready` gate) — tapOn waits for it to exist, which
-# is what makes this reliable instead of racing native camera init.
+# camera-shutter only renders once InAppCamera's onCameraReady fires (see
+# the component's `!ready` gate). Plain tapOn's implicit wait for an
+# element to exist is Maestro's default command timeout (~7s) — not
+# unlimited — and a real CI screenshot caught the iOS simulator still
+# showing "Starting camera…" well past that. extendedWaitUntil (20s) plus
+# a separate tapOn instead of relying on tapOn's own wait.
+- extendedWaitUntil:
+    visible:
+      id: "camera-shutter"
+    timeout: 20000
 - tapOn:
     id: "camera-shutter"
 - assertNotVisible:

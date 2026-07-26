@@ -61,6 +61,16 @@ appId: com.peripateticware.app
     id: "capture-mode-video"
 - assertVisible:
     id: "in-app-camera"
+# camera-record only renders once InAppCamera's onCameraReady fires (see
+# the component's `!ready` gate). Plain tapOn's implicit wait for an
+# element to exist is Maestro's default command timeout (~7s) — not
+# unlimited — and a real CI screenshot caught the iOS simulator still
+# showing "Starting camera…" well past that. extendedWaitUntil (20s) plus
+# a separate tapOn instead of relying on tapOn's own wait.
+- extendedWaitUntil:
+    visible:
+      id: "camera-record"
+    timeout: 20000
 - tapOn:
     id: "camera-record"
 - assertVisible: ".*Recording.*tap to stop.*"
