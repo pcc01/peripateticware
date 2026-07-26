@@ -20,9 +20,18 @@ appId: com.peripateticware.app
     id: "peri-speech-speaker"
 - tapOn:
     id: "peri-speech-speaker"
+# extendedWaitUntil, not plain assertVisible (default ~7s) — same
+# accessibility-tree reliability gap documented elsewhere in this suite
+# (e.g. maestro/flows/activity/4-6-activity-flow.yaml's matching comment):
+# a real CI screenshot at the exact failure point showed the ⏸ icon
+# already rendered on screen.
 # Icon swaps to the "playing" state (⏸) while speaking.
-- assertVisible: "⏸"
+- extendedWaitUntil:
+    visible: "⏸"
+    timeout: 20000
 - tapOn:
     id: "peri-speech-speaker"
 # Tapping again stops playback — icon swaps back.
-- assertVisible: "🔊"
+- extendedWaitUntil:
+    visible: "🔊"
+    timeout: 20000

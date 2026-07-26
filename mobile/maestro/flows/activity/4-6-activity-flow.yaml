@@ -55,6 +55,14 @@ appId: com.peripateticware.app
     timeout: 20000
 
 # 4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet
+#
+# extendedWaitUntil + separate tapOn, not plain tapOn — same
+# accessibility-tree reliability gap as "Creek Habitat Study" above: a real
+# CI screenshot at the exact failure point ("Element not found: Text
+# matching regex: 💬 Ask Peri") showed the button plainly visible on screen.
+- extendedWaitUntil:
+    visible: "💬 Ask Peri"
+    timeout: 20000
 - tapOn: "💬 Ask Peri"
 - assertVisible:
     id: "peri-chat-sheet"

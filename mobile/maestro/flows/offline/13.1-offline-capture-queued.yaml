@@ -68,6 +68,14 @@ appId: com.peripateticware.app
 - tapOn:
     id: "capture-note-input"
 - inputText: "Queued while offline — should upload once reconnected."
+# See 12.1-note-capture.yaml's matching comment: iOS's built-in QuickType
+# "slide to type" tip appears the first time a keyboard shows on a fresh
+# install and can eat the tap meant for the save button. Not currently
+# exercised on iOS CI (offline/ is excluded from that sweep — see the CI
+# workflow's comment) but kept consistent for local/future iOS runs.
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn:
     id: "capture-note-save"
 

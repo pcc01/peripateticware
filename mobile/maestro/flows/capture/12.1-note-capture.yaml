@@ -71,6 +71,17 @@ appId: com.peripateticware.app
 - tapOn:
     id: "capture-note-input"
 - inputText: "Found three different leaf shapes near the water."
+# iOS shows its built-in "Speed up your typing by sliding your finger
+# across the letters" QuickType tip the first time a keyboard appears on a
+# fresh install — every run here, since launchApp above always
+# clearState: true. A real CI screenshot caught it covering the save
+# button at exactly this point, eating the tap and leaving the sheet open
+# (the reported failure was "capture-sheet is not visible" further down).
+# Its own dismiss control is this "Continue" link; optional since it never
+# appears on Android.
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn:
     id: "capture-note-save"
 # CaptureSheet's upload() calls onClose() on success (online upload or

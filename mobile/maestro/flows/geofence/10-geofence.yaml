@@ -80,11 +80,20 @@ appId: com.peripateticware.app
 # location-provider implementation, which plausibly varies more on
 # Android 7.0/API 24 (oldest, least-accelerated device) than newer ones.
 # Hypothesis, not confirmed — needs a real run on that device to verify.
+#
+# Also seen failing on iOS 18 (iPhone 16 simulator) — unlike this suite's
+# usual "visible but not found" gap, a real CI screenshot at this exact
+# failure point showed no toast on screen at all, not one the tree just
+# hadn't caught up to. Consistent with the same
+# Location.watchPositionAsync-latency theory above, just on a different
+# platform's location-mocking path. Bumped the timeout further (20s -> 35s)
+# as a low-risk attempt — not confirmed to be the whole story either;
+# needs a real iOS run to verify.
 - setLocation:
     latitude: 37.95
     longitude: -122.35
 - extendedWaitUntil:
     visible:
       id: "geofence-toast"
-    timeout: 20000
+    timeout: 35000
 - assertVisible: "Done capturing — reflect"

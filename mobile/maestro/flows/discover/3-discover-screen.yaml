@@ -34,7 +34,13 @@ appId: com.peripateticware.app
 - extendedWaitUntil:
     visible: "Creek Habitat Study"
     timeout: 20000
-- assertVisible: ".*Local creek or drainage channel.*"
+# Same accessibility-tree reliability gap as "Creek Habitat Study" above —
+# a real CI run's screenshot at the exact failure point showed this text
+# fully visible on screen, plain assertVisible's default ~7s timeout just
+# wasn't giving the tree time to catch up.
+- extendedWaitUntil:
+    visible: ".*Local creek or drainage channel.*"
+    timeout: 20000
 
 # 3.1 — pull to refresh reloads the activity list
 - swipe:
