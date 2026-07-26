@@ -63,7 +63,15 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(t('settings.signOut.title', 'Sign out'), t('settings.signOut.confirm', 'Are you sure?'), [
+    // No title (was t('settings.signOut.title', 'Sign out')) — that made the
+    // dialog's title text identical to its own destructive button (both
+    // read the same i18n key), so the screen's "Sign out" button plus the
+    // dialog produced THREE "Sign out" text matches, not two. Maestro's
+    // 9.4-sign-out.yaml flow (index- and later below-selector-based) kept
+    // landing on the title instead of the button, tapping inert text and
+    // leaving the dialog open on every run. The message alone is
+    // self-explanatory without a title.
+    Alert.alert('', t('settings.signOut.confirm', 'Are you sure?'), [
       { text: t('common.cancel', 'Cancel'), style: 'cancel' },
       { text: t('settings.signOut.title', 'Sign out'), style: 'destructive', onPress: logout },
     ]);

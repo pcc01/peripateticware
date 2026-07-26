@@ -332,18 +332,25 @@ jobs:
           # `svc wifi disable` + `svc data disable` alone still weren't
           # enough on a real CI run — 13.1 still failed with "📵 Saved
           # offline" never appearing, i.e. CaptureSheet.tsx's
-          # Network.getNetworkStateAsync() still reported online. This
-          # AVD's boot log shows `Successfully initialized netsim WiFi` /
-          # `androidboot.qemu.virtiowifi=1` — the newer netsim-backed
-          # virtual WiFi transport some emulator images use sits below the
-          # WifiManager layer that `svc wifi` toggles, so the framework can
-          # report "disabled" while the underlying virtio-wifi link keeps
-          # forwarding traffic. Airplane mode is enforced higher up (by
-          # ConnectivityManager itself, not a single radio's manager), so
-          # it's the more reliable way to actually cut connectivity on
-          # these images — added alongside (not instead of) the svc calls
-          # since it costs nothing and covers real devices where airplane
-          # mode's broadcast timing can lag.
+          # Network.getNetworkStateAsync() still reported online. Tried
+          # adding `settings put global airplane_mode_on 1` + broadcasting
+          # android.intent.action.AIRPLANE_MODE alongside it (reasoning:
+          # this AVD's boot log shows `Successfully initialized netsim
+          # WiFi` — the netsim-backed virtual WiFi some emulator images use
+          # sits below the WifiManager layer `svc wifi` toggles). Reverted
+          # after two real CI runs: the job's exit code changed from a
+          # normal test-failure `1` to `255` both times, and 13.2 never
+          # even ran — junit-4.xml was missing entirely, meaning the whole
+          # step died partway through shard 3 rather than any flow
+          # actually failing. That's a new, worse failure mode than the
+          # one being fixed, and it correlates too cleanly with this one
+          # change across two separate runs to be coincidence — broadcasting
+          # airplane mode likely destabilizes this AVD's netsim network
+          # stack (a system_server broadcast receiver + netsim reinit
+          # interacting badly). 13.1 not actually going offline in CI is a
+          # known, lower-severity gap (documented in the flow's own header)
+          # until a safer toggle mechanism is found — not worth trading for
+          # a flakier whole-job crash.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
@@ -351,10 +358,8 @@ jobs:
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
             maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
             maestro test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
-            adb shell svc wifi disable; adb shell svc data disable
-            adb shell settings put global airplane_mode_on 1; adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true; sleep 3
+            adb shell svc wifi disable; adb shell svc data disable; sleep 3
             maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-3.xml; echo $? > /tmp/shard3_exit
-            adb shell settings put global airplane_mode_on 0; adb shell am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false
             adb shell svc wifi enable; adb shell svc data enable; sleep 20
             maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-4.xml; echo $? > /tmp/shard4_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
