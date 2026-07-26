@@ -121,7 +121,37 @@ async def main() -> None:
     if not broken:
         print("  (none -- all links reachable)")
 
+    _write_template_csv(broken)
     await _send_report(total_checked, broken)
+
+
+_TEMPLATE_PATH = "/app/scripts/broken_source_links_template.csv"
+
+
+def _write_template_csv(broken: List[Dict[str, Any]]) -> None:
+    """
+    Starter CSV for scripts/apply_source_url_corrections.py, pre-filled with
+    every currently-broken privacy_source_registry row. Only that table is
+    included -- it's the only one the correction script updates (catalog
+    rows and crawler adapters are hand-maintained, out of scope for the bulk
+    CSV flow). new_url is left blank for you to fill in; old_url/detail are
+    reference-only context, ignored by the correction script.
+    """
+    import csv
+
+    registry_broken = [b for b in broken if b["source"] == "privacy_source_registry"]
+    if not registry_broken:
+        return
+
+    with open(_TEMPLATE_PATH, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["country_code", "country_name", "old_url", "detail", "new_url"])
+        for b in registry_broken:
+            writer.writerow([b["code"], b["name"] or "", b["url"], b["detail"], ""])
+
+    print(f"\nStarter CSV written to {_TEMPLATE_PATH} ({len(registry_broken)} row(s)) -- "
+          f"copy it out with `docker cp`, fill in new_url, then run "
+          f"apply_source_url_corrections.py against it.")
 
 
 async def _send_report(total_checked: int, broken: List[Dict[str, Any]]) -> None:
