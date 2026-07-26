@@ -49,10 +49,14 @@ appId: com.peripateticware.app
 # anything async — this is a render/re-paint speed hypothesis, not a
 # confirmed root cause; needs a real run on that device to confirm this
 # actually fixes it rather than just theoretically explaining it.
+#
+# Bumped 20s -> 35s: kept failing on API 24 the same way across two more
+# real CI runs even with the 20s wait, so whatever margin it needed was
+# more than that. Still not confirmed as the actual fix.
 - tapOn: "I'm oriented — begin inquiry"
 - extendedWaitUntil:
     visible: "Observe & Capture"
-    timeout: 20000
+    timeout: 35000
 
 # 4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet
 #

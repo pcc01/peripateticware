@@ -351,19 +351,34 @@ jobs:
           # known, lower-severity gap (documented in the flow's own header)
           # until a safer toggle mechanism is found — not worth trading for
           # a flakier whole-job crash.
+          #
+          # `maestro/flows/geofence/` pulled out of shard 1 into its own
+          # invocation below (shard1geo): a real CI run's raw log showed
+          # `maestro.android.DeviceServerDiedException: Device server died
+          # during 'disableLocationUpdates'` on API 30 (Pixel_4 profile)
+          # specifically, 100% reproducible across every run that reached
+          # it (4 for 4) — Maestro's own cleanup of 10-geofence.yaml's
+          # location mock kills the device connection, which then takes
+          # every flow still queued in that same `maestro test` invocation
+          # down with it (confirmed: 7-journal-screen failed in 0-7s
+          # immediately after, then everything downstream in shard 2 also
+          # failed). Isolating it the same way offline/ already is means a
+          # crash there only costs its own shard's exit code, not the rest
+          # of activity/auth/capture/discover/journal.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
-            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
+            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
+            maestro test maestro/flows/geofence/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1geo.xml; echo $? > /tmp/shard1geo_exit
             maestro test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
             adb shell svc wifi disable; adb shell svc data disable; sleep 3
             maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-3.xml; echo $? > /tmp/shard3_exit
             adb shell svc wifi enable; adb shell svc data enable; sleep 20
             maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-4.xml; echo $? > /tmp/shard4_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0 -a "$(cat /tmp/shard3_exit)" = 0 -a "$(cat /tmp/shard4_exit)" = 0
+            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard1geo_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0 -a "$(cat /tmp/shard3_exit)" = 0 -a "$(cat /tmp/shard4_exit)" = 0
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
@@ -575,30 +590,53 @@ jobs:
           # the affected flows now grant it via a platform-gated launchApp
           # block instead.
           #
-          # Explicit folder list, not maestro/flows/*/ — deliberately
+          # Explicit folder lists, not maestro/flows/*/ — deliberately
           # excludes maestro/flows/offline/. Those two flows need real OS
           # network toggling around them (see the Android job's matching
           # comment); the Android job does that via `adb shell svc
-          # wifi/data disable` + airplane mode. There's no `adb` on iOS,
-          # and no equivalent already wired up here for the simulator (a
-          # host-level toggle like disabling the runner's network
-          # interface is both unverified and risky — it could also take
-          # out the backend health check and every other flow's requests,
-          # since the simulator shares the runner's host network stack).
-          # Previously offline/ was silently included in the `*/` glob
-          # with no toggle at all, so 13.1 always ran online — "📵 Saved
-          # offline" could never appear, the same false failure the
-          # Android job fixed separately. Skipping instead of guessing at
-          # an unverified iOS network-cut mechanism.
-          maestro --device "$SIMULATOR_UDID" test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
+          # wifi/data disable`. There's no `adb` on iOS, and no equivalent
+          # already wired up here for the simulator (a host-level toggle
+          # like disabling the runner's network interface is both
+          # unverified and risky — it could also take out the backend
+          # health check and every other flow's requests, since the
+          # simulator shares the runner's host network stack). Previously
+          # offline/ was silently included in the `*/` glob with no toggle
+          # at all, so 13.1 always ran online — "📵 Saved offline" could
+          # never appear, the same false failure the Android job fixed
+          # separately. Skipping instead of guessing at an unverified iOS
+          # network-cut mechanism.
+          #
+          # Two invocations, not one covering all 11 folders — mirrors the
+          # Android job's own shard1/shard2 split, which exists for the
+          # identical reason documented there: a real CI run's raw log
+          # showed a single long-running Maestro/device session degrading
+          # under sustained load (cascading near-instant failures on the
+          # last several flows of a 20-flow run, distinct from any
+          # individual flow's own timing). iOS never got that fix even
+          # though it shows the same shape of failure. Split along the
+          # same folder groupings Android uses.
+          maestro --device "$SIMULATOR_UDID" test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ \
             -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
-            --format junit --output artifacts/junit.xml
-          EXIT=$?
+            --format junit --output artifacts/junit-1.xml
+          echo $? > /tmp/shard1_exit
+          maestro --device "$SIMULATOR_UDID" test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
+            -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
+            --format junit --output artifacts/junit-2.xml
+          echo $? > /tmp/shard2_exit
           cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-          exit $EXIT
+          test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0
+          exit $?
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
+          # Default startup timeout has been the culprit behind several
+          # "iOS driver not ready in time" job-ending failures across real
+          # CI runs (xcuitest.installer.LocalXCTestInstaller$IOSDriverTimeoutException),
+          # with no corresponding app or test issue — the driver just
+          # hadn't finished attaching yet on a cold CI simulator boot.
+          # Maestro's own error message names this exact env var as the
+          # knob to turn.
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "90000"
 
       - name: Upload Maestro artifacts
         uses: actions/upload-artifact@v4
