@@ -66,6 +66,12 @@ appId: com.peripateticware.app
 
 # Weak-but-real assertion: app is fully functional post-reconnect, no crash
 # or stuck error state after the queue-flush ran in the background.
+# "Back" first — activity/[id].tsx's activity-screen has no tab bar (it's
+# a detail view pushed on top of (tabs)), confirmed via a real CI
+# screenshot showing tab-journal simply not present on that screen. Text
+# match, not id, since the back button (app/activity/[id].tsx) only has an
+# accessibilityLabel/visible "‹ Back", no testID.
+- tapOn: "Back"
 - tapOn:
     id: "tab-journal"
 - assertVisible:

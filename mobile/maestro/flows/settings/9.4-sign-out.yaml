@@ -1,20 +1,22 @@
 # Mirrors e2e/settings.test.js "9.4 — Sign Out clears the session and
-# returns to the login screen".
+# returns to the login screen". Uses Maestro's `index` selector to hit the
+# 2nd "Sign out" match (the native confirm-dialog's destructive button),
+# same disambiguation Detox needed via `.atIndex(1)`.
 #
-# Previously used Maestro's `index` selector to hit what was assumed to be
-# the 2nd "Sign out" match (the native confirm-dialog's destructive
-# button), mirroring the `.atIndex(1)` disambiguation Detox needed. That
-# assumed only 2 elements share the text "Sign out": this screen's own
-# button and the dialog's button. There are actually 3 — settings.tsx's
-# handleLogout() passes the SAME i18n key (settings.signOut.title) as both
-# the Alert's title AND its destructive button label. So `index: 1` (the
-# 2nd match) was landing on the dialog's TITLE text, not the button —
-# tapping inert text, leaving the dialog open, which is why this
-# consistently failed on every platform (not just API 30/24 as first
-# guessed) at the final login-screen assertion. Anchoring on `below:` the
-# confirm message ("Are you sure?", unique text) instead of a positional
-# index selects the actual button regardless of how many "Sign out" texts
-# exist elsewhere on screen.
+# This flow's own failures (assertVisible login-screen at the very end)
+# were never actually about the tap or the selector — a real CI run's
+# screenshot at that exact failure point showed the ONBOARDING SPLASH, not
+# a still-open dialog. Root cause was in app/_layout.tsx's AuthGuard: its
+# `hasOnboarded` state is fetched once on mount and never refreshed, and
+# (onboarding)/first-activity.tsx's finishOnboarding() updates the
+# underlying flag directly via router.replace('/login') without going
+# through AuthGuard at all. So AuthGuard's copy stayed stale at `false`
+# for the rest of the app session — harmless until this flow's sign-out
+# (the only flow that logs out from within a running session instead of
+# relaunching) hit AuthGuard's `!user && !inAuth` branch, which then used
+# that stale `false` and redirected to onboarding instead of login. Fixed
+# at the source (AuthGuard re-reads the flag instead of trusting the
+# cached copy); the tap here was fine all along.
 appId: com.peripateticware.app
 ---
 - launchApp:
@@ -39,10 +41,12 @@ appId: com.peripateticware.app
     timeout: 20000
 - tapOn: "Sign out"
 - extendedWaitUntil:
-    visible: "Are you sure?"
+    visible:
+      text: "Sign out"
+      index: 1
     timeout: 20000
 - tapOn:
     text: "Sign out"
-    below: "Are you sure?"
+    index: 1
 - assertVisible:
     id: "login-screen"

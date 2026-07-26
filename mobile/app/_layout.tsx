@@ -89,7 +89,20 @@ function AuthGuard() {
     const inAuth = inOnboarding || inLogin;
 
     if (!user && !inAuth) {
-      router.replace(hasOnboarded ? '/login' : '/(onboarding)');
+      // Re-read from storage instead of trusting the `hasOnboarded` state
+      // variable here — that state is fetched once on mount and never
+      // refreshed. (onboarding)/first-activity.tsx's finishOnboarding()
+      // writes the flag and navigates to /login directly, bypassing this
+      // effect entirely, so this component's copy stays stale at `false`
+      // for the rest of the app session. Harmless until something else
+      // hits this exact branch later in the same session — confirmed via
+      // a real CI failure: maestro/flows/settings/9.4-sign-out.yaml signs
+      // out (no relaunch, so no fresh mount) and landed back on the
+      // onboarding splash instead of /login because of that stale `false`.
+      getHasOnboarded().then((onboarded) => {
+        setHasOnboarded(onboarded);
+        router.replace(onboarded ? '/login' : '/(onboarding)');
+      });
     } else if (user && inAuth) {
       // Not just inLogin: (onboarding) and (tabs) both register an index
       // route at "/", and on a cold launch with a restored session (e.g.
