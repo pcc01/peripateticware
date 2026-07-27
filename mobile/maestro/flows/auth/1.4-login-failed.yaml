@@ -7,12 +7,25 @@ appId: com.peripateticware.app
 - runFlow: ../onboarding-skip.yaml
 - assertVisible:
     id: "login-screen"
+# Belt-and-suspenders "Continue" dismisses around both fields — see
+# maestro/flows/login-student.yaml's matching comment: iOS's QuickType tip
+# most likely already showed and got dismissed in onboarding-skip.yaml
+# above (the actual first keyboard appearance on a fresh install), but this
+# file does its own inline email/password entry rather than reusing that
+# subflow, so it gets the same defensive dismisses. optional: true since it
+# never appears on Android.
 - tapOn:
     id: "email-input"
 - inputText: "wrong-user@nowhere.test"
 - tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
     id: "password-input"
 - inputText: "DefinitelyWrong1"
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn: "Sign in"
 - assertVisible: "Login failed"
 - tapOn: "OK"

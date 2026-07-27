@@ -26,6 +26,13 @@ appId: com.peripateticware.app
 - tapOn:
     id: "onboarding-name-input"
 - inputText: "Maestro Tester"
+# iOS's built-in QuickType "slide to type" tip appears the first time a
+# keyboard shows on a fresh install — this flow's own name field is that
+# first time. Same defensive dismiss as maestro/flows/onboarding-skip.yaml's
+# matching step. optional: true since it never appears on Android.
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn:
     id: "onboarding-name-cta"
 

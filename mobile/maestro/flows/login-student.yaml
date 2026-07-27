@@ -22,9 +22,24 @@ appId: com.peripateticware.app
 - tapOn:
     id: "email-input"
 - inputText: "${STUDENT_EMAIL}"
+# Belt-and-suspenders, not the primary fix — see onboarding-skip.yaml's own
+# comment: iOS's QuickType tip most likely already showed and got dismissed
+# there (the actual first keyboard appearance on a fresh install, since
+# onboarding-skip runs before this file's own fields do). Kept here too in
+# case it persists across the onboarding -> login transition or the
+# secure-text keyboard for the password field triggers its own instance —
+# a real CI screenshot caught this exact symptom (Sign In's "Missing
+# fields" alert, meaning one or both fields were empty at submit).
+# optional: true since it never appears on Android.
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn:
     id: "password-input"
 - inputText: "${STUDENT_PASSWORD}"
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn: "Sign in"
 - assertVisible:
     id: "discover-screen"
