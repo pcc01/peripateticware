@@ -120,12 +120,7 @@ function ActivityCard({ activity, theme, onPress }: { activity: Activity; theme:
       style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
       activeOpacity={0.75}
       accessibilityRole="button"
-      accessibilityLabel={[
-        activity.title,
-        activity.subject,
-        activity.estimated_duration_minutes ? `${activity.estimated_duration_minutes} min` : null,
-        activity.location_name,
-      ].filter(Boolean).join('. ')}
+      accessibilityLabel={activity.title}
     >
       <View style={[styles.iconBg, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>
         <Text style={styles.cardEmoji}>{emoji}</Text>
@@ -139,7 +134,11 @@ function ActivityCard({ activity, theme, onPress }: { activity: Activity; theme:
             .filter(Boolean).join(' · ')}
         </Text>
         {activity.location_name && (
-          <Text style={[styles.cardLocation, { fontFamily: theme.fontBody, color: theme.textMuted }]} numberOfLines={1}>
+          <Text
+            testID="activity-location"
+            style={[styles.cardLocation, { fontFamily: theme.fontBody, color: theme.textMuted }]}
+            numberOfLines={1}
+          >
             📍 {activity.location_name}
           </Text>
         )}
