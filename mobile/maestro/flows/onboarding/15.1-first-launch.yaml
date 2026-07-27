@@ -26,13 +26,12 @@ appId: com.peripateticware.app
 - tapOn:
     id: "onboarding-name-input"
 - inputText: "Maestro Tester"
-# iOS's built-in QuickType "slide to type" tip appears the first time a
-# keyboard shows on a fresh install — this flow's own name field is that
-# first time. Same defensive dismiss as maestro/flows/onboarding-skip.yaml's
-# matching step. optional: true since it never appears on Android.
-- tapOn:
-    text: "Continue"
-    optional: true
+# NOT a QuickType dismiss here (reverted — see onboarding-skip.yaml's
+# matching comment): this screen's own CTA button is itself labeled
+# "Continue" (src/onboarding/copy.ts's nameCta), so a text-based dismiss
+# tap here matches and taps that real button instead of any keyboard tip,
+# skipping ahead and making the very next tap fail with "element not
+# found" — confirmed by a real CI run failing 100% of the time this way.
 - tapOn:
     id: "onboarding-name-cta"
 

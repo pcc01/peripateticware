@@ -22,20 +22,15 @@ appId: com.peripateticware.app
       - tapOn:
           id: "onboarding-name-input"
       - inputText: "Maestro Tester"
-      # iOS's built-in QuickType "slide to type" tip appears the first time
-      # a keyboard shows on a fresh install — this is that first time in
-      # nearly every flow (onboarding-skip runs before login-student.yaml's
-      # own email/password fields), so this is the more likely place to
-      # actually hit it, not just the later ones already worked around in
-      # maestro/flows/capture/12.1-note-capture.yaml and
-      # maestro/flows/offline/13.1-offline-capture-queued.yaml. A real CI
-      # screenshot caught login-student.yaml's Sign In tap failing with a
-      # "Missing fields" alert — consistent with the tip still covering the
-      # screen from here and eating a later tap. optional: true since it
-      # never appears on Android.
-      - tapOn:
-          text: "Continue"
-          optional: true
+      # NOT a QuickType dismiss here (reverted — see git history): this
+      # screen's own CTA button is itself labeled "Continue"
+      # (src/onboarding/copy.ts's nameCta), so a "tapOn: text: Continue"
+      # here matches and taps THAT real button instead of any keyboard tip,
+      # advancing past this screen early and making the very next line's
+      # `tapOn: id: onboarding-name-cta` fail with "element not found" (a
+      # real CI run hit this 100% of the time). If QuickType interference
+      # needs addressing here, it needs an id-based or more specific
+      # selector that can't collide with this screen's own button text.
       - tapOn:
           id: "onboarding-name-cta"
       - assertVisible:
