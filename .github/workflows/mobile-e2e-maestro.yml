@@ -397,12 +397,14 @@ jobs:
   ios-maestro:
     name: iOS Maestro ${{ matrix.ios-version }} (${{ matrix.device }})
     runs-on: ${{ matrix.runner }}
-    # 60, not 45: same cold-cache story as the Android job's timeout
-    # comment — this workflow's first-ever run took ~16 minutes just for
-    # "Build iOS app for testing" on a cold CocoaPods cache, leaving little
-    # margin in a 45-minute budget once boot + backend wait + the actual
-    # Maestro suite (8-9.5 minutes locally) are added on top.
-    timeout-minutes: 60
+    # 90, not 60: the cold-cache build story from the original 60-minute
+    # comment still applies (~16 min for a cold CocoaPods "Build iOS app for
+    # testing"), and on top of that the "Run Maestro tests" step now spins up
+    # a fresh XCUITest driver per flow file instead of once per shard (see
+    # that step's own comment on the iOS 26 DeviceUnreachableException this
+    # works around) — 20 flows x up to ~90s driver startup each is real
+    # added time, not just headroom.
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
@@ -590,7 +592,7 @@ jobs:
           # the affected flows now grant it via a platform-gated launchApp
           # block instead.
           #
-          # Explicit folder lists, not maestro/flows/*/ — deliberately
+          # Explicit folder list, not maestro/flows/*/ — deliberately
           # excludes maestro/flows/offline/. Those two flows need real OS
           # network toggling around them (see the Android job's matching
           # comment); the Android job does that via `adb shell svc
@@ -606,26 +608,38 @@ jobs:
           # separately. Skipping instead of guessing at an unverified iOS
           # network-cut mechanism.
           #
-          # Two invocations, not one covering all 11 folders — mirrors the
-          # Android job's own shard1/shard2 split, which exists for the
-          # identical reason documented there: a real CI run's raw log
-          # showed a single long-running Maestro/device session degrading
-          # under sustained load (cascading near-instant failures on the
-          # last several flows of a 20-flow run, distinct from any
-          # individual flow's own timing). iOS never got that fix even
-          # though it shows the same shape of failure. Split along the
-          # same folder groupings Android uses.
-          maestro --device "$SIMULATOR_UDID" test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/geofence/ maestro/flows/journal/ \
-            -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
-            --format junit --output artifacts/junit-1.xml
-          echo $? > /tmp/shard1_exit
-          maestro --device "$SIMULATOR_UDID" test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ \
-            -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
-            --format junit --output artifacts/junit-2.xml
-          echo $? > /tmp/shard2_exit
+          # One `maestro test` invocation per flow FILE, not per folder or
+          # one big batch — a real CI run's own artifacts (maestro.log)
+          # showed `maestro.DeviceUnreachableException: Device became
+          # unreachable during deviceInfo` on iOS 26/Xcode 26.6 specifically,
+          # first hit mid-flow inside a `setPermissions` call, then repeating
+          # identically on every remaining flow in that same batch (11/11
+          # failed once it happened). Confirmed not an app crash — Maestro's
+          # own crash detector logged crashFile=none for the whole session.
+          # This is a known upstream Maestro/WebDriverAgent regression on iOS
+          # 26.x (mobile-dev-inc/maestro#3318, #3254, #2932): the XCUITest
+          # driver connection can drop mid-suite, and `maestro test <dir>`
+          # keeps reusing the now-dead port for every subsequent flow instead
+          # of restarting the driver. The maintainers' own documented
+          # workaround is exactly this — invoke each flow file as its own
+          # `maestro test` call so the driver restarts cleanly between them.
+          # Costs some wall-clock (a fresh driver spin-up per flow instead of
+          # once per shard — see this job's timeout-minutes, bumped
+          # accordingly) in exchange for flows no longer cascading off one
+          # dead connection.
+          overall_exit=0
+          i=0
+          for dir in activity auth capture discover geofence journal navigation onboarding perispeech progress settings starter; do
+            for flow in maestro/flows/"$dir"/*.yaml; do
+              i=$((i + 1))
+              maestro --device "$SIMULATOR_UDID" test "$flow" \
+                -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \
+                --format junit --output "artifacts/junit-$i.xml"
+              [ "$?" = 0 ] || overall_exit=1
+            done
+          done
           cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-          test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0
-          exit $?
+          exit $overall_exit
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
