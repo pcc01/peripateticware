@@ -43,15 +43,17 @@ jobs:
   android-maestro:
     name: Android Maestro ${{ matrix.android-version }} (API ${{ matrix.api-level }})
     runs-on: ubuntu-latest
-    # 60, not 30: this workflow's first-ever run showed "Build APK for
-    # testing" alone taking 22m19s on a completely cold Gradle cache (no
-    # dependencies downloaded yet, unlike mobile-e2e.yml's Detox job which
-    # has weeks of warm cache) — that alone blew past a 30-minute budget
-    # before the emulator ever booted. Local runs of the actual Maestro
-    # suite are 8-9.5 minutes total, so 60 leaves generous room for a cold
-    # build plus boot plus tests without approaching Detox-workflow-scale
-    # timeouts.
-    timeout-minutes: 60
+    # 75, not 60: the cold-Gradle-cache story from the original 60-minute
+    # comment still applies ("Build APK for testing" hit 22m19s on a
+    # completely cold cache before the emulator even booted). On top of
+    # that, "Run Android AVD + Maestro tests" now runs every flow as its
+    # own `maestro test` invocation via scripts/run-maestro-flows.sh instead
+    # of one shared session per shard (see that step's own comment on the
+    # DeviceServerDiedException/device-offline failures this works around)
+    # — Android's per-flow driver restart is much cheaper than iOS's
+    # xcodebuild-based one, but ~22 flows' worth of it is still real added
+    # time, not just headroom.
+    timeout-minutes: 75
 
     services:
       postgres:
@@ -264,56 +266,56 @@ jobs:
           # maestro/flows/capture/12.1-note-capture.yaml's header for why
           # `-e`-substitution wasn't reliable enough for this one).
           #
-          # Two `maestro test` invocations, not one `maestro/flows/*/` —
-          # each subfolder still has to be passed explicitly either way
-          # (Maestro's own folder scan is non-recursive, so pointing at
-          # maestro/flows/ itself would only pick up the loose reusable
-          # subflows sitting at that root — login-student.yaml,
-          # onboarding-skip.yaml — not the real suites in subdirectories).
-          # Splitting into two shorter sessions is a real fix, not just an
-          # organizational change: a real CI run's raw log showed the whole
-          # step going silent mid-flow (no Maestro output at all for the
-          # rest of the run) with
+          # One `maestro test` invocation per flow FILE (via
+          # scripts/run-maestro-flows.sh), not one invocation per folder or
+          # shard. This used to be two hand-split shards (activity/auth/
+          # capture/discover/journal, then navigation/onboarding/perispeech/
+          # progress/settings/starter, with geofence pulled into its own
+          # third invocation — see below) as a real fix for a real problem:
+          # a CI run's raw log showed the whole step going silent mid-flow
+          # (no Maestro output at all for the rest of the run) with
           # `maestro.android.DeviceServerDiedException: Device server died
           # during 'disableLocationUpdates' (connection age 629325ms)`; a
           # separate run hit the same dead-silence pattern with
           # `IOException: Command failed (host:transport:emulator-5554):
           # device 'emulator-5554' not found` instead. Different exact
           # symptom, same shape — the emulator/Maestro session becomes
-          # unstable after sustained load (~10-13 minutes across all 22
-          # flows, including several minutes of audio/video/camera capture
-          # and repeated GPS mocking) and everything after that point fails
-          # instantly with no real error, not because of anything wrong in
-          # those specific flows. Roughly halving the flows per session
-          # roughly halves the odds of hitting whatever threshold this is.
-          # Capture (heaviest: audio/video/photo recording) and settings
-          # (second-heaviest: 4 flows) are deliberately in separate shards
-          # so neither session concentrates all the load; geofence (the
-          # flow whose own location-mocking triggered the
-          # disableLocationUpdates crash above) is shard 1 specifically so
-          # it's reached well before the ~10-13 minute mark instead of near
-          # the end of a single 22-flow run.
+          # unstable after sustained load and everything after that point
+          # fails instantly with no real error, not because of anything
+          # wrong in those specific flows.
+          #
+          # Splitting into two shards only halved the odds of hitting
+          # whatever threshold this is — a later real run on API 35 still
+          # hit it mid-shard (`device offline` / DeviceServerDiedException
+          # right after 9.2-theme-change, ~187s into that shard's session,
+          # taking every remaining flow in it down with it: 9.1, 9.4, 9.5,
+          # 0.1-sanity all failed instantly against the same dead
+          # connection). One invocation per flow file removes the
+          # "sustained session" this depends on entirely — each flow gets
+          # its own fresh connection, so a dead one only costs that flow.
+          # This also makes the old geofence-isolation unnecessary as a
+          # special case (see below): geofence already gets its own
+          # invocation like everything else now, so it's back in the main
+          # folder list instead of split out.
           #
           # This action's `script:` field runs each line of the block as
-          # its own separate shell invocation, chained so an earlier
-          # non-zero exit skips every later line entirely — confirmed the
-          # hard way: a first attempt at this split used a trailing `\`
-          # to wrap the long `maestro test ...` line, which doesn't work
-          # as a line continuation here (each line is independent), so
-          # Maestro received a literal stray `\` as a flow-path argument,
-          # failed instantly on "Flow path does not exist", and every line
-          # after it — the second shard, the artifacts copy, all of it —
-          # never ran. Fixed by keeping each `maestro test` invocation on
-          # one physical line (no continuation), and by appending
-          # `; echo $? > /tmp/shard*_exit` to each — since a line's own
-          # reported exit status is whatever its LAST subcommand returns,
-          # this makes the line always look like it succeeded (echo/
-          # redirect essentially never fails) so the chain keeps going
-          # into shard 2 and the artifacts copy regardless of shard 1's
-          # real result, while still recording that real result in a file
-          # for the final line to check.
-          # `maestro/flows/offline/` is deliberately excluded from both
-          # shards above and run separately below: 13.1/13.2's own header
+          # its own separate shell invocation — confirmed the hard way in
+          # the old two-shard version: a `\`-continued long `maestro test
+          # ...` line doesn't work as a line continuation here (each line
+          # is independent), so Maestro received a literal stray `\` as a
+          # flow-path argument and failed instantly on "Flow path does not
+          # exist". That's exactly why the per-flow loop below lives in its
+          # own script file invoked as a single line, rather than as an
+          # inline shell `for` loop spanning several lines of this block.
+          # `; echo $? > /tmp/*_exit` on each invocation exists for the same
+          # reason as before — a line's own reported exit status is
+          # whatever its LAST subcommand returns, so this makes the line
+          # always look like it succeeded (echo/redirect essentially never
+          # fails) and later lines still run regardless of this one's real
+          # result, while still recording that real result in a file for
+          # the final line to check.
+          # `maestro/flows/offline/` is deliberately excluded from the main
+          # sweep and run separately below: 13.1/13.2's own header
           # comments already document that they need real OS network
           # toggling around them (`adb shell svc wifi/data disable` before
           # 13.1, re-enable before 13.2 — Maestro YAML has no way to do
@@ -352,33 +354,30 @@ jobs:
           # until a safer toggle mechanism is found — not worth trading for
           # a flakier whole-job crash.
           #
-          # `maestro/flows/geofence/` pulled out of shard 1 into its own
-          # invocation below (shard1geo): a real CI run's raw log showed
+          # geofence used to be pulled out into its own invocation here
+          # (`shard1geo`) because a real CI run's raw log showed
           # `maestro.android.DeviceServerDiedException: Device server died
           # during 'disableLocationUpdates'` on API 30 (Pixel_4 profile)
           # specifically, 100% reproducible across every run that reached
           # it (4 for 4) — Maestro's own cleanup of 10-geofence.yaml's
-          # location mock kills the device connection, which then takes
-          # every flow still queued in that same `maestro test` invocation
-          # down with it (confirmed: 7-journal-screen failed in 0-7s
-          # immediately after, then everything downstream in shard 2 also
-          # failed). Isolating it the same way offline/ already is means a
-          # crash there only costs its own shard's exit code, not the rest
-          # of activity/auth/capture/discover/journal.
+          # location mock killed the device connection, taking every flow
+          # still queued in that same invocation down with it. It's back in
+          # the main list below: scripts/run-maestro-flows.sh already gives
+          # every flow, geofence included, its own invocation, so that
+          # crash (whenever it still happens) once again only costs
+          # geofence's own exit code, not anything queued after it.
           script: |
             mkdir -p artifacts
             adb reverse tcp:8000 tcp:8000
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
-            maestro test maestro/flows/activity/ maestro/flows/auth/ maestro/flows/capture/ maestro/flows/discover/ maestro/flows/journal/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1.xml; echo $? > /tmp/shard1_exit
-            maestro test maestro/flows/geofence/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-1geo.xml; echo $? > /tmp/shard1geo_exit
-            maestro test maestro/flows/navigation/ maestro/flows/onboarding/ maestro/flows/perispeech/ maestro/flows/progress/ maestro/flows/settings/ maestro/flows/starter/ -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-2.xml; echo $? > /tmp/shard2_exit
+            bash scripts/run-maestro-flows.sh artifacts main activity auth capture discover geofence journal navigation onboarding perispeech progress settings starter; echo $? > /tmp/main_exit
             adb shell svc wifi disable; adb shell svc data disable; sleep 3
-            maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-3.xml; echo $? > /tmp/shard3_exit
+            maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-offline-1.xml; echo $? > /tmp/offline1_exit
             adb shell svc wifi enable; adb shell svc data enable; sleep 20
-            maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-4.xml; echo $? > /tmp/shard4_exit
+            maestro test maestro/flows/offline/13.2-offline-capture-syncs.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-offline-2.xml; echo $? > /tmp/offline2_exit
             cp -r "$HOME/.maestro/tests" artifacts/maestro-tests 2>/dev/null
-            test "$(cat /tmp/shard1_exit)" = 0 -a "$(cat /tmp/shard1geo_exit)" = 0 -a "$(cat /tmp/shard2_exit)" = 0 -a "$(cat /tmp/shard3_exit)" = 0 -a "$(cat /tmp/shard4_exit)" = 0
+            test "$(cat /tmp/main_exit)" = 0 -a "$(cat /tmp/offline1_exit)" = 0 -a "$(cat /tmp/offline2_exit)" = 0
         env:
           STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}
