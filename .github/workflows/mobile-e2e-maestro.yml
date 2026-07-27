@@ -630,6 +630,19 @@ jobs:
           i=0
           for dir in activity auth capture discover geofence journal navigation onboarding perispeech progress settings starter; do
             for flow in maestro/flows/"$dir"/*.yaml; do
+              # 12.3-photo-capture and 12.4-video-capture skipped on iOS only:
+              # a real CI run's failure screenshot showed the in-app camera
+              # preview stuck forever on "Starting camera..." for both —
+              # the iOS Simulator has no camera hardware to back
+              # expo-camera's CameraView, so it never fires ready and the
+              # shutter/record controls this flow waits for can never
+              # appear, regardless of timeout. Both already pass reliably
+              # on Android, where the emulator provides a synthetic camera
+              # feed. Real camera capture on iOS needs verifying on an
+              # actual device, not this Simulator-only CI matrix.
+              case "$flow" in
+                */12.3-photo-capture.yaml|*/12.4-video-capture.yaml) continue ;;
+              esac
               i=$((i + 1))
               maestro --device "$SIMULATOR_UDID" test "$flow" \
                 -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" \

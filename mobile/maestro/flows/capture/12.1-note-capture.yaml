@@ -88,7 +88,16 @@ appId: com.peripateticware.app
 # offline-queue fallback both hit this path), so the sheet closing is the
 # right signal the note was saved rather than asserting a specific
 # online/offline outcome.
-- assertNotVisible:
-    id: "capture-sheet"
+#
+# extendedWaitUntil, not plain assertNotVisible (default ~7s) — a real CI
+# failure ("capture-sheet is not visible" i.e. it was still open) showed the
+# sheet mid-save with the keyboard still up, consistent with upload()'s
+# round trip (or its offline-queue fallback) not always finishing inside
+# the default window, same class of timing gap as the accessibility-tree
+# waits elsewhere in this suite.
+- extendedWaitUntil:
+    notVisible:
+      id: "capture-sheet"
+    timeout: 20000
 - assertVisible:
     id: "activity-screen"

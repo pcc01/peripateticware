@@ -340,6 +340,7 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
         </View>
       </View>
       <TouchableOpacity
+        testID="ask-peri-btn"
         onPress={onAskPeri}
         style={[styles.askPeriBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
         accessibilityRole="button"

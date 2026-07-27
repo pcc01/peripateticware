@@ -60,14 +60,21 @@ appId: com.peripateticware.app
 
 # 4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet
 #
-# extendedWaitUntil + separate tapOn, not plain tapOn — same
-# accessibility-tree reliability gap as "Creek Habitat Study" above: a real
-# CI screenshot at the exact failure point ("Element not found: Text
-# matching regex: 💬 Ask Peri") showed the button plainly visible on screen.
+# id, not text "💬 Ask Peri" — a real CI failure's captured accessibility
+# hierarchy showed this element's accessibilityText is just "Ask Peri", no
+# emoji: app/activity/[id].tsx sets accessibilityLabel={t(...)} (deliberately
+# excluding the decorative 💬, same as a screen reader would want) while the
+# on-screen Text child renders "💬 {t(...)}". Maestro queries the
+# accessibility tree, so it was searching for a string that could never
+# appear there, no matter the timeout. Added testID="ask-peri-btn" to match
+# on instead — robust against that label and any future i18n translation of
+# "Ask Peri" changing this string.
 - extendedWaitUntil:
-    visible: "💬 Ask Peri"
+    visible:
+      id: "ask-peri-btn"
     timeout: 20000
-- tapOn: "💬 Ask Peri"
+- tapOn:
+    id: "ask-peri-btn"
 - assertVisible:
     id: "peri-chat-sheet"
 - assertVisible: "I'm Peri. Ask me anything about the activity or what you're observing."

@@ -20,18 +20,21 @@ appId: com.peripateticware.app
     id: "peri-speech-speaker"
 - tapOn:
     id: "peri-speech-speaker"
-# extendedWaitUntil, not plain assertVisible (default ~7s) — same
-# accessibility-tree reliability gap documented elsewhere in this suite
-# (e.g. maestro/flows/activity/4-6-activity-flow.yaml's matching comment):
-# a real CI screenshot at the exact failure point showed the ⏸ icon
-# already rendered on screen.
-# Icon swaps to the "playing" state (⏸) while speaking.
+# Text, not the ⏸/🔊 glyphs — a real CI failure's captured accessibility
+# hierarchy showed this element's accessibilityText tracking
+# PeriSpeech.tsx's `speaking` state via the accessibilityLabel prop
+# ("Read aloud" / "Stop reading aloud"), not the icon glyph: the glyph is
+# rendered in a plain <Text> child, invisible to the accessibility tree once
+# the parent has its own explicit accessibilityLabel. Same class of gap as
+# "Ask Peri" in maestro/flows/activity/4-6-activity-flow.yaml. Matching on
+# the real accessible label instead — icon swaps to the "playing" state
+# while speaking.
 - extendedWaitUntil:
-    visible: "⏸"
+    visible: "Stop reading aloud"
     timeout: 20000
 - tapOn:
     id: "peri-speech-speaker"
-# Tapping again stops playback — icon swaps back.
+# Tapping again stops playback — label swaps back.
 - extendedWaitUntil:
-    visible: "🔊"
+    visible: "Read aloud"
     timeout: 20000
