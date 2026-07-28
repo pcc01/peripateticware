@@ -92,7 +92,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "http://10.0.2.2:8000",
+      "apiUrl": "https://peripateticware.com",
       "eas": {
         "projectId": "aff166e5-83d2-45a6-abc3-e822b7755de4"
       }
