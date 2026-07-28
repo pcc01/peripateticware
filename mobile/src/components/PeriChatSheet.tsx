@@ -83,8 +83,19 @@ export default function PeriChatSheet({
     }
   };
 
+  // formSheet, not pageSheet — a real CI run's hierarchy dump showed
+  // peri-chat-input/peri-chat-send sitting at y=578-618 out of ~852pt
+  // screen height with the keyboard up: behind the keyboard, not above it,
+  // despite the KeyboardAvoidingView below. CaptureSheet.tsx has the same
+  // Modal + KeyboardAvoidingView + TextInput shape and its equivalent fix
+  // (see that file's own comment) DID work there — the one structural
+  // difference is presentationStyle. iOS's keyboard-frame notifications
+  // that KeyboardAvoidingView listens for are documented to behave
+  // differently depending on a Modal's presentation style; matching
+  // CaptureSheet's (confirmed working) formSheet is the targeted fix, not
+  // a guess at a new mechanism.
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
       <KeyboardAvoidingView
         testID="peri-chat-sheet"
         style={[styles.root, { backgroundColor: theme.bg }]}
