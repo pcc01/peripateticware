@@ -53,6 +53,16 @@ appId: com.peripateticware.app
     id: "capture-mode-audio"
 - tapOn:
     id: "capture-record-btn"
+# Optional dismiss for the OS microphone dialog — same unreliable-pre-grant
+# gap as the location dialog documented above and in
+# 12.1-note-capture.yaml's header: `permissions: microphone: allow` above
+# doesn't reliably suppress it either. A real CI screenshot caught it
+# still showing here, blocking "Recording... tap to stop" from ever
+# appearing. Allow, not dismiss — recording needs the permission actually
+# granted, not just the dialog gone.
+- tapOn:
+    text: "Allow"
+    optional: true
 - assertVisible: ".*Recording.*tap to stop.*"
 - tapOn:
     id: "capture-record-btn"

@@ -5,7 +5,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  Alert, ActivityIndicator, Modal,
+  Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { Theme } from '@/src/theme/tokens';
@@ -138,6 +138,10 @@ export default function CaptureSheet({
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <View testID="capture-sheet" style={[styles.root, { backgroundColor: theme.bg }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
@@ -257,6 +261,7 @@ export default function CaptureSheet({
           </View>
         ) : null}
       </View>
+      </KeyboardAvoidingView>
 
       <InAppCamera
         visible={mode === 'photo' || mode === 'video'}

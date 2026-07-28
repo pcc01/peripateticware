@@ -68,10 +68,12 @@ appId: com.peripateticware.app
 # or stuck error state after the queue-flush ran in the background.
 # "Back" first — activity/[id].tsx's activity-screen has no tab bar (it's
 # a detail view pushed on top of (tabs)), confirmed via a real CI
-# screenshot showing tab-journal simply not present on that screen. Text
-# match, not id, since the back button (app/activity/[id].tsx) only has an
-# accessibilityLabel/visible "‹ Back", no testID.
-- tapOn: "Back"
+# screenshot showing tab-journal simply not present on that screen. id, not
+# text, now that the back button has testID="activity-back-btn" (see
+# maestro/flows/discover/3-discover-screen.yaml's matching comment for why
+# text matching it was fragile to begin with).
+- tapOn:
+    id: "activity-back-btn"
 - tapOn:
     id: "tab-journal"
 - assertVisible:

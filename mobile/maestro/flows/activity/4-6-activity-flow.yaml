@@ -81,6 +81,19 @@ appId: com.peripateticware.app
 - tapOn:
     id: "peri-chat-input"
 - inputText: "What insects live near a creek?"
+# Defensive QuickType dismiss — same as maestro/flows/login-student.yaml's
+# matching comment. This is the first real CI run where this interaction
+# ever executed at all (everything past ask-peri-btn was unreachable
+# before that fix), so whether iOS's QuickType tip can resurface for a
+# freshly-opened Modal/pageSheet's first text field, not just the app's
+# very first keyboard ever, was never actually exercised until now. A real
+# CI run showed the send button producing no user message in the chat —
+# consistent with the tip eating this tap and PeriChatSheet.tsx's send()
+# silently no-op'ing on empty input. Safe either way: this screen has no
+# other "Continue"-labeled control to collide with.
+- tapOn:
+    text: "Continue"
+    optional: true
 - tapOn:
     id: "peri-chat-send"
 - assertVisible: "What insects live near a creek?"

@@ -62,6 +62,13 @@ appId: com.peripateticware.app
     id: "activity-screen"
 - assertVisible: "Creek Habitat Study"
 - assertVisible: "I'm ready — let's go"
-- tapOn: "‹ Back"
+# id, not text "‹ Back" — same class of bug as maestro/flows/activity/
+# 4-6-activity-flow.yaml's Ask Peri fix: activity/[id].tsx's back button's
+# accessibilityLabel is just "Back" (no "‹ "), so the full-string "‹ Back"
+# match could never succeed. Added testID="activity-back-btn" rather than
+# switching to a bare "Back" text match, to avoid relying on exact
+# button-label text at all.
+- tapOn:
+    id: "activity-back-btn"
 - assertVisible:
     id: "discover-screen"

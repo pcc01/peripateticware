@@ -130,6 +130,7 @@ export default function ActivityScreen() {
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <TouchableOpacity
+          testID="activity-back-btn"
           onPress={() => router.back()}
           hitSlop={12}
           accessibilityRole="button"
