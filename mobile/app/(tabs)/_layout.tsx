@@ -1,10 +1,11 @@
 // app/(tabs)/_layout.tsx
-// Four-tab navigator: Discover · Journal · Progress · Settings
+// Four-tab navigator: Discover · My Journal Entries · Progress · Settings
 
 import React from 'react';
 import { Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
+import { t } from '@/src/i18n/t';
 
 function TabIcon({ emoji, size }: { emoji: string; size: number }) {
   return <Text style={{ fontSize: size * 0.75, lineHeight: size }}>{emoji}</Text>;
@@ -28,19 +29,19 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Discover', tabBarButtonTestID: 'tab-discover', tabBarIcon: ({ size }) => <TabIcon emoji="🗺" size={size} /> }}
+        options={{ title: t('tabs.discover', 'Discover'), tabBarButtonTestID: 'tab-discover', tabBarIcon: ({ size }) => <TabIcon emoji="🗺" size={size} /> }}
       />
       <Tabs.Screen
         name="journal"
-        options={{ title: 'Journal', tabBarButtonTestID: 'tab-journal', tabBarIcon: ({ size }) => <TabIcon emoji="📓" size={size} /> }}
+        options={{ title: t('journal.tabLabel', 'My Entries'), tabBarButtonTestID: 'tab-journal', tabBarIcon: ({ size }) => <TabIcon emoji="📓" size={size} /> }}
       />
       <Tabs.Screen
         name="progress"
-        options={{ title: 'Progress', tabBarButtonTestID: 'tab-progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
+        options={{ title: t('tabs.progress', 'Progress'), tabBarButtonTestID: 'tab-progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: 'Settings', tabBarButtonTestID: 'tab-settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
+        options={{ title: t('tabs.settings', 'Settings'), tabBarButtonTestID: 'tab-settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
       />
       {/* explore.tsx is a Redirect-only stub kept to avoid broken imports
           elsewhere — expo-router auto-registers any file under (tabs)/ as

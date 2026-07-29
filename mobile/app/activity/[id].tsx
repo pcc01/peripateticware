@@ -15,10 +15,17 @@ import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
 import CaptureSheet from '@/src/components/CaptureSheet';
+import CapturePreviewModal from '@/src/components/CapturePreviewModal';
+import { Capture } from '@/src/api/captures';
 import Btn from '@/src/components/Btn';
 import { useGeofence } from '@/src/hooks/useGeofence';
 import { logSessionEvent } from '@/src/api/sessionEvents';
-import { t } from '@/src/i18n/t';
+import { flushQueue } from '@/src/db/offlineQueue';
+import {
+  createNotebookEntry, updateNotebookEntry, submitNotebookEntry,
+  linkCaptureToNotebook, fetchNotebookEntryForActivity,
+} from '@/src/api/journal';
+import { useTranslation } from 'react-i18next';
 
 type Phase = 'brief' | 'orient' | 'inquiry' | 'reflect';
 
@@ -30,6 +37,7 @@ const PHASES: Phase[] = ['orient', 'inquiry', 'reflect'];
 export default function ActivityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme, setLocationSkin } = useTheme();
+  const { t } = useTranslation();
 
   const [activity, setActivity] = useState<Activity | null>(null);
   const [phase, setPhase] = useState<Phase>('brief');
@@ -37,10 +45,15 @@ export default function ActivityScreen() {
   const [question, setQuestion] = useState<ObservationQuestion | null>(null);
   const [reflection, setReflection] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [notebookEntryId, setNotebookEntryId] = useState<string | null>(null);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showCapture, setShowCapture] = useState(false);
-  const [captures, setCaptures] = useState<any[]>([]);
+  const [captureMode, setCaptureMode] = useState<'photo' | 'audio' | 'note' | 'video' | null>(null);
+  const [captures, setCaptures] = useState<Capture[]>([]);
+  const [previewCapture, setPreviewCapture] = useState<Capture | null>(null);
   const [geofenceToast, setGeofenceToast] = useState(false);
 
   // M-13: Geofence guard — non-blocking toast when student leaves activity radius
@@ -55,7 +68,7 @@ export default function ActivityScreen() {
   useEffect(() => {
     if (!id) return;
     fetchActivity(id)
-      .then((a) => {
+      .then(async (a) => {
         setActivity(a);
         // M-4: apply city skin if location name suggests urban setting
         const loc = (a.location_name ?? '').toLowerCase();
@@ -63,8 +76,16 @@ export default function ActivityScreen() {
         if (cityTerms.some((t) => loc.includes(t))) {
           setLocationSkin('city');
         }
+        // Resume an existing draft/submission for this activity, if any —
+        // this is what makes "Save for later" actually resumable.
+        const existing = await fetchNotebookEntryForActivity(a.id);
+        if (existing) {
+          setNotebookEntryId(existing.id);
+          if (existing.learning_insights) setReflection(existing.learning_insights);
+          setSubmitted(existing.is_submitted);
+        }
       })
-      .catch(() => Alert.alert('Error', 'Could not load activity'))
+      .catch(() => Alert.alert(t('common.error', 'Error'), t('activity.loadError', 'Could not load activity')))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -96,18 +117,82 @@ export default function ActivityScreen() {
       }
       return;
     }
-    if (phase === 'reflect' && !submitted) {
-      if (!reflection.trim()) {
-        Alert.alert('One more thing', 'Write a quick reflection before submitting.');
-        return;
-      }
+  }, [phase, sessionId, captures.length]);
+
+  // Create-or-update the backing notebook entry with the current reflection
+  // text. Shared by both Save and Submit — Submit just does this and then
+  // also flips is_submitted.
+  const persistReflection = useCallback(async (): Promise<string> => {
+    const input = { activity_id: activity!.id, learning_insights: reflection.trim() };
+    if (notebookEntryId) {
+      await updateNotebookEntry(notebookEntryId, input);
+      return notebookEntryId;
+    }
+    const created = await createNotebookEntry(input);
+    setNotebookEntryId(created.id);
+    return created.id;
+  }, [activity, reflection, notebookEntryId]);
+
+  // Captures always save to the device first (see CaptureSheet.tsx) and
+  // normally drain via the connectivity-triggered background poll — but
+  // Save/Submit is the other guaranteed sync point ("save to device until
+  // the activity is turned in, or a connection shows up"), so force one
+  // real attempt here rather than leaving it purely to the 15s poll timing.
+  // Still best-effort: captures already exist as their own local records
+  // regardless of linking, so a still-unsynced capture (e.g. no signal at
+  // all right now) shouldn't block Save/Submit — it'll link on a later
+  // Save/Submit or whenever the background poll catches up.
+  const linkPendingCaptures = useCallback(async (entryId: string) => {
+    await flushQueue().catch(() => {});
+    await Promise.allSettled(captures.map((c) => linkCaptureToNotebook(entryId, c.id)));
+  }, [captures]);
+
+  const handleSaveDraft = useCallback(async () => {
+    if (!reflection.trim()) {
+      Alert.alert(t('activity.reflect.emptyTitle', 'One more thing'), t('activity.reflect.emptySaveBody', 'Write a quick reflection before saving.'));
+      return;
+    }
+    setSavingDraft(true);
+    try {
+      const entryId = await persistReflection();
+      await linkPendingCaptures(entryId);
+      if (sessionId) logSessionEvent(sessionId, 'reflection_saved', 'reflect');
+      Alert.alert(
+        t('activity.reflect.savedTitle', 'Saved'),
+        t('activity.reflect.savedBody', 'Your progress is saved — come back anytime to add more before submitting.'),
+        [{ text: t('common.ok', 'OK'), onPress: () => router.back() }]
+      );
+    } catch (e) {
+      Alert.alert(t('common.error', 'Error'), e instanceof Error ? e.message : t('common.tryAgain', 'Try again'));
+    } finally {
+      setSavingDraft(false);
+    }
+  }, [reflection, persistReflection, linkPendingCaptures, sessionId]);
+
+  const handleSubmit = useCallback(async () => {
+    if (submitted) return;
+    if (!reflection.trim()) {
+      Alert.alert(t('activity.reflect.emptyTitle', 'One more thing'), t('activity.reflect.emptySubmitBody', 'Write a quick reflection before submitting.'));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const entryId = await persistReflection();
+      await linkPendingCaptures(entryId);
+      await submitNotebookEntry(entryId);
       setSubmitted(true);
       if (sessionId) logSessionEvent(sessionId, 'session_submitted', 'reflect');
-      Alert.alert('Submitted! 🎉', 'Your field work has been saved.', [
-        { text: 'Done', onPress: () => router.replace('/(tabs)') },
-      ]);
+      Alert.alert(
+        t('activity.reflect.submittedTitle', 'Submitted! 🎉'),
+        t('activity.reflect.submittedBody', 'Your field work has been sent to your teacher.'),
+        [{ text: t('common.done', 'Done'), onPress: () => router.replace('/(tabs)') }]
+      );
+    } catch (e) {
+      Alert.alert(t('common.error', 'Error'), e instanceof Error ? e.message : t('common.tryAgain', 'Try again'));
+    } finally {
+      setSubmitting(false);
     }
-  }, [phase, reflection, submitted, sessionId, captures.length]);
+  }, [submitted, reflection, persistReflection, linkPendingCaptures, sessionId]);
 
   if (loading) {
     return (
@@ -133,10 +218,12 @@ export default function ActivityScreen() {
           testID="activity-back-btn"
           onPress={() => router.back()}
           hitSlop={12}
+          style={styles.backTouchTarget}
           accessibilityRole="button"
           accessibilityLabel={t('common.back', 'Back')}
         >
-          <Text style={[styles.backBtn, { color: theme.accent }]}>‹ {t('common.back', 'Back')}</Text>
+          <Text style={[styles.backArrow, { color: theme.accent }]}>{'‹'}</Text>
+          <Text style={[styles.backBtn, { color: theme.accent }]}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <PhaseIndicator phase={phase} theme={theme} />
       </View>
@@ -168,8 +255,12 @@ export default function ActivityScreen() {
             theme={theme}
             onNext={advancePhase}
             onAskPeri={() => setShowChat(true)}
-            onCapture={() => setShowCapture(true)}
-            captureCount={captures.length}
+            onCapture={(mode: 'photo' | 'audio' | 'note' | 'video') => {
+              setCaptureMode(mode);
+              setShowCapture(true);
+            }}
+            captures={captures}
+            onReviewCapture={setPreviewCapture}
           />
         )}
         <PeriChatSheet
@@ -186,6 +277,13 @@ export default function ActivityScreen() {
           onCaptured={(c) => setCaptures((prev) => [...prev, c])}
           theme={theme}
           activityId={activity.id}
+          initialMode={captureMode}
+        />
+        <CapturePreviewModal
+          visible={!!previewCapture}
+          onClose={() => setPreviewCapture(null)}
+          capture={previewCapture}
+          theme={theme}
         />
         {phase === 'reflect' && (
           <ReflectPhase
@@ -193,7 +291,10 @@ export default function ActivityScreen() {
             reflection={reflection}
             onChangeReflection={setReflection}
             theme={theme}
-            onSubmit={advancePhase}
+            onSave={handleSaveDraft}
+            onSubmit={handleSubmit}
+            saving={savingDraft}
+            submitting={submitting}
             submitted={submitted}
           />
         )}
@@ -228,6 +329,7 @@ function PhaseIndicator({ phase, theme }: { phase: Phase; theme: any }) {
 
 // ── Brief phase ────────────────────────────────────────────────────────────
 function BriefPhase({ activity, theme, onStart }: any) {
+  const { t } = useTranslation();
   const subjectEmoji: Record<string, string> = {
     science: '🔬', math: '📐', history: '🏛', art: '🎨', language: '📖', default: '📍',
   };
@@ -236,7 +338,7 @@ function BriefPhase({ activity, theme, onStart }: any) {
   return (
     <View style={{ gap: 20 }}>
       <PeriSpeech
-        text={`Here's what you'll be doing today. Take a moment to read through before heading out.`}
+        text={t('activity.brief.periIntro', "Here's what you'll be doing today. Take a moment to read through before heading out.")}
         theme={theme}
         size={36}
       />
@@ -256,7 +358,7 @@ function BriefPhase({ activity, theme, onStart }: any) {
           </Text>
         )}
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>DETAILS</Text>
+        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.brief.detailsLabel', 'DETAILS')}</Text>
         <View style={styles.metaRow}>
           {activity.subject && <Chip label={activity.subject} theme={theme} />}
           {activity.estimated_duration_minutes && <Chip label={`${activity.estimated_duration_minutes} min`} theme={theme} />}
@@ -270,18 +372,19 @@ function BriefPhase({ activity, theme, onStart }: any) {
 
 // ── Orient phase ───────────────────────────────────────────────────────────
 function OrientPhase({ activity, theme, onReady }: any) {
-  const periText = "You've arrived. Take a moment to observe your surroundings before starting.";
+  const { t } = useTranslation();
+  const periText = t('activity.orient.periText', "You've arrived. Take a moment to observe your surroundings before starting.");
 
   return (
     <View style={{ gap: 20 }}>
       <View style={[styles.phaseHeader, { borderColor: theme.border }]}>
-        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>PHASE 1 · ORIENT</Text>
-        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Arrive & Observe</Text>
+        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.orient.phaseLabel', 'PHASE 1 · ORIENT')}</Text>
+        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('activity.orient.title', 'Arrive & Observe')}</Text>
       </View>
       <PeriSpeech text={periText} theme={theme} size={36} />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>TODAY'S TARGETS</Text>
-        {(activity.learning_objectives ?? ['Look around and note what you see']).map((obj: string, i: number) => (
+        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.orient.targetsLabel', "TODAY'S TARGETS")}</Text>
+        {(activity.learning_objectives ?? [t('activity.orient.defaultTarget', 'Look around and note what you see')]).map((obj: string, i: number) => (
           <View key={i} style={styles.targetRow}>
             <Text style={[styles.targetDot, { color: theme.accent }]}>●</Text>
             <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text, flex: 1 }]}>{obj}</Text>
@@ -294,21 +397,24 @@ function OrientPhase({ activity, theme, onReady }: any) {
 }
 
 // ── Inquiry phase ──────────────────────────────────────────────────────────
-function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture, captureCount }: any) {
+const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️' };
+
+function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture, captures, onReviewCapture }: any) {
+  const { t } = useTranslation();
   const periText = question?.question_text
-    ?? "Look closely. What evidence can you find? Capture what you observe.";
+    ?? t('activity.inquiry.defaultQuestion', 'Look closely. What evidence can you find? Capture what you observe.');
 
   return (
     <View style={{ gap: 20 }}>
       <View style={[styles.phaseHeader, { borderColor: theme.border }]}>
-        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>PHASE 2 · INQUIRY</Text>
-        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Observe & Capture</Text>
+        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.inquiry.phaseLabel', 'PHASE 2 · INQUIRY')}</Text>
+        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('activity.inquiry.title', 'Observe & Capture')}</Text>
       </View>
       <PeriSpeech text={periText} theme={theme} size={36} />
 
       {question?.follow_up && (
         <View style={[styles.followUpCard, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>
-          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.accent }]}>FOLLOW-UP</Text>
+          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.accent }]}>{t('activity.inquiry.followUpLabel', 'FOLLOW-UP')}</Text>
           <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text }]}>
             {question.follow_up}
           </Text>
@@ -316,9 +422,9 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
       )}
 
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>CAPTURE EVIDENCE</Text>
+        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.inquiry.captureLabel', 'CAPTURE EVIDENCE')}</Text>
         <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
-          Use your camera, voice, or notes to record what you find.
+          {t('activity.inquiry.captureHint', 'Use your camera, voice, or notes to record what you find.')}
         </Text>
         <View style={styles.captureRow}>
           {[
@@ -331,7 +437,7 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
               key={id}
               testID={testID}
               style={[styles.captureBtn, { borderColor: theme.border, borderRadius: theme.radiusSm, backgroundColor: theme.surfaceAlt }]}
-              onPress={onCapture}
+              onPress={() => onCapture(id)}
               accessibilityRole="button"
               accessibilityLabel={label}
             >
@@ -339,6 +445,28 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
             </TouchableOpacity>
           ))}
         </View>
+
+        {captures.length > 0 && (
+          <>
+            <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 14 }]}>
+              {t('activity.inquiry.evidenceCollectedLabel', 'COLLECTED ({{count}})').replace('{{count}}', String(captures.length))}
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.evidenceStrip}>
+              {captures.map((c: Capture) => (
+                <TouchableOpacity
+                  key={c.id}
+                  testID={`evidence-chip-${c.id}`}
+                  onPress={() => onReviewCapture(c)}
+                  style={[styles.evidenceChip, { borderColor: theme.border, backgroundColor: theme.surfaceAlt, borderRadius: theme.radiusSm }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('activity.inquiry.reviewEvidence', 'Review this evidence')}
+                >
+                  <Text style={styles.evidenceEmoji}>{CAPTURE_TYPE_EMOJI[c.capture_type] ?? '📎'}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </>
+        )}
       </View>
       <TouchableOpacity
         testID="ask-peri-btn"
@@ -357,22 +485,24 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
 }
 
 // ── Reflect phase ──────────────────────────────────────────────────────────
-function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSubmit, submitted }: any) {
-  const prompt = 'What did this place teach you that a textbook couldn\'t?';
+function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSave, onSubmit, saving, submitting, submitted }: any) {
+  const { t } = useTranslation();
+  const prompt = t('activity.reflect.prompt', "What did this place teach you that a textbook couldn't?");
+  const busy = saving || submitting;
 
   return (
     <View style={{ gap: 20 }}>
       <View style={[styles.phaseHeader, { borderColor: theme.border }]}>
-        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>PHASE 3 · REFLECT</Text>
-        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>Make Meaning</Text>
+        <Text style={[styles.phaseLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.reflect.phaseLabel', 'PHASE 3 · REFLECT')}</Text>
+        <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('activity.reflect.title', 'Make Meaning')}</Text>
       </View>
       <PeriSpeech
-        text="Almost done. Write one thing you'll remember from today."
+        text={t('activity.reflect.periSpeech', "Almost done. Write one thing you'll remember from today.")}
         theme={theme}
         size={36}
       />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>YOUR REFLECTION</Text>
+        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.reflect.yourReflectionLabel', 'YOUR REFLECTION')}</Text>
         <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted, marginBottom: 8 }]}>
           {prompt}
         </Text>
@@ -387,7 +517,7 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSubmi
           }]}
           value={reflection}
           onChangeText={onChangeReflection}
-          placeholder="Write your reflection here…"
+          placeholder={t('activity.reflect.placeholder', 'Write your reflection here…')}
           placeholderTextColor={theme.textFaint}
           multiline
           numberOfLines={5}
@@ -395,11 +525,39 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSubmi
           editable={!submitted}
         />
       </View>
-      <Btn
-        label={submitted ? t('activity.reflect.submitted', 'Submitted ✓') : t('activity.reflect.submitCta', 'Submit field work')}
-        onPress={onSubmit}
-        theme={theme}
-      />
+      {submitted ? (
+        <Btn
+          label={t('activity.reflect.submitted', 'Submitted ✓')}
+          onPress={() => {}}
+          theme={theme}
+          disabled
+        />
+      ) : (
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Btn
+            testID="reflect-save-btn"
+            label={t('activity.reflect.saveCta', 'Save for later')}
+            onPress={onSave}
+            theme={theme}
+            variant="secondary"
+            loading={saving}
+            disabled={busy}
+            style={{ flex: 1 }}
+          />
+          <Btn
+            testID="reflect-submit-btn"
+            label={t('activity.reflect.submitCta', 'Submit field work')}
+            onPress={onSubmit}
+            theme={theme}
+            loading={submitting}
+            disabled={busy}
+            style={{ flex: 1 }}
+          />
+        </View>
+      )}
+      <Text style={[styles.submitHint, { fontFamily: theme.fontBody, color: theme.textFaint }]}>
+        {t('activity.reflect.hint', 'Save keeps this activity open so you can add more later. Submit sends it to your teacher and closes it out.')}
+      </Text>
     </View>
   );
 }
@@ -419,6 +577,8 @@ const styles = StyleSheet.create({
   root:            { flex: 1 },
   center:          { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
+  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4, paddingVertical: 4 },
+  backArrow:       { fontSize: 16 },
   backBtn:         { fontSize: 16 },
   phaseRow:        { flexDirection: 'row', alignItems: 'center', gap: 4 },
   phaseDot:        { width: 10, height: 10, borderRadius: 5 },
@@ -443,6 +603,9 @@ const styles = StyleSheet.create({
   captureRow:      { flexDirection: 'row', gap: 10, justifyContent: 'center', paddingTop: 4 },
   captureBtn:      { width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   captureIcon:     { fontSize: 24 },
+  evidenceStrip:   { flexDirection: 'row', gap: 8, paddingTop: 8 },
+  evidenceChip:    { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  evidenceEmoji:   { fontSize: 20 },
   reflectionInput:  { minHeight: 120, padding: 12, borderWidth: 1, fontSize: 15, lineHeight: 22 },
   geofenceToast:    { margin: 12, padding: 12, borderWidth: 1, borderRadius: 8 },
   geofenceToastText:{ fontSize: 13, lineHeight: 18 },
@@ -450,4 +613,5 @@ const styles = StyleSheet.create({
   captureMainLabel:{ fontSize: 15, fontWeight: '600' },
   askPeriBtn:      { borderWidth: 1, padding: 12, alignItems: 'center' },
   askPeriLabel:    { fontSize: 14, fontWeight: '600' },
+  submitHint:      { fontSize: 12, lineHeight: 18, textAlign: 'center' },
 });

@@ -50,8 +50,6 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "capture-sheet"
 - tapOn:
-    id: "capture-mode-audio"
-- tapOn:
     id: "capture-record-btn"
 # Optional dismiss for the OS microphone dialog — same unreliable-pre-grant
 # gap as the location dialog documented above and in
@@ -66,7 +64,14 @@ appId: com.peripateticware.app
 - assertVisible: ".*Recording.*tap to stop.*"
 - tapOn:
     id: "capture-record-btn"
-- assertNotVisible:
-    id: "capture-sheet"
+# Captures always save to the device first (never a direct upload call —
+# see CaptureSheet.tsx's upload()), so this confirmation shows immediately;
+# the sheet then auto-closes ~900ms later.
+- assertVisible:
+    id: "capture-saved-confirmation"
+- extendedWaitUntil:
+    notVisible:
+      id: "capture-sheet"
+    timeout: 20000
 - assertVisible:
     id: "activity-screen"

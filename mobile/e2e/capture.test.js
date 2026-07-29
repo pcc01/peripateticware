@@ -49,16 +49,15 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
 
     await element(by.id('capture-btn-note')).tap();
     await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
-    await element(by.id('capture-mode-note')).tap();
     await element(by.id('capture-note-input')).typeText('Found three different leaf shapes near the water.');
     await element(by.id('capture-note-save')).tap();
 
-    // CaptureSheet's upload() calls onClose() on success — whether that's
-    // an immediate online upload or the offline-queue fallback
-    // (src/db/offlineQueue.ts), both paths call onClose(), so the sheet
-    // closing is the correct signal the note was saved rather than
-    // asserting a specific online/offline outcome. Mirrors
-    // 12.1-note-capture.yaml's own comment making the same call.
+    // CaptureSheet's upload() always saves to the device first (queueCapture
+    // — see src/db/offlineQueue.ts) regardless of connectivity, so this
+    // confirmation shows immediately, then the sheet auto-closes ~900ms
+    // later. Mirrors 12.1-note-capture.yaml's own comment making the same
+    // call.
+    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(10000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -73,7 +72,6 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
 
     await element(by.id('capture-btn-audio')).tap();
     await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
-    await element(by.id('capture-mode-audio')).tap();
 
     await element(by.id('capture-record-btn')).tap();
     // CaptureSheet's own recording-status text — asserts recording
@@ -84,6 +82,7 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     // brief recording.
     await element(by.id('capture-record-btn')).tap();
 
+    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(15000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -98,7 +97,6 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
 
     await element(by.id('capture-btn-photo')).tap();
     await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
-    await element(by.id('capture-mode-photo')).tap();
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
 
     // camera-shutter only renders once InAppCamera's onCameraReady fires
@@ -110,6 +108,7 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await waitFor(element(by.id('camera-shutter'))).toBeVisible().withTimeout(15000);
     await element(by.id('camera-shutter')).tap();
 
+    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(15000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -124,7 +123,6 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
 
     await element(by.id('capture-btn-video')).tap();
     await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
-    await element(by.id('capture-mode-video')).tap();
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('camera-record'))).toBeVisible().withTimeout(15000);
 
@@ -136,6 +134,7 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await waitFor(element(by.id('camera-record-status'))).toBeVisible().withTimeout(5000);
     await element(by.id('camera-record')).tap();
 
+    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(20000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });

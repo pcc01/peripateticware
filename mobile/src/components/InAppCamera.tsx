@@ -4,7 +4,7 @@
 // Camera app) so they're fully E2E-testable with Maestro.
 
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, ActivityIndicator, Linking, Platform, PermissionsAndroid } from 'react-native';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { Theme } from '@/src/theme/tokens';
 import { t } from '@/src/i18n/t';
@@ -25,19 +25,63 @@ interface Props {
 
 export default function InAppCamera({ visible, mode, onClose, onCaptured, theme }: Props) {
   const cameraRef = useRef<CameraView>(null);
-  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-  const [micPermission, requestMicPermission] = useMicrophonePermissions();
+  const [cameraPermission, requestCameraPermission, getCameraPermission] = useCameraPermissions();
+  const [micPermission, requestMicPermission, getMicPermission] = useMicrophonePermissions();
   const [recording, setRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [ready, setReady] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
   const needsMic = mode === 'video';
   const hasPermission = cameraPermission?.granted && (!needsMic || micPermission?.granted);
 
+  const promptOpenSettings = () => {
+    Alert.alert(
+      t('camera.permissionBlocked.title', 'Permission needed'),
+      t('camera.permissionBlocked.body', 'Access was previously denied, so your device won’t ask again here. Turn it on in Settings to continue.'),
+      [
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+        { text: t('camera.openSettings', 'Open Settings'), onPress: () => Linking.openSettings() },
+      ]
+    );
+  };
+
+  // Requesting camera then mic as two separate back-to-back native calls
+  // (the expo-camera hooks only expose one-at-a-time requests) can cause
+  // Android to silently deny the second one before its dialog ever appears.
+  // Batching both into a single PermissionsAndroid.requestMultiple call
+  // shows one combined system dialog instead, avoiding that race.
   const requestAll = async () => {
-    if (!cameraPermission?.granted) await requestCameraPermission();
-    if (needsMic && !micPermission?.granted) await requestMicPermission();
+    if (requesting) return;
+    setRequesting(true);
+    try {
+      if (needsMic && Platform.OS === 'android') {
+        const results = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        ]);
+        // Resync expo-camera's hook state to what the OS just decided.
+        await Promise.all([getCameraPermission(), getMicPermission()]);
+        const blocked = [
+          results[PermissionsAndroid.PERMISSIONS.CAMERA],
+          results[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO],
+        ].some((r) => r === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN);
+        if (blocked) promptOpenSettings();
+      } else {
+        const camResult = cameraPermission?.granted ? cameraPermission : await requestCameraPermission();
+        const micResult = !needsMic
+          ? null
+          : micPermission?.granted ? micPermission : await requestMicPermission();
+        const blocked = (!camResult?.granted && camResult?.canAskAgain === false)
+          || (needsMic && !micResult?.granted && micResult?.canAskAgain === false);
+        if (blocked) promptOpenSettings();
+      }
+    } catch {
+      Alert.alert(t('camera.permissionError.title', 'Something went wrong'), t('camera.permissionError.body', 'Could not request camera access. Please try again.'));
+    } finally {
+      setRequesting(false);
+    }
   };
 
   const takePhoto = async () => {
@@ -50,15 +94,24 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
 
   const startRecording = async () => {
     if (!cameraRef.current || !ready) return;
+    // Optimistically flip to "recording" for instant UI feedback, but if
+    // recordAsync() rejects (e.g. mic permission not yet synced natively),
+    // reset it in the catch — otherwise the UI stays stuck showing
+    // "recording" with a running timer and no way out.
     setRecording(true);
     setRecordingDuration(0);
     timerRef.current = setInterval(() => setRecordingDuration((d) => d + 1), 1000);
-    const video = await cameraRef.current.recordAsync();
-    if (timerRef.current) clearInterval(timerRef.current);
-    setRecording(false);
-    setRecordingDuration(0);
-    if (video?.uri) {
-      onCaptured({ uri: video.uri, name: 'video.mp4', type: 'video/mp4' });
+    try {
+      const video = await cameraRef.current.recordAsync();
+      if (video?.uri) {
+        onCaptured({ uri: video.uri, name: 'video.mp4', type: 'video/mp4' });
+      }
+    } catch {
+      Alert.alert(t('camera.recordError.title', 'Recording failed'), t('camera.recordError.body', 'Could not record video. Please try again.'));
+    } finally {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setRecording(false);
+      setRecordingDuration(0);
     }
   };
 
@@ -79,16 +132,22 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
             <TouchableOpacity
               testID="camera-grant-permission"
               onPress={requestAll}
-              style={[styles.permissionBtn, { backgroundColor: theme.accent, borderRadius: theme.radiusSm }]}
+              disabled={requesting}
+              style={[styles.permissionBtn, { backgroundColor: theme.accent, borderRadius: theme.radiusSm }, requesting && { opacity: 0.7 }]}
               accessibilityRole="button"
               accessibilityLabel={t('camera.allowAccess', 'Allow access')}
+              accessibilityState={{ disabled: requesting, busy: requesting }}
             >
-              <Text style={[styles.permissionBtnLabel, { color: theme.accentText }]}>{t('camera.allowAccess', 'Allow access')}</Text>
+              {requesting
+                ? <ActivityIndicator color={theme.accentText} size="small" />
+                : <Text style={[styles.permissionBtnLabel, { color: theme.accentText }]}>{t('camera.allowAccess', 'Allow access')}</Text>
+              }
             </TouchableOpacity>
             <TouchableOpacity
               testID="camera-close"
               onPress={onClose}
               hitSlop={12}
+              style={styles.cancelTouchTarget}
               accessibilityRole="button"
               accessibilityLabel={t('common.cancel', 'Cancel')}
             >
@@ -169,7 +228,8 @@ const styles = StyleSheet.create({
   permissionText:        { color: 'white', fontSize: 15, textAlign: 'center' },
   permissionBtn:         { paddingHorizontal: 24, paddingVertical: 12 },
   permissionBtnLabel:    { fontSize: 15, fontWeight: '600' },
-  cancelLink:            { color: '#ccc', fontSize: 14, marginTop: 8 },
+  cancelTouchTarget:     { paddingHorizontal: 8, paddingVertical: 4, marginTop: 8 },
+  cancelLink:            { color: '#ccc', fontSize: 14 },
   topBar:                { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 48 },
   closeIcon:             { color: 'white', fontSize: 22 },
   recordStatus:          { color: 'white', fontSize: 13 },

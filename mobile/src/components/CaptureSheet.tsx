@@ -5,15 +5,16 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform,
+  Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { Theme } from '@/src/theme/tokens';
-import { uploadCapture, Capture } from '@/src/api/captures';
-import { queueCapture } from '@/src/db/offlineQueue';
-import * as Network from 'expo-network';
+import { Capture } from '@/src/api/captures';
+import { queueCapture, flushQueue } from '@/src/db/offlineQueue';
 import InAppCamera, { CapturedFile } from '@/src/components/InAppCamera';
 import { t } from '@/src/i18n/t';
+
+type CaptureMode = null | 'photo' | 'audio' | 'note' | 'video';
 
 interface Props {
   visible: boolean;
@@ -24,9 +25,12 @@ interface Props {
   activityId?: string;
   latitude?: number;
   longitude?: number;
+  /** Jump straight into this mode instead of showing the picker — set when
+   * the caller already knows which tool the student tapped (e.g. the
+   * activity screen's own photo/audio/note/video row). Omit/null to show
+   * the picker, e.g. when opened from a generic "add evidence" entry point. */
+  initialMode?: CaptureMode;
 }
-
-type CaptureMode = null | 'photo' | 'audio' | 'note' | 'video';
 
 const MODES = [
   { mode: 'photo' as CaptureMode, emoji: '📷', label: t('capture.mode.photo', 'Photo') },
@@ -37,51 +41,77 @@ const MODES = [
 
 export default function CaptureSheet({
   visible, onClose, onCaptured, theme,
-  sessionId, activityId, latitude, longitude,
+  sessionId, activityId, latitude, longitude, initialMode = null,
 }: Props) {
-  const [mode, setMode] = useState<CaptureMode>(null);
+  const [mode, setMode] = useState<CaptureMode>(initialMode);
   const [uploading, setUploading] = useState(false);
   const [noteText, setNoteText] = useState('');
+  const [justSaved, setJustSaved] = useState<{ mode: CaptureMode } | null>(null);
+
+  // The sheet stays mounted across opens (only `visible` toggles), so re-sync
+  // the starting mode each time it's opened — otherwise a second open with a
+  // different initialMode would still show whatever mode was left over from
+  // the previous session (or force everyone back through the picker after
+  // the first use).
+  React.useEffect(() => {
+    if (visible) setMode(initialMode);
+  }, [visible, initialMode]);
 
   // Audio recording state
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const upload = async (file: { uri: string; name: string; type: string }, captureType: string) => {
+  // By design, a capture always saves to the device first — it never blocks
+  // on or depends on network state at the moment of capture (a field
+  // activity can't assume signal). src/db/offlineQueue.ts's capture_queue is
+  // the single source of truth; the queue then drains itself two ways: the
+  // background poll in useConnectivity.ts (fires flushQueue() whenever
+  // connectivity comes back), and an explicit flush the activity screen
+  // triggers when the student turns the activity in (see handleSubmit in
+  // app/activity/[id].tsx). Nothing here calls uploadCapture() directly.
+  const upload = async (
+    file: { uri: string; name: string; type: string },
+    captureType: string,
+    localText?: string
+  ) => {
     setUploading(true);
     try {
-      const netState = await Network.getNetworkStateAsync();
-      const online = !!(netState.isConnected && netState.isInternetReachable);
+      const queueId = await queueCapture({
+        local_uri: file.uri,
+        capture_type: captureType,
+        session_id: sessionId,
+        activity_id: activityId,
+        latitude,
+        longitude,
+      });
+      // Attached client-side only (never sent to / returned by the backend)
+      // so the activity screen can show an instant review without an
+      // authenticated re-fetch of the file once it's synced.
+      onCaptured({
+        id: queueId,
+        capture_type: captureType,
+        file_path: file.uri,
+        created_at: new Date().toISOString(),
+        transcript: null,
+        local_uri: localText ? undefined : file.uri,
+        local_text: localText,
+      });
 
-      if (online) {
-        // Upload immediately
-        const capture = await uploadCapture({ file, captureType, sessionId, latitude, longitude });
-        onCaptured(capture);
-      } else {
-        // Queue for later — save locally, return a placeholder capture
-        const queueId = await queueCapture({
-          local_uri: file.uri,
-          capture_type: captureType,
-          session_id: sessionId,
-          activity_id: activityId,
-          latitude,
-          longitude,
-        });
-        // Return a local placeholder so UI updates immediately
-        onCaptured({
-          id: queueId,
-          capture_type: captureType,
-          file_path: file.uri,
-          created_at: new Date().toISOString(),
-          transcript: null,
-        });
-        Alert.alert(
-          t('capture.offline.title', '📵 Saved offline'),
-          t('capture.offline.body', 'This capture is saved on your device and will upload when you reconnect.')
-        );
-      }
-      onClose();
+      // Brief in-sheet confirmation before closing — saving is instant and
+      // always succeeds locally, so this never waits on a network call.
+      setJustSaved({ mode });
+      setTimeout(() => {
+        setJustSaved(null);
+        onClose();
+      }, 900);
+
+      // Best-effort opportunistic sync — if a connection happens to be up
+      // right now, don't make the student wait for the 15s connectivity
+      // poll to notice. Fire-and-forget: failure here just leaves the item
+      // queued for the next poll or the turn-in flush, exactly as if this
+      // call was never made.
+      flushQueue().catch(() => {});
     } catch (e) {
       Alert.alert(t('capture.uploadFailed.title', 'Upload failed'), e instanceof Error ? e.message : t('common.tryAgain', 'Try again'));
     } finally {
@@ -100,30 +130,56 @@ export default function CaptureSheet({
   };
 
   // ── Audio ─────────────────────────────────────────────────────────────────
+  const [requestingMic, setRequestingMic] = useState(false);
+
   const startRecording = async () => {
-    const { status } = await Audio.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(t('capture.micPermission.title', 'Permission needed'), t('capture.micPermission.body', 'Allow microphone access to record audio.'));
-      return;
+    if (requestingMic) return;
+    setRequestingMic(true);
+    try {
+      const { status, canAskAgain } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        if (canAskAgain === false) {
+          Alert.alert(
+            t('capture.micPermission.title', 'Permission needed'),
+            t('capture.micPermission.blockedBody', 'Microphone access was previously denied, so your device won’t ask again here. Turn it on in Settings to continue.'),
+            [
+              { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+              { text: t('camera.openSettings', 'Open Settings'), onPress: () => Linking.openSettings() },
+            ]
+          );
+        } else {
+          Alert.alert(t('capture.micPermission.title', 'Permission needed'), t('capture.micPermission.body', 'Allow microphone access to record audio.'));
+        }
+        return;
+      }
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording: rec } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(rec);
+      setRecordingDuration(0);
+      timerRef.current = setInterval(() => setRecordingDuration((d) => d + 1), 1000);
+    } catch {
+      Alert.alert(t('capture.recordError.title', 'Recording failed'), t('capture.recordError.body', 'Could not start recording. Please try again.'));
+    } finally {
+      setRequestingMic(false);
     }
-    await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-    const { recording: rec } = await Audio.Recording.createAsync(
-      Audio.RecordingOptionsPresets.HIGH_QUALITY
-    );
-    setRecording(rec);
-    setRecordingDuration(0);
-    timerRef.current = setInterval(() => setRecordingDuration((d) => d + 1), 1000);
   };
 
   const stopRecording = async () => {
     if (!recording) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    setRecording(null);
-    setRecordingDuration(0);
-    if (uri) {
-      await upload({ uri, name: 'recording.m4a', type: 'audio/m4a' }, 'audio');
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      if (uri) {
+        await upload({ uri, name: 'recording.m4a', type: 'audio/m4a' }, 'audio');
+      }
+    } catch {
+      Alert.alert(t('capture.recordError.title', 'Recording failed'), t('capture.recordError.body', 'Could not start recording. Please try again.'));
+    } finally {
+      setRecording(null);
+      setRecordingDuration(0);
     }
   };
 
@@ -131,8 +187,9 @@ export default function CaptureSheet({
   const submitNote = async () => {
     if (!noteText.trim()) return;
     // Notes are uploaded as text files
-    const uri = `data:text/plain;base64,${btoa(noteText)}`;
-    await upload({ uri, name: 'note.txt', type: 'text/plain' }, 'text');
+    const text = noteText.trim();
+    const uri = `data:text/plain;base64,${btoa(text)}`;
+    await upload({ uri, name: 'note.txt', type: 'text/plain' }, 'text', text);
     setNoteText('');
   };
 
@@ -158,11 +215,21 @@ export default function CaptureSheet({
           </TouchableOpacity>
         </View>
 
-        {uploading ? (
+        {justSaved ? (
+          <View style={styles.center} testID="capture-saved-confirmation">
+            <Text style={[styles.savedCheckmark, { color: theme.accent }]}>✓</Text>
+            <Text style={[styles.uploadingText, { fontFamily: theme.fontBody, color: theme.text }]}>
+              {t('capture.saved', 'Saved to your device')}
+            </Text>
+            <Text style={[styles.savedSubtext, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+              {t('capture.savedSubtext', "It'll sync automatically, or when you turn in the activity.")}
+            </Text>
+          </View>
+        ) : uploading ? (
           <View style={styles.center}>
             <ActivityIndicator color={theme.accent} size="large" />
             <Text style={[styles.uploadingText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
-              {t('capture.uploading', 'Uploading…')}
+              {t('capture.savingLocally', 'Saving…')}
             </Text>
           </View>
         ) : mode === null ? (
@@ -188,15 +255,21 @@ export default function CaptureSheet({
             <TouchableOpacity
               testID="capture-record-btn"
               onPress={recording ? stopRecording : startRecording}
-              style={[styles.recordBtn, { backgroundColor: recording ? theme.warn : theme.accent, borderRadius: 999 }]}
+              disabled={requestingMic}
+              style={[styles.recordBtn, { backgroundColor: recording ? theme.warn : theme.accent, borderRadius: 999 }, requestingMic && { opacity: 0.7 }]}
               accessibilityRole="button"
               accessibilityLabel={recording ? t('capture.stopRecording', 'Stop recording') : t('capture.startRecording', 'Start recording')}
-              accessibilityState={{ selected: !!recording }}
+              accessibilityState={{ selected: !!recording, disabled: requestingMic, busy: requestingMic }}
             >
-              <Text style={styles.recordIcon}>{recording ? '⏹' : '🎤'}</Text>
+              {requestingMic
+                ? <ActivityIndicator color={theme.accentText} size="small" />
+                : <Text style={styles.recordIcon}>{recording ? '⏹' : '🎤'}</Text>
+              }
             </TouchableOpacity>
             <Text testID="capture-record-status" style={[styles.durationText, { fontFamily: theme.fontMono, color: theme.textMuted }]}>
-              {recording
+              {requestingMic
+                ? t('capture.requestingMic', 'Requesting microphone access…')
+                : recording
                 ? t('capture.recordingStatus', 'Recording {{seconds}}s — tap to stop').replace('{{seconds}}', String(recordingDuration))
                 : t('capture.tapToStart', 'Tap to start recording')}
             </Text>
@@ -204,10 +277,12 @@ export default function CaptureSheet({
               <TouchableOpacity
                 testID="capture-audio-back"
                 onPress={() => setMode(null)}
+                style={styles.backTouchTarget}
                 accessibilityRole="button"
                 accessibilityLabel={t('common.back', 'Back')}
               >
-                <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← {t('common.back', 'Back')}</Text>
+                <Text style={[styles.backArrow, { color: theme.textFaint }]}>{'←'}</Text>
+                <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>{t('common.back', 'Back')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -253,10 +328,12 @@ export default function CaptureSheet({
             <TouchableOpacity
               testID="capture-note-back"
               onPress={() => setMode(null)}
+              style={styles.backTouchTarget}
               accessibilityRole="button"
               accessibilityLabel={t('common.back', 'Back')}
             >
-              <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>← {t('common.back', 'Back')}</Text>
+              <Text style={[styles.backArrow, { color: theme.textFaint }]}>{'←'}</Text>
+              <Text style={[styles.backLink, { color: theme.textFaint, fontFamily: theme.fontBody }]}>{t('common.back', 'Back')}</Text>
             </TouchableOpacity>
           </View>
         ) : null}
@@ -287,11 +364,15 @@ const styles = StyleSheet.create({
   recordBtn:     { width: 80, height: 80, alignItems: 'center', justifyContent: 'center' },
   recordIcon:    { fontSize: 32 },
   durationText:  { fontSize: 13, letterSpacing: 0.5 },
-  backLink:      { fontSize: 14, marginTop: 8 },
+  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 6, marginTop: 8 },
+  backArrow:     { fontSize: 14 },
+  backLink:      { fontSize: 14 },
   noteContainer: { flex: 1, padding: 16, gap: 12 },
   noteLabel:     { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' },
   noteInput:     { flex: 1, padding: 12, borderWidth: 1, fontSize: 15, lineHeight: 22, minHeight: 160 },
   submitBtn:     { padding: 14, alignItems: 'center' },
   submitLabel:   { fontSize: 15, fontWeight: '600' },
-  uploadingText: { fontSize: 14 },
+  uploadingText: { fontSize: 14, textAlign: 'center' },
+  savedCheckmark: { fontSize: 40, fontWeight: '700' },
+  savedSubtext:  { fontSize: 12, textAlign: 'center', paddingHorizontal: 24 },
 });

@@ -9,6 +9,7 @@ export type SessionEventType =
   | 'capture_added'
   | 'geofence_exit'
   | 'session_submitted'
+  | 'reflection_saved'
   | 'location_update';
 
 /** Convenience wrapper — fires a location_update event with GPS coordinates. Best-effort. */

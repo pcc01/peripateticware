@@ -13,6 +13,12 @@ export interface Capture {
   title?: string;
   description?: string;
   created_at: string;
+  /** Client-only, never sent by the backend: the on-device file URI (photo/
+   * audio/video) or raw text (note) captured just before upload, so the
+   * activity screen can offer an instant review/preview without an
+   * authenticated round-trip to fetch the uploaded file back. */
+  local_uri?: string;
+  local_text?: string;
 }
 
 export async function fetchCaptures(activityId?: string): Promise<Capture[]> {
@@ -32,6 +38,7 @@ export async function uploadCapture(params: {
   file: { uri: string; name: string; type: string };
   captureType: string;
   sessionId?: string;
+  activityId?: string;
   title?: string;
   description?: string;
   latitude?: number;
@@ -43,6 +50,7 @@ export async function uploadCapture(params: {
   form.append('file', params.file as unknown as Blob);
   form.append('capture_type', params.captureType);
   if (params.sessionId)   form.append('session_id', params.sessionId);
+  if (params.activityId)  form.append('activity_id', params.activityId);
   if (params.title)       form.append('title', params.title);
   if (params.description) form.append('description', params.description);
   if (params.latitude  != null) form.append('latitude',  String(params.latitude));

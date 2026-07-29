@@ -57,8 +57,6 @@ appId: com.peripateticware.app
     id: "capture-btn-video"
 - assertVisible:
     id: "capture-sheet"
-- tapOn:
-    id: "capture-mode-video"
 - assertVisible:
     id: "in-app-camera"
 # camera-record only renders once InAppCamera's onCameraReady fires (see
@@ -76,7 +74,14 @@ appId: com.peripateticware.app
 - assertVisible: ".*Recording.*tap to stop.*"
 - tapOn:
     id: "camera-record"
-- assertNotVisible:
-    id: "capture-sheet"
+# Captures always save to the device first (never a direct upload call —
+# see CaptureSheet.tsx's upload()), so this confirmation shows immediately;
+# the sheet then auto-closes ~900ms later.
+- assertVisible:
+    id: "capture-saved-confirmation"
+- extendedWaitUntil:
+    notVisible:
+      id: "capture-sheet"
+    timeout: 20000
 - assertVisible:
     id: "activity-screen"

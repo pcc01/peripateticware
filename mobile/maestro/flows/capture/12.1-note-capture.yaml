@@ -5,6 +5,13 @@
 # note/video mode picker) is now reachable via the real capture-btn-*
 # buttons instead of the stub.
 #
+# capture-btn-note now opens straight into the note screen (CaptureSheet's
+# `initialMode` prop) instead of landing on the generic mode picker first —
+# each outer button used to call the same onCapture() handler regardless of
+# which icon was tapped, so every one of them (including the pencil) opened
+# the identical 4-icon picker and made you choose again. No more
+# `capture-mode-note` tap in between.
+#
 # permissions.location — every flow that reaches the Inquiry phase (not
 # just the geofence flow) triggers useGeofence's location permission
 # request, which pops a blocking native dialog if not pre-granted. Found
@@ -67,8 +74,6 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "capture-sheet"
 - tapOn:
-    id: "capture-mode-note"
-- tapOn:
     id: "capture-note-input"
 - inputText: "Found three different leaf shapes near the water."
 # iOS shows its built-in "Speed up your typing by sliding your finger
@@ -84,17 +89,14 @@ appId: com.peripateticware.app
     optional: true
 - tapOn:
     id: "capture-note-save"
-# CaptureSheet's upload() calls onClose() on success (online upload or
-# offline-queue fallback both hit this path), so the sheet closing is the
-# right signal the note was saved rather than asserting a specific
-# online/offline outcome.
-#
-# extendedWaitUntil, not plain assertNotVisible (default ~7s) — a real CI
-# failure ("capture-sheet is not visible" i.e. it was still open) showed the
-# sheet mid-save with the keyboard still up, consistent with upload()'s
-# round trip (or its offline-queue fallback) not always finishing inside
-# the default window, same class of timing gap as the accessibility-tree
-# waits elsewhere in this suite.
+- assertVisible:
+    id: "capture-saved-confirmation"
+# Captures always save to the device first (never a direct upload call —
+# see CaptureSheet.tsx's upload()), so this confirmation shows immediately;
+# the sheet then auto-closes ~900ms later. extendedWaitUntil (not plain
+# assertNotVisible's default ~7s) is generous headroom for that fixed delay
+# plus whatever animation/accessibility-tree lag Maestro needs, matching the
+# other timing-sensitive waits in this suite.
 - extendedWaitUntil:
     notVisible:
       id: "capture-sheet"

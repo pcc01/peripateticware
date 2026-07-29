@@ -7,16 +7,18 @@
 # network toggle happens OUTSIDE this file, via adb, in
 # scripts/run-offline-capture-test.ps1, which wraps this flow with
 # `adb shell svc wifi disable` / `svc data disable` before running it.
-# Do not run this flow standalone expecting it to go offline itself — it
-# only asserts the OFFLINE-branch behavior; something else has to have
-# actually cut the network first.
+# Do not run this flow standalone expecting it to go offline itself — the
+# network needs to actually be cut first for this to be a meaningful test.
 #
-# Uses note capture (not photo) to keep this deterministic and fast — the
-# offline/online branch lives in CaptureSheet's upload() function, which is
-# shared by every capture type (src/components/CaptureSheet.tsx lines
-# 52-91), so exercising it via the simplest capture type (text note, no
-# camera/mic permission dance) is sufficient; which capture type triggers it
-# is incidental to what's being tested here.
+# CaptureSheet.tsx's upload() always saves to the device first regardless of
+# connectivity (a field activity can't assume signal) — there is no more
+# separate online/offline branch or offline-specific UI to distinguish; the
+# confirmation shown is identical either way, by design. This flow therefore
+# doesn't assert anything offline-specific — it just proves capturing with
+# no network doesn't error or hang, which is still worth a dedicated,
+# network-cut CI run (as opposed to the always-online 12.1-note-capture.yaml
+# exercising the identical code path). Uses note capture (not photo) to keep
+# this deterministic and fast — no camera/mic permission dance.
 # Two platform-gated launchApp blocks, not one `${LOCATION_PERMISSION}`
 # value — see 12.1-note-capture.yaml header: env substitution doesn't reach
 # launchApp's permissions map on iOS.
@@ -64,8 +66,6 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "capture-sheet"
 - tapOn:
-    id: "capture-mode-note"
-- tapOn:
     id: "capture-note-input"
 - inputText: "Queued while offline — should upload once reconnected."
 # See 12.1-note-capture.yaml's matching comment: iOS's built-in QuickType
@@ -78,19 +78,14 @@ appId: com.peripateticware.app
     optional: true
 - tapOn:
     id: "capture-note-save"
-
-# The offline-specific signal: CaptureSheet.tsx shows this exact native
-# Alert (title + message, single default "OK" button) only when
-# Network.getNetworkStateAsync() reports not connected/reachable — this is
-# the one assertion in this whole suite that actually proves the OFFLINE
-# branch ran, not just "the sheet closed" (which happens on the online path
-# too, so 12.1-note-capture.yaml's "closes on save" assertion alone can't
-# tell the two paths apart).
-- assertVisible: "📵 Saved offline"
-- assertVisible: "This capture is saved on your device and will upload when you reconnect."
-- tapOn: "OK"
-
-- assertNotVisible:
-    id: "capture-sheet"
+# Same confirmation as the always-online 12.1 flow — proves the local save
+# (queueCapture()) succeeded with zero network involved, which is the whole
+# point here; there's no separate offline-branch UI left to assert.
+- assertVisible:
+    id: "capture-saved-confirmation"
+- extendedWaitUntil:
+    notVisible:
+      id: "capture-sheet"
+    timeout: 20000
 - assertVisible:
     id: "activity-screen"
