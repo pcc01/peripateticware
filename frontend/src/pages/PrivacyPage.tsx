@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { getPrivacyStatus, type PrivacyStatusResult } from '../utils/privacy';
 import { PRODUCT_NAME } from '../constants/brand';
+import './privacy.css';
 
 export const PrivacyPage: React.FC = () => {
   const { t } = useTranslation('landing');

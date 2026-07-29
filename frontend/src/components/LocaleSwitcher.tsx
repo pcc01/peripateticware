@@ -23,6 +23,7 @@ const LOCALES = [
   { code: 'de',    label: 'Deutsch' },
   { code: 'es',    label: 'Español' },
   { code: 'fr',    label: 'Français' },
+  { code: 'fr-CA', label: 'Français (Canada)' },
   { code: 'he',    label: 'עברית' },
   { code: 'it',    label: 'Italiano' },
   { code: 'ja',    label: '日本語' },

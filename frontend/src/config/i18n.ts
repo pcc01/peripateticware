@@ -9,14 +9,23 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 // In Vite, /public files are served at / (root of the domain)
 // So /public/locales/en/landing.json is served at /locales/en/landing.json
 
+// Kept in parity with mobile/src/i18n/locales.ts's SUPPORTED_LOCALES — the
+// full set of locales with real translated content under public/locales/
+// (previously only 7 of the 12 translated locales were exposed here).
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'fr-CA', name: 'Français (Canada)', flag: '🇨🇦' },
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'he', name: 'עברית', flag: '🇮🇱' },
   { code: 'ja', name: '日本語', flag: '🇯🇵' },
   { code: 'ko', name: '한국어', flag: '🇰🇷' },
   { code: 'pt-BR', name: 'Português (Brasil)', flag: '🇧🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
 ]
 
 // ============================================================================
