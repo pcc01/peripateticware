@@ -1,50 +1,50 @@
 {
   "ar": {
     "version": "3833c3a2403b",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "de": {
-    "version": "ee5cf3527df3",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "676f8f85f10b",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "es": {
     "version": "a26953280d3b",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "fr-CA": {
-    "version": "8dfb4adf2b52",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "90ffb02cb21c",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "fr": {
-    "version": "a6c520112806",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "4eb4e9a525b3",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "he": {
-    "version": "1e9b0c0faec0",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "9e6ca5c78973",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "it": {
-    "version": "bccadbe3b1bf",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "841221d3f43a",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "ja": {
-    "version": "1c78b9313ce6",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "14f65b66e5d1",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "ko": {
-    "version": "a93bc8db484f",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "0d812f792d9b",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "pt-BR": {
-    "version": "594869fd1c83",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "951f6d6b3d8f",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "tr": {
-    "version": "071e3c893ddd",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "fd985ef00e84",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   },
   "zh": {
-    "version": "60c9b08a7c0e",
-    "updatedAt": "2026-07-29T21:49:58.703Z"
+    "version": "44cfe4b68396",
+    "updatedAt": "2026-07-29T23:13:41.124Z"
   }
 }

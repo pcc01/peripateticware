@@ -40,8 +40,8 @@
       "title": "도착하고 관측하기"
     },
     "reflect": {
-      "emptySaveBody": "빠르게 반성을 적어주세요. (Quick Reflection)",
-      "emptySubmitBody": "빠른 반성을 적어주세요. (Quick reflection to write)",
+      "emptySaveBody": "저장하기 전에 간단히 소감을 적어주세요.",
+      "emptySubmitBody": "제출하기 전에 간단히 소감을 적어주세요.",
       "emptyTitle": "한 가지 더",
       "hint": "저장하면 나중에 더 추가할 수 있는 활동을 열어둡니다. 제출하면 교사로 보내고 종료합니다.",
       "periSpeech": "essentially_completed. 오늘에서 기억할 점 하나를 적어주세요.",
@@ -52,7 +52,7 @@
       "savedBody": "저progress는 저장되었습니다. 언제든지 더 추가하고 제출하기 전에 돌아와서는 안녕!",
       "savedTitle": "저장됨",
       "submitCta": "제출 필드 작업",
-      "submitted": "제출 ✔ (Submitted with a checkmark symbol)",
+      "submitted": "제출됨 ✓",
       "submittedBody": "당신의 필드 작업이 교사에게 전송되었습니다.",
       "submittedTitle": "제출되었습니다! 🎉",
       "title": "의미 만들기",
@@ -85,7 +85,7 @@
   "capture": {
     "fieldNote": "필드 노트",
     "micPermission": {
-      "blockedBody": "마이크 액세스는 이전에 거부되었으므로 여기서 다시 물어보지 않습니다. 설정에서 켜십시오(Continue)를 위해 설정에서 활성화하십시오.",
+      "blockedBody": "마이크 접근이 이전에 거부되어 여기서 다시 묻지 않습니다. 계속하려면 설정에서 활성화해주세요.",
       "body": "음성을 녹음하려면 마이크 접근을 허용해주세요.",
       "title": "허가 필요"
     },
@@ -97,7 +97,7 @@
     },
     "notePlaceholder": "관찰하는 것을 적어주세요...",
     "offline": {
-      "body": "저장된 디바이스에서 다시 연결하면 업로드됩니다. (This capture is saved on your device and will upload when you reconnect.)",
+      "body": "이 캡처는 기기에 저장되었으며 다시 연결되면 업로드됩니다.",
       "title": "캐시된 오프라인"
     },
     "preview": {
@@ -186,7 +186,7 @@
       "badge": "3 근처의 활동",
       "confirmCta": "위치 허용",
       "periSpeech": "주변에 활동이 있습니다. 위치를 활성화하여 시작하시겠습니까?",
-      "reassurance": "근처의 활동만 표시하기 위해 사용됩니다. (Activities Nearby)",
+      "reassurance": "근처의 활동을 보여주기 위해서만 사용됩니다.",
       "skipCta": "건너뛰기로 지금은 피하기"
     },
     "name": {
@@ -200,7 +200,7 @@
     }
   },
   "perichat": {
-    "closeChat": "채팅 닫기 (chat-ting tik-ki)",
+    "closeChat": "채팅 닫기",
     "connectError": "현재 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
     "greeting": "나는 페리입니다. 활동 또는 관찰하고 있는 것에 대해 어떤 질문이 있나요?",
     "inputPlaceholder": "질문하기...",
@@ -217,7 +217,7 @@
     "empty": "처음 활동을 완료하여 진행 추적을 시작합니다.",
     "stats": {
       "activities": "활동",
-      "captures": "캐치스 (Capture)",
+      "captures": "캡처",
       "dayStreak": "날씨 연속"
     }
   },
@@ -245,7 +245,7 @@
     },
     "newCta": "새로운 도전",
     "periText": "찾은 것이 도전에 맞는가? 다른 학생들이 발견할 수 있도록 작성하세요.",
-    "saveError": "저장하지 못했습니다. (Challenge Saving Failure)",
+    "saveError": "챌린지를 저장하지 못했습니다.",
     "status": {
       "approved": "승인됨",
       "draft": "草稿",
@@ -257,7 +257,7 @@
   "settings": {
     "accountLabel": "계정",
     "language": {
-      "current": "언어: {{language}} (unchanged, since it's already in Korean)",
+      "current": "언어: {{language}}",
       "downloadFailed": "다운로드에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해주세요."
     },
     "languageLabel": "언어",

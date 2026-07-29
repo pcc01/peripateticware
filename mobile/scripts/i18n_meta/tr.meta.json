@@ -181,9 +181,9 @@
   },
   "activity.reflect.emptySubmitBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "4a11b21658142e56",
-    "translatedAt": "2026-07-29T19:26:40.841198+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.emptyTitle": {
     "needsManualTranslation": false,
@@ -643,9 +643,9 @@
   },
   "journal.hideCaptures": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "48f0fbd284dd26a4",
-    "translatedAt": "2026-07-29T19:26:40.841198+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "journal.noCaptures": {
     "needsManualTranslation": false,
@@ -871,9 +871,9 @@
   },
   "perispeech.stopReading": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "a6c798b8abab1275",
-    "translatedAt": "2026-07-28T16:29:25.454263+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "progress.badgesLabel": {
     "needsManualTranslation": false,
@@ -955,15 +955,15 @@
   },
   "propose.form.locationLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "365bee83b6a48728",
-    "translatedAt": "2026-07-29T19:36:34.543143+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.locationPlaceholder": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "2178fb621c68ebe3",
-    "translatedAt": "2026-07-29T19:36:34.543143+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.newTitle": {
     "needsManualTranslation": false,
@@ -973,9 +973,9 @@
   },
   "propose.form.noteLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "f92cdbe298678ad2",
-    "translatedAt": "2026-07-29T19:36:34.543143+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.notePlaceholder": {
     "needsManualTranslation": false,
@@ -985,9 +985,9 @@
   },
   "propose.form.saveDraft": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "3de100106dd4e52e",
-    "translatedAt": "2026-07-29T19:36:34.543143+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.subjectLabel": {
     "needsManualTranslation": false,
@@ -1075,9 +1075,9 @@
   },
   "settings.language.downloadFailed": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "54fe3ded93c92f1c",
-    "translatedAt": "2026-07-29T19:26:40.841198+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "settings.languageLabel": {
     "needsManualTranslation": false,

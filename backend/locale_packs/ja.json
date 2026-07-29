@@ -12,8 +12,8 @@
       "video": "動画を追加"
     },
     "geofence": {
-      "defaultLocation": "活動場所 (katsudou basho)",
-      "dismiss": "位置警告を閉じる\n(Chijou keikoku o shimasu)",
+      "defaultLocation": "活動場所",
+      "dismiss": "位置の警告を閉じる",
       "distanceAway": "(~{{meters}}メートル離れています)",
       "stepCloser": "近くに{{location}}に向けて、続行します。"
     },
@@ -53,7 +53,7 @@
       "savedTitle": "保存済み",
       "submitCta": "提出フィールド作業",
       "submitted": "承認済み ✓",
-      "submittedBody": "教師にお届けしました。(Oshieta shimashita.)",
+      "submittedBody": "あなたのフィールドワークが先生に送信されました。",
       "submittedTitle": "送信済み！🎉",
       "title": "意味を作る",
       "yourReflectionLabel": "あなたの鏡面"
@@ -61,7 +61,7 @@
   },
   "camera": {
     "allowAccess": "アクセスを許可する",
-    "closeCamera": "カメラを閉じる (Kamera o oshieru)",
+    "closeCamera": "カメラを閉じる",
     "openSettings": "設定を開く",
     "permission": {
       "photo": "カメラアクセスが必要です、写真を撮るには。",
@@ -127,7 +127,7 @@
   "common": {
     "activity": "活動",
     "activityPlural": "活動",
-    "back": "戻る (Return)",
+    "back": "戻る",
     "cancel": "キャンセル",
     "captureLabel": "証拠を録音",
     "close": "閉じる",
@@ -135,7 +135,7 @@
     "error": "エラー",
     "journalLabel": "フィールドノート",
     "ok": "わかった",
-    "tryAgain": "もう一度試してください (Mou ichido shite kudasai)"
+    "tryAgain": "もう一度試してください"
   },
   "discover": {
     "empty": "まだ活動はありません。先生が近いと思います。",
@@ -179,7 +179,7 @@
   "onboarding": {
     "firstActivity": {
       "browseCta": "活動一覧を参照",
-      "cta": "開くアクティビティ (kaiaku aktibiti)",
+      "cta": "アクティビティを開く",
       "periSpeech": "近くにフィールド活動があります。"
     },
     "location": {

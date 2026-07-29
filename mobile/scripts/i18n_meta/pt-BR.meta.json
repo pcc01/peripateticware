@@ -253,9 +253,9 @@
   },
   "activity.reflect.submittedBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "323a470cfd5d06cc",
-    "translatedAt": "2026-07-29T19:23:27.092282+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.submittedTitle": {
     "needsManualTranslation": false,
@@ -499,9 +499,9 @@
   },
   "capture.tapToStart": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "b5e04c7b15ceebd5",
-    "translatedAt": "2026-07-28T16:34:50.070724+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.title": {
     "needsManualTranslation": false,
@@ -973,15 +973,15 @@
   },
   "propose.form.noteLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "f92cdbe298678ad2",
-    "translatedAt": "2026-07-29T19:35:47.214445+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.notePlaceholder": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "5009ea3950782c78",
-    "translatedAt": "2026-07-29T19:35:47.214445+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.saveDraft": {
     "needsManualTranslation": false,

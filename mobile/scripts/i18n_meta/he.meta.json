@@ -97,9 +97,9 @@
   },
   "activity.inquiry.evidenceCollectedLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "83d2c38ec5b6ebf0",
-    "translatedAt": "2026-07-29T19:24:07.899317+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.inquiry.followUpLabel": {
     "needsManualTranslation": false,
@@ -247,9 +247,9 @@
   },
   "activity.reflect.submitted": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "dc4a7bb326399222",
-    "translatedAt": "2026-07-28T16:27:04.345330+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.submittedBody": {
     "needsManualTranslation": false,
@@ -1129,9 +1129,9 @@
   },
   "settings.theme.fieldGuide.label": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "d9b6484142ff989e",
-    "translatedAt": "2026-07-28T16:30:37.353670+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "settings.theme.terrain.desc": {
     "needsManualTranslation": false,

@@ -53,7 +53,7 @@
       "savedTitle": "Salvo",
       "submitCta": "Enviar trabalho de campo",
       "submitted": "Aprovado ✓",
-      "submittedBody": "Sua trabalho de campo foi enviado para seu professor(a).",
+      "submittedBody": "Seu trabalho de campo foi enviado para seu professor(a).",
       "submittedTitle": "Enviado! 🎉",
       "title": "Faça Sentido",
       "yourReflectionLabel": "SUA REFLEXÃO"
@@ -117,7 +117,7 @@
     "savingLocally": "Salvando...",
     "startRecording": "Gravar áudio",
     "stopRecording": "Parar de gravar",
-    "tapToStart": "Toque para começar a gravar (tocar para iniciar gravação)",
+    "tapToStart": "Toque para começar a gravar",
     "title": "Adicionar evidência",
     "uploadFailed": {
       "title": "Falha na upload"
@@ -235,8 +235,8 @@
       "locationLabel": "Onde (UMA DICA GERAL)",
       "locationPlaceholder": "Parque local",
       "newTitle": "Desafio novo",
-      "noteLabel": "Aviso para seu professor (opcional)",
-      "notePlaceholder": "Qual sua professor(a) deve saber antes de aprovar isso...",
+      "noteLabel": "NOTA PARA SEU PROFESSOR(A) (OPCIONAL)",
+      "notePlaceholder": "O que seu professor(a) deveria saber antes de aprovar isso…",
       "saveDraft": "Salvar rascunho",
       "subjectLabel": "Assunto",
       "submit": "Enviar para professor",

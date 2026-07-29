@@ -1,9 +1,9 @@
 {
   "activity.brief.detailsLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "14fdc0f6c77f7978",
-    "translatedAt": "2026-07-29T19:26:01.351519+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.brief.periIntro": {
     "needsManualTranslation": false,
@@ -19,15 +19,15 @@
   },
   "activity.capture.audio": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "34b3b71dc198b144",
-    "translatedAt": "2026-07-28T16:25:29.886930+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.capture.note": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "63565c0485fec4f7",
-    "translatedAt": "2026-07-28T16:25:29.886930+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.capture.photo": {
     "needsManualTranslation": false,
@@ -37,9 +37,9 @@
   },
   "activity.capture.video": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "36aeaefe56da1c91",
-    "translatedAt": "2026-07-28T16:25:29.886930+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.geofence.defaultLocation": {
     "needsManualTranslation": false,
@@ -397,9 +397,9 @@
   },
   "capture.mode.video": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "d534be829e32196b",
-    "translatedAt": "2026-07-28T16:25:29.886930+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.notePlaceholder": {
     "needsManualTranslation": false,
@@ -421,9 +421,9 @@
   },
   "capture.preview.pause": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "858e4ba7a29fd38b",
-    "translatedAt": "2026-07-29T19:26:01.351519+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.preview.play": {
     "needsManualTranslation": false,
@@ -703,9 +703,9 @@
   },
   "login.forgotPassword": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "30c1d8d3e9128893",
-    "translatedAt": "2026-07-28T16:25:29.886930+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "login.missingFields.body": {
     "needsManualTranslation": false,
@@ -955,9 +955,9 @@
   },
   "propose.form.locationLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "365bee83b6a48728",
-    "translatedAt": "2026-07-29T19:36:25.506021+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.locationPlaceholder": {
     "needsManualTranslation": false,
@@ -973,9 +973,9 @@
   },
   "propose.form.noteLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "f92cdbe298678ad2",
-    "translatedAt": "2026-07-29T19:36:25.506021+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.notePlaceholder": {
     "needsManualTranslation": false,

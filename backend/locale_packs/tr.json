@@ -41,7 +41,7 @@
     },
     "reflect": {
       "emptySaveBody": "Kısa bir fikir yazın önce kaydetmeye hazır.",
-      "emptySubmitBody": "Yazınız hızlı bir refleksiyonu gönderme öncesinde yapın. (Yalnızca çeviri)",
+      "emptySubmitBody": "Göndermeden önce kısa bir yansıma yazın.",
       "emptyTitle": "Bir şey daha",
       "hint": "Kaydet, bu etkinliği açık tutarak sonra daha fazlası ekleyebilirsiniz. Gönder, öğretmenine gönderip kapatır.",
       "periSpeech": "Tamam yakında. Bugün ne bir şey hatıralsınız yazın.",
@@ -149,7 +149,7 @@
     "draft": "Taslak",
     "empty": "Hiç yok. İşlemi kaydet veya gerçekleştirerek çalışmanızı görmek için lütfen deneyiniz.",
     "fallbackTitle": "Açık Not",
-    "hideCaptures": "Gizle kapsüller (Kapatma)",
+    "hideCaptures": "Kayıtları gizle",
     "noCaptures": "Henüz yakalama yok.",
     "showCaptures": "Göster Captures",
     "submitted": "Gönderildi",
@@ -209,7 +209,7 @@
   },
   "perispeech": {
     "readAloud": "Okunar",
-    "stopReading": "Durakla okuyun (or simply Durakla)"
+    "stopReading": "Okumayı durdur"
   },
   "progress": {
     "badgesLabel": "İZNAMLAR",
@@ -232,12 +232,12 @@
       "descriptionLabel": "NE IŞLEM YAPmalı?",
       "descriptionPlaceholder": "Bulunacak, yapılacak veya gözlemlenecek şeyi açıklayın...",
       "editTitle": "Duzenle Şansı",
-      "locationLabel": "YARDIM (UMUM SÖZLEŞME)",
-      "locationPlaceholder": "yerel bir park (Local Park adındaki kelimeyi de kalır)",
+      "locationLabel": "NEREDE (GENEL BİR İPUCU)",
+      "locationPlaceholder": "örn. bir dere, yerel bir park",
       "newTitle": "Yeni meydan okuma",
-      "noteLabel": "ÖĞRETMENİZİN NOTU (OPÇİONEL)",
+      "noteLabel": "ÖĞRETMENİNE NOT (İSTEĞE BAĞLI)",
       "notePlaceholder": "Öğretmen onaylayınca önce bu her şeyi bilmeli...",
-      "saveDraft": "Kaydet (Tasarım)",
+      "saveDraft": "Taslağı kaydet",
       "subjectLabel": "ÖNEMLİ",
       "submit": "Gönder Teacher'e",
       "titleLabel": "ARAŞTIRMA BAŞLIKLARI",
@@ -258,7 +258,7 @@
     "accountLabel": "HESAP",
     "language": {
       "current": "Dil: {{language}}",
-      "downloadFailed": "Bağlantınız kontrol edin ve yeniden deneyin. (Dosya indirilemedi bu dil.)"
+      "downloadFailed": "Bu dil indirilemedi. Bağlantınızı kontrol edip tekrar deneyin."
     },
     "languageLabel": "TÜRKÇE",
     "role": {

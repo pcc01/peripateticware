@@ -1,9 +1,9 @@
 {
   "activity.brief.detailsLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "14fdc0f6c77f7978",
-    "translatedAt": "2026-07-29T19:23:48.500967+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.brief.periIntro": {
     "needsManualTranslation": false,
@@ -49,9 +49,9 @@
   },
   "activity.geofence.dismiss": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "9493960d1f75cc13",
-    "translatedAt": "2026-07-28T16:26:50.974926+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.geofence.distanceAway": {
     "needsManualTranslation": false,
@@ -385,15 +385,15 @@
   },
   "capture.mode.note": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "d8da2c49df39d91d",
-    "translatedAt": "2026-07-28T16:26:50.974926+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.mode.photo": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "d84eebada93efee1",
-    "translatedAt": "2026-07-28T16:26:50.974926+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.mode.video": {
     "needsManualTranslation": false,
@@ -961,9 +961,9 @@
   },
   "propose.form.locationPlaceholder": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "2178fb621c68ebe3",
-    "translatedAt": "2026-07-29T19:36:03.989906+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.newTitle": {
     "needsManualTranslation": false,
@@ -973,9 +973,9 @@
   },
   "propose.form.noteLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "f92cdbe298678ad2",
-    "translatedAt": "2026-07-29T19:36:03.989906+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.notePlaceholder": {
     "needsManualTranslation": false,

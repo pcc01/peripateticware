@@ -1,7 +1,7 @@
 {
   "activity": {
     "brief": {
-      "detailsLabel": "DETAILS (proper noun)",
+      "detailsLabel": "DÉTAILS",
       "periIntro": "Faites une pause pour lire ce que vous allez faire aujourd'hui avant de sortir.",
       "startCta": "Prêt — allons-y"
     },
@@ -13,7 +13,7 @@
     },
     "geofence": {
       "defaultLocation": "emplacement de l'activité",
-      "dismiss": "Avertir de la position (annuler)",
+      "dismiss": "Ignorer l'avertissement de position",
       "distanceAway": "(à environ {{meters}} m)",
       "stepCloser": "Approchez plus près de {{location}} pour continuer."
     },
@@ -91,8 +91,8 @@
     },
     "mode": {
       "audio": "Voix",
-      "note": "Note (in French): Remarque",
-      "photo": "Photo (no change needed for Canadian French)",
+      "note": "Note",
+      "photo": "Photo",
       "video": "Vidéo"
     },
     "notePlaceholder": "Observez ce que vous voyez...",
@@ -233,9 +233,9 @@
       "descriptionPlaceholder": "Observez ce que l'on trouve, faites ou constaterez...",
       "editTitle": "Éditer le défi",
       "locationLabel": "OU",
-      "locationPlaceholder": "parc à proximité, ruisseau (stream)",
+      "locationPlaceholder": "p. ex. un ruisseau quelconque, un parc local",
       "newTitle": "Nouvelle épreuve",
-      "noteLabel": "AVERTISSEMENT POUR VOTRE PROFESSEUR (OPTIONNEL)",
+      "noteLabel": "NOTE POUR VOTRE ENSEIGNANT(E) (FACULTATIF)",
       "notePlaceholder": "N'importe quoi que votre professeur devrait savoir avant d'approuver cela...",
       "saveDraft": "Enregistrer brouillon",
       "subjectLabel": "OBJET",

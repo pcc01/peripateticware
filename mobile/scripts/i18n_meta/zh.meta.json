@@ -577,9 +577,9 @@
   },
   "common.ok": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "565339bc4d33d728",
-    "translatedAt": "2026-07-29T19:31:17.610536+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "common.tryAgain": {
     "needsManualTranslation": false,
@@ -805,9 +805,9 @@
   },
   "onboarding.name.periSpeech": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "e3395828aef06d18",
-    "translatedAt": "2026-07-28T16:30:03.260862+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "onboarding.name.placeholder": {
     "needsManualTranslation": false,

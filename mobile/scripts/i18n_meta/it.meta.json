@@ -43,9 +43,9 @@
   },
   "activity.geofence.defaultLocation": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "51ac9e09fb6980b6",
-    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.geofence.dismiss": {
     "needsManualTranslation": false,
@@ -283,9 +283,9 @@
   },
   "camera.closeCamera": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "bebcb88d9dcf4003",
-    "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "camera.openSettings": {
     "needsManualTranslation": false,
@@ -973,9 +973,9 @@
   },
   "propose.form.noteLabel": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "f92cdbe298678ad2",
-    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.form.notePlaceholder": {
     "needsManualTranslation": false,

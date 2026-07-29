@@ -43,15 +43,15 @@
   },
   "activity.geofence.defaultLocation": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "51ac9e09fb6980b6",
-    "translatedAt": "2026-07-29T19:22:18.167985+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.geofence.dismiss": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "9493960d1f75cc13",
-    "translatedAt": "2026-07-28T16:06:26.752007+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.geofence.distanceAway": {
     "needsManualTranslation": false,
@@ -253,9 +253,9 @@
   },
   "activity.reflect.submittedBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "323a470cfd5d06cc",
-    "translatedAt": "2026-07-29T19:22:18.167985+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.submittedTitle": {
     "needsManualTranslation": false,
@@ -283,9 +283,9 @@
   },
   "camera.closeCamera": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "bebcb88d9dcf4003",
-    "translatedAt": "2026-07-28T16:06:26.752007+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "camera.openSettings": {
     "needsManualTranslation": false,
@@ -535,9 +535,9 @@
   },
   "common.back": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "76900f1bfd16c8d4",
-    "translatedAt": "2026-07-28T16:06:26.752007+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "common.cancel": {
     "needsManualTranslation": false,
@@ -583,9 +583,9 @@
   },
   "common.tryAgain": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "d8b8392e2c542950",
-    "translatedAt": "2026-07-28T16:06:26.752007+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "discover.empty": {
     "needsManualTranslation": false,
@@ -757,9 +757,9 @@
   },
   "onboarding.firstActivity.cta": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "c3925bf47f6dd3fc",
-    "translatedAt": "2026-07-28T16:06:26.752007+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "onboarding.firstActivity.periSpeech": {
     "needsManualTranslation": false,

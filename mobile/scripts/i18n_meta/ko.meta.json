@@ -175,15 +175,15 @@
   },
   "activity.reflect.emptySaveBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "82d22bbf42dc66dc",
-    "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.emptySubmitBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "4a11b21658142e56",
-    "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.emptyTitle": {
     "needsManualTranslation": false,
@@ -247,9 +247,9 @@
   },
   "activity.reflect.submitted": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "dc4a7bb326399222",
-    "translatedAt": "2026-07-28T16:06:52.339868+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "activity.reflect.submittedBody": {
     "needsManualTranslation": false,
@@ -361,9 +361,9 @@
   },
   "capture.micPermission.blockedBody": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "6e46e1ddf43a8855",
-    "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "capture.micPermission.body": {
     "needsManualTranslation": false,
@@ -787,9 +787,9 @@
   },
   "onboarding.location.reassurance": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "ceb41681acb1e9ff",
-    "translatedAt": "2026-07-28T16:06:52.339868+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "onboarding.location.skipCta": {
     "needsManualTranslation": false,
@@ -829,9 +829,9 @@
   },
   "perichat.closeChat": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "3b14c5dc986f2a36",
-    "translatedAt": "2026-07-28T16:06:52.339868+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "perichat.connectError": {
     "needsManualTranslation": false,
@@ -901,9 +901,9 @@
   },
   "progress.stats.captures": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "502d75c486cf0952",
-    "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "progress.stats.dayStreak": {
     "needsManualTranslation": false,
@@ -1027,9 +1027,9 @@
   },
   "propose.saveError": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "bbb08e4824b63744",
-    "translatedAt": "2026-07-29T19:35:40.671945+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "propose.status.approved": {
     "needsManualTranslation": false,
@@ -1069,9 +1069,9 @@
   },
   "settings.language.current": {
     "needsManualTranslation": false,
-    "provider": "ollama:mistral",
+    "provider": "manual",
     "sourceHash": "79b806b7e53a9f57",
-    "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+    "translatedAt": "2026-07-29T23:13:41.124Z"
   },
   "settings.language.downloadFailed": {
     "needsManualTranslation": false,

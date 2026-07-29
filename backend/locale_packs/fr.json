@@ -45,7 +45,7 @@
       "emptyTitle": "Une chose de plus",
       "hint": "Enregistre pour permettre de rajouter plus tard. Soumettre l'envoie à votre professeur et le ferme.",
       "periSpeech": "Seulement presque terminé. Écrivez une chose que vous vous souviendrez de ce jour.",
-      "phaseLabel": "REFLÈT (PHASE 3)",
+      "phaseLabel": "PHASE 3 · REFLET",
       "placeholder": "Écrivez votre réflexion ici...",
       "prompt": "Qu'a-t-il enseigné ce lieu ce que ne pouvait pas enseigner un manuel d'école ?",
       "saveCta": "Enregistre pour plus tard",
@@ -91,8 +91,8 @@
     },
     "mode": {
       "audio": "Voix",
-      "note": "Note (French): Note",
-      "photo": "Photo (French): Photo",
+      "note": "Note",
+      "photo": "Photo",
       "video": "Vidéo"
     },
     "notePlaceholder": "Observe ce que vous voyez...",
@@ -158,7 +158,7 @@
     "transcriptPending": "En attente de transcript..."
   },
   "login": {
-    "emailLabel": "EMAIL (no change needed for French)",
+    "emailLabel": "EMAIL",
     "failed": {
       "body": "Vérifiez votre adresse e-mail et mot de passe.",
       "title": "Echec de connexion"
@@ -235,7 +235,7 @@
       "locationLabel": "OU",
       "locationPlaceholder": "parc_local",
       "newTitle": "Nouveau défi",
-      "noteLabel": "AVERTISSEMENT À VOTRE PROFESSEUR (OPTIONNEL)",
+      "noteLabel": "NOTE POUR VOTRE ENSEIGNANT (FACULTATIF)",
       "notePlaceholder": "N'importe quoi que votre professeur devrait savoir avant d'approuver cela...",
       "saveDraft": "Enregistrer brouillon",
       "subjectLabel": "OBJET",

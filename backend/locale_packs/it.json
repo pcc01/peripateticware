@@ -12,7 +12,7 @@
       "video": "Aggiungi video"
     },
     "geofence": {
-      "defaultLocation": "la posizione dell'attività (activity_location)",
+      "defaultLocation": "la posizione dell'attività",
       "dismiss": "avviso di locazione annullato",
       "distanceAway": "(a ~{{meters}} m di distanza)",
       "stepCloser": "Avvicinati di più a {{location}} per continuare."
@@ -61,7 +61,7 @@
   },
   "camera": {
     "allowAccess": "Consenti l'accesso",
-    "closeCamera": "Chiusura camera (Chiude camera in abbreviated form)",
+    "closeCamera": "Chiudi fotocamera",
     "openSettings": "Imposta impostazioni",
     "permission": {
       "photo": "Accesso alla camera necessario per prendere una foto.",
@@ -235,7 +235,7 @@
       "locationLabel": "Dove",
       "locationPlaceholder": "parco locale, corso di streaming",
       "newTitle": "Nuovo sfido",
-      "noteLabel": "NOTA AL PROFESSEore (OPZIONALE)",
+      "noteLabel": "NOTA PER IL TUO INSEGNANTE (FACOLTATIVA)",
       "notePlaceholder": "Qualcosa che il tuo insegnante dovrebbe sapere prima di approvare questo...",
       "saveDraft": "Salva bozza",
       "subjectLabel": "Oggetto",

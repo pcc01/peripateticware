@@ -134,7 +134,7 @@
     "done": "完成",
     "error": "错误",
     "journalLabel": "字段记录",
-    "ok": "好的 (háo de)",
+    "ok": "好的",
     "tryAgain": "再试一次"
   },
   "discover": {
@@ -191,7 +191,7 @@
     },
     "name": {
       "cta": "继续",
-      "periSpeech": "你应该叫什么？(Ni yīshǐ jiào shénme?)",
+      "periSpeech": "我该怎么称呼你？",
       "placeholder": "您的名字..."
     },
     "splash": {

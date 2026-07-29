@@ -1,15 +1,15 @@
 {
   "activity": {
     "brief": {
-      "detailsLabel": "DETAILS (no change needed for German)",
+      "detailsLabel": "DETAILS",
       "periIntro": "Hier sehen Sie, was Ihr heute tun wird. Nehmen Sie eine Minute Zeit, um es vor dem Ausgehen durchzulesen.",
       "startCta": "Bereit — los gehen"
     },
     "capture": {
-      "audio": "Hinzufügen einer Stimmenaufnahme (German)",
-      "note": "Hinzufügen einer Notiz (German)",
+      "audio": "Sprachaufnahme hinzufügen",
+      "note": "Notiz hinzufügen",
       "photo": "Foto hinzufügen",
-      "video": "Hinzufügen Video (German)"
+      "video": "Video hinzufügen"
     },
     "geofence": {
       "defaultLocation": "Aktivitätsort",
@@ -93,7 +93,7 @@
       "audio": "Stimme",
       "note": "Notiz",
       "photo": "Foto",
-      "video": "Video (German): Video"
+      "video": "Video"
     },
     "notePlaceholder": "beobachte was du wahrnehmst...",
     "offline": {
@@ -101,7 +101,7 @@
       "title": "gespeichert offline"
     },
     "preview": {
-      "pause": "Pause (German): Pause",
+      "pause": "Pause",
       "play": "Spiele",
       "title": "Ihr Beweis"
     },
@@ -163,7 +163,7 @@
       "body": "Prüfe deine E-Mail und Passwort.",
       "title": "Anmeldung fehlgeschlagen"
     },
-    "forgotPassword": "Vergessen Sie das Passwort? (German)",
+    "forgotPassword": "Passwort vergessen?",
     "missingFields": {
       "body": "Eingabe Ihre Email und Passwort.",
       "title": "Leerfelder"
@@ -232,10 +232,10 @@
       "descriptionLabel": "TUN SOLLEN SIE ETWAS MACHTEN?",
       "descriptionPlaceholder": "Entdecken Sie was zu finden, tun oder beobachten...",
       "editTitle": "Bearbeite Herausforderung",
-      "locationLabel": "Wo (EIN ALLGEMEINES HINWEIS)",
+      "locationLabel": "WO (EIN ALLGEMEINER HINWEIS)",
       "locationPlaceholder": "Fluss: z.B., ein lokaler Park",
       "newTitle": "Neues Challenge",
-      "noteLabel": "LEHRERIN/LEHRER BEMERKUNG (OPTIONAL)",
+      "noteLabel": "NOTIZ FÜR DEINE LEHRKRAFT (OPTIONAL)",
       "notePlaceholder": "Jedes was Ihr Lehrer vor Genehmigung kennen sollte...",
       "saveDraft": "Speichern als Entwurf",
       "subjectLabel": "GEGENSTAND",

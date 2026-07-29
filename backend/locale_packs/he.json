@@ -23,7 +23,7 @@
       "captureLabel": "איסוף דוגמה",
       "defaultQuestion": "שאה קרוב. מי זה הדלק שתמצא? נטע את מה שראית.",
       "doneCta": "שלב הסיום — נעשה הזמן לראות",
-      "evidenceCollectedLabel": "שחקרו ({{count}})",
+      "evidenceCollectedLabel": "נאסף ({{count}})",
       "followUpLabel": "אחוזים",
       "phaseLabel": "פסידה 2 · שאלתו",
       "reviewEvidence": "ראה את הצלחת",
@@ -52,7 +52,7 @@
       "savedBody": "אתה מסוגר בניוך - שוב כל זמן להוספה עוד לפני הצליחה",
       "savedTitle": "שמור",
       "submitCta": "שלח עסקים",
-      "submitted": "שמורת ✓ (Submitted ✓ in Hebrew)",
+      "submitted": "נשלח ✓",
       "submittedBody": "את עמלך השדה נשלח למורה שלך.",
       "submittedTitle": "שמורת! 🎉",
       "title": "צרו תמיד לעשות את הכוחות שלך נפשית ובטח שתעשה משהו מסוג זה",
@@ -276,7 +276,7 @@
       },
       "fieldGuide": {
         "desc": "כתב גםרי — ספר מקום חשוב",
-        "label": "קודך (Field)"
+        "label": "מדריך שטח"
       },
       "terrain": {
         "desc": "קריא ושנה – עזרה טופוגרפית",
