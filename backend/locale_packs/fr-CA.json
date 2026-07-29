@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "Prêt — allons-y"
+    },
+    "capture": {
+      "audio": "Enregistrement vocal ajouté",
+      "note": "Ajouter une note",
+      "photo": "Ajouter une photo",
+      "video": "Ajouter vidéo"
+    },
+    "geofence": {
+      "dismiss": "Avertir de la position (annuler)"
+    },
+    "inquiry": {
+      "askPeri": "Demande à Peri",
+      "doneCta": "Capture terminée — réfléchir"
+    },
+    "orient": {
+      "readyCta": "Je suis orienté — commencer enquête"
+    },
+    "reflect": {
+      "submitCta": "Soumettre travaux de terrain",
+      "submitted": "Soumis ✔️"
+    }
+  },
+  "camera": {
+    "allowAccess": "Accès autorisé",
+    "closeCamera": "Ferme caméra",
+    "permission": {
+      "photo": "Accès à la caméra est nécessaire pour prendre une photo.",
+      "video": "Accès à la caméra et au micro sont nécessaires pour enregistrer une vidéo."
+    },
+    "starting": "Démarrage de la caméra...",
+    "takePhoto": "Prendre une photo"
+  },
+  "capture": {
+    "fieldNote": "NOTES DE CHAMP",
+    "micPermission": {
+      "body": "Accès au micro permettant l'enregistrement de l'audio.",
+      "title": "Autorisation nécessaire"
+    },
+    "mode": {
+      "audio": "Voix",
+      "note": "Note (in French): Remarque",
+      "photo": "Photo (no change needed for Canadian French)",
+      "video": "Vidéo"
+    },
+    "notePlaceholder": "Observez ce que vous voyez...",
+    "offline": {
+      "body": "Enregistrement sauvegardé sur votre appareil et téléchargé lors de la réconnexion.",
+      "title": "En ligne sauvegardé hors connexion"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "Enregistre note",
+    "startRecording": "Enregistrement démarré",
+    "stopRecording": "Arrêter l'enregistrement",
+    "tapToStart": "Enclenchez pour enregistrer",
+    "title": "Ajouter preuve",
+    "uploadFailed": {
+      "title": "Échec de l'envoi"
+    },
+    "uploading": "Envoi en cours..."
+  },
+  "common": {
+    "activity": "Activité",
+    "activityPlural": "Activités",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "captureLabel": "Enregistrement de preuves",
+    "close": "Ferme",
+    "journalLabel": "Notes de champ",
+    "tryAgain": "Essaie encore"
+  },
+  "login": {
+    "forgotPassword": "Mot de passe oublié?",
+    "passwordReset": {
+      "body": "Rappel votre professeur pour réinitialiser votre mot de passe.",
+      "title": "Mot de passe réinitialisé"
+    },
+    "signIn": "Se connecter"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Naviguez tous les activités",
+      "cta": "Ouvrir activité",
+      "periSpeech": "Activité de terrain proche de vous."
+    },
+    "location": {
+      "badge": "3 activités à proximité",
+      "confirmCta": "Autoriser la localisation",
+      "periSpeech": "Activités près de vous. Activer la localisation pour commencer ?",
+      "reassurance": "Utilisé uniquement pour mettre en évidence les activités proches",
+      "skipCta": "Sauter pour l'instant"
+    },
+    "name": {
+      "cta": "Continuer",
+      "periSpeech": "Quel est votre prénom ?",
+      "placeholder": "Votre nom..."
+    },
+    "splash": {
+      "cta": "Get started",
+      "periSpeech": "Activités de champ intéressantes à proximité à découvrir."
+    }
+  },
+  "perichat": {
+    "closeChat": "Ferme le chat",
+    "connectError": "Essay ne peut pas se connecter actuellement. Réessayer dans un instant.",
+    "greeting": "Je suis Peri. Demande-moi quelque chose sur l'activité ou ce que vous observez.",
+    "inputPlaceholder": "Demande une question...",
+    "sendMessage": "Envoyer message",
+    "title": "Demande à Peri"
+  },
+  "perispeech": {
+    "readAloud": "Lisez-le haute voix",
+    "stopReading": "Arrête de lire en haute voix"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Êtes-vous sûr?",
+      "title": "Se déconnecter"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Clair et sombre - netteté du ciel de nuit",
+        "label": "Atmosphère"
+      },
+      "fieldGuide": {
+        "desc": "Chaud parchemin - carnet de champ classique",
+        "label": "Guide de champ"
+      },
+      "terrain": {
+        "desc": "Affûté et précis — focus topographique",
+        "label": "Terrain"
+      }
+    }
+  }
+}

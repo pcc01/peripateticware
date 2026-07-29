@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "Hazır oldum — çalışmalarıza başlayalım"
+    },
+    "capture": {
+      "audio": "Ekşi ses kaydet",
+      "note": "Yeni Not Ekle",
+      "photo": "Ekle fotoğraf",
+      "video": "Ekle video"
+    },
+    "geofence": {
+      "dismiss": "Kızolda Uyarısını Kapat"
+    },
+    "inquiry": {
+      "askPeri": "Soru Peri",
+      "doneCta": "Tamam alındı — yansıma yap"
+    },
+    "orient": {
+      "readyCta": "Açıklandım — soru başlatın"
+    },
+    "reflect": {
+      "submitCta": "Tamamla Field İşi",
+      "submitted": "Tamamlandı ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "Erim izni ver",
+    "closeCamera": "Kapat kamera",
+    "permission": {
+      "photo": "Fotoğraf çekmek için kamera erişimi gereklidir.",
+      "video": "Kameran ve ses çekici erişim gereklidir videoyu kaydetmek için.\nKameran ve ses çekici erişimi videoyu kaydetmek için gerekli."
+    },
+    "starting": "Başlatılıyor kamera...",
+    "takePhoto": "Fotoğraf çek"
+  },
+  "capture": {
+    "fieldNote": "ATEŞ NOTU",
+    "micPermission": {
+      "body": "Kullanıcının ses kaydetmek için mikrofon erişimi iznini ver.",
+      "title": "Izin gereklidir"
+    },
+    "mode": {
+      "audio": "Ses",
+      "note": "Nota",
+      "photo": "Resim",
+      "video": "Video"
+    },
+    "notePlaceholder": "Gözlem edilen yazınız...",
+    "offline": {
+      "body": "Kaydınızda kaydedilmiştir ve yeniden bağlanırsanız yüklenir.",
+      "title": "Kaydedilmiş Offline"
+    },
+    "recordingStatus": "Kaydetme ({{seconds}})s – duraklatmak için tıklayın",
+    "saveNote": "Kaydet",
+    "startRecording": "Kaydı Başlat",
+    "stopRecording": "Durakla\n\n(Note: \"Durakla\" means \"Stop\" in Turkish)",
+    "tapToStart": "Kısa basarak kaydeta başlat",
+    "title": "Eklenen Tümleri Ekle",
+    "uploadFailed": {
+      "title": "Upload failed"
+    },
+    "uploading": "Yükleme..."
+  },
+  "common": {
+    "activity": "Faaliyet",
+    "activityPlural": "Faaliyetler",
+    "back": "Geri",
+    "cancel": "iptal",
+    "captureLabel": "Kısıtla Doğrulama",
+    "close": "Kapat",
+    "journalLabel": "Açıklama notları",
+    "tryAgain": "Yeniden Deneyin"
+  },
+  "login": {
+    "forgotPassword": "Sifre mi unuttum?",
+    "passwordReset": {
+      "body": "Mesajla öğretmenine şifrenizi sıfırla'ma için iletişime geçin.",
+      "title": "Şifre Sıfırla"
+    },
+    "signIn": "Giriş Yap"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Tüm faaliyetleri tarif et",
+      "cta": "Aç",
+      "periSpeech": "Yakında senin yanında alan etkileşimi var."
+    },
+    "location": {
+      "badge": "Yakın yerelde 3 faaliyet",
+      "confirmCta": "Konumu Kapat",
+      "periSpeech": "Yakın yerinde aktiviteler var. Konumu etkinleştirmeyi sağlayarak başlamak için nasıl devam edeceksiniz?\n\nTranslation: Are there activities near you? Enable location to continue?",
+      "reassurance": "Used only to surface nearby activities",
+      "skipCta": "Atlaştır"
+    },
+    "name": {
+      "cta": "Devam Et",
+      "periSpeech": "Nasılsızlarsınız?",
+      "placeholder": "Adınız..."
+    },
+    "splash": {
+      "cta": "Başlayın",
+      "periSpeech": "Arayanızda keşfedilecek alanlarda alan işleri var."
+    }
+  },
+  "perichat": {
+    "closeChat": "Kapat chat",
+    "connectError": "Bağlanamıyorum bu an. Bekleyiniz birkaç saniye sonra tekrar deneyin.",
+    "greeting": "Sen Peri. Aktivite ve gözlem ediyorsunuz konusunda soru sorabilirsiniz.",
+    "inputPlaceholder": "Soru sor...",
+    "sendMessage": "Gönder mesajı",
+    "title": "Soru Peri"
+  },
+  "perispeech": {
+    "readAloud": "Okunar",
+    "stopReading": "Durakla okuyun (or simply Durakla)"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Tamam mi öydüünüz?",
+      "title": "Çıkış Yap"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Karanlık ve derinlik — yavru gökyüzü aydınlatma",
+        "label": "Hava Durumu"
+      },
+      "fieldGuide": {
+        "desc": "Sıcak pergamene — klasik alan not defteri",
+        "label": "Rehber"
+      },
+      "terrain": {
+        "desc": "Açık ve kesin - yerel konum ön plana çıkarma",
+        "label": "Teren"
+      }
+    }
+  }
+}

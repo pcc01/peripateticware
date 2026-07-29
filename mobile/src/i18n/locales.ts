@@ -8,13 +8,15 @@
 // persistence + translation layer is still step 4 of that doc's
 // suggested build order.
 //
-// Locale set mirrors frontend/src/config/i18n.ts's SUPPORTED_LANGUAGES
-// for web/mobile parity, per FEATURE_PLAN.md's note that this was
-// "likely intended." The pre-removal mobile picker reportedly had 8
-// chips (work_tracking.md / BUG_REPORT_TRIAGE.md); the exact original
-// 8th language isn't recoverable from those docs, so this list is 7,
-// matching web exactly. Add an 8th here (and to web's
-// SUPPORTED_LANGUAGES, to keep parity) if/when that's decided.
+// Kept in parity with the full set of locales that have real translated
+// content on the website (frontend/public/locales/ — 12 non-English
+// locales), not just the 7 previously exposed in web's own picker
+// (frontend/src/config/i18n.ts's SUPPORTED_LANGUAGES, updated alongside
+// this file to match).
+//
+// mobile/scripts/translate_appstrings.py parses this array directly, so
+// adding a locale here (plus running that script) is the whole
+// add-a-locale workflow.
 // ─────────────────────────────────────────────────────────────────
 
 export interface SupportedLocale {
@@ -31,6 +33,12 @@ export const SUPPORTED_LOCALES: SupportedLocale[] = [
   { code: 'ja',    name: '日本語',                  flag: '🇯🇵' },
   { code: 'ko',    name: '한국어',                  flag: '🇰🇷' },
   { code: 'pt-BR', name: 'Português (Brasil)',    flag: '🇧🇷' },
+  { code: 'fr-CA', name: 'Français (Canada)',     flag: '🇨🇦' },
+  { code: 'he',    name: 'עברית',                  flag: '🇮🇱' },
+  { code: 'de',    name: 'Deutsch',                flag: '🇩🇪' },
+  { code: 'it',    name: 'Italiano',               flag: '🇮🇹' },
+  { code: 'tr',    name: 'Türkçe',                 flag: '🇹🇷' },
+  { code: 'zh',    name: '中文',                    flag: '🇨🇳' },
 ];
 
 export const DEFAULT_LOCALE = 'en';

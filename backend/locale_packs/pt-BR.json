@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "Estou pronto - vamos lá"
+    },
+    "capture": {
+      "audio": "Gravar gravação de voz",
+      "note": "Adicionar nota",
+      "photo": "Adicionar foto",
+      "video": "Adicionar vídeo"
+    },
+    "geofence": {
+      "dismiss": "Aviso de localização (desmarcar)"
+    },
+    "inquiry": {
+      "askPeri": "Pergunte Peri",
+      "doneCta": "Capturado — refleta"
+    },
+    "orient": {
+      "readyCta": "Eu estou alinhado — comece a consulta"
+    },
+    "reflect": {
+      "submitCta": "Enviar trabalho de campo",
+      "submitted": "Aprovado ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "Acesso permitido",
+    "closeCamera": "Fechar câmera",
+    "permission": {
+      "photo": "Acesso à câmera é necessário para tirar uma foto.",
+      "video": "Acesso à câmera e microfone é necessário para gravar vídeo."
+    },
+    "starting": "Iniciando câmera...",
+    "takePhoto": "Faze uma foto"
+  },
+  "capture": {
+    "fieldNote": "NOTA DE CAMPO",
+    "micPermission": {
+      "body": "Permitir acesso ao microfone para gravar áudio.",
+      "title": "Permissão necessária"
+    },
+    "mode": {
+      "audio": "Voz",
+      "note": "Nota",
+      "photo": "Foto",
+      "video": "Vídeo"
+    },
+    "notePlaceholder": "Observa o que você percebeu...",
+    "offline": {
+      "body": "Armazenado no seu dispositivo e será carregado quando você se conectar novamente.",
+      "title": "Salvo offline"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "Salvar nota",
+    "startRecording": "Gravar áudio",
+    "stopRecording": "Parar de gravar",
+    "tapToStart": "Toque para começar a gravar (tocar para iniciar gravação)",
+    "title": "Adicionar evidência",
+    "uploadFailed": {
+      "title": "Falha na upload"
+    },
+    "uploading": "Carregando..."
+  },
+  "common": {
+    "activity": "Atividade",
+    "activityPlural": "Atividades",
+    "back": "Voltar",
+    "cancel": "Cancelar",
+    "captureLabel": "Evidência de registro",
+    "close": "Fechar",
+    "journalLabel": "Notas de campo",
+    "tryAgain": "Tente novamente"
+  },
+  "login": {
+    "forgotPassword": "Esqueceu a senha?",
+    "passwordReset": {
+      "body": "Contate seu professor para redefinir sua senha.",
+      "title": "Senha de recuperação"
+    },
+    "signIn": "Entrar"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Navegue por todas as atividades",
+      "cta": "Abrir atividade",
+      "periSpeech": "Atividade de campo próxima a você."
+    },
+    "location": {
+      "badge": "Atividades próximas (3)",
+      "confirmCta": "Permitir localização",
+      "periSpeech": "Atividades próximas de você. Ative a localização para começar?",
+      "reassurance": "Atividades próximas",
+      "skipCta": "Pule para agora"
+    },
+    "name": {
+      "cta": "Continuar",
+      "periSpeech": "O que você se chama?",
+      "placeholder": "Seu nome..."
+    },
+    "splash": {
+      "cta": "Iniciar",
+      "periSpeech": "Atividades em campo na sua área são interessantes para explorar."
+    }
+  },
+  "perichat": {
+    "closeChat": "Fechar chat",
+    "connectError": "Não consegui conectar-me agora. Tente novamente em breve.",
+    "greeting": "Peri estou aqui. Pergunte sobre qualquer coisa relacionada à atividade ou ao que você está observando.",
+    "inputPlaceholder": "Pergunte uma pergunta...",
+    "sendMessage": "Enviar mensagem",
+    "title": "Pergunte Peri"
+  },
+  "perispeech": {
+    "readAloud": "Ler por falas",
+    "stopReading": "Parar de falar em voz alta"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Tem certeza?",
+      "title": "Sair"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Claro e escuro - claridade do céu noturno",
+        "label": "Átmosfera"
+      },
+      "fieldGuide": {
+        "desc": "Parchamento quente - caderno de campo clássico",
+        "label": "Guia de Campo"
+      },
+      "terrain": {
+        "desc": "Fino e agudo — foco topográfico",
+        "label": "Solo"
+      }
+    }
+  }
+}

@@ -568,6 +568,12 @@ try:
 except Exception as e:
     print(f"Warning: could not register questions_router: {e}")
 
+try:
+    from routes.locale_packs import router as locale_packs_router
+    app.include_router(locale_packs_router)                       # router prefix="/api/v1/locale-packs"
+except Exception as e:
+    print(f"Warning: could not register locale_packs_router: {e}")
+
 # ── Parent ────────────────────────────────────────────────────────────────────
 try:
     from routes.parent import router as parent_router

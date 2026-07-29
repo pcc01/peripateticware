@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "אני הופעל — נסו נמצא"
+    },
+    "capture": {
+      "audio": "הוסף אודיו רשמי",
+      "note": "הוסף משלוח",
+      "photo": "הוסף תמונה",
+      "video": "הוסף VIDEO"
+    },
+    "geofence": {
+      "dismiss": "מחק אזהרה מיקום"
+    },
+    "inquiry": {
+      "askPeri": "שאל פרי",
+      "doneCta": "שלב הסיום — נעשה הזמן לראות"
+    },
+    "orient": {
+      "readyCta": "אני מוגדר — התחל שאלה"
+    },
+    "reflect": {
+      "submitCta": "שלח עסקים",
+      "submitted": "שמורת ✓ (Submitted ✓ in Hebrew)"
+    }
+  },
+  "camera": {
+    "allowAccess": "סגור את הגישה",
+    "closeCamera": "סגור כמראה",
+    "permission": {
+      "photo": "ציור כמרה צריך לקבלתו לנטע תמונה\n\nNote: The Hebrew translation for \"Camera access\" is \"ציור כמרה\". The rest of the sentence was translated as well.",
+      "video": "ציור וגישה למיקרופון צריך לנתונת כדי לעצור סינמא.\n\n(Camera and microphone access are needed to record video.)"
+    },
+    "starting": "התחיל כמראה...",
+    "takePhoto": "שניתן לנהוג צלם"
+  },
+  "capture": {
+    "fieldNote": "הערה שדה",
+    "micPermission": {
+      "body": "סגור האמתי לשמע אודיו",
+      "title": "איזור צריך"
+    },
+    "mode": {
+      "audio": "קול",
+      "note": "הערה",
+      "photo": "תמונה",
+      "video": "VIDEO"
+    },
+    "notePlaceholder": "כתוב מאודך שראית...",
+    "offline": {
+      "body": "זהו אתרף שמור במכשירך והעלה בצעד שנתחברים שוב\n\n(Note: The string has been translated using Google Translate for reference, and it may not be grammatically perfect Hebrew. For a more accurate translation, I recommend consulting with a professional translator.)",
+      "title": "מושחקים שמורים בלא התחברות"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "שמירה עמודה",
+    "startRecording": "שתרתח לאודיו",
+    "stopRecording": "סטופ ריקוד",
+    "tapToStart": "נ klik להתחיל בריצה",
+    "title": "הוסף אביזית",
+    "uploadFailed": {
+      "title": "עליה נכשל"
+    },
+    "uploading": "עלייה..."
+  },
+  "common": {
+    "activity": "פעילות",
+    "activityPlural": "פעילויות",
+    "back": "אחורה",
+    "cancel": "בטל\n\nNote: The word \"Cancel\" translates to \"בטל\" in Hebrew.",
+    "captureLabel": "אחזק עלומות",
+    "close": "סגור",
+    "journalLabel": "הערות שדה",
+    "tryAgain": "נסה שוב"
+  },
+  "login": {
+    "forgotPassword": "שכחתי הסיסמא?",
+    "passwordReset": {
+      "body": "אישור הסיסמה שלך? צור קשר עם מורה כדי לאפשר את החזרה שלך\n\n(Password reset? Contact your teacher to allow it)",
+      "title": "סיסמה נové"
+    },
+    "signIn": "כניתוף חשבון"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "מצא כל הפעילויות",
+      "cta": "פתח איור",
+      "periSpeech": "שדה פעילות קרב לך"
+    },
+    "location": {
+      "badge": "3 פעילויות קרובות",
+      "confirmCta": "סמשר מקום",
+      "periSpeech": "יש פעילויות קרב אליך. הפעל מיקום כדי להתחיל?",
+      "reassurance": "משתמש בו לציג אינטרנטים קריבים",
+      "skipCta": "סAUT למרה קשורה"
+    },
+    "name": {
+      "cta": "Continue",
+      "periSpeech": "מה אני צריך לקרוא לך?",
+      "placeholder": "שםך..."
+    },
+    "splash": {
+      "cta": "התחיל עםנו",
+      "periSpeech": "בארץ שלך יש פעולות שדה מסוג נוסף לציווג\n\nNote: The Hebrew translation of the given string is provided, but it's essential to ensure that the context and formatting are appropriate for your specific app UI."
+    }
+  },
+  "perichat": {
+    "closeChat": "סגור שיחה",
+    "connectError": "לא הייתי מכונה בזמן הזה. נסה שניים בעוד קרגע.",
+    "greeting": "אני פרי. שאל לי כל שהוא על העמל או את המשאב שראית.",
+    "inputPlaceholder": "שאל שאלה...",
+    "sendMessage": "שלח הודעה",
+    "title": "שאל פרי"
+  },
+  "perispeech": {
+    "readAloud": "קרא לשמע",
+    "stopReading": "לא נקרא באוויר"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "אנта בטוח/ה?",
+      "title": "התנתק\n\nNote: The Hebrew word for \"Sign out\" is \"התנתק\", which means \"log off\"."
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "כוכבים שחורים ועוקבים - מצלעת הלילה",
+        "label": "אתמושפת"
+      },
+      "fieldGuide": {
+        "desc": "כתב גםרי — ספר מקום חשוב",
+        "label": "קודך (Field)"
+      },
+      "terrain": {
+        "desc": "קריא ושנה – עזרה טופוגרפית",
+        "label": "טריין"
+      }
+    }
+  }
+}

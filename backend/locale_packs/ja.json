@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "準備完了 - 行く"
+    },
+    "capture": {
+      "audio": "録音を追加",
+      "note": "メモを追加",
+      "photo": "写真を追加",
+      "video": "動画を追加"
+    },
+    "geofence": {
+      "dismiss": "位置警告を閉じる\n(Chijou keikoku o shimasu)"
+    },
+    "inquiry": {
+      "askPeri": "質問するPeri",
+      "doneCta": "撮影完了 — 反映中"
+    },
+    "orient": {
+      "readyCta": "僕は方向性があります - 調査を開始します。"
+    },
+    "reflect": {
+      "submitCta": "提出フィールド作業",
+      "submitted": "承認済み ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "アクセスを許可する",
+    "closeCamera": "カメラを閉じる (Kamera o oshieru)",
+    "permission": {
+      "photo": "カメラアクセスが必要です、写真を撮るには。",
+      "video": "カメラとマイクロフォンのアクセスが必要です、ビデオを録音するには。"
+    },
+    "starting": "カメラを起動中...",
+    "takePhoto": "写真を撮る"
+  },
+  "capture": {
+    "fieldNote": "フィールドメモ",
+    "micPermission": {
+      "body": "マイクロフォンのアクセスを許可して、音声を録音します。",
+      "title": "権限が必要です"
+    },
+    "mode": {
+      "audio": "声音\n\n(Note: \"Voice\" in English remains unchanged when translated to Japanese.)",
+      "note": "メモ",
+      "photo": "写真",
+      "video": "ビデオ"
+    },
+    "notePlaceholder": "観察した内容を書きます...",
+    "offline": {
+      "body": "このキャプチャは、デバイスに保存されており、再接続時にアップロードされます。",
+      "title": "OFFLINE保存"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "保存メモ",
+    "startRecording": "録音開始",
+    "stopRecording": "録音を停止する",
+    "tapToStart": "タップして録音を開始する",
+    "title": "添付証據",
+    "uploadFailed": {
+      "title": "アップロード失敗"
+    },
+    "uploading": "アップロード中..."
+  },
+  "common": {
+    "activity": "活動",
+    "activityPlural": "活動",
+    "back": "戻る (Return)",
+    "cancel": "キャンセル",
+    "captureLabel": "証拠を録音",
+    "close": "閉じる",
+    "journalLabel": "フィールドノート",
+    "tryAgain": "もう一度試してください (Mou ichido shite kudasai)"
+  },
+  "login": {
+    "forgotPassword": "パスワードを忘れた？",
+    "passwordReset": {
+      "body": "教師に連絡してパスワードをリセットしてください。",
+      "title": "パスワードのリセット"
+    },
+    "signIn": "ログイン"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "活動一覧を参照",
+      "cta": "開くアクティビティ (kaiaku aktibiti)",
+      "periSpeech": "近くにフィールド活動があります。"
+    },
+    "location": {
+      "badge": "近頃3つのアクティビティ",
+      "confirmCta": "位置を許可する",
+      "periSpeech": "近くにアクティビティがあります。位置情報を有効にしてスタートしますか？",
+      "reassurance": "近くの活動を表示する唯一の目的",
+      "skipCta": "スキップしておく"
+    },
+    "name": {
+      "cta": "続ける",
+      "periSpeech": "誰に呼びますか？",
+      "placeholder": "あなたの名前…"
+    },
+    "splash": {
+      "cta": "スタートする",
+      "periSpeech": "あなたの地域には調べる値段があります。"
+    }
+  },
+  "perichat": {
+    "closeChat": "チャットを閉じる",
+    "connectError": "現在接続できません。しばらくお待ちください。",
+    "greeting": "私はペリです。活動や観察中の何かについて聞くことができます。",
+    "inputPlaceholder": "質問をしてください...",
+    "sendMessage": "メッセージを送信",
+    "title": "質問するPeri"
+  },
+  "perispeech": {
+    "readAloud": "読み上げ",
+    "stopReading": "読み上げを停止する"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "確実によろしいですか？",
+      "title": "ログアウト"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "深く、暗く - 夜空の清澄度",
+        "label": "気候"
+      },
+      "fieldGuide": {
+        "desc": "暖かい紙 — 古典的な野外ノートブック",
+        "label": "フィールドガイド"
+      },
+      "terrain": {
+        "desc": "清晰で鋼琴的 — 地形の焦点",
+        "label": "地形"
+      }
+    }
+  }
+}

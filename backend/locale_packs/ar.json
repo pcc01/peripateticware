@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "جاهز — للذهب"
+    },
+    "capture": {
+      "audio": "إضافة صوتية من الكريمة",
+      "note": "اضف ملاحظة",
+      "photo": "اضف صورة",
+      "video": "إضافة فيديو"
+    },
+    "geofence": {
+      "dismiss": "تنظيم الوارنings الموقع"
+    },
+    "inquiry": {
+      "askPeri": "سؤال بيري",
+      "doneCta": "مكتمل الاستقرار"
+    },
+    "orient": {
+      "readyCta": "محيط بالتعليق — ابدأ الاستفسار"
+    },
+    "reflect": {
+      "submitCta": "إرسال العمليات الحقلية",
+      "submitted": "محفوظ ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "سمح للوصول",
+    "closeCamera": "إغلاق كاميرة",
+    "permission": {
+      "photo": "إحتياج إلى الوصول إلى الكاميرا لقبل السjęنة الصورة.",
+      "video": "إجهاز الكاميرا والميكروفون مطلوب لتسجيل الفيديو."
+    },
+    "starting": "بدء الكاميرا...",
+    "takePhoto": "سنشوف الصورة"
+  },
+  "capture": {
+    "fieldNote": "ملاحظة المنطقة",
+    "micPermission": {
+      "body": "سمح للأصدقاء الوصول إلى الميكروفون لتسجيل الأudio.",
+      "title": "إذن مطلوب"
+    },
+    "mode": {
+      "audio": "صوت",
+      "note": "ملاحظة",
+      "photo": "صورة",
+      "video": "فيديو"
+    },
+    "notePlaceholder": "كتاب أنظر إلى...",
+    "offline": {
+      "body": "التسجيل الذي حفظته على أجهزتك وسيتم رفعه عند معاونتك\n\nNote: The translation provided is for the given string only and may not be suitable for other contexts or similar phrases. Always ensure proper localization and cultural sensitivity when translating user interface content.",
+      "title": "محفوظ بغير الاتصال"
+    },
+    "recordingStatus": "سجلة {{seconds}}s — انقر لإيقاف",
+    "saveNote": "حفظ ملاحظة",
+    "startRecording": "بدء التسجيل",
+    "stopRecording": "انهي إستعداد الفيديو",
+    "tapToStart": "انقر لبدء التسجيل",
+    "title": "إضافة الأمواjen",
+    "uploadFailed": {
+      "title": "رفض التحميل"
+    },
+    "uploading": "تحميل..."
+  },
+  "common": {
+    "activity": "مهام",
+    "activityPlural": "ممارسات",
+    "back": "رجوع",
+    "cancel": "إلغاء",
+    "captureLabel": "سجل الأمواтен",
+    "close": "إغلاق",
+    "journalLabel": "ملاحظات المنطقة",
+    "tryAgain": "عودة المحاولة"
+  },
+  "login": {
+    "forgotPassword": "هل نسيت كلمة السر؟",
+    "passwordReset": {
+      "body": "اتصل بعلماءك لإعادة ضبط رقم السجل الخاص بك.",
+      "title": "إعادة تعيين الرقم السري"
+    },
+    "signIn": "سIGN\\_IN"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "تصفح الأنشطة الكلية",
+      "cta": "مفتاح العملية",
+      "periSpeech": "يوجد نشاط مكاني قريبًا منك."
+    },
+    "location": {
+      "badge": "3 أنشطة قريبة",
+      "confirmCta": "سمح بالموقع",
+      "periSpeech": "هناك أنشطة قريبة منك. تمكّن من الموقع لبدء الإنجاز؟",
+      "reassurance": "استخدامه الفقط لإعلن الأنشطة القريبة",
+      "skipCta": "تخطي للآن"
+    },
+    "name": {
+      "cta": "اتمنى",
+      "periSpeech": "اي ما هو الإسم الذي تحتاج أن أقوله؟",
+      "placeholder": "اسمك..."
+    },
+    "splash": {
+      "cta": "بدء البدء",
+      "periSpeech": "في منطقتك هناك أنشطة الحقل المعرفة بالتوجه إلى التصوير"
+    }
+  },
+  "perichat": {
+    "closeChat": "إغلاق الدردشة",
+    "connectError": "لم يتم الاتصال حاليًا. حاول مرة أخرى في لحظة قريبة.",
+    "greeting": "أنا بيري. سأتحدث لك عن الأنشطة أو ما تنظر إليه.",
+    "inputPlaceholder": "سأشارك سؤال...",
+    "sendMessage": "ارسل رسالة",
+    "title": "سؤال بيري"
+  },
+  "perispeech": {
+    "readAloud": "قراءة الأكواد",
+    "stopReading": "اتوقف عن القراءة الصادمة"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "متابعين؟",
+      "title": "تسجيل الخروج"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "سفينة وظلماء — صرخة الليل الترقيه",
+        "label": "أنواع الخلايا الجوية"
+      },
+      "fieldGuide": {
+        "desc": "قطعة خشب غريبة - مجموعة حقل تاريخية",
+        "label": "دليل المنطقة"
+      },
+      "terrain": {
+        "desc": "شاسع وصحيح - التنظيم الجغرافي",
+        "label": "Terrein"
+      }
+    }
+  }
+}

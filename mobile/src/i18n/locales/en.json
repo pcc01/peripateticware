@@ -7,7 +7,10 @@
     "tryAgain": "Try again",
     "back": "Back",
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "ok": "OK",
+    "done": "Done",
+    "error": "Error"
   },
   "onboarding": {
     "splash": {
@@ -39,36 +42,53 @@
       "note": "Note",
       "video": "Video"
     },
-    "offline": {
-      "title": "📵 Saved offline",
-      "body": "This capture is saved on your device and will upload when you reconnect."
-    },
     "uploadFailed": {
       "title": "Upload failed"
     },
     "micPermission": {
       "title": "Permission needed",
-      "body": "Allow microphone access to record audio."
+      "body": "Allow microphone access to record audio.",
+      "blockedBody": "Microphone access was previously denied, so your device won’t ask again here. Turn it on in Settings to continue."
+    },
+    "recordError": {
+      "title": "Recording failed",
+      "body": "Could not start recording. Please try again."
     },
     "title": "Add evidence",
-    "uploading": "Uploading…",
+    "saved": "Saved to your device",
+    "savedSubtext": "It'll sync automatically, or when you turn in the activity.",
+    "savingLocally": "Saving…",
     "stopRecording": "Stop recording",
     "startRecording": "Start recording",
+    "requestingMic": "Requesting microphone access…",
     "recordingStatus": "Recording {{seconds}}s — tap to stop",
     "tapToStart": "Tap to start recording",
     "fieldNote": "FIELD NOTE",
     "notePlaceholder": "Write what you observe…",
-    "saveNote": "Save note"
+    "saveNote": "Save note",
+    "preview": {
+      "title": "Your evidence",
+      "play": "Play",
+      "pause": "Pause"
+    }
   },
   "activity": {
+    "loadError": "Could not load activity",
     "geofence": {
       "dismiss": "Dismiss location warning"
     },
     "brief": {
-      "startCta": "I'm ready — let's go"
+      "startCta": "I'm ready — let's go",
+      "periIntro": "Here's what you'll be doing today. Take a moment to read through before heading out.",
+      "detailsLabel": "DETAILS"
     },
     "orient": {
-      "readyCta": "I'm oriented — begin inquiry"
+      "readyCta": "I'm oriented — begin inquiry",
+      "phaseLabel": "PHASE 1 · ORIENT",
+      "title": "Arrive & Observe",
+      "periText": "You've arrived. Take a moment to observe your surroundings before starting.",
+      "targetsLabel": "TODAY'S TARGETS",
+      "defaultTarget": "Look around and note what you see"
     },
     "capture": {
       "photo": "Add photo",
@@ -78,11 +98,34 @@
     },
     "inquiry": {
       "askPeri": "Ask Peri",
-      "doneCta": "Done capturing — reflect"
+      "doneCta": "Done capturing — reflect",
+      "followUpLabel": "FOLLOW-UP",
+      "phaseLabel": "PHASE 2 · INQUIRY",
+      "title": "Observe & Capture",
+      "defaultQuestion": "Look closely. What evidence can you find? Capture what you observe.",
+      "captureLabel": "CAPTURE EVIDENCE",
+      "captureHint": "Use your camera, voice, or notes to record what you find.",
+      "evidenceCollectedLabel": "COLLECTED ({{count}})",
+      "reviewEvidence": "Review this evidence"
     },
     "reflect": {
+      "phaseLabel": "PHASE 3 · REFLECT",
+      "title": "Make Meaning",
+      "yourReflectionLabel": "YOUR REFLECTION",
+      "prompt": "What did this place teach you that a textbook couldn't?",
+      "periSpeech": "Almost done. Write one thing you'll remember from today.",
+      "placeholder": "Write your reflection here…",
       "submitted": "Submitted ✓",
-      "submitCta": "Submit field work"
+      "saveCta": "Save for later",
+      "submitCta": "Submit field work",
+      "hint": "Save keeps this activity open so you can add more later. Submit sends it to your teacher and closes it out.",
+      "emptyTitle": "One more thing",
+      "emptySaveBody": "Write a quick reflection before saving.",
+      "emptySubmitBody": "Write a quick reflection before submitting.",
+      "savedTitle": "Saved",
+      "savedBody": "Your progress is saved — come back anytime to add more before submitting.",
+      "submittedTitle": "Submitted! 🎉",
+      "submittedBody": "Your field work has been sent to your teacher."
     }
   },
   "camera": {
@@ -90,6 +133,19 @@
       "photo": "Camera access is needed to take a photo.",
       "video": "Camera and microphone access are needed to record video."
     },
+    "permissionBlocked": {
+      "title": "Permission needed",
+      "body": "Access was previously denied, so your device won’t ask again here. Turn it on in Settings to continue."
+    },
+    "permissionError": {
+      "title": "Something went wrong",
+      "body": "Could not request camera access. Please try again."
+    },
+    "recordError": {
+      "title": "Recording failed",
+      "body": "Could not record video. Please try again."
+    },
+    "openSettings": "Open Settings",
     "allowAccess": "Allow access",
     "closeCamera": "Close camera",
     "starting": "Starting camera…",
@@ -134,5 +190,22 @@
   "perispeech": {
     "stopReading": "Stop reading aloud",
     "readAloud": "Read aloud"
+  },
+  "tabs": {
+    "discover": "Discover",
+    "progress": "Progress",
+    "settings": "Settings"
+  },
+  "journal": {
+    "title": "My Journal Entries",
+    "tabLabel": "My Entries",
+    "empty": "Nothing here yet.\nSave or submit an activity to see your work.",
+    "fallbackTitle": "Field Note",
+    "submitted": "Submitted",
+    "draft": "Draft",
+    "showCaptures": "Show captures",
+    "hideCaptures": "Hide captures",
+    "noCaptures": "No captures yet.",
+    "transcriptPending": "Transcript pending…"
   }
 }

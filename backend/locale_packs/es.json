@@ -1,0 +1,206 @@
+{
+  "activity": {
+    "brief": {
+      "detailsLabel": "DETALLES",
+      "periIntro": "Aquí está lo que harás hoy. Tome un momento para leerlo antes de salir.",
+      "startCta": "Listo — vamos"
+    },
+    "capture": {
+      "audio": "Grabación de voz",
+      "note": "Añadir nota",
+      "photo": "Añadir foto",
+      "video": "Añadir video"
+    },
+    "geofence": {
+      "dismiss": "Advierta de la ubicación"
+    },
+    "inquiry": {
+      "askPeri": "Preguntar a Peri",
+      "captureHint": "Grabe con tu cámara, voz o notas lo que encuentres.",
+      "captureLabel": "GRABAR EVIDENCIA",
+      "defaultQuestion": "Observa atentamente. ¿Qué prueba puedes encontrar? Captura lo que observas.",
+      "doneCta": "Reflejado",
+      "followUpLabel": "SIGUIENTE CONTACTO",
+      "phaseLabel": "INVESTIGACIÓN · FASE 2",
+      "title": "Observa y Captura"
+    },
+    "loadError": "No se pudo cargar la actividad",
+    "orient": {
+      "defaultTarget": "Mira alrededor y anota lo que veas",
+      "periText": "Llegaste. Tome un momento para observar tu entorno antes de comenzar.",
+      "phaseLabel": "FASE 1 · ORIENTACIÓN",
+      "readyCta": "Orientado — Iniciar consulta",
+      "targetsLabel": "META: Spanish to English translation",
+      "title": "Llegar y Observa"
+    },
+    "reflect": {
+      "emptySaveBody": "Escribe una reflexión rápida antes de guardar.",
+      "emptySubmitBody": "Reflexione rápida antes de enviar.",
+      "emptyTitle": "Una cosa más",
+      "hint": "Guarda mantiene esta actividad abierta para que puedas agregar más adelante. Enviar la envía a tu maestro y cierra.",
+      "periSpeech": "Acaba de terminar. Escribe una cosa que recordarás del hoy.",
+      "phaseLabel": "FASE 3 · REFLEJAR",
+      "placeholder": "Escribe tu reflexión aquí...",
+      "prompt": "¿Qué aprendiste aquí que un libro de texto no pudo enseñarte?",
+      "saveCta": "Guardar para más tarde",
+      "savedBody": "Tu progreso está guardado — vuelve cualquier momento para agregar más antes de enviarlo.",
+      "savedTitle": "Guardado",
+      "submitCta": "Entregar trabajo de campo",
+      "submitted": "Aceptado ✓",
+      "submittedBody": "Enviado tu trabajo de campo a tu maestro.",
+      "submittedTitle": "Aceptado! 🎉",
+      "title": "Haga Sentido",
+      "yourReflectionLabel": "TU REFLEJO"
+    }
+  },
+  "camera": {
+    "allowAccess": "Permitir acceso",
+    "closeCamera": "Cerrar cámara",
+    "openSettings": "Ajustes",
+    "permission": {
+      "photo": "Acceso a la cámara es necesario para tomar una foto.",
+      "video": "Acceso a cámara y microfono es necesario para grabar vídeo."
+    },
+    "permissionBlocked": {
+      "body": "Acceso fue previamente denegado, por lo que su dispositivo no solicitará más aquí. Activelo en Ajustes para continuar.",
+      "title": "Permiso necesario"
+    },
+    "permissionError": {
+      "body": "No se pudo solicitar el acceso a la cámara. Por favor, inténtalo de nuevo.",
+      "title": "Algo ha ido mal"
+    },
+    "recordError": {
+      "body": "No se pudo grabar el video. Por favor, inténtalo de nuevo.",
+      "title": "Grabación fallida"
+    },
+    "starting": "Iniciando cámara...",
+    "takePhoto": "Foto"
+  },
+  "capture": {
+    "fieldNote": "NOTA DE CAMPO",
+    "micPermission": {
+      "blockedBody": "Acceso al microfono fue anteriormente negado, por lo que su dispositivo no solicitará de nuevo aquí. Activelo en Ajustes para continuar.",
+      "body": "Permitir acceso al micrófono para grabar audio.",
+      "title": "Permiso necesario"
+    },
+    "mode": {
+      "audio": "Voz",
+      "note": "Nota",
+      "photo": "Foto",
+      "video": "Vídeo"
+    },
+    "notePlaceholder": "Escribe lo que observas...",
+    "offline": {
+      "body": "Guardado en su dispositivo y se subirá al volver a conectarse.",
+      "title": "Guardado sin conexión"
+    },
+    "recordError": {
+      "body": "No se pudo iniciar la grabación. Por favor, inténtalo de nuevo.",
+      "title": "Grabación fallida"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "requestingMic": "Solicitando acceso al micrófono...",
+    "saveNote": "Guardar nota",
+    "startRecording": "Graba",
+    "stopRecording": "Dejar de grabar",
+    "tapToStart": "Pulse para empezar a grabar",
+    "title": "Añadir evidencia",
+    "uploadFailed": {
+      "title": "Subida fallida"
+    },
+    "uploading": "Cargando..."
+  },
+  "common": {
+    "activity": "Actividad",
+    "activityPlural": "Actividades",
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "captureLabel": "Registro de pruebas",
+    "close": "Cerrar",
+    "done": "Hecho",
+    "error": "Error (Spanish): Error",
+    "journalLabel": "Notas de campo",
+    "ok": "Aceptar",
+    "tryAgain": "Intentar de nuevo"
+  },
+  "journal": {
+    "draft": "Borrador",
+    "empty": "Nada aquí aún.",
+    "fallbackTitle": "Nota de Campo",
+    "hideCaptures": "Ocultar capturas",
+    "noCaptures": "Sin capturas todavía.",
+    "showCaptures": "Muestra capturas",
+    "submitted": "Entregado",
+    "tabLabel": "Mis Entradas",
+    "title": "Mi Entradas de Diario",
+    "transcriptPending": "Pendiente de transcripción..."
+  },
+  "login": {
+    "forgotPassword": "Olvidaste la contraseña?",
+    "passwordReset": {
+      "body": "Contáctate con tu maestro para restablecer tu contraseña.",
+      "title": "Contraseña de restauración"
+    },
+    "signIn": "Inicia sesión"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Actividades todas",
+      "cta": "Abrir actividad",
+      "periSpeech": "Actividad de campo cercana a usted."
+    },
+    "location": {
+      "badge": "actividades cercanas 3",
+      "confirmCta": "Permitir ubicación",
+      "periSpeech": "Actividades cerca de ti. Habilite la ubicación para empezar?",
+      "reassurance": "Actividades cercanas",
+      "skipCta": "Saltar por ahora"
+    },
+    "name": {
+      "cta": "Continuar",
+      "periSpeech": "¿Cómo me llamo usted?",
+      "placeholder": "Tu nombre..."
+    },
+    "splash": {
+      "cta": "Comencemos",
+      "periSpeech": "Actividades en el campo en tu área que pueden ser interesantes de explorar."
+    }
+  },
+  "perichat": {
+    "closeChat": "Cerrar chat",
+    "connectError": "No pude conectar en este momento. Inténtalo de nuevo en un momento.",
+    "greeting": "Tengo el nombre de Peri. Pregúntame sobre cualquier actividad o lo que estás observando.",
+    "inputPlaceholder": "Pregunta una pregunta...",
+    "sendMessage": "Enviar mensaje",
+    "title": "Preguntar a Peri"
+  },
+  "perispeech": {
+    "readAloud": "Lee en voz alta",
+    "stopReading": "Deja de hablar en voz alta"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Seguro que si?",
+      "title": "Cerrar sesión"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Claridad de la noche profunda y oscura",
+        "label": "Aire"
+      },
+      "fieldGuide": {
+        "desc": "Parchamento caliente - cuaderno de campo clásico",
+        "label": "Guia de Campo"
+      },
+      "terrain": {
+        "desc": "Afilado y agudo — enfoque topográfico",
+        "label": "Terreno"
+      }
+    }
+  },
+  "tabs": {
+    "discover": "Descubre",
+    "progress": "Progreso",
+    "settings": "Ajustes"
+  }
+}

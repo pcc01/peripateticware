@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "준비되었습니다. 가자"
+    },
+    "capture": {
+      "audio": "음성 추가",
+      "note": "노트 추가",
+      "photo": "사진 추가",
+      "video": "영상 추가"
+    },
+    "geofence": {
+      "dismiss": "위치 경고 해제"
+    },
+    "inquiry": {
+      "askPeri": "물어보기 페리",
+      "doneCta": "캡처 완료 — 반영중"
+    },
+    "orient": {
+      "readyCta": "나는 방향을 가지고 있습니다. 조사를 시작합니다."
+    },
+    "reflect": {
+      "submitCta": "제출 필드 작업",
+      "submitted": "제출 ✔ (Submitted with a checkmark symbol)"
+    }
+  },
+  "camera": {
+    "allowAccess": "허용된 액세스",
+    "closeCamera": "카메라 닫기",
+    "permission": {
+      "photo": "카메라 액세스가 필요합니다. 사진을 찍어야 합니다.\n\n(Camera access is required to take a picture.)",
+      "video": "카메라와 마이크 액세스가 필요합니다. 동영상 录像를 수행하려면."
+    },
+    "starting": "카메라 시작중입니다...",
+    "takePhoto": "사진 촬영"
+  },
+  "capture": {
+    "fieldNote": "필드 노트",
+    "micPermission": {
+      "body": "마이크 액세스 허용하여 음성 録록\n\nNote: The Korean translation for \"Allow\" is \"허용\", and \"microphone\" is \"마이크\". The rest of the sentence remains unchanged.",
+      "title": "허가 필요"
+    },
+    "mode": {
+      "audio": "음성",
+      "note": "노트",
+      "photo": "사진",
+      "video": "동영상"
+    },
+    "notePlaceholder": "관찰하는 것을 적어주세요...",
+    "offline": {
+      "body": "저장된 디바이스에서 다시 연결하면 업로드됩니다. (This capture is saved on your device and will upload when you reconnect.)",
+      "title": "캐시된 오프라인"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "저장 노트",
+    "startRecording": "시작하기 録음",
+    "stopRecording": "중지 録록",
+    "tapToStart": "터치하여 녹음 시작",
+    "title": "추가 증거",
+    "uploadFailed": {
+      "title": "업로드 실패"
+    },
+    "uploading": "업로드 중..."
+  },
+  "common": {
+    "activity": "활동",
+    "activityPlural": "활동",
+    "back": "뒤로",
+    "cancel": "취소",
+    "captureLabel": "증거 기록",
+    "close": "닫기",
+    "journalLabel": "필드 노트",
+    "tryAgain": "다시 시도하세요"
+  },
+  "login": {
+    "forgotPassword": "비밀번호를 잊었나요?",
+    "passwordReset": {
+      "body": "교수님과 연락하여 비밀번호를 재설정하십시오.",
+      "title": "비밀번호 재설정"
+    },
+    "signIn": "로그인"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "모든 활동 탐색",
+      "cta": "열기 활동",
+      "periSpeech": "근처에 필드 활동이 있습니다."
+    },
+    "location": {
+      "badge": "3 근처의 활동",
+      "confirmCta": "위치 허용",
+      "periSpeech": "주변에 활동이 있습니다. 위치를 활성화하여 시작하시겠습니까?",
+      "reassurance": "근처의 활동만 표시하기 위해 사용됩니다. (Activities Nearby)",
+      "skipCta": "건너뛰기로 지금은 피하기"
+    },
+    "name": {
+      "cta": "계속하기",
+      "periSpeech": "당신은 어떤 이름으로 부르시겠습니까?",
+      "placeholder": "당신의 이름..."
+    },
+    "splash": {
+      "cta": "시작하기",
+      "periSpeech": "당신의 지역에서 탐색할 만한 필드 활동이 있습니다."
+    }
+  },
+  "perichat": {
+    "closeChat": "채팅 닫기 (chat-ting tik-ki)",
+    "connectError": "현재 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
+    "greeting": "나는 페리입니다. 활동 또는 관찰하고 있는 것에 대해 어떤 질문이 있나요?",
+    "inputPlaceholder": "질문하기...",
+    "sendMessage": "메시지 전송",
+    "title": "물어보기 페리"
+  },
+  "perispeech": {
+    "readAloud": "음성으로 읽기",
+    "stopReading": "중단하세요(음성 출력)"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "확인하시겠습니까?",
+      "title": "로그아웃"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "깊고 어두운 - 밤하늘의 명확함",
+        "label": "대기"
+      },
+      "fieldGuide": {
+        "desc": "춥고 망치꽂은 종이 — 클래식 필드 노트북",
+        "label": "필드 가이드"
+      },
+      "terrain": {
+        "desc": "깨끗하고 정확한 - 토폴로지 중심",
+        "label": "지형"
+      }
+    }
+  }
+}

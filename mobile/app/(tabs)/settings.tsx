@@ -9,12 +9,15 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import { ThemeName } from '@/src/theme/tokens';
 import { SUPPORTED_LOCALES, LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
+import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
 
 export default function SettingsScreen() {
   const { theme, themeName, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const { t, i18n: i18nInstance } = useTranslation();
   const [locale, setLocale] = useState<string>(DEFAULT_LOCALE);
+  const [switchingLocale, setSwitchingLocale] = useState(false);
+  const [localeError, setLocaleError] = useState<string | null>(null);
 
   // NOTE: THEMES used to be a module-level `const` built by calling t() once
   // at import time — that froze the theme labels/descriptions at whichever
@@ -57,9 +60,19 @@ export default function SettingsScreen() {
   }, []);
 
   const handleSelectLocale = async (code: string) => {
-    setLocale(code);
-    await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, code);
-    i18nInstance.changeLanguage(code);
+    if (switchingLocale) return;
+    setSwitchingLocale(true);
+    setLocaleError(null);
+    const ok = await ensureLocaleLoaded(code);
+    if (ok) {
+      setLocale(code);
+      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, code);
+      await i18nInstance.changeLanguage(code);
+    } else {
+      setLocaleError(t('settings.language.downloadFailed', 'Could not download this language. Check your connection and try again.'));
+      // Locale / AsyncStorage / i18next language are left untouched on failure.
+    }
+    setSwitchingLocale(false);
   };
 
   const handleLogout = () => {
@@ -115,10 +128,11 @@ export default function SettingsScreen() {
             <TouchableOpacity
               key={opt.code}
               onPress={() => handleSelectLocale(opt.code)}
-              style={[styles.optionRow, { borderColor: locale === opt.code ? theme.accent : theme.border, borderRadius: theme.radiusSm, backgroundColor: locale === opt.code ? theme.accentMuted : theme.surfaceAlt }]}
+              disabled={switchingLocale}
+              style={[styles.optionRow, { borderColor: locale === opt.code ? theme.accent : theme.border, borderRadius: theme.radiusSm, backgroundColor: locale === opt.code ? theme.accentMuted : theme.surfaceAlt, opacity: switchingLocale ? 0.5 : 1 }]}
               accessibilityRole="radio"
               accessibilityLabel={`${opt.name} language`}
-              accessibilityState={{ selected: locale === opt.code }}
+              accessibilityState={{ selected: locale === opt.code, disabled: switchingLocale }}
             >
               <Text style={styles.optionEmoji}>{opt.flag}</Text>
               <View style={{ flex: 1 }}>
@@ -127,6 +141,9 @@ export default function SettingsScreen() {
               {locale === opt.code && <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>}
             </TouchableOpacity>
           ))}
+          {localeError && (
+            <Text style={[styles.optionDesc, { fontFamily: theme.fontBody, color: theme.warn }]}>{localeError}</Text>
+          )}
         </View>
 
         {/* Logout */}

@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "Pronto - andiamo"
+    },
+    "capture": {
+      "audio": "Registra registrazione vocale",
+      "note": "Aggiungi nota",
+      "photo": "Aggiungi foto",
+      "video": "Aggiungi video"
+    },
+    "geofence": {
+      "dismiss": "avviso di locazione annullato"
+    },
+    "inquiry": {
+      "askPeri": "Chiedi Peri",
+      "doneCta": "Catturato - Refletti"
+    },
+    "orient": {
+      "readyCta": "Orientato - avvia indagine"
+    },
+    "reflect": {
+      "submitCta": "Invia lavoro campo",
+      "submitted": "Confermato ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "Consenti l'accesso",
+    "closeCamera": "Chiusura camera (Chiude camera in abbreviated form)",
+    "permission": {
+      "photo": "Accesso alla camera necessario per prendere una foto.",
+      "video": "Accesso alla camera e al microfono necessario per registrare il video."
+    },
+    "starting": "Avvia camera...",
+    "takePhoto": "Fotografa immagine"
+  },
+  "capture": {
+    "fieldNote": "NOTA CAMPO",
+    "micPermission": {
+      "body": "Consenti l'accesso al microfono per registrare l'audio.",
+      "title": "Permesso richiesto"
+    },
+    "mode": {
+      "audio": "Voce",
+      "note": "Nota",
+      "photo": "Foto",
+      "video": "Video"
+    },
+    "notePlaceholder": "Osserva ciò che vedi...",
+    "offline": {
+      "body": "Salvato questo captura sul tuo dispositivo e verrà caricato alla riconnessione.",
+      "title": "Salvati fuori linea"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "Salvatesta nota",
+    "startRecording": "Registra",
+    "stopRecording": "Interrompi registrazione",
+    "tapToStart": "Tocca per avviare l'incisione audio",
+    "title": "Aggiungi prove",
+    "uploadFailed": {
+      "title": "Caricamento fallito"
+    },
+    "uploading": "Caricamento..."
+  },
+  "common": {
+    "activity": "Attività",
+    "activityPlural": "Attività",
+    "back": "Indietro",
+    "cancel": "Annulla",
+    "captureLabel": "Registra prove",
+    "close": "Chiudi",
+    "journalLabel": "Note di campo",
+    "tryAgain": "Riprova"
+  },
+  "login": {
+    "forgotPassword": "dimenticato la password?",
+    "passwordReset": {
+      "body": "Contatta il tuo insegnante per ricordarti la tua password.",
+      "title": "Ripristino password"
+    },
+    "signIn": "Accesso"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Attività tutte",
+      "cta": "Apri attività",
+      "periSpeech": "Attività di campo vicina a te."
+    },
+    "location": {
+      "badge": "attività 3 vicino a te",
+      "confirmCta": "Consenti alla posizione",
+      "periSpeech": "Attività vicino a te. Abilita la posizione per avviare?",
+      "reassurance": "Attività solo per superficie di attività vicine",
+      "skipCta": "Saltalo per ora"
+    },
+    "name": {
+      "cta": "Prosegui",
+      "periSpeech": "Chiamami come ti chiami?",
+      "placeholder": "Il tuo nome..."
+    },
+    "splash": {
+      "cta": "Avvia",
+      "periSpeech": "Attività nei campi disponibili nella tua zona da esplorare."
+    }
+  },
+  "perichat": {
+    "closeChat": "Chiudi chat",
+    "connectError": "Non sono riuscito a connettersi al momento. Riprova più tardi.",
+    "greeting": "Io sono Peri. Prego, chiedimi qualcosa su attività o su cosa stai osservando.",
+    "inputPlaceholder": "Domanda qualcosa...",
+    "sendMessage": "Invia messaggio",
+    "title": "Chiedi Peri"
+  },
+  "perispeech": {
+    "readAloud": "Leggi in alta voce",
+    "stopReading": "Interrompi di leggere in voce"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Si sta verificando?",
+      "title": "Uscita"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Notte cielo chiara profonda e scura",
+        "label": "Atmosfera"
+      },
+      "fieldGuide": {
+        "desc": "Carta calda - quaderno di campo classico",
+        "label": "Guida Campo"
+      },
+      "terrain": {
+        "desc": "Affilato e preciso — focalizzazione topografica",
+        "label": "Terreno"
+      }
+    }
+  }
+}

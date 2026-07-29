@@ -1,0 +1,138 @@
+{
+  "activity": {
+    "brief": {
+      "startCta": "Bereit — los gehen"
+    },
+    "capture": {
+      "audio": "Hinzufügen einer Stimmenaufnahme (German)",
+      "note": "Hinzufügen einer Notiz (German)",
+      "photo": "Foto hinzufügen",
+      "video": "Hinzufügen Video (German)"
+    },
+    "geofence": {
+      "dismiss": "Abfuhr Ortswarnung"
+    },
+    "inquiry": {
+      "askPeri": "Frage Peri",
+      "doneCta": "Fertig aufgenommen — reflektieren"
+    },
+    "orient": {
+      "readyCta": "ich bin ausgerichtet — Ermittlung aufnehmen"
+    },
+    "reflect": {
+      "submitCta": "Einreichen Feldarbeit",
+      "submitted": "Geliefert ✓"
+    }
+  },
+  "camera": {
+    "allowAccess": "Zugang erlauben",
+    "closeCamera": "Schließe Kamera",
+    "permission": {
+      "photo": "Kamerazugriff ist erforderlich, um ein Foto zu machen.",
+      "video": "Kamerazugriff und Mikrofonzugriff sind erforderlich, um Video aufzuzeichnen."
+    },
+    "starting": "Anfängt Kamera...",
+    "takePhoto": "Fotografieren"
+  },
+  "capture": {
+    "fieldNote": "NOTIZ FELD",
+    "micPermission": {
+      "body": "Mikrofonzugriff erlauben, um Audio aufzuzeichnen.",
+      "title": "Erlaubnis benötigt"
+    },
+    "mode": {
+      "audio": "Stimme",
+      "note": "Notiz",
+      "photo": "Foto",
+      "video": "Video (German): Video"
+    },
+    "notePlaceholder": "beobachte was du wahrnehmst...",
+    "offline": {
+      "body": "Gespeichertes Foto wird auf Ihrem Gerät gespeichert und wird hochgeladen, wenn Sie wieder anschließen.",
+      "title": "gespeichert offline"
+    },
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "saveNote": "Speichern Notiz",
+    "startRecording": "Aufnehmen starten",
+    "stopRecording": "Aufnahme einstellen",
+    "tapToStart": "drücken Sie hier um aufzunehmen",
+    "title": "Beweis hinzufügen",
+    "uploadFailed": {
+      "title": "Hochladen fehlgeschlagen"
+    },
+    "uploading": "Hochladen..."
+  },
+  "common": {
+    "activity": "Aktivität",
+    "activityPlural": "Aktivitäten",
+    "back": "Rück",
+    "cancel": "Abbrechen",
+    "captureLabel": "Beweis aufnehmen",
+    "close": "Schließen",
+    "journalLabel": "Feldnotizen",
+    "tryAgain": "Versuch es nochmal"
+  },
+  "login": {
+    "forgotPassword": "Vergessen Sie das Passwort? (German)",
+    "passwordReset": {
+      "body": "Kontaktiere deinen Lehrer, um Ihren Passwort zu neu setzen.",
+      "title": "Kennwort zurücksetzen"
+    },
+    "signIn": "anmelden"
+  },
+  "onboarding": {
+    "firstActivity": {
+      "browseCta": "Aktivitäten alle durchsehen",
+      "cta": "Offene Aktivität",
+      "periSpeech": "Eine Aktivität auf dem Feld befindet sich in der Nähe von Ihnen."
+    },
+    "location": {
+      "badge": "3 Aktivitäten in der Nähe",
+      "confirmCta": "Erlauben Standort",
+      "periSpeech": "Aktivitäten in der Nähe. Aktiviere die Lokation, um fortzufahren?",
+      "reassurance": "Nutzung zur Darstellung nahe gelegener Aktivitäten",
+      "skipCta": "überspringen für derzeit"
+    },
+    "name": {
+      "cta": "Fortsetzen",
+      "periSpeech": "Was soll ich Dich heißen?",
+      "placeholder": "Ihr Name..."
+    },
+    "splash": {
+      "cta": "Anfang starten",
+      "periSpeech": "Gebietstätigkeiten wert explorierender Felder gibt es in Ihrer Umgebung."
+    }
+  },
+  "perichat": {
+    "closeChat": "Schließen-Chat",
+    "connectError": "Verbinde sich nicht zum Moment. Versuche es später noch einmal.",
+    "greeting": "Ich heiße Peri. Frage mich etwas über die Aktivität oder was du beobachtest.",
+    "inputPlaceholder": "Frage etwas...",
+    "sendMessage": "Senden Sie Nachricht",
+    "title": "Frage Peri"
+  },
+  "perispeech": {
+    "readAloud": "Lese laut",
+    "stopReading": "Lesen Sie nicht mehr laut"
+  },
+  "settings": {
+    "signOut": {
+      "confirm": "Sind Sie sicher?",
+      "title": "Ausloggen"
+    },
+    "theme": {
+      "atmosphere": {
+        "desc": "Tiefe und dunkel — Klarheit des Nachthimmels",
+        "label": "Luftumschluss"
+      },
+      "fieldGuide": {
+        "desc": "Heißes Pergament — Klassisches Feldtagebuch",
+        "label": "Feldleitfaden"
+      },
+      "terrain": {
+        "desc": "scharf und klar – topographischer Fokus",
+        "label": "Gelände"
+      }
+    }
+  }
+}
