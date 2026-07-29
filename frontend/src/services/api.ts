@@ -10,6 +10,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
 import { useEffect, useReducer, useCallback, useRef } from 'react'
 import * as Types from './types'
+import i18n from '../config/i18n'
 
 /* ============================================================================ */
 /* API CLIENT SETUP */
@@ -33,6 +34,14 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem('auth_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // Tags server-created content (e.g. activities) with the UI locale
+    // active at creation time — see backend/routes/activities.py's
+    // create_activity() Accept-Language read. Sent as a plain i18next
+    // language code (e.g. 'es', 'fr-CA'), not full RFC 2616 q-value syntax,
+    // since we control the only sender.
+    if (i18n.language) {
+      config.headers['Accept-Language'] = i18n.language
     }
     return config
   },

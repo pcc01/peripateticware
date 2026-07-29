@@ -333,6 +333,7 @@ class Activity(Base):
     is_shareable = Column(Boolean, default=False)
     share_scope = Column(String(20), default='org')  # 'org' | 'all'
     language = Column(String(50), nullable=True)         # content language e.g. 'English'
+    created_locale = Column(String(10), nullable=True)   # UI locale active at creation, e.g. 'es', 'fr-CA' — analytics only, distinct from `language`
     state_standard = Column(String(100), nullable=True)  # US state curriculum standard e.g. 'CA'
     discipline = Column(String(100), nullable=True)      # academic discipline e.g. 'STEM'
 

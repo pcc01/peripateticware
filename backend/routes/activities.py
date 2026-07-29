@@ -5,7 +5,7 @@
 """Activity management endpoints - MERGED (Existing + Phase 5 + ActivityBuilder)"""
 
 from pydantic import BaseModel as _BaseModel
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text, String
 from uuid import UUID
@@ -75,6 +75,7 @@ def _require_teacher(current_user: User, detail: str = "Only teachers can perfor
 @router.post("", response_model=ActivityResponse, status_code=status.HTTP_201_CREATED)
 async def create_activity(
     activity: ActivityCreate,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -83,6 +84,13 @@ async def create_activity(
     Supports all 4 taxonomies + location / Ollama fields.
     """
     _require_teacher(current_user, "Only teachers can create activities")
+
+    # Analytics-only tag: the UI locale the teacher was using at creation
+    # time (sent as a plain Accept-Language value by the frontend, e.g.
+    # 'es', 'fr-CA' — not the full RFC 2616 quality-weighted list format,
+    # since we control the only sender). Distinct from `language` below,
+    # which is a free-text, teacher-declared content language.
+    created_locale = (request.headers.get("Accept-Language") or "").strip()[:10] or None
 
     db_activity = Activity(
         teacher_id=current_user.id,
@@ -117,6 +125,7 @@ async def create_activity(
         is_shareable=activity.is_shareable,
         share_scope=getattr(activity, "share_scope", "org") or "org",
         language=getattr(activity, "language", None),
+        created_locale=created_locale,
         state_standard=getattr(activity, "state_standard", None),
         discipline=getattr(activity, "discipline", None),
         status=ActivityStatus.DRAFT,

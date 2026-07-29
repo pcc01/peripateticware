@@ -237,6 +237,7 @@ class ActivityResponse(ActivityBase):
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
     location_name: Optional[str] = None
+    created_locale: Optional[str] = None
 
     @field_validator('attachments', mode='before')
     @classmethod

@@ -151,6 +151,11 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         # ── Shared library columns ─────────────────────────────────────────
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS share_scope VARCHAR(20) DEFAULT 'org'")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS language VARCHAR(50)")
+        # created_locale: UI locale active when the teacher created this activity
+        # (e.g. 'es', 'fr-CA') — analytics-only tag, distinct from `language`
+        # (a free-text, teacher-declared content language). Auto-set from the
+        # Accept-Language header in routes/activities.py::create_activity().
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS created_locale VARCHAR(10)")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS state_standard VARCHAR(100)")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discipline VARCHAR(100)")
         # ── AssessmentRubrics columns ──────────────────────────────────────
