@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "DETAILS (no change needed for German)",
+      "periIntro": "Hier sehen Sie, was Ihr heute tun wird. Nehmen Sie eine Minute Zeit, um es vor dem Ausgehen durchzulesen.",
       "startCta": "Bereit — los gehen"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "Hinzufügen Video (German)"
     },
     "geofence": {
-      "dismiss": "Abfuhr Ortswarnung"
+      "defaultLocation": "Aktivitätsort",
+      "dismiss": "Abfuhr Ortswarnung",
+      "distanceAway": "(~{{meters}} m entfernt)",
+      "stepCloser": "Geh näher an {{location}} heran, um weiterzugehen."
     },
     "inquiry": {
       "askPeri": "Frage Peri",
-      "doneCta": "Fertig aufgenommen — reflektieren"
+      "captureHint": "Verwenden Sie Ihre Kamera, Stimme oder Notizen, um was Sie finden zu dokumentieren.",
+      "captureLabel": "ERBEWEIS AUFNIMMEN",
+      "defaultQuestion": "Beobachte genau. Was beweisendes Zeugnis finden könntest du? Fange was du bemerkt, auf, aufzunehmen.",
+      "doneCta": "Fertig aufgenommen — reflektieren",
+      "evidenceCollectedLabel": "SAMMELTE ({{count}})",
+      "followUpLabel": "NACHFOLGE",
+      "phaseLabel": "ERSTEPHASE · ERMITTLUNG",
+      "reviewEvidence": "Überprüfe diese Beweise",
+      "title": "Beobachten & Fangen"
     },
+    "loadError": "Kann Aktivität nicht laden",
+    "notFound": "Aktivität nicht gefunden.",
     "orient": {
-      "readyCta": "ich bin ausgerichtet — Ermittlung aufnehmen"
+      "defaultTarget": "Umsehen und notieren, was du siehst",
+      "periText": "Angekommen. Nehmen Sie eine Moment, um Ihre Umgebung zu beobachten, bevor Sie beginnen.",
+      "phaseLabel": "PHASE 1 · ORIENTIERUNG",
+      "readyCta": "ich bin ausgerichtet — Ermittlung aufnehmen",
+      "targetsLabel": "HEUTEZUELLENZIEL",
+      "title": "Ankommen & Beobachten"
     },
     "reflect": {
+      "emptySaveBody": "Schreibe eine schnelle Reflexion vor Speichern.",
+      "emptySubmitBody": "Schreiben Sie eine schnelle Reflexion vor der Übermittlung.",
+      "emptyTitle": "Eines mehres Ding",
+      "hint": "Speichere diese Aktivität offen, damit Sie später mehr hinzufügen können. Übermitteln schickt es Ihrem Lehrer und schließt es ab.",
+      "periSpeech": "Erledigt fast. Schreibe eins, was du heute erinnern wird.",
+      "phaseLabel": "WAHNEN 3 · WIDERSPUCH",
+      "placeholder": "Schreibe hier deine Reflexion...",
+      "prompt": "Was hat diese Stätte dich gelehrt, was ein Lehrbuch nicht konnte?",
+      "saveCta": "Speichern für Spät",
+      "savedBody": "Ihr Fortschritt wird gespeichert — kehr jederzeit zurück, um mehr hinzuzufügen bevor Sie absenden.",
+      "savedTitle": "Gespeichert",
       "submitCta": "Einreichen Feldarbeit",
-      "submitted": "Geliefert ✓"
+      "submitted": "Geliefert ✓",
+      "submittedBody": "Deine Feldforschung wurde Ihrem Lehrer übermittelt.",
+      "submittedTitle": "Geliefert! 🎉",
+      "title": "Machen Sinn",
+      "yourReflectionLabel": "IHR SELBSTBILD"
     }
   },
   "camera": {
     "allowAccess": "Zugang erlauben",
     "closeCamera": "Schließe Kamera",
+    "openSettings": "Einstellungen öffnen",
     "permission": {
       "photo": "Kamerazugriff ist erforderlich, um ein Foto zu machen.",
       "video": "Kamerazugriff und Mikrofonzugriff sind erforderlich, um Video aufzuzeichnen."
+    },
+    "permissionBlocked": {
+      "body": "Zugang wurde zuletzt verweigert, sodass Ihr Gerät hier nicht mehr nachfragen wird. Um fortzufahren, aktivieren Sie es im Einstellungen.",
+      "title": "Erlaubnis benötigt"
+    },
+    "permissionError": {
+      "body": "Kamerazugriff konnte nicht angefordert werden. Bitte versuchen Sie es erneut.",
+      "title": "etwas ist schief gelaufen"
+    },
+    "recordError": {
+      "body": "Kann kein Video aufnehmen. Bitte versuchen Sie es erneut.",
+      "title": "Aufnahme fehlgeschlagen"
     },
     "starting": "Anfängt Kamera...",
     "takePhoto": "Fotografieren"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "NOTIZ FELD",
     "micPermission": {
+      "blockedBody": "Mikrofonzugriff wurde vorher abgelehnt, sodass Ihr Gerät hier nicht mehr nachfragen wird. Um fortzufahren, aktivieren Sie es in Einstellungen.",
       "body": "Mikrofonzugriff erlauben, um Audio aufzuzeichnen.",
       "title": "Erlaubnis benötigt"
     },
@@ -51,8 +100,21 @@
       "body": "Gespeichertes Foto wird auf Ihrem Gerät gespeichert und wird hochgeladen, wenn Sie wieder anschließen.",
       "title": "gespeichert offline"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "Pause (German): Pause",
+      "play": "Spiele",
+      "title": "Ihr Beweis"
+    },
+    "recordError": {
+      "body": "Kann nicht aufnehmen beginnen. Bitte versuchen Sie es erneut.",
+      "title": "Aufnahme fehlgeschlagen"
+    },
+    "recordingStatus": "Aufnahme läuft ({{seconds}} s) — zum Stoppen tippen",
+    "requestingMic": "Anfrage nach Zugriff auf Mikrofon...",
     "saveNote": "Speichern Notiz",
+    "saved": "Gerettet auf deinem Gerät",
+    "savedSubtext": "Synchronisiert automatisch oder wenn Sie die Aktivität einreichen.",
+    "savingLocally": "Speichern...",
     "startRecording": "Aufnehmen starten",
     "stopRecording": "Aufnahme einstellen",
     "tapToStart": "drücken Sie hier um aufzunehmen",
@@ -69,16 +131,50 @@
     "cancel": "Abbrechen",
     "captureLabel": "Beweis aufnehmen",
     "close": "Schließen",
+    "done": "Fertig",
+    "error": "Fehler",
     "journalLabel": "Feldnotizen",
+    "ok": "Gut",
     "tryAgain": "Versuch es nochmal"
   },
+  "discover": {
+    "empty": "Keine Aktivitäten bis jetzt - Ihre Lehrerin/Lehrer fügt bald einige hinzu.",
+    "loadError": "Aktivitäten konnten nicht geladen werden",
+    "offlineBanner": "AUSGESCHALTET - angezeigte aktivitäten aus dem Cache",
+    "periTextEmpty": "Entdecken wir etwas, was in der Nähe zu entdecken ist.",
+    "periText_one": "{{count}} Aktivität wartet auf dich. Wo explorierst du heute?",
+    "periText_other": "{{count}}} Aktivitäten, die auf dich warten. Wohin wirst du heute erkunden?"
+  },
+  "journal": {
+    "draft": "Entwurf",
+    "empty": "Nichts hier noch.",
+    "fallbackTitle": "Feldnotiz",
+    "hideCaptures": "Verbergen Aufnahmen",
+    "noCaptures": "Keine Fänge bis jetzt.",
+    "showCaptures": "Zeige Fänge an",
+    "submitted": "Abgesendet",
+    "tabLabel": "Meine Einträge",
+    "title": "Tagebuch Einträge",
+    "transcriptPending": "Wartet auf Transkript..."
+  },
   "login": {
+    "emailLabel": "E-MAIL",
+    "failed": {
+      "body": "Prüfe deine E-Mail und Passwort.",
+      "title": "Anmeldung fehlgeschlagen"
+    },
     "forgotPassword": "Vergessen Sie das Passwort? (German)",
+    "missingFields": {
+      "body": "Eingabe Ihre Email und Passwort.",
+      "title": "Leerfelder"
+    },
+    "passwordLabel": "Kennwort",
     "passwordReset": {
       "body": "Kontaktiere deinen Lehrer, um Ihren Passwort zu neu setzen.",
       "title": "Kennwort zurücksetzen"
     },
-    "signIn": "anmelden"
+    "signIn": "anmelden",
+    "welcomeBack": "Willkommen zurück! Melden Sie sich an, um Ihre Lernreise fortzusetzen."
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "Lese laut",
     "stopReading": "Lesen Sie nicht mehr laut"
   },
+  "progress": {
+    "badgesLabel": "PREMIEN",
+    "competenciesLabel": "FERTIGKEITSSTÄRKEN",
+    "empty": "Fortschritt verfolgen Sie mit der ersten Aktivität abzuschließen.",
+    "stats": {
+      "activities": "Aktivitäten",
+      "captures": "Fängt",
+      "dayStreak": "Tage-Serie"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "Entfernt es endgültig.",
+      "confirm": "Abheben",
+      "title": "Abheben Herausforderung?"
+    },
+    "empty": "Keine Herausforderungen bis jetzt. Vorschlage für andere Schüler im Feld einreichen.",
+    "form": {
+      "descriptionLabel": "TUN SOLLEN SIE ETWAS MACHTEN?",
+      "descriptionPlaceholder": "Entdecken Sie was zu finden, tun oder beobachten...",
+      "editTitle": "Bearbeite Herausforderung",
+      "locationLabel": "Wo (EIN ALLGEMEINES HINWEIS)",
+      "locationPlaceholder": "Fluss: z.B., ein lokaler Park",
+      "newTitle": "Neues Challenge",
+      "noteLabel": "LEHRERIN/LEHRER BEMERKUNG (OPTIONAL)",
+      "notePlaceholder": "Jedes was Ihr Lehrer vor Genehmigung kennen sollte...",
+      "saveDraft": "Speichern als Entwurf",
+      "subjectLabel": "GEGENSTAND",
+      "submit": "Übermitteln an Lehrer",
+      "titleLabel": "HERAUSFORDERUNGS-TITEL",
+      "titlePlaceholder": "ältester Baum im Park finden"
+    },
+    "newCta": "Neues Challenge",
+    "periText": "Heraus etwas gefunden, das einen Herausforderung wert ist? Schreibe es auf, damit andere Studenten es entdecken können.",
+    "saveError": "Kann Ihre Herausforderung nicht gespeichert werden.",
+    "status": {
+      "approved": "Genehmigt",
+      "draft": "Entwurf",
+      "pending": "Bewertungswartendorf",
+      "rejected": "Bedarf Änderungen"
+    },
+    "teacherFeedbackLabel": "LEHRER-FEEDBACK"
+  },
   "settings": {
+    "accountLabel": "KONTO",
+    "language": {
+      "current": "Sprache: {{language}}",
+      "downloadFailed": "Kann diese Sprache nicht herunterladen. Prüfe deine Verbindung und versuche es erneut."
+    },
+    "languageLabel": "DEUTSCH",
+    "role": {
+      "student": "Schüler"
+    },
     "signOut": {
       "confirm": "Sind Sie sicher?",
       "title": "Ausloggen"
     },
+    "studentFallback": "Schüler",
     "theme": {
       "atmosphere": {
         "desc": "Tiefe und dunkel — Klarheit des Nachthimmels",
@@ -133,6 +282,13 @@
         "desc": "scharf und klar – topographischer Fokus",
         "label": "Gelände"
       }
-    }
+    },
+    "themeLabel": "THEMA"
+  },
+  "tabs": {
+    "discover": "Entdecken",
+    "progress": "Fortschritt",
+    "propose": "Vorschlagen",
+    "settings": "Einstellungen"
   }
 }

@@ -7,12 +7,15 @@ describe('Navigation (Bottom Tab Bar)', () => {
     await loginAsStudent();
   });
 
-  it('2.1-2.4 — taps each of the 4 tabs and shows the matching screen', async () => {
+  it('2.1-2.4 — taps each of the 5 tabs and shows the matching screen', async () => {
     await element(by.id('tab-discover')).tap();
     await expect(element(by.id('discover-screen'))).toBeVisible();
 
     await element(by.id('tab-journal')).tap();
     await expect(element(by.id('journal-screen'))).toBeVisible();
+
+    await element(by.id('tab-propose')).tap();
+    await expect(element(by.id('propose-screen'))).toBeVisible();
 
     await element(by.id('tab-progress')).tap();
     await expect(element(by.id('progress-screen'))).toBeVisible();
@@ -21,15 +24,16 @@ describe('Navigation (Bottom Tab Bar)', () => {
     await expect(element(by.id('settings-screen'))).toBeVisible();
   });
 
-  it('2.5 — only the 4 registered tabs are visible, no extra "Explore" tab', async () => {
+  it('2.5 — only the 5 registered tabs are visible, no extra "Explore" tab', async () => {
     await expect(element(by.id('tab-discover'))).toBeVisible();
     await expect(element(by.id('tab-journal'))).toBeVisible();
+    await expect(element(by.id('tab-propose'))).toBeVisible();
     await expect(element(by.id('tab-progress'))).toBeVisible();
     await expect(element(by.id('tab-settings'))).toBeVisible();
 
     // app/(tabs)/explore.tsx exists as a file in the (tabs) route group, but
-    // (tabs)/_layout.tsx only registers index/journal/progress/settings as
-    // Tabs.Screen entries, so no 5th "Explore" tab should ever render.
+    // (tabs)/_layout.tsx hides it via href: null, so no 6th "Explore" tab
+    // should ever render.
     await expect(element(by.id('tab-explore'))).not.toExist();
     await expect(element(by.text('Explore'))).not.toExist();
   });

@@ -15,7 +15,10 @@
         "NSCameraUsageDescription": "Peripateticware uses your camera to capture field evidence.",
         "NSMicrophoneUsageDescription": "Peripateticware uses your microphone to record field audio.",
         "NSPhotoLibraryUsageDescription": "Peripateticware saves captures to your photo library.",
-        "NSLocationWhenInUseUsageDescription": "Peripateticware uses your location to find nearby activities."
+        "NSLocationWhenInUseUsageDescription": "Peripateticware uses your location to find nearby activities.",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
       },
       "runtimeVersion": {
         "policy": "appVersion"

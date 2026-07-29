@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivities, Activity } from '@/src/api/activities';
-import { t } from '@/src/i18n/t';
+import { useTranslation } from 'react-i18next';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 import PeriSpeech from '@/src/components/PeriSpeech';
 
@@ -21,6 +21,7 @@ const SUBJECT_EMOJI: Record<string, string> = {
 
 export default function DiscoverScreen() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const { isOnline } = useConnectivity();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export default function DiscoverScreen() {
       const data = await fetchActivities();
       setActivities(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load activities');
+      setError(e instanceof Error ? e.message : t('discover.loadError', 'Could not load activities'));
     }
   }, []);
 
@@ -46,21 +47,24 @@ export default function DiscoverScreen() {
   }, [load]);
 
   const periText = activities.length > 0
-    ? `${activities.length} activit${activities.length === 1 ? 'y' : 'ies'} waiting for you. Where will you explore today?`
-    : "Let's find something to explore nearby.";
+    ? t('discover.periText', '{{count}} activity waiting for you. Where will you explore today?', {
+        count: activities.length,
+        defaultValue_other: '{{count}} activities waiting for you. Where will you explore today?',
+      })
+    : t('discover.periTextEmpty', "Let's find something to explore nearby.");
 
   return (
     <SafeAreaView testID="discover-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
-          Discover
+          {t('tabs.discover', 'Discover')}
         </Text>
       </View>
 
       {!isOnline && (
         <View style={[styles.offlineBanner, { backgroundColor: theme.warnLight }]}>
           <Text style={[styles.offlineText, { fontFamily: theme.fontMono, color: theme.warn }]}>
-            📵 OFFLINE — showing cached activities
+            📵 {t('discover.offlineBanner', 'OFFLINE — showing cached activities')}
           </Text>
         </View>
       )}
@@ -95,7 +99,7 @@ export default function DiscoverScreen() {
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
-                No activities yet — your teacher will add some soon.
+                {t('discover.empty', 'No activities yet — your teacher will add some soon.')}
               </Text>
             </View>
           }

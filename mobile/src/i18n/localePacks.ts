@@ -34,9 +34,20 @@ async function fetchManifest(): Promise<Manifest | null> {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${API_BASE}/api/v1/locale-packs/manifest`, { signal: controller.signal });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (__DEV__) console.warn(`[i18n] manifest fetch returned ${res.status} from ${API_BASE}`);
+      return null;
+    }
     return await res.json();
-  } catch {
+  } catch (e) {
+    // Swallowed everywhere this is called — restoreLastLocale/ensureLocaleLoaded
+    // must never throw on a network hiccup. But a silent catch here means a
+    // real config problem (ATS blocking plain HTTP to a LAN dev backend, a
+    // stale EXPO_PUBLIC_API_URL baked into the build, backend not running)
+    // is otherwise invisible — only a generic "Could not download this
+    // language" ever reaches the UI. Log the actual cause in dev so it's
+    // visible in the Metro/Xcode console instead of guessed at blind.
+    if (__DEV__) console.warn(`[i18n] manifest fetch failed for ${API_BASE}:`, e);
     return null;
   } finally {
     clearTimeout(timeout);
@@ -93,7 +104,8 @@ export async function ensureLocaleLoaded(code: string): Promise<boolean> {
       registerPack(code, data);
       await AsyncStorage.setItem(PACK_VERSION_KEY_PREFIX + code, remoteVersion);
       return true;
-    } catch {
+    } catch (e) {
+      if (__DEV__) console.warn(`[i18n] pack download failed for '${code}' from ${API_BASE}:`, e);
       // Fall through to the best-effort cached load below.
     }
   }

@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "תפריטים",
+      "periIntro": "כאן מה תעשית היום. קרא לחשב לפני שתצא.",
       "startCta": "אני הופעל — נסו נמצא"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "הוסף VIDEO"
     },
     "geofence": {
-      "dismiss": "מחק אזהרה מיקום"
+      "defaultLocation": "המקום העסקה",
+      "dismiss": "מחק אזהרה מיקום",
+      "distanceAway": "(~{{meters}} מ׳ משם)",
+      "stepCloser": "התקרב ל-{{location}} כדי להמשיך."
     },
     "inquiry": {
       "askPeri": "שאל פרי",
-      "doneCta": "שלב הסיום — נעשה הזמן לראות"
+      "captureHint": "שמור את הכמרה, העסק, או הערות שלך בדיוק.",
+      "captureLabel": "איסוף דוגמה",
+      "defaultQuestion": "שאה קרוב. מי זה הדלק שתמצא? נטע את מה שראית.",
+      "doneCta": "שלב הסיום — נעשה הזמן לראות",
+      "evidenceCollectedLabel": "שחקרו ({{count}})",
+      "followUpLabel": "אחוזים",
+      "phaseLabel": "פסידה 2 · שאלתו",
+      "reviewEvidence": "ראה את הצלחת",
+      "title": "שמור ולאחז"
     },
+    "loadError": "לא יכול לטעון פעילות",
+    "notFound": "איור לא מצאתי",
     "orient": {
-      "readyCta": "אני מוגדר — התחל שאלה"
+      "defaultTarget": "צפה למחול ושם מאת הזהות שראית",
+      "periText": "אתה נסגר. קח לעצמך לבדוד את הספינות שלך לפני שתהתחל.",
+      "phaseLabel": "פסדה 1 · נוכח",
+      "readyCta": "אני מוגדר — התחל שאלה",
+      "targetsLabel": "מטרות היום",
+      "title": "ביחול ושמור"
     },
     "reflect": {
+      "emptySaveBody": "כתיבה קצרה לשמירה עם הזדהות קודמת",
+      "emptySubmitBody": "כתוב קצרה משפט לאישור",
+      "emptyTitle": "אחד מהצעירים",
+      "hint": "שמירה מנהלת את הפעולה הזאת פתוחה כדי שתוכל להוסיף יותר מאוד מהן. Submit שלח אותה למורה וסגירה אותה",
+      "periSpeech": "כמה שוב. כתב אחד שתזכר מיום הזה.",
+      "phaseLabel": "פסדה 3 · נושא",
+      "placeholder": "כתב את ההסתדמות שלך כאן...",
+      "prompt": "מה למקום הזה את שיכחת את המדריך שלא ניתן לספר בספר?",
+      "saveCta": "שמירה לאחרית",
+      "savedBody": "אתה מסוגר בניוך - שוב כל זמן להוספה עוד לפני הצליחה",
+      "savedTitle": "שמור",
       "submitCta": "שלח עסקים",
-      "submitted": "שמורת ✓ (Submitted ✓ in Hebrew)"
+      "submitted": "שמורת ✓ (Submitted ✓ in Hebrew)",
+      "submittedBody": "את עמלך השדה נשלח למורה שלך.",
+      "submittedTitle": "שמורת! 🎉",
+      "title": "צרו תמיד לעשות את הכוחות שלך נפשית ובטח שתעשה משהו מסוג זה",
+      "yourReflectionLabel": "הראיון שלך"
     }
   },
   "camera": {
     "allowAccess": "סגור את הגישה",
     "closeCamera": "סגור כמראה",
+    "openSettings": "פתוח הגדרות",
     "permission": {
-      "photo": "ציור כמרה צריך לקבלתו לנטע תמונה\n\nNote: The Hebrew translation for \"Camera access\" is \"ציור כמרה\". The rest of the sentence was translated as well.",
-      "video": "ציור וגישה למיקרופון צריך לנתונת כדי לעצור סינמא.\n\n(Camera and microphone access are needed to record video.)"
+      "photo": "יש צורך בגישה למצלמה כדי לצלם תמונה.",
+      "video": "יש צורך בגישה למצלמה ולמיקרופון כדי להקליט וידאו."
+    },
+    "permissionBlocked": {
+      "body": "גישה נכשלה בעבורך קודם אתה, כך לא תשאל מחוזכת שם. אפשר לאטח אותה בהגדרות כדי להמשיך.",
+      "title": "איזור צריך"
+    },
+    "permissionError": {
+      "body": "לא ניתן לשאול לגרסה הקמרה. נא נסה שנייה.",
+      "title": "שגיעה תקלה"
+    },
+    "recordError": {
+      "body": "לא הועתק סינר VIDEO. נא נסה שנייה.",
+      "title": "עריכה נכשלה"
     },
     "starting": "התחיל כמראה...",
     "takePhoto": "שניתן לנהוג צלם"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "הערה שדה",
     "micPermission": {
+      "blockedBody": "מיקרופון התארח בעבורך היה מכיל שגיאה כדי שלא ישאל שנית כאן. אזהרה: סטTINGS כדי להמשיך.",
       "body": "סגור האמתי לשמע אודיו",
       "title": "איזור צריך"
     },
@@ -48,11 +97,24 @@
     },
     "notePlaceholder": "כתוב מאודך שראית...",
     "offline": {
-      "body": "זהו אתרף שמור במכשירך והעלה בצעד שנתחברים שוב\n\n(Note: The string has been translated using Google Translate for reference, and it may not be grammatically perfect Hebrew. For a more accurate translation, I recommend consulting with a professional translator.)",
+      "body": "זה נשמר במכשירך ויועלה כשתתחבר/י שוב.",
       "title": "מושחקים שמורים בלא התחברות"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "שומר",
+      "play": "צלחה",
+      "title": "איסוריך"
+    },
+    "recordError": {
+      "body": "לא ניתן להתחיל בקשר עם הסדכות. נא נסה שוב.",
+      "title": "עציגה נכשלה"
+    },
+    "recordingStatus": "מקליט {{seconds}} שניות — הקש/י לעצירה",
+    "requestingMic": "מבטיח את המיקרופון...",
     "saveNote": "שמירה עמודה",
+    "saved": "שמור באתר הכניסתך",
+    "savedSubtext": "יתכן שהסynchronization יעבור אוטומטית, או כשתחזור את הפעילות.",
+    "savingLocally": "שמור:",
     "startRecording": "שתרתח לאודיו",
     "stopRecording": "סטופ ריקוד",
     "tapToStart": "נ klik להתחיל בריצה",
@@ -66,19 +128,53 @@
     "activity": "פעילות",
     "activityPlural": "פעילויות",
     "back": "אחורה",
-    "cancel": "בטל\n\nNote: The word \"Cancel\" translates to \"בטל\" in Hebrew.",
+    "cancel": "בטל",
     "captureLabel": "אחזק עלומות",
     "close": "סגור",
+    "done": "מכון",
+    "error": "שגיאה",
     "journalLabel": "הערות שדה",
+    "ok": "נאה",
     "tryAgain": "נסה שוב"
   },
+  "discover": {
+    "empty": "אף על פי כן אין עדיינות עדיין — המשורף שלך יסיים אותן בקרוב.",
+    "loadError": "לא יכול לטעון פעולות",
+    "offlineBanner": "אופלין - מצגת שיעורים מכובדים",
+    "periTextEmpty": "שוכחים למצוא רקע לטפס לפגש ביקרה נהדרת.",
+    "periText_one": "עד {{count}} משהו מתחבר לך. איפה תציג את הספינות היום?",
+    "periText_other": "עוד {{count}} משהכרתים לך. איפה תצטרף היום?"
+  },
+  "journal": {
+    "draft": "דראפט",
+    "empty": "אין כך עדיין שום נתונים כאן. שמור או השלם פעולה כדי לראות עבודתך.",
+    "fallbackTitle": "הערות שדה",
+    "hideCaptures": "סגור אימפיים",
+    "noCaptures": "לא נשמעו כפירות עדיין.",
+    "showCaptures": "צפה באינסנטוקים",
+    "submitted": "שלחו",
+    "tabLabel": "מי הכתובות",
+    "title": "דירוגי חזון שלי",
+    "transcriptPending": "טקסט מחושב מתארך..."
+  },
   "login": {
+    "emailLabel": "אימיל",
+    "failed": {
+      "body": "בדוק את האימיל והסיסמה שלך",
+      "title": "כניסה נכשלה"
+    },
     "forgotPassword": "שכחתי הסיסמא?",
+    "missingFields": {
+      "body": "אנא הזן את כתובת האימיל והסיסמא שלך",
+      "title": "חוקים רפואים"
+    },
+    "passwordLabel": "סיסמא",
     "passwordReset": {
-      "body": "אישור הסיסמה שלך? צור קשר עם מורה כדי לאפשר את החזרה שלך\n\n(Password reset? Contact your teacher to allow it)",
+      "body": "לאיפוס הסיסמה, פני/ה למורה שלך.",
       "title": "סיסמה נové"
     },
-    "signIn": "כניתוף חשבון"
+    "signIn": "כניתוף חשבון",
+    "welcomeBack": "ברוך הבא שוב! התחבר למסע למדה שלך לנצח."
   },
   "onboarding": {
     "firstActivity": {
@@ -94,13 +190,13 @@
       "skipCta": "סAUT למרה קשורה"
     },
     "name": {
-      "cta": "Continue",
+      "cta": "המשך",
       "periSpeech": "מה אני צריך לקרוא לך?",
       "placeholder": "שםך..."
     },
     "splash": {
       "cta": "התחיל עםנו",
-      "periSpeech": "בארץ שלך יש פעולות שדה מסוג נוסף לציווג\n\nNote: The Hebrew translation of the given string is provided, but it's essential to ensure that the context and formatting are appropriate for your specific app UI."
+      "periSpeech": "יש באזור שלך פעילויות שדה ששוות גילוי."
     }
   },
   "perichat": {
@@ -115,11 +211,64 @@
     "readAloud": "קרא לשמע",
     "stopReading": "לא נקרא באוויר"
   },
+  "progress": {
+    "badgesLabel": "שלוחנים",
+    "competenciesLabel": "כחות",
+    "empty": "סיכם את פעולה הראשונה כדי להתחבר למעקב על התקדם.",
+    "stats": {
+      "activities": "אישורים",
+      "captures": "אימותים",
+      "dayStreak": "סטריקה יומית"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "זו מחקה אותו לעולם",
+      "confirm": "הסריקה",
+      "title": "תרגישו עזרה להסריקה?"
+    },
+    "empty": "אף העצמות לא נכנסו עדיין. הזרק אחת שום-עצמה לאחרים לפגש בשדה.",
+    "form": {
+      "descriptionLabel": "מה ישלחו לעשות?",
+      "descriptionPlaceholder": "צריך לומר מה לחפש, לעשות או לראות...",
+      "editTitle": "ערוך תחזיקה",
+      "locationLabel": "אימה (צורך כללי)",
+      "locationPlaceholder": "נחל:  wayam, גן מקומי",
+      "newTitle": "רשימה חדשה",
+      "noteLabel": "הערה למושג שלך (אינ צריכית)",
+      "notePlaceholder": "כל את המורה שידע לאחר שנסתף בזאת...",
+      "saveDraft": "שמירה בנסחים",
+      "subjectLabel": "מוצר",
+      "submit": "שלח למורה",
+      "titleLabel": "שלחן משחק",
+      "titlePlaceholder": "מציג את השוקד עץ החזק בפרק"
+    },
+    "newCta": "רשימה חדשה",
+    "periText": "מצאת שינוי מעניין לחיזק? כתבו אותו כדי שיוכלו לחפש אחריו את הסטודנטים האחרים.",
+    "saveError": "לא הוצג שמירת החלון שלך",
+    "status": {
+      "approved": "אישור",
+      "draft": "ציורים",
+      "pending": "מועדפים לראשית הבקשה",
+      "rejected": "צריך שינויים"
+    },
+    "teacherFeedbackLabel": "משואבים למורה"
+  },
   "settings": {
+    "accountLabel": "אקונט",
+    "language": {
+      "current": "שפה: {{language}}",
+      "downloadFailed": "לא הועתק שפה זו. בדיק את הכנסת החינם ונסה שנית."
+    },
+    "languageLabel": "עברית",
+    "role": {
+      "student": "תלמיד"
+    },
     "signOut": {
       "confirm": "אנта בטוח/ה?",
-      "title": "התנתק\n\nNote: The Hebrew word for \"Sign out\" is \"התנתק\", which means \"log off\"."
+      "title": "התנתק"
     },
+    "studentFallback": "תלמיד",
     "theme": {
       "atmosphere": {
         "desc": "כוכבים שחורים ועוקבים - מצלעת הלילה",
@@ -133,6 +282,13 @@
         "desc": "קריא ושנה – עזרה טופוגרפית",
         "label": "טריין"
       }
-    }
+    },
+    "themeLabel": "אמצעי"
+  },
+  "tabs": {
+    "discover": "ציפור",
+    "progress": "פרוгреס",
+    "propose": "פרסום",
+    "settings": "אישורים"
   }
 }

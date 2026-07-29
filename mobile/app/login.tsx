@@ -12,10 +12,11 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import Btn from '@/src/components/Btn';
-import { t } from '@/src/i18n/t';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const { login } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing fields', 'Please enter your email and password.');
+      Alert.alert(t('login.missingFields.title', 'Missing fields'), t('login.missingFields.body', 'Please enter your email and password.'));
       return;
     }
     setLoading(true);
@@ -33,8 +34,8 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } catch (err) {
       Alert.alert(
-        'Login failed',
-        err instanceof Error ? err.message : 'Check your email and password.'
+        t('login.failed.title', 'Login failed'),
+        err instanceof Error ? err.message : t('login.failed.body', 'Check your email and password.')
       );
     } finally {
       setLoading(false);
@@ -60,7 +61,7 @@ export default function LoginScreen() {
       >
         <View style={styles.periWrap}>
           <PeriSpeech
-            text="Welcome back! Sign in to continue your learning journey."
+            text={t('login.welcomeBack', 'Welcome back! Sign in to continue your learning journey.')}
             theme={theme}
             size={40}
           />
@@ -68,7 +69,7 @@ export default function LoginScreen() {
 
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radiusLg }]}>
           <Text style={[styles.label, { color: theme.textMuted, fontFamily: theme.fontMono }]}>
-            EMAIL
+            {t('login.emailLabel', 'EMAIL')}
           </Text>
           <TextInput
             testID="email-input"
@@ -83,7 +84,7 @@ export default function LoginScreen() {
           />
 
           <Text style={[styles.label, { color: theme.textMuted, fontFamily: theme.fontMono }]}>
-            PASSWORD
+            {t('login.passwordLabel', 'PASSWORD')}
           </Text>
           <TextInput
             testID="password-input"

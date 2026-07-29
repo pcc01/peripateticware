@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "详情",
+      "periIntro": "今天你将要做的事情如下。请先逐一阅读，然后出发。",
       "startCta": "准备好了 — 让我们走"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "添加视频"
     },
     "geofence": {
-      "dismiss": "取消位置警告"
+      "defaultLocation": "活动地点",
+      "dismiss": "取消位置警告",
+      "distanceAway": "(~{{meters}}米远)",
+      "stepCloser": "靠近{{location}}继续前进。"
     },
     "inquiry": {
       "askPeri": "问 Пер伊",
-      "doneCta": "已捕获完成 — 反映中"
+      "captureHint": "使用您的摄像头、声音或笔记记录您发现的内容。",
+      "captureLabel": "捕获证据",
+      "defaultQuestion": "注意细看。你能找到什么证据吗？记录你所观察到的内容。",
+      "doneCta": "已捕获完成 — 反映中",
+      "evidenceCollectedLabel": "收集（{{count}})",
+      "followUpLabel": "追踪",
+      "phaseLabel": "阶段2 · 咨询",
+      "reviewEvidence": "查看此证据",
+      "title": "观察与捕获"
     },
+    "loadError": "无法加载活动",
+    "notFound": "活动未找到。",
     "orient": {
-      "readyCta": "我方向 clarity — 开始查询"
+      "defaultTarget": "周围观察并记下你看到的事情",
+      "periText": "你已到达。请先观察周围环境，然后开始。",
+      "phaseLabel": "阶段1 · 方位",
+      "readyCta": "我方向 clarity — 开始查询",
+      "targetsLabel": "今天目标",
+      "title": "到达观察"
     },
     "reflect": {
+      "emptySaveBody": "写一篇简单的反思，然后保存。",
+      "emptySubmitBody": "写一篇简单的反思之前提交。",
+      "emptyTitle": "一个更多的事情",
+      "hint": "保存将此活动保持打开，以便您后续添加更多内容。提交将其发送到您的教师并关闭它。",
+      "periSpeech": "几乎完成了。今天记住一件事情。",
+      "phaseLabel": "阶段3 · 反思",
+      "placeholder": "在这里写下你的反思…",
+      "prompt": "这个地方教了你什么，一个文本书没有能力教呢？",
+      "saveCta": "保存到后面",
+      "savedBody": "您的进展已保存 — 随时回来再添加一些内容，提交之前。",
+      "savedTitle": "已保存",
       "submitCta": "提交场地工作",
-      "submitted": "已提交 ✓"
+      "submitted": "已提交 ✓",
+      "submittedBody": "您的实地工作已经发送给了您的老师。",
+      "submittedTitle": "提交成功！🎉",
+      "title": "创建意义",
+      "yourReflectionLabel": "你的反思"
     }
   },
   "camera": {
     "allowAccess": "允许访问",
     "closeCamera": "关闭摄像头",
+    "openSettings": "打开设置",
     "permission": {
       "photo": "摄像头访问权限需要拍照。",
       "video": "摄像头和麦克风的访问权限需要录制视频。"
+    },
+    "permissionBlocked": {
+      "body": "之前访问被拒绝，所以你的设备不会再问。在设置中开启以继续。",
+      "title": "需要权限"
+    },
+    "permissionError": {
+      "body": "无法请求摄像头权限。请重试。",
+      "title": "出了点问题"
+    },
+    "recordError": {
+      "body": "无法录制视频，请重试。",
+      "title": "录音失败"
     },
     "starting": "开始摄像头中...",
     "takePhoto": "拍照"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "字段记录",
     "micPermission": {
+      "blockedBody": "麦克风访问之前被拒绝，因此在这里将不再提示。 请在设置中打开以继续。",
       "body": "允许访问麦克风录音音频。",
       "title": "需要权限"
     },
@@ -51,8 +100,21 @@
       "body": "该捕获在您的设备上保存，当重新连接时会自动上传。",
       "title": "离线存档"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "暂停",
+      "play": "玩家",
+      "title": "您的证据"
+    },
+    "recordError": {
+      "body": "录音失败，请重试。",
+      "title": "录音失败"
+    },
+    "recordingStatus": "录音中 {{seconds}}秒 — 点击停止",
+    "requestingMic": "请求麦克风权限中...",
     "saveNote": "保存笔记",
+    "saved": "已保存到您的设备",
+    "savedSubtext": "它将自动同步，或者当您提交活动时。",
+    "savingLocally": "保存中...",
     "startRecording": "开始录音",
     "stopRecording": "停止录制",
     "tapToStart": "点击开始录音",
@@ -69,16 +131,50 @@
     "cancel": "取消",
     "captureLabel": "记录证据",
     "close": "关闭",
+    "done": "完成",
+    "error": "错误",
     "journalLabel": "字段记录",
+    "ok": "好的 (háo de)",
     "tryAgain": "再试一次"
   },
+  "discover": {
+    "empty": "尚未有活动 — 你的老师很快就会添加一些。",
+    "loadError": "无法加载活动",
+    "offlineBanner": "离线 — 显示缓存活动",
+    "periTextEmpty": "让我们找点附近的东西来探索。",
+    "periText_one": "你有{{count}}个活动等待您。今天你会在哪里探索？",
+    "periText_other": "有{{count}}个活动等待你。今天你会在哪里探索？"
+  },
+  "journal": {
+    "draft": "草稿",
+    "empty": "没有内容，保存或提交活动查看您的工作。",
+    "fallbackTitle": "字段记事本",
+    "hideCaptures": "隐藏捕获",
+    "noCaptures": "没有抓取到任何数据。",
+    "showCaptures": "显示捕获",
+    "submitted": "提交",
+    "tabLabel": "我的记录",
+    "title": "我的日记条目",
+    "transcriptPending": "待定中..."
+  },
   "login": {
+    "emailLabel": "电子邮件",
+    "failed": {
+      "body": "检查您的电子邮件和密码。",
+      "title": "登录失败"
+    },
     "forgotPassword": "忘记密码？",
+    "missingFields": {
+      "body": "请输入您的电子邮件和密码。",
+      "title": "缺少字段"
+    },
+    "passwordLabel": "密码",
     "passwordReset": {
       "body": "联系教师重置密码",
       "title": "密码重置"
     },
-    "signIn": "登录"
+    "signIn": "登录",
+    "welcomeBack": "欢迎回来！继续您的学习旅程，请登录。"
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "朗读",
     "stopReading": "停止朗读"
   },
+  "progress": {
+    "badgesLabel": "徽章",
+    "competenciesLabel": "技能",
+    "empty": "完成第一项活动开始跟踪进展。",
+    "stats": {
+      "activities": "活动",
+      "captures": "捕获",
+      "dayStreak": "连续天数"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "永久删除它",
+      "confirm": "取款",
+      "title": "撤回挑战？"
+    },
+    "empty": "没有挑战 yet。提议一个供其他学生在场地找到。",
+    "form": {
+      "descriptionLabel": "他们应该做什么？",
+      "descriptionPlaceholder": "描述要找到、做或观察的内容...",
+      "editTitle": "编辑挑战",
+      "locationLabel": "在这里（一个一般提示）",
+      "locationPlaceholder": "直播流，本地公园",
+      "newTitle": "新挑战",
+      "noteLabel": "教师备注（可选）",
+      "notePlaceholder": "这项任务您的老师应该在批准之前了解以下内容...",
+      "saveDraft": "保存草稿",
+      "subjectLabel": "科目",
+      "submit": "提交给教师",
+      "titleLabel": "挑战标题",
+      "titlePlaceholder": "找到公园里最古老的树"
+    },
+    "newCta": "新挑战",
+    "periText": "找到值得挑战的东西？写一篇文章，让其他学生发现。",
+    "saveError": "保存挑战失败",
+    "status": {
+      "approved": "批准",
+      "draft": "草稿",
+      "pending": "等待审核",
+      "rejected": "需要更改："
+    },
+    "teacherFeedbackLabel": "教师反馈"
+  },
   "settings": {
+    "accountLabel": "帐户",
+    "language": {
+      "current": "语言：{{language}}",
+      "downloadFailed": "下载此语言失败。请检查您的连接并重试。"
+    },
+    "languageLabel": "语言",
+    "role": {
+      "student": "学生"
+    },
     "signOut": {
       "confirm": "你确定吗？",
       "title": "退出登录"
     },
+    "studentFallback": "学生",
     "theme": {
       "atmosphere": {
         "desc": "深沉而清晰 — 夜空亮度",
@@ -133,6 +282,13 @@
         "desc": "清晰锐利 - 地形焦点",
         "label": "地形"
       }
-    }
+    },
+    "themeLabel": "主题"
+  },
+  "tabs": {
+    "discover": "发现",
+    "progress": "进度",
+    "propose": "建议",
+    "settings": "设置"
   }
 }

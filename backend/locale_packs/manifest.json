@@ -1,50 +1,50 @@
 {
   "ar": {
-    "updatedAt": "2026-07-29T02:42:11.670244+00:00",
-    "version": "ee5d82641a84"
+    "version": "64d277963800",
+    "updatedAt": "2026-07-29T19:41:13.774Z"
   },
   "de": {
-    "updatedAt": "2026-07-29T02:42:11.673495+00:00",
-    "version": "e00bbb74dc51"
+    "version": "acefcbcee80b",
+    "updatedAt": "2026-07-29T19:41:13.774Z"
   },
   "es": {
-    "updatedAt": "2026-07-29T02:42:11.677054+00:00",
-    "version": "970145187b57"
-  },
-  "fr": {
-    "updatedAt": "2026-07-29T02:42:11.682957+00:00",
-    "version": "18583aaff178"
+    "version": "0ad67c9ea805",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "fr-CA": {
-    "updatedAt": "2026-07-29T02:42:11.679714+00:00",
-    "version": "8264bd3bbdcb"
+    "version": "c40da16645e1",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
+  },
+  "fr": {
+    "version": "987ee53c58e0",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "he": {
-    "updatedAt": "2026-07-29T02:42:11.687612+00:00",
-    "version": "68f6cf11cf27"
+    "version": "d276c847df50",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "it": {
-    "updatedAt": "2026-07-29T02:42:11.691461+00:00",
-    "version": "80671621d1e9"
+    "version": "dee68b1056ee",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "ja": {
-    "updatedAt": "2026-07-29T02:42:11.694645+00:00",
-    "version": "25139b1f4713"
+    "version": "5dd491b4c744",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "ko": {
-    "updatedAt": "2026-07-29T02:42:11.697902+00:00",
-    "version": "c0fbb6c399e2"
+    "version": "5ccfe2a7aae6",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "pt-BR": {
-    "updatedAt": "2026-07-29T02:42:11.701412+00:00",
-    "version": "3c7f808d9925"
+    "version": "3cc4375c623b",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "tr": {
-    "updatedAt": "2026-07-29T02:42:11.704772+00:00",
-    "version": "e44fc2a83a4f"
+    "version": "cae1b5ccbda8",
+    "updatedAt": "2026-07-29T19:41:13.775Z"
   },
   "zh": {
-    "updatedAt": "2026-07-29T02:42:11.707634+00:00",
-    "version": "d1953a163bee"
+    "version": "31c5cbdc6162",
+    "updatedAt": "2026-07-29T19:41:13.776Z"
   }
 }

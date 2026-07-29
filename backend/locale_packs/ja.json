@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "詳細",
+      "periIntro": "今日は以下の作業を行います。出発前に読み通してください。",
       "startCta": "準備完了 - 行く"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "動画を追加"
     },
     "geofence": {
-      "dismiss": "位置警告を閉じる\n(Chijou keikoku o shimasu)"
+      "defaultLocation": "活動場所 (katsudou basho)",
+      "dismiss": "位置警告を閉じる\n(Chijou keikoku o shimasu)",
+      "distanceAway": "(~{{meters}}メートル離れています)",
+      "stepCloser": "近くに{{location}}に向けて、続行します。"
     },
     "inquiry": {
       "askPeri": "質問するPeri",
-      "doneCta": "撮影完了 — 反映中"
+      "captureHint": "カメラ、声音、またはメモを使用して発見したものを記録してください。",
+      "captureLabel": "採得証識",
+      "defaultQuestion": "注意してください。何かの証識を見つけることができますか？それを撮り取りましょう。",
+      "doneCta": "撮影完了 — 反映中",
+      "evidenceCollectedLabel": "収集中（{{count}})",
+      "followUpLabel": "追い続ける",
+      "phaseLabel": "フェーズ2 · 問い合わせ",
+      "reviewEvidence": "この証拠を確認してください",
+      "title": "観察してキャプチャ"
     },
+    "loadError": "活動を読み込めませんでした",
+    "notFound": "活動が見つかりません。",
     "orient": {
-      "readyCta": "僕は方向性があります - 調査を開始します。"
+      "defaultTarget": "周りを見ながら、注目してみて",
+      "periText": "到着しました。巡りを見ながら始める前に時間を遣ってください。",
+      "phaseLabel": "フェーズ1 · 方向",
+      "readyCta": "僕は方向性があります - 調査を開始します。",
+      "targetsLabel": "今日の目標",
+      "title": "着く & 観察"
     },
     "reflect": {
+      "emptySaveBody": "速やかな反省を書いてください。保存前に。",
+      "emptySubmitBody": "速やかな反省を書いてください。",
+      "emptyTitle": "もう1つ",
+      "hint": "保存は後で追加することを許可し、教師に送信して閉じます。Submit",
+      "periSpeech": "まだまだです。今日から思い出した一つを書きなさい。",
+      "phaseLabel": "フェーズ3 · 反省",
+      "placeholder": "ここに自分の反省を書いてください...",
+      "prompt": "この場所はテキストブックで学べなかったものについて教えてくれましたか？",
+      "saveCta": "保存する（後で）",
+      "savedBody": "進捗は保存されています — 何時でも戻り、追加してください。前提出前に。",
+      "savedTitle": "保存済み",
       "submitCta": "提出フィールド作業",
-      "submitted": "承認済み ✓"
+      "submitted": "承認済み ✓",
+      "submittedBody": "教師にお届けしました。(Oshieta shimashita.)",
+      "submittedTitle": "送信済み！🎉",
+      "title": "意味を作る",
+      "yourReflectionLabel": "あなたの鏡面"
     }
   },
   "camera": {
     "allowAccess": "アクセスを許可する",
     "closeCamera": "カメラを閉じる (Kamera o oshieru)",
+    "openSettings": "設定を開く",
     "permission": {
       "photo": "カメラアクセスが必要です、写真を撮るには。",
       "video": "カメラとマイクロフォンのアクセスが必要です、ビデオを録音するには。"
+    },
+    "permissionBlocked": {
+      "body": "前回アクセスが拒否されていたため、ここではもう一度お問い合わせになりません。設定で有効にしてください。続けるには。",
+      "title": "権限が必要です"
+    },
+    "permissionError": {
+      "body": "カメラへのアクセスを求めることができません。もう一度お試しください。",
+      "title": "何かおかしい"
+    },
+    "recordError": {
+      "body": "録画できませんでした。もう一度お試しください。",
+      "title": "録音に失敗しました"
     },
     "starting": "カメラを起動中...",
     "takePhoto": "写真を撮る"
@@ -37,11 +85,12 @@
   "capture": {
     "fieldNote": "フィールドメモ",
     "micPermission": {
+      "blockedBody": "マイクロフォンのアクセスが前回拒否されていました。そこで、今後ここでは再度確認せずに使用します。設定で有効にしてください。続けるには。",
       "body": "マイクロフォンのアクセスを許可して、音声を録音します。",
       "title": "権限が必要です"
     },
     "mode": {
-      "audio": "声音\n\n(Note: \"Voice\" in English remains unchanged when translated to Japanese.)",
+      "audio": "音声",
       "note": "メモ",
       "photo": "写真",
       "video": "ビデオ"
@@ -51,8 +100,21 @@
       "body": "このキャプチャは、デバイスに保存されており、再接続時にアップロードされます。",
       "title": "OFFLINE保存"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "一時停止",
+      "play": "プレイ",
+      "title": "あなたの証拠"
+    },
+    "recordError": {
+      "body": "録音を開始できません。もう一度お試しください。",
+      "title": "録音に失敗しました"
+    },
+    "recordingStatus": "録音中 {{seconds}}秒 — タップして停止",
+    "requestingMic": "マイクアクセスを要求中...",
     "saveNote": "保存メモ",
+    "saved": "デバイスに保存されました",
+    "savedSubtext": "自動的に同期されます、またはアクティビティを提出したときに。",
+    "savingLocally": "保存中...",
     "startRecording": "録音開始",
     "stopRecording": "録音を停止する",
     "tapToStart": "タップして録音を開始する",
@@ -69,16 +131,50 @@
     "cancel": "キャンセル",
     "captureLabel": "証拠を録音",
     "close": "閉じる",
+    "done": "完了",
+    "error": "エラー",
     "journalLabel": "フィールドノート",
+    "ok": "わかった",
     "tryAgain": "もう一度試してください (Mou ichido shite kudasai)"
   },
+  "discover": {
+    "empty": "まだ活動はありません。先生が近いと思います。",
+    "loadError": "活動を読み込めません",
+    "offlineBanner": "オフライン - キャッシュされたアクティビティを表示中",
+    "periTextEmpty": "近くに探してみましょう、観光地や遊び場など。",
+    "periText_one": "活動{{count}}が待っています。今日はどこに探索しますか？",
+    "periText_other": "活動{{count}}が待っています。今日どこに探索しますか？"
+  },
+  "journal": {
+    "draft": "下書き",
+    "empty": "まだ何もありません。",
+    "fallbackTitle": "フィールドノート",
+    "hideCaptures": "隠すキャプチャ",
+    "noCaptures": "キャプチャされていません。",
+    "showCaptures": "表示 Captures",
+    "submitted": "提出済み",
+    "tabLabel": "マイエントリーズ",
+    "title": "私の日記エントリー",
+    "transcriptPending": "転記中..."
+  },
   "login": {
+    "emailLabel": "メール",
+    "failed": {
+      "body": "メールアドレスとパスワードを確認してください。",
+      "title": "ログインに失敗しました"
+    },
     "forgotPassword": "パスワードを忘れた？",
+    "missingFields": {
+      "body": "メールアドレスとパスワードを入力してください。",
+      "title": "欠けている項目"
+    },
+    "passwordLabel": "パスワード",
     "passwordReset": {
       "body": "教師に連絡してパスワードをリセットしてください。",
       "title": "パスワードのリセット"
     },
-    "signIn": "ログイン"
+    "signIn": "ログイン",
+    "welcomeBack": "歓迎再度！学習の旅行を続けるためにログインしてください。"
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "読み上げ",
     "stopReading": "読み上げを停止する"
   },
+  "progress": {
+    "badgesLabel": "誉勲",
+    "competenciesLabel": "能力",
+    "empty": "初めてのアクティビティを完了させて進行状況を追跡し始めます。",
+    "stats": {
+      "activities": "活動",
+      "captures": "キャプチャーズ",
+      "dayStreak": "日数連続"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "これは永久に削除します。",
+      "confirm": "引き出し",
+      "title": "撤回チャレンジ？"
+    },
+    "empty": "まだチャレンジはありません。他の学生に野外で探してもらうチャレンジを提案してください。",
+    "form": {
+      "descriptionLabel": "何をしなければならないのですか？",
+      "descriptionPlaceholder": "探したいもの、行うこと、または観察することを説明してください...",
+      "editTitle": "編集チャレンジ",
+      "locationLabel": "ウェア (一般的なヒント)",
+      "locationPlaceholder": "ストリーム：例、ローカルの公園：例、{{placeholder}}",
+      "newTitle": "新チャレンジ",
+      "noteLabel": "教師に注意事項（任意）",
+      "notePlaceholder": "この承認前に教師が知っておくべきもの...",
+      "saveDraft": "保存中断",
+      "subjectLabel": "件名",
+      "submit": "教師に提出",
+      "titleLabel": "チャレンジタイトル",
+      "titlePlaceholder": "公園で最古の樹を探してください"
+    },
+    "newCta": "新チャレンジ",
+    "periText": "誰かの手に頼めないものを発見した？それを他の学生たちが発見できるように書き込んでください。",
+    "saveError": "保存できませんでした。（Challenge Savings Failure）",
+    "status": {
+      "approved": "承認済み",
+      "draft": "ドラフト",
+      "pending": "レビュー待ち",
+      "rejected": "変更が必要"
+    },
+    "teacherFeedbackLabel": "教師評価"
+  },
   "settings": {
+    "accountLabel": "アカウント",
+    "language": {
+      "current": "言語：{{language}}",
+      "downloadFailed": "ダウンロードできませんでした。接続を確認して再試行してください。"
+    },
+    "languageLabel": "言語",
+    "role": {
+      "student": "学生"
+    },
     "signOut": {
       "confirm": "確実によろしいですか？",
       "title": "ログアウト"
     },
+    "studentFallback": "学生",
     "theme": {
       "atmosphere": {
         "desc": "深く、暗く - 夜空の清澄度",
@@ -133,6 +282,13 @@
         "desc": "清晰で鋼琴的 — 地形の焦点",
         "label": "地形"
       }
-    }
+    },
+    "themeLabel": "テーマ"
+  },
+  "tabs": {
+    "discover": "発見",
+    "progress": "進捗",
+    "propose": "提案する",
+    "settings": "設定"
   }
 }

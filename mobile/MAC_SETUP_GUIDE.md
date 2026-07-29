@@ -495,3 +495,28 @@ the scheme's environment variables in Xcode, before step 6.
   section 11's `EXPO_PUBLIC_API_URL` note; also confirm the phone and Mac
   are on the same Wi-Fi network (or that USB networking is enabled) and
   the Mac's firewall isn't blocking incoming connections to port 8000.
+- **iPhone 12 — app crashes on launch with "No script URL provided" /
+  `scriptURLString=(null)`** — the Debug build (section 11) has no
+  embedded JS bundle; it loads from Metro over Bonjour/mDNS
+  auto-discovery, and this is what fails when that discovery doesn't
+  happen. Cheapest cause first, robust fix if it keeps happening:
+  - **Quick check:** confirm `npx expo start` is actually running in a
+    terminal on the Mac *before* hitting Xcode's ▶ Run — Xcode does not
+    reliably start Metro for you on a device build. Also confirm the
+    phone is on the same Wi-Fi network as the Mac (not just plugged in
+    via USB), and that the Mac's firewall didn't block node's first
+    "allow incoming connections" prompt. On the phone, Settings →
+    Privacy & Security → Local Network should show the app toggled on;
+    if it's missing from that list entirely, Bonjour discovery can't
+    work at all until the Info.plist carries the right permission key
+    (see the dev-client fix below, which handles this).
+  - **Robust fix:** install `expo-dev-client` so a failed auto-discovery
+    shows a manual bundler-URL entry screen instead of crashing:
+    ```bash
+    npx expo install expo-dev-client
+    npx expo prebuild --platform ios --clean
+    bundle exec pod install --project-directory=ios
+    ```
+    Rebuild/run from Xcode, then on the dev-client screen enter
+    `http://<mac-lan-ip>:8081` (same IP as the `EXPO_PUBLIC_API_URL`
+    note above, port 8081 instead of 8000).

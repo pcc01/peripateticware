@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "DETTAGLI",
+      "periIntro": "Fai così oggi. Leggi attentamente prima di uscire.",
       "startCta": "Pronto - andiamo"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "Aggiungi video"
     },
     "geofence": {
-      "dismiss": "avviso di locazione annullato"
+      "defaultLocation": "la posizione dell'attività (activity_location)",
+      "dismiss": "avviso di locazione annullato",
+      "distanceAway": "(a ~{{meters}} m di distanza)",
+      "stepCloser": "Avvicinati di più a {{location}} per continuare."
     },
     "inquiry": {
       "askPeri": "Chiedi Peri",
-      "doneCta": "Catturato - Refletti"
+      "captureHint": "Registra con la tua camera, voce o note ciò che trovi.",
+      "captureLabel": "CAPTURA EVIDENZIE",
+      "defaultQuestion": "Osserva attentamente. Quale prova puoi trovare? Cattura cosa osservi.",
+      "doneCta": "Catturato - Refletti",
+      "evidenceCollectedLabel": "Raccolti ({{count}})",
+      "followUpLabel": "RICONTROLA",
+      "phaseLabel": "INVESTIGAZIONE 2",
+      "reviewEvidence": "Rivisula queste prove",
+      "title": "Osserva e Cattura"
     },
+    "loadError": "Non è possibile caricare attività",
+    "notFound": "Attività non trovata.",
     "orient": {
-      "readyCta": "Orientato - avvia indagine"
+      "defaultTarget": "Guarda intorno e segui cosa vedi",
+      "periText": "Arrivato. Fai una pausa per osservare il tuo ambiente prima di iniziare.",
+      "phaseLabel": "FASE 1 · ORIZIENTAZIONE",
+      "readyCta": "Orientato - avvia indagine",
+      "targetsLabel": "OGGI OBiettivi",
+      "title": "Arriva e Osserva"
     },
     "reflect": {
+      "emptySaveBody": "Refletti velocemente prima di salvare.",
+      "emptySubmitBody": "Refletti velocemente prima di inviare.",
+      "emptyTitle": "Altro in più",
+      "hint": "Salva mantiene questa attività aperta per aggiungere di più in seguito. Invia la invia alla tua insegnante e chiude.",
+      "periSpeech": "Ricordi ancora qualcosa di oggi. Scrivi una cosa che ti rimarrà impressa.",
+      "phaseLabel": "RIFLESSIONE · FASE 3",
+      "placeholder": "Scrivi qui la tua riflessione...",
+      "prompt": "Cosa hai imparato qui che un testo non poteva insegnarti?",
+      "saveCta": "Salvatelo per dopo",
+      "savedBody": "Sono salva le tue prestazioni - torna a qualunque momento per aggiungere di più prima di inviare.",
+      "savedTitle": "Salvati",
       "submitCta": "Invia lavoro campo",
-      "submitted": "Confermato ✓"
+      "submitted": "Confermato ✓",
+      "submittedBody": "Invio lavoro campo inviato al tuo insegnante.",
+      "submittedTitle": "Inviato! 🎉",
+      "title": "Fai Senso",
+      "yourReflectionLabel": "TUO RIFLESSIONE"
     }
   },
   "camera": {
     "allowAccess": "Consenti l'accesso",
     "closeCamera": "Chiusura camera (Chiude camera in abbreviated form)",
+    "openSettings": "Imposta impostazioni",
     "permission": {
       "photo": "Accesso alla camera necessario per prendere una foto.",
       "video": "Accesso alla camera e al microfono necessario per registrare il video."
+    },
+    "permissionBlocked": {
+      "body": "Accesso negato in precedenza, quindi il tuo dispositivo non richiederà più conferma qui. Attivalo nelle Impostazioni per continuare.",
+      "title": "Permesso richiesto"
+    },
+    "permissionError": {
+      "body": "Non è stato possibile richiedere l'accesso alla camera. Riprova più tardi.",
+      "title": "Qualcosa è andato storto"
+    },
+    "recordError": {
+      "body": "Non è possibile registrare il video. Riprova più tardi.",
+      "title": "Registrazione fallita"
     },
     "starting": "Avvia camera...",
     "takePhoto": "Fotografa immagine"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "NOTA CAMPO",
     "micPermission": {
+      "blockedBody": "Accesso al microfono è stato precedentemente negato, quindi qui non verrà richiesto di nuovo. Attivalo nelle Impostazioni per continuare.",
       "body": "Consenti l'accesso al microfono per registrare l'audio.",
       "title": "Permesso richiesto"
     },
@@ -51,8 +100,21 @@
       "body": "Salvato questo captura sul tuo dispositivo e verrà caricato alla riconnessione.",
       "title": "Salvati fuori linea"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "Sosta",
+      "play": "Gioca",
+      "title": "Sua prova"
+    },
+    "recordError": {
+      "body": "Non è possibile avviare il registrazione. Riprova più tardi.",
+      "title": "Registrazione fallita"
+    },
+    "recordingStatus": "Registrazione {{seconds}} s — tocca per fermare",
+    "requestingMic": "Richiedo l'accesso al microfono...",
     "saveNote": "Salvatesta nota",
+    "saved": "Salvato sul tuo dispositivo",
+    "savedSubtext": "Sincronizza automaticamente, oppure quando confermi l'attività.",
+    "savingLocally": "Salvando...",
     "startRecording": "Registra",
     "stopRecording": "Interrompi registrazione",
     "tapToStart": "Tocca per avviare l'incisione audio",
@@ -69,16 +131,50 @@
     "cancel": "Annulla",
     "captureLabel": "Registra prove",
     "close": "Chiudi",
+    "done": "Fatto",
+    "error": "Errore",
     "journalLabel": "Note di campo",
+    "ok": "Bene",
     "tryAgain": "Riprova"
   },
+  "discover": {
+    "empty": "Attività ancora inattive - il tuo insegnante le aggiungerà presto.",
+    "loadError": "Non è possibile caricare le attività",
+    "offlineBanner": "OFFLINE - mostrando attività in cache",
+    "periTextEmpty": "Scopriamo qualcosa da esplorare in prossimità.",
+    "periText_one": "Attendevi {{count}} attività. Dove esplorerai oggi?",
+    "periText_other": "Attività in attesa per te: {{count}}. Dove esplorerai oggi?"
+  },
+  "journal": {
+    "draft": "Bozza",
+    "empty": "Nulla qui ancora.",
+    "fallbackTitle": "Nota Campo",
+    "hideCaptures": "Nascondi catture",
+    "noCaptures": "Nessuna cattura ancora.",
+    "showCaptures": "Mostra catture",
+    "submitted": "Inviato",
+    "tabLabel": "Miei Accessi",
+    "title": "Diario miei appunti",
+    "transcriptPending": "In corso..."
+  },
   "login": {
+    "emailLabel": "E-MAIL",
+    "failed": {
+      "body": "Controlla la tua email e la tua password.",
+      "title": "Accesso fallito"
+    },
     "forgotPassword": "dimenticato la password?",
+    "missingFields": {
+      "body": "Email e password",
+      "title": "Campi mancanti"
+    },
+    "passwordLabel": "Password",
     "passwordReset": {
       "body": "Contatta il tuo insegnante per ricordarti la tua password.",
       "title": "Ripristino password"
     },
-    "signIn": "Accesso"
+    "signIn": "Accesso",
+    "welcomeBack": "Benvenuto di nuovo! Accedi per continuare il tuo viaggio formativo."
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "Leggi in alta voce",
     "stopReading": "Interrompi di leggere in voce"
   },
+  "progress": {
+    "badgesLabel": "PREMIALI",
+    "competenciesLabel": "COMPETENZE",
+    "empty": "Completa la prima attività per iniziare a seguire il tuo progressivo.",
+    "stats": {
+      "activities": "Attività",
+      "captures": "Cattura",
+      "dayStreak": "Sequenza di giorni"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "Cancella definitivamente",
+      "confirm": "Ritira",
+      "title": "Ritira sfida?"
+    },
+    "empty": "Sono ancora senza sfide. Proponi una per permettere agli altri studenti di cercarla nel campo.",
+    "form": {
+      "descriptionLabel": "COSA DOVREBBERO FARE?",
+      "descriptionPlaceholder": "Osserva cosa trovare, fare o osservare...",
+      "editTitle": "Modifica sfida",
+      "locationLabel": "Dove",
+      "locationPlaceholder": "parco locale, corso di streaming",
+      "newTitle": "Nuovo sfido",
+      "noteLabel": "NOTA AL PROFESSEore (OPZIONALE)",
+      "notePlaceholder": "Qualcosa che il tuo insegnante dovrebbe sapere prima di approvare questo...",
+      "saveDraft": "Salva bozza",
+      "subjectLabel": "Oggetto",
+      "submit": "Invia al professore",
+      "titleLabel": "SFIDA TITOLO",
+      "titlePlaceholder": "albero più antico nel parco"
+    },
+    "newCta": "Nuovo sfida",
+    "periText": "Sfondato qualcosa da sfidare? Scrivilo per farlo scoprire dagli altri studenti.",
+    "saveError": "Non è possibile salvare il tuo sfido.",
+    "status": {
+      "approved": "Approvato",
+      "draft": "Bozza",
+      "pending": "Attesa valutazione",
+      "rejected": "Richieste modifiche"
+    },
+    "teacherFeedbackLabel": "VALUTAZIONE INSEGNANTE"
+  },
   "settings": {
+    "accountLabel": "CONTO",
+    "language": {
+      "current": "Lingua: {{language}}",
+      "downloadFailed": "Non è possibile scaricare questa lingua. Controlla la tua connessione e riprova."
+    },
+    "languageLabel": "ITALIANO",
+    "role": {
+      "student": "Studente"
+    },
     "signOut": {
       "confirm": "Si sta verificando?",
       "title": "Uscita"
     },
+    "studentFallback": "Studente",
     "theme": {
       "atmosphere": {
         "desc": "Notte cielo chiara profonda e scura",
@@ -133,6 +282,13 @@
         "desc": "Affilato e preciso — focalizzazione topografica",
         "label": "Terreno"
       }
-    }
+    },
+    "themeLabel": "TEMATICA"
+  },
+  "tabs": {
+    "discover": "Scopri",
+    "progress": "Avanzamento",
+    "propose": "Proposta",
+    "settings": "Impostazioni"
   }
 }

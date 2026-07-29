@@ -3,11 +3,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchProgress, ProgressData } from '@/src/api/journal';
 
 export default function ProgressScreen() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [data, setData] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -23,7 +25,7 @@ export default function ProgressScreen() {
   return (
     <SafeAreaView testID="progress-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>Progress</Text>
+        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('tabs.progress', 'Progress')}</Text>
       </View>
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
@@ -36,9 +38,9 @@ export default function ProgressScreen() {
           {/* Stats row */}
           <View style={styles.statsRow}>
             {[
-              { label: 'Activities', value: data?.total_activities_completed ?? 0, emoji: '🏅' },
-              { label: 'Captures',  value: data?.total_captures ?? 0,              emoji: '📷' },
-              { label: 'Day streak', value: data?.current_streak_days ?? 0,        emoji: '🔥' },
+              { label: t('progress.stats.activities', 'Activities'), value: data?.total_activities_completed ?? 0, emoji: '🏅' },
+              { label: t('progress.stats.captures', 'Captures'),  value: data?.total_captures ?? 0,              emoji: '📷' },
+              { label: t('progress.stats.dayStreak', 'Day streak'), value: data?.current_streak_days ?? 0,        emoji: '🔥' },
             ].map((stat) => (
               <View key={stat.label} style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
                 <Text style={styles.statEmoji}>{stat.emoji}</Text>
@@ -51,7 +53,7 @@ export default function ProgressScreen() {
           {/* Competencies */}
           {(data?.competencies ?? []).length > 0 && (
             <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-              <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>COMPETENCIES</Text>
+              <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('progress.competenciesLabel', 'COMPETENCIES')}</Text>
               {data!.competencies.map((c, i) => (
                 <View key={i} style={styles.compRow}>
                   <Text style={[styles.compName, { fontFamily: theme.fontBody, color: theme.text }]}>{c.name}</Text>
@@ -67,7 +69,7 @@ export default function ProgressScreen() {
           {/* Badges */}
           {(data?.badges ?? []).length > 0 && (
             <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-              <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>BADGES</Text>
+              <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('progress.badgesLabel', 'BADGES')}</Text>
               <View style={styles.badgeGrid}>
                 {data!.badges.map((b) => (
                   <View key={b.id} style={[styles.badge, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>
@@ -83,7 +85,7 @@ export default function ProgressScreen() {
             <View style={styles.center}>
               <Text style={{ fontSize: 40 }}>🌱</Text>
               <Text style={[{ fontFamily: theme.fontBody, color: theme.textMuted, textAlign: 'center', fontSize: 14, lineHeight: 22 }]}>
-                Complete your first activity to start tracking progress.
+                {t('progress.empty', 'Complete your first activity to start tracking progress.')}
               </Text>
             </View>
           )}

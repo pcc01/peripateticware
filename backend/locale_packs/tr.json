@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "AYNLARI",
+      "periIntro": "Günün ne yapacağınızı aşağıda gösteriyoruz. Çıkış yapmadan önce lütfen okuyunuz.",
       "startCta": "Hazır oldum — çalışmalarıza başlayalım"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "Ekle video"
     },
     "geofence": {
-      "dismiss": "Kızolda Uyarısını Kapat"
+      "defaultLocation": "Etkinlik Yeri",
+      "dismiss": "Kızolda Uyarısını Kapat",
+      "distanceAway": "(~{{meters}}m uzaklıkta)",
+      "stepCloser": "Devam etmek için {{location}}'a bir adım daha yaklaşın."
     },
     "inquiry": {
       "askPeri": "Soru Peri",
-      "doneCta": "Tamam alındı — yansıma yap"
+      "captureHint": "Kameranız, sesinizi ve notlarınızı kullanarak bulduğunuzu kaydetin.",
+      "captureLabel": "KARNATIR",
+      "defaultQuestion": "Ak şikayetle. Nasıl kararlı bir İşaret bulabilirsiniz? Gözlemlerinizi kapsatın. Kaptürünüzü kullanarak kaydedin.",
+      "doneCta": "Tamam alındı — yansıma yap",
+      "evidenceCollectedLabel": "TOPLANAN ({{count}})",
+      "followUpLabel": "Takip Edin",
+      "phaseLabel": "TAHAP 2 · ARAMASıZLAMA",
+      "reviewEvidence": "Tevkiyeden yeni şüpheyi incele",
+      "title": "Takip Et ve Alır"
     },
+    "loadError": "Yönetemle etmeye devam edilemiyor",
+    "notFound": "Hareket bulunamadı.",
     "orient": {
-      "readyCta": "Açıklandım — soru başlatın"
+      "defaultTarget": "Göz at ve görüntülendiğinizi yazın",
+      "periText": "Geldiniz. Çevresenizi önce bir anda inceleyin beklemeden başlayın.",
+      "phaseLabel": "YON TAHMİNATI 1 · YÖNÜNTÜ",
+      "readyCta": "Açıklandım — soru başlatın",
+      "targetsLabel": "AŞTIN HEDEFLER",
+      "title": "Yaklaş ve Gözlemle"
     },
     "reflect": {
+      "emptySaveBody": "Kısa bir fikir yazın önce kaydetmeye hazır.",
+      "emptySubmitBody": "Yazınız hızlı bir refleksiyonu gönderme öncesinde yapın. (Yalnızca çeviri)",
+      "emptyTitle": "Bir şey daha",
+      "hint": "Kaydet, bu etkinliği açık tutarak sonra daha fazlası ekleyebilirsiniz. Gönder, öğretmenine gönderip kapatır.",
+      "periSpeech": "Tamam yakında. Bugün ne bir şey hatıralsınız yazın.",
+      "phaseLabel": "AYAKTAŞI 3 · YANITLAMA",
+      "placeholder": "Yazınız buraya yazın...",
+      "prompt": "Bu yer ne bir kitab öğretmiyordu, bu yerde nasıl?",
+      "saveCta": "Kaydet sonra",
+      "savedBody": "Kaydolduğunuz ilerleme kalındırıldı — her zaman geri dönerek daha fazlası ekleyebilirsiniz.",
+      "savedTitle": "Kaydedilenler",
       "submitCta": "Tamamla Field İşi",
-      "submitted": "Tamamlandı ✓"
+      "submitted": "Tamamlandı ✓",
+      "submittedBody": "Gönderilen alan çalışmasınız öğretmeninize gönderildi.",
+      "submittedTitle": "Gönderildi! 🎉",
+      "title": "Anlatma: Yapıştırma",
+      "yourReflectionLabel": "SENİN YANSIMAN"
     }
   },
   "camera": {
     "allowAccess": "Erim izni ver",
     "closeCamera": "Kapat kamera",
+    "openSettings": "Ayarlar Aç",
     "permission": {
       "photo": "Fotoğraf çekmek için kamera erişimi gereklidir.",
       "video": "Kameran ve ses çekici erişim gereklidir videoyu kaydetmek için.\nKameran ve ses çekici erişimi videoyu kaydetmek için gerekli."
+    },
+    "permissionBlocked": {
+      "body": "Daha önce erişim reddedilmişti, bu yüzden cihazınız burada tekrar sormayacak. Devam etmek için Ayarlar'dan açın.",
+      "title": "Izin gereklidir"
+    },
+    "permissionError": {
+      "body": "Kamera erişim isteği sorgulanamadı. Lütfen tekrar deneyin.",
+      "title": "Hata oluştu"
+    },
+    "recordError": {
+      "body": "Kayıt edilemedi videonuz. Lütfen tekrar deneyin.",
+      "title": "Kaydışlemesiz"
     },
     "starting": "Başlatılıyor kamera...",
     "takePhoto": "Fotoğraf çek"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "ATEŞ NOTU",
     "micPermission": {
+      "blockedBody": "Mikrofon erişimi önce reddedildi, bu yüzden cihazın burada tekrar sormayacaktır. Ayarlar'da açmak için devre dökün, devam etmek için devam edin.",
       "body": "Kullanıcının ses kaydetmek için mikrofon erişimi iznini ver.",
       "title": "Izin gereklidir"
     },
@@ -51,14 +100,27 @@
       "body": "Kaydınızda kaydedilmiştir ve yeniden bağlanırsanız yüklenir.",
       "title": "Kaydedilmiş Offline"
     },
+    "preview": {
+      "pause": "Durakla",
+      "play": "Oynat",
+      "title": "Kara Kaynakınız"
+    },
+    "recordError": {
+      "body": "Başlatılamadı kaydı. Lütfen tekrar deneyin.",
+      "title": "Kaydışlemme Başarısız"
+    },
     "recordingStatus": "Kaydetme ({{seconds}})s – duraklatmak için tıklayın",
+    "requestingMic": "İstemiyoruz mikrofon erişimini…",
     "saveNote": "Kaydet",
+    "saved": "Kaydedildi cihazınızda",
+    "savedSubtext": "Otomatik olarak sinklenir, ya da aktiviteyi gönderirseniz.",
+    "savingLocally": "Kaydetme...",
     "startRecording": "Kaydı Başlat",
-    "stopRecording": "Durakla\n\n(Note: \"Durakla\" means \"Stop\" in Turkish)",
+    "stopRecording": "Kaydı durdur",
     "tapToStart": "Kısa basarak kaydeta başlat",
     "title": "Eklenen Tümleri Ekle",
     "uploadFailed": {
-      "title": "Upload failed"
+      "title": "Yükleme başarısız oldu"
     },
     "uploading": "Yükleme..."
   },
@@ -69,16 +131,50 @@
     "cancel": "iptal",
     "captureLabel": "Kısıtla Doğrulama",
     "close": "Kapat",
+    "done": "Tamamlandı",
+    "error": "Hata",
     "journalLabel": "Açıklama notları",
+    "ok": "Tamam",
     "tryAgain": "Yeniden Deneyin"
   },
+  "discover": {
+    "empty": "Yapılan aktivite yok — size daha kısa sürede öğretmeniniz aktivite ekleyecektir.",
+    "loadError": "Yönetem aktiviteleri yüklenemedi.",
+    "offlineBanner": "YOK AİNLİK — gösterilen depodaki faaliyetleri",
+    "periTextEmpty": "Yakında keşfedilecek bir yere çıkaralım.",
+    "periText_one": "İşleminizde {{count}} aktivite bekliyor. Bugün ne yere keşfedebilirsiniz?",
+    "periText_other": "İşleminizde {{count}} aktivite bekliyor. Hangi yere bugün keşfedeceksiniz?"
+  },
+  "journal": {
+    "draft": "Taslak",
+    "empty": "Hiç yok. İşlemi kaydet veya gerçekleştirerek çalışmanızı görmek için lütfen deneyiniz.",
+    "fallbackTitle": "Açık Not",
+    "hideCaptures": "Gizle kapsüller (Kapatma)",
+    "noCaptures": "Henüz yakalama yok.",
+    "showCaptures": "Göster Captures",
+    "submitted": "Gönderildi",
+    "tabLabel": "Kayıtlarım",
+    "title": "Günlüğüm Kayıtları",
+    "transcriptPending": "Gönderilen transkript bekleniyor..."
+  },
   "login": {
+    "emailLabel": "E-POSTA",
+    "failed": {
+      "body": "Kontrol ediniz email ve şifreniziz.",
+      "title": "Giriş Başarısız"
+    },
     "forgotPassword": "Sifre mi unuttum?",
+    "missingFields": {
+      "body": "Lütfen email ve şifre bilgilerinizi giriniz.",
+      "title": "Eksik alanlar"
+    },
+    "passwordLabel": "Şifre",
     "passwordReset": {
       "body": "Mesajla öğretmenine şifrenizi sıfırla'ma için iletişime geçin.",
       "title": "Şifre Sıfırla"
     },
-    "signIn": "Giriş Yap"
+    "signIn": "Giriş Yap",
+    "welcomeBack": "Hoşgeldiniz tekrar! Devam etmek için öğrenme yolunuzu devam edebilmeniz için oturum açın."
   },
   "onboarding": {
     "firstActivity": {
@@ -89,8 +185,8 @@
     "location": {
       "badge": "Yakın yerelde 3 faaliyet",
       "confirmCta": "Konumu Kapat",
-      "periSpeech": "Yakın yerinde aktiviteler var. Konumu etkinleştirmeyi sağlayarak başlamak için nasıl devam edeceksiniz?\n\nTranslation: Are there activities near you? Enable location to continue?",
-      "reassurance": "Used only to surface nearby activities",
+      "periSpeech": "Yakınınızda etkinlikler var. Devam etmek için konumu etkinleştirin.",
+      "reassurance": "Yalnızca yakındaki etkinlikleri göstermek için kullanılır",
       "skipCta": "Atlaştır"
     },
     "name": {
@@ -115,11 +211,64 @@
     "readAloud": "Okunar",
     "stopReading": "Durakla okuyun (or simply Durakla)"
   },
+  "progress": {
+    "badgesLabel": "İZNAMLAR",
+    "competenciesLabel": "YARARLIKLAR",
+    "empty": "Tamamlayınız ilk etkinliği, ilerleme kaydına başlamak için başlanmaktadır.",
+    "stats": {
+      "activities": "Faaliyetler",
+      "captures": "Kapturlar",
+      "dayStreak": "Gün serisi"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "Kaldırır sona doğru.",
+      "confirm": "Çek",
+      "title": "İçeşme şansı var mı?"
+    },
+    "empty": "Henüz şuan hiç sorun yok. Diğer öğrenciler için alanında bir tanesini önermek.",
+    "form": {
+      "descriptionLabel": "NE IŞLEM YAPmalı?",
+      "descriptionPlaceholder": "Bulunacak, yapılacak veya gözlemlenecek şeyi açıklayın...",
+      "editTitle": "Duzenle Şansı",
+      "locationLabel": "YARDIM (UMUM SÖZLEŞME)",
+      "locationPlaceholder": "yerel bir park (Local Park adındaki kelimeyi de kalır)",
+      "newTitle": "Yeni meydan okuma",
+      "noteLabel": "ÖĞRETMENİZİN NOTU (OPÇİONEL)",
+      "notePlaceholder": "Öğretmen onaylayınca önce bu her şeyi bilmeli...",
+      "saveDraft": "Kaydet (Tasarım)",
+      "subjectLabel": "ÖNEMLİ",
+      "submit": "Gönder Teacher'e",
+      "titleLabel": "ARAŞTIRMA BAŞLIKLARI",
+      "titlePlaceholder": "Enç, en az şunu bul: Park'ta en eski ağaçı"
+    },
+    "newCta": "Yeni meydan okuma",
+    "periText": "Yeni bir şey buldunuz mu zorlukta değerli? Diğer öğrenciler tarafından keşfedilebilir hale getirmek için yazın.",
+    "saveError": "Kadar zaman kaydetmeye çalışamadı.",
+    "status": {
+      "approved": "Onaylandı",
+      "draft": "Taslak",
+      "pending": "Tekrar Kontrol Ediliyor",
+      "rejected": "İhtiyaç değişiklikleri"
+    },
+    "teacherFeedbackLabel": "ÖĞRETMEN FEEDBACK"
+  },
   "settings": {
+    "accountLabel": "HESAP",
+    "language": {
+      "current": "Dil: {{language}}",
+      "downloadFailed": "Bağlantınız kontrol edin ve yeniden deneyin. (Dosya indirilemedi bu dil.)"
+    },
+    "languageLabel": "TÜRKÇE",
+    "role": {
+      "student": "Öğrenci"
+    },
     "signOut": {
       "confirm": "Tamam mi öydüünüz?",
       "title": "Çıkış Yap"
     },
+    "studentFallback": "Öğrenci",
     "theme": {
       "atmosphere": {
         "desc": "Karanlık ve derinlik — yavru gökyüzü aydınlatma",
@@ -133,6 +282,13 @@
         "desc": "Açık ve kesin - yerel konum ön plana çıkarma",
         "label": "Teren"
       }
-    }
+    },
+    "themeLabel": "TEMATik"
+  },
+  "tabs": {
+    "discover": "Keşfedin",
+    "progress": "İlerleme",
+    "propose": "Teklifi Sunat",
+    "settings": "Ayarlar"
   }
 }

@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "DETALHES",
+      "periIntro": "Faça o seguinte hoje. Leia atentamente antes de sair.",
       "startCta": "Estou pronto - vamos lá"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "Adicionar vídeo"
     },
     "geofence": {
-      "dismiss": "Aviso de localização (desmarcar)"
+      "defaultLocation": "localização da atividade",
+      "dismiss": "Aviso de localização (desmarcar)",
+      "distanceAway": "(~{{meters}} m de distância)",
+      "stepCloser": "Chegue mais perto de {{location}} para continuar."
     },
     "inquiry": {
       "askPeri": "Pergunte Peri",
-      "doneCta": "Capturado — refleta"
+      "captureHint": "Grave sua câmera, voz ou notas para gravar o que encontrar.",
+      "captureLabel": "CAPTURAR EVIDENCIA",
+      "defaultQuestion": "Observa atentamente. Que evidência você pode encontrar? Captura o que observa.",
+      "doneCta": "Capturado — refleta",
+      "evidenceCollectedLabel": "COLETADO ({{count}})",
+      "followUpLabel": "SEGUIMENTO",
+      "phaseLabel": "FASE 2 · INVESTIGAÇÃO",
+      "reviewEvidence": "Revise esta evidência",
+      "title": "Observa e Captura"
     },
+    "loadError": "Não foi possível carregar atividade",
+    "notFound": "Atividade não encontrada.",
     "orient": {
-      "readyCta": "Eu estou alinhado — comece a consulta"
+      "defaultTarget": "Olhe ao redor e anote o que você vê",
+      "periText": "Chegaste. Leve um momento para observar o seu ambiente antes de começar.",
+      "phaseLabel": "FASE 1 · ORIENTAÇÃO",
+      "readyCta": "Eu estou alinhado — comece a consulta",
+      "targetsLabel": "META: Translation from English to Brazilian Portuguese",
+      "title": "Chegar e Observar"
     },
     "reflect": {
+      "emptySaveBody": "Escreva uma rápida reflexão antes de salvar.",
+      "emptySubmitBody": "Escreva uma rápida reflexão antes de enviar.",
+      "emptyTitle": "Mais uma coisa",
+      "hint": "Salve mantém esta atividade aberta para que você possa adicionar mais tarde. Enviar envia-a para seu professor e fecha-a.",
+      "periSpeech": "Lembrança: Ainda falta pouco. Escreva uma coisa que você lembrará do hoje.",
+      "phaseLabel": "FASE 3 · REFLET",
+      "placeholder": "Escreva sua reflexão aqui...",
+      "prompt": "O que aprendeu aqui que um livro de texto não pudesse ensinar?",
+      "saveCta": "Salve para mais tarde",
+      "savedBody": "Seu progresso está salvo — volte sempre para adicionar mais antes de enviar.",
+      "savedTitle": "Salvo",
       "submitCta": "Enviar trabalho de campo",
-      "submitted": "Aprovado ✓"
+      "submitted": "Aprovado ✓",
+      "submittedBody": "Sua trabalho de campo foi enviado para seu professor(a).",
+      "submittedTitle": "Enviado! 🎉",
+      "title": "Faça Sentido",
+      "yourReflectionLabel": "SUA REFLEXÃO"
     }
   },
   "camera": {
     "allowAccess": "Acesso permitido",
     "closeCamera": "Fechar câmera",
+    "openSettings": "Configurações",
     "permission": {
       "photo": "Acesso à câmera é necessário para tirar uma foto.",
       "video": "Acesso à câmera e microfone é necessário para gravar vídeo."
+    },
+    "permissionBlocked": {
+      "body": "Acesso foi negado anteriormente, portanto seu dispositivo não solicitará novamente aqui. Ative-o nas configurações para continuar.",
+      "title": "Permissão necessária"
+    },
+    "permissionError": {
+      "body": "Não foi possível solicitar acesso à câmera. Tente novamente.",
+      "title": "Algo deu errado"
+    },
+    "recordError": {
+      "body": "Não foi possível gravar o vídeo. Tente novamente.",
+      "title": "Gravação falhou"
     },
     "starting": "Iniciando câmera...",
     "takePhoto": "Faze uma foto"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "NOTA DE CAMPO",
     "micPermission": {
+      "blockedBody": "Microfone de acesso foi anteriormente negado, portanto seu dispositivo não solicitará novamente aqui. Ative-o nas configurações para continuar.",
       "body": "Permitir acesso ao microfone para gravar áudio.",
       "title": "Permissão necessária"
     },
@@ -51,8 +100,21 @@
       "body": "Armazenado no seu dispositivo e será carregado quando você se conectar novamente.",
       "title": "Salvo offline"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "Pausa",
+      "play": "Jogar",
+      "title": "Sua evidência"
+    },
+    "recordError": {
+      "body": "Não foi possível iniciar a gravação. Tente novamente.",
+      "title": "Gravação falhou"
+    },
+    "recordingStatus": "Gravando {{seconds}} s — toque para parar",
+    "requestingMic": "Solicitando acesso ao microfone...",
     "saveNote": "Salvar nota",
+    "saved": "Salvo no seu dispositivo",
+    "savedSubtext": "Sincronizará automaticamente ou quando você enviar a atividade.",
+    "savingLocally": "Salvando...",
     "startRecording": "Gravar áudio",
     "stopRecording": "Parar de gravar",
     "tapToStart": "Toque para começar a gravar (tocar para iniciar gravação)",
@@ -69,16 +131,50 @@
     "cancel": "Cancelar",
     "captureLabel": "Evidência de registro",
     "close": "Fechar",
+    "done": "Concluído",
+    "error": "Erro",
     "journalLabel": "Notas de campo",
+    "ok": "Aceito",
     "tryAgain": "Tente novamente"
   },
+  "discover": {
+    "empty": "Atividades ainda não estão disponíveis - sua professor(a) adicionará algumas logo.",
+    "loadError": "Não foi possível carregar atividades",
+    "offlineBanner": "DESCONECTADO - mostrando atividades armazenadas",
+    "periTextEmpty": "Procuramos algo para explorar perto de você.",
+    "periText_one": "{{count}} atividade aguardando por você. Em qual lugar explorará hoje?",
+    "periText_other": "{{count}} atividades esperando por você. Onde você vai explorar hoje?"
+  },
+  "journal": {
+    "draft": "Rascunho",
+    "empty": "Nada aqui ainda.",
+    "fallbackTitle": "Nota de Campo",
+    "hideCaptures": "Ocultar capturas",
+    "noCaptures": "Sem capturas ainda.",
+    "showCaptures": "Mostrar capturas",
+    "submitted": "Enviado",
+    "tabLabel": "Minhas Entradas",
+    "title": "Meus Registros de Diário",
+    "transcriptPending": "Transcrição pendente..."
+  },
   "login": {
+    "emailLabel": "E-MAIL",
+    "failed": {
+      "body": "Verifique seu email e senha.",
+      "title": "Falha na autenticação"
+    },
     "forgotPassword": "Esqueceu a senha?",
+    "missingFields": {
+      "body": "Por favor, entre com seu email e senha.",
+      "title": "Campos faltantes"
+    },
+    "passwordLabel": "Senha",
     "passwordReset": {
       "body": "Contate seu professor para redefinir sua senha.",
       "title": "Senha de recuperação"
     },
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "welcomeBack": "Bem-vindo de volta! Faça login para continuar sua jornada de aprendizado."
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "Ler por falas",
     "stopReading": "Parar de falar em voz alta"
   },
+  "progress": {
+    "badgesLabel": "PATCHAS",
+    "competenciesLabel": "CONHECIMENTOS",
+    "empty": "Conclua sua primeira atividade para começar a rastrear o progresso.",
+    "stats": {
+      "activities": "Atividades",
+      "captures": "Capturas",
+      "dayStreak": "Sequência de dias"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "Apaga permanentemente isso.",
+      "confirm": "Retirar",
+      "title": "Desafiar retirada?"
+    },
+    "empty": "Desafios ainda não encontrados. Proponha um para que outros estudantes o encontrem no campo.",
+    "form": {
+      "descriptionLabel": "O QUEREM FAZER?",
+      "descriptionPlaceholder": "Encontre o que procurar, fazer ou observar...",
+      "editTitle": "Desafie Edição",
+      "locationLabel": "Onde (UMA DICA GERAL)",
+      "locationPlaceholder": "Parque local",
+      "newTitle": "Desafio novo",
+      "noteLabel": "Aviso para seu professor (opcional)",
+      "notePlaceholder": "Qual sua professor(a) deve saber antes de aprovar isso...",
+      "saveDraft": "Salvar rascunho",
+      "subjectLabel": "Assunto",
+      "submit": "Enviar para professor",
+      "titleLabel": "DESAFIO TÍTULO",
+      "titlePlaceholder": "Índice da árvore mais antiga do parque"
+    },
+    "newCta": "Desafio novo",
+    "periText": "Desafie encontrado? Escreva sobre ele para que outros estudantes o descubram.",
+    "saveError": "Não foi possível salvar seu desafio.",
+    "status": {
+      "approved": "Aprovado",
+      "draft": "Rascunho",
+      "pending": "Aguardando revisão",
+      "rejected": "Necessita de alterações"
+    },
+    "teacherFeedbackLabel": "AVALIAÇÃO DO PROFESSOR"
+  },
   "settings": {
+    "accountLabel": "CONTA",
+    "language": {
+      "current": "Língua: {{language}}",
+      "downloadFailed": "Não foi possível baixar esta língua. Verifique sua conexão e tente novamente."
+    },
+    "languageLabel": "PORTUGUÊS",
+    "role": {
+      "student": "Aluno"
+    },
     "signOut": {
       "confirm": "Tem certeza?",
       "title": "Sair"
     },
+    "studentFallback": "Aluno",
     "theme": {
       "atmosphere": {
         "desc": "Claro e escuro - claridade do céu noturno",
@@ -133,6 +282,13 @@
         "desc": "Fino e agudo — foco topográfico",
         "label": "Solo"
       }
-    }
+    },
+    "themeLabel": "TEMÁ"
+  },
+  "tabs": {
+    "discover": "Descubra",
+    "progress": "Avanço",
+    "propose": "Proporça",
+    "settings": "Configurações"
   }
 }

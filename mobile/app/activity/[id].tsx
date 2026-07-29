@@ -13,6 +13,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivity, Activity } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
+import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
 import CaptureSheet from '@/src/components/CaptureSheet';
 import CapturePreviewModal from '@/src/components/CapturePreviewModal';
@@ -205,7 +206,7 @@ export default function ActivityScreen() {
   if (!activity) {
     return (
       <View style={[styles.center, { backgroundColor: theme.bg }]}>
-        <Text style={{ color: theme.textMuted }}>Activity not found.</Text>
+        <Text style={{ color: theme.textMuted }}>{t('activity.notFound', 'Activity not found.')}</Text>
       </View>
     );
   }
@@ -239,8 +240,10 @@ export default function ActivityScreen() {
           accessibilityLabel={t('activity.geofence.dismiss', 'Dismiss location warning')}
         >
           <Text style={[styles.geofenceToastText, { fontFamily: theme.fontBody, color: theme.warn }]}>
-            📍 Step closer to {activity?.location_name ?? 'the activity location'} to keep going.
-            {distanceMeters != null ? ` (~${distanceMeters}m away)` : ''} ✕
+            📍 {t('activity.geofence.stepCloser', 'Step closer to {{location}} to keep going.', {
+              location: activity?.location_name ?? t('activity.geofence.defaultLocation', 'the activity location'),
+            })}
+            {distanceMeters != null ? ` ${t('activity.geofence.distanceAway', '(~{{meters}}m away)', { meters: distanceMeters })}` : ''} ✕
           </Text>
         </TouchableOpacity>
       )}
@@ -343,10 +346,17 @@ function BriefPhase({ activity, theme, onStart }: any) {
         size={36}
       />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.cardEmoji]}>{emoji}</Text>
-        <Text style={[styles.activityTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
-          {activity.title}
-        </Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.cardEmoji]}>{emoji}</Text>
+          <Text style={[styles.activityTitle, { fontFamily: theme.fontHead, color: theme.text, flex: 1 }]}>
+            {activity.title}
+          </Text>
+          <SpeakerButton
+            testID="activity-brief-speaker"
+            text={[activity.title, activity.description].filter(Boolean).join('. ')}
+            theme={theme}
+          />
+        </View>
         {activity.description && (
           <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
             {activity.description}
@@ -383,7 +393,15 @@ function OrientPhase({ activity, theme, onReady }: any) {
       </View>
       <PeriSpeech text={periText} theme={theme} size={36} />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.orient.targetsLabel', "TODAY'S TARGETS")}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, flex: 1 }]}>{t('activity.orient.targetsLabel', "TODAY'S TARGETS")}</Text>
+          <SpeakerButton
+            testID="activity-targets-speaker"
+            text={(activity.learning_objectives ?? [t('activity.orient.defaultTarget', 'Look around and note what you see')]).join('. ')}
+            theme={theme}
+            size={22}
+          />
+        </View>
         {(activity.learning_objectives ?? [t('activity.orient.defaultTarget', 'Look around and note what you see')]).map((obj: string, i: number) => (
           <View key={i} style={styles.targetRow}>
             <Text style={[styles.targetDot, { color: theme.accent }]}>●</Text>
@@ -414,7 +432,10 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
 
       {question?.follow_up && (
         <View style={[styles.followUpCard, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>
-          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.accent }]}>{t('activity.inquiry.followUpLabel', 'FOLLOW-UP')}</Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.accent, flex: 1 }]}>{t('activity.inquiry.followUpLabel', 'FOLLOW-UP')}</Text>
+            <SpeakerButton testID="activity-followup-speaker" text={question.follow_up} theme={theme} size={22} />
+          </View>
           <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text }]}>
             {question.follow_up}
           </Text>
@@ -502,7 +523,10 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSave,
         size={36}
       />
       <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('activity.reflect.yourReflectionLabel', 'YOUR REFLECTION')}</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, flex: 1 }]}>{t('activity.reflect.yourReflectionLabel', 'YOUR REFLECTION')}</Text>
+          <SpeakerButton testID="activity-reflect-prompt-speaker" text={prompt} theme={theme} size={22} />
+        </View>
         <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted, marginBottom: 8 }]}>
           {prompt}
         </Text>
@@ -588,6 +612,7 @@ const styles = StyleSheet.create({
   phaseLabel:      { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' },
   phaseTitle:      { fontSize: 22, fontWeight: '700', marginTop: 2 },
   card:            { padding: 16, borderWidth: 1, gap: 10 },
+  titleRow:        { flexDirection: 'row', alignItems: 'center', gap: 10 },
   cardEmoji:       { fontSize: 32 },
   activityTitle:   { fontSize: 20, fontWeight: '700', lineHeight: 26 },
   bodyText:        { fontSize: 14, lineHeight: 22 },

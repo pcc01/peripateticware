@@ -10,7 +10,7 @@ import {
 import { Theme } from '@/src/theme/tokens';
 import CrowAvatar from '@/src/components/CrowAvatar';
 import { chatWithPeri, ChatMessage } from '@/src/api/inference';
-import { t } from '@/src/i18n/t';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   visible: boolean;
@@ -27,12 +27,11 @@ interface DisplayMessage {
   content: string;
 }
 
-const PERI_GREETING = t('perichat.greeting', "I'm Peri. Ask me anything about the activity or what you're observing.");
-
 export default function PeriChatSheet({
   visible, onClose, theme,
   activityTitle, activitySubject, currentPrompt,
 }: Props) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,7 +39,8 @@ export default function PeriChatSheet({
 
   useEffect(() => {
     if (visible && messages.length === 0) {
-      setMessages([{ id: 'greeting', role: 'assistant', content: PERI_GREETING }]);
+      const greeting = t('perichat.greeting', "I'm Peri. Ask me anything about the activity or what you're observing.");
+      setMessages([{ id: 'greeting', role: 'assistant', content: greeting }]);
     }
   }, [visible]);
 

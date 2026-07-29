@@ -8,8 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import { ThemeName } from '@/src/theme/tokens';
-import { SUPPORTED_LOCALES, LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
+import { LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
 import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
+import LanguagePicker from '@/src/components/LanguagePicker';
 
 export default function SettingsScreen() {
   const { theme, themeName, setTheme } = useTheme();
@@ -85,20 +86,22 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView testID="settings-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20 }}>
-        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>Settings</Text>
+        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('tabs.settings', 'Settings')}</Text>
 
         {/* User info */}
         {user && (
           <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-            <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>ACCOUNT</Text>
-            <Text style={[styles.userEmail, { fontFamily: theme.fontBody, color: theme.text }]}>{user.email || 'Student'}</Text>
-            <Text style={[styles.userRole, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{user.role}</Text>
+            <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.accountLabel', 'ACCOUNT')}</Text>
+            <Text style={[styles.userEmail, { fontFamily: theme.fontBody, color: theme.text }]}>{user.email || t('settings.studentFallback', 'Student')}</Text>
+            <Text style={[styles.userRole, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+              {user.role === 'STUDENT' ? t('settings.role.student', 'Student') : user.role}
+            </Text>
           </View>
         )}
 
         {/* Theme picker */}
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>THEME</Text>
+          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.themeLabel', 'THEME')}</Text>
           {THEMES.map((opt) => (
             <TouchableOpacity
               key={opt.name}
@@ -119,28 +122,13 @@ export default function SettingsScreen() {
           ))}
         </View>
 
-        {/* Language picker — persists to AsyncStorage and calls
-            i18n.changeLanguage() (see handleSelectLocale above), so
-            selecting a chip takes effect immediately, no restart needed. */}
+        {/* Language picker — a popout modal (LanguagePicker) rather than an
+            always-expanded 13-row list. Selecting persists to AsyncStorage
+            and calls i18n.changeLanguage() (see handleSelectLocale above),
+            so it takes effect immediately, no restart needed. */}
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>LANGUAGE</Text>
-          {SUPPORTED_LOCALES.map((opt) => (
-            <TouchableOpacity
-              key={opt.code}
-              onPress={() => handleSelectLocale(opt.code)}
-              disabled={switchingLocale}
-              style={[styles.optionRow, { borderColor: locale === opt.code ? theme.accent : theme.border, borderRadius: theme.radiusSm, backgroundColor: locale === opt.code ? theme.accentMuted : theme.surfaceAlt, opacity: switchingLocale ? 0.5 : 1 }]}
-              accessibilityRole="radio"
-              accessibilityLabel={`${opt.name} language`}
-              accessibilityState={{ selected: locale === opt.code, disabled: switchingLocale }}
-            >
-              <Text style={styles.optionEmoji}>{opt.flag}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.optionLabel, { fontFamily: theme.fontBody, color: theme.text }]}>{opt.name}</Text>
-              </View>
-              {locale === opt.code && <Text style={[styles.checkmark, { color: theme.accent }]}>✓</Text>}
-            </TouchableOpacity>
-          ))}
+          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.languageLabel', 'LANGUAGE')}</Text>
+          <LanguagePicker theme={theme} locale={locale} disabled={switchingLocale} onSelect={handleSelectLocale} />
           {localeError && (
             <Text style={[styles.optionDesc, { fontFamily: theme.fontBody, color: theme.warn }]}>{localeError}</Text>
           )}

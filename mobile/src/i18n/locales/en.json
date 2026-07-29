@@ -74,8 +74,12 @@
   },
   "activity": {
     "loadError": "Could not load activity",
+    "notFound": "Activity not found.",
     "geofence": {
-      "dismiss": "Dismiss location warning"
+      "dismiss": "Dismiss location warning",
+      "stepCloser": "Step closer to {{location}} to keep going.",
+      "defaultLocation": "the activity location",
+      "distanceAway": "(~{{meters}}m away)"
     },
     "brief": {
       "startCta": "I'm ready — let's go",
@@ -152,6 +156,17 @@
     "takePhoto": "Take photo"
   },
   "settings": {
+    "accountLabel": "ACCOUNT",
+    "studentFallback": "Student",
+    "themeLabel": "THEME",
+    "languageLabel": "LANGUAGE",
+    "role": {
+      "student": "Student"
+    },
+    "language": {
+      "current": "Language: {{language}}",
+      "downloadFailed": "Could not download this language. Check your connection and try again."
+    },
     "theme": {
       "fieldGuide": {
         "label": "Field Guide",
@@ -181,6 +196,17 @@
   },
   "login": {
     "signIn": "Sign in",
+    "welcomeBack": "Welcome back! Sign in to continue your learning journey.",
+    "emailLabel": "EMAIL",
+    "passwordLabel": "PASSWORD",
+    "missingFields": {
+      "title": "Missing fields",
+      "body": "Please enter your email and password."
+    },
+    "failed": {
+      "title": "Login failed",
+      "body": "Check your email and password."
+    },
     "passwordReset": {
       "title": "Password reset",
       "body": "Contact your teacher to reset your password."
@@ -194,7 +220,59 @@
   "tabs": {
     "discover": "Discover",
     "progress": "Progress",
-    "settings": "Settings"
+    "settings": "Settings",
+    "propose": "Propose"
+  },
+  "propose": {
+    "periText": "Found something worth a challenge? Write it up for other students to discover.",
+    "empty": "No challenges yet. Propose one for other students to find in the field.",
+    "newCta": "New challenge",
+    "saveError": "Could not save your challenge.",
+    "teacherFeedbackLabel": "TEACHER FEEDBACK",
+    "status": {
+      "draft": "Draft",
+      "pending": "Awaiting review",
+      "approved": "Approved",
+      "rejected": "Needs changes"
+    },
+    "delete": {
+      "title": "Withdraw challenge?",
+      "body": "This removes it for good.",
+      "confirm": "Withdraw"
+    },
+    "form": {
+      "newTitle": "New challenge",
+      "editTitle": "Edit challenge",
+      "titleLabel": "CHALLENGE TITLE",
+      "titlePlaceholder": "e.g. Find the oldest tree in the park",
+      "descriptionLabel": "WHAT SHOULD THEY DO?",
+      "descriptionPlaceholder": "Describe what to find, do, or observe…",
+      "locationLabel": "WHERE (A GENERAL HINT)",
+      "locationPlaceholder": "e.g. any stream, a local park",
+      "subjectLabel": "SUBJECT",
+      "noteLabel": "NOTE TO YOUR TEACHER (OPTIONAL)",
+      "notePlaceholder": "Anything your teacher should know before approving this…",
+      "saveDraft": "Save draft",
+      "submit": "Submit to teacher"
+    }
+  },
+  "discover": {
+    "periText_one": "{{count}} activity waiting for you. Where will you explore today?",
+    "periText_other": "{{count}} activities waiting for you. Where will you explore today?",
+    "periTextEmpty": "Let's find something to explore nearby.",
+    "offlineBanner": "OFFLINE — showing cached activities",
+    "empty": "No activities yet — your teacher will add some soon.",
+    "loadError": "Could not load activities"
+  },
+  "progress": {
+    "stats": {
+      "activities": "Activities",
+      "captures": "Captures",
+      "dayStreak": "Day streak"
+    },
+    "competenciesLabel": "COMPETENCIES",
+    "badgesLabel": "BADGES",
+    "empty": "Complete your first activity to start tracking progress."
   },
   "journal": {
     "title": "My Journal Entries",

@@ -1,0 +1,22 @@
+{
+  "lara": {
+    "scope": "month",
+    "limit": 10000,
+    "used": 0,
+    "exhausted": false,
+    "month": "2026-07"
+  },
+  "deepl": {
+    "scope": "lifetime",
+    "limit": 500000,
+    "used": 0,
+    "exhausted": false
+  },
+  "microsoft": {
+    "scope": "month",
+    "limit": 2000000,
+    "used": 1461,
+    "exhausted": false,
+    "month": "2026-07"
+  }
+}

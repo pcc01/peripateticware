@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import CrowAvatar from './CrowAvatar';
 import type { Theme } from '@/src/theme/tokens';
 import { useSpeech } from '@/src/hooks/useSpeech';
-import { t } from '@/src/i18n/t';
+import { getSpeechLocale } from '@/src/i18n/locales';
 
 interface PeriSpeechProps {
   text: string;
@@ -12,7 +13,8 @@ interface PeriSpeechProps {
 }
 
 export default function PeriSpeech({ text, theme, size = 44 }: PeriSpeechProps) {
-  const { speaking, toggle } = useSpeech();
+  const { t, i18n } = useTranslation();
+  const { speaking, toggle } = useSpeech({ language: getSpeechLocale(i18n.language) });
 
   return (
     <View style={styles.row}>

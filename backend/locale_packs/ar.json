@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "تفاصيل",
+      "periIntro": "هناك ما ستفعله أورد اليوم. قراءة محتوى بعضه قبل الخروج.",
       "startCta": "جاهز — للذهب"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "إضافة فيديو"
     },
     "geofence": {
-      "dismiss": "تنظيم الوارنings الموقع"
+      "defaultLocation": "الموقع النشاطي (المكان)",
+      "dismiss": "تنظيم الوارنings الموقع",
+      "distanceAway": "(~{{meters}} متر تقريبًا)",
+      "stepCloser": "اقترب من {{location}} للاستمرار."
     },
     "inquiry": {
       "askPeri": "سؤال بيري",
-      "doneCta": "مكتمل الاستقرار"
+      "captureHint": "استخدم كاميركائك، الصوت، أو ملحوظاتك لإنشاء مقطع فيديو من ما تجده.",
+      "captureLabel": "سجل الأحداث",
+      "defaultQuestion": "انظر بشكل حقيقي. ما الأمور التي يمكنك العثور عليها؟ استخدم التحكم في ما تزارعه.",
+      "doneCta": "مكتمل الاستقرار",
+      "evidenceCollectedLabel": "جمعت ({{count}})",
+      "followUpLabel": "تابع",
+      "phaseLabel": "الفازة 2 · التقرير",
+      "reviewEvidence": "اقرأ الإحصاءات المذكورة",
+      "title": "اطفأ وقنع"
     },
+    "loadError": "غلقت المشاركة",
+    "notFound": "فعلية محدودة.",
     "orient": {
-      "readyCta": "محيط بالتعليق — ابدأ الاستفسار"
+      "defaultTarget": "تدرج وملاحظ أي ما تراه",
+      "periText": "لقد وصلت. انظر بعناية المحيط قبل بدء.",
+      "phaseLabel": "fasl 1 · تعليم الاورينت",
+      "readyCta": "محيط بالتعليق — ابدأ الاستفسار",
+      "targetsLabel": "هدفي اليوم",
+      "title": "سلوك واطفال"
     },
     "reflect": {
+      "emptySaveBody": "اكتب مرفق سريع للحفظ من قبل.",
+      "emptySubmitBody": "اكتب مرفق سريع للإطلاع قبل الارسال",
+      "emptyTitle": "شيء أخر",
+      "hint": "حفظ متاخدم هذه النشاط المفتوحة للإضافة الأخرى في المستقبل. إرسال من التقديم إلى علماءك وإغلاقه.",
+      "periSpeech": "قريب من الانتهاء. كتابة شيئًا ستذكره من اليوم.",
+      "phaseLabel": "فازة 3 · التعديل",
+      "placeholder": "كتابة معلناتك هنا...",
+      "prompt": "أي ما تعلمتها هذه المكان الما لم يساعدها الكتابة؟",
+      "saveCta": "احفظ للأخira",
+      "savedBody": "تم الحفظ للتقدمك — عودة بأي مرة لإضافة المزيد قبل الاستخدام.",
+      "savedTitle": "محفوظ",
       "submitCta": "إرسال العمليات الحقلية",
-      "submitted": "محفوظ ✓"
+      "submitted": "محفوظ ✓",
+      "submittedBody": "أعمالك الخارجية مرسلة إلى أشخاص عليهم التعليم",
+      "submittedTitle": "محفوظ! 🎉",
+      "title": "تصنيف العناية",
+      "yourReflectionLabel": "تحليلك الجزئي"
     }
   },
   "camera": {
     "allowAccess": "سمح للوصول",
     "closeCamera": "إغلاق كاميرة",
+    "openSettings": "افتح الإعدادات",
     "permission": {
       "photo": "إحتياج إلى الوصول إلى الكاميرا لقبل السjęنة الصورة.",
       "video": "إجهاز الكاميرا والميكروفون مطلوب لتسجيل الفيديو."
+    },
+    "permissionBlocked": {
+      "body": "تم الوصول إلى الانفاق من قبل ، فهذا الأجهزة لن يسأل مرة أخرى هنا. اضغط على \"الإعدادات\" للمتابعة.",
+      "title": "إذن مطلوب"
+    },
+    "permissionError": {
+      "body": "غلقت الطلب إلى الوصول إلى الكاميرا. حاول مرة أخرى.",
+      "title": "شيء ذُلّ ما تراهو"
+    },
+    "recordError": {
+      "body": "غلقت عملية الفيديو. حاول مرة أخرى.",
+      "title": "فشل السجلات"
     },
     "starting": "بدء الكاميرا...",
     "takePhoto": "سنشوف الصورة"
@@ -37,6 +85,7 @@
   "capture": {
     "fieldNote": "ملاحظة المنطقة",
     "micPermission": {
+      "blockedBody": "تم رفض الوصول إلى الميكروفون سابقًا، فهذا يعني أن جهازك لن يطلب مرة أخرى هنا. اضغط على \"الإعدادات\" للمسح بشكل عام.",
       "body": "سمح للأصدقاء الوصول إلى الميكروفون لتسجيل الأudio.",
       "title": "إذن مطلوب"
     },
@@ -48,11 +97,24 @@
     },
     "notePlaceholder": "كتاب أنظر إلى...",
     "offline": {
-      "body": "التسجيل الذي حفظته على أجهزتك وسيتم رفعه عند معاونتك\n\nNote: The translation provided is for the given string only and may not be suitable for other contexts or similar phrases. Always ensure proper localization and cultural sensitivity when translating user interface content.",
+      "body": "تم حفظ هذا على جهازك وسيتم رفعه عند الاتصال مرة أخرى.",
       "title": "محفوظ بغير الاتصال"
     },
+    "preview": {
+      "pause": "إيقاف",
+      "play": "اعداد",
+      "title": "أكتب الحجة"
+    },
+    "recordError": {
+      "body": "غلقت السجل الصوتي. حاول مرة أخرى.",
+      "title": "فشل السجل"
+    },
     "recordingStatus": "سجلة {{seconds}}s — انقر لإيقاف",
+    "requestingMic": "طلب المصدر الصوتي...",
     "saveNote": "حفظ ملاحظة",
+    "saved": "محفوظ على جهازك",
+    "savedSubtext": "سيتم التزامن ال自动ي، أو عند مقبلة النشرة الأدارية.",
+    "savingLocally": "احفظ...",
     "startRecording": "بدء التسجيل",
     "stopRecording": "انهي إستعداد الفيديو",
     "tapToStart": "انقر لبدء التسجيل",
@@ -69,16 +131,50 @@
     "cancel": "إلغاء",
     "captureLabel": "سجل الأمواтен",
     "close": "إغلاق",
+    "done": "مكتمل",
+    "error": "خطأ",
     "journalLabel": "ملاحظات المنطقة",
+    "ok": "نعم",
     "tryAgain": "عودة المحاولة"
   },
+  "discover": {
+    "empty": "لا تعمليات مضافة حتى الآن — سوف تضيفها أشخاص الدراسة بسرعة.",
+    "loadError": "غلقت المهام",
+    "offlineBanner": "غير المتصل - عرض النشاطات المحفوظة",
+    "periTextEmpty": "احتولوا على البحث عن شيء للتصفح بالقرب منا",
+    "periText_one": "لديك {{count}} مهام معلقة. أين ستتصور اليوم؟",
+    "periText_other": "لديك {{count}} مهام تنتظرك. أين ستبحث عن التكوين اليوم؟"
+  },
+  "journal": {
+    "draft": "رافز",
+    "empty": "لا شيء هنا حتى الآن.",
+    "fallbackTitle": "ملحوظة حقل",
+    "hideCaptures": "اخفاء التسجيلات",
+    "noCaptures": "لم يتم الاحتلال بعد.",
+    "showCaptures": "عرض التسجيلات",
+    "submitted": "تمت الارسال",
+    "tabLabel": "إدخالاتي",
+    "title": "ورقعاتي المدخلات",
+    "transcriptPending": "تقرير معلق..."
+  },
   "login": {
+    "emailLabel": "إيميل",
+    "failed": {
+      "body": "تحقق من البريد الإلكتروني وكلمة السر الخاصة بك.",
+      "title": "اعتماد خطأ"
+    },
     "forgotPassword": "هل نسيت كلمة السر؟",
+    "missingFields": {
+      "body": "ادخل البريد الإلكتروني وكلمة السر الخاصة بك.",
+      "title": "رقم عددي"
+    },
+    "passwordLabel": "كلمة السر",
     "passwordReset": {
       "body": "اتصل بعلماءك لإعادة ضبط رقم السجل الخاص بك.",
       "title": "إعادة تعيين الرقم السري"
     },
-    "signIn": "سIGN\\_IN"
+    "signIn": "سIGN\\_IN",
+    "welcomeBack": "اهلا بعودتك! تسجيل الدخول للمتابعة على رحلتك التعليمية."
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "قراءة الأكواد",
     "stopReading": "اتوقف عن القراءة الصادمة"
   },
+  "progress": {
+    "badgesLabel": "شields",
+    "competenciesLabel": "تكنولوجيات",
+    "empty": "اكمل أنشاء أول نشاطك لبدء ترقيم التقدم.",
+    "stats": {
+      "activities": "مهام",
+      "captures": "استثناء",
+      "dayStreak": "نزاع يومي"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "ذلك مسحه بشكل دائم",
+      "confirm": "التحويل",
+      "title": "تحدي الإنقاذ؟"
+    },
+    "empty": "لا تحديات مصدقة حتى الآن. قم بتقديم واحد للطالبين للبحث عنه في السريع.",
+    "form": {
+      "descriptionLabel": "ماذا يجب أن يفعلوا؟",
+      "descriptionPlaceholder": "وصف ما الذي ستتمكن من إيجاده، أو عمله، أو الاطلاع عليه...",
+      "editTitle": "تحرير التحدي",
+      "locationLabel": "أين (نصيحة عامة)",
+      "locationPlaceholder": "نهاية الأنترنت: مثل الدفقة، محيط حديقة محلية",
+      "newTitle": "تحدي جديد",
+      "noteLabel": "يلاحظة لعلمك المعلم (إختياري)",
+      "notePlaceholder": "ما يجب على المعلم أن يتعرف على ذلك قبل موافقته...",
+      "saveDraft": "حفظ النسخة المؤقتة",
+      "subjectLabel": "وضعية",
+      "submit": "ارسال إلى المعلم",
+      "titleLabel": "عنوان التحدي",
+      "titlePlaceholder": "البحث عن الشجرة القديمة في المنزلة"
+    },
+    "newCta": "رَصِد مُحدث جديد",
+    "periText": "اعتقدت شيئًا مقروءًا؟ اكتبه للطالبين الآخرين للمعرفة.",
+    "saveError": "غلقت عمود السياسة",
+    "status": {
+      "approved": "موافق",
+      "draft": "رافز",
+      "pending": "انتظار المراجعة",
+      "rejected": "تحتاج إلى تغييرات"
+    },
+    "teacherFeedbackLabel": "تقييم المعلمة"
+  },
   "settings": {
+    "accountLabel": "HESA",
+    "language": {
+      "current": "لغة: {{language}}",
+      "downloadFailed": "لم يتم تحميل هذا اللغة. قم بتأكد من الاتصال وحاول مرة أخرى."
+    },
+    "languageLabel": "لغة",
+    "role": {
+      "student": "طالب"
+    },
     "signOut": {
       "confirm": "متابعين؟",
       "title": "تسجيل الخروج"
     },
+    "studentFallback": "طالب",
     "theme": {
       "atmosphere": {
         "desc": "سفينة وظلماء — صرخة الليل الترقيه",
@@ -133,6 +282,13 @@
         "desc": "شاسع وصحيح - التنظيم الجغرافي",
         "label": "Terrein"
       }
-    }
+    },
+    "themeLabel": "أضف موضوع"
+  },
+  "tabs": {
+    "discover": "اكتشف",
+    "progress": "تقدم",
+    "propose": "اقرأ",
+    "settings": "Ajustes"
   }
 }

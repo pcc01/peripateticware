@@ -1,4 +1,16 @@
 {
+  "activity.brief.detailsLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "14fdc0f6c77f7978",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.brief.periIntro": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "b0b35276af41e0e9",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "activity.brief.startCta": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
@@ -29,11 +41,29 @@
     "sourceHash": "36aeaefe56da1c91",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "activity.geofence.defaultLocation": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "51ac9e09fb6980b6",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "activity.geofence.dismiss": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "9493960d1f75cc13",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "activity.geofence.distanceAway": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "484b576568ece9d0",
+    "translatedAt": "2026-07-29T19:34:18.048Z"
+  },
+  "activity.geofence.stepCloser": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "a52176d96b40806c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "activity.inquiry.askPeri": {
     "needsManualTranslation": false,
@@ -41,17 +71,173 @@
     "sourceHash": "bbe80fee0db1adac",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "activity.inquiry.captureHint": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "1e8d40ba6e20b529",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.captureLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "a8f9838ec5885fbd",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.defaultQuestion": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0f6bd60cf0f01ba3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "activity.inquiry.doneCta": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "eeb971ca1dd97ca9",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "activity.inquiry.evidenceCollectedLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "83d2c38ec5b6ebf0",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.followUpLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "8fc5d5d0ce2df153",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.phaseLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "274cd9adae3db6e2",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.reviewEvidence": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3bfa286fdd254414",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.inquiry.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "d97899d5947fe174",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.loadError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "b06e00029bbd9004",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.notFound": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ee62fe8c94c63014",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.orient.defaultTarget": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "535aac17d5e13420",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.orient.periText": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "f21428001e64b5e3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.orient.phaseLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "27c8a90014155fd8",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "activity.orient.readyCta": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "f6f861a69a328bec",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "activity.orient.targetsLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "525f66090a03128f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.orient.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "fcb1e5943dc68bc4",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.emptySaveBody": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "82d22bbf42dc66dc",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.emptySubmitBody": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4a11b21658142e56",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.emptyTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "7e5b5850d0896ce5",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.hint": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "07fd095c6e3c6144",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.periSpeech": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "037d7d88a9247f04",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.phaseLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "511d3ebbb6009a5e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.placeholder": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "51f3784276f0fe59",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.prompt": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "cfdbb3304353f6ed",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.saveCta": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ce3cf1fbf050b524",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.savedBody": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "be7242d39242a411",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.savedTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "b5c120b316c237a0",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "activity.reflect.submitCta": {
     "needsManualTranslation": false,
@@ -65,6 +251,30 @@
     "sourceHash": "dc4a7bb326399222",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "activity.reflect.submittedBody": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "323a470cfd5d06cc",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.submittedTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0a2ef2f361441d5e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "27e2f723e9879ae3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "activity.reflect.yourReflectionLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0c017ba4f27a4763",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "camera.allowAccess": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
@@ -77,6 +287,12 @@
     "sourceHash": "bebcb88d9dcf4003",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "camera.openSettings": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3f940108cb1ecd9c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "camera.permission.photo": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
@@ -88,6 +304,42 @@
     "provider": "ollama:mistral",
     "sourceHash": "5861dd6173595418",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "camera.permissionBlocked.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "5987ea1d117e277e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "camera.permissionBlocked.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4e25d34a20313a61",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "camera.permissionError.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "274d38999ed33b3c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "camera.permissionError.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ab827e3fe17da220",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "camera.recordError.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ae62b792adea23e2",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "camera.recordError.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "83aeb329ae94ae8c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "camera.starting": {
     "needsManualTranslation": false,
@@ -106,6 +358,12 @@
     "provider": "ollama:mistral",
     "sourceHash": "26a38e74709d2240",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "capture.micPermission.blockedBody": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "6e46e1ddf43a8855",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "capture.micPermission.body": {
     "needsManualTranslation": false,
@@ -161,17 +419,71 @@
     "sourceHash": "ea1ec9a9048c6af4",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "capture.preview.pause": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "858e4ba7a29fd38b",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.preview.play": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "436e61016e26fcb7",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.preview.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "7e98d69958165bc3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.recordError.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "db25de8a223a027f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.recordError.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "83aeb329ae94ae8c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "capture.recordingStatus": {
-    "needsManualTranslation": true,
-    "provider": "none",
+    "needsManualTranslation": false,
+    "provider": "manual",
     "sourceHash": "3902b9d074e72d46",
-    "translatedAt": "2026-07-28T16:37:14.249238+00:00"
+    "translatedAt": "2026-07-29T19:34:18.048Z"
+  },
+  "capture.requestingMic": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "07b09b7026d7c12f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "capture.saveNote": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "6501e1ced8da0bff",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "capture.saved": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "e0e98251f77621da",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.savedSubtext": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3e061fc970fd841e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "capture.savingLocally": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "23e39291d6135814",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "capture.startRecording": {
     "needsManualTranslation": false,
@@ -245,11 +557,29 @@
     "sourceHash": "7d9eb7acb13e2462",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "common.done": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "11a6767d5674c7e4",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "common.error": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "54a0e8c17ebb21a1",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "common.journalLabel": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "10894d52cb90a9c0",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "common.ok": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "565339bc4d33d728",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "common.tryAgain": {
     "needsManualTranslation": false,
@@ -257,11 +587,143 @@
     "sourceHash": "d8b8392e2c542950",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "discover.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "1a09332538440916",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "discover.loadError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "fff9ae82f33a7847",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "discover.offlineBanner": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0f7a2c4f4be3186c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "discover.periTextEmpty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2ff2c24604299b9a",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "discover.periText_one": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "e12bf58db9c0473b",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "discover.periText_other": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "1dc2b97e5af5f4b8",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.draft": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ebf12ef47cf575b3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "91965b02e70fcfa1",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.fallbackTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "5d0761b9d6fde90c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.hideCaptures": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "48f0fbd284dd26a4",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.noCaptures": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "d35d96d5002c52b2",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.showCaptures": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "eabb5f40070b572f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.submitted": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "64900440a8c9a5ed",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.tabLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "15f5a8ceccd404e5",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "e31c1f2222ddb58e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "journal.transcriptPending": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "463e9595f5a14186",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "login.emailLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "72d90af393d61072",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "login.failed.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "a1e2a55df7cf611f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "login.failed.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "5a96e8452f1ed477",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "login.forgotPassword": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
     "sourceHash": "30c1d8d3e9128893",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "login.missingFields.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "455bd6c4e37b1d70",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "login.missingFields.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "69121d3f63d5a27a",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "login.passwordLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0be64ae89ddd24e2",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "login.passwordReset.body": {
     "needsManualTranslation": false,
@@ -280,6 +742,12 @@
     "provider": "ollama:mistral",
     "sourceHash": "bfd402b2f6f38125",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "login.welcomeBack": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "fa431a98be013fd3",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "onboarding.firstActivity.browseCta": {
     "needsManualTranslation": false,
@@ -407,6 +875,222 @@
     "sourceHash": "a6c798b8abab1275",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
   },
+  "progress.badgesLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "a7a6ff85f0b57f48",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "progress.competenciesLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "990cfd7459739e56",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "progress.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "680b9ffce0abf24b",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "progress.stats.activities": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4d0076e6b4c71059",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "progress.stats.captures": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "502d75c486cf0952",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "progress.stats.dayStreak": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4575171b4873ea0c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "propose.delete.body": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "f13e9144ee5176d7",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.delete.confirm": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "164546a9c5481480",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.delete.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "9c52ab188cc50baf",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "8cb7808e53649b82",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.descriptionLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "51c1162a950952a4",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.descriptionPlaceholder": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "cb97704cfd792f01",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.editTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "97e4b9391c08d396",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.locationLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "365bee83b6a48728",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.locationPlaceholder": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2178fb621c68ebe3",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.newTitle": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "01ef0f5962dda043",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.noteLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "f92cdbe298678ad2",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.notePlaceholder": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "5009ea3950782c78",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.saveDraft": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3de100106dd4e52e",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.subjectLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "5995c8078362c129",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.submit": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "0aae53cbe389846e",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.titleLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "be8a9d5cf65a0080",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.form.titlePlaceholder": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "fe20fac9598a7300",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.newCta": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "01ef0f5962dda043",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.periText": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "c73f32cfd23297fc",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.saveError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "bbb08e4824b63744",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.status.approved": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "87b42e40c2a290e0",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.status.draft": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ebf12ef47cf575b3",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.status.pending": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4848885e3fc43f6c",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.status.rejected": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "17fa92a7f72312ab",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "propose.teacherFeedbackLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "d2ebc1263f6e9de5",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "settings.accountLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2d75b76b2dcf4656",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "settings.language.current": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "79b806b7e53a9f57",
+    "translatedAt": "2026-07-29T19:34:18.048Z"
+  },
+  "settings.language.downloadFailed": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "54fe3ded93c92f1c",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "settings.languageLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "1287750a09b1318a",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "settings.role.student": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2a164d5415787b6e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
   "settings.signOut.confirm": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
@@ -418,6 +1102,12 @@
     "provider": "ollama:mistral",
     "sourceHash": "48f0d3d397d49f13",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "settings.studentFallback": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2a164d5415787b6e",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   },
   "settings.theme.atmosphere.desc": {
     "needsManualTranslation": false,
@@ -454,5 +1144,35 @@
     "provider": "ollama:mistral",
     "sourceHash": "5dd6e0396c9df27d",
     "translatedAt": "2026-07-28T16:28:49.994602+00:00"
+  },
+  "settings.themeLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "56ec7f17970bc0ee",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "tabs.discover": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "d4a33d5b78bccebe",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "tabs.progress": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4664827f8e890192",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
+  },
+  "tabs.propose": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "1cbd9e713d937bad",
+    "translatedAt": "2026-07-29T19:36:30.068341+00:00"
+  },
+  "tabs.settings": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "74a883a037bc227f",
+    "translatedAt": "2026-07-29T19:26:22.816945+00:00"
   }
 }

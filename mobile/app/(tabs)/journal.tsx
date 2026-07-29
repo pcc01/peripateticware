@@ -9,7 +9,7 @@ import type { Theme } from '@/src/theme/tokens';
 import { fetchJournal, JournalEntry } from '@/src/api/journal';
 import { fetchCaptures, Capture } from '@/src/api/captures';
 import { getCachedActivity } from '@/src/db/activityCache';
-import { t } from '@/src/i18n/t';
+import { useTranslation } from 'react-i18next';
 
 // Same capture_type → emoji mapping CaptureSheet.tsx uses for its mode picker
 // (photo/audio/note[text]/video). Falls back to a generic icon for any other
@@ -39,6 +39,7 @@ function entryContent(entry: JournalEntry): string {
  * expands the section — never on initial journal list load (avoids an N+1
  * request storm across every visible journal entry). */
 function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -117,6 +118,7 @@ function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme
 
 export default function JournalScreen() {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [activityTitles, setActivityTitles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);

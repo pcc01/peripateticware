@@ -41,6 +41,24 @@ export const SUPPORTED_LOCALES: SupportedLocale[] = [
   { code: 'zh',    name: '中文',                    flag: '🇨🇳' },
 ];
 
+// expo-speech / native TTS engines want a fully-qualified BCP-47 tag
+// (region included) to pick the right voice — a bare 'zh' or 'ar' is
+// ambiguous enough that some Android TTS engines silently fall back to
+// the device's default (usually en-US) instead of erroring, which reads
+// like "the language picker did nothing." Only entries that need a
+// region suffix are listed; SUPPORTED_LOCALES codes that are already
+// fully-qualified (pt-BR, fr-CA) or already work as bare tags (en, es,
+// fr, ja, ko, de, it, tr) pass through unchanged.
+const SPEECH_LOCALE_MAP: Record<string, string> = {
+  ar: 'ar-SA',
+  he: 'he-IL',
+  zh: 'zh-CN',
+};
+
+export function getSpeechLocale(code: string): string {
+  return SPEECH_LOCALE_MAP[code] ?? code;
+}
+
 export const DEFAULT_LOCALE = 'en';
 
 // Matches the prior removed picker's AsyncStorage key (work_tracking.md) so

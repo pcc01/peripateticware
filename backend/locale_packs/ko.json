@@ -1,6 +1,8 @@
 {
   "activity": {
     "brief": {
+      "detailsLabel": "세부 정보",
+      "periIntro": "오늘은 이렇게 할 것입니다. 출발하기 전에 잠깐 읽어보세요.",
       "startCta": "준비되었습니다. 가자"
     },
     "capture": {
@@ -10,26 +12,72 @@
       "video": "영상 추가"
     },
     "geofence": {
-      "dismiss": "위치 경고 해제"
+      "defaultLocation": "활동 위치",
+      "dismiss": "위치 경고 해제",
+      "distanceAway": "(~{{meters}}m 거리)",
+      "stepCloser": "계속 진행하려면 {{location}} 쪽으로 더 가까이 다가가세요."
     },
     "inquiry": {
       "askPeri": "물어보기 페리",
-      "doneCta": "캡처 완료 — 반영중"
+      "captureHint": "카메라, 음성, 또는 노트를 사용하여 발견한 것을 기록합니다.",
+      "captureLabel": "증거 캡처",
+      "defaultQuestion": "궁금하게 보이는 것을 찾아보세요. 당신이 본 것을 캡처하세요.",
+      "doneCta": "캡처 완료 — 반영중",
+      "evidenceCollectedLabel": "수집됨 ({{count}})",
+      "followUpLabel": "추적",
+      "phaseLabel": "단계 2 · 조사",
+      "reviewEvidence": "증거 검토",
+      "title": "관찰하고 캡처하다"
     },
+    "loadError": "활동을 불러올 수 없음",
+    "notFound": "활동을 찾을 수 없습니다.",
     "orient": {
-      "readyCta": "나는 방향을 가지고 있습니다. 조사를 시작합니다."
+      "defaultTarget": "주위를 둘러보고 보이는 것을 기록하세요.",
+      "periText": "도착했습니다. 주변을 조금 관찰하세요. 시작하기 전에.",
+      "phaseLabel": "단계 1 · 방향 정렬",
+      "readyCta": "나는 방향을 가지고 있습니다. 조사를 시작합니다.",
+      "targetsLabel": "오늘의 목표",
+      "title": "도착하고 관측하기"
     },
     "reflect": {
+      "emptySaveBody": "빠르게 반성을 적어주세요. (Quick Reflection)",
+      "emptySubmitBody": "빠른 반성을 적어주세요. (Quick reflection to write)",
+      "emptyTitle": "한 가지 더",
+      "hint": "저장하면 나중에 더 추가할 수 있는 활동을 열어둡니다. 제출하면 교사로 보내고 종료합니다.",
+      "periSpeech": "essentially_completed. 오늘에서 기억할 점 하나를 적어주세요.",
+      "phaseLabel": "단계 3 · 반성",
+      "placeholder": "여기에 자신의 반성을 적어주세요...",
+      "prompt": "이곳은 텍스북으로는 배울 수 없었던 것을 어떤 것인가요?",
+      "saveCta": "저장하기 위해 나중에",
+      "savedBody": "저progress는 저장되었습니다. 언제든지 더 추가하고 제출하기 전에 돌아와서는 안녕!",
+      "savedTitle": "저장됨",
       "submitCta": "제출 필드 작업",
-      "submitted": "제출 ✔ (Submitted with a checkmark symbol)"
+      "submitted": "제출 ✔ (Submitted with a checkmark symbol)",
+      "submittedBody": "당신의 필드 작업이 교사에게 전송되었습니다.",
+      "submittedTitle": "제출되었습니다! 🎉",
+      "title": "의미 만들기",
+      "yourReflectionLabel": "당신의 반성"
     }
   },
   "camera": {
     "allowAccess": "허용된 액세스",
     "closeCamera": "카메라 닫기",
+    "openSettings": "설정 열기",
     "permission": {
-      "photo": "카메라 액세스가 필요합니다. 사진을 찍어야 합니다.\n\n(Camera access is required to take a picture.)",
+      "photo": "사진을 찍으려면 카메라 접근 권한이 필요합니다.",
       "video": "카메라와 마이크 액세스가 필요합니다. 동영상 录像를 수행하려면."
+    },
+    "permissionBlocked": {
+      "body": "이전에 액세스가 거부되었으므로, 여기서는 더 이상 물어보지 않습니다. 설정에서 켜십시오(계속하려면)합니다.",
+      "title": "허가 필요"
+    },
+    "permissionError": {
+      "body": "카메라 액세스를 요청할 수 없습니다. 다시 시도해주세요.",
+      "title": "오류가 발생했습니다."
+    },
+    "recordError": {
+      "body": "동영상 录制에 실패했습니다. 다시 시도해주세요.",
+      "title": "録音실패"
     },
     "starting": "카메라 시작중입니다...",
     "takePhoto": "사진 촬영"
@@ -37,7 +85,8 @@
   "capture": {
     "fieldNote": "필드 노트",
     "micPermission": {
-      "body": "마이크 액세스 허용하여 음성 録록\n\nNote: The Korean translation for \"Allow\" is \"허용\", and \"microphone\" is \"마이크\". The rest of the sentence remains unchanged.",
+      "blockedBody": "마이크 액세스는 이전에 거부되었으므로 여기서 다시 물어보지 않습니다. 설정에서 켜십시오(Continue)를 위해 설정에서 활성화하십시오.",
+      "body": "음성을 녹음하려면 마이크 접근을 허용해주세요.",
       "title": "허가 필요"
     },
     "mode": {
@@ -51,8 +100,21 @@
       "body": "저장된 디바이스에서 다시 연결하면 업로드됩니다. (This capture is saved on your device and will upload when you reconnect.)",
       "title": "캐시된 오프라인"
     },
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "preview": {
+      "pause": "일시정지",
+      "play": "재생",
+      "title": "당신의 증거"
+    },
+    "recordError": {
+      "body": "녹음을 시작할 수 없습니다. 다시 시도해주세요.",
+      "title": "녹음 실패"
+    },
+    "recordingStatus": "녹음 중 {{seconds}}초 — 탭하여 중지",
+    "requestingMic": "마이크 액세스 요청 중...",
     "saveNote": "저장 노트",
+    "saved": "저장됨 디바이스에",
+    "savedSubtext": "자동으로 동기화되며, 활동을 제출할 때도 합니다.",
+    "savingLocally": "저장중...",
     "startRecording": "시작하기 録음",
     "stopRecording": "중지 録록",
     "tapToStart": "터치하여 녹음 시작",
@@ -69,16 +131,50 @@
     "cancel": "취소",
     "captureLabel": "증거 기록",
     "close": "닫기",
+    "done": "완료",
+    "error": "오류",
     "journalLabel": "필드 노트",
+    "ok": "확인",
     "tryAgain": "다시 시도하세요"
   },
+  "discover": {
+    "empty": "활동이 없어요 — 당신의 선생님이 곧 추가할 것입니다.",
+    "loadError": "활동을 불러오실 수 없습니다.",
+    "offlineBanner": "오프라인 — 캐시된 활동 표시",
+    "periTextEmpty": "근처에서 탐색하기로 뭔가 찾아보자.",
+    "periText_one": "당신에게 {{count}}개의 활동이 기다리고 있습니다. 오늘은 어디를 탐색하시겠습니까?",
+    "periText_other": "당신에게 {{count}}개의 활동이 대기중입니다. 오늘은 어디로 탐색하시겠습니까?"
+  },
+  "journal": {
+    "draft": "수정중",
+    "empty": "아직 내용이 없습니다. 활동을 저장하거나 제출하여 작업을 볼 수 있습니다.",
+    "fallbackTitle": "필드노트",
+    "hideCaptures": "캡처 감추기",
+    "noCaptures": "캐치되지 않음 yet. (이 문자열은 대한민국의 언어가 아닌 영어입니다.)",
+    "showCaptures": "캡처 보기",
+    "submitted": "제출됨",
+    "tabLabel": "내 기록",
+    "title": "내 일기 ENTRY",
+    "transcriptPending": "전체 교육 기록 대기중..."
+  },
   "login": {
+    "emailLabel": "이메일",
+    "failed": {
+      "body": "이메일과 비밀번호를 확인하세요.",
+      "title": "로그인 실패"
+    },
     "forgotPassword": "비밀번호를 잊었나요?",
+    "missingFields": {
+      "body": "이메일과 비밀번호를 입력해주세요.",
+      "title": "누락된 필드"
+    },
+    "passwordLabel": "비밀번호",
     "passwordReset": {
       "body": "교수님과 연락하여 비밀번호를 재설정하십시오.",
       "title": "비밀번호 재설정"
     },
-    "signIn": "로그인"
+    "signIn": "로그인",
+    "welcomeBack": "환영합니다! 학습 여정을 계속하려면 로그인하세요."
   },
   "onboarding": {
     "firstActivity": {
@@ -115,11 +211,64 @@
     "readAloud": "음성으로 읽기",
     "stopReading": "중단하세요(음성 출력)"
   },
+  "progress": {
+    "badgesLabel": "배지",
+    "competenciesLabel": "기술",
+    "empty": "처음 활동을 완료하여 진행 추적을 시작합니다.",
+    "stats": {
+      "activities": "활동",
+      "captures": "캐치스 (Capture)",
+      "dayStreak": "날씨 연속"
+    }
+  },
+  "propose": {
+    "delete": {
+      "body": "이것을 영원히 제거합니다.",
+      "confirm": "출금",
+      "title": "출금 도전입니까?"
+    },
+    "empty": "아직 도전이 없습니다. 다른 학생들이 외부에서 찾을 수 있는 도전을 제안하세요.",
+    "form": {
+      "descriptionLabel": "어떻게 해야 할까요?",
+      "descriptionPlaceholder": "찾을 것, 할 것, 관찰할 것...",
+      "editTitle": "수정 대회",
+      "locationLabel": "어디 (일반적인 힌트)",
+      "locationPlaceholder": "강流: 예, 지역 공원",
+      "newTitle": "새로운 도전",
+      "noteLabel": "선생님에게 메모 (선택사항)",
+      "notePlaceholder": "이 내용을 승인하기 전에 교수님께 알아야 할 모든 것...",
+      "saveDraft": "저장 草稿",
+      "subjectLabel": "과목",
+      "submit": "선생님에게 제출",
+      "titleLabel": "대회 제목",
+      "titlePlaceholder": "공원에서 가장 오래된 나무 찾기"
+    },
+    "newCta": "새로운 도전",
+    "periText": "찾은 것이 도전에 맞는가? 다른 학생들이 발견할 수 있도록 작성하세요.",
+    "saveError": "저장하지 못했습니다. (Challenge Saving Failure)",
+    "status": {
+      "approved": "승인됨",
+      "draft": "草稿",
+      "pending": "검토 대기중",
+      "rejected": "변경이 필요함"
+    },
+    "teacherFeedbackLabel": "선생님 평가"
+  },
   "settings": {
+    "accountLabel": "계정",
+    "language": {
+      "current": "언어: {{language}} (unchanged, since it's already in Korean)",
+      "downloadFailed": "다운로드에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해주세요."
+    },
+    "languageLabel": "언어",
+    "role": {
+      "student": "학생"
+    },
     "signOut": {
       "confirm": "확인하시겠습니까?",
       "title": "로그아웃"
     },
+    "studentFallback": "학생",
     "theme": {
       "atmosphere": {
         "desc": "깊고 어두운 - 밤하늘의 명확함",
@@ -133,6 +282,13 @@
         "desc": "깨끗하고 정확한 - 토폴로지 중심",
         "label": "지형"
       }
-    }
+    },
+    "themeLabel": "테마"
+  },
+  "tabs": {
+    "discover": "발견",
+    "progress": "진행",
+    "propose": "제안",
+    "settings": "설정"
   }
 }

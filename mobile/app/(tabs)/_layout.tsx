@@ -4,8 +4,8 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { t } from '@/src/i18n/t';
 
 function TabIcon({ emoji, size }: { emoji: string; size: number }) {
   return <Text style={{ fontSize: size * 0.75, lineHeight: size }}>{emoji}</Text>;
@@ -13,6 +13,11 @@ function TabIcon({ emoji, size }: { emoji: string; size: number }) {
 
 export default function TabLayout() {
   const { theme } = useTheme();
+  // useTranslation subscribes this component to i18next's `languageChanged`
+  // event — without it, Tabs.Screen `title` options are computed once at
+  // mount and never recomputed on a runtime language switch (tab labels
+  // silently stayed in whatever language was active on cold boot).
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -34,6 +39,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="journal"
         options={{ title: t('journal.tabLabel', 'My Entries'), tabBarButtonTestID: 'tab-journal', tabBarIcon: ({ size }) => <TabIcon emoji="📓" size={size} /> }}
+      />
+      <Tabs.Screen
+        name="propose"
+        options={{ title: t('tabs.propose', 'Propose'), tabBarButtonTestID: 'tab-propose', tabBarIcon: ({ size }) => <TabIcon emoji="🧭" size={size} /> }}
       />
       <Tabs.Screen
         name="progress"
