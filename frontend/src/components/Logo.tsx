@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import React from 'react';
 import { PRODUCT_NAME } from '../constants/brand';
+import { Crow } from './Crow';
 
 interface LogoProps {
   size?: number;
@@ -25,21 +26,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {/* Crow icon */}
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 40 40"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg">
-        
-        {/* Simplified crow */}
-        <circle cx="20" cy="18" r="8" fill="#1a1a1a" />
-        <path d="M 14 12 Q 10 10 8 12 Q 10 14 14 14 Z" fill="#1a1a1a" />
-        <path d="M 24 11 L 30 10 L 24 13 Z" fill="#ff9500" />
-        <circle cx="23" cy="11" r="1.5" fill="#ffffff" />
-        <line x1="18" y1="25" x2="18" y2="32" stroke="#ff9500" strokeWidth="1.5" />
-        <line x1="22" y1="25" x2="22" y2="32" stroke="#ff9500" strokeWidth="1.5" />
-      </svg>
+      <Crow size={size} />
 
       {showText &&
       <span

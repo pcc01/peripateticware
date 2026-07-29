@@ -28,9 +28,10 @@ export default function CrowAvatar({ theme, size = 44 }: CrowAvatarProps) {
       {/* Long dagger beak */}
       <Path d="M13,15 L5,16 L13,18Z" fill={accent} />
       <Path d="M13,18 L7,19 L13,19.5Z" fill={accent} />
-      {/* Eye */}
-      <Circle cx="17" cy="14" r="1.7" fill={bg} />
-      <Circle cx="17.4" cy="13.6" r="0.5" fill={bg} opacity={0.6} />
+      {/* Eye — sclera ring, dark pupil, catchlight */}
+      <Circle cx="17" cy="14" r="1.9" fill={bg} />
+      <Circle cx="17.3" cy="14.2" r="1.1" fill="#111" />
+      <Circle cx="17.7" cy="13.7" r="0.35" fill={bg} />
       {/* Perch + feet */}
       <Line x1="12" y1="35" x2="34" y2="35" stroke={accent} strokeWidth="1.4" strokeLinecap="round" opacity={0.4} />
       <Path d="M19,32 L17,35 M19,32 L19,35 M19,32 L21,35" stroke={accent} strokeWidth="1.2" strokeLinecap="round" fill="none" />

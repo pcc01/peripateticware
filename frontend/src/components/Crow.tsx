@@ -13,8 +13,9 @@ interface CrowProps {
  * Peripateticware Crow Mascot
  * Black corvid symbolizing outdoor exploration and learning.
  * Perched profile: long black dagger beak, sleek body, wedge tail,
- * black legs gripping a perch, and a warm gloss on the plumage to match
- * the Peripateticware earthy palette.
+ * black legs gripping a perch, an iridescent charcoal/navy/purple gloss
+ * on the plumage, and a brass compass slung on a cord from its beak —
+ * the "knowledgeable guide" mark.
  */
 export const Crow: React.FC<CrowProps> = ({ size = 120, className = '' }) => {
   return (
@@ -27,11 +28,12 @@ export const Crow: React.FC<CrowProps> = ({ size = 120, className = '' }) => {
       className={className}
     >
       <defs>
-        {/* Warm near-black plumage to sit in the Peripateticware earthy palette */}
+        {/* Iridescent near-black plumage — charcoal through navy to a subtle purple */}
         <linearGradient id="crowGloss" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2a231c" />
-          <stop offset="45%" stopColor="#15110c" />
-          <stop offset="100%" stopColor="#0a0805" />
+          <stop offset="0%" stopColor="#3a3550" />
+          <stop offset="35%" stopColor="#1f2233" />
+          <stop offset="70%" stopColor="#141225" />
+          <stop offset="100%" stopColor="#0a0810" />
         </linearGradient>
       </defs>
 
@@ -58,7 +60,7 @@ export const Crow: React.FC<CrowProps> = ({ size = 120, className = '' }) => {
         fill="#000000"
         opacity="0.5"
       />
-      <g stroke="#6b5d4a" strokeWidth="1" fill="none" opacity="0.45" strokeLinecap="round">
+      <g stroke="#5a5a86" strokeWidth="1" fill="none" opacity="0.5" strokeLinecap="round">
         <path d="M52,54 C60,55 68,60 74,69" />
         <path d="M56,60 C62,62 68,66 72,74" />
       </g>
@@ -69,13 +71,29 @@ export const Crow: React.FC<CrowProps> = ({ size = 120, className = '' }) => {
       <path d="M7,46 Q5,47.5 8,49.5" stroke="#0a0a0a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
       <path d="M34,46 L26,46.5" stroke="#000000" strokeWidth="0.8" opacity="0.4" strokeLinecap="round" />
 
-      {/* Eye — dark with catchlight */}
-      <circle cx="44" cy="38" r="3.4" fill="#2c2418" />
-      <circle cx="44" cy="38" r="2.2" fill="#000000" />
-      <circle cx="45" cy="37" r="0.8" fill="#f0ead8" />
+      {/* Compass — brass pendant slung from mid-beak, hanging free of the body */}
+      <path d="M20,48 C17,57 16,65 16,71" stroke="#5c4a35" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M20,48 C22,57 26,65 27.5,71.2" stroke="#5c4a35" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <circle cx="22" cy="78" r="8.4" fill="#c9a35f" stroke="#7d5f34" strokeWidth="1" />
+      <circle cx="22" cy="78" r="6.2" fill="#f3ead2" />
+      <g stroke="#8a6a3a" strokeWidth="0.7">
+        <line x1="22" y1="72.3" x2="22" y2="74" />
+        <line x1="22" y1="82" x2="22" y2="83.7" />
+        <line x1="16.3" y1="78" x2="18" y2="78" />
+        <line x1="26" y1="78" x2="27.7" y2="78" />
+      </g>
+      <path d="M22,78 L20.4,74.6 L22,75.9 L23.6,74.6 Z" fill="#a03a2a" />
+      <path d="M22,78 L20.7,81.4 L22,80.1 L23.3,81.4 Z" fill="#3a3550" />
+      <circle cx="22" cy="78" r="0.9" fill="#3a2a15" />
 
-      {/* Crown gloss sheen — warm */}
-      <path d="M46,29 C53,27 61,28 68,33" stroke="#8a7656" strokeWidth="2" fill="none" opacity="0.4" strokeLinecap="round" />
+      {/* Eye — defined pupil with a prominent white catchlight */}
+      <circle cx="44" cy="38" r="3.6" fill="#3d3550" />
+      <circle cx="44.3" cy="38.3" r="2.4" fill="#000000" />
+      <circle cx="45.4" cy="36.9" r="1.05" fill="#ffffff" />
+      <circle cx="43.2" cy="39.4" r="0.4" fill="#ffffff" opacity="0.55" />
+
+      {/* Crown gloss sheen */}
+      <path d="M46,29 C53,27 61,28 68,33" stroke="#6a628a" strokeWidth="2" fill="none" opacity="0.45" strokeLinecap="round" />
     </svg>
   )
 }

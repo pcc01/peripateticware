@@ -154,9 +154,10 @@ const Crow712: React.FC<{
       <path d="M13,15 L5,16 L13,18 Z" fill={accent} />
       <path d="M13,18 L7,19 L13,19.5 Z" fill={accent} />
 
-      {/* Eye */}
-      <circle cx="17" cy="14" r="1.7" fill={accentMuted} />
-      <circle cx="17.4" cy="13.6" r="0.5" fill={accentMuted} opacity="0.6" />
+      {/* Eye — sclera ring, dark pupil, catchlight */}
+      <circle cx="17" cy="14" r="1.9" fill={accentMuted} />
+      <circle cx="17.3" cy="14.2" r="1.1" fill="#111" />
+      <circle cx="17.7" cy="13.7" r="0.35" fill={accentMuted} />
 
       {/* Feet on perch */}
       <line x1="12" y1="35" x2="34" y2="35" stroke={accent} strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
