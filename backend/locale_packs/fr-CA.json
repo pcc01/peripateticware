@@ -283,7 +283,14 @@
         "label": "Terrain"
       }
     },
-    "themeLabel": "THÈME"
+    "themeLabel": "THÈME",
+    "voice": {
+      "automatic": "Automatique",
+      "current": "Voix : {{voice}}",
+      "none": "Aucune voix installée trouvée pour cette langue.",
+      "previewText": "Voici à quoi ressemble cette voix."
+    },
+    "voiceLabel": "VOIX"
   },
   "tabs": {
     "discover": "Découvrez",

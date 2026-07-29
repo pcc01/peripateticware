@@ -283,7 +283,14 @@
         "label": "지형"
       }
     },
-    "themeLabel": "테마"
+    "themeLabel": "테마",
+    "voice": {
+      "automatic": "자동",
+      "current": "음성: {{voice}}",
+      "none": "이 언어에 설치된 음성을 찾을 수 없습니다.",
+      "previewText": "이 음성은 이렇게 들립니다."
+    },
+    "voiceLabel": "음성"
   },
   "tabs": {
     "discover": "발견",

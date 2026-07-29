@@ -11,6 +11,7 @@ import { ThemeName } from '@/src/theme/tokens';
 import { LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
 import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
 import LanguagePicker from '@/src/components/LanguagePicker';
+import VoicePicker from '@/src/components/VoicePicker';
 
 export default function SettingsScreen() {
   const { theme, themeName, setTheme } = useTheme();
@@ -132,6 +133,16 @@ export default function SettingsScreen() {
           {localeError && (
             <Text style={[styles.optionDesc, { fontFamily: theme.fontBody, color: theme.warn }]}>{localeError}</Text>
           )}
+        </View>
+
+        {/* Voice picker — which on-device TTS voice reads Peri and activity
+            text aloud for the currently-selected language above. Defaults
+            to "Automatic" (matches app language via useSpeech's `language`
+            hint); only needs to be touched if that default resolves to the
+            wrong voice on a given device. */}
+        <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
+          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.voiceLabel', 'VOICE')}</Text>
+          <VoicePicker theme={theme} />
         </View>
 
         {/* Logout */}

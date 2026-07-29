@@ -283,7 +283,14 @@
         "label": "地形"
       }
     },
-    "themeLabel": "主题"
+    "themeLabel": "主题",
+    "voice": {
+      "automatic": "自动",
+      "current": "语音：{{voice}}",
+      "none": "未找到此语言的已安装语音。",
+      "previewText": "这个声音听起来是这样的。"
+    },
+    "voiceLabel": "语音"
   },
   "tabs": {
     "discover": "发现",

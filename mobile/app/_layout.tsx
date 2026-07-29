@@ -12,6 +12,7 @@ import '@/src/i18n';
 
 import { ThemeProvider } from '@/src/theme/ThemeContext';
 import { AuthProvider, useAuth } from '@/src/stores/AuthContext';
+import { SpeechVoiceProvider } from '@/src/stores/SpeechVoiceContext';
 import { initOfflineLayer } from '@/src/db/appInit';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 import { getHasOnboarded } from '@/src/onboarding/onboardingFlag';
@@ -178,16 +179,18 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
-            <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
-            <Stack.Screen name="login"         options={{ headerShown: false }} />
-            <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
-          </Stack>
-          <AuthGuard />
-          <StatusBar style="auto" />
-        </AuthProvider>
+        <SpeechVoiceProvider>
+          <AuthProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
+              <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
+              <Stack.Screen name="login"         options={{ headerShown: false }} />
+              <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
+            </Stack>
+            <AuthGuard />
+            <StatusBar style="auto" />
+          </AuthProvider>
+        </SpeechVoiceProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

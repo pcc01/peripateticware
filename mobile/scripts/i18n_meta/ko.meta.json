@@ -1151,6 +1151,36 @@
     "sourceHash": "56ec7f17970bc0ee",
     "translatedAt": "2026-07-29T19:22:48.903776+00:00"
   },
+  "settings.voice.automatic": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "d461a493a3753877",
+    "translatedAt": "2026-07-29T21:49:58.703Z"
+  },
+  "settings.voice.current": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "757d48512e683d24",
+    "translatedAt": "2026-07-29T21:49:58.703Z"
+  },
+  "settings.voice.none": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "e0e7c50f66ad4aee",
+    "translatedAt": "2026-07-29T21:49:58.703Z"
+  },
+  "settings.voice.previewText": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "d404ba077bc0896a",
+    "translatedAt": "2026-07-29T21:49:58.703Z"
+  },
+  "settings.voiceLabel": {
+    "needsManualTranslation": false,
+    "provider": "manual",
+    "sourceHash": "a430e6d293d0f1d5",
+    "translatedAt": "2026-07-29T21:49:58.703Z"
+  },
   "tabs.discover": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",

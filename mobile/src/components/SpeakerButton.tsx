@@ -13,7 +13,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { Theme } from '@/src/theme/tokens';
 import { useSpeech } from '@/src/hooks/useSpeech';
-import { getSpeechLocale } from '@/src/i18n/locales';
+import { useSpeechVoice } from '@/src/stores/SpeechVoiceContext';
 
 interface Props {
   text: string;
@@ -23,8 +23,9 @@ interface Props {
 }
 
 export default function SpeakerButton({ text, theme, size = 26, testID }: Props) {
-  const { t, i18n } = useTranslation();
-  const { speaking, toggle } = useSpeech({ language: getSpeechLocale(i18n.language) });
+  const { t } = useTranslation();
+  const { voiceId, speechLocale } = useSpeechVoice();
+  const { speaking, toggle } = useSpeech({ language: speechLocale, voice: voiceId });
 
   return (
     <TouchableOpacity

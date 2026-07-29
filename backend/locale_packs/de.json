@@ -283,7 +283,14 @@
         "label": "Gelände"
       }
     },
-    "themeLabel": "THEMA"
+    "themeLabel": "THEMA",
+    "voice": {
+      "automatic": "Automatisch",
+      "current": "Stimme: {{voice}}",
+      "none": "Keine installierte Stimme für diese Sprache gefunden.",
+      "previewText": "So klingt diese Stimme."
+    },
+    "voiceLabel": "STIMME"
   },
   "tabs": {
     "discover": "Entdecken",

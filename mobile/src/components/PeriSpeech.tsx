@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import CrowAvatar from './CrowAvatar';
 import type { Theme } from '@/src/theme/tokens';
 import { useSpeech } from '@/src/hooks/useSpeech';
-import { getSpeechLocale } from '@/src/i18n/locales';
+import { useSpeechVoice } from '@/src/stores/SpeechVoiceContext';
 
 interface PeriSpeechProps {
   text: string;
@@ -13,8 +13,9 @@ interface PeriSpeechProps {
 }
 
 export default function PeriSpeech({ text, theme, size = 44 }: PeriSpeechProps) {
-  const { t, i18n } = useTranslation();
-  const { speaking, toggle } = useSpeech({ language: getSpeechLocale(i18n.language) });
+  const { t } = useTranslation();
+  const { voiceId, speechLocale } = useSpeechVoice();
+  const { speaking, toggle } = useSpeech({ language: speechLocale, voice: voiceId });
 
   return (
     <View style={styles.row}>

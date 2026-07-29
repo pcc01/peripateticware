@@ -283,7 +283,14 @@
         "label": "地形"
       }
     },
-    "themeLabel": "テーマ"
+    "themeLabel": "テーマ",
+    "voice": {
+      "automatic": "自動",
+      "current": "音声: {{voice}}",
+      "none": "この言語に対応する音声が見つかりません。",
+      "previewText": "この声はこのように聞こえます。"
+    },
+    "voiceLabel": "音声"
   },
   "tabs": {
     "discover": "発見",

@@ -283,7 +283,14 @@
         "label": "Solo"
       }
     },
-    "themeLabel": "TEMÁ"
+    "themeLabel": "TEMÁ",
+    "voice": {
+      "automatic": "Automático",
+      "current": "Voz: {{voice}}",
+      "none": "Nenhuma voz instalada foi encontrada para este idioma.",
+      "previewText": "É assim que esta voz soa."
+    },
+    "voiceLabel": "VOZ"
   },
   "tabs": {
     "discover": "Descubra",

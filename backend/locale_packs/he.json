@@ -283,7 +283,14 @@
         "label": "טריין"
       }
     },
-    "themeLabel": "אמצעי"
+    "themeLabel": "אמצעי",
+    "voice": {
+      "automatic": "אוטומטי",
+      "current": "קול: {{voice}}",
+      "none": "לא נמצא קול מותקן לשפה זו.",
+      "previewText": "כך נשמע קול זה."
+    },
+    "voiceLabel": "קול"
   },
   "tabs": {
     "discover": "ציפור",

@@ -283,7 +283,14 @@
         "label": "Terrein"
       }
     },
-    "themeLabel": "أضف موضوع"
+    "themeLabel": "أضف موضوع",
+    "voice": {
+      "automatic": "تلقائي",
+      "current": "الصوت: {{voice}}",
+      "none": "لم يتم العثور على صوت مثبت لهذه اللغة.",
+      "previewText": "هكذا يبدو هذا الصوت."
+    },
+    "voiceLabel": "الصوت"
   },
   "tabs": {
     "discover": "اكتشف",

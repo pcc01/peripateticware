@@ -15,7 +15,7 @@
   "microsoft": {
     "scope": "month",
     "limit": 2000000,
-    "used": 1461,
+    "used": 1477,
     "exhausted": false,
     "month": "2026-07"
   }

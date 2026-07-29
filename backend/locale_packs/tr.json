@@ -283,7 +283,14 @@
         "label": "Teren"
       }
     },
-    "themeLabel": "TEMATik"
+    "themeLabel": "TEMATik",
+    "voice": {
+      "automatic": "Otomatik",
+      "current": "Ses: {{voice}}",
+      "none": "Bu dil için yüklü ses bulunamadı.",
+      "previewText": "Bu ses böyle duyulur."
+    },
+    "voiceLabel": "SES"
   },
   "tabs": {
     "discover": "Keşfedin",

@@ -1,50 +1,50 @@
 {
   "ar": {
-    "version": "64d277963800",
-    "updatedAt": "2026-07-29T19:41:13.774Z"
+    "version": "3833c3a2403b",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "de": {
-    "version": "acefcbcee80b",
-    "updatedAt": "2026-07-29T19:41:13.774Z"
+    "version": "ee5cf3527df3",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "es": {
-    "version": "0ad67c9ea805",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "a26953280d3b",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "fr-CA": {
-    "version": "c40da16645e1",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "8dfb4adf2b52",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "fr": {
-    "version": "987ee53c58e0",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "a6c520112806",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "he": {
-    "version": "d276c847df50",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "1e9b0c0faec0",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "it": {
-    "version": "dee68b1056ee",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "bccadbe3b1bf",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "ja": {
-    "version": "5dd491b4c744",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "1c78b9313ce6",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "ko": {
-    "version": "5ccfe2a7aae6",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "a93bc8db484f",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "pt-BR": {
-    "version": "3cc4375c623b",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "594869fd1c83",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "tr": {
-    "version": "cae1b5ccbda8",
-    "updatedAt": "2026-07-29T19:41:13.775Z"
+    "version": "071e3c893ddd",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   },
   "zh": {
-    "version": "31c5cbdc6162",
-    "updatedAt": "2026-07-29T19:41:13.776Z"
+    "version": "60c9b08a7c0e",
+    "updatedAt": "2026-07-29T21:49:58.703Z"
   }
 }

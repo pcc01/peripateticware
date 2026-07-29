@@ -283,7 +283,14 @@
         "label": "Terreno"
       }
     },
-    "themeLabel": "TEMATICA"
+    "themeLabel": "TEMATICA",
+    "voice": {
+      "automatic": "Automatico",
+      "current": "Voce: {{voice}}",
+      "none": "Nessuna voce installata trovata per questa lingua.",
+      "previewText": "Ecco come suona questa voce."
+    },
+    "voiceLabel": "VOCE"
   },
   "tabs": {
     "discover": "Scopri",

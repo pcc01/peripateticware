@@ -160,12 +160,19 @@
     "studentFallback": "Student",
     "themeLabel": "THEME",
     "languageLabel": "LANGUAGE",
+    "voiceLabel": "VOICE",
     "role": {
       "student": "Student"
     },
     "language": {
       "current": "Language: {{language}}",
       "downloadFailed": "Could not download this language. Check your connection and try again."
+    },
+    "voice": {
+      "current": "Voice: {{voice}}",
+      "automatic": "Automatic",
+      "previewText": "This is what this voice sounds like.",
+      "none": "No installed voices found for this language."
     },
     "theme": {
       "fieldGuide": {
