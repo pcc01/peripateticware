@@ -93,26 +93,26 @@
     "product_title": "Prodotto",
     "product_tools": "Strumenti",
     "product_demo": "Demo",
-    "company_title": "Società",
-    "company_about": "Informazioni",
+    "company_title": "Azienda",
+    "company_about": "Chi siamo",
     "company_team": "Squadra",
     "company_blog": "Blog",
-    "company_careers": "Carriere",
+    "company_careers": "Lavora con noi",
     "resources_title": "Risorse",
     "resources_docs": "Documentazione",
     "resources_guides": "Guide",
     "resources_api": "API",
-    "resources_support": "Supporto",
+    "resources_support": "Assistenza",
     "company_name": "Peripateticware",
-    "brand_desc": "descrizione del marchio",
-    "all_rights": "Tutti i diritti riservati",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
-    "product_features": "Caratteristiche",
-    "product_pricing": "Prezzo",
+    "brand_desc": "L'apprendimento avviene all'aperto.",
+    "all_rights": "Tutti i diritti riservati.",
+    "legal_title": "Note legali",
+    "legal_privacy": "Informativa sulla Privacy",
+    "legal_terms": "Termini di Servizio",
+    "legal_cookies": "Informativa sui Cookie",
+    "legal_contact": "Contatti",
+    "product_features": "Funzionalità",
+    "product_pricing": "Prezzi",
     "privacy_protected": "I tuoi dati sono protetti da questi framework",
     "company_contact": "Contatti",
     "product_privacy_engine": "Motore della Privacy",
@@ -795,6 +795,10 @@
   "drawing": "Disegno",
   "meet_peri": {
     "step": {
+      "1": {
+        "desc": "Peri crea l'atmosfera e chiede al tuo bambino cosa notano. Non ci sono ancora risposte giuste - solo l'osservazione.",
+        "phase": "Impegnare"
+      },
       "2": {
         "phase": "Osserva",
         "desc": "Il tuo bambino registra ciò che vede, sente o misura. Peri richiede specifiche se la risposta è vaga."
@@ -810,28 +814,24 @@
       "5": {
         "phase": "Applica",
         "desc": "Peri si chiede cosa questo significhi per una nuova situazione. La conoscenza diventa portatile."
-      },
-      "1": {
-        "desc": "Peri crea l'atmosfera e chiede al tuo bambino cosa notano. Non ci sono ancora risposte giuste - solo l'osservazione.",
-        "phase": "Impegnare"
       }
     },
     "badge": "Incontra Peri",
     "exchange": {
-      "5": {
-        "text": "Questa è la direzione giusta. Cosa potresti misurare o fotografare qui per sostenere questa idea?"
+      "1": {
+        "text": "Sei sulla riva del fiume. Prima di misurare qualsiasi cosa - qual è la prima cosa che noti sull'acqua qui rispetto a dieci piedi a monte?"
       },
       "2": {
         "text": "Qui è più lento e c'è più fango in fondo."
       },
+      "3": {
+        "text": "Ottima osservazione. Perché pensi che il fango si sia depositato qui e non a monte dove l'acqua scorre più veloce?"
+      },
       "4": {
         "text": "Forse l'acqua più lenta non può trasportare molte cose?"
       },
-      "1": {
-        "text": "Sei sulla riva del fiume. Prima di misurare qualsiasi cosa - qual è la prima cosa che noti sull'acqua qui rispetto a dieci piedi a monte?"
-      },
-      "3": {
-        "text": "Ottima osservazione. Perché pensi che il fango si sia depositato qui e non a monte dove l'acqua scorre più veloce?"
+      "5": {
+        "text": "Questa è la direzione giusta. Cosa potresti misurare o fotografare qui per sostenere questa idea?"
       }
     }
   },
@@ -1427,9 +1427,9 @@
     "personal": {
       "title": "Personale",
       "feature": {
+        "1": "Osservazioni geolocalizzate",
         "2": "Intelligenza artificiale suggerimenti di riflessione",
-        "3": "Progressione",
-        "1": "Osservazioni geolocalizzate"
+        "3": "Progressione"
       },
       "cta": "Inizia Gratis",
       "subtitle": "Per singoli studenti",
@@ -2574,9 +2574,9 @@
     "field_work_date": "Lavoro sul campo {{data}}"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Condividi posizione",
-    "your_teacher_wants_to_see_your_location_": "Il tuo insegnante vuole vedere la tua posizione durante questa attività per poter seguire i progressi del lavoro sul campo. La tua posizione viene condivisa solo mentre la sessione è attiva.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Il tuo insegnante vuole vedere la tua posizione durante questa attività per poter seguire i progressi del lavoro sul campo. La tua posizione viene condivisa solo mentre la sessione è attiva."
   },
   "professorFieldworkPage": {
     "back": "Indietro",
@@ -2730,11 +2730,11 @@
           }
         },
         "task": {
-          "2": {
-            "text": "Acquifero laboratorio ✓"
-          },
           "1": {
             "text": "Osservazione dell'ecosistema ✓"
+          },
+          "2": {
+            "text": "Acquifero laboratorio ✓"
           },
           "3": {
             "text": "Visita al Campidoglio - in sospeso"
@@ -2762,7 +2762,7 @@
     },
     "homeschool": {
       "1": {
-        "title": "Oggi",
+        "title": "Attività di Oggi",
         "task": {
           "1": {
             "text": "Riconoscere i tipi di roccia in superficie"
@@ -2849,7 +2849,7 @@
   },
   "compliance": {
     "coppa": {
-      "name": "Lege sulla Protezione della Privacy dei Minori nella Rete",
+      "name": "Legge sulla Protezione della Privacy dei Minori nella Rete",
       "region": "Stati Uniti"
     },
     "gdpr": {
@@ -2858,7 +2858,7 @@
     },
     "ccpa": {
       "region": "California, USA",
-      "name": "Lege sulla privacy dei consumatori della California"
+      "name": "Legge sulla privacy dei consumatori della California"
     },
     "lgpd": {
       "region": "Brasile",
@@ -2962,18 +2962,18 @@
   "pricing_tier": {
     "personal": {
       "feature": {
-        "3": "Intelligenza Artificiale Peri",
-        "5": "Visualizza portfolio",
         "1": "Aule individuali",
         "2": "Attività principali",
-        "4": "Cattura delle prove"
+        "3": "Intelligenza Artificiale Peri",
+        "4": "Cattura delle prove",
+        "5": "Visualizza portfolio"
       },
       "name": "Personale"
     },
     "school": {
       "feature": {
-        "2": "Multi-amministratore",
         "1": "Multiclassi",
+        "2": "Multi-amministratore",
         "3": "Organizzazioni Analytics",
         "4": "Supporto prioritario"
       },
@@ -2981,10 +2981,10 @@
     },
     "district": {
       "feature": {
+        "1": "Distribuzione su vasta area",
         "2": "integrazioni personalizzate",
         "3": "Onboarding personalizzato",
-        "4": "Priorità + Supporto SLA",
-        "1": "Distribuzione su vasta area"
+        "4": "Priorità + Supporto SLA"
       },
       "name": "Distretto"
     },
@@ -3033,5 +3033,6 @@
   },
   "team_1_role": "Fondatore e PM",
   "database": "Database",
-  "video": "Video"
+  "video": "Video",
+  "pricing_nav_label": "Prezzi"
 }

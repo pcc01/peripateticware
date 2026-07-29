@@ -108,30 +108,30 @@
   "select": "선택 없음",
   "footer": {
     "brand_title": "Peripateticware",
-    "brand_desc": "제품명",
-    "product_title": "제품 제목",
-    "product_tools": "제품 도구",
+    "brand_desc": "배움은 야외에서 일어납니다.",
+    "product_title": "제품",
+    "product_tools": "도구",
     "product_demo": "제품 데모",
-    "company_title": "회사 제목",
+    "company_title": "회사",
     "company_about": "회사 소개",
     "company_team": "회사 팀",
     "company_blog": "회사 블로그",
-    "company_careers": "회사 인재상",
-    "resources_title": "리소스 제목",
+    "company_careers": "채용",
+    "resources_title": "리소스",
     "resources_docs": "리소스 문서",
     "resources_guides": "리소스 가이드",
     "resources_api": "리소스 API",
-    "resources_support": "리소스 지원",
+    "resources_support": "지원",
     "company_name": "Peripateticware",
-    "all_rights": "모든 권리",
+    "all_rights": "모든 권리 보유.",
     "company_contact": "연락",
-    "product_features": "제품 특징",
-    "product_pricing": "제품 가격",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "product_features": "기능",
+    "product_pricing": "요금제",
+    "legal_title": "법적 고지",
+    "legal_privacy": "개인정보 처리방침",
+    "legal_terms": "이용약관",
+    "legal_cookies": "쿠키 정책",
+    "legal_contact": "문의하기",
     "privacy_protected": "당신의 데이터는 이러한 프레임워크로 보호됩니다.",
     "product_privacy_engine": "개인정보 엔지니어링",
     "resources_privacy": "개인정보 엔지니어링",
@@ -155,7 +155,7 @@
     "feature_1_title": "증거를 캡처합니다",
     "feature_1_desc": "사진, 오디오, 스케치, 현장 기록 — 모든 것을 한곳에 모아 포트폴리오와 연동하세요.",
     "feature_2_title": "Peri가 지칭합니다",
-    "feature_2_desc": "Peri the crow는 당신을 더 깊이 생각하도록 끌어들이고 아이디어를 발산시키며, 정답을 제공하지 않습니다.",
+    "feature_2_desc": "까마귀 페리가 올바른 질문을 던져 더 깊이 생각하도록 도와줍니다 — 아이디어에 불을 붙이고, 답을 알려주지 않습니다.",
     "feature_3_title": "성장을 추적하세요",
     "feature_3_desc": "활동을 수행하고 외부학습 포트폴리오를 구축함에 따라 자신의 능력을 확장할 수 있는 것을 감상하세요."
   },
@@ -164,7 +164,7 @@
     "secondary_cta": "데모 예약",
     "mockup_title": "베계지 단위",
     "headline": "움직이는 디자인 활동 만들기",
-    "intro": "몇 분 안에 외부 활동을 지정된 교육 알맞은 형식으로 geo-태그링하고, 학생들이 장소에서 증거를 캡처합니다. 실시간 진행 상황을 받아보세요 — 앱 다운로드가 필요없습니다.",
+    "intro": "몇 분 만에 위치 태그가 지정된, 교육과정에 맞춘 야외 활동을 만드세요. 학생들은 현장에서 증거를 기록하고, 선생님은 실시간으로 진행 상황을 확인할 수 있습니다 — 앱 다운로드가 필요 없습니다.",
     "coach_prompt": "3명의 학생이 증거를 제출했습니다. · 2개의 반성을 심사 대기중입니다.",
     "feature_2_desc": "각 학생이 현재 어떤 단계에 있는지, 무엇을 파악했는지, 그리고 누가 도움이 필요한지 실시간으로 확인하세요.",
     "feature_3_title": "내장된 평가",
@@ -813,7 +813,48 @@
   "photo": "사진",
   "video": "비디오",
   "drawing": "그림",
-  "meet_peri": "페리를 만나보세요",
+  "meet_peri": {
+    "badge": "페리 만나보기",
+    "step": {
+      "1": {
+        "phase": "참여",
+        "desc": "페리가 상황을 설명하고 아이에게 무엇을 발견했는지 물어봅니다. 아직 정답은 없어요 — 그냥 관찰하는 거예요."
+      },
+      "2": {
+        "phase": "관찰",
+        "desc": "아이가 보고, 듣고, 측정한 것을 기록합니다. 답이 모호하면 페리가 더 구체적으로 물어봅니다."
+      },
+      "3": {
+        "phase": "분석",
+        "desc": "페리가 비교와 분류 질문을 합니다. 무엇이 비슷한가요? 무엇이 다른가요? 어떤 패턴이 보이나요?"
+      },
+      "4": {
+        "phase": "설명",
+        "desc": "아이가 원인이나 메커니즘을 제시합니다. 페리는 힌트가 아닌 근거를 묻는 질문으로 이를 검증합니다."
+      },
+      "5": {
+        "phase": "적용",
+        "desc": "페리가 이것이 새로운 상황에 어떤 의미인지 묻습니다. 지식이 다른 곳에도 적용 가능해집니다."
+      }
+    },
+    "exchange": {
+      "1": {
+        "text": "지금 개울가에 있어요. 뭔가를 측정하기 전에 — 바로 여기 물과 3미터 상류의 물을 비교했을 때 가장 먼저 눈에 띄는 게 뭐예요?"
+      },
+      "2": {
+        "text": "여기가 더 느리고 바닥에 진흙이 더 많아요."
+      },
+      "3": {
+        "text": "좋은 관찰이에요. 왜 진흙이 물살이 더 빠른 상류가 아니라 여기에 쌓였을까요?"
+      },
+      "4": {
+        "text": "느린 물이 많은 것을 옮기지 못해서 그런 걸까요?"
+      },
+      "5": {
+        "text": "맞는 방향이에요. 그 생각을 뒷받침하려면 여기서 무엇을 측정하거나 촬영할 수 있을까요?"
+      }
+    }
+  },
   "available_247": "✓ 24시간 가용",
   "journal": "일기장",
   "badges": "배드지",
@@ -1715,9 +1756,9 @@
     "see_all": "모두 보기 {{count}}"
   },
   "pages_sessionpage": {
+    "10003": "✅",
     "location_sharing": "위치 공유",
-    "your_teacher_wants_to_see_your_location_": "당신의 선생님은 이 활동에서 필드작업 진행 상황을 보려고 하며, 활동 중에만 위치를 공유합니다. 활동 중에는 위치 정보가 공개됩니다.",
-    "10003": "✅"
+    "your_teacher_wants_to_see_your_location_": "당신의 선생님은 이 활동에서 필드작업 진행 상황을 보려고 하며, 활동 중에만 위치를 공유합니다. 활동 중에는 위치 정보가 공개됩니다."
   },
   "professorFieldworkPage": {
     "back": "<- 뒤로가기",
@@ -1748,7 +1789,7 @@
     "student": {
       "1": {
         "badge": "관찰",
-        "title": "Field Journal — 허수아비 방문",
+        "title": "필드 저널 — 허수아비 방문",
         "prompt": "물의 맨 가운데에서 식물이 어떤 패턴인지 보이는 것을 어떻게 알 수 있나요?"
       },
       "2": {
@@ -1825,11 +1866,11 @@
           }
         },
         "task": {
-          "2": {
-            "text": "수질환경실험 ✔"
-          },
           "1": {
             "text": "에코시스템 관측 ✓"
+          },
+          "2": {
+            "text": "수질환경실험 ✔"
           },
           "3": {
             "text": "주식회사 방문 — 대기중"
@@ -2492,7 +2533,46 @@
     "role_parent": "부모 역할"
   },
   "features": "기능",
-  "pricing": "가격",
+  "pricing": {
+    "personal": {
+      "title": "개인",
+      "subtitle": "개별 학생용",
+      "price": "무료",
+      "description": "야외 학습을 시작해 보세요",
+      "feature": {
+        "1": "위치 태그 기반 관찰 기록",
+        "2": "AI 기반 성찰 질문",
+        "3": "진행 상황 추적"
+      },
+      "cta": "무료로 시작하기"
+    },
+    "school": {
+      "title": "학교",
+      "subtitle": "교사 및 학급용",
+      "description": "학급 전체 관리",
+      "feature": {
+        "1": "활동 빌더",
+        "2": "학생 관리",
+        "3": "평가 루브릭",
+        "4": "학부모 포털"
+      },
+      "cta": "영업팀 문의"
+    },
+    "district": {
+      "title": "교육구",
+      "subtitle": "교육구 전체용",
+      "price": "맞춤 견적",
+      "description": "엔터프라이즈 기능 및 지원",
+      "feature": {
+        "1": "무제한 교사 및 학생",
+        "2": "맞춤형 연동",
+        "3": "전담 지원",
+        "4": "개인정보 보호 규정 준수",
+        "5": "고급 분석"
+      },
+      "cta": "영업팀 문의"
+    }
+  },
   "simple_transparent_pricing": "단순하고 투명한 가격",
   "testimonial_1_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "testimonial_1_author": "Lorem Ipsum · Placeholder Title",
@@ -2586,11 +2666,13 @@
       }
     },
     "contact_for_pricing": "가격에 대해 문의하세요",
-    "contact_team": "연락하십시오 Team",
+    "contact_team": "팀에 문의하기",
     "contact_footer_pre": "가격 및 적합한 플랜을 찾고 상세 정보를 요청하려면 우리 팀과 연결하세요 —",
     "contact_footer_link": "연락 주세요"
   },
-  "privacy_first": "개인정보 보호 최우선",
+  "privacy_first": {
+    "badge": "개인정보 및 컴플라이언스"
+  },
   "eg_understand_photosynthesis_process": "예, 사진섬리제 과정 이해",
   "manage_district_and_school_configuration": "지방과 학교 구성 관리.",
   "adminauditlogpage": {
@@ -2675,7 +2757,9 @@
     "gdpr_card_desc": "일반 데이터 보호 규정(GDPR). 유럽연합 내 학교 및 학생에게 적용됩니다. 데이터는 합법적인 근거가 있는 경우에만 처리되며, 학생과 학부모는 데이터에 대한 완전한 접근권 및 삭제권을 보유합니다.",
     "ferpa_card_desc": "가족 교육권 및 개인정보 보호법(FERPA). 미국 학교 내 학생 교육 기록에 대한 접근을 규율합니다. 학교나 학부모의 서면 동의 없이는 학생 정보가 절대 공유되지 않습니다.",
     "ccpa_card_desc": "캘리포니아 소비자 개인정보 보호법. 캘리포니아 거주자에게 적용됩니다. 학생과 학부모는 언제든지 개인정보의 열람, 삭제 또는 판매 거부를 요청할 수 있습니다.",
-    "coppa_card_desc": "아동 온라인 개인정보 보호법(COPPA). 미국 내 13세 미만 사용자에게 적용됩니다. 미성년자로부터 개인정보를 수집하기 전에 반드시 부모의 동의를 얻습니다."
+    "coppa_card_desc": "아동 온라인 개인정보 보호법(COPPA). 미국 내 13세 미만 사용자에게 적용됩니다. 미성년자로부터 개인정보를 수집하기 전에 반드시 부모의 동의를 얻습니다.",
+    "custom_policy_card_title": "맞춤 정책",
+    "custom_policy_card_desc": "관할 지역에 특화된 규칙이 필요하신가요? 관리자는 특정 지역, 학교 또는 조직에 맞춘 맞춤형 개인정보 보호 규칙을 작성하고 게시할 수 있습니다."
   },
   "capture_photosvideo": "사진/비디오 녹화 📸",
   "take_photos_record_videos_and_capture_au": "사진을 찍고, 동영상을 녹음하고, 자신의 관찰과 발견을 문서화하기 위해 오디오를 캡처합니다.",
@@ -2958,5 +3042,6 @@
     "step_upload": "업로드",
     "step_parse": "구문 분석",
     "step_save": "저장"
-  }
+  },
+  "pricing_nav_label": "요금제"
 }

@@ -95,23 +95,23 @@
     "product_tools": "Araçlar",
     "product_demo": "Demo",
     "company_title": "Şirket",
-    "company_about": "Hakkında",
+    "company_about": "Hakkımızda",
     "company_team": "Takım",
     "company_blog": "Bloğ",
-    "company_careers": "İş Fırsaları",
+    "company_careers": "Kariyer",
     "resources_title": "Kaynaklar",
     "resources_docs": "Dökümantasyon",
     "resources_guides": "Rehberler",
     "resources_api": "API",
     "resources_support": "Destek",
     "company_name": "Peripateticware",
-    "brand_desc": "Çevresel, sahada öğrenme öğrencileri, öğretmenler ve aileler için.",
+    "brand_desc": "Öğrenme dışarıda gerçekleşir.",
     "all_rights": "Tüm hakları saklıdır.",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "legal_title": "Yasal",
+    "legal_privacy": "Gizlilik Politikası",
+    "legal_terms": "Kullanım Şartları",
+    "legal_cookies": "Çerez Politikası",
+    "legal_contact": "İletişim",
     "product_features": "Özellikler",
     "product_pricing": "Fiyatlandırma",
     "privacy_protected": "Veriğiniz şu çerçevelerden korunmaktadır",
@@ -822,9 +822,6 @@
       }
     },
     "exchange": {
-      "5": {
-        "text": "O'nun doğru yön olduğu. Burada ne ölçebilir veya fotoğrafçayabilirsin bu fikri desteklemek için?"
-      },
       "1": {
         "text": "Su Creek'in kenarında bulundusunuz. Herhangi bir şey ölçmeden önce – burada bulunduğunuz yere göre on metre akışın yukarısındaki suyun ne olduğunu ilk olarak dikkatlerinize çeken şey nedir?"
       },
@@ -836,6 +833,9 @@
       },
       "4": {
         "text": "Su içecek daha yavaş akarken o kadar çok şey taşımayabilir mi?"
+      },
+      "5": {
+        "text": "O'nun doğru yön olduğu. Burada ne ölçebilir veya fotoğrafçayabilirsin bu fikri desteklemek için?"
       }
     },
     "badge": "Peri ile Tanışın"
@@ -1352,7 +1352,9 @@
     "gdpr_card_desc": "Genel Veri Koruma Yönetmeliği. Avrupa Birliği’ndeki okullar ve öğrenciler için geçerlidir. Veriler yalnızca yasal dayanaklar çerçevesinde işlenir; öğrenciler ve veliler tam erişim ve silme haklarına sahiptir.",
     "ferpa_card_desc": "Aile Eğitim Hakları ve Gizlilik Yasası. ABD’deki okullarda öğrenci eğitim kayıtlarına erişimi düzenler. Öğrenci verileri, okulun veya velinin yazılı onayı olmadan asla paylaşılmaz.",
     "ccpa_card_desc": "Kaliforniya Tüketici Gizliliği Yasası. Kaliforniya’da ikamet eden kişiler için geçerlidir. Öğrenciler ve veliler, istedikleri zaman kişisel bilgilerinin açıklanmasını, silinmesini veya bu bilgilerin satışından vazgeçilmesini talep edebilirler.",
-    "coppa_card_desc": "Çocukların Çevrimiçi Gizliliğinin Korunmasına İlişkin Yasa. Amerika Birleşik Devletleri’nde 13 yaşın altındaki kullanıcılar için geçerlidir. Reşit olmayanlardan herhangi bir kişisel veri toplanmadan önce ebeveyn onayı alınır."
+    "coppa_card_desc": "Çocukların Çevrimiçi Gizliliğinin Korunmasına İlişkin Yasa. Amerika Birleşik Devletleri’nde 13 yaşın altındaki kullanıcılar için geçerlidir. Reşit olmayanlardan herhangi bir kişisel veri toplanmadan önce ebeveyn onayı alınır.",
+    "custom_policy_card_title": "Özel Politika",
+    "custom_policy_card_desc": "Yargı bölgesine özgü bir kurala mı ihtiyacınız var? Yöneticiler, herhangi bir bölge, okul veya kuruluş için özel gizlilik kuralları oluşturup yayınlayabilir."
   },
   "capture_photosvideo": "Foto/Video Çek",
   "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",
@@ -2577,9 +2579,9 @@
     "see_all": "Tümünü gör {{count}}"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Paylaşım Yeri",
-    "your_teacher_wants_to_see_your_location_": "Öğretmenin bu etkinlik sırasında yerinizi görmek istiyor ki alan çalışmalarının ilerlemesini takip edebilsinler. Yer bilgileriniz sadece oturum aktifken paylaşılır.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Öğretmenin bu etkinlik sırasında yerinizi görmek istiyor ki alan çalışmalarının ilerlemesini takip edebilsinler. Yer bilgileriniz sadece oturum aktifken paylaşılır."
   },
   "professorFieldworkPage": {
     "back": "geri",
@@ -2681,11 +2683,11 @@
           "1": {
             "text": "Ekosistem gözlem ✓"
           },
-          "3": {
-            "text": "İstanbul gezisi - beklemede"
-          },
           "2": {
             "text": "Su döngüsü laboratuvarı ✓"
+          },
+          "3": {
+            "text": "İstanbul gezisi - beklemede"
           }
         },
         "title": "Haftalık İlerleme",
@@ -2738,7 +2740,7 @@
             "text": "Tam gözlem günlüğü"
           }
         },
-        "title": "Bugünin Etkinliği",
+        "title": "Bugünün Etkinliği",
         "badge": "Aktif"
       },
       "2": {
@@ -2774,17 +2776,17 @@
       "3": {
         "subtitle": "İlkbahar 2026 · Emma Rivera",
         "task": {
-          "3": {
-            "text": "Standartlar kapsamı ✓"
-          },
-          "4": {
-            "text": "Görüntü özetleri"
-          },
           "1": {
             "text": "Kapak sayfası ✓"
           },
           "2": {
             "text": "Etkinlik günlüğü ✓"
+          },
+          "3": {
+            "text": "Standartlar kapsamı ✓"
+          },
+          "4": {
+            "text": "Görüntü özetleri"
           }
         },
         "prompt": "PDF portföy hazır. Tüm gerekli TX eyalet raporlama alanlarını içerir.",
@@ -2934,16 +2936,16 @@
       }
     },
     "district": {
-      "name": "Bahçe",
+      "name": "Bölge",
       "feature": {
         "1": "İlçe çapında dağıtım",
-        "2": "Ent integralsiyonlar",
-        "3": "Eğitici giriş",
+        "2": "Özel entegrasyonlar",
+        "3": "Özel katılım süreci",
         "4": "Öncelikli Destek"
       }
     },
     "homeschool": {
-      "name": "Evcilik",
+      "name": "Ev Okulu",
       "feature": {
         "1": "Aile Hesapları",
         "2": "Dosya Portföyü",
@@ -3042,5 +3044,6 @@
     "step_upload": "Yükle",
     "step_parse": "Ayrıştır",
     "step_save": "Kaydet"
-  }
+  },
+  "pricing_nav_label": "Fiyatlandırma"
 }

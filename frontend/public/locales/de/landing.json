@@ -100,14 +100,14 @@
   "select": "-- Wählen Sie --",
   "footer": {
     "brand_title": "Peripateticware",
-    "brand_desc": "Außerschulisches, praxisorientiertes Lernen für Schüler, Lehrer und Familien.",
+    "brand_desc": "Lernen findet draußen statt.",
     "product_title": "Produkt",
     "product_features": "Funktionen",
     "product_tools": "Werkzeuge",
-    "product_pricing": "Preisgestaltung",
+    "product_pricing": "Preise",
     "product_demo": "Demo",
-    "company_title": "Firma",
-    "company_about": "Über",
+    "company_title": "Unternehmen",
+    "company_about": "Über uns",
     "company_team": "Team",
     "company_blog": "Blog",
     "company_careers": "Karriere",
@@ -115,14 +115,14 @@
     "resources_docs": "Dokumentation",
     "resources_guides": "Führer",
     "resources_api": "API",
-    "resources_support": "Unterstützung",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "resources_support": "Support",
+    "legal_title": "Rechtliches",
+    "legal_privacy": "Datenschutzerklärung",
+    "legal_terms": "Nutzungsbedingungen",
+    "legal_cookies": "Cookie-Richtlinie",
+    "legal_contact": "Kontakt",
     "company_name": "Peripateticware",
-    "all_rights": "Alle Rechte vorbehalten",
+    "all_rights": "Alle Rechte vorbehalten.",
     "privacy_protected": "Ihre Daten sind unter diesen Rahmenwerken geschützt",
     "company_contact": "Kontakt",
     "product_privacy_engine": "Datenschutz-Engine",
@@ -156,10 +156,10 @@
     },
     "school": {
       "feature": {
+        "1": "Aktionsersteller",
         "2": "Schülerverwaltung",
         "3": "Bewertungsraster",
-        "4": "Elternportal",
-        "1": "Aktionsersteller"
+        "4": "Elternportal"
       },
       "cta": "Verkauf kontaktieren",
       "title": "Schule",
@@ -1026,7 +1026,9 @@
     "gdpr_card_desc": "Datenschutz-Grundverordnung. Gilt für Schulen und Schüler in der Europäischen Union. Die Datenverarbeitung erfolgt ausschließlich auf rechtmäßiger Grundlage; Schüler und Eltern haben uneingeschränkte Zugriffs- und Löschrechte.",
     "ferpa_card_desc": "Gesetz über die Rechte der Familie auf Bildung und Datenschutz (Family Educational Rights and Privacy Act). Regelt den Zugang zu den Bildungsunterlagen von Schülern an US-amerikanischen Schulen. Schülerdaten werden niemals ohne schriftliche Einwilligung der Schule oder der Eltern weitergegeben.",
     "ccpa_card_desc": "Kalifornisches Verbraucherdatenschutzgesetz (California Consumer Privacy Act). Gilt für Einwohner Kaliforniens. Schüler und Eltern können jederzeit Auskunft, Löschung oder den Verzicht auf den Verkauf personenbezogener Daten beantragen.",
-    "coppa_card_desc": "Gesetz zum Schutz der Privatsphäre von Kindern im Internet (Children’s Online Privacy Protection Act). Gilt für Nutzer unter 13 Jahren in den Vereinigten Staaten. Vor der Erhebung personenbezogener Daten von Minderjährigen wird die Zustimmung der Eltern eingeholt."
+    "coppa_card_desc": "Gesetz zum Schutz der Privatsphäre von Kindern im Internet (Children’s Online Privacy Protection Act). Gilt für Nutzer unter 13 Jahren in den Vereinigten Staaten. Vor der Erhebung personenbezogener Daten von Minderjährigen wird die Zustimmung der Eltern eingeholt.",
+    "custom_policy_card_title": "Individuelle Richtlinie",
+    "custom_policy_card_desc": "Benötigen Sie eine regionsspezifische Regel? Administratoren können individuelle Datenschutzrichtlinien für jede Region, Schule oder Organisation erstellen und veröffentlichen."
   },
   "loading_your_projects": "Lade Ihre Projekte...",
   "retry": "Wiederholen",
@@ -1188,8 +1190,8 @@
       "1": {
         "text": "Du stehst am Creek-Ufer. Bevor wir irgendetwas messen — was fällt dir als Erstes an dem Wasser direkt hier im Vergleich zu zehn Metern flussaufwärts auf?"
       },
-      "5": {
-        "text": "Das ist die richtige Richtung. Was könntest du hier messen oder fotografieren, um diese Idee zu unterstützen?"
+      "2": {
+        "text": "Es ist hier und da langsamer und es gibt mehr Schlamm am Boden."
       },
       "3": {
         "text": "Gute Beobachtung. Warum denkst du, dass sich der Schlamm hier abgelagert hat und nicht flussaufwärts, wo das Wasser schneller ist?"
@@ -1197,8 +1199,8 @@
       "4": {
         "text": "Kann langsameres Wasser nicht so viel tragen?"
       },
-      "2": {
-        "text": "Es ist hier und da langsamer und es gibt mehr Schlamm am Boden."
+      "5": {
+        "text": "Das ist die richtige Richtung. Was könntest du hier messen oder fotografieren, um diese Idee zu unterstützen?"
       }
     },
     "badge": "Peri treffen"
@@ -2571,9 +2573,9 @@
     "see_all": "Alle anzeigen {{count}}"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Standortfreigabe",
-    "your_teacher_wants_to_see_your_location_": "Dein Lehrer möchte deinen Standort während dieser Aktivität sehen, um den Fortschritt der Feldarbeit zu verfolgen. Dein Standort wird nur geteilt, solange die Sitzung aktiv ist.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Dein Lehrer möchte deinen Standort während dieser Aktivität sehen, um den Fortschritt der Feldarbeit zu verfolgen. Dein Standort wird nur geteilt, solange die Sitzung aktiv ist."
   },
   "professorFieldworkPage": {
     "back": "Zurück",
@@ -2623,7 +2625,7 @@
     "teacher": {
       "1": {
         "title": "Erstellen Sie Aktivität - Flussstudie",
-        "prompt": "\"Setze Standort, Ziele und kognitiven Level fest. Peri generiert führende Fragen automatisch.\"\n\n(Translated with preserved template variables)",
+        "prompt": "Setze Standort, Ziele und kognitiven Level fest. Peri generiert führende Fragen automatisch.",
         "badge": "Einrichten"
       },
       "2": {
@@ -2640,9 +2642,6 @@
     "parent": {
       "1": {
         "task": {
-          "4": {
-            "text": "Exportportfolio bereit"
-          },
           "1": {
             "text": "Wissenschaft — Ökosystemeinheit ✓"
           },
@@ -2651,6 +2650,9 @@
           },
           "3": {
             "text": "Geschichte — Besuch im Kapitolinischen Museum"
+          },
+          "4": {
+            "text": "Exportportfolio bereit"
           }
         },
         "title": "Emma's Fortschritt",
@@ -2674,11 +2676,11 @@
           "1": {
             "text": "Ökosystem-Beobachtung ✓"
           },
-          "3": {
-            "text": "Kapitolbesuch - ausstehend"
-          },
           "2": {
             "text": "Wasserzyklus-Labor ✓"
+          },
+          "3": {
+            "text": "Kapitolbesuch - ausstehend"
           }
         },
         "title": "Wöchentlicher Fortschritt",
@@ -2731,14 +2733,11 @@
             "text": "Beobachtungsprotokoll"
           }
         },
-        "title": "Heute's Aktivit├Ąt",
+        "title": "Heutige Aktivität",
         "badge": "Aktiv"
       },
       "2": {
         "task": {
-          "4": {
-            "text": "Sprachen und Literatur — Forschung"
-          },
           "1": {
             "text": "Erde — Erdsysteme ✓"
           },
@@ -2747,6 +2746,9 @@
           },
           "3": {
             "text": "Geschichte - Geographie von Texas"
+          },
+          "4": {
+            "text": "Sprachen und Literatur — Forschung"
           }
         },
         "title": "Standardsabdeckung",
@@ -2767,20 +2769,20 @@
       "3": {
         "subtitle": "Frühling 2026 · Emma Rivera",
         "task": {
-          "3": {
-            "text": "Standardsabdeckung ✓"
-          },
-          "4": {
-            "text": "Beweis-Daumenabdrücke ✓"
-          },
           "1": {
             "text": "Deckblatt ✓"
           },
           "2": {
             "text": "Aktivitätsprotokoll ✓"
+          },
+          "3": {
+            "text": "Standardsabdeckung ✓"
+          },
+          "4": {
+            "text": "Beweis-Daumenabdrücke ✓"
           }
         },
-        "prompt": "\"Ihr PDF-Portfolio ist bereit. Enthält alle erforderlichen TX-Staatsberichterstattungsfelder.\"\n\n(Preserved template variables: {count}, %s, $t(...))",
+        "prompt": "Ihr PDF-Portfolio ist bereit. Enthält alle erforderlichen TX-Staatsberichterstattungsfelder.",
         "title": "Portfolio bereit",
         "badge": "Exportbereit",
         "stat": {
@@ -2824,7 +2826,7 @@
       "region": "USA"
     },
     "coppa": {
-      "name": "Kindertdatenschutzschutzgesetz",
+      "name": "Kinderdatenschutzgesetz",
       "region": "USA"
     }
   },
@@ -2913,17 +2915,17 @@
     },
     "school": {
       "feature": {
-        "3": "Organisationsanalyse",
-        "4": "Prioritätensupport",
         "1": "Mehrere Klassenzimmer",
-        "2": "Mehrfachadministrator"
+        "2": "Mehrfachadministrator",
+        "3": "Organisationsanalyse",
+        "4": "Prioritätensupport"
       },
       "name": "Schule"
     },
     "district": {
       "name": "Bezirk",
       "feature": {
-        "1": "de: \"Flächendeckender Einsatz\"",
+        "1": "Flächendeckender Einsatz",
         "2": "Individual Integrationen",
         "3": "Onboarding-Service",
         "4": "Prioritäre Support-Leistung"
@@ -3034,5 +3036,6 @@
   "seattle_wa": "Seattle, WA",
   "radius": "Radius",
   "video": "Video",
-  "name": "Name"
+  "name": "Name",
+  "pricing_nav_label": "Preise"
 }

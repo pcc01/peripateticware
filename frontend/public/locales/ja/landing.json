@@ -114,29 +114,29 @@
   "gdpr": "GDPR（General Data Protection Regulation）",
   "footer": {
     "brand_title": "Peripateticware",
-    "product_title": "商品",
-    "product_tools": "道具",
+    "product_title": "製品",
+    "product_tools": "ツール",
     "product_demo": "デモ",
-    "company_title": "会社",
-    "company_about": "「アバウト」",
+    "company_title": "会社概要",
+    "company_about": "会社について",
     "company_team": "チーム",
     "company_blog": "ブログ",
-    "company_careers": "「キャリア」",
+    "company_careers": "採用情報",
     "resources_title": "リソース",
     "resources_docs": "ドキュメント",
     "resources_guides": "「ガイド」",
     "resources_api": "API",
     "resources_support": "サポート",
     "company_name": "Peripateticware",
-    "brand_desc": "「学生、教師、家族向けの野外、現地で学ぶ機会」",
-    "all_rights": "©️",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
-    "product_features": "「機能」",
-    "product_pricing": "値段",
+    "brand_desc": "学びは外で起こる。",
+    "all_rights": "全著作権所有。",
+    "legal_title": "法的情報",
+    "legal_privacy": "プライバシーポリシー",
+    "legal_terms": "利用規約",
+    "legal_cookies": "クッキーポリシー",
+    "legal_contact": "お問い合わせ",
+    "product_features": "機能",
+    "product_pricing": "料金",
     "privacy_protected": "「これらのフレームワークで、あなたのデータは保護されています」",
     "company_contact": "連絡",
     "product_privacy_engine": "「プライバシー エンジン」",
@@ -149,7 +149,7 @@
   "story_title": "「なぜ動きを学ぶ」",
   "story_text_1": "「アリストテレスは歩きながら教え、移動することは思考の一つだという信念を持っていました。二千年が経った今でも、研究はこれに同意しています。」",
   "story_text_2": "Peripateticwareは、その洞察をあなたの手に届けてくれます。教師たちは、カリキュラムを現実の世界で生き生きとさせる活動を考案します。生徒たちは探求し、記録し、振り返ります。ペリが探究を導きます。そして、学びは――ついに――動き出すのです。",
-  "about": "「アバウト」",
+  "about": "会社概要",
   "login": "ログイン",
   "sign_up": "「登録」",
   "why": "なぜ",
@@ -1338,7 +1338,7 @@
   "coppa": "コピーア",
   "ferpa": "['フェルパ']",
   "privacy_first": {
-    "badge": "「プライバシーとコンプライアンス」"
+    "badge": "プライバシーとコンプライアンス"
   },
   "eg_understand_photosynthesis_process": "光合成過程を理解する",
   "manage_district_and_school_configuration": "管理地区と学校の設定",
@@ -1470,7 +1470,7 @@
     "role_teacher": "先生",
     "role_parent": "「役割」"
   },
-  "features": "「機能」",
+  "features": "機能",
   "pricing": {
     "personal": {
       "title": "個人",
@@ -2453,12 +2453,12 @@
     "refreshing": "リフレッシュ中…"
   },
   "components_landingpage": {
-    "peripateticware_began_as_a_white_paper_w": "「パリペタティックウェアは、マクグロヒル・エデュケーション内で執筆された白書として始まりました。それは、GPSを搭載したモバイルデバイスが学習を変えるだろうと主張し、実地の場所を歩きながら構造化された調査に従って学ぶことで、テキストブックでは決してできないように学べることを提唱しました。」",
+    "peripateticware_began_as_a_white_paper_w": "パリペタティックウェアは、マクグロヒル・エデュケーション内で執筆された白書として始まりました。それは、GPSを搭載したモバイルデバイスが学習を変えるだろうと主張し、実地の場所を歩きながら構造化された調査に従って学ぶことで、テキストブックでは決してできないように学べることを提唱しました。",
     "guided_inquiry_that_leads_to_real_knowle": "「真実の知識へ導く指南」",
     "sample_exchange_creek_study_grade_5": "「サンプル交換 - クリーク研究、学年5」",
     "peri_never_gives_the_answer_it_asks_the_": "「パリは答えを与えない。次の正しい質問をする。— 質問はカーソルからクールされたバンクに引き出される。AIの回答はローカルでオラマーを実行するか、アノスピックAPIキーが必要。」",
     "built_from_a_2007_idea_that_took_until_2": "「2007年のアイデアが、実現可能になったのは2026年まで待たねばならなかった」",
-    "the_paper_named_one_problem_it_couldnt_s": "「問題を解決できなかった紙の一つに、評価というものがあった。川底や大聖堂のアーチで、都市公園で起きる学習をどう評価するかという Frageだ。しかし、2026年にAIがついに答えを出してくれた。」",
+    "the_paper_named_one_problem_it_couldnt_s": "問題を解決できなかった紙の一つに、評価というものがあった。川底や大聖堂のアーチで、都市公園で起きる学習をどう評価するかという問いだった。しかし、2026年にAIがついに答えを出してくれた。",
     "from_the_original_2007_paper": "「元々、2007年の論文」",
     "simple_honest_pricing": "単純で正直な価格",
     "free_for_one_classroom_no_credit_card_re": "無料で1教室分利用可能。クレジットカード不要で始められます。",
@@ -2646,9 +2646,9 @@
     "contact_us": "連絡する"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "共有",
-    "your_teacher_wants_to_see_your_location_": "このアクティビティ中、担当の先生はフィールドワークの進捗状況を把握するため、あなたの現在地を確認したいと考えています。現在地は、セッションがアクティブな間のみ共有されます。",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "このアクティビティ中、担当の先生はフィールドワークの進捗状況を把握するため、あなたの現在地を確認したいと考えています。現在地は、セッションがアクティブな間のみ共有されます。"
   },
   "team_1_name": "Paul Cerda",
   "team_1_role": "「創始者＆PM」",
@@ -2667,10 +2667,10 @@
       "name": "個人",
       "feature": {
         "1": "個々の教室",
-        "2": "「主要な活動タイプ」",
-        "3": "「パリ・AI」",
+        "2": "主要な活動タイプ",
+        "3": "パリ・AI",
         "4": "証拠収集",
-        "5": "「ポートフォリオビュー」"
+        "5": "ポートフォリオビュー"
       }
     },
     "school": {
@@ -2678,56 +2678,56 @@
       "feature": {
         "1": "多くの教室",
         "2": "多重管理",
-        "3": "「組織分析」",
+        "3": "組織分析",
         "4": "優先サポート"
       }
     },
     "district": {
       "name": "区",
       "feature": {
-        "1": "「全地区展開」",
-        "2": "「カスタム統合」",
-        "3": "「専用のオンボーディング」",
+        "1": "全地区展開",
+        "2": "カスタム統合",
+        "3": "専用のオンボーディング",
         "4": "優先順位 + SLAサポート"
       }
     },
     "homeschool": {
-      "name": "「ホームスクール」",
+      "name": "ホームスクール",
       "feature": {
-        "1": "「ファミリーアカウント」",
-        "2": "「ポートフォリオPDFエクスポート」",
-        "3": "「州の準拠報告」",
+        "1": "ファミリーアカウント",
+        "2": "ポートフォリオPDFエクスポート",
+        "3": "州の準拠報告",
         "4": "標準マッピング"
       }
     },
-    "contact_footer_pre": "「お問い合せください。ご希望のプランと価格をご確認いただけます。」",
+    "contact_footer_pre": "お問い合せください。ご希望のプランと価格をご確認いただけます。",
     "contact_for_pricing": "お問い合わせください",
-    "contact_team": "「チームに連絡」",
+    "contact_team": "チームに連絡",
     "contact_footer_link": "連絡する"
   },
   "compliance": {
     "ferpa": {
-      "name": "「ファミリー・エデュケーショナル・ライツ・アンド・プライバシー・アクト」",
+      "name": "ファミリー・エデュケーショナル・ライツ・アンド・プライバシー・アクト",
       "region": "アメリカ合衆国"
     },
     "gdpr": {
       "region": "ユーロ・連合",
-      "name": "「一般的なデータ保護規制」"
+      "name": "一般的なデータ保護規制"
     },
     "ccpa": {
       "region": "カリフォルニア、米国",
-      "name": "「カリフォルニア消費者プライバシー法」"
+      "name": "カリフォルニア消費者プライバシー法"
     },
     "lgpd": {
       "region": "ブラジル",
-      "name": "「個人情報保護法」"
+      "name": "個人情報保護法"
     },
     "pipeda": {
       "region": "カナダ",
       "name": "個人情報保護法及び電子文書に関する法律"
     },
     "coppa": {
-      "name": "「子供のオンラインプライバシー保護法」",
+      "name": "子供のオンラインプライバシー保護法",
       "region": "アメリカ合衆国"
     }
   },
@@ -2841,6 +2841,11 @@
       }
     },
     "teacher": {
+      "1": {
+        "title": "「アクティビティの作成 — 河川調査」",
+        "prompt": "自動的に導く質問を生成します。",
+        "badge": "設定"
+      },
       "2": {
         "badge": "監視",
         "prompt": "「アクティブな生徒：{count}名 · フィールドノート提出：{count}件 · フィードバック待ち：{count}件」",
@@ -2850,11 +2855,6 @@
         "prompt": "「あなたの件名と位置に基づいて、Bloomの活動アイデアが4つあります…」",
         "title": "「 Peri AI 提案 」",
         "badge": "人工知能アシスト"
-      },
-      "1": {
-        "title": "「アクティビティの作成 — 河川調査」",
-        "prompt": "自動的に導く質問を生成します。",
-        "badge": "設定"
       }
     },
     "parent": {
@@ -2903,11 +2903,11 @@
           }
         },
         "task": {
-          "2": {
-            "text": "水循環ラボ ✓"
-          },
           "1": {
             "text": "「エコシステム観察 ✓」"
+          },
+          "2": {
+            "text": "水循環ラボ ✓"
           },
           "3": {
             "text": "首都訪問 — 保留中"
@@ -2956,11 +2956,11 @@
       },
       "2": {
         "stat": {
-          "2": {
-            "label": "部分"
-          },
           "1": {
             "label": "会議"
+          },
+          "2": {
+            "label": "部分"
           },
           "3": {
             "label": "隙間"
@@ -2986,14 +2986,14 @@
       },
       "3": {
         "stat": {
+          "1": {
+            "label": "活動"
+          },
           "2": {
             "label": "証拠"
           },
           "3": {
             "label": "ページ"
-          },
-          "1": {
-            "label": "活動"
           }
         },
         "task": {
@@ -3081,5 +3081,6 @@
   "cta_privacy_note": "「FERPAとCOPPAに準拠しています。生徒のデータは決して売却または共有されません。」",
   "components_localeswitcher": {
     "aria_label_select_language": "言語を選択"
-  }
+  },
+  "pricing_nav_label": "料金"
 }

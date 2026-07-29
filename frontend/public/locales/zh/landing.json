@@ -1,4 +1,5 @@
 {
+  "500": "五百",
   "student": {
     "headline": "学习发生在外面",
     "intro": "在人工智能探索伙伴Peri的指引下，探索身边的世界，记录所见所闻，并建立一个真实世界发现的作品集。",
@@ -82,7 +83,7 @@
   "story_text_1": "亚里士多德边走边教。他认为，移动的行为——无论是穿梭于空间之中、探索问题，还是进行观察——本身就是一种思考方式。两千年后，研究结果也印证了这一点。",
   "story_text_2": "学习随身携带。老师设计活动，将课程带入真实世界。学生探索、记录并反思。Peri指导调查。学习终于开始移动。",
   "team_title": "教师打造，为教师而用",
-  "testimonials_title": "educator 说",
+  "testimonials_title": "教育者怎么说",
   "activitybuilderupdated": {
     "create_activity": "创建活动",
     "basic_information": "基本信息",
@@ -155,29 +156,29 @@
   "select": "-- 请选择 --",
   "footer": {
     "brand_title": "Peripateticware",
-    "brand_desc": "户外、基于场地的学习，适用于学生、教师和家庭。",
+    "brand_desc": "学习发生在户外。",
     "product_title": "产品",
     "product_tools": "工具",
     "product_demo": "示例",
     "company_title": "公司",
-    "company_about": "关于",
+    "company_about": "关于我们",
     "company_team": "队",
     "company_blog": "博客",
-    "company_careers": "职业",
+    "company_careers": "招聘",
     "resources_title": "资源",
     "resources_docs": "文档",
     "resources_guides": "指南",
     "resources_api": "接口",
     "resources_support": "支持",
     "company_name": "Peripateticware",
-    "all_rights": "所有权保留。",
-    "product_features": "特色",
-    "product_pricing": "定价",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "all_rights": "版权所有。",
+    "product_features": "功能",
+    "product_pricing": "价格",
+    "legal_title": "法律信息",
+    "legal_privacy": "隐私政策",
+    "legal_terms": "服务条款",
+    "legal_cookies": "Cookie 政策",
+    "legal_contact": "联系我们",
     "privacy_protected": "数据受到以下框架保护",
     "company_contact": "联系",
     "product_privacy_engine": "隐私引擎",
@@ -834,8 +835,8 @@
         "desc": "您的孩子提出一种原因或机制。皮里用证据问题而不是提示来测试它。"
       },
       "5": {
-        "phase": "申请",
-        "desc": "Peri 想知道這對新情況意味著什麼。 knowledge 變得可攜式。"
+        "phase": "应用",
+        "desc": "Peri 想知道这对新情况意味着什么。知识变得可迁移。"
       }
     },
     "badge": "会见佩里",
@@ -1898,7 +1899,9 @@
     "gdpr_card_desc": "《通用数据保护条例》。适用于欧盟境内的学校和学生。数据处理仅在合法依据下进行；学生和家长享有完全的访问权和删除权。",
     "ferpa_card_desc": "《家庭教育权利与隐私法》。该法案规范了美国学校中学生教育记录的查阅权限。未经学校或家长书面同意，绝不会共享学生数据。",
     "ccpa_card_desc": "《加利福尼亚州消费者隐私法》。适用于加利福尼亚州居民。学生和家长可随时要求披露、删除个人信息，或选择不允许出售其个人信息。",
-    "coppa_card_desc": "《儿童在线隐私保护法》。适用于美国境内13岁以下的用户。在收集未成年人的任何个人数据之前，均须征得家长同意。"
+    "coppa_card_desc": "《儿童在线隐私保护法》。适用于美国境内13岁以下的用户。在收集未成年人的任何个人数据之前，均须征得家长同意。",
+    "custom_policy_card_title": "自定义政策",
+    "custom_policy_card_desc": "需要针对特定司法管辖区的规则吗？管理员可以为任何地区、学校或组织创建并发布自定义隐私规则。"
   },
   "capture_photosvideo": "拍照/录像",
   "take_photos_record_videos_and_capture_au": "拍照、录像和录音以记录您的观察和发现。",
@@ -2338,7 +2341,7 @@
     "peripateticware_began_as_a_white_paper_w": "“McGraw-Hill Education内部起草的《漫游软件》白皮书，主张GPS启用的移动设备将改变学习方式——学生在真实场所行走，受结构化询问指导，能以教科书无法做到的方式学习。”",
     "guided_inquiry_that_leads_to_real_knowle": "引导查询，带来真知",
     "sample_exchange_creek_study_grade_5": "流动交换——溪流研究，五年级",
-    "peri_never_gives_the_answer_it_asks_the_": "Peri从不给出答案，它总是问下一个正确的问题。 —— 问题来自精心挑选的库；AI响应需要在本地运行Ollama或使用Anthropic API密钥。\n\n\n(Note: I've preserved the template variables and translated the text directly into fluent, natural Chinese. I did not include any Markdown fences, quotes, notes, formatting, or introductions.)",
+    "peri_never_gives_the_answer_it_asks_the_": "Peri从不给出答案，它总是问下一个正确的问题。—— 问题来自精心挑选的库；AI响应需要在本地运行Ollama或使用Anthropic API密钥。",
     "built_from_a_2007_idea_that_took_until_2": "在2007年萌生的想法，直到2026年才变为可能",
     "the_paper_named_one_problem_it_couldnt_s": "在一場名為「評估」的挑戰面前，這份報告無法提供解決方案。如何衡量在溪床、教堂拱門或城市公園學習而來的成就？到了2026年，人工智慧終於為我們帶來了答案。",
     "from_the_original_2007_paper": "原文（2007年论文）",
@@ -2576,9 +2579,9 @@
     "see_all": "查看全部 {{count}}"
   },
   "pages_sessionpage": {
+    "10003": "√",
     "location_sharing": "位置分享",
-    "your_teacher_wants_to_see_your_location_": "您的老师想查看您在此期间的位置，以便跟踪野外作业进展。只有在活动期间才会分享您的位置。",
-    "10003": "√"
+    "your_teacher_wants_to_see_your_location_": "您的老师想查看您在此期间的位置，以便跟踪野外作业进展。只有在活动期间才会分享您的位置。"
   },
   "professorFieldworkPage": {
     "back": "返回",
@@ -2679,7 +2682,7 @@
             "text": "“历史 — 访问首都”"
           },
           "4": {
-            "text": "portfolio已导出"
+            "text": "作品集已导出"
           }
         }
       },
@@ -2698,11 +2701,11 @@
           }
         },
         "task": {
-          "2": {
-            "text": "水循环实验室 ✓"
-          },
           "1": {
             "text": "生态系统观察✓"
+          },
+          "2": {
+            "text": "水循环实验室 ✓"
           },
           "3": {
             "text": "首都参访 — 待定"
@@ -2882,7 +2885,7 @@
       "name": "个人信息保护法和电子文档法"
     },
     "ferpa": {
-      "name": "familiy教育权利法",
+      "name": "家庭教育权利与隐私法",
       "region": "美国"
     },
     "coppa": {
@@ -2991,7 +2994,7 @@
     "personal": {
       "name": "个性化",
       "feature": {
-        "1": "個別教室",
+        "1": "个别教室",
         "2": "核心活动类型",
         "3": "人工智能 Peri",
         "4": "证据采集",
@@ -3012,7 +3015,7 @@
       "feature": {
         "1": "区域内部署",
         "2": "自定义集成",
-        "3": "“专属入门”",
+        "3": "专属入门",
         "4": "优先级+SLA支持"
       }
     },
@@ -3020,7 +3023,7 @@
       "name": "学习在家",
       "feature": {
         "1": "家庭账号",
-        "2": "“导出PDF文件夹”",
+        "2": "导出PDF文件夹",
         "3": "报告",
         "4": "标准映射"
       }
@@ -3033,7 +3036,6 @@
   "components_landing_storysection": {
     "alt_a_student_walking_through_the_forest_wit": "森林里的学生正在使用移动设备。"
   },
-  "500": "五百",
   "live_sessions": "直播会话",
   "started": "开始",
   "monitor_map": "监控地图",
@@ -3042,5 +3044,6 @@
     "step_upload": "上传",
     "step_parse": "解析",
     "step_save": "保存"
-  }
+  },
+  "pricing_nav_label": "价格"
 }

@@ -117,26 +117,26 @@
     "product_title": "Produit",
     "product_tools": "Outils",
     "product_demo": "Démo",
-    "company_title": "Société",
+    "company_title": "Entreprise",
     "company_about": "À propos",
     "company_team": "Équipe",
     "company_blog": "blog",
-    "company_careers": "Postes",
+    "company_careers": "Carrières",
     "resources_title": "Ressources",
     "resources_docs": "Documentation",
     "resources_guides": "Guide",
     "resources_api": "API",
-    "resources_support": "Support",
+    "resources_support": "Assistance",
     "company_name": "Peripateticware",
-    "brand_desc": "Apprentissage en plein air pour les étudiants, les enseignants et les familles.",
-    "all_rights": "Tous droits réservés",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "brand_desc": "L'apprentissage se passe dehors.",
+    "all_rights": "Tous droits réservés.",
+    "legal_title": "Mentions légales",
+    "legal_privacy": "Politique de confidentialité",
+    "legal_terms": "Conditions d'utilisation",
+    "legal_cookies": "Politique de cookies",
+    "legal_contact": "Contact",
     "product_features": "Fonctionnalités",
-    "product_pricing": "Prix",
+    "product_pricing": "Tarifs",
     "privacy_protected": "Vos données sont protégées dans le cadre de ces référentiels",
     "company_contact": "Contact",
     "product_privacy_engine": "Moteur de confidentialité",
@@ -1477,9 +1477,9 @@
       "subtitle": "Pour les étudiants individuels",
       "price": "Gratuit",
       "feature": {
+        "1": "Observations géolocalisées",
         "2": "Prompts de réflexion alimentés par l'IA",
-        "3": "Progression",
-        "1": "Observations géolocalisées"
+        "3": "Progression"
       },
       "cta": "Démarrer gratuitement",
       "description": "Démarrer avec l'apprentissage en plein air"
@@ -2646,9 +2646,9 @@
     "contact_us": "Contactez-nous"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Partage d'emplacement",
-    "your_teacher_wants_to_see_your_location_": "Votre enseignant souhaite visualiser votre emplacement durant cette activité afin de suivre la progression des travaux de terrain. Votre emplacement n'est partagé qupendant que la session est active.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Votre enseignant souhaite visualiser votre emplacement durant cette activité afin de suivre la progression des travaux de terrain. Votre emplacement n'est partagé qupendant que la session est active."
   },
   "cta_privacy_note": "Conforme à FERPA et COPPA. Les données des étudiants ne sont jamais vendues ni partagées.",
   "field_journal_feature_1": "Capturer sur le terrain — photos, sons et notes écrites géolocalisées avec précision à l'emplacement exact",
@@ -2720,11 +2720,11 @@
     "parent": {
       "1": {
         "stat": {
-          "2": {
-            "label": "Cette semaine"
-          },
           "1": {
             "label": "Activités"
+          },
+          "2": {
+            "label": "Cette semaine"
           },
           "3": {
             "label": "Insignes"
@@ -2750,22 +2750,22 @@
       },
       "2": {
         "stat": {
+          "1": {
+            "label": "Activités"
+          },
           "2": {
             "label": "heures"
           },
           "3": {
             "label": "Implication"
-          },
-          "1": {
-            "label": "Activités"
           }
         },
         "task": {
-          "2": {
-            "text": "Eau cycle lab ✓"
-          },
           "1": {
             "text": "Observation de l'écosystème ✓"
+          },
+          "2": {
+            "text": "Eau cycle lab ✓"
           },
           "3": {
             "text": "Visite de la capitale - en attente"
@@ -2796,18 +2796,18 @@
     },
     "homeschool": {
       "1": {
-        "title": "Aujourd'hui",
+        "title": "Activité du jour",
         "badge": "Actif",
         "subtitle": "Terre · Emma et Lucas",
         "task": {
           "1": {
             "text": "Identifier les types de roches à l'affleurement"
           },
-          "3": {
-            "text": "Erosion photographique"
-          },
           "2": {
             "text": "Mesurer le débit du flux"
+          },
+          "3": {
+            "text": "Erosion photographique"
           },
           "4": {
             "text": "Complet journal d'observation"
@@ -2830,9 +2830,6 @@
         },
         "subtitle": "Texas : Exigences pour l'instruction à domicile",
         "task": {
-          "4": {
-            "text": "Langues et Recherches"
-          },
           "1": {
             "text": "Terre — Systèmes de la Terre ✓"
           },
@@ -2841,6 +2838,9 @@
           },
           "3": {
             "text": "Histoire — Géographie du Texas"
+          },
+          "4": {
+            "text": "Langues et Recherches"
           }
         }
       },
@@ -2884,11 +2884,11 @@
   "compliance": {
     "gdpr": {
       "region": "Union Européenne",
-      "name": "RÈGLEMENT GÉNÉRAL SUR LA PROTECTION DES DONNÉES"
+      "name": "Règlement général sur la protection des données"
     },
     "ccpa": {
       "region": "Californie, États-Unis",
-      "name": "Californian Consumer Privacy Act"
+      "name": "Loi californienne sur la protection de la vie privée des consommateurs"
     },
     "lgpd": {
       "region": "Brésil",
@@ -2899,7 +2899,7 @@
       "name": "Loi sur la protection des renseignements personnels et les documents électroniques"
     },
     "ferpa": {
-      "name": "FERPA",
+      "name": "Loi sur les droits à l'éducation et à la vie privée de la famille",
       "region": "États-Unis"
     },
     "coppa": {
@@ -3004,8 +3004,8 @@
   "pricing_tier": {
     "personal": {
       "feature": {
-        "2": "Activités principales",
         "1": "Classes individuelles",
+        "2": "Activités principales",
         "3": "Peri IA",
         "4": "Capture de preuves",
         "5": "Voir le portfolio"
@@ -3019,7 +3019,7 @@
         "3": "Organisation Analytics",
         "4": "Support prioritaire"
       },
-      "name": "école"
+      "name": "École"
     },
     "district": {
       "name": "Arrondissement",
@@ -3037,7 +3037,7 @@
         "3": "Conformité des états",
         "4": "Cartographie des normes"
       },
-      "name": "école à domicile"
+      "name": "École à domicile"
     },
     "contact_for_pricing": "Contactez-nous pour obtenir un devis",
     "contact_team": "Contacter l'équipe",
@@ -3080,5 +3080,6 @@
   "pages_cookiepolicypage": {
     "helloperipateticwarecom": "hello@peripateticware.com"
   },
-  "localization_notice": "Traduit à l'aide de Mistral LLM pour la commodité des utilisateurs. Pour signaler une traduction de mauvaise qualité, contactez l'administrateur à localization@peripateticware.com."
+  "localization_notice": "Traduit à l'aide de Mistral LLM pour la commodité des utilisateurs. Pour signaler une traduction de mauvaise qualité, contactez l'administrateur à localization@peripateticware.com.",
+  "pricing_nav_label": "Tarifs"
 }

@@ -158,7 +158,7 @@ export function StudentHowItWorksPage(): React.ReactNode {
       {/* AI COACH */}
       <section className="sihw-ai-coach">
         <div className="sihw-container">
-          <h2 className="sihw-section-title">{t("landing:meet_peri", "Meet Peri")}</h2>
+          <h2 className="sihw-section-title">{t("landing:meet_peri.badge", "Meet Peri")}</h2>
           <p className="sihw-section-desc">{t("landing:your_ai_thinking_partner_when_youre_stuc", "Your AI thinking partner. When you're stuck, ask Peri. She'll never give you the answer\u2014just ask the next question.")}
 
           </p>

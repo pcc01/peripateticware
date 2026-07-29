@@ -260,7 +260,7 @@ export function TeacherTourPage(): React.ReactNode {
       {/* PRICING */}
       <section className="ttp-pricing">
         <div className="ttp-container">
-          <h2 className="ttp-section-title">{t("landing:pricing", "Pricing")}</h2>
+          <h2 className="ttp-section-title">{t("landing:pricing_nav_label", "Pricing")}</h2>
 
           <div className="ttp-pricing-cards">
             <div className="ttp-pricing-card">

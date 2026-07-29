@@ -29,39 +29,23 @@
       }
     },
     "parent": {
-      "2": {
-        "stat": {
-          "3": {
-            "label": "Engagement"
-          }
-        },
-        "title": "Progrès hebdomadaire'}, {"
-      },
       "1": {
         "stat": {
           "3": {
             "label": "Insignes"
           }
         }
+      },
+      "2": {
+        "stat": {
+          "3": {
+            "label": "Engagement"
+          }
+        },
+        "title": "Progrès hebdomadaire"
       }
     },
     "homeschool": {
-      "3": {
-        "stat": {
-          "3": {
-            "label": "Pages"
-          }
-        },
-        "task": {
-          "3": {
-            "text": "Couverture des normes ✓"
-          },
-          "4": {
-            "text": "Miniat\u001b[7D\u001b[K\n"
-          }
-        },
-        "prompt": ", "
-      },
       "1": {
         "task": {
           "1": {
@@ -93,6 +77,22 @@
             "text": "Langues — Recherche"
           }
         }
+      },
+      "3": {
+        "stat": {
+          "3": {
+            "label": "Pages"
+          }
+        },
+        "task": {
+          "3": {
+            "text": "Couverture des normes ✓"
+          },
+          "4": {
+            "text": "Miniat\u001b[7D\u001b[K\n"
+          }
+        },
+        "prompt": ", "
       }
     },
     "teacher": {
@@ -103,7 +103,7 @@
         "badge": "Surveillance"
       },
       "3": {
-        "badge": "Assistance par IA'}, {"
+        "badge": "Assistance par IA"
       }
     }
   },
@@ -115,29 +115,6 @@
     "student": "Étudiants",
     "teacher": "Enseignants",
     "homeschool": "Éducateurs à la maison"
-  },
-  "compliance": {
-    "pipeda": {
-      "region": "Canada",
-      "name": "Personal Information Protection and Electronic Documents Act"
-    },
-    "gdpr": {
-      "name": "General Data Protection Regulation"
-    },
-    "ccpa": {
-      "name": "California Consumer Privacy Act"
-    },
-    "lgpd": {
-      "name": "Lei Geral de Proteção de Dados"
-    },
-    "ferpa": {
-      "name": "Loi sur la confidentialit√© des dossiers √©ducatifs des √©tudiants",
-      "region": "√Čtats-Unis"
-    },
-    "coppa": {
-      "name": "Loi sur la protection de la vie priv√©e des enfants en ligne",
-      "region": "États-Unis d'Amérique"
-    }
   },
   "pages_admin_adminhelppage": {
     "placeholder_search_help_topics": "Recherche aide sur les sujets…",
@@ -204,32 +181,6 @@
   },
   "components_landing_storysection": {
     "alt_a_student_walking_through_the_forest_wit": "False"
-  },
-  "pricing_tier": {
-    "personal": {
-      "name": "False",
-      "feature": {
-        "1": "False",
-        "3": "Péri AI",
-        "4": "fr-ca"
-      }
-    },
-    "district": {
-      "feature": {
-        "2": "Priorit√© + Support SLA",
-        "3": "Exportation de PDF de portefeuille"
-      }
-    },
-    "homeschool": {
-      "feature": {
-        "3": "False",
-        "4": "False"
-      }
-    },
-    "contact_for_pricing": "False",
-    "school": {
-      "name": "École'}, {"
-    }
   },
   "meet_peri": {
     "step": {
@@ -330,7 +281,7 @@
     "resources_api": "API",
     "resources_support": "Support",
     "company_contact": "Contact",
-    "legal_contact": "legal contact"
+    "legal_contact": "Contact"
   },
   "team_2_role": "Lorem Ipsum Dolor",
   "team_3_name": "Dolor Sit Amet",

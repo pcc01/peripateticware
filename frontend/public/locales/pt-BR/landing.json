@@ -1,4 +1,5 @@
 {
+  "500": "500 Internal Server Error",
   "student": {
     "headline": "Aprendizado Acontece Fora",
     "intro": "Explore o mundo ao seu redor, capture o que encontrar e construa um portfólio de descobertas do mundo real – guiado por Peri, seu companheiro de inquirição de IA.",
@@ -155,7 +156,7 @@
   "select": "-- Selecionar --",
   "footer": {
     "brand_title": "Peripateticware",
-    "brand_desc": "Aprender ao ar livre e baseado em campo para estudantes, professores e famílias.",
+    "brand_desc": "O aprendizado acontece ao ar livre.",
     "product_title": "Produto",
     "product_tools": "Ferramentas",
     "product_demo": "Demonstração",
@@ -170,14 +171,14 @@
     "resources_api": "API",
     "resources_support": "Suporte",
     "company_name": "Peripateticware",
-    "all_rights": "Todos os direitos reservados",
-    "product_features": "Características",
-    "product_pricing": "Preço",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "all_rights": "Todos os direitos reservados.",
+    "product_features": "Funcionalidades",
+    "product_pricing": "Preços",
+    "legal_title": "Legal",
+    "legal_privacy": "Política de Privacidade",
+    "legal_terms": "Termos de Serviço",
+    "legal_cookies": "Política de Cookies",
+    "legal_contact": "Contato",
     "privacy_protected": "Seus dados estão protegidos sob esses quadros.",
     "company_contact": "Contato",
     "product_privacy_engine": "Máquina de Privacidade",
@@ -1883,7 +1884,9 @@
     "gdpr_card_desc": "Regulamento Geral sobre a Proteção de Dados. Aplica-se a escolas e alunos na União Europeia. Os dados são tratados exclusivamente com base em fundamentos legais; os alunos e os pais têm plenos direitos de acesso e exclusão.",
     "ferpa_card_desc": "Lei de Direitos Educacionais e Privacidade da Família. Regula o acesso aos registros educacionais dos alunos nas escolas dos Estados Unidos. Os dados dos alunos nunca são compartilhados sem o consentimento por escrito da escola ou dos pais.",
     "ccpa_card_desc": "Lei de Privacidade do Consumidor da Califórnia. Aplica-se aos residentes da Califórnia. Alunos e pais podem solicitar o acesso, a exclusão ou a recusa à venda de informações pessoais a qualquer momento.",
-    "coppa_card_desc": "Lei de Proteção à Privacidade Online das Crianças. Aplica-se a usuários menores de 13 anos nos Estados Unidos. O consentimento dos pais é obtido antes da coleta de quaisquer dados pessoais de menores."
+    "coppa_card_desc": "Lei de Proteção à Privacidade Online das Crianças. Aplica-se a usuários menores de 13 anos nos Estados Unidos. O consentimento dos pais é obtido antes da coleta de quaisquer dados pessoais de menores.",
+    "custom_policy_card_title": "Política Personalizada",
+    "custom_policy_card_desc": "Precisa de uma regra específica para uma jurisdição? Os administradores podem criar e publicar regras de privacidade personalizadas para qualquer região, escola ou organização."
   },
   "capture_photosvideo": "Fotografar/vídeo",
   "take_photos_record_videos_and_capture_au": "Fotografar, gravar vídeos e capturar áudio para documentar suas observações e descobertas.",
@@ -2561,9 +2564,9 @@
     "field_work_date": "Trabalho de campo {{data}}"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Compartilhamento de Localização",
-    "your_teacher_wants_to_see_your_location_": "Seu professor deseja ver sua localização durante esta atividade para poder acompanhar o progresso do trabalho de campo. Sua localização será compartilhada apenas enquanto a sessão estiver ativa.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Seu professor deseja ver sua localização durante esta atividade para poder acompanhar o progresso do trabalho de campo. Sua localização será compartilhada apenas enquanto a sessão estiver ativa."
   },
   "professorFieldworkPage": {
     "back": "Voltar",
@@ -2686,11 +2689,11 @@
           }
         },
         "task": {
-          "2": {
-            "text": "Água ciclo de laboratório ✓"
-          },
           "1": {
             "text": "Observação do ecossistema ✓"
+          },
+          "2": {
+            "text": "Água ciclo de laboratório ✓"
           },
           "3": {
             "text": "Visita ao Capitolio - pendente"
@@ -2719,7 +2722,7 @@
     },
     "homeschool": {
       "1": {
-        "title": "Hoje",
+        "title": "Atividade de Hoje",
         "badge": "Ativo",
         "subtitle": "Terra e Ciência · Emma & Lucas",
         "task": {
@@ -2874,7 +2877,7 @@
       "region": "EUA"
     },
     "coppa": {
-      "name": "Crianças Online Proteção de Privacidade Lei",
+      "name": "Lei de Proteção da Privacidade Infantil Online",
       "region": "EUA"
     }
   },
@@ -2979,7 +2982,7 @@
     "personal": {
       "name": "Pessoal",
       "feature": {
-        "1": "Salâs individuais",
+        "1": "Salas individuais",
         "2": "Atividades principais",
         "3": "Peri Inteligência Artificial",
         "4": "Prévia de prova",
@@ -3021,7 +3024,6 @@
   "components_landing_storysection": {
     "alt_a_student_walking_through_the_forest_wit": "Um estudante caminhando pela floresta com um dispositivo móvel"
   },
-  "500": "500 Internal Server Error",
   "m": "minutos",
   "pe": "PR",
   "live_sessions": "Sessões ao Vivo ({count})",
@@ -3041,5 +3043,6 @@
     "step_save": "Salvar",
     "step_upload": "Fazer upload"
   },
-  "seattle_wa": "Seattle, WA"
+  "seattle_wa": "Seattle, WA",
+  "pricing_nav_label": "Preços"
 }

@@ -571,30 +571,30 @@
   },
   "first_name": "First Name",
   "footer": {
-    "all_rights": "all rights",
-    "brand_desc": "brand desc",
+    "all_rights": "All rights reserved.",
+    "brand_desc": "Learning happens outside.",
     "brand_title": "Peripateticware",
-    "company_about": "company about",
+    "company_about": "About",
     "company_blog": "company blog",
-    "company_careers": "company careers",
+    "company_careers": "Careers",
     "company_name": "Peripateticware",
     "company_team": "company team",
-    "company_title": "company title",
-    "legal_contact": "legal contact",
-    "legal_cookies": "legal cookies",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_title": "legal title",
+    "company_title": "Company",
+    "legal_contact": "Contact",
+    "legal_cookies": "Cookie Policy",
+    "legal_privacy": "Privacy Policy",
+    "legal_terms": "Terms of Service",
+    "legal_title": "Legal",
     "product_demo": "product demo",
-    "product_features": "product features",
-    "product_pricing": "product pricing",
-    "product_title": "product title",
-    "product_tools": "product tools",
+    "product_features": "Features",
+    "product_pricing": "Pricing",
+    "product_title": "Product",
+    "product_tools": "Tools",
     "resources_api": "resources api",
     "resources_docs": "resources docs",
     "resources_guides": "resources guides",
-    "resources_support": "resources support",
-    "resources_title": "resources title"
+    "resources_support": "Support",
+    "resources_title": "Resources"
   },
   "for_districts_regions": "For districts & regions",
   "for_entire_schools": "For entire schools",
@@ -742,7 +742,48 @@
   "math": "Math",
   "max": "Max",
   "medium": "Medium",
-  "meet_peri": "Meet Peri",
+  "meet_peri": {
+    "badge": "Meet Peri",
+    "step": {
+      "1": {
+        "phase": "Engage",
+        "desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking."
+      },
+      "2": {
+        "phase": "Observe",
+        "desc": "Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague."
+      },
+      "3": {
+        "phase": "Analyse",
+        "desc": "Peri asks comparison and classification questions. What's similar? What's different? What pattern do you see?"
+      },
+      "4": {
+        "phase": "Explain",
+        "desc": "Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints."
+      },
+      "5": {
+        "phase": "Apply",
+        "desc": "Peri asks what this means for a new situation. Knowledge becomes portable."
+      }
+    },
+    "exchange": {
+      "1": {
+        "text": "You're at the creek bank. Before we measure anything — what's the first thing you notice about the water right here versus ten feet upstream?"
+      },
+      "2": {
+        "text": "It's slower here and there's more mud on the bottom."
+      },
+      "3": {
+        "text": "Good observation. Why do you think the mud settled here and not upstream where the water is faster?"
+      },
+      "4": {
+        "text": "Maybe slower water can't carry as much stuff?"
+      },
+      "5": {
+        "text": "That's the right direction. What could you measure or photograph here to support that idea?"
+      }
+    }
+  },
   "message_sent": "Message sent:",
   "message_the_teacher_directly_from_your_e": "Message the teacher directly from your email. No portal login needed. Responses in their inbox too.",
   "messages": {
@@ -975,7 +1016,46 @@
   "postgresql_16_pgvector": "PostgreSQL 16 + pgvector",
   "preferences": "Preferences",
   "preview_activity": "Preview Activity",
-  "pricing": "Pricing",
+  "pricing": {
+    "personal": {
+      "title": "Personal",
+      "subtitle": "For individual students",
+      "price": "Free",
+      "description": "Get started with outdoor learning",
+      "feature": {
+        "1": "Geo-tagged observations",
+        "2": "AI-powered reflection prompts",
+        "3": "Progress tracking"
+      },
+      "cta": "Start Free"
+    },
+    "school": {
+      "title": "School",
+      "subtitle": "For teachers & classrooms",
+      "description": "Full classroom management",
+      "feature": {
+        "1": "Activity builder",
+        "2": "Student management",
+        "3": "Assessment rubrics",
+        "4": "Parent portal"
+      },
+      "cta": "Contact Sales"
+    },
+    "district": {
+      "title": "District",
+      "subtitle": "For entire districts",
+      "price": "Custom",
+      "description": "Enterprise features & support",
+      "feature": {
+        "1": "Unlimited teachers & students",
+        "2": "Custom integrations",
+        "3": "Dedicated support",
+        "4": "Privacy compliance",
+        "5": "Advanced analytics"
+      },
+      "cta": "Contact Sales"
+    }
+  },
   "primary": "Primary",
   "privacy": {
     "auto_updates_desc": "Privacy rules are versioned and deployed server-side. When a jurisdiction updates its requirements, the platform applies the new rule without any code change on your end.",
@@ -1019,7 +1099,9 @@
     "versioned_rules_title": "Versioned Rules"
   },
   "privacy_config": "🔒 Privacy Config",
-  "privacy_first": "Privacy First",
+  "privacy_first": {
+    "badge": "Privacy & Compliance"
+  },
   "privacy_protected": "✓ Privacy protected",
   "privacypage": {
     "back_to_home": "← Back to Home"
@@ -1505,5 +1587,75 @@
   "work_with_teammates_share_observations_a": "Work with teammates, share observations, and learn from each other's discoveries.",
   "work_with_your_teammates_and_share_your_": "Work with your teammates and share your observations and ideas.",
   "works_across_5_continents_we_handle_the_": "Works across 5 continents. We handle the legal complexity. You handle the learning.",
-  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant."
+  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant.",
+  "pricing_nav_label": "Pricing",
+  "pricing_tier": {
+    "personal": {
+      "name": "Personal",
+      "feature": {
+        "1": "Individual classrooms",
+        "2": "Core activity types",
+        "3": "Peri AI",
+        "4": "Evidence capture",
+        "5": "Portfolio view"
+      }
+    },
+    "school": {
+      "name": "School",
+      "feature": {
+        "1": "Multiple classrooms",
+        "2": "Multi-admin",
+        "3": "Org analytics",
+        "4": "Priority support"
+      }
+    },
+    "district": {
+      "name": "District",
+      "feature": {
+        "1": "District-wide deployment",
+        "2": "Custom integrations",
+        "3": "Dedicated onboarding",
+        "4": "Priority + SLA support"
+      }
+    },
+    "homeschool": {
+      "name": "Homeschool",
+      "feature": {
+        "1": "Family accounts",
+        "2": "Portfolio PDF export",
+        "3": "State compliance reports",
+        "4": "Standards mapping"
+      }
+    },
+    "contact_for_pricing": "Contact us for pricing",
+    "contact_team": "Contact Team",
+    "contact_footer_pre": "Contact our team for pricing details and to find the right plan —",
+    "contact_footer_link": "contact us"
+  },
+  "compliance": {
+    "ferpa": {
+      "name": "Family Educational Rights and Privacy Act",
+      "region": "United States"
+    },
+    "coppa": {
+      "name": "Children's Online Privacy Protection Act",
+      "region": "United States"
+    },
+    "gdpr": {
+      "name": "General Data Protection Regulation",
+      "region": "European Union"
+    },
+    "ccpa": {
+      "name": "California Consumer Privacy Act",
+      "region": "California, US"
+    },
+    "lgpd": {
+      "name": "Lei Geral de Proteção de Dados",
+      "region": "Brazil"
+    },
+    "pipeda": {
+      "name": "Personal Information Protection and Electronic Documents Act",
+      "region": "Canada"
+    }
+  }
 }

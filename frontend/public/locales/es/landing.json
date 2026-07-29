@@ -122,29 +122,29 @@
   "gdpr": "RGPD",
   "footer": {
     "brand_title": "Peripateticware",
-    "brand_desc": "Descripción de la marca",
+    "brand_desc": "El aprendizaje ocurre al aire libre.",
     "product_title": "Producto",
-    "product_features": "Características",
+    "product_features": "Funciones",
     "product_tools": "Herramientas",
-    "product_pricing": "Oferta",
+    "product_pricing": "Precios",
     "product_demo": "Demostración",
-    "company_title": "Compañía",
+    "company_title": "Empresa",
     "company_about": "Acerca de",
     "company_team": "Equipo",
     "company_blog": "Blog",
-    "company_careers": "Trabajos",
+    "company_careers": "Empleo",
     "resources_title": "Recursos",
     "resources_docs": "Documentación",
     "resources_guides": "Guias",
     "resources_api": "API",
     "resources_support": "Soporte",
-    "legal_title": "legal title",
-    "legal_privacy": "legal privacy",
-    "legal_terms": "legal terms",
-    "legal_cookies": "legal cookies",
-    "legal_contact": "legal contact",
+    "legal_title": "Legal",
+    "legal_privacy": "Política de Privacidad",
+    "legal_terms": "Términos de Servicio",
+    "legal_cookies": "Política de Cookies",
+    "legal_contact": "Contacto",
     "company_name": "Peripateticware",
-    "all_rights": "Todos los derechos reservados",
+    "all_rights": "Todos los derechos reservados.",
     "privacy_protected": "Sus datos están protegidos bajo estos marcos",
     "company_contact": "Contacto",
     "product_privacy_engine": "Motor de Privacidad",
@@ -191,9 +191,9 @@
     "district": {
       "subtitle": "Para distritos completos",
       "feature": {
-        "3": "Soporte dedicado",
         "1": "Ilimitados maestros y estudiantes",
         "2": "Integraciones personalizadas",
+        "3": "Soporte dedicado",
         "4": "Cumplimiento de privacidad",
         "5": "Análisis avanzado"
       },
@@ -1184,9 +1184,6 @@
       }
     },
     "exchange": {
-      "5": {
-        "text": "Esa es la dirección correcta. ¿Qué podrías medir o fotografiar aquí para apoyar esa idea?"
-      },
       "1": {
         "text": "Estás en la orilla del arroyo. Antes de medir algo — ¿qué es lo primero que notas sobre el agua aquí en comparación con diez pies aguas arriba?"
       },
@@ -1198,6 +1195,9 @@
       },
       "4": {
         "text": "¿Puede que el agua más lenta no pueda llevar tanta carga?"
+      },
+      "5": {
+        "text": "Esa es la dirección correcta. ¿Qué podrías medir o fotografiar aquí para apoyar esa idea?"
       }
     },
     "badge": "Conoce a Peri"
@@ -2646,14 +2646,19 @@
     "contact_us": "Contáctenos"
   },
   "pages_sessionpage": {
+    "10003": "✓",
     "location_sharing": "Compartir ubicación",
-    "your_teacher_wants_to_see_your_location_": "Tu maestro desea ver tu ubicación durante esta actividad para poder rastrear el progreso del trabajo de campo. Solo se comparte tu ubicación mientras la sesión está activa.",
-    "10003": "✓"
+    "your_teacher_wants_to_see_your_location_": "Tu maestro desea ver tu ubicación durante esta actividad para poder rastrear el progreso del trabajo de campo. Solo se comparte tu ubicación mientras la sesión está activa."
   },
   "cta_privacy_note": "Cumple con FERPA y COPPA. Los datos de los estudiantes nunca se venden ni se comparten.",
   "field_journal_title": "El Diario de Campo: Aprendizaje que perdura",
   "phone_carousel": {
     "student": {
+      "1": {
+        "badge": "Observación",
+        "title": "Wetlands Visit",
+        "prompt": "¿Qué patrones observas en cómo se arreglan las plantas cerca del borde del agua?"
+      },
       "2": {
         "prompt": "Encontraste tres insectos diferentes. ¿Qué tienen en común y qué los hace diferentes?",
         "title": "¿Qué pregunta Peri?",
@@ -2663,11 +2668,6 @@
         "badge": "Analizar",
         "prompt": "Excelente observación. ¿Qué crees que causó el cambio de color en las hojas de este lado del árbol?",
         "title": "Pruebas capturadas"
-      },
-      "1": {
-        "badge": "Observación",
-        "title": "Wetlands Visit",
-        "prompt": "¿Qué patrones observas en cómo se arreglan las plantas cerca del borde del agua?"
       }
     },
     "teacher": {
@@ -2724,23 +2724,23 @@
           "1": {
             "text": "Ecosistema observación ✓"
           },
-          "3": {
-            "text": "Visita a la capital — pendiente"
-          },
           "2": {
             "text": "Agua ciclo laboratorio ✓"
+          },
+          "3": {
+            "text": "Visita a la capital — pendiente"
           }
         },
         "title": "Semanal",
         "stat": {
-          "3": {
-            "label": "Compromiso"
-          },
           "1": {
             "label": "Actividades"
           },
           "2": {
             "label": "Horas"
+          },
+          "3": {
+            "label": "Compromiso"
           }
         },
         "badge": "En el buen camino"
@@ -2749,15 +2749,15 @@
         "subtitle": "Desde Sra. Smith · Hoy",
         "prompt": "Emma demostró gran iniciativa al identificar plantas nativas. Portfolio de bocetos aprobado.",
         "stat": {
-          "3": {
-            "label": "Cartera",
-            "value": "Listo"
-          },
           "1": {
             "label": "Este Semana"
           },
           "2": {
             "label": "Este mes"
+          },
+          "3": {
+            "label": "Cartera",
+            "value": "Listo"
           }
         },
         "title": "Recientes",
@@ -2767,36 +2767,36 @@
     "homeschool": {
       "1": {
         "task": {
-          "3": {
-            "text": "Erosión fotográfica"
-          },
           "1": {
             "text": "Identificar tipos de roca en afloramiento"
           },
           "2": {
             "text": "Medir la tasa de flujo del arroyo"
           },
+          "3": {
+            "text": "Erosión fotográfica"
+          },
           "4": {
             "text": "Registro de observaciones completo"
           }
         },
-        "title": "Hoy's Actividad",
+        "title": "Actividad de Hoy",
         "badge": "Activo",
         "subtitle": "Tierra · Emma y Lucas"
       },
       "2": {
         "task": {
-          "3": {
-            "text": "Historia — Geografía de Texas"
-          },
-          "4": {
-            "text": "Investigación de Arte"
-          },
           "1": {
             "text": "Ciencia - Sistemas Terrestres ✓"
           },
           "2": {
             "text": "Matemáticas — Medición ✓"
+          },
+          "3": {
+            "text": "Historia — Geografía de Texas"
+          },
+          "4": {
+            "text": "Investigación de Arte"
           }
         },
         "title": "Cubrimiento de Normas",
@@ -2817,17 +2817,17 @@
       "3": {
         "subtitle": "Primavera de 2026 · Emma Rivera",
         "task": {
-          "3": {
-            "text": "Estándares cubiertos ✓"
-          },
-          "4": {
-            "text": "Miniaturas de pruebas ✓"
-          },
           "1": {
             "text": "Página de portada ✓"
           },
           "2": {
             "text": "Actividad registrada ✓"
+          },
+          "3": {
+            "text": "Estándares cubiertos ✓"
+          },
+          "4": {
+            "text": "Miniaturas de pruebas ✓"
           }
         },
         "prompt": "El PDF del portafolio está listo. Incluye todos los campos de informes estatales TX requeridos.",
@@ -2861,7 +2861,7 @@
       "region": "Estados Unidos"
     },
     "coppa": {
-      "name": "LOPD",
+      "name": "Ley de Protección de la Privacidad Infantil en Línea",
       "region": "Estados Unidos"
     },
     "gdpr": {
@@ -2976,10 +2976,10 @@
     },
     "district": {
       "feature": {
-        "3": "Onboarding personalizado",
-        "4": "Soporte prioritario + SLA",
         "1": "Distrito completo",
-        "2": "Integraciones personalizadas"
+        "2": "Integraciones personalizadas",
+        "3": "Onboarding personalizado",
+        "4": "Soporte prioritario + SLA"
       },
       "name": "Distrito"
     },
@@ -3081,5 +3081,6 @@
   },
   "field_journal_feature_2": "Aumenta en tu escritorio — cuatro secciones estructuradas (Análisis, Reflexión, Conexiones, Preguntas) te guían a pensar más profundamente después de la actividad.",
   "monitor_map": "Mapa de Monitoreo",
-  "field_journal_feature_3": "Comentarios de profesores integrados — los profesores anota y aprueban entradas; las notas aprobadas fluyen automáticamente al portafolio"
+  "field_journal_feature_3": "Comentarios de profesores integrados — los profesores anota y aprueban entradas; las notas aprobadas fluyen automáticamente al portafolio",
+  "pricing_nav_label": "Precios"
 }
