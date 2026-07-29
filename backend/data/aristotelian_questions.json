@@ -1,0 +1,2786 @@
+[
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What colour is this object? Does it change when you move it into shadow?",
+    "follow_up": "Look closely — are all parts the same colour?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Is this object living or non-living? How can you tell?",
+    "follow_up": "What evidence helps you decide?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many legs does this creature have? Count them twice to check.",
+    "follow_up": "What else do you notice about how it moves?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Is this object hard, soft, rough, or smooth? How did you find out?",
+    "follow_up": "Can you find something nearby with the opposite texture?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Do you think this object would float or sink in water? What makes you think that?",
+    "follow_up": "What would you need to test your idea?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Close your eyes for ten seconds. What sounds can you hear?",
+    "follow_up": "Which sound was loudest? Which was quietest?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this leaf fell off the tree?",
+    "follow_up": "What season do you think it is? What else tells you that?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is the biggest thing you can see from here, and what is the smallest?",
+    "follow_up": "How do you know which one is bigger?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What texture does this surface have? How many different textures can you find nearby?",
+    "follow_up": "Which texture appears most often and why might that be?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why do you think this plant is growing toward the light? What would happen if you turned it around?",
+    "follow_up": "What does this tell you about what plants need?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the soil here differ from soil somewhere else you have seen?",
+    "follow_up": "What might cause those differences?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "How many of your steps does it take to walk around this object? Estimate first, then count.",
+    "follow_up": "How close was your estimate?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why might one side of this tree have more moss than the other side?",
+    "follow_up": "Which direction is that side facing?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "What pattern do you notice in how the leaves are arranged on this stem?",
+    "follow_up": "Can you find another plant with the same pattern?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Sort three things you can see into groups. What rule did you use?",
+    "follow_up": "Could someone else sort them a different way?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What evidence here shows it rained recently?",
+    "follow_up": "How long ago do you think it rained?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What evidence tells you this rock was formed by water, heat, or pressure?",
+    "follow_up": "What type of rock is this and what does its formation tell you about this place's history?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What measurements would you need to test whether this slope affects the speed of water flow?",
+    "follow_up": "How would you control for other variables?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What evidence suggests this area has been disturbed — by animals, weather, or people?",
+    "follow_up": "What clues tell you which one it was?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the temperature in the shade compare to direct sun here? Why?",
+    "follow_up": "How would you measure that difference precisely?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What signs of insect activity can you find, and what do they tell you about this ecosystem?",
+    "follow_up": "Which insects seem most common here, and why might that be?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "Why might one side of this tree trunk look different from the other?",
+    "follow_up": "What does that tell you about this location?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Classify three organisms you observe by how they get their energy.",
+    "follow_up": "What evidence supports each classification?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What would you need to measure to determine whether this spot gets more sunlight than a nearby spot?",
+    "follow_up": "How would that affect what grows here?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What data would confirm or disprove your hypothesis about this ecosystem?",
+    "follow_up": "What sample size would you need for your conclusion to be reliable?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Design an experiment to determine what factor most influences plant growth in this location.",
+    "follow_up": "What controls would you include?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What confounding variables would make it hard to conclude human activity caused the changes you observe here?",
+    "follow_up": "How would you control for them?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Propose a testable hypothesis for why plant diversity differs between this spot and open ground nearby.",
+    "follow_up": "What would falsify your hypothesis?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would you quantify biodiversity at this site, and what are the limitations of your method?",
+    "follow_up": "What method would give a more accurate picture?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence here would support or challenge the idea that this ecosystem is in equilibrium?",
+    "follow_up": "What would you monitor over time to test that?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a monitoring protocol you could repeat monthly to track a change you predict will happen here.",
+    "follow_up": "What would count as a meaningful change?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What abiotic factor — light, water, soil, or temperature — seems most limiting for growth here?",
+    "follow_up": "What evidence supports that conclusion?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Count how many of each shape you can find. Which shape appears most?",
+    "follow_up": "Can you arrange them from most to least common?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many trees can you count from where you're standing?",
+    "follow_up": "Did you count any twice? How do you know?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Which is longer: your shoe or this stick? How can you check?",
+    "follow_up": "What could you use to measure them exactly?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "pattern",
+    "question_text": "Look at this fence, path, or wall. Is there a pattern? What repeats?",
+    "follow_up": "What comes next in the pattern?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Find three round things and three straight-edged things nearby.",
+    "follow_up": "Which group was easier to find? Why?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "measurement",
+    "question_text": "About how many of your footsteps wide is this path?",
+    "follow_up": "Would a grown-up's footsteps give the same number? Why or why not?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Which is heavier: a leaf or a rock? How can you tell without a scale?",
+    "follow_up": "What clues does weight give you about what something is made of?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many sides does this shape have? Can you find another shape with the same number?",
+    "follow_up": "What's different about the two shapes even though the sides match?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Estimate the height of this tree in metres. What method could you use to check your estimate?",
+    "follow_up": "How close was your estimate? What caused the difference?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "Look at the cracks in this surface. What pattern do they follow? Why might they grow that way?",
+    "follow_up": "Can you sketch the pattern and predict where the next crack would appear?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Estimate how many of this object would fit end-to-end across this space.",
+    "follow_up": "How would you check your estimate without measuring every single one?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "What pattern do you see in the branching of this plant?",
+    "follow_up": "Does the same pattern repeat at a smaller or larger scale?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "How could you estimate the number of leaves on this tree without counting every one?",
+    "follow_up": "What sampling method would make your estimate more accurate?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Compare the size of two similar objects nearby. About what fraction of one is the other?",
+    "follow_up": "How confident are you in that fraction, and why?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What shapes can you find repeated in this structure or landscape?",
+    "follow_up": "Why might that shape be common here?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "If you paced off this space, about how many square metres is it?",
+    "follow_up": "What could make your estimate too big or too small?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "How would you calculate the area of this irregular space using only a measuring tape?",
+    "follow_up": "What is your margin of error?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Estimate the angle of this slope. How would you check your estimate?",
+    "follow_up": "How does the angle affect what you'd expect to find growing here?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "What ratio describes the spacing between these objects?",
+    "follow_up": "Does that ratio stay consistent across the whole area?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "How would you estimate the volume of this object without submerging it in water?",
+    "follow_up": "What assumptions does your method rely on?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "Compare the density of objects in this area to a similar area elsewhere. How would you measure density here?",
+    "follow_up": "What might explain a difference?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "If you wanted to prove this path gets more foot traffic than that one, what data would you collect?",
+    "follow_up": "What would count as convincing evidence?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Using only your own body as a ruler, how would you estimate the perimeter of this space?",
+    "follow_up": "What's your margin of error, and why?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "How would you estimate the total mass of leaf litter on the ground in this area?",
+    "follow_up": "What sampling approach would make this practical?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What statistical test would best determine whether the distribution of plants here is random or clustered?",
+    "follow_up": "What does the result tell you about the environment?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "measurement",
+    "question_text": "Design a sampling method to estimate the total number of a specific plant across this entire area without counting every one.",
+    "follow_up": "What error would your method introduce?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "Does the branching pattern you see follow a predictable mathematical ratio, like the golden ratio? How would you test that?",
+    "follow_up": "What would it mean if it doesn't?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What sample size would you need to be confident about an average measurement across this whole space?",
+    "follow_up": "How does variability in your samples affect that number?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Model how the shape of this hill would change the flow of water across it. What data would test your model?",
+    "follow_up": "What would prove your model wrong?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would you calculate the probability of finding a specific object at a random point in this area?",
+    "follow_up": "What assumptions does your probability model require?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "measurement",
+    "question_text": "What are the limitations of estimating this object's size using only proportional comparison to a known object?",
+    "follow_up": "What method would reduce that error?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design an experiment using only measurements you can take by hand to test whether this area's slope predicts where plants grow.",
+    "follow_up": "What controls would strengthen your conclusion?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is the oldest thing you can see here? What makes you think it's old?",
+    "follow_up": "What is the newest thing you can see?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Do you see any signs that people have been here before you? What are they?",
+    "follow_up": "Do you think a person made them on purpose or by accident?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "What is made by people here, and what is made by nature?",
+    "follow_up": "How can you tell the difference?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think someone built a path or bench in this spot?",
+    "follow_up": "Would you have chosen the same spot?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What materials do you see used to build things here — wood, stone, metal?",
+    "follow_up": "Which material do you think lasts the longest outside?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Does this place look like it's used a lot or a little? What tells you that?",
+    "follow_up": "What would change if more people started using it?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "comparison",
+    "question_text": "Does anything here look different from how you think it looked 100 years ago?",
+    "follow_up": "What do you think has stayed the same?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why might this spot have been a good place for people to gather long ago?",
+    "follow_up": "Is it still a good place to gather today?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What materials was this building made from? Where do you think those materials came from?",
+    "follow_up": "What does that tell you about when it was built and who built it?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "Why do you think people settled near this water source rather than further away?",
+    "follow_up": "What other resources would they have needed nearby?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What is the oldest human-made object you can find here, and how can you estimate its age?",
+    "follow_up": "What clues help you guess how old it is?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why might this spot have been chosen for a road, path, or building instead of somewhere nearby?",
+    "follow_up": "What would have made another spot less useful?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "How do you think this place looked before people built here?",
+    "follow_up": "What evidence lets you picture that?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What tools or technology would people have needed to build what you see here?",
+    "follow_up": "How is that different from tools used today?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this structure was built to face this particular direction?",
+    "follow_up": "What natural factor might explain that choice?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What would you look for to figure out how long ago this was built?",
+    "follow_up": "Where could you find that information if you can't tell just by looking?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What physical evidence at this site tells you something about its past use?",
+    "follow_up": "What questions would you need primary sources to answer?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "Why do you think this settlement or structure grew in this particular direction over time?",
+    "follow_up": "What would you need to confirm that theory?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the way this space is used today differ from how it was likely used a century ago?",
+    "follow_up": "What evidence supports your comparison?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What signs of repair, rebuilding, or change over time can you find here?",
+    "follow_up": "What might have caused each change?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What economic or practical reason might explain why this place developed the way it did?",
+    "follow_up": "What evidence supports that reason?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "If this site had no historical records, what could you still learn from its physical layout alone?",
+    "follow_up": "What would remain a mystery without documents?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How might this place have looked different to someone visiting 50 years ago versus today?",
+    "follow_up": "What evidence lets you picture both versions?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What does the wear and aging you see here tell you about how this place has been used over time?",
+    "follow_up": "Which parts show the most wear, and why?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What claims could you make about this site based on physical evidence alone, without documents?",
+    "follow_up": "What are the limits of physical evidence as a historical source?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What are the limits of using only physical evidence, without written records, to reconstruct this site's history?",
+    "follow_up": "What kind of claim would be irresponsible to make from physical evidence alone?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What broader historical, economic, or political forces might explain why this place exists in its current form?",
+    "follow_up": "How would you research that connection further?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Propose a research question this site raises that primary sources could help answer.",
+    "follow_up": "What primary sources would you look for?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "Whose history does this site tell, and whose history might be missing from what's visible here?",
+    "follow_up": "How would you go about recovering the missing perspective?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What does the preservation — or lack of preservation — of this site suggest about how it's been valued over time?",
+    "follow_up": "Who gets to decide what's preserved?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "How might this site's history be interpreted differently by different groups of people?",
+    "follow_up": "What evidence would each interpretation rely on?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "If you were documenting this site for future historians, what would you record that isn't obvious at first glance?",
+    "follow_up": "Why would that detail matter fifty years from now?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What colours, shapes, and textures do you see in front of you right now?",
+    "follow_up": "Which is most eye-catching and why?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is your favorite color you can see right now? Where else do you see that color?",
+    "follow_up": "Is it exactly the same shade everywhere, or does it change?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Which looks smoother to you, and which looks rougher? How can you tell just by looking?",
+    "follow_up": "Would touching them tell you something different?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What shapes can you find in the clouds, rocks, or leaves around you?",
+    "follow_up": "What does that shape remind you of?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Where is the light coming from right now? How can you tell?",
+    "follow_up": "What has a shadow, and which way does it point?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "Find something that is bright and something that is dull nearby.",
+    "follow_up": "What makes one look brighter than the other?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "If you could only use three colors to draw this scene, which three would you choose?",
+    "follow_up": "Why those three?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "comparison",
+    "question_text": "What looks the most different from everything else around it?",
+    "follow_up": "What makes it stand out?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the light here change the appearance of colours compared to indoors?",
+    "follow_up": "How would an artist capture that difference?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "If you drew this scene, what would you put in the very center, and why?",
+    "follow_up": "What would you leave out entirely?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "How do the colors here change from close up to far away?",
+    "follow_up": "Why might distance affect how a color looks?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What line — straight, curved, or jagged — is most common in what you see?",
+    "follow_up": "How does that kind of line make the scene feel?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "Compare the textures of two natural materials here. How would you show that difference in a drawing?",
+    "follow_up": "What art tool would help show texture best?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "How does the time of day seem to be affecting the colors and shadows you see?",
+    "follow_up": "How might this scene look different at a different time of day?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What pattern of light and dark do you notice here?",
+    "follow_up": "Where is the darkest spot, and where is the brightest?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "comparison",
+    "question_text": "If you had to describe this place using only shapes, what three shapes would you use?",
+    "follow_up": "Which shape appears most often?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What compositional choices would you make to capture this scene? What would you include or exclude and why?",
+    "follow_up": "What mood do you want to convey and how does your composition support it?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "How does the balance of open space and detail here affect how the scene feels?",
+    "follow_up": "Would adding or removing detail change that feeling?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How would a photograph of this scene differ from a painting of it in what it could communicate?",
+    "follow_up": "What could a painting show that a photo couldn't?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What mood does the lighting here create, and what specifically produces that mood?",
+    "follow_up": "How would changing the light change the mood?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "If you had to choose one focal point for a composition of this scene, what would it be and why?",
+    "follow_up": "What would draw the eye away from it?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the color palette here compare to a place you know that feels completely different?",
+    "follow_up": "What does color contribute to that feeling?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What here was clearly shaped by human design versus natural process? How can you tell?",
+    "follow_up": "Does knowing that change how you'd represent it?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What repeating visual rhythm — in spacing, shape, or color — do you notice here?",
+    "follow_up": "How would you use that rhythm in a composition?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "How does the context of this place — its history, function, or community — affect how you would represent it?",
+    "follow_up": "What artistic choices communicate that context to a viewer who has never been here?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What emotional response is this place designed or evolved to produce, and through what visual means?",
+    "follow_up": "Is that response universal, or does it depend on the viewer?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "observation",
+    "question_text": "If you were making a series of works about this place, what would each piece emphasize differently?",
+    "follow_up": "What would unify the series?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How might an artist from a different culture or era represent this place differently than you would?",
+    "follow_up": "What assumptions shape your own approach?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What visual tension — between order and chaos, or natural and built — exists in this scene?",
+    "follow_up": "How would you choose to resolve or emphasize that tension?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "What symbolic meaning could this place hold in a work of art, beyond its literal appearance?",
+    "follow_up": "What visual choices would communicate that symbolism?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "Is there a 'best' vantage point to represent this place, or does the idea of a single best view break down here? Why?",
+    "follow_up": "What would be lost by choosing just one?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "comparison",
+    "question_text": "How would you represent the passage of time at this location within a single still image?",
+    "follow_up": "What visual technique would suggest time passing?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What three words best describe what you see right now?",
+    "follow_up": "Can you use those words in a sentence?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is one new word you learned today, and what does it describe?",
+    "follow_up": "Can you use it in a sentence about this place?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Is this place quiet or noisy? What word describes the sound best?",
+    "follow_up": "What's making that sound?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "If this place could talk, what is the first thing it would say?",
+    "follow_up": "Why do you think it would say that?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What does this place smell like? Find a word that describes it.",
+    "follow_up": "Does that smell remind you of anywhere else?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "Find something soft and something sharp. What word describes each one?",
+    "follow_up": "Which word was harder to think of?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Tell a story in three sentences about what might have happened here before you arrived.",
+    "follow_up": "What clues gave you that idea?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is the most interesting thing you can see? Describe it without naming what it is.",
+    "follow_up": "Could someone guess what it is from your description?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write a precise description of this object so that someone who cannot see it could identify it.",
+    "follow_up": "What details are most important to include?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write three sentences that use your senses — sight, sound, and touch — to describe this place.",
+    "follow_up": "Which sense gave you the most interesting detail?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "What is this place similar to, and what is it different from?",
+    "follow_up": "What comparison would help someone picture it best?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Choose one object here and write a riddle about it without naming it directly.",
+    "follow_up": "What clue was the trickiest to write?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What word best captures the feeling of this place? Why that word and not another?",
+    "follow_up": "What details support that word choice?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Write a short explanation of why you think this place looks the way it does.",
+    "follow_up": "What evidence did you use in your explanation?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "If this place were a character, what would its personality be like?",
+    "follow_up": "What details make you think that?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write directions to this exact spot that a stranger could follow without a map.",
+    "follow_up": "What landmark did you use to make the directions clear?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What specific details from this place would you use as evidence in an argument about its importance?",
+    "follow_up": "How do you decide which details are relevant?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What figurative language — a simile or metaphor — could you use to describe this place?",
+    "follow_up": "Why does that comparison fit better than a literal description?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What tone would best suit a piece of writing about this place — serious, playful, mysterious? Why?",
+    "follow_up": "What detail here supports that tone?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "If you were writing a persuasive piece about protecting this place, what would be your strongest piece of evidence?",
+    "follow_up": "What counterargument would you need to address?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write an opening sentence for a story that begins in this exact spot.",
+    "follow_up": "What mood does your opening sentence set?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would a description of this place differ depending on who was describing it — a scientist versus a poet?",
+    "follow_up": "Try writing one sentence from each perspective."
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What word in your description of this place is doing the most work? Could you replace it with something stronger?",
+    "follow_up": "What made you choose the word you did?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What three pieces of sensory evidence would convince someone this place is worth visiting?",
+    "follow_up": "Which piece of evidence is most convincing, and why?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What is the most precise claim you can make about this place that is fully supported by what you observe?",
+    "follow_up": "What would weaken that claim?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What would weaken the claim you just made? How would you address that weakness in your writing?",
+    "follow_up": "Is your claim still defensible after considering the weakness?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What perspective or bias might shape how you're describing this place right now?",
+    "follow_up": "How would someone with a different background describe it differently?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "observation",
+    "question_text": "Write a paragraph about this place using only concrete, sensory language — no abstract or emotional words allowed.",
+    "follow_up": "What was hardest to describe without using an abstract word?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "Compare two possible titles for a piece of writing about this place. Which better captures its essence, and why?",
+    "follow_up": "What does the weaker title miss?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What rhetorical purpose would a description of this place serve in an argument versus a memoir?",
+    "follow_up": "How would the same details be used differently in each?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Draft a thesis statement about this place that you could support with only what you can observe right now.",
+    "follow_up": "What's the strongest piece of evidence for that thesis?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "If you had to cut half the details from your description of this place, which would you keep and why?",
+    "follow_up": "What does that choice reveal about what matters most to you here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What living things can you count around you right now?",
+    "follow_up": "How did you decide what counts as living?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Is this a plant or an animal? What tells you the difference?",
+    "follow_up": "Can you find one of each nearby?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many different kinds of leaves can you find? Are any exactly the same?",
+    "follow_up": "What's different between two leaves that look similar?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Does this plant or creature look like it's growing, resting, or moving? How can you tell?",
+    "follow_up": "What would you expect to see if you came back tomorrow?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "Find something with fur, something with feathers, and something with neither.",
+    "follow_up": "Which was hardest to find?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this bug is under a rock instead of out in the open?",
+    "follow_up": "What would happen if you moved the rock?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is the smallest living thing you can find? What is the biggest?",
+    "follow_up": "How do you know they're both alive?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Does this plant look healthy or unhealthy? What makes you say that?",
+    "follow_up": "What might have caused it to look that way?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Sort three living things you see by whether they're plants, animals, or something else, like fungi.",
+    "follow_up": "Was anything hard to classify? Why?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "How many different species of plant can you find within a few steps of where you're standing?",
+    "follow_up": "Which one seems most common here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why might insects prefer this plant over the one next to it?",
+    "follow_up": "What would you look for to test your idea?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How is this plant adapted to survive in this specific spot — sun, shade, wet, or dry?",
+    "follow_up": "What would happen if you moved it somewhere very different?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What evidence of an animal can you find without seeing the animal itself?",
+    "follow_up": "What does that evidence tell you about the animal's size or habits?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this tree has more branches on one side than the other?",
+    "follow_up": "What direction does the fuller side face?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "classification",
+    "question_text": "What features would you use to group the insects or bugs you find here into types?",
+    "follow_up": "Which feature is most useful for telling them apart?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What do the living things here seem to need most — water, light, or shelter? What's your evidence?",
+    "follow_up": "How would you test whether you're right?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What relationship do you notice between two different living things here — do they help, compete, or ignore each other?",
+    "follow_up": "What evidence supports your answer?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What signs of a food chain can you piece together just from what you observe here?",
+    "follow_up": "What's missing that you'd need to confirm it?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the plant life differ between a sunny patch and a shaded patch nearby?",
+    "follow_up": "What does that tell you about each plant's needs?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What adaptation does this organism have that helps it survive specifically in this environment?",
+    "follow_up": "What would happen to it in a very different environment?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence here suggests this area supports a healthy or struggling ecosystem?",
+    "follow_up": "What single piece of evidence would change your assessment the most?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "classification",
+    "question_text": "How would you classify the relationship between this plant and the insects on it — helpful, harmful, or neutral?",
+    "follow_up": "What would confirm your classification?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What role might this organism play in its ecosystem — producer, consumer, or decomposer?",
+    "follow_up": "What evidence supports that role?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "Why might biodiversity be higher in this spot than in a nearby, more disturbed area?",
+    "follow_up": "What would you measure to confirm that difference?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence here would let you assess this ecosystem's resilience to a disturbance like drought or fire?",
+    "follow_up": "What data would you need over time to confirm your assessment?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Propose a hypothesis about competitive exclusion between two species you observe here.",
+    "follow_up": "How would you test it without disturbing the ecosystem?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would you compare the genetic diversity you'd expect in this population versus an isolated, smaller population?",
+    "follow_up": "What observable clues hint at population size here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What human impact, if any, is visible in this ecosystem, and how might it affect long-term biodiversity?",
+    "follow_up": "What evidence would show recovery versus continued decline?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a non-invasive study to determine which pollinators are most important to this plant community.",
+    "follow_up": "What would count as strong evidence for your conclusion?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What selective pressures might explain a trait you observe in an organism here?",
+    "follow_up": "How would you distinguish that from random variation?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How would you determine whether this ecosystem is more similar to a stable climax community or an early successional stage?",
+    "follow_up": "What evidence points each way?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a citizen-science protocol that could track this ecosystem's biodiversity over several years using only a smartphone.",
+    "follow_up": "What would make your data reliable despite being collected by non-experts?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What does the air feel like right now — warm, cool, still, or windy?",
+    "follow_up": "How can you tell without a thermometer?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Touch the ground. Is it wet, dry, warm, or cool?",
+    "follow_up": "What might have made it that way?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What color is the sky right now, and does it look the same in every direction?",
+    "follow_up": "What might change the color of the sky later today?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Find something made of rock and something made of wood.",
+    "follow_up": "How is the rock different from the wood?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What is the water near you doing — moving, still, dripping, or none at all?",
+    "follow_up": "What tells you which one it is?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this spot has more plants than that one?",
+    "follow_up": "What's different about the two spots?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What do you notice about the shadows right now compared to earlier?",
+    "follow_up": "What caused the shadows to change?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "About how warm does it feel here compared to a spot in full sun?",
+    "follow_up": "What would you use to check your guess?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why do you think there's more water in the soil here than over there?",
+    "follow_up": "What's different about the ground in each spot?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What signs of weather from the last few days can you find here?",
+    "follow_up": "How long do you think those signs will last?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "comparison",
+    "question_text": "How does the air feel different close to the ground versus standing up?",
+    "follow_up": "What might explain that difference?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "What pattern do you see in where moss or lichen grows on rocks or trees here?",
+    "follow_up": "What do all those spots have in common?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What evidence tells you whether this water source is moving fast or slow?",
+    "follow_up": "What would change if it moved faster?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "How could you estimate the wind speed here without an instrument?",
+    "follow_up": "What clues does moving vegetation give you?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What evidence here shows erosion happening, and how fast might it be happening?",
+    "follow_up": "What would speed up or slow down that erosion?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How does the plant cover here compare to a spot with more foot traffic?",
+    "follow_up": "What does that comparison tell you about disturbance?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What chemical or physical process do you think shaped this surface?",
+    "follow_up": "What evidence rules out the other possibility?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What would you measure to determine if this water source is safe to drink untreated?",
+    "follow_up": "Why wouldn't looking at it be enough?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would you compare the microclimate here to an open field nearby?",
+    "follow_up": "What variables would you need to control to make a fair comparison?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence would tell you whether this ecosystem has reached a stable state or is still changing?",
+    "follow_up": "What would you expect to see differently in five years?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence supports or challenges the idea that this location's climate has shifted in recent decades?",
+    "follow_up": "What data would you need that you can't collect just by looking?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What feedback loop might explain why this area looks the way it does?",
+    "follow_up": "Would that loop tend to stabilize or amplify change here?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "How reliable would a single day's observation be for drawing conclusions about this ecosystem's health?",
+    "follow_up": "What would make your conclusion more reliable?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Propose a mechanism for how this landscape feature likely formed over time.",
+    "follow_up": "What evidence would you need to test that mechanism?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a long-term study to determine whether this ecosystem is a net carbon source or sink.",
+    "follow_up": "What confounding factors would threaten your conclusion?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What would it take to convincingly argue that a specific factor, not just correlation, explains what you observe here?",
+    "follow_up": "What alternative explanation would you need to rule out?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Point to something small, something medium, and something big.",
+    "follow_up": "How did you decide which was medium?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "pattern",
+    "question_text": "Clap once for every tree you see. How many claps did you do?",
+    "follow_up": "Could you count them a faster way?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many corners does this object have?",
+    "follow_up": "Find something with more corners and something with fewer."
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Which is closer to you: that rock or that tree? How do you know?",
+    "follow_up": "What would make it hard to tell from far away?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "measurement",
+    "question_text": "About how many hand-spans wide is this object?",
+    "follow_up": "Would a grown-up's hand give a different number?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "classification",
+    "question_text": "Sort five things by size, from smallest to biggest.",
+    "follow_up": "Was anything hard to place in order?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Estimate how many steps to the nearest tree, then count to check.",
+    "follow_up": "How far off was your estimate?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "pattern",
+    "question_text": "What repeating pattern of colors or shapes can you find here?",
+    "follow_up": "What would come next if the pattern kept going?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "About how many of this smaller object would equal the length of that longer one?",
+    "follow_up": "How would you check your estimate?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "Which has more surface area: this leaf or your hand? How would you find out for sure?",
+    "follow_up": "What method did you use to compare them?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "Estimate the perimeter of this object using only your hand as a ruler.",
+    "follow_up": "What's a source of error in your method?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "What geometric shape does this object's outline most resemble?",
+    "follow_up": "How close is it to a perfect version of that shape?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "measurement",
+    "question_text": "How would you estimate this object's weight without a scale, using something you already know the weight of?",
+    "follow_up": "How confident are you in your estimate?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "Compare the spacing of two different natural patterns you see. Which is more regular?",
+    "follow_up": "What would make a pattern 'regular' mathematically?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "How would you calculate the surface area of this irregular object using only a ruler?",
+    "follow_up": "What shape would you approximate it with?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "pattern",
+    "question_text": "Does this object show line symmetry, rotational symmetry, both, or neither?",
+    "follow_up": "How did you test for symmetry?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "How would you estimate this hill's slope as a percentage using only your own height?",
+    "follow_up": "What assumption does your method depend on?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What data would you need to determine whether this area's terrain is unusually steep compared to typical land?",
+    "follow_up": "Where would you find a baseline for comparison?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "measurement",
+    "question_text": "How would you use similar triangles to estimate the height of something too tall to measure directly?",
+    "follow_up": "What measurements would you need to take?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What would make an estimate based on a single sample here unreliable?",
+    "follow_up": "How many samples would you need for confidence?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "pattern",
+    "question_text": "Does the arrangement you see here follow an arithmetic or geometric pattern, or neither?",
+    "follow_up": "How would you test which one it is?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "measurement",
+    "question_text": "What's the difference between precision and accuracy in a measurement you just took here?",
+    "follow_up": "Which one matters more for your purpose?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What statistical measure would best summarize the variation you see in size among similar objects here?",
+    "follow_up": "Why that measure over another?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "measurement",
+    "question_text": "Design a method using only trigonometry to measure something here you cannot physically reach.",
+    "follow_up": "What would introduce the most error in your method?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a mathematical model that predicts how this landscape feature would change over the next decade.",
+    "follow_up": "What data would you need to validate your model?"
+  },
+  {
+    "subject": "math",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "What are the limitations of using a simple average to describe the typical size of what you're observing here?",
+    "follow_up": "What would a better summary statistic capture that an average misses?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is one thing here that a person made?",
+    "follow_up": "What is one thing here that nobody made?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Do you see anything here that looks very old?",
+    "follow_up": "What makes something look old to you?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Have people walked here before you today? How can you tell?",
+    "follow_up": "How many people do you think have visited?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think there's a path here instead of just walking through the grass?",
+    "follow_up": "Would you have made the path the same way?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What would you tell a friend about this place if they had never seen it?",
+    "follow_up": "What's the most important thing to mention?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Does this place look like somewhere people work, play, or both?",
+    "follow_up": "What tells you that?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What clues tell you who takes care of this place?",
+    "follow_up": "What would happen if nobody took care of it?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Why do you think this spot was chosen over other nearby spots for what's here now?",
+    "follow_up": "What would make a spot a bad choice?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "If this place had to be described in a museum exhibit, what would the label say?",
+    "follow_up": "What object here would you put on display?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "How do you think the people who first used this place traveled to get here?",
+    "follow_up": "What evidence supports your guess?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What would you photograph here to show someone in the future how this place looked today?",
+    "follow_up": "Why would that photo matter later?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "How is this place similar to or different from a historical place you've learned about?",
+    "follow_up": "What's the most important difference?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What decision by past people is still visible in how this place is laid out?",
+    "follow_up": "Would that decision be made the same way today?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What would an archaeologist notice here that a regular visitor might miss?",
+    "follow_up": "What tools would they use to find it?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How might this place have served a completely different purpose in the past?",
+    "follow_up": "What evidence would confirm or rule that out?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What natural feature here likely influenced a human decision about this place?",
+    "follow_up": "How certain are you of that influence?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What would remain of this place if it were abandoned for 100 years?",
+    "follow_up": "What would disappear first?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "Whose voices or perspectives are represented by what's visible here, and whose are not?",
+    "follow_up": "How would you find the missing perspective?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What long-term consequence of a past decision is still shaping this place today?",
+    "follow_up": "Was that consequence intended?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What would you need to verify before trusting a plaque, sign, or story told about this place?",
+    "follow_up": "What would make a source here unreliable?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How might two different historians disagree about the significance of this place?",
+    "follow_up": "What evidence would each rely on?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What role did power, money, or politics likely play in shaping what you see here?",
+    "follow_up": "What evidence supports that role?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What is the strongest argument you could make about this place's historical significance using only what's visible?",
+    "follow_up": "What's the weakest part of that argument?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "If you had to argue this place should be preserved, what historical case would you make?",
+    "follow_up": "What would the counterargument be?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a research plan to trace how this specific place has changed hands or purposes over the last century.",
+    "follow_up": "What sources would be hardest to find?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "How would a historian's own time period and background shape how they'd interpret this place?",
+    "follow_up": "How does that affect your own interpretation right now?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is the prettiest thing you can see right now?",
+    "follow_up": "What makes it pretty to you?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Point to something rough and something smooth.",
+    "follow_up": "Which would be more fun to draw?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What two colors do you see touching each other right now?",
+    "follow_up": "Do they look good together or not? Why?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Is this shadow long or short right now?",
+    "follow_up": "What would make it longer or shorter?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "Which is bigger up close: your hand or that leaf? Does that change far away?",
+    "follow_up": "Why does distance change how big things look?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What sound would you draw if you could turn sound into a picture?",
+    "follow_up": "What color or shape would represent that sound?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "If you had only a pencil, what part of this scene would be hardest to draw? Why?",
+    "follow_up": "What would make it easier?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "How does this place look different in bright light versus shade?",
+    "follow_up": "Which lighting do you like better for a picture?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What's in the foreground, middle, and background of what you see?",
+    "follow_up": "Which layer is most interesting to you?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "How does the wind, if there is any, change what you'd draw right now compared to a still day?",
+    "follow_up": "What would show motion in a still picture?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "comparison",
+    "question_text": "Compare the colors here to a black-and-white photo of the same place. What would be lost?",
+    "follow_up": "What single color would you keep if you could only choose one?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What's the visual 'story' this scene tells in one glance?",
+    "follow_up": "What's the next thing your eye moves to after the first?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What element here breaks the pattern of everything around it?",
+    "follow_up": "Does that make it more or less interesting to draw?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "Would this scene work better as a wide view or a close-up? Why?",
+    "follow_up": "What would each choice emphasize?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "How does the season or weather affect the mood of this scene?",
+    "follow_up": "How would you show that mood without literally drawing weather?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What's the most 'photogenic' spot within view, and why does it work?",
+    "follow_up": "What's actually happening compositionally there?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would this scene look different rendered in a completely different art style, like abstract versus realistic?",
+    "follow_up": "What would each style reveal or hide?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What choice by whoever designed or shaped this space communicates something intentional?",
+    "follow_up": "Do you think that choice succeeds?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What would you crop out of this scene to make a stronger composition, and why?",
+    "follow_up": "What does removing it change?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "How does scale — what's near versus far — create depth in what you're looking at?",
+    "follow_up": "What technique would you use to show that depth on paper?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How would this place be represented differently in a tourism photo versus a documentary photo?",
+    "follow_up": "What does each choose to emphasize or hide?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "What single visual element could you add or remove to completely change how this scene feels?",
+    "follow_up": "Why would that one change matter so much?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "Is there an ethical dimension to how you'd choose to represent this place — what to include or leave out?",
+    "follow_up": "Who might be affected by that choice?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "observation",
+    "question_text": "If this scene were the cover of a book, what genre would it suggest, and why?",
+    "follow_up": "What detail gives away that genre?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "How could you use this place as a visual metaphor for an abstract idea, like change or permanence?",
+    "follow_up": "What specific visual choice would carry that meaning?"
+  },
+  {
+    "subject": "art",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How does the way you're seeing this place right now differ from how a camera would capture it?",
+    "follow_up": "What does human perception add that a lens can't?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is one sound word — like buzz or crunch — that fits this place?",
+    "follow_up": "What made you think of that word?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "If this place were a color, what color would it be?",
+    "follow_up": "Why that color?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What's one word that describes how this place makes you feel?",
+    "follow_up": "What detail here matches that feeling?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "Tell someone in one sentence what this place is like.",
+    "follow_up": "What word in your sentence is most important?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What is this place like, and what is it not like?",
+    "follow_up": "Which comparison is easier to explain?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What's the first thing you'd tell a friend to notice here?",
+    "follow_up": "Why would you point that out first?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write two sentences describing this place: one using only sight, one using only sound.",
+    "follow_up": "Which sentence paints a clearer picture?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "comparison",
+    "question_text": "What's a place you've been before that this reminds you of?",
+    "follow_up": "What's different about the two places?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Describe this place using only action words — no describing words allowed.",
+    "follow_up": "What was hard about using only action words?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "Write a sentence explaining why you think this place looks the way it does.",
+    "follow_up": "What clue supports your explanation?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "Write a short paragraph as if you were a visitor seeing this place for the very first time.",
+    "follow_up": "What would surprise a first-time visitor most?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What single detail here would you use to hook a reader's attention in a story's first line?",
+    "follow_up": "Why would that detail work?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What's a word most people wouldn't think to use to describe this place, but that fits well?",
+    "follow_up": "What makes it a better fit than an obvious word?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What three details would convince a skeptical reader that this place is worth writing about?",
+    "follow_up": "Which detail is your strongest?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How would a description of this place change if it were written for a travel brochure instead of a diary?",
+    "follow_up": "What would each version leave out?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "What's the most overused word people might use to describe this place, and what could replace it?",
+    "follow_up": "Why is the replacement stronger?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What's the effect of describing this place using short sentences versus long ones?",
+    "follow_up": "Try writing one short and one long sentence about it."
+  },
+  {
+    "subject": "language",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What's the weakest word choice in a first attempt at describing this place, and how would you fix it?",
+    "follow_up": "What made the original weak?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "observation",
+    "question_text": "How does the specific word choice you use here shape a reader's emotional response?",
+    "follow_up": "What's an alternative word that would shift that response?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What is this place's function in a narrative — setting, symbol, or obstacle — if it appeared in a story?",
+    "follow_up": "What choice made you land on that function?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How would description differ between a first-person and third-person account of standing here?",
+    "follow_up": "What does each perspective gain or lose?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What assumption are you making about your reader when you describe this place a certain way?",
+    "follow_up": "How would that description change for a different audience?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What's the single most persuasive sentence you could write about this place, and what makes it persuasive?",
+    "follow_up": "What rhetorical device does it rely on?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "observation",
+    "question_text": "Write an opening line for two completely different genres — mystery and comedy — both set exactly here.",
+    "follow_up": "What word choice signals each genre?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Draft a claim about this place you could defend in a formal essay using only firsthand observation.",
+    "follow_up": "What's your strongest supporting detail?"
+  },
+  {
+    "subject": "language",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "How does the act of writing about this place change how you actually perceive it?",
+    "follow_up": "What did you notice only because you were trying to describe it?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "How many different living things can you touch gently without hurting them?",
+    "follow_up": "How did you know it was safe to touch?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "Find something that grows and something that doesn't.",
+    "follow_up": "How can you tell something is growing?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "Does this plant have flowers, just leaves, or both?",
+    "follow_up": "What might change about it later in the year?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why do you think this animal or bug is moving the way it is?",
+    "follow_up": "What is it probably trying to do?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "understand",
+    "observation_type": "observation",
+    "question_text": "What do you think this plant needs to stay alive?",
+    "follow_up": "What here shows it's getting what it needs — or not?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "classification",
+    "question_text": "Find two living things that look related to each other.",
+    "follow_up": "What makes them look related?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "observation",
+    "question_text": "What part of this plant do you think does the most work to keep it alive?",
+    "follow_up": "Why did you choose that part?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "causation",
+    "question_text": "Why might this animal's home be built in this exact spot?",
+    "follow_up": "What would make a bad spot for its home?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "classification",
+    "question_text": "Group the living things you see by where they live — ground, air, or water.",
+    "follow_up": "Which group has the most members here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "causation",
+    "question_text": "How do you think this plant is spreading its seeds?",
+    "follow_up": "What evidence supports your idea?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "apply",
+    "observation_type": "comparison",
+    "question_text": "Compare how two different plants here are getting sunlight.",
+    "follow_up": "Which strategy seems to work better in this spot?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "observation",
+    "question_text": "What behavior have you seen from a living thing here that seems purposeful rather than random?",
+    "follow_up": "What purpose might it serve?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What might happen to this organism if its main food source disappeared?",
+    "follow_up": "What would it likely do instead?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "evidence",
+    "question_text": "What physical feature helps this organism avoid being eaten?",
+    "follow_up": "How effective do you think that feature is?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "comparison",
+    "question_text": "How do the survival strategies of a plant and an animal here differ?",
+    "follow_up": "What do they have in common despite the differences?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What evidence suggests this organism is well-suited or poorly-suited to this specific environment?",
+    "follow_up": "What would 'poorly-suited' look like here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "evidence",
+    "question_text": "What signs of reproduction — seeds, eggs, offspring — can you find here?",
+    "follow_up": "What does that tell you about the season?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "6-8",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What would you need to observe over multiple visits to confirm a population here is growing or shrinking?",
+    "follow_up": "Why can't one visit tell you that?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What symbiotic relationship, if any, can you identify between two organisms here?",
+    "follow_up": "How would you distinguish mutualism from parasitism?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "comparison",
+    "question_text": "How would you compare this habitat's carrying capacity for a species to a very different habitat?",
+    "follow_up": "What factor would matter most in that comparison?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What would constitute strong versus weak evidence that a species here is native rather than introduced?",
+    "follow_up": "What would you need to research beyond what you can see?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "What genetic or environmental factor might explain variation you see among individuals of the same species here?",
+    "follow_up": "How would you test which factor matters more?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "causation",
+    "question_text": "What tradeoff does this organism seem to have made — for example, growth versus defense? What's your evidence?",
+    "follow_up": "Would a different tradeoff work better here?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "evidence",
+    "question_text": "Design a simple field experiment to test whether a specific factor limits this population's growth.",
+    "follow_up": "What would you need to hold constant?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "create",
+    "observation_type": "causation",
+    "question_text": "Propose an evolutionary explanation for a trait you observe, and identify what evidence would support or undermine it.",
+    "follow_up": "What's the strongest alternative explanation you'd need to rule out?"
+  },
+  {
+    "subject": "biology",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "How would you evaluate whether an intervention to help this ecosystem would do more good than harm?",
+    "follow_up": "What unintended consequence would concern you most?"
+  }
+]

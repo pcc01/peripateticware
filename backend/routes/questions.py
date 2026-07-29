@@ -18,8 +18,10 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+from pathlib import Path
 from typing import Optional
 import io
+import json
 import logging
 import sqlite3
 import tempfile
@@ -33,97 +35,25 @@ router = APIRouter(prefix="/api/v1/aristotelian-questions", tags=["questions"])
 
 
 # ── Seed data ─────────────────────────────────────────────────────────────────
-# Format: (subject, grade_band, bloom_level, observation_type, question_text, follow_up)
+# Lives in data/aristotelian_questions.json, not inline here — at 190+ entries
+# (up from the original 26) a literal Python list stopped being something
+# anyone could reasonably review or edit by hand. Loaded once at import time;
+# format is {subject, grade_band, bloom_level, observation_type,
+# question_text, follow_up} per entry.
 
-SEED_QUESTIONS = [
-    # Science — observation
-    ("science", "k-2",  "remember",  "observation",
-     "What colour is this object? Does it change when you move it into shadow?",
-     "Look closely — are all parts the same colour?"),
-    ("science", "k-2",  "understand", "classification",
-     "Is this object living or non-living? How can you tell?",
-     "What evidence helps you decide?"),
-    ("science", "3-5",  "understand", "observation",
-     "What texture does this surface have? How many different textures can you find nearby?",
-     "Which texture appears most often and why might that be?"),
-    ("science", "3-5",  "apply",     "causation",
-     "Why do you think this plant is growing toward the light? What would happen if you turned it around?",
-     "What does this tell you about what plants need?"),
-    ("science", "3-5",  "analyse",   "comparison",
-     "How does the soil here differ from soil somewhere else you have seen?",
-     "What might cause those differences?"),
-    ("science", "6-8",  "analyse",   "causation",
-     "What evidence tells you this rock was formed by water, heat, or pressure?",
-     "What type of rock is this and what does its formation tell you about this place's history?"),
-    ("science", "6-8",  "evaluate",  "evidence",
-     "What measurements would you need to test whether this slope affects the speed of water flow?",
-     "How would you control for other variables?"),
-    ("science", "9-12", "evaluate",  "evidence",
-     "What data would confirm or disprove your hypothesis about this ecosystem?",
-     "What sample size would you need for your conclusion to be reliable?"),
-    ("science", "9-12", "create",    "causation",
-     "Design an experiment to determine what factor most influences plant growth in this location.",
-     "What controls would you include?"),
+_SEED_PATH = Path(__file__).parent.parent / "data" / "aristotelian_questions.json"
 
-    # Mathematics
-    ("math", "k-2",  "remember",  "observation",
-     "Count how many of each shape you can find. Which shape appears most?",
-     "Can you arrange them from most to least common?"),
-    ("math", "3-5",  "apply",     "measurement",
-     "Estimate the height of this tree in metres. What method could you use to check your estimate?",
-     "How close was your estimate? What caused the difference?"),
-    ("math", "3-5",  "analyse",   "pattern",
-     "Look at the cracks in this surface. What pattern do they follow? Why might they grow that way?",
-     "Can you sketch the pattern and predict where the next crack would appear?"),
-    ("math", "6-8",  "analyse",   "measurement",
-     "How would you calculate the area of this irregular space using only a measuring tape?",
-     "What is your margin of error?"),
-    ("math", "9-12", "evaluate",  "evidence",
-     "What statistical test would best determine whether the distribution of plants here is random or clustered?",
-     "What does the result tell you about the environment?"),
 
-    # History
-    ("history", "3-5",  "understand", "observation",
-     "What materials was this building made from? Where do you think those materials came from?",
-     "What does that tell you about when it was built and who built it?"),
-    ("history", "3-5",  "analyse",   "causation",
-     "Why do you think people settled near this water source rather than further away?",
-     "What other resources would they have needed nearby?"),
-    ("history", "6-8",  "analyse",   "evidence",
-     "What physical evidence at this site tells you something about its past use?",
-     "What questions would you need primary sources to answer?"),
-    ("history", "9-12", "evaluate",  "evidence",
-     "What claims could you make about this site based on physical evidence alone, without documents?",
-     "What are the limits of physical evidence as a historical source?"),
+def _load_seed_questions() -> list[tuple]:
+    with open(_SEED_PATH, encoding="utf-8") as f:
+        rows = json.load(f)
+    return [
+        (r["subject"], r["grade_band"], r["bloom_level"], r["observation_type"], r["question_text"], r["follow_up"])
+        for r in rows
+    ]
 
-    # Art
-    ("art", "k-2",  "remember",  "observation",
-     "What colours, shapes, and textures do you see in front of you right now?",
-     "Which is most eye-catching and why?"),
-    ("art", "3-5",  "analyse",   "comparison",
-     "How does the light here change the appearance of colours compared to indoors?",
-     "How would an artist capture that difference?"),
-    ("art", "6-8",  "evaluate",  "observation",
-     "What compositional choices would you make to capture this scene? What would you include or exclude and why?",
-     "What mood do you want to convey and how does your composition support it?"),
-    ("art", "9-12", "create",    "causation",
-     "How does the context of this place — its history, function, or community — affect how you would represent it?",
-     "What artistic choices communicate that context to a viewer who has never been here?"),
 
-    # Language arts
-    ("language", "k-2",  "remember",  "observation",
-     "What three words best describe what you see right now?",
-     "Can you use those words in a sentence?"),
-    ("language", "3-5",  "apply",     "observation",
-     "Write a precise description of this object so that someone who cannot see it could identify it.",
-     "What details are most important to include?"),
-    ("language", "6-8",  "analyse",   "evidence",
-     "What specific details from this place would you use as evidence in an argument about its importance?",
-     "How do you decide which details are relevant?"),
-    ("language", "9-12", "evaluate",  "evidence",
-     "What is the most precise claim you can make about this place that is fully supported by what you observe?",
-     "What would weaken that claim?"),
-]
+SEED_QUESTIONS = _load_seed_questions()
 
 
 # ── Startup table creation ────────────────────────────────────────────────────
@@ -145,32 +75,46 @@ CREATE_INDEXES_SQL = [
     "CREATE INDEX IF NOT EXISTS idx_aq_subject ON aristotelian_questions(subject)",
     "CREATE INDEX IF NOT EXISTS idx_aq_grade   ON aristotelian_questions(grade_band)",
     "CREATE INDEX IF NOT EXISTS idx_aq_bloom   ON aristotelian_questions(bloom_level)",
+    # Backs ON CONFLICT (question_text) below — question_text is the natural
+    # key here (there's no other stable identifier in the seed JSON), so a
+    # unique index on it is what makes reseeding idempotent.
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_aq_question_text_unique ON aristotelian_questions(question_text)",
 ]
 
 SEED_SQL = """
 INSERT INTO aristotelian_questions
     (subject, grade_band, bloom_level, observation_type, question_text, follow_up)
 VALUES (:subject, :grade_band, :bloom_level, :observation_type, :question_text, :follow_up)
-ON CONFLICT DO NOTHING
+ON CONFLICT (question_text) DO NOTHING
 """
 
 
 async def ensure_questions_table(engine):
-    """Create table and seed if empty — called from main.py startup."""
+    """
+    Create table/indexes and seed any new questions — called from main.py
+    startup on every boot, not just when the table is empty. The seed JSON
+    started at 26 questions and grew to 190+; gating the insert loop behind
+    `count == 0` meant an already-seeded dev database from the 26-question
+    era would never pick up the rest without a manual wipe. ON CONFLICT
+    (question_text) DO NOTHING (backed by the unique index above) makes
+    re-running the full seed list on every startup cheap and safe — already-
+    present rows are skipped, only genuinely new ones get inserted.
+    """
     try:
         async with engine.begin() as conn:
             await conn.execute(text(CREATE_TABLE_SQL))
             for idx_sql in CREATE_INDEXES_SQL:
                 await conn.execute(text(idx_sql))
-            count = (await conn.execute(text("SELECT COUNT(*) FROM aristotelian_questions"))).scalar()
-            if count == 0:
-                for q in SEED_QUESTIONS:
-                    await conn.execute(text(SEED_SQL), dict(zip(
-                        ["subject", "grade_band", "bloom_level", "observation_type", "question_text", "follow_up"], q
-                    )))
-                logger.info(f"✅ Aristotelian questions seeded ({len(SEED_QUESTIONS)} questions)")
+            before = (await conn.execute(text("SELECT COUNT(*) FROM aristotelian_questions"))).scalar()
+            for q in SEED_QUESTIONS:
+                await conn.execute(text(SEED_SQL), dict(zip(
+                    ["subject", "grade_band", "bloom_level", "observation_type", "question_text", "follow_up"], q
+                )))
+            after = (await conn.execute(text("SELECT COUNT(*) FROM aristotelian_questions"))).scalar()
+            if after > before:
+                logger.info(f"✅ Aristotelian questions: {after - before} new question(s) seeded ({after} total)")
             else:
-                logger.info(f"✅ Aristotelian questions table ready ({count} questions)")
+                logger.info(f"✅ Aristotelian questions table ready ({after} questions)")
     except Exception as e:
         logger.warning(f"⊘ Questions table setup skipped: {e}")
 
