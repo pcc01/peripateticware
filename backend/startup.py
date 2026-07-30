@@ -1236,6 +1236,16 @@ async def apply_student_phase7_migrations(engine) -> None:
         # against the real table and has been removed. See GPS_MAP_HANDOFF.md
         # addendum for the full incident writeup.
         "CREATE TABLE IF NOT EXISTS session_events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), session_id UUID NOT NULL, student_id UUID, event_type VARCHAR(50) NOT NULL, phase VARCHAR(30), metadata JSONB, created_at TIMESTAMP DEFAULT NOW())",
+        # Every live-tracking poll (GET /sessions/{id}/events, every 5s-180s
+        # depending on tier -- see services/polling.py) filters on session_id
+        # and orders by created_at. Without this, that's a full sequential
+        # scan of the whole cross-tenant table on every single poll tick --
+        # invisible on a small/empty dev table, but the actual CPU cost
+        # driver once session_events accumulates real volume (multi-week
+        # Projects especially, since they run long enough to log far more
+        # events than a single field trip). Composite index serves both the
+        # equality filter and the sort in one scan.
+        "CREATE INDEX IF NOT EXISTS idx_session_events_session_id ON session_events(session_id, created_at)",
     ]
     for _s in _stmts:
         try:

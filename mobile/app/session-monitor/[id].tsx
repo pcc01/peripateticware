@@ -18,7 +18,9 @@ import MapView, { UrlTile, Marker } from 'react-native-maps';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchSessionEvents, SessionEvent } from '@/src/api/liveTracking';
 
-const POLL_INTERVAL_MS = 5_000;
+// Fallback until a pollIntervalSeconds nav param (tiered polling — see
+// backend/services/polling.py) is available, e.g. deep-linked directly.
+const DEFAULT_POLL_INTERVAL_MS = 5_000;
 const OSM_TILE_URL = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 interface KnownLocation {
@@ -39,10 +41,12 @@ function agoLabel(iso: string, t: (k: string, d: string, o?: any) => any): strin
 export default function SessionMonitorScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const { id, studentName, activityTitle, lat, lng } = useLocalSearchParams<{ id: string; studentName?: string; activityTitle?: string; lat?: string; lng?: string }>();
+  const { id, studentName, activityTitle, lat, lng, pollIntervalSeconds } = useLocalSearchParams<{ id: string; studentName?: string; activityTitle?: string; lat?: string; lng?: string; pollIntervalSeconds?: string }>();
   const initialLat = lat ? parseFloat(lat) : null;
   const initialLng = lng ? parseFloat(lng) : null;
   const hasInitialLocation = initialLat != null && !isNaN(initialLat) && initialLng != null && !isNaN(initialLng);
+  const parsedPollSeconds = pollIntervalSeconds ? parseInt(pollIntervalSeconds, 10) : NaN;
+  const pollIntervalMs = !isNaN(parsedPollSeconds) && parsedPollSeconds > 0 ? parsedPollSeconds * 1000 : DEFAULT_POLL_INTERVAL_MS;
 
   const [location, setLocation] = useState<KnownLocation | null>(null);
   const [events, setEvents] = useState<SessionEvent[]>([]);
@@ -79,9 +83,9 @@ export default function SessionMonitorScreen() {
     setEvents([]);
     setLocation(null);
     poll().finally(() => setLoading(false));
-    const interval = setInterval(poll, POLL_INTERVAL_MS);
+    const interval = setInterval(poll, pollIntervalMs);
     return () => clearInterval(interval);
-  }, [id, poll]);
+  }, [id, poll, pollIntervalMs]);
 
   return (
     <SafeAreaView testID="session-monitor-screen" style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>

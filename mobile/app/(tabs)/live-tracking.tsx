@@ -6,7 +6,7 @@
 // implemented; REST polling is the real, working mechanism web already
 // settled on.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -45,22 +45,40 @@ export default function LiveTrackingScreen() {
   const [error, setError] = useState(false);
   const mappable = sessions.filter((s) => s.latitude != null && s.longitude != null);
 
+  // Tiered polling (backend/services/polling.py): each row carries its own
+  // poll_interval_seconds hint, so this list refreshes at the fastest
+  // cadence any currently-active row actually needs (15s default when
+  // empty; slower once every active session is long-running-tier).
+  const nextPollMsRef = useRef(15_000);
+
   const load = useCallback(async () => {
     try {
       setError(false);
-      setSessions(await fetchActiveSessions());
+      const data = await fetchActiveSessions();
+      setSessions(data);
+      if (data.length > 0) {
+        nextPollMsRef.current = Math.min(...data.map((s) => s.poll_interval_seconds)) * 1000;
+      }
     } catch {
       setError(true);
     }
   }, []);
 
   useEffect(() => {
-    load().finally(() => setLoading(false));
-    // Refresh the roster of who's currently active every 15s — the
-    // session-monitor detail screen polls its own events much more often;
-    // this list only needs to catch students starting/finishing sessions.
-    const interval = setInterval(load, 15_000);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const tick = async () => {
+      await load();
+      setLoading(false);
+      if (!cancelled) timer = setTimeout(tick, nextPollMsRef.current);
+    };
+    tick();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [load]);
 
   const onRefresh = useCallback(async () => {
@@ -110,7 +128,7 @@ export default function LiveTrackingScreen() {
                     pinColor={activityColor(s.activity_id)}
                     title={s.student_name}
                     description={s.activity_title}
-                    onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: s.session_id, studentName: s.student_name, activityTitle: s.activity_title, lat: s.latitude ?? '', lng: s.longitude ?? '' } })}
+                    onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: s.session_id, studentName: s.student_name, activityTitle: s.activity_title, lat: s.latitude ?? '', lng: s.longitude ?? '', pollIntervalSeconds: s.detail_poll_interval_seconds } })}
                   />
                 ))}
               </MapView>
@@ -127,7 +145,7 @@ export default function LiveTrackingScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               testID={`live-session-${item.session_id}`}
-              onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: item.session_id, studentName: item.student_name, activityTitle: item.activity_title, lat: item.latitude ?? '', lng: item.longitude ?? '' } })}
+              onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: item.session_id, studentName: item.student_name, activityTitle: item.activity_title, lat: item.latitude ?? '', lng: item.longitude ?? '', pollIntervalSeconds: item.detail_poll_interval_seconds } })}
               style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
               activeOpacity={0.75}
               accessibilityRole="button"

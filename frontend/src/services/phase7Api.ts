@@ -289,7 +289,7 @@ export const proposalApi = {
 // PROFESSOR — FIELDWORK LOCATION MAP
 // ============================================================================
 
-import type { FieldworkLocationsResponse, ProjectActiveSessionsResponse } from '../types/phase7'
+import type { FieldworkLocationsResponse, ProjectActiveSessionsResponse, ProjectCompletionReportResponse } from '../types/phase7'
 
 export const professorApi = {
   /**
@@ -316,5 +316,15 @@ export const projectTrackingApi = {
   getProjectActiveSessions: (projectId: string): Promise<ProjectActiveSessionsResponse> =>
     apiClient
       .get<ProjectActiveSessionsResponse>(`/teacher/projects/${projectId}/active-sessions`)
+      .then((r) => r.data),
+
+  /**
+   * "What's the status right now" snapshot for a long-running project —
+   * per-activity completion counts + per-participant status table. One-time
+   * fetch, no polling (unlike the live tracking above).
+   */
+  getProjectCompletionReport: (projectId: string): Promise<ProjectCompletionReportResponse> =>
+    apiClient
+      .get<ProjectCompletionReportResponse>(`/teacher/projects/${projectId}/completion-report`)
       .then((r) => r.data),
 }

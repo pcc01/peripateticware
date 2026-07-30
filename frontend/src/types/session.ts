@@ -14,6 +14,8 @@ export interface LearningSession {
   evidence?: EvidenceOfLearning[]
   competency_assessment?: CompetencyAssessment
   original_ai_draft?: string
+  // Tiered-polling hint from GET /sessions/{id} — see services/polling.py (backend).
+  poll_interval_seconds?: number | null
 }
 
 export interface EvidenceOfLearning {

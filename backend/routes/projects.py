@@ -15,6 +15,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from models import User, Project, ProjectStatus, ProjectActivity, Activity
 from routes.sessions import _check_gps_consent
+from services.polling import poll_interval_seconds
 from schemas.activities import (
     ProjectCreate,
     ProjectUpdate,
@@ -585,4 +586,120 @@ async def project_active_sessions(
     return {
         "sessions": sessions_out,
         "gps_enabled_activity_count": gps_enabled_activity_count,
+        # A Project always spans duration_weeks >= 1 (schema constraint), so
+        # every session reached through this endpoint is long-running by
+        # definition — see services/polling.py.
+        "poll_interval_seconds": poll_interval_seconds(None, in_project=True, detail=False),
+    }
+
+
+@router.get("/{project_id}/completion-report")
+async def project_completion_report(
+    project_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    "What's the status right now" snapshot for a Project — the useful
+    *primary* view once continuous live tracking (project_active_sessions
+    above) doesn't make sense for a project running unattended over weeks.
+
+    Adapts the same join pattern homeschool.py's _fetch_report_data already
+    uses for period exports (learning_sessions/evidence_captures joined
+    through the relevant activities, rolled up by status) rather than a
+    fresh design. Unlike that endpoint this is a one-time snapshot with no
+    date-range filter — "status right now" is what this was scoped for, not
+    a period export.
+
+    A "participant" is any student with at least one session on any
+    activity in this project — there's no separate project-roster concept
+    in the schema to report against instead.
+    """
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    if project.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have access to this project")
+
+    activity_rows = (await db.execute(
+        text("""
+            SELECT a.id AS activity_id, a.title AS activity_title, pa."order" AS activity_order,
+                   COUNT(DISTINCT ls.id) AS total_sessions,
+                   COUNT(DISTINCT ls.id) FILTER (WHERE ls.status = 'completed') AS completed_sessions,
+                   COUNT(DISTINCT ls.user_id) AS participant_count,
+                   COUNT(ec.id) AS evidence_capture_count
+            FROM project_activities pa
+            JOIN activities a ON a.id = pa.activity_id
+            LEFT JOIN learning_sessions ls ON ls.activity_id = a.id
+            LEFT JOIN evidence_captures ec ON ec.session_id = ls.id
+            WHERE pa.project_id = :pid
+            GROUP BY a.id, a.title, pa."order"
+            ORDER BY pa."order"
+        """),
+        {"pid": str(project_id)},
+    )).mappings().all()
+
+    # Per (student, activity) rollup — a student may have re-attempted an
+    # activity across multiple sessions, so this collapses to one status per
+    # pair (completed beats in_progress beats anything else) rather than
+    # exposing raw session rows.
+    participant_activity_rows = (await db.execute(
+        text("""
+            SELECT u.id AS student_id, u.first_name, u.last_name,
+                   a.id AS activity_id,
+                   BOOL_OR(ls.status = 'completed')   AS has_completed,
+                   BOOL_OR(ls.status = 'in_progress') AS has_in_progress,
+                   MAX(COALESCE(ls.completed_at, ls.updated_at, ls.created_at)) AS last_activity_at,
+                   COUNT(ec.id) AS evidence_count
+            FROM project_activities pa
+            JOIN activities a ON a.id = pa.activity_id
+            JOIN learning_sessions ls ON ls.activity_id = a.id
+            JOIN users u ON u.id = ls.user_id
+            LEFT JOIN evidence_captures ec ON ec.session_id = ls.id
+            WHERE pa.project_id = :pid
+            GROUP BY u.id, u.first_name, u.last_name, a.id
+        """),
+        {"pid": str(project_id)},
+    )).mappings().all()
+
+    participants: dict = {}
+    for r in participant_activity_rows:
+        sid = str(r["student_id"])
+        p = participants.setdefault(sid, {
+            "student_id": sid,
+            "student_name": f"{r['first_name']} {r['last_name']}".strip(),
+            "activities": {},
+            "last_activity_at": None,
+            "evidence_capture_count": 0,
+        })
+        activity_status = "completed" if r["has_completed"] else ("in_progress" if r["has_in_progress"] else "not_started")
+        p["activities"][str(r["activity_id"])] = activity_status
+        p["evidence_capture_count"] += r["evidence_count"] or 0
+        last_at = r["last_activity_at"]
+        if last_at and (p["last_activity_at"] is None or last_at.isoformat() > p["last_activity_at"]):
+            p["last_activity_at"] = last_at.isoformat()
+
+    return {
+        "project": {
+            "id": str(project.id),
+            "title": project.title,
+            "duration_weeks": project.duration_weeks,
+            "activity_count": len(activity_rows),
+        },
+        "activities": [
+            {
+                "activity_id": str(r["activity_id"]),
+                "activity_title": r["activity_title"],
+                "order": r["activity_order"],
+                "total_sessions": r["total_sessions"],
+                "completed_sessions": r["completed_sessions"],
+                "participant_count": r["participant_count"],
+                "evidence_capture_count": r["evidence_capture_count"],
+            }
+            for r in activity_rows
+        ],
+        "participants": sorted(participants.values(), key=lambda p: p["student_name"]),
     }

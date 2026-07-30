@@ -14,6 +14,7 @@ import uuid
 from core.database import get_db
 from core.dependencies import get_current_user
 from models.database import LearningSession, User, TripleJoinRecord
+from services.polling import poll_interval_seconds
 import logging
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,9 @@ class SessionResponse(BaseModel):
     inquiry_log: list = []
     created_at: str
     updated_at: str
+    # Tiered live-tracking hint for useSessionWebSocket's poll cadence — None
+    # when the session has no linked activity (nothing to derive a tier from).
+    poll_interval_seconds: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -188,6 +192,21 @@ async def get_session(
             )
         await _require_session_access(session, current_user, db)
 
+        poll_interval = None
+        if session.activity_id:
+            act_row = (await db.execute(
+                text("""
+                    SELECT a.estimated_duration_minutes,
+                           EXISTS (SELECT 1 FROM project_activities pa WHERE pa.activity_id = a.id) AS in_project
+                    FROM activities a WHERE a.id = :aid
+                """),
+                {"aid": str(session.activity_id)},
+            )).mappings().first()
+            if act_row:
+                poll_interval = poll_interval_seconds(
+                    act_row["estimated_duration_minutes"], act_row["in_project"], detail=True
+                )
+
         return SessionResponse(
             session_id=str(session.id),
             title=session.title,
@@ -201,7 +220,8 @@ async def get_session(
             },
             inquiry_log=session.inquiry_log or [],
             created_at=session.created_at.isoformat(),
-            updated_at=session.updated_at.isoformat()
+            updated_at=session.updated_at.isoformat(),
+            poll_interval_seconds=poll_interval,
         )
 
     except HTTPException:

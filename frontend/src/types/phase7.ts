@@ -364,4 +364,43 @@ export interface ProjectActiveSession {
 export interface ProjectActiveSessionsResponse {
   sessions: ProjectActiveSession[]
   gps_enabled_activity_count: number
+  // Tiered-polling hint (services/polling.py) — a Project is always
+  // long-running (duration_weeks >= 1), so this is constant per response.
+  poll_interval_seconds: number
+}
+
+// Project completion report — GET /teacher/projects/{id}/completion-report.
+// A one-time "status right now" snapshot, the useful primary view for a
+// long-running Project once continuous live tracking above isn't (see
+// backend/routes/projects.py's project_completion_report).
+export interface ProjectCompletionActivity {
+  activity_id: string
+  activity_title: string
+  order: number
+  total_sessions: number
+  completed_sessions: number
+  participant_count: number
+  evidence_capture_count: number
+}
+
+export type ProjectCompletionActivityStatus = 'completed' | 'in_progress' | 'not_started'
+
+export interface ProjectCompletionParticipant {
+  student_id: string
+  student_name: string
+  // Keyed by activity_id
+  activities: Record<string, ProjectCompletionActivityStatus>
+  last_activity_at: string | null
+  evidence_capture_count: number
+}
+
+export interface ProjectCompletionReportResponse {
+  project: {
+    id: string
+    title: string
+    duration_weeks: number
+    activity_count: number
+  }
+  activities: ProjectCompletionActivity[]
+  participants: ProjectCompletionParticipant[]
 }

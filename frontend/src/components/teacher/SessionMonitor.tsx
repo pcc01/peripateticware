@@ -17,9 +17,13 @@ interface SessionMonitorProps {
 
 const SessionMonitor: React.FC<SessionMonitorProps> = ({ session }) => {
   const { t } = useTranslation(['TEACHER', 'common']);
-  const wsState = useSessionWebSocket(session.session_id);
-  const studentLocations = useStudentLocations(session.session_id);
-  const inquiries = useInquiryUpdates(session.session_id);
+  // Backend-computed tiered-polling cadence (services/polling.py) — falls
+  // back to the hooks' own 5s default when the session response didn't
+  // carry one (e.g. no linked activity).
+  const pollIntervalMs = session.poll_interval_seconds ? session.poll_interval_seconds * 1000 : undefined;
+  const wsState = useSessionWebSocket(session.session_id ?? null, true, pollIntervalMs);
+  const studentLocations = useStudentLocations(session.session_id ?? null, pollIntervalMs);
+  const inquiries = useInquiryUpdates(session.session_id ?? null, pollIntervalMs);
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
 
   // Convert student locations to map markers

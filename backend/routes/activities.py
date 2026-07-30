@@ -19,6 +19,7 @@ from core.dependencies import get_current_user, get_current_teacher
 from core.encryption import decrypt as _decrypt
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.assessment import TAXONOMY_DESCRIPTIONS
+from services.polling import poll_interval_seconds
 from schemas.activities import (
     ActivityCreate,
     ActivityUpdate,
@@ -979,8 +980,11 @@ async def teacher_active_sessions(
             SELECT
                 ls.id AS session_id, ls.user_id AS student_id, ls.status,
                 ls.created_at AS started_at, ls.latitude, ls.longitude, ls.location_name,
-                a.id AS activity_id, a.title AS activity_title,
-                u.first_name, u.last_name
+                a.id AS activity_id, a.title AS activity_title, a.estimated_duration_minutes,
+                u.first_name, u.last_name,
+                EXISTS (
+                    SELECT 1 FROM project_activities pa WHERE pa.activity_id = a.id
+                ) AS in_project
             FROM learning_sessions ls
             JOIN activities a ON ls.activity_id = a.id
             JOIN users u ON ls.user_id = u.id
@@ -1002,6 +1006,15 @@ async def teacher_active_sessions(
             "latitude": r["latitude"],
             "longitude": r["longitude"],
             "location_name": r["location_name"],
+            # Overview cadence, for this list's own refresh loop.
+            "poll_interval_seconds": poll_interval_seconds(
+                r["estimated_duration_minutes"], r["in_project"], detail=False
+            ),
+            # Detail cadence, carried through as a nav param when a row is
+            # tapped so session-monitor/[id].tsx doesn't need its own lookup.
+            "detail_poll_interval_seconds": poll_interval_seconds(
+                r["estimated_duration_minutes"], r["in_project"], detail=True
+            ),
         }
         for r in rows
     ]

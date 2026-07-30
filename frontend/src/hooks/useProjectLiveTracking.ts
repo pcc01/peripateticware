@@ -14,12 +14,17 @@ import type { ProjectActiveSession } from '@/types/phase7'
  * concurrently-active sessions across different activities.
  *
  * Same REST-polling architecture as useSessionWebSocket (no WebSocket
- * backend — see GPS_MAP_HANDOFF.md), fanned out: every 5s, refresh the
- * roster (already activity-gated + consent-filtered server-side), then poll
- * each active session's own event stream in parallel for location updates.
+ * backend — see GPS_MAP_HANDOFF.md), fanned out: refresh the roster
+ * (already activity-gated + consent-filtered server-side) on a cadence the
+ * *backend* dictates via poll_interval_seconds (tiered-polling — a Project
+ * is always long-running, so this lands on the slower tier; see
+ * services/polling.py), then poll each active session's own event stream in
+ * parallel for location updates.
  */
 
-const POLL_INTERVAL_MS = 5_000
+// Only used before the first successful roster fetch has told us the real
+// (server-computed) interval.
+const DEFAULT_POLL_INTERVAL_MS = 5_000
 
 export interface ProjectStudentLocation {
   latitude: number
@@ -48,12 +53,20 @@ export function useProjectLiveTracking(projectId: string | null) {
   // One "since" cursor per session-id, so each session's event poll only
   // fetches what's new since the last tick.
   const cursorsRef = useRef<Record<string, string>>({})
+  // Set from each response's poll_interval_seconds — read by the scheduling
+  // effect below so cadence can change (e.g. once real data replaces an
+  // empty-roster response) without waiting for a fixed timer to expire.
+  const pollIntervalMsRef = useRef<number>(DEFAULT_POLL_INTERVAL_MS)
 
   const poll = useCallback(async () => {
     if (!projectId) return
     try {
-      const { sessions, gps_enabled_activity_count } =
+      const { sessions, gps_enabled_activity_count, poll_interval_seconds } =
         await projectTrackingApi.getProjectActiveSessions(projectId)
+
+      if (poll_interval_seconds) {
+        pollIntervalMsRef.current = poll_interval_seconds * 1000
+      }
 
       const activeIds = new Set(sessions.map((s) => s.session_id))
       // Drop cursors/locations for sessions that fell out of the roster
@@ -123,11 +136,25 @@ export function useProjectLiveTracking(projectId: string | null) {
   useEffect(() => {
     if (!projectId) return
     cursorsRef.current = {}
+    pollIntervalMsRef.current = DEFAULT_POLL_INTERVAL_MS
     setState((prev) => ({ ...prev, loading: true }))
 
-    poll()
-    const interval = setInterval(poll, POLL_INTERVAL_MS)
-    return () => clearInterval(interval)
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    // Self-rescheduling rather than setInterval so a cadence change picked
+    // up mid-poll (pollIntervalMsRef) takes effect on the very next tick
+    // instead of waiting for the old interval to be torn down and rebuilt.
+    const tick = async () => {
+      await poll()
+      if (!cancelled) timer = setTimeout(tick, pollIntervalMsRef.current)
+    }
+    tick()
+
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
   }, [projectId, poll])
 
   return state

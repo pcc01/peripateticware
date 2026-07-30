@@ -17,6 +17,11 @@ export interface ActiveSession {
   latitude: number | null;
   longitude: number | null;
   location_name: string | null;
+  // Tiered-polling hints (backend/services/polling.py) — overview cadence
+  // for this list's own refresh, detail cadence to carry into
+  // session-monitor/[id].tsx when a row is tapped.
+  poll_interval_seconds: number;
+  detail_poll_interval_seconds: number;
 }
 
 export interface SessionEvent {
