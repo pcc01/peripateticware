@@ -2,19 +2,24 @@
 // Polls GET /sessions/{id}/events every 5s (same interval and mechanism as
 // web's useSessionWebSocket hook — see src/api/liveTracking.ts's header
 // comment for why this is REST polling, not an actual WebSocket) and shows
-// the most recent known location plus a feed of capture/inquiry events as
-// they arrive. No map — mobile has no map dependency yet; this is the same
-// "lean read-only summary" scope call as the other dashboards.
+// the most recent known location on a map plus a feed of capture/inquiry
+// events as they arrive. Map uses react-native-maps with an OpenStreetMap
+// UrlTile overlay, same free tile source as web's Leaflet Map.tsx — but on
+// Android react-native-maps wraps the real Google Maps SDK, which requires
+// a valid, authorized API key before it renders anything at all (including
+// this overlay); see AndroidManifest.xml's com.google.android.geo.API_KEY.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import MapView, { UrlTile, Marker } from 'react-native-maps';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchSessionEvents, SessionEvent } from '@/src/api/liveTracking';
 
 const POLL_INTERVAL_MS = 5_000;
+const OSM_TILE_URL = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 interface KnownLocation {
   latitude: number;
@@ -34,7 +39,10 @@ function agoLabel(iso: string, t: (k: string, d: string, o?: any) => any): strin
 export default function SessionMonitorScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const { id, studentName, activityTitle } = useLocalSearchParams<{ id: string; studentName?: string; activityTitle?: string }>();
+  const { id, studentName, activityTitle, lat, lng } = useLocalSearchParams<{ id: string; studentName?: string; activityTitle?: string; lat?: string; lng?: string }>();
+  const initialLat = lat ? parseFloat(lat) : null;
+  const initialLng = lng ? parseFloat(lng) : null;
+  const hasInitialLocation = initialLat != null && !isNaN(initialLat) && initialLng != null && !isNaN(initialLng);
 
   const [location, setLocation] = useState<KnownLocation | null>(null);
   const [events, setEvents] = useState<SessionEvent[]>([]);
@@ -108,6 +116,34 @@ export default function SessionMonitorScreen() {
         )}
       </View>
 
+      {(location || hasInitialLocation) && (
+        <MapView
+          testID="session-monitor-map"
+          style={styles.map}
+          initialRegion={{
+            latitude: location?.latitude ?? (initialLat as number),
+            longitude: location?.longitude ?? (initialLng as number),
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }}
+          region={
+            location
+              ? { latitude: location.latitude, longitude: location.longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 }
+              : undefined
+          }
+        >
+          <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} flipY={false} />
+          <Marker
+            coordinate={{
+              latitude: location?.latitude ?? (initialLat as number),
+              longitude: location?.longitude ?? (initialLng as number),
+            }}
+            title={studentName}
+            description={activityTitle}
+          />
+        </MapView>
+      )}
+
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
       ) : (
@@ -156,6 +192,7 @@ export default function SessionMonitorScreen() {
 
 const styles = StyleSheet.create({
   root:        { flex: 1 },
+  map:         { width: '100%', height: 220 },
   header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
   backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4 },
   backArrow:   { fontSize: 16 },

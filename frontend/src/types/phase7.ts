@@ -344,3 +344,24 @@ export interface FieldworkLocationsResponse {
   locations: FieldworkLocation[]
   count: number
 }
+
+// Project-level live tracking — GET /teacher/projects/{id}/active-sessions.
+// Already activity-gated (discovery_location_gps_capture_enabled) and
+// consent-filtered server-side; see backend/routes/projects.py.
+export interface ProjectActiveSession {
+  session_id: string
+  student_id: string
+  student_name: string
+  activity_id: string
+  activity_title: string
+  status: string
+  started_at: string | null
+  latitude: number | null
+  longitude: number | null
+  location_name: string | null
+}
+
+export interface ProjectActiveSessionsResponse {
+  sessions: ProjectActiveSession[]
+  gps_enabled_activity_count: number
+}

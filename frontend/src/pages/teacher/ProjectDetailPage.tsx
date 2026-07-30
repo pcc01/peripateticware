@@ -144,6 +144,9 @@ const ProjectDetailPage: React.FC = () => {
               <button className="btn btn-secondary btn-block" onClick={() => navigate('/teacher/activities')}>
                 {t('landing:view_activities', 'View Activities')}
               </button>
+              <button className="btn btn-secondary btn-block" onClick={() => navigate(`/teacher/projects/${project.id}/live-tracking`)}>
+                {t('landing:projectdetailpage.live_tracking', 'Live Tracking')}
+              </button>
             </div>
           </div>
         </div>

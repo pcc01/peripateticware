@@ -289,7 +289,7 @@ export const proposalApi = {
 // PROFESSOR — FIELDWORK LOCATION MAP
 // ============================================================================
 
-import type { FieldworkLocationsResponse } from '../types/phase7'
+import type { FieldworkLocationsResponse, ProjectActiveSessionsResponse } from '../types/phase7'
 
 export const professorApi = {
   /**
@@ -300,5 +300,21 @@ export const professorApi = {
   getFieldworkLocations: (activityId: string): Promise<FieldworkLocationsResponse> =>
     apiClient
       .get<FieldworkLocationsResponse>(`/activities/${activityId}/fieldwork-locations`)
+      .then((r) => r.data),
+}
+
+// ============================================================================
+// PROJECT LIVE TRACKING  (teacher)
+// ============================================================================
+
+export const projectTrackingApi = {
+  /**
+   * Currently in-progress sessions across every activity in a project.
+   * Already activity-gated (discovery_location_gps_capture_enabled) and
+   * consent-filtered server-side — see backend/routes/projects.py.
+   */
+  getProjectActiveSessions: (projectId: string): Promise<ProjectActiveSessionsResponse> =>
+    apiClient
+      .get<ProjectActiveSessionsResponse>(`/teacher/projects/${projectId}/active-sessions`)
       .then((r) => r.data),
 }

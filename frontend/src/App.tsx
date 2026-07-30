@@ -54,6 +54,7 @@ import TeacherWelcomePage from './pages/teacher/TeacherWelcomePage'
 import ProjectsPage from './pages/teacher/ProjectsPage'
 import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
 import ProjectNewPage from './pages/teacher/ProjectNewPage'
+import ProjectLiveTrackingPage from './pages/teacher/ProjectLiveTrackingPage'
 import { TeacherTourPage } from './pages/teacher/TeacherTourPage'
 import ActivityManager from './components/teacher/ActivityManager'
 import { TeacherSettingsPage } from './pages/TeacherSettingsPage'
@@ -396,6 +397,7 @@ const App: React.FC = () => {
           <Route path="/teacher/projects" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectsPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/projects/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectNewPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/projects/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectDetailPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/projects/:id/live-tracking" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectLiveTrackingPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />

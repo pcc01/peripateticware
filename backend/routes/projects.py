@@ -5,7 +5,7 @@
 """Project management endpoints"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from datetime import datetime
@@ -14,6 +14,7 @@ from typing import Optional, List
 from core.database import get_db
 from core.dependencies import get_current_user
 from models import User, Project, ProjectStatus, ProjectActivity, Activity
+from routes.sessions import _check_gps_consent
 from schemas.activities import (
     ProjectCreate,
     ProjectUpdate,
@@ -439,3 +440,97 @@ async def reorder_activities(
     await db.commit()
 
     return await _load_project_with_activities(project_id, current_user, db)
+
+
+@router.get("/{project_id}/active-sessions")
+async def project_active_sessions(
+    project_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Currently in-progress field sessions across every activity in this
+    project, for the project-level live tracking map.
+
+    Scope is deliberately gated on the existing per-activity
+    discovery_location_gps_capture_enabled flag rather than a new
+    project-level toggle — a project's live map only ever shows sessions
+    for activities that already have tracking turned on individually (see
+    THREAD_HANDOFF.md for why a redundant project-level switch was rejected).
+
+    Consent is enforced here, not deferred: for each candidate row we
+    replicate the same "who actually needs consent" rule already live in
+    sessions.py's log_session_event (13+ students who don't require
+    parental consent self-consent separately and bypass the gate), and
+    drop any row that still needs consent but doesn't have it, via the
+    same _check_gps_consent() used there.
+    """
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    if project.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have access to this project")
+
+    gps_count_result = await db.execute(
+        text("""
+            SELECT COUNT(*) FROM project_activities pa
+            JOIN activities a ON pa.activity_id = a.id
+            WHERE pa.project_id = :pid AND a.discovery_location_gps_capture_enabled = TRUE
+        """),
+        {"pid": str(project_id)},
+    )
+    gps_enabled_activity_count = gps_count_result.scalar() or 0
+
+    rows_result = await db.execute(
+        text("""
+            SELECT
+                ls.id AS session_id, ls.user_id AS student_id, ls.status,
+                ls.created_at AS started_at, ls.latitude, ls.longitude, ls.location_name,
+                a.id AS activity_id, a.title AS activity_title,
+                u.first_name, u.last_name, u.age_group, u.requires_parental_consent
+            FROM learning_sessions ls
+            JOIN activities a ON ls.activity_id = a.id
+            JOIN project_activities pa ON pa.activity_id = a.id
+            JOIN users u ON ls.user_id = u.id
+            WHERE pa.project_id = :pid AND a.teacher_id = :tid
+              AND a.discovery_location_gps_capture_enabled = TRUE
+              AND ls.status = 'in_progress' AND ls.is_active = true
+            ORDER BY ls.created_at DESC
+        """),
+        {"pid": str(project_id), "tid": current_user.id},
+    )
+    candidates = rows_result.mappings().all()
+
+    sessions_out = []
+    for r in candidates:
+        needs_consent = True
+        age_group = r["age_group"]
+        rpc = r["requires_parental_consent"]
+        if age_group not in ("under_13", None) and not rpc:
+            needs_consent = False  # 13+ self-consents separately
+
+        if needs_consent:
+            has_consent = await _check_gps_consent(db, r["student_id"], r["activity_id"])
+            if not has_consent:
+                continue
+
+        sessions_out.append({
+            "session_id": str(r["session_id"]),
+            "student_id": str(r["student_id"]),
+            "student_name": f"{r['first_name']} {r['last_name']}".strip(),
+            "activity_id": str(r["activity_id"]),
+            "activity_title": r["activity_title"],
+            "status": r["status"],
+            "started_at": r["started_at"].isoformat() if r["started_at"] else None,
+            "latitude": r["latitude"],
+            "longitude": r["longitude"],
+            "location_name": r["location_name"],
+        })
+
+    return {
+        "sessions": sessions_out,
+        "gps_enabled_activity_count": gps_enabled_activity_count,
+    }

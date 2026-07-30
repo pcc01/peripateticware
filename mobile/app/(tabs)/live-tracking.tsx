@@ -11,8 +11,22 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import MapView, { UrlTile, Marker } from 'react-native-maps';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActiveSessions, ActiveSession } from '@/src/api/liveTracking';
+
+// Same OSM tile source web's Leaflet Map.tsx uses. NOTE: on Android this still
+// needs a real Google Maps API key (AndroidManifest.xml) — react-native-maps
+// wraps the real Google Maps SDK there, which won't render this overlay (or
+// anything else) without one. Confirmed via adb logcat "Authorization failure".
+const OSM_TILE_URL = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+// Stable per-activity color, same hashing approach as web's ProjectLiveTracker.
+const ACTIVITY_COLORS = ['#2563eb', '#16a34a', '#dc2626', '#9333ea', '#ea580c', '#0891b2', '#be185d', '#ca8a04'];
+function activityColor(activityId: string): string {
+  const hash = activityId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return ACTIVITY_COLORS[hash % ACTIVITY_COLORS.length];
+}
 
 function elapsedLabel(startedAt: string | null): string {
   if (!startedAt) return '';
@@ -29,6 +43,7 @@ export default function LiveTrackingScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
+  const mappable = sessions.filter((s) => s.latitude != null && s.longitude != null);
 
   const load = useCallback(async () => {
     try {
@@ -75,6 +90,32 @@ export default function LiveTrackingScreen() {
           keyExtractor={(s) => s.session_id}
           contentContainerStyle={{ padding: 16, gap: 10 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
+          ListHeaderComponent={
+            mappable.length > 0 ? (
+              <MapView
+                testID="live-tracking-map"
+                style={styles.overviewMap}
+                initialRegion={{
+                  latitude: mappable[0].latitude as number,
+                  longitude: mappable[0].longitude as number,
+                  latitudeDelta: 0.2,
+                  longitudeDelta: 0.2,
+                }}
+              >
+                <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} flipY={false} />
+                {mappable.map((s) => (
+                  <Marker
+                    key={s.session_id}
+                    coordinate={{ latitude: s.latitude as number, longitude: s.longitude as number }}
+                    pinColor={activityColor(s.activity_id)}
+                    title={s.student_name}
+                    description={s.activity_title}
+                    onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: s.session_id, studentName: s.student_name, activityTitle: s.activity_title, lat: s.latitude ?? '', lng: s.longitude ?? '' } })}
+                  />
+                ))}
+              </MapView>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.center}>
               <Text style={styles.emptyEmoji}>📍</Text>
@@ -86,7 +127,7 @@ export default function LiveTrackingScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               testID={`live-session-${item.session_id}`}
-              onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: item.session_id, studentName: item.student_name, activityTitle: item.activity_title } })}
+              onPress={() => router.push({ pathname: '/session-monitor/[id]', params: { id: item.session_id, studentName: item.student_name, activityTitle: item.activity_title, lat: item.latitude ?? '', lng: item.longitude ?? '' } })}
               style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
               activeOpacity={0.75}
               accessibilityRole="button"
@@ -118,6 +159,7 @@ const styles = StyleSheet.create({
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   emptyEmoji:   { fontSize: 48 },
   emptyText:    { fontSize: 14, textAlign: 'center', lineHeight: 22 },
+  overviewMap:  { width: '100%', height: 200, borderRadius: 12, marginBottom: 10 },
   card:         { padding: 14, borderWidth: 1, gap: 6 },
   cardHeaderRow:{ flexDirection: 'row', alignItems: 'center', gap: 10 },
   liveDot:      { width: 8, height: 8, borderRadius: 4 },

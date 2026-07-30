@@ -24,6 +24,12 @@
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://u.expo.dev/aff166e5-83d2-45a6-abc3-e822b7755de4"/>
     <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="@string/expo_runtime_version"/>
+    <!-- react-native-maps (session-monitor/[id].tsx, (tabs)/live-tracking.tsx) is a
+         wrapper around the real Google Maps Android SDK — confirmed via adb logcat
+         ("Authorization failure") that it renders nothing at all, not even a custom
+         OSM UrlTile overlay, without a valid key here. Put a real key from
+         GOOGLE_MAPS_API_KEY (.env) in this value before the map is usable. -->
+    <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAUc6LIS8Zx4c9IoE-hGSAXn_92SWiUeEE"/>
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
