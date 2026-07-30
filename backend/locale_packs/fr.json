@@ -175,6 +175,33 @@
     "title": "Mon Journal d'entrées",
     "transcriptPending": "En attente de transcript..."
   },
+  "leaderboard": {
+    "empty": "Personne n'a commencé ce défi encore.",
+    "finished": "Terminé",
+    "loadError": "Pas possible de charger ce classement.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Tu es classé {{rank}}. Tu as terminé en {{time}}.",
+    "mySummaryInProgress": "Rangé en {{rank}}. Vous avez {{count}} pièces d'évidence jusqu'ici.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "pièces de preuve jusqu'ici ({{count}})",
+    "you": "Tu"
+  },
+  "liveTracking": {
+    "activityFeed": "FEED D'ACTIVITÉ",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, commencés il y a {{elapsed}}",
+    "disconnected": "DÉCONNECTÉ",
+    "empty": "Aucun étudiant n'est actuellement en terrain.",
+    "hoursAgo": "il y a {{n}}h",
+    "lastKnownLocation": "LASTER LOCATION CONNUE",
+    "live": "VIVANT",
+    "loadError": "Impossible de charger les sessions actives.",
+    "minutesAgo": "il y a {{n}} minutes",
+    "noEvents": "Aucune activité pour le moment.",
+    "noLocationYet": "Aucune mise à jour de position reçue encore.",
+    "secondsAgo": "il y a {{n}} secondes",
+    "tabLabel": "Suivi en direct",
+    "title": "Suivi en direct"
+  },
   "login": {
     "emailLabel": "EMAIL",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Echec de connexion"
     },
     "forgotPassword": "Mot de passe oublié ?",
+    "hidePassword": "Mot de passe masqué",
     "missingFields": {
       "body": "S'il vous plait entrez votre adresse email et mot de passe.",
       "title": "Champs manquants"
@@ -191,6 +219,7 @@
       "body": "Renseignez-vous avec votre professeur pour réinitialiser votre mot de passe.",
       "title": "Mot de passe réinitialisé"
     },
+    "showPassword": "Mot de passe affiché",
     "signIn": "Se connecter",
     "welcomeBack": "Bienvenue de retour ! Connectez-vous pour continuer votre voyage d'apprentissage."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "PASSES",
     "competenciesLabel": "COMPETENCES",
     "empty": "Progrès enregistré à partir de votre première activité.",
+    "leaderboardsEmpty": "Aucun défi créé par les étudiants encore — proposez-en un pour démarrer une classement.",
+    "leaderboardsLabel": "CLASSIFICATIONS",
+    "participantCount": "{{count}} prenant part",
+    "proposedBy": "par {{name}}",
     "stats": {
       "activities": "Activités",
       "captures": "Captures",
@@ -324,6 +357,7 @@
     "voiceLabel": "VOIX"
   },
   "tabs": {
+    "achievements": "Réussites",
     "discover": "Découvrez",
     "progress": "Avancement",
     "propose": "Proposer",

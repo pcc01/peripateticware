@@ -75,11 +75,15 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="progress"
-        options={{ href: isStudent ? undefined : null, title: t('tabs.progress', 'Progress'), tabBarButtonTestID: 'tab-progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
+        options={{ href: isStudent ? undefined : null, title: t('tabs.achievements', 'Achievements'), tabBarButtonTestID: 'tab-progress', tabBarIcon: ({ size }) => <TabIcon emoji="🌱" size={size} /> }}
       />
       <Tabs.Screen
         name="teacher-dashboard"
         options={{ href: isTeacher ? undefined : null, title: t('teacherDashboard.tabLabel', 'Dashboard'), tabBarButtonTestID: 'tab-teacher-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="📊" size={size} /> }}
+      />
+      <Tabs.Screen
+        name="live-tracking"
+        options={{ href: isTeacher ? undefined : null, title: t('liveTracking.tabLabel', 'Live Tracking'), tabBarButtonTestID: 'tab-live-tracking', tabBarIcon: ({ size }) => <TabIcon emoji="📡" size={size} /> }}
       />
       <Tabs.Screen
         name="parent-dashboard"

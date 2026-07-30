@@ -6,6 +6,13 @@ import {
   View, Text, TextInput, StyleSheet, KeyboardAvoidingView,
   Platform, ActivityIndicator, TouchableOpacity, Alert,
 } from 'react-native';
+// @expo/vector-icons is already a dependency but unused elsewhere in this
+// app — every other icon here is an emoji (see app/(tabs)/_layout.tsx's
+// TabIcon). A password-reveal glyph specifically benefits from a real
+// vector icon (crisp at small sizes, no font-rendering variance across
+// devices the way 👁 vs 🙈 can have), so this is a deliberate one-off,
+// not the start of a wider icon-library migration.
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
@@ -22,6 +29,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -86,16 +94,29 @@ export default function LoginScreen() {
           <Text style={[styles.label, { color: theme.textMuted, fontFamily: theme.fontMono }]}>
             {t('login.passwordLabel', 'PASSWORD')}
           </Text>
-          <TextInput
-            testID="password-input"
-            style={inputStyle}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            placeholderTextColor={theme.textFaint}
-            secureTextEntry
-            autoComplete="password"
-          />
+          <View style={styles.passwordRow}>
+            <TextInput
+              testID="password-input"
+              style={[inputStyle, styles.passwordInput]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor={theme.textFaint}
+              secureTextEntry={!showPassword}
+              autoComplete="password"
+            />
+            <TouchableOpacity
+              testID="password-reveal-toggle"
+              onPress={() => setShowPassword((v) => !v)}
+              hitSlop={10}
+              style={styles.passwordRevealBtn}
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? t('login.hidePassword', 'Hide password') : t('login.showPassword', 'Show password')}
+              accessibilityState={{ selected: showPassword }}
+            >
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color={theme.textFaint} />
+            </TouchableOpacity>
+          </View>
 
           {loading ? (
             <ActivityIndicator color={theme.accent} style={{ marginTop: 8 }} />
@@ -128,5 +149,8 @@ const styles = StyleSheet.create({
   card:       { padding: 20, borderWidth: 1, gap: 10 },
   label:      { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: -4 },
   input:      { height: 44, paddingHorizontal: 12, borderWidth: 1, fontSize: 15 },
+  passwordRow:      { position: 'relative', justifyContent: 'center' },
+  passwordInput:    { paddingRight: 44 },
+  passwordRevealBtn:{ position: 'absolute', right: 4, height: 44, width: 40, alignItems: 'center', justifyContent: 'center' },
   forgotText: { textAlign: 'center', fontSize: 13, marginTop: 4 },
 });

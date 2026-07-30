@@ -175,6 +175,33 @@
     "title": "我的日记条目",
     "transcriptPending": "待定中..."
   },
+  "leaderboard": {
+    "empty": "没有人开始了这个挑战。",
+    "finished": "完成",
+    "loadError": "无法加载这个排行榜。",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "你的排名为{{rank}}。您在{{time}}完成了。",
+    "mySummaryInProgress": "你的排名是{{rank}}。你目前拥有{{count}}个证据。",
+    "secondsFormat": "z{{s}}s",
+    "stepsSoFar": "已有{{count}}个证据",
+    "you": "您"
+  },
+  "liveTracking": {
+    "activityFeed": "活动反馈",
+    "cardAccessibilityLabel": "{{name}}， {{activity}}， {{elapsed}} 前开始",
+    "disconnected": "已断开连接",
+    "empty": "目前没有学生在野外工作。",
+    "hoursAgo": "前{{n}}小时",
+    "lastKnownLocation": "最后知晓位置",
+    "live": "直播",
+    "loadError": "无法加载活动会话。",
+    "minutesAgo": "前{{n}}分钟",
+    "noEvents": "没有活动数据。",
+    "noLocationYet": "尚未接收到位置更新。",
+    "secondsAgo": "前{{n}}秒",
+    "tabLabel": "实时跟踪",
+    "title": "实时跟踪"
+  },
   "login": {
     "emailLabel": "电子邮件",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "登录失败"
     },
     "forgotPassword": "忘记密码？",
+    "hidePassword": "隐藏密码",
     "missingFields": {
       "body": "请输入您的电子邮件和密码。",
       "title": "缺少字段"
@@ -191,6 +219,7 @@
       "body": "联系教师重置密码",
       "title": "密码重置"
     },
+    "showPassword": "显示密码",
     "signIn": "登录",
     "welcomeBack": "欢迎回来！继续您的学习旅程，请登录。"
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "徽章",
     "competenciesLabel": "技能",
     "empty": "完成第一项活动开始跟踪进展。",
+    "leaderboardsEmpty": "没有学生创建的挑战，提出一个开始排行榜。",
+    "leaderboardsLabel": "排行榜",
+    "participantCount": "{{count}} 参与中",
+    "proposedBy": "由 {{name}}",
     "stats": {
       "activities": "活动",
       "captures": "捕获",
@@ -324,6 +357,7 @@
     "voiceLabel": "语音"
   },
   "tabs": {
+    "achievements": "成就",
     "discover": "发现",
     "progress": "进度",
     "propose": "建议",

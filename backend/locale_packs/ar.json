@@ -175,6 +175,33 @@
     "title": "ورقعاتي المدخلات",
     "transcriptPending": "تقرير معلق..."
   },
+  "leaderboard": {
+    "empty": "لم يبدأ أحد هذا التحدي حتى الآن.",
+    "finished": "انتهى",
+    "loadError": "تعذر تحميل لوحة المتصدرين هذه.",
+    "minutesSecondsFormat": "{{m}} دقيقة {{s}} ثانية",
+    "mySummaryFinished": "تمتع إنت برангك {{rank}}. أنت وقفت في {{time}}.",
+    "mySummaryInProgress": "تمركزت على مرحلة {{rank}}. لديك {{count}} قطعة من الأبواب الآن.",
+    "secondsFormat": "السِّيَّرَاتُ {{s}}s",
+    "stepsSoFar": "{{count}} قطعة دليل حتى الآن",
+    "you": "أنت"
+  },
+  "liveTracking": {
+    "activityFeed": "أطراف العمل",
+    "cardAccessibilityLabel": "{{name}}، {{activity}}، بدأ منذ {{elapsed}}",
+    "disconnected": "فوق الإتصال",
+    "empty": "لا يوجد طالبون من الصفوف الحقلية الآن.",
+    "hoursAgo": "قبل {{n}} في الناتج",
+    "lastKnownLocation": "موقع آخر المعرفة",
+    "live": "حية",
+    "loadError": "غلقت الرفع للجلسات النشطة.",
+    "minutesAgo": "قبل {{n}} من الدقيقة",
+    "noEvents": "لا توجد أنشطة حتى الآن.",
+    "noLocationYet": "لم يتلقى مستندات الموقع الحالية حتى الآن.",
+    "secondsAgo": "قبل {{n}} ثانية",
+    "tabLabel": "إطلاق التراكينغ الحي",
+    "title": "تتبع حيوص"
+  },
   "login": {
     "emailLabel": "إيميل",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "اعتماد خطأ"
     },
     "forgotPassword": "هل نسيت كلمة السر؟",
+    "hidePassword": "اخفي كلمة السر",
     "missingFields": {
       "body": "ادخل البريد الإلكتروني وكلمة السر الخاصة بك.",
       "title": "رقم عددي"
@@ -191,6 +219,7 @@
       "body": "اتصل بعلماءك لإعادة ضبط رقم السجل الخاص بك.",
       "title": "إعادة تعيين الرقم السري"
     },
+    "showPassword": "إظهار كلمة السر",
     "signIn": "سIGN\\_IN",
     "welcomeBack": "اهلا بعودتك! تسجيل الدخول للمتابعة على رحلتك التعليمية."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "شields",
     "competenciesLabel": "تكنولوجيات",
     "empty": "اكمل أنشاء أول نشاطك لبدء ترقيم التقدم.",
+    "leaderboardsEmpty": "لا تحدثات مخصوصة للطالبين حتى الآن — قم بإرسال مدخل لبدء قائمة الرANKING.",
+    "leaderboardsLabel": "قائمة الرؤية",
+    "participantCount": "من {{count}} يمكنهم التعاون",
+    "proposedBy": "بواسطة {{name}}",
     "stats": {
       "activities": "مهام",
       "captures": "استثناء",
@@ -324,6 +357,7 @@
     "voiceLabel": "الصوت"
   },
   "tabs": {
+    "achievements": "نجاحات",
     "discover": "اكتشف",
     "progress": "تقدم",
     "propose": "اقرأ",

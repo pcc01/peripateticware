@@ -175,6 +175,33 @@
     "title": "Diario miei appunti",
     "transcriptPending": "In corso..."
   },
+  "leaderboard": {
+    "empty": "Nessuno ha iniziato ancora questo sfido.",
+    "finished": "Completato",
+    "loadError": "Non è possibile caricare questa classifica.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Sono classificato {{rank}}. Ho terminato in {{time}}.",
+    "mySummaryInProgress": "Classificati al {{rank}}. Hai {{count}} pezzi di prova fino adesso.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "pezzi di prova per ora {{count}}",
+    "you": "Ti"
+  },
+  "liveTracking": {
+    "activityFeed": "ATTIVITÀ FEED",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, iniziata {{elapsed}} fa",
+    "disconnected": "SCONNESSO",
+    "empty": "Nessun studente è attualmente fuori campo.",
+    "hoursAgo": "fa {{n}} fa fa",
+    "lastKnownLocation": "ULTIMA POSIZIONE CONOSCIUTA",
+    "live": "VIVO",
+    "loadError": "Non è possibile caricare le sessioni attive.",
+    "minutesAgo": "fa {{n}} minuti fa",
+    "noEvents": "Nessuna attività ancora.",
+    "noLocationYet": "Nessuna aggiornamento posizione ricevuto ancora.",
+    "secondsAgo": "{{n}}s fa",
+    "tabLabel": "Seguimento in tempo reale",
+    "title": "Seguimento in tempo reale"
+  },
   "login": {
     "emailLabel": "E-MAIL",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Accesso fallito"
     },
     "forgotPassword": "dimenticato la password?",
+    "hidePassword": "Nascondi password",
     "missingFields": {
       "body": "Email e password",
       "title": "Campi mancanti"
@@ -191,6 +219,7 @@
       "body": "Contatta il tuo insegnante per ricordarti la tua password.",
       "title": "Ripristino password"
     },
+    "showPassword": "Mostra password",
     "signIn": "Accesso",
     "welcomeBack": "Benvenuto di nuovo! Accedi per continuare il tuo viaggio formativo."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "PREMIALI",
     "competenciesLabel": "COMPETENZE",
     "empty": "Completa la prima attività per iniziare a seguire il tuo progressivo.",
+    "leaderboardsEmpty": "Nessuna sfida create da studente ancora - proponi una per avviare il punteggio.",
+    "leaderboardsLabel": "CLASSIFICHE",
+    "participantCount": "partecipanti{{count}}",
+    "proposedBy": "da {{name}}",
     "stats": {
       "activities": "Attività",
       "captures": "Cattura",
@@ -324,6 +357,7 @@
     "voiceLabel": "VOCE"
   },
   "tabs": {
+    "achievements": "Risultati",
     "discover": "Scopri",
     "progress": "Avanzamento",
     "propose": "Proposta",

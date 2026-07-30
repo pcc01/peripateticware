@@ -175,6 +175,33 @@
     "title": "私の日記エントリー",
     "transcriptPending": "転記中..."
   },
+  "leaderboard": {
+    "empty": "誰もこのチャレンジを始めていません。",
+    "finished": "完了",
+    "loadError": "このライダーボードを読み込めません。",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "君は{{rank}}だ。{{time}}で完走した。",
+    "mySummaryInProgress": "ランク：{{rank}}。現在、あなたには{{count}}個の証拠があります。",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "{{count}}個の証拠まで",
+    "you": "あなた"
+  },
+  "liveTracking": {
+    "activityFeed": "アクティビティフィード",
+    "cardAccessibilityLabel": "{{name}}、{{activity}}、{{elapsed}}前に開始",
+    "disconnected": "切断中",
+    "empty": "現在野外に出撃中の学生はありません。",
+    "hoursAgo": "前{{n}}分",
+    "lastKnownLocation": "最後に知られた位置",
+    "live": "ライブ",
+    "loadError": "アクティブなセッションを読み込めません。",
+    "minutesAgo": "{{n}}分前",
+    "noEvents": "アクティビティはまだありません。",
+    "noLocationYet": "現在位置の更新が受け付けられていません。",
+    "secondsAgo": "前に{{n}}秒",
+    "tabLabel": "ライブトラッキング",
+    "title": "ライブトラッキング"
+  },
   "login": {
     "emailLabel": "メール",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "ログインに失敗しました"
     },
     "forgotPassword": "パスワードを忘れた？",
+    "hidePassword": "パスワードを隠す",
     "missingFields": {
       "body": "メールアドレスとパスワードを入力してください。",
       "title": "欠けている項目"
@@ -191,6 +219,7 @@
       "body": "教師に連絡してパスワードをリセットしてください。",
       "title": "パスワードのリセット"
     },
+    "showPassword": "表示パスワード",
     "signIn": "ログイン",
     "welcomeBack": "歓迎再度！学習の旅行を続けるためにログインしてください。"
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "誉勲",
     "competenciesLabel": "能力",
     "empty": "初めてのアクティビティを完了させて進行状況を追跡し始めます。",
+    "leaderboardsEmpty": "学生が作成したチャレンジはまだありません。チャレンジを提案してリーダーボードを開始しましょう。",
+    "leaderboardsLabel": "ランキング",
+    "participantCount": "{{count}}人参加中",
+    "proposedBy": "より {{name}} による",
     "stats": {
       "activities": "活動",
       "captures": "キャプチャーズ",
@@ -324,6 +357,7 @@
     "voiceLabel": "音声"
   },
   "tabs": {
+    "achievements": "成就",
     "discover": "発見",
     "progress": "進捗",
     "propose": "提案する",

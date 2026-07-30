@@ -175,6 +175,33 @@
     "title": "Meus Registros de Diário",
     "transcriptPending": "Transcrição pendente..."
   },
+  "leaderboard": {
+    "empty": "Ninguém começou este desafio ainda.",
+    "finished": "Concluído",
+    "loadError": "Não foi possível carregar este ranking.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Você está classificado em {{rank}}. Terminou em {{time}}.",
+    "mySummaryInProgress": "Você está classificado em {{rank}}. Até agora, possui {{count}} peças de evidência.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "{{count}} peças de evidência até agora",
+    "you": "Você"
+  },
+  "liveTracking": {
+    "activityFeed": "ATividade Feed",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, iniciado há {{elapsed}}",
+    "disconnected": "DESCONECTADO",
+    "empty": "Não há alunos atualmente fora do campo.",
+    "hoursAgo": "há {{n}} atrás",
+    "lastKnownLocation": "ÚLTIMA LOCAÇÃO CONHECIDA",
+    "live": "VIVO",
+    "loadError": "Não foi possível carregar sessões ativas.",
+    "minutesAgo": "há {{n}} minuto(s) atrás",
+    "noEvents": "Atividade ainda não realizada.",
+    "noLocationYet": "Nenhum atualização de local recebida ainda.",
+    "secondsAgo": "há {{n}} atrás",
+    "tabLabel": "Rastreamento em Tempo Real",
+    "title": "Rastreamento em Tempo Real"
+  },
   "login": {
     "emailLabel": "E-MAIL",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Falha na autenticação"
     },
     "forgotPassword": "Esqueceu a senha?",
+    "hidePassword": "Senha oculta",
     "missingFields": {
       "body": "Por favor, entre com seu email e senha.",
       "title": "Campos faltantes"
@@ -191,6 +219,7 @@
       "body": "Contate seu professor para redefinir sua senha.",
       "title": "Senha de recuperação"
     },
+    "showPassword": "Mostrar senha",
     "signIn": "Entrar",
     "welcomeBack": "Bem-vindo de volta! Faça login para continuar sua jornada de aprendizado."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "PATCHAS",
     "competenciesLabel": "CONHECIMENTOS",
     "empty": "Conclua sua primeira atividade para começar a rastrear o progresso.",
+    "leaderboardsEmpty": "Desafios criados por estudantes ainda não existem - proponha um para iniciar uma tabela de liderança.",
+    "leaderboardsLabel": "CLASSIFICAÇÕES",
+    "participantCount": "{{count}} participando",
+    "proposedBy": "por {{name}}",
     "stats": {
       "activities": "Atividades",
       "captures": "Capturas",
@@ -324,6 +357,7 @@
     "voiceLabel": "VOZ"
   },
   "tabs": {
+    "achievements": "Conquistas",
     "discover": "Descubra",
     "progress": "Avanço",
     "propose": "Proporça",

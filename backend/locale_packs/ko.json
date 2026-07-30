@@ -175,6 +175,33 @@
     "title": "내 일기 ENTRY",
     "transcriptPending": "전체 교육 기록 대기중..."
   },
+  "leaderboard": {
+    "empty": "아직 이 챌린지를 시작하신 사람이 없습니다.",
+    "finished": "완료",
+    "loadError": "이 리더보드를 불러오는 데 실패했습니다.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "당신의 랭크는 {{rank}}입니다. {{time}}에 완료하셨습니다.",
+    "mySummaryInProgress": "당신의 랭크는 {{rank}}입니다. 현재 {{count}}개의 증거를 가지고 있습니다.",
+    "secondsFormat": "스스로{{s}}",
+    "stepsSoFar": "이미지에서 {{count}}개의 증거까지",
+    "you": "당신"
+  },
+  "liveTracking": {
+    "activityFeed": "활동 피드",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, {{elapsed}} 전에 시작했어요",
+    "disconnected": "연결되지 않음",
+    "empty": "현재 외전에서는 학생이 없습니다.",
+    "hoursAgo": "당신{{n}} 전에",
+    "lastKnownLocation": "최근 알려진 위치",
+    "live": "라이브",
+    "loadError": "활동 세션을 로드할 수 없습니다.",
+    "minutesAgo": "{{n}}m 전",
+    "noEvents": "활동이 없습니다.",
+    "noLocationYet": "위치 업데이트 받아들여지지 않았습니다.",
+    "secondsAgo": "전체에서 {{n}} 이전",
+    "tabLabel": "실시간 추적",
+    "title": "실시간 추적"
+  },
   "login": {
     "emailLabel": "이메일",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "로그인 실패"
     },
     "forgotPassword": "비밀번호를 잊었나요?",
+    "hidePassword": "비밀번호 숨기기",
     "missingFields": {
       "body": "이메일과 비밀번호를 입력해주세요.",
       "title": "누락된 필드"
@@ -191,6 +219,7 @@
       "body": "교수님과 연락하여 비밀번호를 재설정하십시오.",
       "title": "비밀번호 재설정"
     },
+    "showPassword": "비밀번호 보기",
     "signIn": "로그인",
     "welcomeBack": "환영합니다! 학습 여정을 계속하려면 로그인하세요."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "배지",
     "competenciesLabel": "기술",
     "empty": "처음 활동을 완료하여 진행 추적을 시작합니다.",
+    "leaderboardsEmpty": "학생이 만든 도전이 없습니다. — 한 가지를 제안하여 리더보드를 시작하세요.",
+    "leaderboardsLabel": "리더보드",
+    "participantCount": "참여자 {{count}}",
+    "proposedBy": "의해 {{name}}",
     "stats": {
       "activities": "활동",
       "captures": "캡처",
@@ -324,6 +357,7 @@
     "voiceLabel": "음성"
   },
   "tabs": {
+    "achievements": "성就",
     "discover": "발견",
     "progress": "진행",
     "propose": "제안",

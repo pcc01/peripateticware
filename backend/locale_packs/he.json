@@ -175,6 +175,33 @@
     "title": "דירוגי חזון שלי",
     "transcriptPending": "טקסט מחושב מתארך..."
   },
+  "leaderboard": {
+    "empty": "אין משתמש נפה שהתחל הרשמה זו עד כרגע.",
+    "finished": "מכונית",
+    "loadError": "לא יכול לטעון הספרייה של מזקן.",
+    "minutesSecondsFormat": "מ_{{m}} m ס_{{s}} s",
+    "mySummaryFinished": "אתה נרשם במקום {{rank}}. סיימת בזמן {{time}}.",
+    "mySummaryInProgress": "אתה נרשם במקום {{rank}}. לדוגמה זו יש לך {{count}} אוצרות עלומות עד כďיום.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "נערכו נמוך {{count}} אביזות עד כה",
+    "you": "Ani"
+  },
+  "liveTracking": {
+    "activityFeed": "פעילות הצגת",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, התחיל לפני {{elapsed}}",
+    "disconnected": "מחוק",
+    "empty": "אין נוספים מתוך השדה לעתה.",
+    "hoursAgo": "זמן האחרון {{n}} לפני",
+    "lastKnownLocation": "מקום האחרון שנדעת",
+    "live": "חיים",
+    "loadError": "לא יוכל לטעון שנתקיימו סיונים פעילים.",
+    "minutesAgo": "זמן האחרון {{n}} מינות",
+    "noEvents": "אף פעולה עדיין לא קיימת.",
+    "noLocationYet": "לא קבע עדכון מיקום העתק עד כרגע.",
+    "secondsAgo": "{{n}}s לפני כן",
+    "tabLabel": "מעקב אותו",
+    "title": "בדיקה אותה זמנית"
+  },
   "login": {
     "emailLabel": "אימיל",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "כניסה נכשלה"
     },
     "forgotPassword": "שכחתי הסיסמא?",
+    "hidePassword": "סגור סיסמה",
     "missingFields": {
       "body": "אנא הזן את כתובת האימיל והסיסמא שלך",
       "title": "חוקים רפואים"
@@ -191,6 +219,7 @@
       "body": "לאיפוס הסיסמה, פני/ה למורה שלך.",
       "title": "סיסמה נové"
     },
+    "showPassword": "הצג סיסמא",
     "signIn": "כניתוף חשבון",
     "welcomeBack": "ברוך הבא שוב! התחבר למסע למדה שלך לנצח."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "שלוחנים",
     "competenciesLabel": "כחות",
     "empty": "סיכם את פעולה הראשונה כדי להתחבר למעקב על התקדם.",
+    "leaderboardsEmpty": "אין עדיKEN מסוגרים חלופיים עדיין — הצג אחת כדי להתחיל טבלת קידוד.",
+    "leaderboardsLabel": "סיכום משחקים",
+    "participantCount": "{{count}} משתתפים",
+    "proposedBy": "מאת {{name}}",
     "stats": {
       "activities": "אישורים",
       "captures": "אימותים",
@@ -324,6 +357,7 @@
     "voiceLabel": "קול"
   },
   "tabs": {
+    "achievements": "ניהולים",
     "discover": "ציפור",
     "progress": "פרוгреס",
     "propose": "פרסום",

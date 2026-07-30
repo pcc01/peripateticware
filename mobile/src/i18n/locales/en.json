@@ -218,7 +218,9 @@
       "title": "Password reset",
       "body": "Contact your teacher to reset your password."
     },
-    "forgotPassword": "Forgot password?"
+    "forgotPassword": "Forgot password?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "perispeech": {
     "stopReading": "Stop reading aloud",
@@ -226,7 +228,7 @@
   },
   "tabs": {
     "discover": "Discover",
-    "progress": "Progress",
+    "achievements": "Achievements",
     "settings": "Settings",
     "propose": "Propose"
   },
@@ -324,7 +326,38 @@
     },
     "competenciesLabel": "COMPETENCIES",
     "badgesLabel": "BADGES",
-    "empty": "Complete your first activity to start tracking progress."
+    "empty": "Complete your first activity to start tracking progress.",
+    "leaderboardsLabel": "LEADERBOARDS",
+    "leaderboardsEmpty": "No student-created challenges yet — propose one to start a leaderboard.",
+    "participantCount": "{{count}} taking part",
+    "proposedBy": "by {{name}}"
+  },
+  "leaderboard": {
+    "loadError": "Could not load this leaderboard.",
+    "empty": "Nobody has started this challenge yet.",
+    "you": "You",
+    "finished": "Finished",
+    "stepsSoFar": "{{count}} pieces of evidence so far",
+    "secondsFormat": "{{s}}s",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "You're ranked {{rank}}. You finished in {{time}}.",
+    "mySummaryInProgress": "You're ranked {{rank}}. You have {{count}} pieces of evidence so far."
+  },
+  "liveTracking": {
+    "tabLabel": "Live Tracking",
+    "title": "Live Tracking",
+    "loadError": "Could not load active sessions.",
+    "empty": "No students are currently out in the field.",
+    "live": "LIVE",
+    "disconnected": "DISCONNECTED",
+    "lastKnownLocation": "LAST KNOWN LOCATION",
+    "noLocationYet": "No location update received yet.",
+    "activityFeed": "ACTIVITY FEED",
+    "noEvents": "No activity yet.",
+    "secondsAgo": "{{n}}s ago",
+    "minutesAgo": "{{n}}m ago",
+    "hoursAgo": "{{n}}h ago",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, started {{elapsed}} ago"
   },
   "journal": {
     "title": "My Journal Entries",

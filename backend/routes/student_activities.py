@@ -1367,3 +1367,111 @@ async def student_record_gps_consent(
         raise HTTPException(status_code=500, detail="Failed to record consent")
 
     return {"recorded": True, "consent_given": body.consent_given}
+
+
+# =============================================================================
+# ── Leaderboards for student-created ("reverse scavenger hunt") activities ──
+#
+# routes/proposals.py's approve_proposal() sets is_student_proposed=TRUE +
+# proposed_by_student_id when a teacher approves a student's challenge into a
+# real Activity. These two endpoints let any student browse those activities
+# and see how their peers are doing on one — completed sessions ranked by
+# time taken, in-progress ones by evidence_captures count as a proxy for "how
+# far along" on a multi-step challenge (there's no explicit step/checkpoint
+# count anywhere in the data model, so captures submitted is the closest
+# real signal available without inventing new activity-authoring UI).
+# =============================================================================
+
+@router.get("/proposed-activities")
+async def list_proposed_activities(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Published, student-proposed activities — the leaderboard picker list."""
+    _require_student(current_user)
+
+    result = await db.execute(
+        _text("""
+            SELECT a.id, a.title, a.subject, a.created_at,
+                   u.first_name AS proposer_first_name, u.last_name AS proposer_last_name,
+                   (SELECT COUNT(*) FROM learning_sessions ls WHERE ls.activity_id = a.id) AS participant_count
+            FROM activities a
+            LEFT JOIN users u ON u.id = a.proposed_by_student_id
+            WHERE a.is_student_proposed = TRUE AND a.status = 'published' AND a.is_active = TRUE
+            ORDER BY a.created_at DESC
+        """)
+    )
+    rows = result.mappings().all()
+    return [
+        {
+            "id": str(r["id"]),
+            "title": r["title"],
+            "subject": r["subject"],
+            "proposed_by": (f"{r['proposer_first_name']} {r['proposer_last_name']}".strip()
+                             if r["proposer_first_name"] else None),
+            "participant_count": r["participant_count"],
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+        }
+        for r in rows
+    ]
+
+
+@router.get("/activities/{activity_id}/leaderboard")
+async def activity_leaderboard(
+    activity_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Per-student standings for one activity. Completed sessions are ranked
+    first, fastest completion time first; in-progress sessions follow,
+    ranked by evidence captured so far (most first).
+    """
+    _require_student(current_user)
+
+    result = await db.execute(
+        _text("""
+            SELECT
+                ls.id AS session_id, ls.user_id AS student_id, ls.status,
+                ls.created_at AS started_at, ls.completed_at,
+                u.first_name, u.last_name,
+                (SELECT COUNT(*) FROM evidence_captures ec WHERE ec.session_id = ls.id) AS captures_count
+            FROM learning_sessions ls
+            JOIN users u ON u.id = ls.user_id
+            WHERE ls.activity_id = CAST(:aid AS uuid)
+            ORDER BY ls.created_at ASC
+        """),
+        {"aid": activity_id},
+    )
+    rows = result.mappings().all()
+
+    entries = []
+    for r in rows:
+        time_taken_seconds = None
+        if r["status"] == "completed" and r["completed_at"] and r["started_at"]:
+            time_taken_seconds = round((r["completed_at"] - r["started_at"]).total_seconds())
+        entries.append({
+            "student_id": str(r["student_id"]),
+            "student_name": f"{r['first_name']} {r['last_name']}".strip(),
+            "status": r["status"],
+            "captures_count": r["captures_count"],
+            "time_taken_seconds": time_taken_seconds,
+            "started_at": r["started_at"].isoformat() if r["started_at"] else None,
+            "is_you": str(r["student_id"]) == str(current_user.id),
+        })
+
+    completed = sorted(
+        (e for e in entries if e["status"] == "completed"),
+        key=lambda e: e["time_taken_seconds"] if e["time_taken_seconds"] is not None else float("inf"),
+    )
+    in_progress = sorted(
+        (e for e in entries if e["status"] != "completed"),
+        key=lambda e: e["captures_count"],
+        reverse=True,
+    )
+
+    ranked = completed + in_progress
+    for i, e in enumerate(ranked, start=1):
+        e["rank"] = i
+
+    return {"activity_id": activity_id, "entries": ranked}

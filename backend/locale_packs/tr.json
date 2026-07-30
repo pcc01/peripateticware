@@ -175,6 +175,33 @@
     "title": "Günlüğüm Kayıtları",
     "transcriptPending": "Gönderilen transkript bekleniyor..."
   },
+  "leaderboard": {
+    "empty": "Henüz herkese şu seansi başlamamıştır.",
+    "finished": "Tamamlandı",
+    "loadError": "Yüklenemedi bu sıralama tablosu.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Sen sıralama {{rank}}. Zamanız {{time}}.",
+    "mySummaryInProgress": "Sen sıralama {{rank}}. Zaten {{count}} tane kısaltma bulunmuştur.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "İşte zamanlayıcı kadar {{count}} adet kararlı kısıt",
+    "you": "Sen"
+  },
+  "liveTracking": {
+    "activityFeed": "Aktivite Sırları",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, {{elapsed}} önce başladı",
+    "disconnected": "BAĞLANTI KOPTU",
+    "empty": "Henüz alanında hiç öğrenci yok.",
+    "hoursAgo": "{{n}}h önce",
+    "lastKnownLocation": "Sonuncu Bilinen Konum",
+    "live": "YAYIN",
+    "loadError": "Aktif oturum yüklenemedi.",
+    "minutesAgo": "{{n}}m önce",
+    "noEvents": "Yapılmamış bir aktivite yok.",
+    "noLocationYet": "Yerleşim güncelleme alındı mi henüz?",
+    "secondsAgo": "{{n}}s ago",
+    "tabLabel": "Takip Edilecek",
+    "title": "Takip Edilecek"
+  },
   "login": {
     "emailLabel": "E-POSTA",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Giriş Başarısız"
     },
     "forgotPassword": "Sifre mi unuttum?",
+    "hidePassword": "Şifre Gizle",
     "missingFields": {
       "body": "Lütfen email ve şifre bilgilerinizi giriniz.",
       "title": "Eksik alanlar"
@@ -191,6 +219,7 @@
       "body": "Mesajla öğretmenine şifrenizi sıfırla'ma için iletişime geçin.",
       "title": "Şifre Sıfırla"
     },
+    "showPassword": "Şifre Göster",
     "signIn": "Giriş Yap",
     "welcomeBack": "Hoşgeldiniz tekrar! Devam etmek için öğrenme yolunuzu devam edebilmeniz için oturum açın."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "İZNAMLAR",
     "competenciesLabel": "YARARLIKLAR",
     "empty": "Tamamlayınız ilk etkinliği, ilerleme kaydına başlamak için başlanmaktadır.",
+    "leaderboardsEmpty": "Henüz öğrenciler tarafından oluşturulan bir zorluk yok — bir liderlik tablosu başlatmak için bir önerin.",
+    "leaderboardsLabel": "TABLOLAR",
+    "participantCount": "İlgi çekici {{count}} kişi katıldı",
+    "proposedBy": "{{name}} tarafından",
     "stats": {
       "activities": "Faaliyetler",
       "captures": "Kapturlar",
@@ -324,6 +357,7 @@
     "voiceLabel": "SES"
   },
   "tabs": {
+    "achievements": "Başarılar",
     "discover": "Keşfedin",
     "progress": "İlerleme",
     "propose": "Teklifi Sunat",

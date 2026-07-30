@@ -958,6 +958,55 @@ async def teacher_classes(
     ]
 
 
+@router.get("/teacher/active-sessions")
+async def teacher_active_sessions(
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Currently in-progress field sessions on this teacher's activities, for
+    live tracking (mobile teacher dashboard + web SessionMonitor).
+
+    latitude/longitude reflect the session's start location (set once, at
+    session creation) — the actual moving position comes from polling
+    GET /api/v1/sessions/{session_id}/events for 'location_update' events,
+    same as web's useSessionWebSocket hook. This endpoint is just "who's
+    currently in the field, and where did they start" so a teacher can pick
+    which session to watch closely.
+    """
+    result = await db.execute(
+        text("""
+            SELECT
+                ls.id AS session_id, ls.user_id AS student_id, ls.status,
+                ls.created_at AS started_at, ls.latitude, ls.longitude, ls.location_name,
+                a.id AS activity_id, a.title AS activity_title,
+                u.first_name, u.last_name
+            FROM learning_sessions ls
+            JOIN activities a ON ls.activity_id = a.id
+            JOIN users u ON ls.user_id = u.id
+            WHERE a.teacher_id = :tid AND ls.status = 'in_progress' AND ls.is_active = true
+            ORDER BY ls.created_at DESC
+        """),
+        {"tid": current_user.id},
+    )
+    rows = result.mappings().all()
+    return [
+        {
+            "session_id": str(r["session_id"]),
+            "student_id": str(r["student_id"]),
+            "student_name": f"{r['first_name']} {r['last_name']}".strip(),
+            "activity_id": str(r["activity_id"]),
+            "activity_title": r["activity_title"],
+            "status": r["status"],
+            "started_at": r["started_at"].isoformat() if r["started_at"] else None,
+            "latitude": r["latitude"],
+            "longitude": r["longitude"],
+            "location_name": r["location_name"],
+        }
+        for r in rows
+    ]
+
+
 # ── Submission review endpoints (called by TeacherSubmissionsPage) ────────────
 #
 # These operate on learning_sessions (which the teacher submissions list returns)

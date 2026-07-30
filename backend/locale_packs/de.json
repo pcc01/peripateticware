@@ -175,6 +175,33 @@
     "title": "Tagebuch Einträge",
     "transcriptPending": "Wartet auf Transkript..."
   },
+  "leaderboard": {
+    "empty": "Keiner hat diesen Herausforderung noch begonnen.",
+    "finished": "Fertig",
+    "loadError": "Kann diese Leaderboard nicht geladen werden.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Du bist auf Rang {{rank}}. Du hast in {{time}} abgeschlossen.",
+    "mySummaryInProgress": "Du bist auf Rang {{rank}}. Bis jetzt besitzen Sie {{count}} Stücke von Beweisen.",
+    "secondsFormat": "{{s}}",
+    "stepsSoFar": "{{count}} Stücke Beweisstücke bis jetzt",
+    "you": "Du"
+  },
+  "liveTracking": {
+    "activityFeed": "Aktivitätsfeed",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, begann vor {{elapsed}}",
+    "disconnected": "GETNACHTSCHLUSS",
+    "empty": "Keine Schüler sind derzeit im Feld.",
+    "hoursAgo": "vor {{n}} Stunden",
+    "lastKnownLocation": "letzte bekannte Position",
+    "live": "LEBEND",
+    "loadError": "Kann keine aktiven Sitzungen laden.",
+    "minutesAgo": "vor {{n}} Minuten",
+    "noEvents": "Keine Aktivität bis jetzt.",
+    "noLocationYet": "Keine Standortaktualisierung empfangen bis jetzt.",
+    "secondsAgo": "vor {{n}} Stunden",
+    "tabLabel": "Leitende Überwachung",
+    "title": "Leitende Überwachung"
+  },
   "login": {
     "emailLabel": "E-MAIL",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Anmeldung fehlgeschlagen"
     },
     "forgotPassword": "Passwort vergessen?",
+    "hidePassword": "Verstecke Kennwort",
     "missingFields": {
       "body": "Eingabe Ihre Email und Passwort.",
       "title": "Leerfelder"
@@ -191,6 +219,7 @@
       "body": "Kontaktiere deinen Lehrer, um Ihren Passwort zu neu setzen.",
       "title": "Kennwort zurücksetzen"
     },
+    "showPassword": "Passwort anzeigen",
     "signIn": "anmelden",
     "welcomeBack": "Willkommen zurück! Melden Sie sich an, um Ihre Lernreise fortzusetzen."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "PREMIEN",
     "competenciesLabel": "FERTIGKEITSSTÄRKEN",
     "empty": "Fortschritt verfolgen Sie mit der ersten Aktivität abzuschließen.",
+    "leaderboardsEmpty": "Keine Herausforderungen von Schülern geschaffen — eine vorstellen, um eine Wertungstabelle zu beginnen.",
+    "leaderboardsLabel": "RANGBEERLISTE",
+    "participantCount": "{{count}} teilnehmend",
+    "proposedBy": "von {{name}}",
     "stats": {
       "activities": "Aktivitäten",
       "captures": "Fängt",
@@ -324,6 +357,7 @@
     "voiceLabel": "STIMME"
   },
   "tabs": {
+    "achievements": "Leistungen",
     "discover": "Entdecken",
     "progress": "Fortschritt",
     "propose": "Vorschlagen",

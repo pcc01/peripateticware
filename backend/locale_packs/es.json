@@ -175,6 +175,33 @@
     "title": "Mis Entradas del Diario",
     "transcriptPending": "Transcripción pendiente…"
   },
+  "leaderboard": {
+    "empty": "Nadie ha comenzado este desafío aún.",
+    "finished": "Finalizado",
+    "loadError": "No se pudo cargar esta tabla de clasificaciones.",
+    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "mySummaryFinished": "Te estás posicionando en {{rank}}. Acabaste en {{time}}.",
+    "mySummaryInProgress": "Te estás clasificando en {{rank}}. Tienes hasta el momento {{count}} piezas de evidencia.",
+    "secondsFormat": "{{s}}s",
+    "stepsSoFar": "¡{{count}} piezas de prueba hasta ahora!",
+    "you": "Tú"
+  },
+  "liveTracking": {
+    "activityFeed": "ACTIVIDAD DE LA TIENDA",
+    "cardAccessibilityLabel": "{{name}}, {{activity}}, empezó hace {{elapsed}}",
+    "disconnected": "DESCONECTADO",
+    "empty": "Estudiantes no están actualmente en el campo.",
+    "hoursAgo": "atrás en {{n}} horas",
+    "lastKnownLocation": "ÚLTIMA UBICACIÓN CONOCIDA",
+    "live": "VIVO",
+    "loadError": "No se pudo cargar las sesiones activas.",
+    "minutesAgo": "pasado {{n}}m",
+    "noEvents": "Sin actividad todavía.",
+    "noLocationYet": "No se ha recibido actualización de ubicación aún.",
+    "secondsAgo": "{{n}} hace",
+    "tabLabel": "Rastreo en vivo",
+    "title": "Rastreo en vivo"
+  },
   "login": {
     "emailLabel": "CORREO ELECTRÓNICO",
     "failed": {
@@ -182,6 +209,7 @@
       "title": "Error al iniciar sesión"
     },
     "forgotPassword": "¿Olvidaste tu contraseña?",
+    "hidePassword": "Ocultar contraseña",
     "missingFields": {
       "body": "Ingresa tu correo electrónico y contraseña.",
       "title": "Faltan campos"
@@ -191,6 +219,7 @@
       "body": "Contacta a tu maestro para restablecer tu contraseña.",
       "title": "Restablecer contraseña"
     },
+    "showPassword": "Contraseña visible",
     "signIn": "Iniciar sesión",
     "welcomeBack": "¡Bienvenido de nuevo! Inicia sesión para continuar tu viaje de aprendizaje."
   },
@@ -246,6 +275,10 @@
     "badgesLabel": "INSIGNIAS",
     "competenciesLabel": "COMPETENCIAS",
     "empty": "Completa tu primera actividad para empezar a seguir tu progreso.",
+    "leaderboardsEmpty": "Desafíos creados por estudiantes aún no hay — proponer uno para iniciar una tabla de posiciones.",
+    "leaderboardsLabel": "CLASIFICACIONES",
+    "participantCount": "{{count}} participando",
+    "proposedBy": "por {{name}}",
     "stats": {
       "activities": "Actividades",
       "captures": "Capturas",
@@ -324,6 +357,7 @@
     "voiceLabel": "VOZ"
   },
   "tabs": {
+    "achievements": "Logros",
     "discover": "Descubre",
     "progress": "Progreso",
     "propose": "Proponer",
