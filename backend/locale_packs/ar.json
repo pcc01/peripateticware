@@ -145,6 +145,24 @@
     "periText_one": "لديك {{count}} مهام معلقة. أين ستتصور اليوم؟",
     "periText_other": "لديك {{count}} مهام تنتظرك. أين ستبحث عن التكوين اليوم؟"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "أطفال",
+    "empty": "لم يتم إضافة أطفال حتى الآن. اضف طفل في الويب اب للرؤية معركز التقدم هنا.",
+    "gradeLabel": "نقطة {{grade}}",
+    "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
+    "overallProgress": "نسبة التقدم الكلية {{percent}}%",
+    "progressUnavailable": "غلقت التحميل تقدير الطفل",
+    "stats": {
+      "activities": "ممارسات",
+      "children": "أطفال",
+      "completed": "مكتمل",
+      "sessions": "الجلسات",
+      "standards": "استندادات",
+      "totalSessions": "الجلسات"
+    },
+    "tabLabel": "لوحة القيادة",
+    "title": "لوحة التعليم البيتي"
+  },
   "journal": {
     "draft": "رافز",
     "empty": "لا شيء هنا حتى الآن.",
@@ -198,6 +216,19 @@
       "cta": "بدء البدء",
       "periSpeech": "في منطقتك هناك أنشطة الحقل المعرفة بالتوجه إلى التصوير"
     }
+  },
+  "parentDashboard": {
+    "empty": "لم يتم ربط أي أطفال حتى الآن. ربط واحد من الأطفال في الويب عاءلة لرؤية تقدمهم هنا.",
+    "lastActive": "آخر التحديث: {{date}}",
+    "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
+    "progressUnavailable": "غلقت التحميل تقدير الطفل",
+    "stats": {
+      "activities": "أنشطة",
+      "engagement": "تعاونة",
+      "hours": "ساعات"
+    },
+    "tabLabel": "أطفال",
+    "title": "Awlādī"
   },
   "perichat": {
     "closeChat": "إغلاق الدردشة",
@@ -297,5 +328,19 @@
     "progress": "تقدم",
     "propose": "اقرأ",
     "settings": "Ajustes"
+  },
+  "teacherDashboard": {
+    "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
+    "noActivities": "لم تقوم بإنشاء أي مهام حتى الآن — استخدم التطبيق الإنترنت لإنشاء واحدة.",
+    "recentLabel": "أحدث النشاطات",
+    "stats": {
+      "active": "نشط",
+      "classes": "أقسام",
+      "pending": "معلق",
+      "students": "طلاب"
+    },
+    "tabLabel": "لوحة القيادة",
+    "title": "لوحة المعلم",
+    "webHint": "للسلونات، القائمة الفردية والمعايير الاستثنائية، استخدم الويب اب اب."
   }
 }

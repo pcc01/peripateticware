@@ -145,6 +145,24 @@
     "periText_one": "你有{{count}}个活动等待您。今天你会在哪里探索？",
     "periText_other": "有{{count}}个活动等待你。今天你会在哪里探索？"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "儿童",
+    "empty": "尚未添加任何孩子。在网站应用程序中添加一个孩子以在这里查看他们的进展。",
+    "gradeLabel": "成绩 {{grade}}",
+    "loadError": "无法加载您的仪表板。",
+    "overallProgress": "总体进展{{percent}}%",
+    "progressUnavailable": "无法加载这名孩子的进展。",
+    "stats": {
+      "activities": "活动",
+      "children": "儿童",
+      "completed": "已完成",
+      "sessions": "会话",
+      "standards": "标准",
+      "totalSessions": "会话"
+    },
+    "tabLabel": "仪表板",
+    "title": "家庭教育控制台"
+  },
   "journal": {
     "draft": "草稿",
     "empty": "没有内容，保存或提交活动查看您的工作。",
@@ -198,6 +216,19 @@
       "cta": "开始使用",
       "periSpeech": "你的地区有值得探索的场地活动。"
     }
+  },
+  "parentDashboard": {
+    "empty": "尚未链接任何孩子。在网站应用程序中链接一个孩子，以查看他们的进展。",
+    "lastActive": "最后活跃时间：{{date}}",
+    "loadError": "无法加载您的仪表板。",
+    "progressUnavailable": "无法加载这位孩子的进展。",
+    "stats": {
+      "activities": "活动",
+      "engagement": "参与度",
+      "hours": "小时数"
+    },
+    "tabLabel": "儿童",
+    "title": "我的孩子"
   },
   "perichat": {
     "closeChat": "关闭聊天",
@@ -297,5 +328,19 @@
     "progress": "进度",
     "propose": "建议",
     "settings": "设置"
+  },
+  "teacherDashboard": {
+    "loadError": "无法加载您的仪表板。",
+    "noActivities": "你还没有创建任何活动，请使用网页应用创建一个。",
+    "recentLabel": "最近活动",
+    "stats": {
+      "active": "活动中",
+      "classes": "课程",
+      "pending": "待处理",
+      "students": "学生"
+    },
+    "tabLabel": "仪表板",
+    "title": "教师控制台",
+    "webHint": "关于教室、排班表和评分标准，请使用网页应用。"
   }
 }

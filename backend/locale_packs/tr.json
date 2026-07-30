@@ -145,6 +145,24 @@
     "periText_one": "İşleminizde {{count}} aktivite bekliyor. Bugün ne yere keşfedebilirsiniz?",
     "periText_other": "İşleminizde {{count}} aktivite bekliyor. Hangi yere bugün keşfedeceksiniz?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "ÇOCUKLAR",
+    "empty": "Yeterlenmeyen çocuk eklenmemiş. Web uygulamasında bir çocuk ekleerek ilerleme durumunu burada gözlemleyin.",
+    "gradeLabel": "SİNEKLİ {{grade}}",
+    "loadError": "Yardım edilemiyor dashboard.",
+    "overallProgress": "{{percent}}% genel ilerleme",
+    "progressUnavailable": "Yükleme sırasında bu çocukun ilerlemeyi yükleyemedi.",
+    "stats": {
+      "activities": "Faaliyetler",
+      "children": "Çocuklar",
+      "completed": "Tamamlandı",
+      "sessions": "Oturumlar",
+      "standards": "Standartlar",
+      "totalSessions": "Oturumlar"
+    },
+    "tabLabel": "Ana Sayfa",
+    "title": "Anaokulu Paneli"
+  },
   "journal": {
     "draft": "Taslak",
     "empty": "Hiç yok. İşlemi kaydet veya gerçekleştirerek çalışmanızı görmek için lütfen deneyiniz.",
@@ -198,6 +216,19 @@
       "cta": "Başlayın",
       "periSpeech": "Arayanızda keşfedilecek alanlarda alan işleri var."
     }
+  },
+  "parentDashboard": {
+    "empty": "Çocuk bağlantısı yapılmamıştır. Web uygulamasında bir çocuya bağlanarak ilerleme durumunu burada gözlemleyin.",
+    "lastActive": "Son aktif: {{date}}",
+    "loadError": "Yardım edilemiyor dashboard.",
+    "progressUnavailable": "Ardışık zamanlarda bu çocukun ilerleme yüklenemedi.",
+    "stats": {
+      "activities": "Faaliyetler",
+      "engagement": "Tamamlama",
+      "hours": "Saatler (plural) - Saati (singular)"
+    },
+    "tabLabel": "Çocuklar",
+    "title": "Annem ve Çocuklarım"
   },
   "perichat": {
     "closeChat": "Kapat chat",
@@ -297,5 +328,19 @@
     "progress": "İlerleme",
     "propose": "Teklifi Sunat",
     "settings": "Ayarlar"
+  },
+  "teacherDashboard": {
+    "loadError": "Yardım edilemiyor dashboard.",
+    "noActivities": "Olmadığınız zaman hiçbir aktivite oluşturmadınız - internet tabanlı uygulamayı kullanarak birini oluşturun.",
+    "recentLabel": "FAKAT SON AŞAMALAR",
+    "stats": {
+      "active": "Aktif",
+      "classes": "Sınıflar",
+      "pending": "Bekleyen",
+      "students": "Öğrenciler"
+    },
+    "tabLabel": "Ana Sayfa",
+    "title": "Öğretmen Paneli",
+    "webHint": "Sınif odaları, öğrenci listeleri ve rubrikler için web uygulamasını kullanın."
   }
 }

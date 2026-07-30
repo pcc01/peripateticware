@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, clearToken } from '@/src/api/client';
-import { login as apiLogin, logout as apiLogout, LoginResponse } from '@/src/api/auth';
+import { login as apiLogin, logout as apiLogout, getCurrentUser, LoginResponse } from '@/src/api/auth';
 
 interface User {
   id: string;
@@ -26,23 +26,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken_] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore session on mount
+  // Restore session on mount. The JWT itself only carries the user id (see
+  // src/api/auth.ts's getCurrentUser() comment) — email and role are NOT
+  // embedded in it, so decoding the token locally can never recover them.
+  // A prior version of this effect did exactly that and hardcoded
+  // `role: 'STUDENT'` as a placeholder that was supposed to get corrected
+  // "on next action" but nothing ever did — every restored session silently
+  // became a student session regardless of the account's real role, which
+  // is what made teacher/parent accounts always land back on the student
+  // tabs after a cold start even once those tabs became role-aware. Fetch
+  // the real profile from /api/v1/auth/me instead, same as the web
+  // frontend's checkAuth() already does on every mount.
   useEffect(() => {
-    getToken().then((t) => {
-      if (t) {
-        // Token exists but we don't have user info — decode from JWT payload
-        try {
-          const payload = JSON.parse(atob(t.split('.')[1]));
-          // Minimal user from token — email/role fetched fresh on next action
-          setToken_(t);
-          setUser({ id: payload.sub, email: '', role: 'STUDENT' });
-        } catch {
-          // Malformed token — clear it
-          clearToken();
-        }
+    (async () => {
+      const t = await getToken();
+      if (!t) { setIsLoading(false); return; }
+      setToken_(t);
+      try {
+        const me = await getCurrentUser();
+        setUser({ id: me.user_id, email: me.email, role: me.role.toUpperCase() });
+      } catch {
+        // Token expired/invalid/network down — clear it rather than trap the
+        // user in a half-authenticated state with a token that doesn't work.
+        await clearToken();
+        setToken_(null);
       }
       setIsLoading(false);
-    });
+    })();
   }, []);
 
   const login = async (email: string, password: string) => {

@@ -145,6 +145,24 @@
     "periText_one": "Attendevi {{count}} attività. Dove esplorerai oggi?",
     "periText_other": "Attività in attesa per te: {{count}}. Dove esplorerai oggi?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "BAMBI",
+    "empty": "Nessun figlio aggiunto ancora. Aggiungi un figlio nell'app web per vedere il loro progresso qui.",
+    "gradeLabel": "VAI CLASSE {{grade}}",
+    "loadError": "Non è possibile caricare la tua area di lavoro.",
+    "overallProgress": "{{percent}}% progresso complessivo",
+    "progressUnavailable": "Non è stato possibile caricare il progresso di questo bambino.",
+    "stats": {
+      "activities": "Attività",
+      "children": "Bambini",
+      "completed": "Completato",
+      "sessions": "Sessioni",
+      "standards": "Norme",
+      "totalSessions": "Sessioni"
+    },
+    "tabLabel": "Pannello di controllo",
+    "title": "Tavolo di lavoro home-scuola"
+  },
   "journal": {
     "draft": "Bozza",
     "empty": "Nulla qui ancora.",
@@ -198,6 +216,19 @@
       "cta": "Avvia",
       "periSpeech": "Attività nei campi disponibili nella tua zona da esplorare."
     }
+  },
+  "parentDashboard": {
+    "empty": "Nessun figlio collegato ancora. Collega un figlio nell'app web per vedere il loro progresso qui.",
+    "lastActive": "Attivo per ultima volta: {{date}}",
+    "loadError": "Non è possibile caricare la tua area di lavoro.",
+    "progressUnavailable": "Non è possibile caricare il progresso di questo bambino.",
+    "stats": {
+      "activities": "Attività",
+      "engagement": "Interazione",
+      "hours": "Ore"
+    },
+    "tabLabel": "Bambini",
+    "title": "Figli Miei"
   },
   "perichat": {
     "closeChat": "Chiudi chat",
@@ -297,5 +328,19 @@
     "progress": "Avanzamento",
     "propose": "Proposta",
     "settings": "Impostazioni"
+  },
+  "teacherDashboard": {
+    "loadError": "Non è possibile caricare la tua console.",
+    "noActivities": "Non hai creato ancora attività - utilizza l'app web per creare una.",
+    "recentLabel": "AZIONI RICENTRATE",
+    "stats": {
+      "active": "Attivo",
+      "classes": "Lezioni",
+      "pending": "In corso",
+      "students": "Alunni"
+    },
+    "tabLabel": "Pannello di controllo",
+    "title": "Dashboard insegnante",
+    "webHint": "Utilizza l'app web per le aule, elenco delle matricole e i rubriche."
   }
 }

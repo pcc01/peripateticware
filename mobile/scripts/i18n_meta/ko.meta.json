@@ -623,6 +623,90 @@
     "sourceHash": "1dc2b97e5af5f4b8",
     "translatedAt": "2026-07-29T19:22:48.903776+00:00"
   },
+  "homeschoolDashboard.childrenLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4058815f6565b795",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "a9aa1e134f072d10",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.gradeLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "519ff2901883e5aa",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.loadError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "047091874166ffd3",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.overallProgress": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "8a412615810e66e6",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.progressUnavailable": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "6f50539497d5d631",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.activities": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4d0076e6b4c71059",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.children": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3583a358a585b13b",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.completed": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "22a970d2e5b1cc23",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.sessions": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "6fa3cbf451b2a1d5",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.standards": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "b9a136292f4004e2",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.stats.totalSessions": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "6fa3cbf451b2a1d5",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.tabLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "67b696468610b879",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
+  "homeschoolDashboard.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "77a64c64b7c871a3",
+    "translatedAt": "2026-07-30T03:37:09.310269+00:00"
+  },
   "journal.draft": {
     "needsManualTranslation": false,
     "provider": "ollama:mistral",
@@ -826,6 +910,60 @@
     "provider": "ollama:mistral",
     "sourceHash": "6c305287c443677f",
     "translatedAt": "2026-07-28T16:06:52.339868+00:00"
+  },
+  "parentDashboard.empty": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "32460dcbb3de78a1",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.lastActive": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "beb5b2eebdac6799",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.loadError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "047091874166ffd3",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.progressUnavailable": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "6f50539497d5d631",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.stats.activities": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "4d0076e6b4c71059",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.stats.engagement": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "ea68771a399457d9",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.stats.hours": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "21e8492938abc179",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.tabLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "3583a358a585b13b",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "parentDashboard.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "b8177fca9ea51e6a",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
   },
   "perichat.closeChat": {
     "needsManualTranslation": false,
@@ -1204,5 +1342,65 @@
     "provider": "ollama:mistral",
     "sourceHash": "74a883a037bc227f",
     "translatedAt": "2026-07-29T19:22:48.903776+00:00"
+  },
+  "teacherDashboard.loadError": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "047091874166ffd3",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.noActivities": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "695cf61c26ae4160",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.recentLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "c3777cd63c27eb2a",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.stats.active": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "92340695899bd2d8",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.stats.classes": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "84637286c5b731d7",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.stats.pending": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "331551b0de4157c9",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.stats.students": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "2a19bb78de3ef043",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.tabLabel": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "67b696468610b879",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.title": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "eafe1cadcdbdf89f",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
+  },
+  "teacherDashboard.webHint": {
+    "needsManualTranslation": false,
+    "provider": "ollama:mistral",
+    "sourceHash": "d26ce14bc8a78021",
+    "translatedAt": "2026-07-30T03:21:40.094401+00:00"
   }
 }

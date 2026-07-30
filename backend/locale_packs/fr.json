@@ -145,6 +145,24 @@
     "periText_one": "{{count}} activité qui t’attend. Où vas-tu explorer aujourd’hui ?",
     "periText_other": "{{count}} des activités qui t’attendent. Où vas-tu explorer aujourd’hui ?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "ENFANTS",
+    "empty": "Encore aucun enfant ajouté. Ajoutez un enfant dans l'application web pour voir leur progrès ici.",
+    "gradeLabel": "NIVEAU {{grade}}",
+    "loadError": "Impossible de charger votre tableau de bord.",
+    "overallProgress": "{{percent}} % de progression globale",
+    "progressUnavailable": "Pas possible de charger le progrès de cet enfant.",
+    "stats": {
+      "activities": "Activités",
+      "children": "Enfants",
+      "completed": "Terminé",
+      "sessions": "Séances",
+      "standards": "Normes",
+      "totalSessions": "Séances"
+    },
+    "tabLabel": "Tableau de bord",
+    "title": "Tableau de bord d'éducation à domicile"
+  },
   "journal": {
     "draft": "Projet",
     "empty": "Rien ici encore.",
@@ -198,6 +216,19 @@
       "cta": "Commencer",
       "periSpeech": "Activités de champ à explorer dans votre région."
     }
+  },
+  "parentDashboard": {
+    "empty": "Encore aucun enfant lié. Liez un enfant sur l'application web pour voir leur progrès ici.",
+    "lastActive": "Actif récemment : {{date}}",
+    "loadError": "Impossible de charger votre tableau de bord.",
+    "progressUnavailable": "Pas possible de charger le progrès de cet enfant.",
+    "stats": {
+      "activities": "Activités",
+      "engagement": "Implication",
+      "hours": "Heures"
+    },
+    "tabLabel": "Enfants",
+    "title": "Mes Enfants"
   },
   "perichat": {
     "closeChat": "Fermez le chat",
@@ -297,5 +328,19 @@
     "progress": "Avancement",
     "propose": "Proposer",
     "settings": "Paramètres"
+  },
+  "teacherDashboard": {
+    "loadError": "Impossible de charger votre tableau de bord.",
+    "noActivities": "Pas de activité créée encore - utilisez l'application web pour en créer une.",
+    "recentLabel": "ACTIVITES RÉCENTES",
+    "stats": {
+      "active": "Actif",
+      "classes": "Cours",
+      "pending": "En attente",
+      "students": "Eleves"
+    },
+    "tabLabel": "Tableau de bord",
+    "title": "Tableau de bord enseignant",
+    "webHint": "Utilisez l'application web pour les classes, les listes de présence et les rubriques."
   }
 }

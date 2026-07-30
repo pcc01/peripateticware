@@ -145,6 +145,24 @@
     "periText_one": "{{count}} Aktivität wartet auf dich. Wo explorierst du heute?",
     "periText_other": "{{count}}} Aktivitäten, die auf dich warten. Wohin wirst du heute erkunden?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "KINDER",
+    "empty": "Keine Kinder hinzugefügt noch. Hier fügen Sie ein Kind im Web-App an, um ihre Fortschritt hier zu sehen.",
+    "gradeLabel": "GRADE {{grade}}",
+    "loadError": "Kann Ihr Dashboard nicht geladen werden.",
+    "overallProgress": "{{percent}} % Gesamtfortschritt",
+    "progressUnavailable": "Kann dieses Kinds Fortschritt nicht laden.",
+    "stats": {
+      "activities": "Aktivitäten",
+      "children": "Kinder",
+      "completed": "Vollendet",
+      "sessions": "Sitzungen",
+      "standards": "Normen",
+      "totalSessions": "Sitzungen"
+    },
+    "tabLabel": "Tabelle",
+    "title": "Heimschul-Dashboard"
+  },
   "journal": {
     "draft": "Entwurf",
     "empty": "Nichts hier noch.",
@@ -198,6 +216,19 @@
       "cta": "Anfang starten",
       "periSpeech": "Gebietstätigkeiten wert explorierender Felder gibt es in Ihrer Umgebung."
     }
+  },
+  "parentDashboard": {
+    "empty": "Keine Kinder verknüpft noch. Verknüpfen Sie ein Kind im Web-App über die Verknüpfungsfunktion, um ihre Fortschrittsdaten hier anzuzeigen.",
+    "lastActive": "Aktivstille: {{date}}",
+    "loadError": "Kann Ihre Dashboard nicht geladen werden.",
+    "progressUnavailable": "Kann das Fortschritt dieses Kindes nicht geladen werden.",
+    "stats": {
+      "activities": "Aktivitäten",
+      "engagement": "Interaktion",
+      "hours": "Stunden"
+    },
+    "tabLabel": "Kinder",
+    "title": "Meine Kinder"
   },
   "perichat": {
     "closeChat": "Schließen-Chat",
@@ -297,5 +328,19 @@
     "progress": "Fortschritt",
     "propose": "Vorschlagen",
     "settings": "Einstellungen"
+  },
+  "teacherDashboard": {
+    "loadError": "Kann Ihre Dashboard nicht geladen werden.",
+    "noActivities": "Keine Aktivitäten erstellt - nutze die Web-App um eine zu erstellen.",
+    "recentLabel": "AKTIVITÄTEN GEGENWARTIG",
+    "stats": {
+      "active": "Aktiv",
+      "classes": "Klassen",
+      "pending": "Ausstehend",
+      "students": "Schüler"
+    },
+    "tabLabel": "Tabelle",
+    "title": "Lehrer-Dashboard",
+    "webHint": "Klassenraum, Schülerlisten und Rubriken nutzen Sie die Web-App."
   }
 }

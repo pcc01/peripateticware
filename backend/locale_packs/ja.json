@@ -145,6 +145,24 @@
     "periText_one": "活動{{count}}が待っています。今日はどこに探索しますか？",
     "periText_other": "活動{{count}}が待っています。今日どこに探索しますか？"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "子供",
+    "empty": "子供が追加されていません。ウェブアプリで子供を追加して、ここで進捗状況を見ることができます。",
+    "gradeLabel": "レVel {{grade}}",
+    "loadError": "ダッシュボードを読み込めません。",
+    "overallProgress": "全体進捗{{percent}}%",
+    "progressUnavailable": "この子どもの進捗を読み込めませんでした。",
+    "stats": {
+      "activities": "活動",
+      "children": "子供",
+      "completed": "完了",
+      "sessions": "セッション",
+      "standards": "規格",
+      "totalSessions": "セッション"
+    },
+    "tabLabel": "ダッシュボード",
+    "title": "ホームスクールダッシュボード"
+  },
   "journal": {
     "draft": "下書き",
     "empty": "まだ何もありません。",
@@ -198,6 +216,19 @@
       "cta": "スタートする",
       "periSpeech": "あなたの地域には調べる値段があります。"
     }
+  },
+  "parentDashboard": {
+    "empty": "子供にリンクされていません。ウェブアプリで子供をリンクして、ここで進捗状況を見ることができます。",
+    "lastActive": "最後にアクティブ：{{date}}",
+    "loadError": "ダッシュボードを読み込めません。",
+    "progressUnavailable": "この子供の進捗を読み込めません。",
+    "stats": {
+      "activities": "活動",
+      "engagement": "参加",
+      "hours": "時間"
+    },
+    "tabLabel": "子供",
+    "title": "私の子供たち"
   },
   "perichat": {
     "closeChat": "チャットを閉じる",
@@ -297,5 +328,19 @@
     "progress": "進捗",
     "propose": "提案する",
     "settings": "設定"
+  },
+  "teacherDashboard": {
+    "loadError": "ダッシュボードを読み込めません。",
+    "noActivities": "まだアクティビティを作成していません。ウェブアプリを使用して、1つを作成してください。",
+    "recentLabel": "最近の活動",
+    "stats": {
+      "active": "アクティブ",
+      "classes": "クラス",
+      "pending": "待ち受け中",
+      "students": "学生"
+    },
+    "tabLabel": "ダッシュボード",
+    "title": "教師ダッシュボード",
+    "webHint": "クラスルーム、ローター、およびルビックを使用するには、ウェブアプリを使用してください。"
   }
 }

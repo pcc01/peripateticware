@@ -145,6 +145,24 @@
     "periText_one": "{{count}} atividade aguardando por você. Em qual lugar explorará hoje?",
     "periText_other": "{{count}} atividades esperando por você. Onde você vai explorar hoje?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "CRÈCERES",
+    "empty": "Nenhum filho adicionado ainda. Adicione um filho na aplicação web para ver o seu progresso aqui.",
+    "gradeLabel": "NOTA {{grade}}",
+    "loadError": "Não foi possível carregar seu painel.",
+    "overallProgress": "{{percent}}% progresso geral",
+    "progressUnavailable": "Não foi possível carregar o progresso deste filho.",
+    "stats": {
+      "activities": "Atividades",
+      "children": "Crianças",
+      "completed": "Concluído",
+      "sessions": "Sessões",
+      "standards": "Normas",
+      "totalSessions": "Sessões"
+    },
+    "tabLabel": "Painel",
+    "title": "Painel de Aprendizagem em Casa"
+  },
   "journal": {
     "draft": "Rascunho",
     "empty": "Nada aqui ainda.",
@@ -198,6 +216,19 @@
       "cta": "Iniciar",
       "periSpeech": "Atividades em campo na sua área são interessantes para explorar."
     }
+  },
+  "parentDashboard": {
+    "empty": "Sem filhos vinculados ainda. Vincule um filho na aplicação web para ver seu progresso aqui.",
+    "lastActive": "Última atividade: {{date}}",
+    "loadError": "Não foi possível carregar seu painel.",
+    "progressUnavailable": "Não foi possível carregar o progresso deste filho.",
+    "stats": {
+      "activities": "Atividades",
+      "engagement": "Interação",
+      "hours": "Horas"
+    },
+    "tabLabel": "Crianças",
+    "title": "Meus Filhos"
   },
   "perichat": {
     "closeChat": "Fechar chat",
@@ -297,5 +328,19 @@
     "progress": "Avanço",
     "propose": "Proporça",
     "settings": "Configurações"
+  },
+  "teacherDashboard": {
+    "loadError": "Não foi possível carregar sua tabela de bordo.",
+    "noActivities": "Atividades não criadas ainda — crie uma usando a versão web.",
+    "recentLabel": "ATividades Recentes",
+    "stats": {
+      "active": "Ativo",
+      "classes": "Aulas",
+      "pending": "Aguardando",
+      "students": "Alunos"
+    },
+    "tabLabel": "Painel",
+    "title": "Painel do Professor",
+    "webHint": "Aulas, turmas e rubricaques utilizem a aplicação web."
   }
 }

@@ -145,6 +145,24 @@
     "periText_one": "{{count}} actividad te espera. ¿Dónde explorarás hoy?",
     "periText_other": "{{count}} actividades te esperan. ¿Dónde explorarás hoy?"
   },
+  "homeschoolDashboard": {
+    "childrenLabel": "NIÑOS",
+    "empty": "Ningún niño agregado aún. Agrega un niño en la aplicación web para ver su progreso aquí.",
+    "gradeLabel": "NOTA {{grade}}",
+    "loadError": "No se pudo cargar tu tablero.",
+    "overallProgress": "{{percent}} % de progreso general",
+    "progressUnavailable": "No se pudo cargar el progreso de este niño.",
+    "stats": {
+      "activities": "Actividades",
+      "children": "Niños",
+      "completed": "Completado",
+      "sessions": "Sesiones",
+      "standards": "Normas",
+      "totalSessions": "Sesiones"
+    },
+    "tabLabel": "Tablero",
+    "title": "Tablero de enseñanza en casa"
+  },
   "journal": {
     "draft": "Borrador",
     "empty": "Nada por aquí todavía.\nGuarda o entrega una actividad para ver tu trabajo.",
@@ -198,6 +216,19 @@
       "cta": "Comencemos",
       "periSpeech": "Hay actividades de campo en tu área que vale la pena explorar."
     }
+  },
+  "parentDashboard": {
+    "empty": "Ningún hijo vinculado aún. Víncula un niño en la aplicación web para ver su progreso aquí.",
+    "lastActive": "Activo últimamente: {{date}}",
+    "loadError": "No se pudo cargar tu tablero.",
+    "progressUnavailable": "No se pudo cargar el progreso de este niño.",
+    "stats": {
+      "activities": "Actividades",
+      "engagement": "Interacción",
+      "hours": "Horas"
+    },
+    "tabLabel": "Niños",
+    "title": "Mis Hijos"
   },
   "perichat": {
     "closeChat": "Cerrar chat",
@@ -297,5 +328,19 @@
     "progress": "Progreso",
     "propose": "Proponer",
     "settings": "Ajustes"
+  },
+  "teacherDashboard": {
+    "loadError": "No se pudo cargar tu tablero.",
+    "noActivities": "No has creado actividades aún — utilice la aplicación web para crear una.",
+    "recentLabel": "ACTIVIDADES RECIENTES",
+    "stats": {
+      "active": "Activo",
+      "classes": "Clases",
+      "pending": "Pendiente",
+      "students": "Estudiantes"
+    },
+    "tabLabel": "Tablero",
+    "title": "Tablero de Maestro",
+    "webHint": "Aulas, listas de clase y rubricas, utiliza la aplicación web."
   }
 }

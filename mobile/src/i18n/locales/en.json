@@ -230,6 +230,51 @@
     "settings": "Settings",
     "propose": "Propose"
   },
+  "teacherDashboard": {
+    "title": "Teacher Dashboard",
+    "tabLabel": "Dashboard",
+    "loadError": "Could not load your dashboard.",
+    "recentLabel": "RECENT ACTIVITIES",
+    "noActivities": "You haven't created any activities yet — use the web app to build one.",
+    "webHint": "For classrooms, rosters, and rubrics, use the web app.",
+    "stats": {
+      "students": "Students",
+      "classes": "Classes",
+      "active": "Active",
+      "pending": "Pending"
+    }
+  },
+  "parentDashboard": {
+    "title": "My Children",
+    "tabLabel": "Children",
+    "loadError": "Could not load your dashboard.",
+    "empty": "No children linked yet. Link a child in the web app to see their progress here.",
+    "progressUnavailable": "Could not load this child's progress.",
+    "lastActive": "Last active: {{date}}",
+    "stats": {
+      "activities": "Activities",
+      "hours": "Hours",
+      "engagement": "Engagement"
+    }
+  },
+  "homeschoolDashboard": {
+    "title": "Homeschool Dashboard",
+    "tabLabel": "Dashboard",
+    "loadError": "Could not load your dashboard.",
+    "empty": "No children added yet. Add a child in the web app to see their progress here.",
+    "progressUnavailable": "Could not load this child's progress.",
+    "childrenLabel": "CHILDREN",
+    "gradeLabel": "GRADE {{grade}}",
+    "overallProgress": "{{percent}}% overall progress",
+    "stats": {
+      "children": "Children",
+      "activities": "Activities",
+      "totalSessions": "Sessions",
+      "standards": "Standards",
+      "sessions": "Sessions",
+      "completed": "Completed"
+    }
+  },
   "propose": {
     "periText": "Found something worth a challenge? Write it up for other students to discover.",
     "empty": "No challenges yet. Propose one for other students to find in the field.",
