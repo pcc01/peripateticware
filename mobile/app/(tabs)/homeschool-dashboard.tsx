@@ -1,11 +1,13 @@
-// app/(tabs)/homeschool-dashboard.tsx — read-only summary for HOMESCHOOL
-// accounts. Mirrors teacher-dashboard.tsx's stats row (this role also
-// creates activities, like a teacher) and parent-dashboard.tsx's per-child
-// progress cards (this role also tracks individual kids, like a parent) —
-// a homeschool parent is genuinely both. Adding/editing children, standards
-// coverage, and portfolio export stay web-only; see app/(tabs)/_layout.tsx
-// for how this tab is shown only when the signed-in account's role is
-// HOMESCHOOL.
+// app/(tabs)/homeschool-dashboard.tsx — "Children" tab for HOMESCHOOL
+// accounts: per-child progress cards, same idea as parent-dashboard.tsx's
+// "this role also tracks individual kids" view. This used to also carry a
+// stats-row summary (activities/sessions/standards) and be the *primary*
+// tab for HOMESCHOOL, but HOMESCHOOL now mirrors TEACHER's Dashboard +
+// Live Tracking tabs exactly (see app/(tabs)/_layout.tsx) — those stats
+// live there now. This is kept as a secondary "Children" tab, HOMESCHOOL
+// only, since a homeschool parent tracking individual kids is the one
+// thing TEACHER's tabs genuinely don't cover. Adding/editing children,
+// standards coverage, and portfolio export stay web-only.
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
@@ -13,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import {
-  fetchHomeschoolDashboard, fetchHomeschoolChildren, fetchHomeschoolChildProgress,
-  HomeschoolDashboard, HomeschoolChild, HomeschoolChildProgress,
+  fetchHomeschoolChildren, fetchHomeschoolChildProgress,
+  HomeschoolChild, HomeschoolChildProgress,
 } from '@/src/api/homeschool';
 
 function ChildCard({ child, theme, t }: { child: HomeschoolChild; theme: any; t: (k: string, d: string, o?: any) => any }) {
@@ -76,7 +78,6 @@ function ChildCard({ child, theme, t }: { child: HomeschoolChild; theme: any; t:
 export default function HomeschoolDashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [summary, setSummary] = useState<HomeschoolDashboard | null>(null);
   const [children, setChildren] = useState<HomeschoolChild[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,9 +86,7 @@ export default function HomeschoolDashboardScreen() {
   const load = useCallback(async () => {
     try {
       setError(false);
-      const [s, c] = await Promise.all([fetchHomeschoolDashboard(), fetchHomeschoolChildren()]);
-      setSummary(s);
-      setChildren(c);
+      setChildren(await fetchHomeschoolChildren());
     } catch {
       setError(true);
     }
@@ -104,12 +103,12 @@ export default function HomeschoolDashboardScreen() {
   return (
     <SafeAreaView testID="homeschool-dashboard-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('homeschoolDashboard.title', 'Homeschool Dashboard')}</Text>
+        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('homeschoolDashboard.childrenTitle', 'Children')}</Text>
       </View>
 
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
-      ) : error || !summary ? (
+      ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
             {t('homeschoolDashboard.loadError', 'Could not load your dashboard.')}
@@ -120,23 +119,6 @@ export default function HomeschoolDashboardScreen() {
           contentContainerStyle={{ padding: 16, gap: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
         >
-          <View style={styles.summaryRow}>
-            {[
-              { label: t('homeschoolDashboard.stats.children', 'Children'), value: summary.child_count, emoji: '👨‍👩‍👧' },
-              { label: t('homeschoolDashboard.stats.activities', 'Activities'), value: summary.activity_count, emoji: '📍' },
-              { label: t('homeschoolDashboard.stats.totalSessions', 'Sessions'), value: summary.session_count, emoji: '🗓' },
-              { label: t('homeschoolDashboard.stats.standards', 'Standards'), value: summary.standards_count, emoji: '📋' },
-            ].map((stat) => (
-              <View key={stat.label} style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
-                <Text style={styles.statCardEmoji}>{stat.emoji}</Text>
-                <Text style={[styles.statCardValue, { fontFamily: theme.fontHead, color: theme.text }]}>{stat.value}</Text>
-                <Text style={[styles.statCardLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{stat.label.toUpperCase()}</Text>
-              </View>
-            ))}
-          </View>
-
-          <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('homeschoolDashboard.childrenLabel', 'CHILDREN')}</Text>
-
           {children.length === 0 ? (
             <View style={styles.center}>
               <Text style={styles.emptyEmoji}>👨‍👩‍👧</Text>
@@ -160,11 +142,6 @@ const styles = StyleSheet.create({
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   emptyEmoji:   { fontSize: 48 },
   emptyText:    { fontSize: 14, textAlign: 'center', lineHeight: 22 },
-  summaryRow:   { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  statCard:     { flexGrow: 1, flexBasis: '45%', alignItems: 'center', padding: 14, borderWidth: 1, gap: 4 },
-  statCardEmoji:{ fontSize: 22 },
-  statCardValue:{ fontSize: 24, fontWeight: '700' },
-  statCardLabel:{ fontSize: 8, letterSpacing: 1, textTransform: 'uppercase' },
   sectionLabel: { fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' },
   card:         { padding: 14, borderWidth: 1, gap: 10 },
   cardHeaderRow:{ flexDirection: 'row', alignItems: 'center', gap: 10 },

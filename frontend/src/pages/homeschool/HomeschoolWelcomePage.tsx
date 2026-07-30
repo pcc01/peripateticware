@@ -98,9 +98,16 @@ const HomeschoolWelcomePage: React.FC = () => {
         // later on the Children page. (Previously the POST 422'd and was swallowed,
         // so children never saved.)
         const slug = child.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'child';
+        // Not @homeschool.local — `.local` is an RFC 6762 special-use TLD
+        // that pydantic's EmailStr rejects outright ("special-use or
+        // reserved name"), confirmed live against this backend (every child
+        // created through this wizard was silently 422ing before this fix,
+        // caught by the existing anyFailed handling below but never
+        // surfaced as why). A subdomain of the real product domain passes
+        // validation and still can't collide with a real user's own email.
         const payload = {
           full_name:   child.name.trim(),
-          email:       `${slug}.${Math.random().toString(36).slice(2, 7)}@homeschool.local`,
+          email:       `${slug}.${Math.random().toString(36).slice(2, 7)}@homeschool.peripateticware.com`,
           password:    'Homeschool@1234',
           grade_level: parseInt(child.grade) || 0,
           age_band:    child.age_band,

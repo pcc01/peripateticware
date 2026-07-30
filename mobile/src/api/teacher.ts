@@ -70,3 +70,42 @@ export interface TeacherActivityDetail {
 export async function fetchTeacherActivityDetail(id: string): Promise<TeacherActivityDetail> {
   return apiFetch<TeacherActivityDetail>(`/api/v1/activities/${id}`);
 }
+
+export interface TeacherActivityListItem {
+  id: string;
+  title: string;
+  subject: string;
+  grade_level: number;
+  status: string;
+  created_at: string;
+}
+
+interface PaginatedActivities {
+  items: TeacherActivityListItem[];
+  total: number;
+}
+
+// "Active" on the dashboard means published — mirrors active_activities'
+// definition in teacher_dashboard() (published_act). GET /activities is the
+// same list endpoint web's ActivityManager uses; page_size=100 keeps this a
+// single request rather than adding real pagination UI to a lean mobile
+// list (a teacher/homeschool account realistically has well under 100
+// published activities).
+export async function fetchTeacherActivities(): Promise<TeacherActivityListItem[]> {
+  const data = await apiFetch<PaginatedActivities>('/api/v1/activities?status=published&page_size=100');
+  return data.items;
+}
+
+export interface TeacherClass {
+  id: string;
+  name: string;
+  description: string | null;
+  grade_level: number | null;
+  school_year: string | null;
+  is_active: boolean;
+  created_at: string | null;
+}
+
+export async function fetchTeacherClasses(): Promise<TeacherClass[]> {
+  return apiFetch<TeacherClass[]>('/api/v1/activities/teacher/classes');
+}

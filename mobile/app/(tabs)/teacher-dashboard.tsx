@@ -7,13 +7,12 @@
 //
 // Stat cards and activity rows are real tap targets (Session 47 Addendum 3,
 // item 1 — they used to be plain Views with no onPress at all): activity
-// rows open a read-only detail screen (app/teacher-activity/[id].tsx);
-// "Pending" and "Students" cards open the submissions list
-// (app/teacher-submissions.tsx), since both numbers are drawn from the same
-// underlying session data. "Active" and "Classes" are left non-interactive —
-// "Active" would just reopen the Recent Activities list already visible
-// right below it, and there's no built mobile screen for classroom/roster
-// browsing (that stays web-only, same as everywhere else on this tab).
+// rows and the "Active" card open the full activities list
+// (app/teacher-activities.tsx — the dashboard's own Recent Activities
+// section only shows the last 5); "Pending" and "Students" cards open the
+// submissions list (app/teacher-submissions.tsx), since both numbers are
+// drawn from the same underlying session data; "Classes" opens a read-only
+// class list (app/teacher-classes.tsx).
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
@@ -29,7 +28,12 @@ const STATUS_COLOR_KEY: Record<string, 'accent' | 'textMuted' | 'warn'> = {
   archived: 'textMuted',
 };
 
-const TAPPABLE_STATS = new Set(['pending', 'students']);
+const STAT_DESTINATION: Record<string, string> = {
+  students: '/teacher-submissions',
+  pending: '/teacher-submissions',
+  active: '/teacher-activities',
+  classes: '/teacher-classes',
+};
 
 export default function TeacherDashboardScreen() {
   const { theme } = useTheme();
@@ -81,27 +85,21 @@ export default function TeacherDashboardScreen() {
               { key: 'classes', label: t('teacherDashboard.stats.classes', 'Classes'), value: data.total_classes, emoji: '🏫' },
               { key: 'active', label: t('teacherDashboard.stats.active', 'Active'), value: data.active_activities, emoji: '📍' },
               { key: 'pending', label: t('teacherDashboard.stats.pending', 'Pending'), value: data.pending_submissions, emoji: '📥' },
-            ].map((stat) => {
-              const tappable = TAPPABLE_STATS.has(stat.key);
-              const Wrapper = tappable ? TouchableOpacity : View;
-              return (
-                <Wrapper
-                  key={stat.key}
-                  testID={`teacher-dashboard-stat-${stat.key}`}
-                  style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
-                  {...(tappable ? {
-                    onPress: () => router.push('/teacher-submissions'),
-                    activeOpacity: 0.75,
-                    accessibilityRole: 'button' as const,
-                    accessibilityLabel: `${stat.label}, ${stat.value}`,
-                  } : {})}
-                >
-                  <Text style={styles.statEmoji}>{stat.emoji}</Text>
-                  <Text style={[styles.statValue, { fontFamily: theme.fontHead, color: theme.text }]}>{stat.value}</Text>
-                  <Text style={[styles.statLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{stat.label.toUpperCase()}</Text>
-                </Wrapper>
-              );
-            })}
+            ].map((stat) => (
+              <TouchableOpacity
+                key={stat.key}
+                testID={`teacher-dashboard-stat-${stat.key}`}
+                onPress={() => router.push(STAT_DESTINATION[stat.key] as any)}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel={`${stat.label}, ${stat.value}`}
+                style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
+              >
+                <Text style={styles.statEmoji}>{stat.emoji}</Text>
+                <Text style={[styles.statValue, { fontFamily: theme.fontHead, color: theme.text }]}>{stat.value}</Text>
+                <Text style={[styles.statLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{stat.label.toUpperCase()}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>

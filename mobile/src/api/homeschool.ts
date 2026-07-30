@@ -5,8 +5,10 @@
 // teacher-of-record (creates activities, tracks state-requirement coverage),
 // not just an observer of a school-enrolled kid's progress — but mobile
 // still only shows a lean summary here, same as teacher/parent; curriculum
-// coverage, standards import/export, and adding/editing children stay
-// web-only.
+// coverage, standards import/export, and editing/removing children stay
+// web-only. createHomeschoolChild() is the one exception — used only by the
+// first-run onboarding wizard (app/homeschool-welcome.tsx), mirroring
+// web's HomeschoolWelcomePage.tsx, not a general child-management screen.
 
 import { apiFetch } from './client';
 
@@ -45,4 +47,19 @@ export async function fetchHomeschoolChildren(): Promise<HomeschoolChild[]> {
 
 export async function fetchHomeschoolChildProgress(childId: string): Promise<HomeschoolChildProgress> {
   return apiFetch<HomeschoolChildProgress>(`/api/v1/homeschool/children/${childId}/progress`);
+}
+
+export interface CreateHomeschoolChildInput {
+  full_name: string;
+  email: string;
+  password: string;
+  grade_level: number;
+  age_band: 'k6' | 'm712' | 'h1318';
+}
+
+export async function createHomeschoolChild(child: CreateHomeschoolChildInput): Promise<{ id: string; email: string; full_name: string }> {
+  return apiFetch('/api/v1/homeschool/children', {
+    method: 'POST',
+    body: JSON.stringify(child),
+  });
 }

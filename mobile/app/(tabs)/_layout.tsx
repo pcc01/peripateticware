@@ -2,15 +2,14 @@
 // Role-aware tab navigator. STUDENT gets the field-capture tabs (Discover /
 // My Entries / Propose / Progress); PARENT gets a single read-only dashboard
 // tab — see app/(tabs)/parent-dashboard.tsx for why mobile only shows a lean
-// summary rather than the full web dashboard. HOMESCHOOL mirrors TEACHER
-// exactly (teacher-dashboard + live-tracking): backend/routes/homeschool.py
-// already documents "Homeschool parent = teacher + parent in one account"
-// and every teacher endpoint (get_current_teacher dependency, plus
-// ownership-filtered queries in activities.py) already accepts HOMESCHOOL,
-// since a homeschool parent owns activities/children the same way a teacher
-// owns activities/classroom students. homeschool-dashboard.tsx is kept but
-// unregistered (same pattern as explore.tsx below) rather than deleted.
-// Settings is universal.
+// summary rather than the full web dashboard. HOMESCHOOL mirrors TEACHER's
+// Dashboard + Live Tracking tabs (backend/routes/homeschool.py already
+// documents "Homeschool parent = teacher + parent in one account", and
+// every teacher endpoint — get_current_teacher dependency, plus
+// ownership-filtered queries in activities.py — already accepts HOMESCHOOL),
+// plus one extra tab TEACHER doesn't get: homeschool-dashboard.tsx's
+// per-child progress cards, since tracking individual kids is genuinely
+// unique to this role. Settings is universal.
 //
 // expo-router auto-registers every file under (tabs)/ as a tab unless
 // explicitly hidden via `href: null` — that's how a signed-out-of-role tab
@@ -18,12 +17,13 @@
 // in the bar. All non-Settings screens are always registered; only which
 // ones show for the current role changes.
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
+import { fetchOnboardingStatus } from '@/src/api/onboarding';
 
 function TabIcon({ emoji, size }: { emoji: string; size: number }) {
   return <Text style={{ fontSize: size * 0.75, lineHeight: size }}>{emoji}</Text>;
@@ -43,6 +43,25 @@ export default function TabLayout() {
   const isParent = role === 'PARENT';
   const isHomeschool = role === 'HOMESCHOOL';
 
+  // First-run wizard gate, HOMESCHOOL only (app/homeschool-welcome.tsx,
+  // mirroring web's HomeschoolWelcomePage.tsx). GET /onboarding/status'
+  // `dismissed` flag lives on the organizations row, shared with web, so
+  // this only ever fires once across both platforms. Reached here (rather
+  // than the global AuthGuard in app/_layout.tsx) to keep that already
+  // carefully-tuned redirect logic untouched — this check is self-contained
+  // and only affects HOMESCHOOL accounts; every other role renders
+  // immediately with no extra round-trip.
+  const [onboardChecked, setOnboardChecked] = useState(!isHomeschool);
+  useEffect(() => {
+    if (!isHomeschool) { setOnboardChecked(true); return; }
+    let cancelled = false;
+    fetchOnboardingStatus()
+      .then((s) => { if (!cancelled && !s.dismissed) router.replace('/homeschool-welcome'); })
+      .catch(() => { /* fail open — don't block the dashboard on a network error */ })
+      .finally(() => { if (!cancelled) setOnboardChecked(true); });
+    return () => { cancelled = true; };
+  }, [isHomeschool]);
+
   // href:null hides a tab from the BAR but doesn't change which screen the
   // navigator mounts first — that's still whichever route is first in
   // registration order (index) unless told otherwise. Without this, a
@@ -51,6 +70,8 @@ export default function TabLayout() {
   // role so switching accounts (logout/login as a different role) re-picks
   // the right initial tab instead of reusing a stale navigator instance.
   const initialRouteName = (isTeacher || isHomeschool) ? 'teacher-dashboard' : isParent ? 'parent-dashboard' : 'index';
+
+  if (!onboardChecked) return null;
 
   return (
     <Tabs
@@ -95,10 +116,15 @@ export default function TabLayout() {
         name="parent-dashboard"
         options={{ href: isParent ? undefined : null, title: t('parentDashboard.tabLabel', 'Children'), tabBarButtonTestID: 'tab-parent-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="👨‍👩‍👧" size={size} /> }}
       />
-      {/* homeschool-dashboard.tsx kept but never registered as a visible
-          tab — HOMESCHOOL now mirrors TEACHER's tabs above instead. Same
-          keep-but-hide pattern as explore.tsx below. */}
-      <Tabs.Screen name="homeschool-dashboard" options={{ href: null }} />
+      {/* Secondary tab, HOMESCHOOL only — per-child progress cards.
+          HOMESCHOOL mirrors TEACHER's Dashboard + Live Tracking tabs above,
+          but tracking individual kids is the one thing those tabs don't
+          cover for this role, so it stays as an additional tab rather than
+          being dropped entirely. */}
+      <Tabs.Screen
+        name="homeschool-dashboard"
+        options={{ href: isHomeschool ? undefined : null, title: t('homeschoolDashboard.tabLabel', 'Children'), tabBarButtonTestID: 'tab-homeschool-children', tabBarIcon: ({ size }) => <TabIcon emoji="👨‍👩‍👧" size={size} /> }}
+      />
       <Tabs.Screen
         name="settings"
         options={{ title: t('tabs.settings', 'Settings'), tabBarButtonTestID: 'tab-settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
