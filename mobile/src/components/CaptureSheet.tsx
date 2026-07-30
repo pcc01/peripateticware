@@ -201,7 +201,7 @@ export default function CaptureSheet({
       >
       <View testID="capture-sheet" style={[styles.root, { backgroundColor: theme.bg }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
+          <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>
             {t('capture.title', 'Add evidence')}
           </Text>
           <TouchableOpacity
@@ -354,8 +354,8 @@ export default function CaptureSheet({
 const styles = StyleSheet.create({
   root:          { flex: 1 },
   header:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
-  title:         { fontSize: 20, fontWeight: '700' },
-  closeBtn:      { fontSize: 18, padding: 4 },
+  title:         { fontSize: 20, fontWeight: '700', flexShrink: 1 },
+  closeBtn:      { fontSize: 18, padding: 4, flexShrink: 0 },
   center:        { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24 },
   modeGrid:      { flexDirection: 'row', justifyContent: 'center', gap: 16, padding: 32 },
   modeBtn:       { width: 90, height: 90, alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1 },

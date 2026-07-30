@@ -175,7 +175,7 @@ export default function InAppCamera({ visible, mode, onClose, onCaptured, theme 
                 <Text style={styles.closeIcon}>✕</Text>
               </TouchableOpacity>
               {mode === 'video' && (
-                <Text testID="camera-record-status" style={styles.recordStatus}>
+                <Text testID="camera-record-status" style={styles.recordStatus} numberOfLines={1}>
                   {recording
                     ? t('capture.recordingStatus', 'Recording {{seconds}}s — tap to stop').replace('{{seconds}}', String(recordingDuration))
                     : t('capture.tapToStart', 'Tap to start recording')}
@@ -231,8 +231,8 @@ const styles = StyleSheet.create({
   cancelTouchTarget:     { paddingHorizontal: 8, paddingVertical: 4, marginTop: 8 },
   cancelLink:            { color: '#ccc', fontSize: 14 },
   topBar:                { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 48 },
-  closeIcon:             { color: 'white', fontSize: 22 },
-  recordStatus:          { color: 'white', fontSize: 13 },
+  closeIcon:             { color: 'white', fontSize: 22, flexShrink: 0 },
+  recordStatus:          { color: 'white', fontSize: 13, flexShrink: 1, minWidth: 0, textAlign: 'right' },
   bottomBar:             { position: 'absolute', bottom: 0, left: 0, right: 0, alignItems: 'center', paddingBottom: 40 },
   shutterOuter:          { width: 76, height: 76, borderRadius: 38, borderWidth: 4, borderColor: 'white', alignItems: 'center', justifyContent: 'center' },
   shutterInner:          { width: 60, height: 60, borderRadius: 30, backgroundColor: 'white' },

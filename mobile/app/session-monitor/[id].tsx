@@ -95,7 +95,7 @@ export default function SessionMonitorScreen() {
           accessibilityLabel={t('common.back', 'Back')}
         >
           <Text style={[styles.backArrow, { color: theme.accent }]}>{'‹'}</Text>
-          <Text style={[styles.backBtn, { color: theme.accent }]}>{t('common.back', 'Back')}</Text>
+          <Text style={[styles.backBtn, { color: theme.accent }]} numberOfLines={1}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <View
           style={[styles.connectionPill, { borderColor: connected ? theme.accent : theme.warn }]}
@@ -103,7 +103,7 @@ export default function SessionMonitorScreen() {
           accessibilityLabel={connected ? t('liveTracking.live', 'LIVE') : t('liveTracking.disconnected', 'DISCONNECTED')}
         >
           <View style={[styles.connectionDot, { backgroundColor: connected ? theme.accent : theme.warn }]} />
-          <Text style={[styles.connectionText, { fontFamily: theme.fontMono, color: connected ? theme.accent : theme.warn }]}>
+          <Text style={[styles.connectionText, { fontFamily: theme.fontMono, color: connected ? theme.accent : theme.warn }]} numberOfLines={1}>
             {connected ? t('liveTracking.live', 'LIVE') : t('liveTracking.disconnected', 'DISCONNECTED')}
           </Text>
         </View>
@@ -194,10 +194,10 @@ const styles = StyleSheet.create({
   root:        { flex: 1 },
   map:         { width: '100%', height: 220 },
   header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4 },
+  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, flexShrink: 1, minWidth: 0 },
   backArrow:   { fontSize: 16 },
-  backBtn:     { fontSize: 16 },
-  connectionPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderRadius: 999 },
+  backBtn:     { fontSize: 16, flexShrink: 1 },
+  connectionPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderRadius: 999, flexShrink: 0 },
   connectionDot:  { width: 7, height: 7, borderRadius: 4 },
   connectionText: { fontSize: 10, letterSpacing: 0.6 },
   titleBlock:  { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },

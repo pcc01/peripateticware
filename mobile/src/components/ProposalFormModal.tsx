@@ -91,7 +91,7 @@ export default function ProposalFormModal({ visible, onClose, onSaved, theme, ed
     <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
       <View style={[styles.root, { backgroundColor: theme.bg }]}>
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
+          <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>
             {editing ? t('propose.form.editTitle', 'Edit challenge') : t('propose.form.newTitle', 'New challenge')}
           </Text>
           <TouchableOpacity
@@ -207,8 +207,8 @@ export default function ProposalFormModal({ visible, onClose, onSaved, theme, ed
 const styles = StyleSheet.create({
   root:        { flex: 1 },
   header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
-  headerTitle: { fontSize: 18, fontWeight: '700' },
-  closeBtn:    { fontSize: 18, padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', flexShrink: 1 },
+  closeBtn:    { fontSize: 18, padding: 4, flexShrink: 0 },
   body:        { padding: 16, gap: 8 },
   label:       { fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 10, marginBottom: 2 },
   input:       { minHeight: 44, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, fontSize: 15 },

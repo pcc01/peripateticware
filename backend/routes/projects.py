@@ -32,10 +32,66 @@ router = APIRouter(
 )
 
 
-async def _load_project_with_activities(project_id: UUID, current_user: User, db: AsyncSession) -> Project:
-    """Fetch a project (with ownership check) and attach ordered activities.
+def _activity_to_list_dict(a: Activity) -> dict:
+    """Plain-column projection of an Activity for ProjectResponse.activities.
 
-    Shared by get_project / add_activity_to_project / remove_activity_from_project /
+    Only reads scalar columns already loaded on `a` — never touches a
+    relationship attribute, so this is safe to call in an async session
+    with no active greenlet context.
+    """
+    return {
+        'id': a.id,
+        'teacher_id': a.teacher_id,
+        'title': a.title,
+        'description': a.description,
+        'subject': a.subject,
+        'grade_level': a.grade_level,
+        'difficulty_level': a.difficulty_level,
+        'estimated_duration_minutes': a.estimated_duration_minutes,
+        'status': a.status,
+        'activity_type': a.activity_type,
+        'is_shareable': a.is_shareable,
+        'share_scope': a.share_scope,
+        'language': a.language,
+        'state_standard': a.state_standard,
+        'discipline': a.discipline,
+        'view_count': a.view_count,
+        'created_at': a.created_at,
+        'updated_at': a.updated_at,
+    }
+
+
+def _project_to_response(project: Project, ordered_activities: List[Activity]) -> ProjectResponse:
+    """Build a ProjectResponse from plain columns.
+
+    Deliberately does not assign into `project.activities` (a lazy-loaded
+    many-to-many relationship) — doing so forces SQLAlchemy to implicitly
+    lazy-load the current collection to diff against, which raises
+    MissingGreenlet in this async session. Building the response directly
+    avoids ever touching that attribute, matching list_projects' existing
+    pattern for ProjectListResponse.
+    """
+    return ProjectResponse(
+        id=project.id,
+        teacher_id=project.teacher_id,
+        title=project.title,
+        description=project.description,
+        grade_level=project.grade_level,
+        subject=project.subject,
+        duration_weeks=project.duration_weeks,
+        start_date=project.start_date,
+        end_date=project.end_date,
+        status=project.status,
+        activities=[_activity_to_list_dict(a) for a in ordered_activities],
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+    )
+
+
+async def _load_project_with_activities(project_id: UUID, current_user: User, db: AsyncSession) -> ProjectResponse:
+    """Fetch a project (with ownership check) and its ordered activities.
+
+    Shared by get_project / update_project / add_activity_to_project /
     reorder_activities so they all return the same fully-populated shape.
     """
     result = await db.execute(select(Project).where(Project.id == project_id))
@@ -71,9 +127,7 @@ async def _load_project_with_activities(project_id: UUID, current_user: User, db
     activity_map = {a.id: a for a in activities}
     ordered_activities = [activity_map[pa.activity_id] for pa in project_activities if pa.activity_id in activity_map]
 
-    project.activities = ordered_activities
-
-    return project
+    return _project_to_response(project, ordered_activities)
 
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
@@ -108,9 +162,7 @@ async def create_project(
     await db.commit()
     await db.refresh(db_project)
 
-    db_project.activities = []
-
-    return db_project
+    return _project_to_response(db_project, [])
 
 
 @router.get("", response_model=PaginatedProjectResponse)

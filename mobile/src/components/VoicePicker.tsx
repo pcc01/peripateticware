@@ -60,7 +60,7 @@ export default function VoicePicker({ theme }: Props) {
         >
           <TouchableOpacity activeOpacity={1} style={[styles.card, { backgroundColor: theme.bg, borderColor: theme.border }]}>
             <View style={styles.header}>
-              <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
+              <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>
                 {t('settings.voiceLabel', 'VOICE')}
               </Text>
               <TouchableOpacity
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
   backdrop:    { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card:        { width: '100%', maxHeight: '75%', borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
   header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title:       { fontSize: 17, fontWeight: '700' },
-  closeBtn:    { fontSize: 18, padding: 4 },
+  title:       { fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  closeBtn:    { fontSize: 18, padding: 4, flexShrink: 0 },
   list:        { flexGrow: 0 },
   emptyText:   { fontSize: 13, textAlign: 'center', paddingVertical: 16 },
   optionRow:   { flexDirection: 'row', alignItems: 'center', padding: 10, borderWidth: 1, gap: 8, marginBottom: 8 },

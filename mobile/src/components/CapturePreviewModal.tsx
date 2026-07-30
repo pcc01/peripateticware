@@ -62,7 +62,7 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
       <View style={styles.backdrop}>
         <View style={[styles.card, { backgroundColor: theme.bg, borderColor: theme.border }]}>
           <View style={styles.header}>
-            <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
+            <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>
               {t('capture.preview.title', 'Your evidence')}
             </Text>
             <TouchableOpacity
@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
   backdrop:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   card:      { width: '100%', maxHeight: '80%', borderWidth: 1, borderRadius: 16, padding: 16, gap: 14 },
   header:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title:     { fontSize: 17, fontWeight: '700' },
-  closeBtn:  { fontSize: 18, padding: 4 },
+  title:     { fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  closeBtn:  { fontSize: 18, padding: 4, flexShrink: 0 },
   media:     { width: '100%', aspectRatio: 1, borderRadius: 10, backgroundColor: '#000' },
   audioRow:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
   playBtn:   { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
