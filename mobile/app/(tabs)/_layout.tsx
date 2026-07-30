@@ -1,10 +1,16 @@
 // app/(tabs)/_layout.tsx
 // Role-aware tab navigator. STUDENT gets the field-capture tabs (Discover /
-// My Entries / Propose / Progress); TEACHER, PARENT, and HOMESCHOOL each get
-// a single read-only dashboard tab instead — see app/(tabs)/
-// teacher-dashboard.tsx, parent-dashboard.tsx, and homeschool-dashboard.tsx
-// for why mobile only shows a lean summary rather than the full web
-// dashboards. Settings is universal.
+// My Entries / Propose / Progress); PARENT gets a single read-only dashboard
+// tab — see app/(tabs)/parent-dashboard.tsx for why mobile only shows a lean
+// summary rather than the full web dashboard. HOMESCHOOL mirrors TEACHER
+// exactly (teacher-dashboard + live-tracking): backend/routes/homeschool.py
+// already documents "Homeschool parent = teacher + parent in one account"
+// and every teacher endpoint (get_current_teacher dependency, plus
+// ownership-filtered queries in activities.py) already accepts HOMESCHOOL,
+// since a homeschool parent owns activities/children the same way a teacher
+// owns activities/classroom students. homeschool-dashboard.tsx is kept but
+// unregistered (same pattern as explore.tsx below) rather than deleted.
+// Settings is universal.
 //
 // expo-router auto-registers every file under (tabs)/ as a tab unless
 // explicitly hidden via `href: null` — that's how a signed-out-of-role tab
@@ -44,7 +50,7 @@ export default function TabLayout() {
   // screen's content with no tab in the bar showing as active. Keyed by
   // role so switching accounts (logout/login as a different role) re-picks
   // the right initial tab instead of reusing a stale navigator instance.
-  const initialRouteName = isTeacher ? 'teacher-dashboard' : isParent ? 'parent-dashboard' : isHomeschool ? 'homeschool-dashboard' : 'index';
+  const initialRouteName = (isTeacher || isHomeschool) ? 'teacher-dashboard' : isParent ? 'parent-dashboard' : 'index';
 
   return (
     <Tabs
@@ -79,20 +85,20 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="teacher-dashboard"
-        options={{ href: isTeacher ? undefined : null, title: t('teacherDashboard.tabLabel', 'Dashboard'), tabBarButtonTestID: 'tab-teacher-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="📊" size={size} /> }}
+        options={{ href: (isTeacher || isHomeschool) ? undefined : null, title: t('teacherDashboard.tabLabel', 'Dashboard'), tabBarButtonTestID: 'tab-teacher-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="📊" size={size} /> }}
       />
       <Tabs.Screen
         name="live-tracking"
-        options={{ href: isTeacher ? undefined : null, title: t('liveTracking.tabLabel', 'Live Tracking'), tabBarButtonTestID: 'tab-live-tracking', tabBarIcon: ({ size }) => <TabIcon emoji="📡" size={size} /> }}
+        options={{ href: (isTeacher || isHomeschool) ? undefined : null, title: t('liveTracking.tabLabel', 'Live Tracking'), tabBarButtonTestID: 'tab-live-tracking', tabBarIcon: ({ size }) => <TabIcon emoji="📡" size={size} /> }}
       />
       <Tabs.Screen
         name="parent-dashboard"
         options={{ href: isParent ? undefined : null, title: t('parentDashboard.tabLabel', 'Children'), tabBarButtonTestID: 'tab-parent-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="👨‍👩‍👧" size={size} /> }}
       />
-      <Tabs.Screen
-        name="homeschool-dashboard"
-        options={{ href: isHomeschool ? undefined : null, title: t('homeschoolDashboard.tabLabel', 'Dashboard'), tabBarButtonTestID: 'tab-homeschool-dashboard', tabBarIcon: ({ size }) => <TabIcon emoji="🏡" size={size} /> }}
-      />
+      {/* homeschool-dashboard.tsx kept but never registered as a visible
+          tab — HOMESCHOOL now mirrors TEACHER's tabs above instead. Same
+          keep-but-hide pattern as explore.tsx below. */}
+      <Tabs.Screen name="homeschool-dashboard" options={{ href: null }} />
       <Tabs.Screen
         name="settings"
         options={{ title: t('tabs.settings', 'Settings'), tabBarButtonTestID: 'tab-settings', tabBarIcon: ({ size }) => <TabIcon emoji="⚙️" size={size} /> }}
