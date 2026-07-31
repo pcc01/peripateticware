@@ -187,6 +187,75 @@ async def create_curriculum_unit(
         )
 
 
+@router.get("/units")
+async def list_curriculum_units_paginated(
+    subject: Optional[str] = None,
+    grade_level: Optional[int] = None,
+    page: int = 1,
+    page_size: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """List curriculum units with pagination (for activity mapping)"""
+    try:
+        conditions = [CurriculumUnit.is_active == True]
+
+        if subject:
+            conditions.append(CurriculumUnit.subject.ilike(f"%{subject}%"))
+        if grade_level:
+            conditions.append(CurriculumUnit.grade_level == grade_level)
+
+        count_result = await db.execute(
+            select(func.count()).select_from(CurriculumUnit).where(*conditions)
+        )
+        total = count_result.scalar() or 0
+
+        offset = (page - 1) * page_size
+        units_result = await db.execute(
+            select(CurriculumUnit)
+            .where(*conditions)
+            .order_by(CurriculumUnit.title)
+            .offset(offset)
+            .limit(page_size)
+        )
+        units = units_result.scalars().all()
+
+        total_pages = (total + page_size - 1) // page_size
+
+        return {
+            "items": [
+                CurriculumResponse(
+                    curriculum_id=str(unit.id),
+                    title=unit.title,
+                    subject=unit.subject,
+                    grade_level=unit.grade_level,
+                    bloom_level=unit.bloom_level,
+                    marzano_level=unit.marzano_level
+                )
+                for unit in units
+            ],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages
+        }
+
+    except Exception as e:
+        logger.error(f"Error listing curriculum: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list curriculum units"
+        )
+
+
+# NOTE: must stay registered above -- a path-parameter route matches any
+# literal segment (including "units") since FastAPI/Starlette resolves
+# routes in registration order. GET /curriculum/units was 500ing with
+# "badly formed hexadecimal UUID string" because this route used to be
+# declared first, so "units" was matched here as curriculum_id and passed
+# straight into uuid.UUID(). Found live while wiring CurriculumMapper.tsx
+# into ActivityManager.tsx (2026-07-30) -- this bug predates that change
+# and meant curriculum mapping never actually worked from any UI.
 @router.get("/{curriculum_id}", response_model=CurriculumResponse)
 async def get_curriculum_unit(
     curriculum_id: str,
@@ -223,67 +292,6 @@ async def get_curriculum_unit(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch curriculum unit"
-        )
-
-
-@router.get("/units")
-async def list_curriculum_units_paginated(
-    subject: Optional[str] = None,
-    grade_level: Optional[int] = None,
-    page: int = 1,
-    page_size: int = 50,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """List curriculum units with pagination (for activity mapping)"""
-    try:
-        conditions = [CurriculumUnit.is_active == True]
-
-        if subject:
-            conditions.append(CurriculumUnit.subject.ilike(f"%{subject}%"))
-        if grade_level:
-            conditions.append(CurriculumUnit.grade_level == grade_level)
-
-        count_result = await db.execute(
-            select(func.count()).select_from(CurriculumUnit).where(*conditions)
-        )
-        total = count_result.scalar() or 0
-
-        offset = (page - 1) * page_size
-        units_result = await db.execute(
-            select(CurriculumUnit)
-            .where(*conditions)
-            .order_by(CurriculumUnit.title)
-            .offset(offset)
-            .limit(page_size)
-        )
-        units = units_result.scalars().all()
-
-        total_pages = (total + page_size - 1) // page_size
-        
-        return {
-            "items": [
-                CurriculumResponse(
-                    curriculum_id=str(unit.id),
-                    title=unit.title,
-                    subject=unit.subject,
-                    grade_level=unit.grade_level,
-                    bloom_level=unit.bloom_level,
-                    marzano_level=unit.marzano_level
-                )
-                for unit in units
-            ],
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages
-        }
-    
-    except Exception as e:
-        logger.error(f"Error listing curriculum: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list curriculum units"
         )
 
 

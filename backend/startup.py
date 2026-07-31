@@ -165,6 +165,18 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS total_points INTEGER NOT NULL DEFAULT 100")
         await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE")
         await _exec_safepoint(conn, "ALTER TABLE assessment_rubrics ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()")
+        # models.database.CurriculumUnit has declared created_by since before
+        # this file's history, but neither database/init.sql nor any prior
+        # migration here ever created the column -- GET /curriculum/units
+        # 500'd with "column curriculum_units.created_by does not exist" on
+        # every single call, on every environment, since CurriculumUnit's
+        # SELECT * always includes every mapped column. Found 2026-07-30
+        # while wiring CurriculumMapper.tsx into ActivityManager.tsx (the
+        # third of three independent bugs stacked on this one feature — a
+        # route-ordering bug and a missing frontend auth header were the
+        # other two — meaning curriculum mapping has never worked end-to-end
+        # from any UI).
+        await _exec_safepoint(conn, "ALTER TABLE curriculum_units ADD COLUMN IF NOT EXISTS created_by UUID")
     logger.info("✅ Enum and core column migrations applied")
 
 

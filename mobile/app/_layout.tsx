@@ -111,7 +111,27 @@ function AuthGuard() {
       // structural default for "/" can land on (onboarding) regardless of
       // hasOnboarded — this branch was only catching the login case, so an
       // already-authenticated user landing in onboarding got stuck there.
-      router.replace('/(tabs)');
+      //
+      // Target the role's actual home tab explicitly rather than the bare
+      // '/(tabs)' group path. A bare group path resolves to that group's
+      // own index route ((tabs)/index.tsx = Discover) regardless of
+      // (tabs)/_layout.tsx's own initialRouteName -- confirmed live: every
+      // TEACHER/HOMESCHOOL/PARENT login (and every cold launch with an
+      // already-valid session, since that also funnels through this same
+      // branch once getCurrentUser() resolves) landed on the hidden
+      // Discover screen's "No activities yet -- your teacher will add some
+      // soon" copy, with only the correct role-specific tab BAR showing
+      // underneath it. Tapping the bar's own tab worked fine -- only the
+      // *initial* landing screen was wrong. Mirrors the same role → initial
+      // tab mapping (tabs)/_layout.tsx computes for its own
+      // initialRouteName, kept here too since that prop alone isn't
+      // sufficient when arriving via an explicit path.
+      const role = user.role;
+      const dest =
+        role === 'TEACHER' || role === 'HOMESCHOOL' ? '/(tabs)/teacher-dashboard'
+        : role === 'PARENT' ? '/(tabs)/parent-dashboard'
+        : '/(tabs)';
+      router.replace(dest);
     } else if (!user && inOnboarding && hasOnboarded) {
       // Symmetric case of the one above: the same "/" route ambiguity can
       // land an unauthenticated-but-already-onboarded user (e.g. after

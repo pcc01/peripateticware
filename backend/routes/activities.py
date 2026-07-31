@@ -1020,6 +1020,92 @@ async def teacher_active_sessions(
     ]
 
 
+class BulkTrackingUpdateRequest(_BaseModel):
+    activity_ids: List[UUID]
+    gps_enabled: bool
+
+
+@router.get("/teacher/tracking-settings")
+async def teacher_tracking_settings(
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Account-level view of GPS live-tracking across every one of this
+    teacher's activities, for the unified tracking-settings page — today
+    tracking is otherwise only visible/configurable one activity at a time
+    in ActivityManager's Location tab, with no way to see or bulk-change
+    what's currently on across a whole account (WORK_TRACKING.md Session 47
+    item 4). Each row also carries the same tiered-polling cadence teacher_
+    active_sessions computes (services/polling.py), so a teacher can see
+    which activities would poll at the fast "trip" cadence vs the slower
+    "long-running" one if tracking were active right now.
+    """
+    result = await db.execute(
+        text("""
+            SELECT
+                a.id AS activity_id, a.title, a.subject, a.grade_level, a.status,
+                a.estimated_duration_minutes, a.discovery_location_gps_capture_enabled AS gps_enabled,
+                p.id AS project_id, p.title AS project_title
+            FROM activities a
+            LEFT JOIN project_activities pa ON pa.activity_id = a.id
+            LEFT JOIN projects p ON p.id = pa.project_id
+            WHERE a.teacher_id = :tid AND a.is_active = true
+            ORDER BY a.title
+        """),
+        {"tid": current_user.id},
+    )
+    rows = result.mappings().all()
+    return [
+        {
+            "activity_id": str(r["activity_id"]),
+            "title": r["title"],
+            "subject": r["subject"],
+            "grade_level": r["grade_level"],
+            "status": r["status"],
+            "gps_enabled": bool(r["gps_enabled"]),
+            "project_id": str(r["project_id"]) if r["project_id"] else None,
+            "project_title": r["project_title"],
+            "poll_interval_seconds": poll_interval_seconds(
+                r["estimated_duration_minutes"], r["project_id"] is not None, detail=False
+            ),
+        }
+        for r in rows
+    ]
+
+
+@router.patch("/teacher/tracking-settings/bulk")
+async def bulk_update_tracking_settings(
+    request: BulkTrackingUpdateRequest,
+    current_user: User = Depends(get_current_teacher),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Turn GPS live-tracking on/off for several activities at once — the
+    "bulk control" half of the gap above. Per-activity toggling already
+    works through the ordinary PATCH /activities/{id} (ActivityUpdate now
+    declares discovery_location_gps_capture_enabled -- see schemas/
+    activities.py); this is only for the multi-select bulk action.
+    """
+    if not request.activity_ids:
+        return {"updated": 0}
+
+    result = await db.execute(
+        text("""
+            UPDATE activities
+            SET discovery_location_gps_capture_enabled = :enabled, updated_at = NOW()
+            WHERE teacher_id = :tid AND id = ANY(CAST(:ids AS uuid[]))
+        """),
+        {
+            "enabled": request.gps_enabled,
+            "tid": current_user.id,
+            "ids": [str(i) for i in request.activity_ids],
+        },
+    )
+    await db.commit()
+    return {"updated": result.rowcount}
+
+
 # ── Submission review endpoints (called by TeacherSubmissionsPage) ────────────
 #
 # These operate on learning_sessions (which the teacher submissions list returns)

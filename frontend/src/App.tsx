@@ -56,6 +56,7 @@ import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
 import ProjectNewPage from './pages/teacher/ProjectNewPage'
 import ProjectLiveTrackingPage from './pages/teacher/ProjectLiveTrackingPage'
 import ProjectCompletionReportPage from './pages/teacher/ProjectCompletionReportPage'
+import TrackingSettingsPage from './pages/teacher/TrackingSettingsPage'
 import { TeacherTourPage } from './pages/teacher/TeacherTourPage'
 import ActivityManager from './components/teacher/ActivityManager'
 import { TeacherSettingsPage } from './pages/TeacherSettingsPage'
@@ -400,6 +401,7 @@ const App: React.FC = () => {
           <Route path="/teacher/projects/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectDetailPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/projects/:id/live-tracking" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectLiveTrackingPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/projects/:id/report" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ProjectCompletionReportPage /></TeacherLayout></ProtectedRoute>} />
+          <Route path="/teacher/tracking-settings" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><TrackingSettingsPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityListPage /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/new" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />
           <Route path="/teacher/activities/:id" element={<ProtectedRoute requiredRole="teacher"><TeacherLayout><ActivityManager /></TeacherLayout></ProtectedRoute>} />
@@ -445,6 +447,7 @@ const App: React.FC = () => {
           <Route path="/homeschool/activities" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityListPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities/new" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities/:id" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/tracking-settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><TrackingSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/requirements" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolRequirementsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/coverage" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolCoveragePage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/export" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolExportPage /></HomeschoolLayout></ProtectedRoute>} />

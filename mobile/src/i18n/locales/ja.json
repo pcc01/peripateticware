@@ -1,65 +1,4 @@
 {
-  "common": {
-    "activity": "Activity",
-    "activityPlural": "Activities",
-    "captureLabel": "Record evidence",
-    "journalLabel": "Field notes",
-    "tryAgain": "Try again",
-    "back": "Back",
-    "close": "Close",
-    "cancel": "Cancel"
-  },
-  "onboarding": {
-    "splash": {
-      "periSpeech": "There are field activities in your area worth exploring.",
-      "cta": "Get started"
-    },
-    "name": {
-      "periSpeech": "What should I call you?",
-      "placeholder": "Your name…",
-      "cta": "Continue"
-    },
-    "location": {
-      "periSpeech": "There are activities near you. Enable location to get started?",
-      "confirmCta": "Allow location",
-      "skipCta": "Skip for now",
-      "badge": "3 activities nearby",
-      "reassurance": "Used only to surface nearby activities"
-    },
-    "firstActivity": {
-      "periSpeech": "There's a field activity near you.",
-      "cta": "Open activity",
-      "browseCta": "Browse all activities"
-    }
-  },
-  "capture": {
-    "mode": {
-      "photo": "Photo",
-      "audio": "Voice",
-      "note": "Note",
-      "video": "Video"
-    },
-    "offline": {
-      "title": "📵 Saved offline",
-      "body": "This capture is saved on your device and will upload when you reconnect."
-    },
-    "uploadFailed": {
-      "title": "Upload failed"
-    },
-    "micPermission": {
-      "title": "Permission needed",
-      "body": "Allow microphone access to record audio."
-    },
-    "title": "Add evidence",
-    "uploading": "Uploading…",
-    "stopRecording": "Stop recording",
-    "startRecording": "Start recording",
-    "recordingStatus": "Recording {{seconds}}s — tap to stop",
-    "tapToStart": "Tap to start recording",
-    "fieldNote": "FIELD NOTE",
-    "notePlaceholder": "Write what you observe…",
-    "saveNote": "Save note"
-  },
   "activity": {
     "geofence": {
       "dismiss": "Dismiss location warning"
@@ -95,6 +34,111 @@
     "starting": "Starting camera…",
     "takePhoto": "Take photo"
   },
+  "capture": {
+    "mode": {
+      "photo": "Photo",
+      "audio": "Voice",
+      "note": "Note",
+      "video": "Video"
+    },
+    "offline": {
+      "title": "📵 Saved offline",
+      "body": "This capture is saved on your device and will upload when you reconnect."
+    },
+    "uploadFailed": {
+      "title": "Upload failed"
+    },
+    "micPermission": {
+      "title": "Permission needed",
+      "body": "Allow microphone access to record audio."
+    },
+    "title": "Add evidence",
+    "uploading": "Uploading…",
+    "stopRecording": "Stop recording",
+    "startRecording": "Start recording",
+    "recordingStatus": "Recording {{seconds}}s — tap to stop",
+    "tapToStart": "Tap to start recording",
+    "fieldNote": "FIELD NOTE",
+    "notePlaceholder": "Write what you observe…",
+    "saveNote": "Save note"
+  },
+  "common": {
+    "activity": "Activity",
+    "activityPlural": "Activities",
+    "captureLabel": "Record evidence",
+    "journalLabel": "Field notes",
+    "tryAgain": "Try again",
+    "back": "Back",
+    "close": "Close",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "continue": "Continue"
+  },
+  "homeschoolDashboard": {
+    "childrenTitle": "Children"
+  },
+  "homeschoolWelcome": {
+    "noChildrenError": "Please add at least one child.",
+    "someFailedError": "Some children could not be saved automatically — you can add them later from the web app.",
+    "skipSetup": "Skip setup",
+    "welcomeTitle": "Welcome! 🌿",
+    "step1": "Add Children",
+    "step2": "Your State",
+    "step3": "First Activity",
+    "whoTeaching": "Who are you teaching?",
+    "childNamePlaceholder": "Child {{n}} name",
+    "addAnotherChild": "+ Add another child",
+    "whichState": "Which state do you homeschool in?",
+    "whichStateBody": "This helps show the right state reporting requirements. You can change this any time.",
+    "selectStateOptional": "— Select your state (optional) —",
+    "stateFootnote": "35 US states require homeschool parents to keep learning records — Peripateticware generates reports automatically from your activity log.",
+    "allSetBody": "Head to the web app to create your first outdoor activity — Peri will suggest Aristotelian inquiry questions tailored to your location and subject.",
+    "goToDashboard": "Go to dashboard",
+    "selectState": "Select your state"
+  },
+  "login": {
+    "signIn": "Sign in",
+    "passwordReset": {
+      "title": "Password reset",
+      "body": "Contact your teacher to reset your password."
+    },
+    "forgotPassword": "Forgot password?"
+  },
+  "onboarding": {
+    "splash": {
+      "periSpeech": "There are field activities in your area worth exploring.",
+      "cta": "Get started"
+    },
+    "name": {
+      "periSpeech": "What should I call you?",
+      "placeholder": "Your name…",
+      "cta": "Continue"
+    },
+    "location": {
+      "periSpeech": "There are activities near you. Enable location to get started?",
+      "confirmCta": "Allow location",
+      "skipCta": "Skip for now",
+      "badge": "3 activities nearby",
+      "reassurance": "Used only to surface nearby activities"
+    },
+    "firstActivity": {
+      "periSpeech": "There's a field activity near you.",
+      "cta": "Open activity",
+      "browseCta": "Browse all activities"
+    }
+  },
+  "perichat": {
+    "greeting": "I'm Peri. Ask me anything about the activity or what you're observing.",
+    "connectError": "I couldn't connect right now. Try again in a moment.",
+    "title": "Ask Peri",
+    "closeChat": "Close chat",
+    "inputPlaceholder": "Ask a question…",
+    "sendMessage": "Send message"
+  },
+  "perispeech": {
+    "stopReading": "Stop reading aloud",
+    "readAloud": "Read aloud"
+  },
   "settings": {
     "theme": {
       "fieldGuide": {
@@ -115,24 +159,29 @@
       "confirm": "Are you sure?"
     }
   },
-  "perichat": {
-    "greeting": "I'm Peri. Ask me anything about the activity or what you're observing.",
-    "connectError": "I couldn't connect right now. Try again in a moment.",
-    "title": "Ask Peri",
-    "closeChat": "Close chat",
-    "inputPlaceholder": "Ask a question…",
-    "sendMessage": "Send message"
+  "teacherActivities": {
+    "title": "Active Activities",
+    "loadError": "Could not load activities.",
+    "empty": "No published activities yet."
   },
-  "login": {
-    "signIn": "Sign in",
-    "passwordReset": {
-      "title": "Password reset",
-      "body": "Contact your teacher to reset your password."
-    },
-    "forgotPassword": "Forgot password?"
+  "teacherActivity": {
+    "gradeLabel": "Grade {{grade}}",
+    "daysAgo": "{{n}}d ago",
+    "loadError": "Could not load this activity.",
+    "minutesLabel": "{{n}} min",
+    "descriptionLabel": "DESCRIPTION",
+    "objectivesLabel": "LEARNING OBJECTIVES",
+    "submissionsLabel": "SUBMISSIONS",
+    "noSubmissions": "No students have started this activity yet."
   },
-  "perispeech": {
-    "stopReading": "Stop reading aloud",
-    "readAloud": "Read aloud"
+  "teacherClasses": {
+    "title": "Classes",
+    "loadError": "Could not load classes.",
+    "empty": "No classes yet — use the web app to create one."
+  },
+  "teacherSubmissions": {
+    "title": "Submissions",
+    "loadError": "Could not load submissions.",
+    "empty": "No submissions yet."
   }
 }

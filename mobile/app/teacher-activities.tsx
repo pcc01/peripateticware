@@ -50,7 +50,6 @@ export default function TeacherActivitiesScreen() {
           accessibilityLabel={t('common.back', 'Back')}
         >
           <Text style={[styles.backArrow, { color: theme.accent }]}>{'‹'}</Text>
-          <Text style={[styles.backBtn, { color: theme.accent }]} numberOfLines={1}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>{t('teacherActivities.title', 'Active Activities')}</Text>
         <View style={{ width: 40 }} />
@@ -108,10 +107,13 @@ const styles = StyleSheet.create({
   emptyEmoji:      { fontSize: 48 },
   emptyText:       { fontSize: 14, textAlign: 'center', lineHeight: 22 },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, flexShrink: 1, minWidth: 0 },
-  backArrow:       { fontSize: 16 },
-  backBtn:         { fontSize: 16, flexShrink: 1 },
-  title:           { fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  // Icon-only — no "Back" label to truncate under any locale/width (was
+  // clipping to 1-2 characters once the centered title took most of the
+  // row's flex-shrink budget). Fixed width matches the right-side spacer
+  // below so the title stays genuinely centered.
+  backTouchTarget: { width: 40, alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 4, flexShrink: 0 },
+  backArrow:       { fontSize: 28 },
+  title:           { fontSize: 17, fontWeight: '700', flex: 1, textAlign: 'center' },
   card:            { padding: 14, borderWidth: 1 },
   activityTitle:   { fontSize: 15, fontWeight: '700' },
   meta:            { fontSize: 10, letterSpacing: 0.4, marginTop: 4 },

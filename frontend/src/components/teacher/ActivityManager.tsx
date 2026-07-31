@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions } from './OllamaLessonSuggestions';
 import { WikiLocationInfo } from './WikiLocationInfo';
+import CurriculumMapper from './CurriculumMapper';
 
 // ── Backend-payload normalization ─────────────────────────────────────────────
 // The backend expects bloom_level as an integer (1-6) and activity_type as one of
@@ -1355,6 +1356,22 @@ const ActivityManager = () => {
               <option key={r.id} value={r.id}>{r.title}</option>
             ))}
           </select>
+        </div>
+
+        {/* Curriculum Alignment — curriculum_unit_ids is read/written on
+            load/save but had no picker UI anywhere reachable in the app
+            (only the removed EnhancedActivityBuilder.tsx rendered this). */}
+        <div className="border-b border-gray-200 pb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {t('components_teacher_activitymanager.curriculum_alignment', 'Curriculum Alignment')}{' '}
+            <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
+          </label>
+          <CurriculumMapper
+            selectedUnits={formData.curriculum_unit_ids || []}
+            onUnitsChange={(unitIds) => setFormData((p) => ({ ...p, curriculum_unit_ids: unitIds }))}
+            subject={formData.subject}
+            gradeLevel={formData.grade_level}
+          />
         </div>
 
         {/* Buttons */}

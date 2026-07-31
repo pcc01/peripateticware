@@ -341,7 +341,14 @@ export const curriculumApi = {
     });
 
     const url = `${API_BASE_URL}/curriculum/units?${queryString}`;
-    const response = await fetch(url);
+    // Every other call in this file sends the auth token -- this one didn't,
+    // so /curriculum/units always 403'd ("Not authenticated") the moment the
+    // /{curriculum_id} route-ordering bug above it was fixed and requests
+    // could actually reach the real handler. Found live while wiring
+    // CurriculumMapper.tsx into ActivityManager.tsx (2026-07-30).
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${getAuthToken()}` },
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch curriculum units: ${response.statusText}`);

@@ -289,7 +289,7 @@ export const proposalApi = {
 // PROFESSOR — FIELDWORK LOCATION MAP
 // ============================================================================
 
-import type { FieldworkLocationsResponse, ProjectActiveSessionsResponse, ProjectCompletionReportResponse } from '../types/phase7'
+import type { FieldworkLocationsResponse, ProjectActiveSessionsResponse, ProjectCompletionReportResponse, TrackingSettingsRow } from '../types/phase7'
 
 export const professorApi = {
   /**
@@ -326,5 +326,27 @@ export const projectTrackingApi = {
   getProjectCompletionReport: (projectId: string): Promise<ProjectCompletionReportResponse> =>
     apiClient
       .get<ProjectCompletionReportResponse>(`/teacher/projects/${projectId}/completion-report`)
+      .then((r) => r.data),
+}
+
+// ============================================================================
+// UNIFIED TRACKING SETTINGS  (teacher)
+// ============================================================================
+
+export const trackingSettingsApi = {
+  list: (): Promise<TrackingSettingsRow[]> =>
+    apiClient.get<TrackingSettingsRow[]>('/activities/teacher/tracking-settings').then((r) => r.data),
+
+  setOne: (activityId: string, gpsEnabled: boolean): Promise<void> =>
+    apiClient
+      .put(`/activities/${activityId}`, { discovery_location_gps_capture_enabled: gpsEnabled })
+      .then(() => undefined),
+
+  setBulk: (activityIds: string[], gpsEnabled: boolean): Promise<{ updated: number }> =>
+    apiClient
+      .patch<{ updated: number }>('/activities/teacher/tracking-settings/bulk', {
+        activity_ids: activityIds,
+        gps_enabled: gpsEnabled,
+      })
       .then((r) => r.data),
 }

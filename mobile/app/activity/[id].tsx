@@ -224,7 +224,6 @@ export default function ActivityScreen() {
           accessibilityLabel={t('common.back', 'Back')}
         >
           <Text style={[styles.backArrow, { color: theme.accent }]}>{'‹'}</Text>
-          <Text style={[styles.backBtn, { color: theme.accent }]} numberOfLines={1}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <PhaseIndicator phase={phase} theme={theme} />
       </View>
@@ -601,9 +600,10 @@ const styles = StyleSheet.create({
   root:            { flex: 1 },
   center:          { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 4, paddingVertical: 4, flexShrink: 1, minWidth: 0 },
-  backArrow:       { fontSize: 16 },
-  backBtn:         { fontSize: 16, flexShrink: 1 },
+  // Icon-only — no "Back" label to truncate under any locale/width (was
+  // clipping to 1-2 characters competing against the phase-progress dots).
+  backTouchTarget: { paddingHorizontal: 4, paddingVertical: 4, flexShrink: 0 },
+  backArrow:       { fontSize: 28 },
   phaseRow:        { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0 },
   phaseDot:        { width: 10, height: 10, borderRadius: 5 },
   phaseLine:       { width: 20, height: 2 },

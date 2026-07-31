@@ -404,3 +404,19 @@ export interface ProjectCompletionReportResponse {
   activities: ProjectCompletionActivity[]
   participants: ProjectCompletionParticipant[]
 }
+
+// Unified tracking-settings surface — GET/PATCH /activities/teacher/tracking-settings.
+// Account-level view of GPS live-tracking across every activity, with bulk
+// control (see backend/routes/activities.py's teacher_tracking_settings /
+// bulk_update_tracking_settings).
+export interface TrackingSettingsRow {
+  activity_id: string
+  title: string
+  subject: string | null
+  grade_level: number | null
+  status: string
+  gps_enabled: boolean
+  project_id: string | null
+  project_title: string | null
+  poll_interval_seconds: number
+}

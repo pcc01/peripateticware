@@ -37,6 +37,9 @@ const ActivityListPage: React.FC = () => {
   const activitiesBase = isHomeschool
     ? '/homeschool/activities'
     : '/teacher/activities'
+  const trackingSettingsPath = isHomeschool
+    ? '/homeschool/tracking-settings'
+    : '/teacher/tracking-settings'
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -135,21 +138,38 @@ const ActivityListPage: React.FC = () => {
             <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#1a1a1a', margin: 0 }}>{t('activitylistpage.activities', 'Activities')}</h1>
             <p style={{ color: '#6b7280', marginTop: '6px' }}>{t('activitylistpage.create_and_manage_outdoor_learning_activ', 'Create and manage outdoor learning activities')}</p>
           </div>
-          <button
-            onClick={() => navigate(`${activitiesBase}/new`)}
-            style={{
-              background: '#4a7c59',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-            }}
-          >
-            + New Activity
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => navigate(trackingSettingsPath)}
+              style={{
+                background: 'transparent',
+                color: '#4a7c59',
+                border: '1px solid #4a7c59',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+              }}
+            >
+              📍 {t('pages_teacher_activitylistpage.tracking_settings', 'Tracking Settings')}
+            </button>
+            <button
+              onClick={() => navigate(`${activitiesBase}/new`)}
+              style={{
+                background: '#4a7c59',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 20px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+              }}
+            >
+              + New Activity
+            </button>
+          </div>
         </div>
 
         {/* Search */}

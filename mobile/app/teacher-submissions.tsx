@@ -69,7 +69,6 @@ export default function TeacherSubmissionsScreen() {
           accessibilityLabel={t('common.back', 'Back')}
         >
           <Text style={[styles.backArrow, { color: theme.accent }]}>{'‹'}</Text>
-          <Text style={[styles.backBtn, { color: theme.accent }]} numberOfLines={1}>{t('common.back', 'Back')}</Text>
         </TouchableOpacity>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>{t('teacherSubmissions.title', 'Submissions')}</Text>
         <View style={{ width: 40 }} />
@@ -128,10 +127,9 @@ const styles = StyleSheet.create({
   emptyEmoji:      { fontSize: 48 },
   emptyText:       { fontSize: 14, textAlign: 'center', lineHeight: 22 },
   header:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-  backTouchTarget: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4, flexShrink: 1, minWidth: 0 },
-  backArrow:       { fontSize: 16 },
-  backBtn:         { fontSize: 16, flexShrink: 1 },
-  title:           { fontSize: 17, fontWeight: '700', flexShrink: 1 },
+  backTouchTarget: { width: 40, alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 4, flexShrink: 0 },
+  backArrow:       { fontSize: 28 },
+  title:           { fontSize: 17, fontWeight: '700', flex: 1, textAlign: 'center' },
   card:            { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderWidth: 1 },
   studentName:     { fontSize: 16, fontWeight: '700' },
   activityTitle:   { fontSize: 12, marginTop: 1 },

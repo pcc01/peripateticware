@@ -188,6 +188,14 @@ class ActivityUpdate(BaseModel):
     inquiry_phase: Optional[str] = None
     reflect_phase: Optional[str] = None
     location_wiki_data: Optional[dict] = None
+    # Was settable at creation only (ActivityCreate has it) but silently
+    # dropped by this schema on edit -- ActivityManager.tsx's Location tab
+    # sends it on every save regardless of create/edit, but FastAPI/Pydantic
+    # discards undeclared fields before update_activity() ever sees them, so
+    # the edit-form checkbox has never actually worked for existing
+    # activities. Needed by the unified tracking-settings surface too (bulk
+    # toggle has nothing to toggle without this).
+    discovery_location_gps_capture_enabled: Optional[bool] = None
 
     @field_validator('learning_objectives', mode='before')
     @classmethod
