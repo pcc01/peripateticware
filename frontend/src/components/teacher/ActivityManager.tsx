@@ -150,11 +150,6 @@ const ActivityManager = () => {
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
 
-  // Wikidata/Wikipedia place background info — shown to the teacher while
-  // building the activity (to spur ideas) and saved onto the activity itself
-  // so students can read it offline later. See WikiLocationInfo.tsx.
-  const [showWikiInfo, setShowWikiInfo] = useState(false);
-
   const TAXONOMIES: Record<string, { label: string; levels: { value: string; label: string }[] }> = {
     blooms: {
       label: "Bloom's Revised",
@@ -301,12 +296,6 @@ const ActivityManager = () => {
       if (name) {
         setFormData(f => ({ ...f, location_name: name }));
         setGeoStatus('');
-        // Auto-expand Background Info once real coordinates resolve to a real
-        // place. Restores the "synopsis just appears" feel the 0,0-default
-        // fix (see location_latitude/longitude above) took away — that fix
-        // only stopped the panel from firing on the fake default, it was
-        // never meant to add an extra required click for real locations.
-        setShowWikiInfo(true);
       } else {
         setGeoStatus('');
       }
@@ -332,9 +321,6 @@ const ActivityManager = () => {
           setGeoStatus(coords.isApproximate
             ? 'Exact address not found — pinned to the nearest town. Adjust lat/long below if needed.'
             : '');
-          // Same as the reverse-geocode path above — surface the synopsis
-          // automatically now that we have a real place, no manual click needed.
-          setShowWikiInfo(true);
         } else {
           // No match from Nominatim — leave lat/lng untouched (still 0,0 / whatever
           // was there before) rather than silently keeping stale coordinates from
@@ -632,7 +618,7 @@ const ActivityManager = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-[100rem] mx-auto p-6">
       <h1 className="text-2xl font-bold mb-2">
         {isEditing ? 'Edit Activity' : 'Create Activity'}
       </h1>
@@ -781,36 +767,6 @@ const ActivityManager = () => {
                 className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
             </div>
           </div>
-
-          {/* Wiki location background info — helps the teacher come up with
-              ideas for the activity, and gets saved onto formData below so
-              students can read it offline later (see location_wiki_data). */}
-          {formData.location_latitude && formData.location_longitude && (
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={() => setShowWikiInfo(v => !v)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium mb-3"
-              >
-                {showWikiInfo ? '▼' : '▶'} 📖 Background Info About This Location
-              </button>
-              {showWikiInfo && (
-                <WikiLocationInfo
-                  latitude={formData.location_latitude}
-                  longitude={formData.location_longitude}
-                  subject={formData.subject}
-                  locationName={formData.location_name}
-                  onInfoLoaded={(info) => {
-                    setFormData(f => ({
-                      ...f,
-                      location_wiki_data: info,
-                      location_info: info.description || '',
-                    }));
-                  }}
-                />
-              )}
-            </div>
-          )}
 
           {/* GPS live tracking toggle */}
           <button
@@ -1398,6 +1354,34 @@ const ActivityManager = () => {
           </button>
         </div>
       </form>
+
+        {/* Context column — read-only background/reference material, pulled
+            out of the form so a long Wikidata synopsis (description,
+            architect/date, nearby points of interest, etc.) doesn't push
+            the rest of the form's fields far down the page. Always visible
+            once a location is set — no extra click needed to see it. */}
+        <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-6 bg-gray-50 rounded-lg p-4 border border-gray-200 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
+          <h2 className="text-lg font-bold text-gray-900 mb-1">{t('components_teacher_activitymanager.background_context', '📖 Background & Context')}</h2>
+          {formData.location_latitude && formData.location_longitude ? (
+            <WikiLocationInfo
+              latitude={formData.location_latitude}
+              longitude={formData.location_longitude}
+              subject={formData.subject}
+              locationName={formData.location_name}
+              onInfoLoaded={(info) => {
+                setFormData(f => ({
+                  ...f,
+                  location_wiki_data: info,
+                  location_info: info.description || '',
+                }));
+              }}
+            />
+          ) : (
+            <p className="text-sm text-gray-400 mt-2">
+              {t('components_teacher_activitymanager.add_a_location_to_see_background', 'Add a location above to see background information about it here.')}
+            </p>
+          )}
+        </div>
 
         {/* Peri AI sidebar — persistent, not a collapsible panel: reacts to
             whatever subject/objective/location is filled in on the left,
