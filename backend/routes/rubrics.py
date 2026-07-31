@@ -180,7 +180,12 @@ async def generate_rubric_criteria(
 
         model = settings.OLLAMA_MODEL_TEXT or "mistral"
         try:
-            response = _ollama.chat(
+            # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
+            # settings.OLLAMA_BASE_URL — nothing listens there inside this
+            # app's Docker container (Ollama runs on the host, reached via
+            # host.docker.internal).
+            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
+            response = client.chat(
                 model=model,
                 messages=[
                     {"role": "system", "content": SYSTEM_STANDARDS_ANALYST},

@@ -150,7 +150,14 @@ async def test_enrich_location_cache_miss_falls_through_to_service(ctx):
 
     with patch("routes.privacy_locations.get_location_service", return_value=fake_service):
         with patch("routes.privacy_locations.settings.ENABLE_LOCATION_CACHE", False):
-            resp = await client.get(f"/api/v1/locations/{place_id}/enrich")
+            # No Wikipedia/Wikidata match AND the AI-synopsis fallback also
+            # finds nothing (e.g. Ollama unreachable) — description must stay
+            # None, not synthesize placeholder content either way.
+            with patch(
+                "services.activity_generation_service.ActivityGenerationService.generate_location_synopsis",
+                new=AsyncMock(return_value=None),
+            ):
+                resp = await client.get(f"/api/v1/locations/{place_id}/enrich")
 
     assert resp.status_code == 200
     body = resp.json()
@@ -169,14 +176,58 @@ async def test_enrich_location_cache_miss_falls_through_to_service(ctx):
     assert called_location.source == "openstreetmap"
 
 
+@pytest.mark.asyncio
+async def test_enrich_location_ai_synopsis_fallback_when_no_wiki_match(ctx):
+    """When Wikipedia/Wikidata have nothing for a place (a small local site
+    with no wiki presence — e.g. a watershed restoration project), the AI
+    fallback fills in a synopsis and the response is clearly labeled
+    source="ai_generated" rather than presented as sourced content."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    place_id = "some-local-site"
+
+    cache_lookup_result = MagicMock()
+    cache_lookup_result.scalar_one_or_none.return_value = None
+    db.execute.return_value = cache_lookup_result
+
+    from services.multi_backend_location_service import LocationData
+
+    empty_enriched = LocationData(
+        name="Some Local Site",
+        latitude=48.05,
+        longitude=-122.51,
+        location_type="point_of_interest",
+        address="123 County Rd",
+        place_id=place_id,
+        source="nominatim",
+    )
+
+    fake_service = MagicMock()
+    fake_service.enrich_location = AsyncMock(return_value=empty_enriched)
+
+    with patch("routes.privacy_locations.get_location_service", return_value=fake_service):
+        with patch("routes.privacy_locations.settings.ENABLE_LOCATION_CACHE", False):
+            with patch(
+                "services.activity_generation_service.ActivityGenerationService.generate_location_synopsis",
+                new=AsyncMock(return_value="A small local site useful for observing rural land use."),
+            ):
+                resp = await client.get(f"/api/v1/locations/{place_id}/enrich")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["description"] == "A small local site useful for observing rural land use."
+    assert body["source"] == "ai_generated"
+
+
 # ===========================================================================
-# 3. _fetch_wikidata_id() — regression: gates on location.name, not
+# 3. fetch_wikidata_id_by_name() — regression: gates on location.name, not
 #    location.wikipedia_url
 # ===========================================================================
 
 @pytest.mark.asyncio
 async def test_fetch_wikidata_id_calls_out_when_name_present():
-    """_fetch_wikidata_id() must attempt the Wikidata search whenever
+    """fetch_wikidata_id_by_name() must attempt the Wikidata search whenever
     location.name is populated, REGARDLESS of whether wikipedia_url is set —
     this was previously (buggily) gated on wikipedia_url, which meant OSM
     nodes without a wikipedia tag never got a Wikidata lookup at all."""
@@ -201,16 +252,18 @@ async def test_fetch_wikidata_id_calls_out_when_name_present():
 
     mock_client = AsyncMock()
     mock_client.get = AsyncMock(return_value=fake_response)
-    mock_client.__aenter__.return_value = mock_client
-    mock_client.__aexit__.return_value = False
 
-    # _fetch_wikidata_id is defined on the OSM backend class, not the
-    # top-level MultiBackendLocationService facade — resolve it directly.
-    from services.multi_backend_location_service import OpenStreetMapBackend
-    backend = OpenStreetMapBackend()
+    # fetch_wikidata_id_by_name is a module-level function shared between
+    # OpenStreetMapBackend and WikipediaGeosearchBackend (not a method on
+    # either), using the module's shared pooled client — patch that getter
+    # rather than httpx.AsyncClient directly.
+    from services.multi_backend_location_service import fetch_wikidata_id_by_name
 
-    with patch("httpx.AsyncClient", return_value=mock_client):
-        result = await backend._fetch_wikidata_id(location)
+    with patch(
+        "services.multi_backend_location_service.get_http_client",
+        return_value=mock_client,
+    ):
+        result = await fetch_wikidata_id_by_name(location)
 
     assert result.wikidata_id == "Q44440"
     mock_client.get.assert_awaited_once()
@@ -218,9 +271,9 @@ async def test_fetch_wikidata_id_calls_out_when_name_present():
 
 @pytest.mark.asyncio
 async def test_fetch_wikidata_id_skips_lookup_when_name_missing():
-    """When location.name is empty, _fetch_wikidata_id() must not attempt
-    any HTTP call at all — it should return the location unchanged."""
-    from services.multi_backend_location_service import OpenStreetMapBackend, LocationData
+    """When location.name is empty, fetch_wikidata_id_by_name() must not
+    attempt any HTTP call at all — it should return the location unchanged."""
+    from services.multi_backend_location_service import fetch_wikidata_id_by_name, LocationData
 
     location = LocationData(
         name="",
@@ -233,11 +286,12 @@ async def test_fetch_wikidata_id_skips_lookup_when_name_missing():
         wikidata_id=None,
     )
 
-    backend = OpenStreetMapBackend()
-
     mock_client = AsyncMock()
-    with patch("httpx.AsyncClient", return_value=mock_client):
-        result = await backend._fetch_wikidata_id(location)
+    with patch(
+        "services.multi_backend_location_service.get_http_client",
+        return_value=mock_client,
+    ):
+        result = await fetch_wikidata_id_by_name(location)
 
     mock_client.get.assert_not_called()
     assert result.wikidata_id is None

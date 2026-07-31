@@ -104,12 +104,15 @@ class ActivityGenerationRequest(BaseModel):
     """
     Request body for POST /api/v1/activities/generate-suggestions
 
-    The AI service uses location + subject + grade to generate contextually
-    relevant activity suggestions.
+    The AI service uses subject + grade (+ location, when given) to generate
+    contextually relevant activity suggestions. Location is optional — some
+    activities are intentionally place-generic ("map your neighborhood",
+    "investigate a local wetland"), with the real place captured on-site
+    later rather than at creation time.
     """
-    location_latitude: float
-    location_longitude: float
-    location_name: str
+    location_latitude: Optional[float] = None
+    location_longitude: Optional[float] = None
+    location_name: Optional[str] = None
     subject: str = Field(..., min_length=1, max_length=100)
     grade_level: int = Field(..., ge=3, le=12)
     taxonomy_framework: TaxonomyFramework = TaxonomyFramework.BLOOMS

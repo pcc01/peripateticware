@@ -75,7 +75,14 @@ async def extract_criteria(
 
         model = settings.OLLAMA_MODEL_TEXT or "mistral"
         try:
-            response = _ollama.chat(
+            # The bare module-level ollama.chat() defaults to 127.0.0.1:11434
+            # and ignores settings.OLLAMA_BASE_URL entirely — inside this app's
+            # Docker container that's nothing (Ollama runs on the host, reached
+            # via host.docker.internal), so every call here failed with a
+            # connection error regardless of OLLAMA_BASE_URL being set
+            # correctly. An explicit Client(host=...) is what actually reads it.
+            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
+            response = client.chat(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 options={"temperature": 0.1},   # Low temp for structured output

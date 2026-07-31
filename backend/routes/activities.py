@@ -525,6 +525,92 @@ async def archive_activity(
 # PHASE 5 ENDPOINTS
 # ============================================================================
 
+@router.post("/generate-suggestions", response_model=ActivityGenerationResponse)
+async def generate_draft_activity_suggestions(
+    request: ActivityGenerationRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate AI activity suggestions while still drafting an activity —
+    no saved activity_id required (see /{activity_id}/generate-suggestions
+    below for regenerating on an already-saved activity).
+
+    Backs the activity builder's AI sidebar: whatever of subject/objective
+    (grade level)/location the teacher has filled in so far is used as-is;
+    location is optional (some activities are intentionally place-generic).
+    """
+    _require_teacher(current_user, "Only teachers can generate activities")
+
+    import time
+    started = time.monotonic()
+
+    # generate_activity_suggestions() takes bloom_level (singular — not
+    # "blooms_level", unlike TaxonomyFramework.BLOOMS.value) / marzano_level /
+    # dok_level / solo_level as separate kwargs; CUSTOM has no matching kwarg.
+    _TAXONOMY_LEVEL_KWARG = {
+        TaxonomyFramework.BLOOMS: "bloom_level",
+        TaxonomyFramework.MARZANO: "marzano_level",
+        TaxonomyFramework.DOK: "dok_level",
+        TaxonomyFramework.SOLO: "solo_level",
+    }
+    taxonomy_kwargs: Dict[str, Any] = {}
+    if request.desired_taxonomy_level is not None:
+        kwarg_name = _TAXONOMY_LEVEL_KWARG.get(request.taxonomy_framework)
+        if kwarg_name:
+            taxonomy_kwargs[kwarg_name] = request.desired_taxonomy_level
+
+    service = ActivityGenerationService(llm_provider=settings.LLM_PROVIDER.lower())
+
+    generation_result = await service.generate_activity_suggestions(
+        subject=request.subject,
+        grade_level=request.grade_level,
+        location_name=request.location_name,
+        latitude=request.location_latitude,
+        longitude=request.location_longitude,
+        additional_context=request.additional_context,
+        db=db,
+        num_suggestions=request.activity_count,
+        **taxonomy_kwargs,
+    )
+
+    if not generation_result.get("success"):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=generation_result.get("error", "Generation failed"),
+        )
+
+    suggestions = [
+        ActivitySuggestion(
+            title=s.get("title", "Activity Suggestion"),
+            description=s.get("description", ""),
+            learning_objectives=s.get("learning_objectives", []),
+            estimated_duration_minutes=s.get("estimated_duration_minutes", 90),
+            # Suggestion carries a 1-6 Bloom's level; this schema's
+            # difficulty_level is 1-5 — clamp rather than invent a second
+            # LLM-derived field for what is, for this UI, the same signal.
+            difficulty_level=min(5, max(1, s.get("bloom_level", 3))),
+            bloom_level=s.get("bloom_level", 3),
+            marzano_level=s.get("marzano_level"),
+            dok_level=s.get("dok_level"),
+            solo_level=s.get("solo_level"),
+            materials_needed=s.get("materials_needed", []),
+            location_context_summary=s.get("reasoning"),
+        )
+        for s in generation_result.get("suggestions", [])
+    ]
+
+    return ActivityGenerationResponse(
+        suggestions=suggestions,
+        location_name=generation_result.get("location", {}).get("name") or "No specific location",
+        subject=request.subject,
+        grade_level=request.grade_level,
+        taxonomy_framework=request.taxonomy_framework,
+        provider=generation_result.get("llm_model", service.llm_provider),
+        model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
+        generation_time_ms=int((time.monotonic() - started) * 1000),
+    )
+
+
 @router.post("/{activity_id}/location-context", response_model=Dict[str, Any])
 async def get_location_context(
     activity_id: UUID,
@@ -1485,7 +1571,12 @@ async def classify_taxonomy(
 
         model = settings.OLLAMA_MODEL_TEXT or "mistral"
         try:
-            response = _ollama.chat(
+            # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
+            # settings.OLLAMA_BASE_URL — nothing listens there inside this
+            # app's Docker container (Ollama runs on the host, reached via
+            # host.docker.internal).
+            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
+            response = client.chat(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
                 options={"temperature": 0.10},  # Low temp for structured output

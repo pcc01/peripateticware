@@ -83,6 +83,9 @@ export interface Activity {
     reflect: PhaseStatus
   }
   rubric_ids?: string[]
+  // Backend's actual GET /activities/{id} response shape (routes/activities.py,
+  // schemas/activities.py) sends a single attached rubric, not an array.
+  rubric_id?: string
   curriculum_links?: string[]
   standards?: string[]
   teacher?: { id: string; name?: string; email?: string }

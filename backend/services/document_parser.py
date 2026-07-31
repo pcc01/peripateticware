@@ -108,10 +108,14 @@ async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
         return result
 
     model = settings.OLLAMA_MODEL_VISION or "llava"
+    # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
+    # settings.OLLAMA_BASE_URL — nothing listens there inside this app's
+    # Docker container (Ollama runs on the host, via host.docker.internal).
+    ollama_client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
     for i, img_bytes in enumerate(page_images):
         try:
             b64 = base64.b64encode(img_bytes).decode()
-            response = _ollama.chat(
+            response = ollama_client.chat(
                 model=model,
                 messages=[{
                     "role": "user",

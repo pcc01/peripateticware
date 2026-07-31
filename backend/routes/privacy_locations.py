@@ -17,7 +17,7 @@ from core.database import get_db
 from core.config import settings
 from services.privacy_engine import get_privacy_checker
 from services.privacy_config_loader import PrivacyConfigurationLoader
-from services.multi_backend_location_service import get_location_service, LocationData
+from services.multi_backend_location_service import get_location_service, get_http_client, LocationData
 from services.iapp_privacy_crawler import run_privacy_crawler, run_jurisdiction_crawl, get_supported_countries
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,31 @@ class LocationSearchResponse(BaseModel):
     rating: Optional[float] = None
     user_ratings_total: Optional[int] = None
     is_cached: bool
+
+
+class GeocodeRequest(BaseModel):
+    """Forward-geocode free text — a place name or a full street address."""
+    query: str
+
+
+class GeocodeResponse(BaseModel):
+    """Forward-geocode result"""
+    latitude: float
+    longitude: float
+    display_name: str
+    place_id: str
+    address: str
+    is_cached: bool
+    # True when the exact typed address had no match and this is a coarser
+    # fallback (e.g. just the town) — see geocode_location()'s fallback chain.
+    is_approximate: bool = False
+
+
+def _geocode_cache_key(query: str) -> str:
+    """Deterministic place_id for a normalized geocode query string."""
+    import hashlib
+    normalized = (query or "").strip().lower()
+    return "geocode:" + hashlib.sha256(normalized.encode()).hexdigest()[:32]
 
 
 # ============================================================================
@@ -90,9 +115,164 @@ async def reload_privacy_config(db: AsyncSession = Depends(get_db)):
 # LOCATION ENDPOINTS
 # ============================================================================
 
+@router.post("/locations/geocode", response_model=GeocodeResponse)
+async def geocode_location(
+    request: GeocodeRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Forward-geocode free text — a landmark name ("Eiffel Tower") or a full
+    street address ("7015 Maxwelton Rd, Clinton, WA 98236") — to
+    latitude/longitude. Backs the activity builder's single "Location Name"
+    field so a teacher-typed address resolves the same way a landmark name
+    does, with no separate "Address" field needed.
+
+    Moved server-side (this previously happened client-side, straight from
+    the browser to Nominatim — see ActivityManager.tsx's old forwardGeocode)
+    so it shares the pooled client (get_http_client) and the same
+    CachedLocation table as /locations/search, instead of an uncached,
+    unauthenticated call repeated on every keystroke pause.
+    """
+    query = (request.query or "").strip()
+    if not query:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="query is required")
+
+    from models.database import CachedLocation as _CL
+    from sqlalchemy import select as _sel3
+    from datetime import datetime as _dt
+
+    place_id = _geocode_cache_key(query)
+
+    if settings.ENABLE_LOCATION_CACHE:
+        existing = (await db.execute(
+            _sel3(_CL).where(_CL.place_id == place_id)
+        )).scalar_one_or_none()
+        if existing:
+            try:
+                existing.access_count = (existing.access_count or 0) + 1
+                existing.last_accessed = _dt.utcnow()
+                await db.commit()
+            except Exception as usage_err:
+                logger.warning(f"Geocode usage tracking update failed (non-fatal): {usage_err}")
+                await db.rollback()
+            return GeocodeResponse(
+                latitude=existing.latitude,
+                longitude=existing.longitude,
+                display_name=existing.name,
+                place_id=place_id,
+                address=existing.address or "",
+                is_cached=True,
+            )
+
+    # Fallback chain: rural/small-town roads (e.g. an outdoor-classroom site
+    # down a county road) are frequently missing house-number-level detail
+    # in OSM/Nominatim entirely — confirmed directly against Nominatim, not
+    # a bug in this endpoint: the exact street address returns [], but
+    # progressively dropping the leading (most specific) comma-separated
+    # segment finds the town/village. A coarse pin the teacher can drag to
+    # the right spot beats a hard 404 with no starting point at all.
+    segments = [s.strip() for s in query.split(",") if s.strip()]
+    candidates = [query] + [", ".join(segments[i:]) for i in range(1, len(segments))]
+
+    client = get_http_client()
+    results = None
+    matched_query = query
+    for attempt, candidate in enumerate(candidates):
+        try:
+            response = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": candidate, "format": "json", "limit": 1, "addressdetails": 1},
+                timeout=10,
+            )
+            response.raise_for_status()
+            candidate_results = response.json()
+        except Exception as e:
+            logger.error(f"Geocode request failed for '{candidate}': {e}")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Geocoding service unavailable"
+            )
+        if candidate_results:
+            results = candidate_results
+            matched_query = candidate
+            break
+
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No location found for '{query}'"
+        )
+    is_approximate = matched_query != query
+
+    top = results[0]
+    latitude = float(top["lat"])
+    longitude = float(top["lon"])
+    display_name = top.get("display_name", matched_query)
+    address_obj = top.get("address") if isinstance(top.get("address"), dict) else {}
+    address_str = ", ".join(p for p in [
+        address_obj.get("road"),
+        address_obj.get("house_number"),
+        address_obj.get("city") or address_obj.get("town") or address_obj.get("village"),
+        address_obj.get("state"),
+        address_obj.get("postcode"),
+    ] if p)
+
+    # Only cache exact (first-attempt) matches. Caching a fallback match
+    # under the *original* address's cache key would silently keep serving
+    # a coarse approximation on every future lookup of that exact address —
+    # the is_approximate flag on this response wouldn't survive into the
+    # cache-hit branch above without a schema change, so the honest choice
+    # is to just recompute the (cheap) fallback chain each time instead.
+    if settings.ENABLE_LOCATION_CACHE and not is_approximate:
+        try:
+            db.add(_CL(
+                name=display_name,
+                latitude=latitude,
+                longitude=longitude,
+                location_type="geocode",
+                address=address_str,
+                place_id=place_id,
+                source="nominatim",
+            ))
+            await db.commit()
+        except Exception as cache_err:
+            logger.warning(f"Geocode cache write skipped for '{query}': {cache_err}")
+            await db.rollback()
+
+    return GeocodeResponse(
+        latitude=latitude,
+        longitude=longitude,
+        display_name=display_name,
+        place_id=place_id,
+        address=address_str,
+        is_cached=False,
+        is_approximate=is_approximate,
+    )
+
+
+async def _prewarm_enrichment(place_ids: List[str]) -> None:
+    """
+    Pre-fetch and cache enrichment for the top few /locations/search results
+    so picking a different nearby place still feels instant. Runs after the
+    response is sent, so it opens its own DB session rather than reusing the
+    request-scoped one (which may already be torn down by then) — same
+    session-factory pattern get_db() itself uses.
+    """
+    from core.database import get_session_factory
+
+    session_factory = get_session_factory()
+    for place_id in place_ids:
+        try:
+            async with session_factory() as session:
+                await enrich_location(place_id=place_id, subject=None, refresh=False, db=session)
+        except Exception as prewarm_err:
+            logger.warning(f"Pre-warm enrichment skipped for {place_id}: {prewarm_err}")
+
+
 @router.post("/locations/search", response_model=List[LocationSearchResponse])
 async def search_nearby_locations(
     request: LocationSearchRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -173,6 +353,14 @@ async def search_nearby_locations(
             for loc in locations
         ]
 
+        # Pre-warm enrichment for the top few results in the background, so
+        # picking a nearby place other than the auto-matched one is already
+        # cached by the time the teacher clicks it.
+        if settings.ENABLE_LOCATION_CACHE and responses:
+            background_tasks.add_task(
+                _prewarm_enrichment, [r.place_id for r in responses[:3]]
+            )
+
         logger.info(f"Found {len(responses)} locations")
         return responses
 
@@ -231,6 +419,24 @@ async def enrich_location(
                 is_stale = True
 
         if enriched and not is_stale:
+            # Usage tracking — mirrors the increment-and-commit idiom already
+            # used for the (unrelated) inference cache in routes/inference.py
+            # (_get_cached_inference). Without this, access_count/usage_count
+            # sit at their insert-time defaults forever, so the "which places
+            # do teachers actually use" signal these columns exist for never
+            # accumulates on a real cache hit.
+            try:
+                from datetime import datetime as _dt
+                if cached:
+                    cached.access_count = (cached.access_count or 0) + 1
+                    cached.last_accessed = _dt.utcnow()
+                enriched.usage_count = (enriched.usage_count or 0) + 1
+                enriched.last_used = _dt.utcnow()
+                await db.commit()
+            except Exception as usage_err:
+                logger.warning(f"Location usage tracking update failed (non-fatal): {usage_err}")
+                await db.rollback()
+
             return {
                 "place_id": place_id,
                 "name": cached.name if cached else place_id,
@@ -280,6 +486,30 @@ async def enrich_location(
             )
 
         enriched_location = await service.enrich_location(location, subject=subject)
+
+        # AI-synopsis fallback: small local sites (a watershed restoration
+        # project, a school's own outdoor classroom) often have no Wikipedia
+        # or Wikidata entry at all — enrich_location() above then returns no
+        # description. Rather than leaving the panel blank, ask the LLM for
+        # a short overview from its general knowledge. Clearly distinguished
+        # from sourced content via source="ai_generated" (checked by
+        # WikiLocationInfo.tsx to render a distinct label) — an LLM's
+        # knowledge of a small, obscure place can be thin or wrong on
+        # specifics, so it must never be presented as if it were Wikipedia.
+        if not enriched_location.description:
+            from services.activity_generation_service import ActivityGenerationService
+
+            synopsis = await ActivityGenerationService(
+                llm_provider=settings.LLM_PROVIDER.lower()
+            ).generate_location_synopsis(
+                location_name=enriched_location.name,
+                address=enriched_location.address,
+                latitude=enriched_location.latitude,
+                longitude=enriched_location.longitude,
+            )
+            if synopsis:
+                enriched_location.description = synopsis
+                enriched_location.source = "ai_generated"
 
         # Simple populated-fields heuristic for enrichment_quality — not a
         # hardcoded constant. LocationData has no enrichment_quality field.

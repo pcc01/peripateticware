@@ -272,6 +272,7 @@ def build_activity_generation_prompt(
     taxonomy_levels: dict | None = None,
     learning_objectives: list[str] | None = None,
     curriculum_standards: list[str] | None = None,
+    additional_context: str = "",
     num_activities: int = 3,
     activity_types: list[str] | None = None,
 ) -> str:
@@ -305,6 +306,8 @@ def build_activity_generation_prompt(
         standards_block = "Curriculum standards to align with:\n" + \
             "\n".join(f"  • {s}" for s in curriculum_standards[:8])
 
+    notes_block = f"\nTEACHER'S NOTES\n{additional_context.strip()}\n" if additional_context and additional_context.strip() else ""
+
     desc_line  = f"Description: {location_description}\n" if location_description else ""
     wiki_line  = f"Background (Wikipedia):\n{wikipedia_extract[:600]}\n" if wikipedia_extract else ""
     solo_line  = f"SOLO: {solo_desc}\n" if solo_desc else ""
@@ -316,6 +319,7 @@ Subject: {subject}
 Grade level: {grade_level}
 {objectives_block}
 {standards_block}
+{notes_block}
 
 COGNITIVE TARGETS
 Bloom's Revised: {bloom_desc}
@@ -351,6 +355,47 @@ Return ONLY a valid JSON array. No markdown, no preamble. Schema:
     "peri_opening_question": "string — the first question Peri asks to launch inquiry"
   }}
 ]"""
+
+
+def build_location_synopsis_prompt(
+    *,
+    location_name: str,
+    address: str = "",
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+) -> str:
+    """
+    Fallback synopsis for a place with no Wikipedia/Wikidata coverage — small
+    local sites (a watershed restoration project, a community garden, a
+    school's own outdoor classroom) that a landmark-focused wiki simply
+    doesn't index. Draws on the model's general knowledge rather than a
+    lookup — the caller is responsible for labelling the result as
+    AI-generated rather than sourced.
+
+    Temperature: 0.3
+    Max tokens: 300
+    Returns plain text (2-4 sentences), not JSON.
+    """
+    address_line = f"Address: {address}\n" if address else ""
+    coord_line = (
+        f"Coordinates: {latitude:.4f}, {longitude:.4f}\n"
+        if latitude is not None and longitude is not None else ""
+    )
+    return f"""PLACE
+Name: {location_name}
+{address_line}{coord_line}
+TASK
+This place has no Wikipedia or Wikidata entry. Using what you know about this specific place \
+(or, if you don't recognize it specifically, reasonable inference from its name, address, and \
+region), write a short 2-4 sentence overview useful to a K-12 teacher planning a field-based \
+learning activity here. Mention what kind of place it likely is (park, watershed, historic site, \
+civic building, etc.) and one or two things students might observe or learn there.
+
+Do not invent specific facts you are not reasonably confident about (exact founding dates, named \
+individuals, precise statistics). If you don't recognize the place at all, say so plainly and \
+describe only what can be inferred from its name, address, and region.
+
+Return ONLY the overview text. No preamble, no markdown, no JSON."""
 
 
 # ──────────────────────────────────────────────────────────────────────────────

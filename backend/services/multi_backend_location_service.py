@@ -34,6 +34,40 @@ logger = logging.getLogger(__name__)
 # successfully find a real POI: https://meta.wikimedia.org/wiki/User-Agent_policy
 WIKIMEDIA_USER_AGENT = "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"
 
+# Shared, connection-pooled client for all Overpass/Nominatim/Wikipedia/
+# Wikidata calls in this module. Every call site here used to open its own
+# `async with httpx.AsyncClient()` — a fresh TCP+TLS handshake per hop, even
+# though the enrichment chain (fetch_wikidata_id_by_name -> enrich_with_wikidata
+# -> enrich_with_wikipedia) makes 2-3 *sequential* calls to the same 2 hosts
+# in a single request. Reusing one pooled client lets httpx keep those
+# connections alive across hops (and across requests), which is the main
+# fix for "the wikidata lookup feels slow." Default timeout is tightened from
+# the previous per-call 10s to 4s — these APIs normally answer in well under
+# a second, so 10s was only ever making a hang (not a normal response) take
+# longer to fail. Overpass/Nominatim keep their own longer per-call timeouts
+# below since they're a different, occasionally slower host.
+_shared_http_client: Optional[httpx.AsyncClient] = None
+
+
+def get_http_client() -> httpx.AsyncClient:
+    """Get (or lazily create) the shared pooled httpx client for this module."""
+    global _shared_http_client
+    if _shared_http_client is None or _shared_http_client.is_closed:
+        _shared_http_client = httpx.AsyncClient(
+            timeout=4,
+            headers={"User-Agent": WIKIMEDIA_USER_AGENT},
+            limits=httpx.Limits(max_keepalive_connections=20, max_connections=40),
+        )
+    return _shared_http_client
+
+
+async def close_http_client() -> None:
+    """Close the shared client. Call once on app shutdown."""
+    global _shared_http_client
+    if _shared_http_client is not None and not _shared_http_client.is_closed:
+        await _shared_http_client.aclose()
+        _shared_http_client = None
+
 
 @dataclass
 class LocationData:
@@ -136,47 +170,47 @@ class OpenStreetMapBackend(LocationBackend):
         """
         
         try:
-            async with httpx.AsyncClient() as client:
-                # Sending the raw query via `content=` gives the request no
-                # (or the wrong) Content-Type, which Overpass rejects with
-                # "406 Not Acceptable" — every search silently fell through
-                # to the Nominatim backend as a result, and since Nominatim
-                # has no Wikidata link, the enrichment step never had a real
-                # POI to enrich, only ever synthesizing generic content.
-                # Overpass expects its query as a `data` form field (this is
-                # the documented way to POST — see overpass-api.de/api/interpreter);
-                # `data=` makes httpx send it as
-                # application/x-www-form-urlencoded, which Overpass accepts.
-                response = await client.post(
-                    self.overpass_url,
-                    data={"data": overpass_query},
-                    # The public Overpass instance has been intermittently
-                    # unreachable from this deployment ("All connection
-                    # attempts failed" — a connect-level failure, not a slow
-                    # response), likely rate-limiting/blocking after repeated
-                    # testing. Search now runs all backends concurrently
-                    # (see MultiBackendLocationService.search_nearby), so
-                    # this timeout is the effective floor on total search
-                    # latency whenever Overpass is unreachable — Overpass,
-                    # when reachable, responds in well under a second for a
-                    # bbox this small, so 5s is still generous for the
-                    # success case while capping the failure case tighter
-                    # than the previous 8s (itself already cut from 30s).
-                    timeout=5,
-                    # Overpass's public instance usage policy rejects requests
-                    # with no/generic User-Agent — this call had none at all
-                    # (unlike NominatimBackend below, which already sets one),
-                    # which is the likely other half of the 406 behavior.
-                    headers={"User-Agent": "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"},
-                )
+            client = get_http_client()
+            # Sending the raw query via `content=` gives the request no
+            # (or the wrong) Content-Type, which Overpass rejects with
+            # "406 Not Acceptable" — every search silently fell through
+            # to the Nominatim backend as a result, and since Nominatim
+            # has no Wikidata link, the enrichment step never had a real
+            # POI to enrich, only ever synthesizing generic content.
+            # Overpass expects its query as a `data` form field (this is
+            # the documented way to POST — see overpass-api.de/api/interpreter);
+            # `data=` makes httpx send it as
+            # application/x-www-form-urlencoded, which Overpass accepts.
+            response = await client.post(
+                self.overpass_url,
+                data={"data": overpass_query},
+                # The public Overpass instance has been intermittently
+                # unreachable from this deployment ("All connection
+                # attempts failed" — a connect-level failure, not a slow
+                # response), likely rate-limiting/blocking after repeated
+                # testing. Search now runs all backends concurrently
+                # (see MultiBackendLocationService.search_nearby), so
+                # this timeout is the effective floor on total search
+                # latency whenever Overpass is unreachable — Overpass,
+                # when reachable, responds in well under a second for a
+                # bbox this small, so 5s is still generous for the
+                # success case while capping the failure case tighter
+                # than the previous 8s (itself already cut from 30s).
+                timeout=5,
+                # Overpass's public instance usage policy rejects requests
+                # with no/generic User-Agent — this call had none at all
+                # (unlike NominatimBackend below, which already sets one),
+                # which is the likely other half of the 406 behavior.
+                headers={"User-Agent": "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"},
+            )
 
-                if response.status_code == 200:
-                    data = response.json()
-                    locations = self._parse_osm_response(data)
-                    return locations
-                else:
-                    logger.error(f"Overpass API error: {response.status_code}")
-                    return []
+            if response.status_code == 200:
+                data = response.json()
+                locations = self._parse_osm_response(data)
+                return locations
+            else:
+                logger.error(f"Overpass API error: {response.status_code}")
+                return []
 
         except Exception as e:
             logger.error(f"Error querying Overpass API: {e}")
@@ -379,23 +413,21 @@ async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
     """Fetch Wikidata ID by searching Wikidata for the location's name"""
     if location.name:
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    "https://www.wikidata.org/w/api.php",
-                    params={
-                        "action": "wbsearchentities",
-                        "search": location.name,
-                        "language": "en",
-                        "format": "json"
-                    },
-                    timeout=10,
-                    headers={"User-Agent": WIKIMEDIA_USER_AGENT},
-                )
+            client = get_http_client()
+            response = await client.get(
+                "https://www.wikidata.org/w/api.php",
+                params={
+                    "action": "wbsearchentities",
+                    "search": location.name,
+                    "language": "en",
+                    "format": "json"
+                },
+            )
 
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("search"):
-                        location.wikidata_id = data["search"][0]["id"]
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("search"):
+                    location.wikidata_id = data["search"][0]["id"]
         except Exception as e:
             logger.warning(f"Could not fetch Wikidata ID: {e}")
 
@@ -408,101 +440,97 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
         return location
 
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://www.wikidata.org/wiki/Special:EntityData/{}.json".format(
-                    location.wikidata_id
-                ),
-                timeout=10,
-                headers={"User-Agent": WIKIMEDIA_USER_AGENT},
-            )
+        client = get_http_client()
+        response = await client.get(
+            "https://www.wikidata.org/wiki/Special:EntityData/{}.json".format(
+                location.wikidata_id
+            ),
+        )
 
-            if response.status_code == 200:
-                data = response.json()
-                entity = data["entities"].get(location.wikidata_id, {})
+        if response.status_code == 200:
+            data = response.json()
+            entity = data["entities"].get(location.wikidata_id, {})
 
-                # Extract claims (statements)
-                claims = entity.get("claims", {})
+            # Extract claims (statements)
+            claims = entity.get("claims", {})
 
-                # Get image
-                if "P18" in claims:  # image
+            # Get image
+            if "P18" in claims:  # image
+                try:
+                    image_title = claims["P18"][0]["mainsnak"]["datavalue"]["value"]
+                    location.image_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{image_title}"
+                except:
+                    pass
+
+            # Get description (short, one-line — Wikidata's own summary,
+            # e.g. "tower located on the Champ de Mars in Paris, France").
+            # Only used as a fallback when nothing better is set yet —
+            # enrich_with_wikipedia's full article synopsis is what
+            # "points of interest about the location" actually means,
+            # and must never get clobbered by this one-liner regardless
+            # of which function happens to run first.
+            if not location.description and "en" in entity.get("descriptions", {}):
+                location.description = entity["descriptions"]["en"]["value"]
+
+            # Cross-link to the English Wikipedia article via Wikidata's
+            # own sitelinks. OSM tags frequently carry a wikidata= tag
+            # without a matching wikipedia= tag (or no tags at all, when
+            # we got here via the name-search fallback) — without this,
+            # location.wikipedia_url stays empty, enrich_with_wikipedia()
+            # never runs, and the panel is stuck showing only the short
+            # Wikidata description above instead of a real synopsis.
+            if not location.wikipedia_url:
+                enwiki_title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
+                if enwiki_title:
+                    location.wikipedia_url = f"https://en.wikipedia.org/wiki/{enwiki_title.replace(' ', '_')}"
+
+            # Get inception date
+            if "P571" in claims:  # inception
+                try:
+                    location.construction_date = claims["P571"][0]["mainsnak"]["datavalue"]["value"]["time"]
+                except:
+                    pass
+
+            # Get creator/artist. Falls back to "architect" (P84)
+            # for buildings, since P170 (creator) is mostly used for
+            # artworks. Either way this is a Wikidata *entity ID*
+            # (e.g. "Q42"), not a name — resolve it to a human
+            # -readable label below, otherwise the panel shows a raw
+            # Q-code, which is exactly the kind of placeholder-
+            # looking junk this was supposed to fix.
+            creator_id = None
+            for prop in ("P170", "P84"):
+                if prop in claims:
                     try:
-                        image_title = claims["P18"][0]["mainsnak"]["datavalue"]["value"]
-                        location.image_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{image_title}"
-                    except:
-                        pass
-
-                # Get description (short, one-line — Wikidata's own summary,
-                # e.g. "tower located on the Champ de Mars in Paris, France").
-                # Only used as a fallback when nothing better is set yet —
-                # enrich_with_wikipedia's full article synopsis is what
-                # "points of interest about the location" actually means,
-                # and must never get clobbered by this one-liner regardless
-                # of which function happens to run first.
-                if not location.description and "en" in entity.get("descriptions", {}):
-                    location.description = entity["descriptions"]["en"]["value"]
-
-                # Cross-link to the English Wikipedia article via Wikidata's
-                # own sitelinks. OSM tags frequently carry a wikidata= tag
-                # without a matching wikipedia= tag (or no tags at all, when
-                # we got here via the name-search fallback) — without this,
-                # location.wikipedia_url stays empty, enrich_with_wikipedia()
-                # never runs, and the panel is stuck showing only the short
-                # Wikidata description above instead of a real synopsis.
-                if not location.wikipedia_url:
-                    enwiki_title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
-                    if enwiki_title:
-                        location.wikipedia_url = f"https://en.wikipedia.org/wiki/{enwiki_title.replace(' ', '_')}"
-
-                # Get inception date
-                if "P571" in claims:  # inception
-                    try:
-                        location.construction_date = claims["P571"][0]["mainsnak"]["datavalue"]["value"]["time"]
-                    except:
-                        pass
-
-                # Get creator/artist. Falls back to "architect" (P84)
-                # for buildings, since P170 (creator) is mostly used for
-                # artworks. Either way this is a Wikidata *entity ID*
-                # (e.g. "Q42"), not a name — resolve it to a human
-                # -readable label below, otherwise the panel shows a raw
-                # Q-code, which is exactly the kind of placeholder-
-                # looking junk this was supposed to fix.
-                creator_id = None
-                for prop in ("P170", "P84"):
-                    if prop in claims:
-                        try:
-                            creator_id = claims[prop][0]["mainsnak"]["datavalue"]["value"]["id"]
-                            break
-                        except Exception:
-                            continue
-
-                if creator_id:
-                    try:
-                        label_resp = await client.get(
-                            "https://www.wikidata.org/w/api.php",
-                            params={
-                                "action": "wbgetentities",
-                                "ids": creator_id,
-                                "props": "labels",
-                                "languages": "en",
-                                "format": "json",
-                            },
-                            timeout=10,
-                            headers={"User-Agent": WIKIMEDIA_USER_AGENT},
-                        )
-                        if label_resp.status_code == 200:
-                            label_data = label_resp.json()
-                            label = (
-                                label_data.get("entities", {})
-                                .get(creator_id, {})
-                                .get("labels", {})
-                                .get("en", {})
-                                .get("value")
-                            )
-                            location.architect_or_artist = label or creator_id
+                        creator_id = claims[prop][0]["mainsnak"]["datavalue"]["value"]["id"]
+                        break
                     except Exception:
-                        location.architect_or_artist = creator_id
+                        continue
+
+            if creator_id:
+                try:
+                    label_resp = await client.get(
+                        "https://www.wikidata.org/w/api.php",
+                        params={
+                            "action": "wbgetentities",
+                            "ids": creator_id,
+                            "props": "labels",
+                            "languages": "en",
+                            "format": "json",
+                        },
+                    )
+                    if label_resp.status_code == 200:
+                        label_data = label_resp.json()
+                        label = (
+                            label_data.get("entities", {})
+                            .get(creator_id, {})
+                            .get("labels", {})
+                            .get("en", {})
+                            .get("value")
+                        )
+                        location.architect_or_artist = label or creator_id
+                except Exception:
+                    location.architect_or_artist = creator_id
 
     except Exception as e:
         logger.warning(f"Error enriching with Wikidata: {e}")
@@ -519,50 +547,48 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
         # Extract page title
         title = location.wikipedia_url.split("/wiki/")[-1]
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                "https://en.wikipedia.org/w/api.php",
-                params={
-                    "action": "query",
-                    "titles": title,
-                    # pageprops added so we can pull the linked Wikidata QID
-                    # (wikibase_item) from this same response — previously a
-                    # separate wbsearchentities round trip to Wikidata was
-                    # always made afterward to find it by name-matching,
-                    # which is both slower (one more network hop in the
-                    # critical path) and less reliable (name search can
-                    # match the wrong entity). One fewer sequential request
-                    # when this succeeds.
-                    "prop": "extracts|pageimages|pageprops",
-                    "exintro": True,
-                    "explaintext": True,
-                    "format": "json"
-                },
-                timeout=10,
-                headers={"User-Agent": WIKIMEDIA_USER_AGENT},
-            )
+        client = get_http_client()
+        response = await client.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query",
+                "titles": title,
+                # pageprops added so we can pull the linked Wikidata QID
+                # (wikibase_item) from this same response — previously a
+                # separate wbsearchentities round trip to Wikidata was
+                # always made afterward to find it by name-matching,
+                # which is both slower (one more network hop in the
+                # critical path) and less reliable (name search can
+                # match the wrong entity). One fewer sequential request
+                # when this succeeds.
+                "prop": "extracts|pageimages|pageprops",
+                "exintro": True,
+                "explaintext": True,
+                "format": "json"
+            },
+        )
 
-            if response.status_code == 200:
-                data = response.json()
-                pages = data.get("query", {}).get("pages", {})
+        if response.status_code == 200:
+            data = response.json()
+            pages = data.get("query", {}).get("pages", {})
 
-                for page_id, page in pages.items():
-                    if page_id != "-1":
-                        if "extract" in page:
-                            # 500 chars was one clipped sentence — not what
-                            # "tell me interesting points about this place"
-                            # means. `exintro=True` already limits this to
-                            # just the lead section (before the first
-                            # heading), so it won't run away into the whole
-                            # article; 2000 chars comfortably fits a full
-                            # multi-sentence synopsis for most landmarks.
-                            location.description = page["extract"][:2000]
-                        if "thumbnail" in page:
-                            location.image_url = page["thumbnail"]["source"]
-                        if not location.wikidata_id:
-                            qid = page.get("pageprops", {}).get("wikibase_item")
-                            if qid:
-                                location.wikidata_id = qid
+            for page_id, page in pages.items():
+                if page_id != "-1":
+                    if "extract" in page:
+                        # 500 chars was one clipped sentence — not what
+                        # "tell me interesting points about this place"
+                        # means. `exintro=True` already limits this to
+                        # just the lead section (before the first
+                        # heading), so it won't run away into the whole
+                        # article; 2000 chars comfortably fits a full
+                        # multi-sentence synopsis for most landmarks.
+                        location.description = page["extract"][:2000]
+                    if "thumbnail" in page:
+                        location.image_url = page["thumbnail"]["source"]
+                    if not location.wikidata_id:
+                        qid = page.get("pageprops", {}).get("wikibase_item")
+                        if qid:
+                            location.wikidata_id = qid
 
     except Exception as e:
         logger.warning(f"Error enriching with Wikipedia: {e}")
@@ -648,49 +674,48 @@ class NominatimBackend(LocationBackend):
         """Search using Nominatim reverse geocoding"""
         
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    f"{self.nominatim_url}/reverse",
-                    params={
-                        "lat": latitude,
-                        "lon": longitude,
-                        "radius": min(radius_meters, 5000),  # Nominatim limit
-                        "zoom": 17,
-                        "format": "json"
-                    },
-                    timeout=10,
-                    headers={"User-Agent": "PeripateticwareApp/1.0"}
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    # Nominatim returns single result, use with OSM for better results
-                    raw_address = data.get("address", {})
-                    if isinstance(raw_address, dict):
-                        # Build a readable string from Nominatim's address object
-                        parts = [
-                            raw_address.get("road", ""),
-                            raw_address.get("city") or raw_address.get("town") or raw_address.get("village", ""),
-                            raw_address.get("state", ""),
-                            raw_address.get("postcode", ""),
-                        ]
-                        address_str = ", ".join(p for p in parts if p)
-                    else:
-                        address_str = str(raw_address)
+            client = get_http_client()
+            response = await client.get(
+                f"{self.nominatim_url}/reverse",
+                params={
+                    "lat": latitude,
+                    "lon": longitude,
+                    "radius": min(radius_meters, 5000),  # Nominatim limit
+                    "zoom": 17,
+                    "format": "json"
+                },
+                timeout=10,
+            )
 
-                    location = LocationData(
-                        name=data.get("name") or data.get("display_name", "Location"),
-                        latitude=float(data.get("lat")),
-                        longitude=float(data.get("lon")),
-                        location_type="point_of_interest",
-                        address=address_str,
-                        place_id=f"nominatim_{data.get('osm_id')}",
-                        source="nominatim"
-                    )
-                    return [location]
+            if response.status_code == 200:
+                data = response.json()
+                # Nominatim returns single result, use with OSM for better results
+                raw_address = data.get("address", {})
+                if isinstance(raw_address, dict):
+                    # Build a readable string from Nominatim's address object
+                    parts = [
+                        raw_address.get("road", ""),
+                        raw_address.get("city") or raw_address.get("town") or raw_address.get("village", ""),
+                        raw_address.get("state", ""),
+                        raw_address.get("postcode", ""),
+                    ]
+                    address_str = ", ".join(p for p in parts if p)
                 else:
-                    return []
-        
+                    address_str = str(raw_address)
+
+                location = LocationData(
+                    name=data.get("name") or data.get("display_name", "Location"),
+                    latitude=float(data.get("lat")),
+                    longitude=float(data.get("lon")),
+                    location_type="point_of_interest",
+                    address=address_str,
+                    place_id=f"nominatim_{data.get('osm_id')}",
+                    source="nominatim"
+                )
+                return [location]
+            else:
+                return []
+
         except Exception as e:
             logger.error(f"Error querying Nominatim: {e}")
             return []
@@ -746,48 +771,46 @@ class WikipediaGeosearchBackend(LocationBackend):
         gsradius = min(radius_meters, 10000)
 
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(
-                    "https://en.wikipedia.org/w/api.php",
-                    params={
-                        "action": "query",
-                        "list": "geosearch",
-                        "gscoord": f"{latitude}|{longitude}",
-                        "gsradius": gsradius,
-                        "gslimit": 20,
-                        "format": "json",
-                    },
-                    timeout=10,
-                    headers={"User-Agent": "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"},
-                )
+            client = get_http_client()
+            response = await client.get(
+                "https://en.wikipedia.org/w/api.php",
+                params={
+                    "action": "query",
+                    "list": "geosearch",
+                    "gscoord": f"{latitude}|{longitude}",
+                    "gsradius": gsradius,
+                    "gslimit": 20,
+                    "format": "json",
+                },
+            )
 
-                if response.status_code != 200:
-                    logger.error(f"Wikipedia geosearch error: {response.status_code}")
-                    return []
+            if response.status_code != 200:
+                logger.error(f"Wikipedia geosearch error: {response.status_code}")
+                return []
 
-                data = response.json()
-                results = data.get("query", {}).get("geosearch", [])
+            data = response.json()
+            results = data.get("query", {}).get("geosearch", [])
 
-                locations = []
-                for r in results:
-                    title = r.get("title")
-                    if not title:
-                        continue
-                    locations.append(LocationData(
-                        name=title,
-                        latitude=r.get("lat", latitude),
-                        longitude=r.get("lon", longitude),
-                        location_type="point_of_interest",
-                        address="",
-                        # pageid is stable and unique — safer than slugifying
-                        # the title, which can contain characters place_id
-                        # lookups elsewhere don't expect.
-                        place_id=f"wikipedia_{r.get('pageid')}",
-                        wikipedia_url=f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
-                        source="wikipedia",
-                    ))
+            locations = []
+            for r in results:
+                title = r.get("title")
+                if not title:
+                    continue
+                locations.append(LocationData(
+                    name=title,
+                    latitude=r.get("lat", latitude),
+                    longitude=r.get("lon", longitude),
+                    location_type="point_of_interest",
+                    address="",
+                    # pageid is stable and unique — safer than slugifying
+                    # the title, which can contain characters place_id
+                    # lookups elsewhere don't expect.
+                    place_id=f"wikipedia_{r.get('pageid')}",
+                    wikipedia_url=f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                    source="wikipedia",
+                ))
 
-                return locations[:20]
+            return locations[:20]
 
         except Exception as e:
             logger.error(f"Error querying Wikipedia geosearch: {e}")

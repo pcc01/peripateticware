@@ -21,6 +21,12 @@ interface LocationInfo {
   // previously discarded entirely (only searchResults[0] was ever used),
   // even though the backend was already finding up to 20 of these per call.
   nearbyPoints?: { name: string; type: string }[];
+  // True when `description` came from the LLM's general knowledge rather
+  // than a real Wikipedia/Wikidata match (backend enrich.source ===
+  // 'ai_generated') — small local sites with no wiki presence at all.
+  // Must be visibly distinguished from sourced content in the UI: an LLM's
+  // knowledge of an obscure place can be thin or simply wrong on specifics.
+  aiGenerated?: boolean;
 }
 
 interface WikiLocationInfoProps {
@@ -79,6 +85,13 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
   
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Separate from isLoading: gates only the enrichment sub-panel
+  // (description/architect/keywords), not the whole component. Without this
+  // split, the entire panel — including the nearby-places list, which
+  // /locations/search already has by the time this component would even
+  // start rendering — sat behind one spinner for as long as the slowest
+  // part (Wikidata/Wikipedia enrichment) took.
+  const [isEnriching, setIsEnriching] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -86,14 +99,11 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
   }, [latitude, longitude]);
 
   /**
-   * Primary path (Item 4): call the backend enrichment pipeline —
-   * POST /api/v1/locations/search to find a nearby indexed POI, then
-   * GET /api/v1/locations/{place_id}/enrich for Wikidata/Wikipedia-sourced
-   * educational metadata. Returns null (not an error) when /locations/search
-   * finds no nearby POI, so the caller can fall through to the client-side
-   * Nominatim/Wikipedia fallback below.
+   * Fast phase: POST /api/v1/locations/search to find a nearby indexed POI.
+   * Returns null (not an error) when nothing is found, so the caller can
+   * fall through to the client-side Nominatim/Wikipedia fallback below.
    */
-  const fetchFromBackendPipeline = async (forceRefresh: boolean = false): Promise<LocationInfo | null> => {
+  const fetchSearchMatch = async (): Promise<{ target: any; nearbyPoints: LocationInfo['nearbyPoints'] } | null> => {
     const searchResponse = await fetch('/api/v1/locations/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -108,7 +118,26 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
     }
 
     const target = pickBestMatch(searchResults, locationName);
-    const placeId = target.place_id;
+    // /locations/search returns up to 20 real nearby places in one call —
+    // only the matched one gets enriched. Surface the rest (excluding
+    // whichever one was matched, by place_id rather than a fixed index —
+    // the match is no longer guaranteed to be index 0) as a "what else is
+    // nearby" list instead of discarding them; no extra network calls
+    // needed since this data was already fetched.
+    const nearbyPoints = searchResults
+      .filter((r: any) => r.place_id !== target.place_id && r.name)
+      .slice(0, 8)
+      .map((r: any) => ({ name: r.name, type: r.location_type || 'location' }));
+
+    return { target, nearbyPoints: nearbyPoints.length > 0 ? nearbyPoints : undefined };
+  };
+
+  /**
+   * Slower phase: GET /api/v1/locations/{place_id}/enrich for
+   * Wikidata/Wikipedia-sourced educational metadata (or an AI-generated
+   * fallback synopsis when neither has an entry for this place).
+   */
+  const fetchEnrichment = async (placeId: string, forceRefresh: boolean): Promise<any> => {
     const params = new URLSearchParams();
     if (subject) params.set('subject', subject);
     // Bypasses the backend's up-to-7-day enrichment cache. Without this,
@@ -123,43 +152,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
     if (!enrichResponse.ok) {
       throw new Error(`locations/${placeId}/enrich failed (${enrichResponse.status})`);
     }
-    const enrich = await enrichResponse.json();
-
-    const description =
-      enrich.description || `Location near ${enrich.name || target.name || placeId}`;
-
-    // /locations/search returns up to 20 real nearby places in one call —
-    // only the matched one is enriched above. Surface the rest (excluding
-    // whichever one was matched/enriched, by place_id rather than a fixed
-    // index — the match is no longer guaranteed to be index 0) as a "what
-    // else is nearby" list instead of discarding them; no extra network
-    // calls needed since this data was already fetched.
-    const nearbyPoints = searchResults
-      .filter((r: any) => r.place_id !== placeId && r.name)
-      .slice(0, 8)
-      .map((r: any) => ({ name: r.name, type: r.location_type || 'location' }));
-
-    const info: LocationInfo = {
-      name: enrich.name || target.name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-      description,
-      // Repurposed: wikiId now sources from the Wikidata QID instead of a
-      // Wikipedia page title. Confirmed UI-only display state — never sent
-      // in the activity save payload — so this is a zero-risk change.
-      wikiId: enrich.wikidata_id || undefined,
-      type: target.location_type || 'location',
-      features: extractFeatures(description),
-      wikidataId: enrich.wikidata_id || undefined,
-      architectOrArtist: enrich.architect_or_artist || undefined,
-      constructionDate: enrich.construction_date || undefined,
-      historicalSignificance: enrich.historical_significance || undefined,
-      keywords: enrich.keywords && enrich.keywords.length > 0 ? enrich.keywords : undefined,
-      learningOpportunities:
-        enrich.learning_opportunities && enrich.learning_opportunities.length > 0
-          ? enrich.learning_opportunities
-          : undefined,
-      nearbyPoints: nearbyPoints.length > 0 ? nearbyPoints : undefined,
-    };
-    return info;
+    return enrichResponse.json();
   };
 
   const fetchLocationInfo = async (forceRefresh: boolean = false) => {
@@ -167,19 +160,66 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
     setError('');
 
     try {
-      // Primary: backend enrichment pipeline (Items 1-3). If it throws, fall
-      // through below to the client-side fallback rather than propagating.
+      // Primary: backend pipeline. If the search phase throws, fall through
+      // below to the client-side fallback rather than propagating.
       try {
-        const backendInfo = await fetchFromBackendPipeline(forceRefresh);
-        if (backendInfo) {
-          setLocationInfo(backendInfo);
-          onInfoLoaded(backendInfo);
+        const match = await fetchSearchMatch();
+        if (match) {
+          const { target, nearbyPoints } = match;
+          const placeId = target.place_id;
+
+          // Render immediately with what /locations/search already gave us
+          // — don't make the teacher wait for the slower Wikidata/Wikipedia
+          // enrichment just to see the place name and what's nearby.
+          const partialInfo: LocationInfo = {
+            name: target.name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+            description: '',
+            type: target.location_type || 'location',
+            features: [],
+            nearbyPoints,
+          };
+          setLocationInfo(partialInfo);
+          setIsLoading(false);
+
+          setIsEnriching(true);
+          try {
+            const enrich = await fetchEnrichment(placeId, forceRefresh);
+            const description =
+              enrich.description || `Location near ${enrich.name || target.name || placeId}`;
+            const fullInfo: LocationInfo = {
+              ...partialInfo,
+              name: enrich.name || partialInfo.name,
+              description,
+              // Repurposed: wikiId now sources from the Wikidata QID instead of a
+              // Wikipedia page title. Confirmed UI-only display state — never sent
+              // in the activity save payload — so this is a zero-risk change.
+              wikiId: enrich.wikidata_id || undefined,
+              features: extractFeatures(description),
+              wikidataId: enrich.wikidata_id || undefined,
+              architectOrArtist: enrich.architect_or_artist || undefined,
+              constructionDate: enrich.construction_date || undefined,
+              historicalSignificance: enrich.historical_significance || undefined,
+              keywords: enrich.keywords && enrich.keywords.length > 0 ? enrich.keywords : undefined,
+              learningOpportunities:
+                enrich.learning_opportunities && enrich.learning_opportunities.length > 0
+                  ? enrich.learning_opportunities
+                  : undefined,
+              aiGenerated: enrich.source === 'ai_generated',
+            };
+            setLocationInfo(fullInfo);
+            onInfoLoaded(fullInfo);
+          } catch (enrichErr) {
+            console.warn('Location enrichment failed, showing basic place info only:', enrichErr);
+            onInfoLoaded(partialInfo);
+          } finally {
+            setIsEnriching(false);
+          }
           return;
         }
-        // backendInfo === null: /locations/search found no nearby POI —
-        // fall through to the client-side fallback below.
+        // match === null: /locations/search found no nearby POI — fall
+        // through to the client-side fallback below.
       } catch (backendErr) {
-        console.warn('Backend location enrichment failed, falling back to client-side lookup:', backendErr);
+        console.warn('Backend location search failed, falling back to client-side lookup:', backendErr);
       }
 
       // Fallback: client-side reverse-geocode (Nominatim) + Wikipedia geosearch
@@ -343,7 +383,18 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
           </div>
 
           <div className={styles.description}>
-            <p>{locationInfo.description}</p>
+            {locationInfo.aiGenerated &&
+          <p style={{ fontSize: '12px', fontWeight: 600, color: '#92610e', marginBottom: 4 }}>
+                {t("landing:ai_generated_overview", "🤖 AI-generated overview — verify details")}
+              </p>
+          }
+            {locationInfo.description
+          ? <p>{locationInfo.description}</p>
+          : isEnriching &&
+          <p style={{ fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
+                  {t("landing:looking_up_more_about_this_place", "Looking up more about this place…")}
+                </p>
+          }
           </div>
 
           {locationInfo.features && locationInfo.features.length > 0 &&

@@ -20,7 +20,6 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from core.config import settings
-from services.wikimedia_service import WikimediaLocationService
 
 logger = logging.getLogger(__name__)
 
@@ -42,28 +41,33 @@ class ActivityGenerationService:
     
     async def generate_activity_suggestions(
         self,
-        location_name: str,
-        latitude: float,
-        longitude: float,
         subject: str,
         grade_level: int,
+        location_name: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
         bloom_level: Optional[int] = None,
         marzano_level: Optional[int] = None,
         dok_level: Optional[int] = None,
         solo_level: Optional[int] = None,
         curriculum_titles: Optional[List[str]] = None,
+        additional_context: Optional[str] = None,
         db: Session = None,
         num_suggestions: int = 3
     ) -> Dict[str, Any]:
         """
-        Generate activity suggestions for a location
-        
+        Generate activity suggestions. Location is optional — some activities
+        are intentionally place-generic ("map your neighborhood", "investigate
+        a local wetland"), with the real place captured on-site later rather
+        than at creation time. When latitude/longitude are omitted, suggestions
+        are generated from subject/grade/taxonomy alone.
+
         Args:
-            location_name: Name of location (e.g., "Golden Gate Park")
-            latitude: Location latitude
-            longitude: Location longitude
             subject: Subject (Science, History, etc.)
             grade_level: Grade level (3-12)
+            location_name: Name of location (e.g., "Golden Gate Park"), if any
+            latitude: Location latitude, if any
+            longitude: Location longitude, if any
             bloom_level: Bloom's level (1-6) if specified
             marzano_level: Marzano's level (1-4) if specified
             dok_level: Depth of Knowledge (1-4) if specified
@@ -111,12 +115,19 @@ class ActivityGenerationService:
         """
         
         try:
-            # Step 1: Fetch location context from Wikimedia
-            logger.info(f"Fetching location context for {location_name}")
-            location_context = await WikimediaLocationService.get_location_context(
-                latitude, longitude, location_name, db, use_cache=True
-            )
-            
+            # Step 1: Fetch location context — only when a location was
+            # actually given. Sourced from the same fast, pooled
+            # multi_backend_location_service the activity form's location
+            # panel uses (routes/privacy_locations.py), not the legacy
+            # wikimedia_service — that duplicated this with an unpooled
+            # client per call, which is what made this path slow.
+            location_context: Dict[str, Any] = {}
+            if latitude is not None and longitude is not None:
+                logger.info(f"Fetching location context for {location_name}")
+                location_context = await self._fetch_location_context(
+                    latitude, longitude, location_name
+                )
+
             # Step 2: Build curriculum context string
             curriculum_context = self._build_curriculum_context(
                 subject, grade_level, bloom_level, marzano_level,
@@ -128,6 +139,7 @@ class ActivityGenerationService:
                 location_name, location_context, subject, grade_level, num_suggestions,
                 bloom_level=bloom_level, dok_level=dok_level,
                 curriculum_titles=curriculum_titles,
+                additional_context=additional_context,
             )
             
             # Step 4: Call LLM (Ollama or Claude)
@@ -174,6 +186,38 @@ class ActivityGenerationService:
                 "llm_model": self.llm_provider
             }
     
+    async def generate_location_synopsis(
+        self,
+        location_name: str,
+        address: str = "",
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+    ) -> Optional[str]:
+        """
+        Fallback synopsis for a place Wikipedia/Wikidata have no entry for
+        (a small local site — a watershed restoration project, a school's
+        own outdoor classroom). Returns None on failure so the caller can
+        leave the description blank rather than show a broken panel.
+        """
+        from services.prompt_library import build_location_synopsis_prompt
+
+        prompt = build_location_synopsis_prompt(
+            location_name=location_name,
+            address=address,
+            latitude=latitude,
+            longitude=longitude,
+        )
+        try:
+            if self.llm_provider == "claude":
+                text = await self._generate_with_claude(prompt)
+            else:
+                text = await self._generate_with_ollama(prompt)
+            text = (text or "").strip()
+            return text or None
+        except Exception as e:
+            logger.warning(f"Location synopsis generation failed for '{location_name}': {e}")
+            return None
+
     def _build_curriculum_context(
         self,
         subject: str,
@@ -216,9 +260,58 @@ class ActivityGenerationService:
         
         return "\n".join(context_parts)
     
+    async def _fetch_location_context(
+        self,
+        latitude: float,
+        longitude: float,
+        location_name: Optional[str],
+    ) -> Dict[str, Any]:
+        """
+        Location context for the generation prompt, sourced from the same
+        fast, pooled multi_backend_location_service used by the activity
+        form's location panel (routes/privacy_locations.py) — not the
+        legacy wikimedia_service, which duplicates this with its own
+        unpooled, sequential httpx client per call. Returns a dict shaped
+        like the old wikimedia_service response (wikipedia/geographic_features/
+        educational_value/success) so the rest of this method — and the
+        "location" block in generate_activity_suggestions()'s return value —
+        doesn't need to change.
+        """
+        from services.multi_backend_location_service import get_location_service
+
+        try:
+            service = get_location_service()
+            results = await service.search_nearby(latitude, longitude, radius_meters=500)
+            if not results:
+                return {}
+
+            target = results[0]
+            if location_name:
+                norm = location_name.strip().lower()
+                match = next(
+                    (r for r in results if r.name and r.name.strip().lower() == norm), None
+                )
+                if match:
+                    target = match
+
+            enriched = await service.enrich_location(target, subject=None)
+            return {
+                "wikipedia": {
+                    "title": enriched.name,
+                    "extract": enriched.description or "",
+                    "url": enriched.wikipedia_url,
+                },
+                "geographic_features": {},
+                "educational_value": enriched.description,
+                "success": bool(enriched.description),
+            }
+        except Exception as e:
+            logger.warning(f"Location context lookup failed for '{location_name}': {e}")
+            return {}
+
     def _build_generation_prompt(
         self,
-        location_name: str,
+        location_name: Optional[str],
         location_context: Dict[str, Any],
         subject: str,
         grade_level: int,
@@ -226,12 +319,20 @@ class ActivityGenerationService:
         bloom_level: Optional[int] = None,
         dok_level: Optional[int] = None,
         curriculum_titles: Optional[List[str]] = None,
+        additional_context: Optional[str] = None,
     ) -> str:
         """Build the prompt for LLM activity generation"""
 
         from services.prompt_library import build_activity_generation_prompt
+        # No location given (place-generic activity, e.g. "map your
+        # neighborhood") — tell the model that explicitly rather than
+        # passing an empty/None name into the "LOCATION\nName: " line.
+        resolved_location_name = location_name or (
+            "No specific location set — design for a typical local outdoor "
+            "or community setting, not a named landmark"
+        )
         return build_activity_generation_prompt(
-            location_name=location_name,
+            location_name=resolved_location_name,
             location_description=location_context.get("educational_value", ""),
             wikipedia_extract=location_context.get("wikipedia", {}).get("extract", ""),
             subject=subject,
@@ -242,6 +343,7 @@ class ActivityGenerationService:
             },
             learning_objectives=[],   # not currently collected by this service — no source data exists yet; empty list degrades gracefully, do not invent a source
             curriculum_standards=curriculum_titles or [],
+            additional_context=additional_context or "",
             num_activities=num_suggestions,
         )
     

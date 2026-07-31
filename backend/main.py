@@ -267,6 +267,8 @@ async def lifespan(app: FastAPI):
 
     # ── SHUTDOWN ─────────────────────────────────────────────────────────────
     logger.info("Shutting down Peripateticware...")
+    from services.multi_backend_location_service import close_http_client
+    await close_http_client()
     await engine.dispose()
     logger.info("Database connections closed")
 

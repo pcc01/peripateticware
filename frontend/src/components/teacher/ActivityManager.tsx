@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
-import { OllamaLessonSuggestions } from './OllamaLessonSuggestions';
+import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
 import { WikiLocationInfo } from './WikiLocationInfo';
 import CurriculumMapper from './CurriculumMapper';
 
@@ -63,72 +63,31 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
   return data.display_name ?? '';
 }
 
-// OSM classes that are almost never what a teacher means when they type a
-// landmark name — a trail, ridge, or waterway that happens to contain the
-// query as a name token (e.g. "Skookum Peak/Louvre Bootpath" for a search on
-// "Louvre") ranks ahead of the real landmark ("Musée du Louvre" in Paris,
-// whose actual OSM name tag doesn't literally contain the bare word
-// "Louvre") if you only look at result[0] of a limit=1 query. Pulling a few
-// candidates and deprioritizing these classes fixes that without needing a
-// country/viewbox bias, which we don't have for landmarks that could be
-// anywhere in the world.
-const MINOR_GEOCODE_CLASSES = new Set(['highway', 'natural', 'waterway', 'boundary']);
-
-function pickBestGeocodeMatch(results: any[]): any {
-  const majorCandidates = results.filter((r) => !MINOR_GEOCODE_CLASSES.has(r.class));
-  const pool = majorCandidates.length ? majorCandidates : results;
-  // Nominatim already returns importance-ranked results, but re-sort
-  // explicitly rather than assuming — importance is the best available signal
-  // for "this is the famous/notable thing" vs. "this is a local footpath".
-  return pool.slice().sort((a, b) => (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0))[0];
-}
-
-// Re-ranking Nominatim's top few results (below) only helps when the real
-// landmark is IN that narrow candidate window to begin with. For a bare,
-// famous name ("Louvre") Nominatim's raw name-token matching can rank
-// several incidental OSM features above it well past limit=5 — re-sorting
-// the same 5 results does nothing if the museum isn't among them. Wikipedia's
-// own search ranking has no such problem (it reliably surfaces the famous
-// "Louvre" article over an obscure trail with the word in its name), and
-// most landmark articles are geo-tagged with real coordinates via
-// prop=coordinates — so try that first, and only fall back to Nominatim for
-// addresses/places that don't have a Wikipedia article.
-async function wikipediaGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
+// Forward geocode — turns whatever the teacher typed into "Location Name"
+// (a landmark name, e.g. "Eiffel Tower", OR a full street address, e.g.
+// "7015 Maxwelton Rd, Clinton, WA 98236") into coordinates. One field
+// handles both forms of input; no separate "Address" field needed.
+//
+// This used to call Wikipedia/Nominatim directly from the browser
+// (uncached, unauthenticated, and invisible to the backend's location
+// cache). It now goes through the backend's /locations/geocode endpoint,
+// which shares the same pooled HTTP client and CachedLocation cache as the
+// nearby-search/enrichment pipeline below — so a repeated or popular query
+// resolves instantly instead of re-hitting Nominatim every time.
+async function forwardGeocode(name: string): Promise<{ lat: number; lng: number; isApproximate: boolean } | null> {
   try {
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&srlimit=1&format=json&origin=*`
-    );
-    if (!searchRes.ok) return null;
-    const searchData = await searchRes.json();
-    const title = searchData?.query?.search?.[0]?.title;
-    if (!title) return null;
-
-    const coordRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=coordinates&format=json&origin=*`
-    );
-    if (!coordRes.ok) return null;
-    const coordData = await coordRes.json();
-    const pages = coordData?.query?.pages;
-    const page = pages ? (Object.values(pages)[0] as any) : null;
-    const coord = page?.coordinates?.[0];
-    if (!coord || typeof coord.lat !== 'number' || typeof coord.lon !== 'number') return null;
-    return { lat: coord.lat, lng: coord.lon };
+    const res = await fetch('/api/v1/locations/geocode', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: name }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (typeof data.latitude !== 'number' || typeof data.longitude !== 'number') return null;
+    return { lat: data.latitude, lng: data.longitude, isApproximate: !!data.is_approximate };
   } catch {
     return null;
   }
-}
-
-async function forwardGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
-  const wiki = await wikipediaGeocode(name);
-  if (wiki) return wiki;
-
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=5`;
-  const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (!data.length) return null;
-  const best = pickBestGeocodeMatch(data);
-  return { lat: parseFloat(best.lat), lng: parseFloat(best.lon) };
 }
 
 const ActivityManager = () => {
@@ -180,6 +139,9 @@ const ActivityManager = () => {
   const [taxonomyType, setTaxonomyType] = useState<string>('blooms');
   const [rubrics, setRubrics] = useState<{ id: string; title: string }[]>([]);
   const [selectedRubricId, setSelectedRubricId] = useState('');
+  // Filter-as-you-type for the rubric list — a plain <select> gets slow to
+  // scan once a teacher has more than a handful of rubrics.
+  const [rubricFilter, setRubricFilter] = useState('');
 
   // GPS live tracking + homeschool self-consent (parent IS the user, so consent
   // is recorded at save time rather than via the async per-student parent-consent
@@ -281,7 +243,6 @@ const ActivityManager = () => {
   const [privacyConfirmed, setPrivacyConfirmed] = useState(false);
   const [complianceTimer, setComplianceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [geoStatus, setGeoStatus] = useState<string>('');
-  const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [showQuickPreview, setShowQuickPreview] = useState(false);
 
   // Auto-classify (Priority 1 — build_taxonomy_classification_prompt()):
@@ -294,39 +255,40 @@ const ActivityManager = () => {
   const geoLatLngTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const geoNameTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleAISuggestionSelected = (suggestion: string) => {
-    // suggestion arrives as "Title — one-sentence what-students-do description"
-    const dashIdx = suggestion.indexOf(' — ');
-    const suggTitle = dashIdx > -1 ? suggestion.slice(0, dashIdx).trim() : suggestion.trim();
-    const suggBody  = dashIdx > -1 ? suggestion.slice(dashIdx + 3).trim() : '';
-
+  const handleAISuggestionSelected = (suggestion: AcceptedSuggestion) => {
     setFormData(f => {
       // If title is empty, offer the suggestion title as the activity title too
-      const newTitle = f.title?.trim() ? f.title : suggTitle;
-      // Build a useful starting description the teacher can expand
+      const newTitle = f.title?.trim() ? f.title : suggestion.title;
       const draft = [
-        suggBody || suggTitle,
-        '',
-        'Students will:',
-        `• ${suggBody || 'Work on this activity at the location'}`,
-        '• Document observations and evidence in their field journal',
-        '• Connect findings to the lesson objectives',
-        '• Share and discuss results with peers',
+        suggestion.description || suggestion.title,
+        ...(suggestion.learningObjectives.length
+          ? ['', 'Students will:', ...suggestion.learningObjectives.map(o => `• ${o}`)]
+          : []),
         '',
         '(Edit this description to add specific instructions, materials, and expectations for your students.)',
       ].join('\n');
       const newDesc = f.description?.trim() ? f.description + '\n\n' + draft : draft;
       return { ...f, title: newTitle, description: newDesc };
     });
-    // BUG: this used to unconditionally close the panel on every selection
-    // (setShowAISuggestions(false)) — but OllamaLessonSuggestions tracks
-    // selection as a Set and toggles individual cards (handleSelect adds/
-    // removes from `selected` and flips each card's own "✓ Added to
-    // description" indicator), clearly designed for picking more than one
-    // suggestion in a sitting. Closing the whole panel after the first click
-    // both defeated that and hid the per-card confirmation text the moment
-    // it would've shown. The panel now only closes via the explicit
-    // "Hide"/"Ask Peri" toggle button (line ~842) instead.
+
+    // Also offer the matching taxonomy level as a suggestion, through the
+    // same suggest-then-confirm flow already used for auto-classify
+    // (acceptTaxonomySuggestion below) — one taxonomy-accept UI, not two.
+    const levelByFramework: Record<string, number | undefined> = {
+      blooms: suggestion.bloomLevel,
+      dok: suggestion.dokLevel,
+      marzano: suggestion.marzanoLevel,
+      solo: suggestion.soloLevel,
+    };
+    const level = levelByFramework[taxonomyType];
+    const entry = level ? TAXONOMIES[taxonomyType]?.levels[level - 1] : undefined;
+    if (entry) {
+      setTaxonomySuggestion({
+        value: entry.value,
+        label: entry.label,
+        rationale: `From the AI suggestion "${suggestion.title}"`,
+      });
+    }
   };
 
   // Reverse geocode when lat/lng change (debounced 800 ms)
@@ -362,7 +324,14 @@ const ActivityManager = () => {
         const coords = await forwardGeocode(name);
         if (coords) {
           setFormData(f => ({ ...f, location_latitude: coords.lat, location_longitude: coords.lng }));
-          setGeoStatus('');
+          // Rural/small-town addresses are frequently missing house-number
+          // detail in OSM — the backend falls back to the nearest town in
+          // that case rather than failing outright. Say so, since the pin
+          // this drops is then only approximate and may need dragging to
+          // the exact spot.
+          setGeoStatus(coords.isApproximate
+            ? 'Exact address not found — pinned to the nearest town. Adjust lat/long below if needed.'
+            : '');
           // Same as the reverse-geocode path above — surface the synopsis
           // automatically now that we have a real place, no manual click needed.
           setShowWikiInfo(true);
@@ -414,6 +383,11 @@ const ActivityManager = () => {
           location_wiki_data: activity.location_wiki_data ?? null,
           location_info: activity.location_info ?? '',
         });
+        // Pre-existing gap: the rubric picker only ever wrote to this state
+        // via its own onChange — never populated from a loaded activity, so
+        // editing an activity that already had a rubric attached showed
+        // "No rubric" instead of the real selection.
+        setSelectedRubricId(activity.rubric_id ?? '');
       }).
       catch((err) => {
         setSubmitError('Failed to load activity: ' + err.message);
@@ -658,7 +632,7 @@ const ActivityManager = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-2">
         {isEditing ? 'Edit Activity' : 'Create Activity'}
       </h1>
@@ -734,7 +708,8 @@ const ActivityManager = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg p-8 shadow">
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <form onSubmit={handleSubmit} className="flex-1 min-w-0 space-y-6 bg-white rounded-lg p-8 shadow">
         {/* Error Alert */}
         {submitError &&
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
@@ -743,49 +718,11 @@ const ActivityManager = () => {
           </div>
         }
 
-        {/* Basic Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:basic_information", "Basic Information")}</h2>
-
-          {/* Title */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.title", "Title")}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.title ? 'border-red-500' : 'border-gray-300'}`
-              }
-              placeholder={t("landing:enter_activity_title", "Enter activity title")}
-              maxLength={200} />
-            
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            <p className="text-gray-500 text-xs mt-1">{formData.title?.length || 0}/200</p>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.description", "Description")}
-              <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.description ? 'border-red-500' : 'border-gray-300'}`
-              }
-              placeholder={t("landing:enter_activity_description", "Enter activity description")}
-              rows={4} />
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-            <p className="text-gray-500 text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
-          </div>
-        </div>
-
-        {/* Context Section — Subject · Location · Objectives (feeds Peri AI) */}
+        {/* Context Section — Subject · Location · Objectives (feeds Peri AI).
+            Leads the form: these are the inputs the AI sidebar reacts to,
+            and location can be the reason the activity exists at all (a
+            field trip to a specific place), so they come before title/
+            description rather than after. */}
         <div className="border-b border-gray-200 pb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">{t('components_teacher_activitymanager.context', 'Context')}</h2>
           <p className="text-sm text-gray-400 mb-4">{t('components_teacher_activitymanager.subject_location_and_objectives_peri_ai_', 'Subject, location, and objectives — Peri AI uses these to generate activity suggestions.')}</p>
@@ -945,37 +882,46 @@ const ActivityManager = () => {
           </div>
         </div>
 
-        {/* Peri AI Suggestions — immediately after context */}
-        <div className="border-b border-gray-200 pb-6 bg-purple-50 rounded-lg px-4 -mx-2 mb-6">
-          <div className="flex items-start justify-between pt-4">
-            <div>
-              <h2 className="text-lg font-bold text-purple-900 mb-1">{t('components_teacher_activitymanager.peri_ai_activity_suggestions', '✨ Peri AI Activity Suggestions')}</h2>
-              <p className="text-sm text-purple-700">{t('components_teacher_activitymanager.fill_in_subject_location_and_at_least_on', 'Fill in subject, location, and at least one objective above — then let Peri suggest activity ideas.')}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowAISuggestions(s => !s)}
-              className="ml-4 flex-shrink-0 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-sm">
-              {showAISuggestions ? 'Hide' : 'Ask Peri ✨'}
-            </button>
+        {/* Basic Information Section */}
+        <div className="border-b border-gray-200 pb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:basic_information", "Basic Information")}</h2>
+
+          {/* Title */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.title", "Title")}
+              <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.title ? 'border-red-500' : 'border-gray-300'}`
+              }
+              placeholder={t("landing:enter_activity_title", "Enter activity title")}
+              maxLength={200} />
+
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            <p className="text-gray-500 text-xs mt-1">{formData.title?.length || 0}/200</p>
           </div>
-          {showAISuggestions && (
-            <div className="mt-4">
-              <OllamaLessonSuggestions
-                title={formData.title}
-                description={formData.description}
-                latitude={formData.location_latitude}
-                longitude={formData.location_longitude}
-                locationInfo={formData.location_name}
-                taxonomyType={taxonomyType}
-                taxonomyLevel={formData.bloom_level}
-                subject={formData.subject}
-                gradeLevel={formData.grade_level}
-                durationMinutes={formData.estimated_duration_minutes}
-                onSuggestionSelected={handleAISuggestionSelected}
-              />
-            </div>
-          )}
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.description", "Description")}
+              <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.description ? 'border-red-500' : 'border-gray-300'}`
+              }
+              placeholder={t("landing:enter_activity_description", "Enter activity description")}
+              rows={4} />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            <p className="text-gray-500 text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
+          </div>
         </div>
 
         {/* Academic Information Section */}
@@ -1022,10 +968,80 @@ const ActivityManager = () => {
               </div>
             </div>
 
-            {/* Taxonomy — two-level picker */}
-            <div className="space-y-2">
+            {/* Duration */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:estimated_duration_minutes", "Estimated Duration (minutes)")}
+
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.estimated_duration_minutes}
+                onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                errors.estimated_duration_minutes ? 'border-red-500' : 'border-gray-300'}`
+                } />
+              
+              {errors.estimated_duration_minutes &&
+              <p className="text-red-500 text-sm mt-1">{errors.estimated_duration_minutes}</p>
+              }
+            </div>
+
+            {/* Activity Type */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activity_type", "Activity Type")}
+
+              </label>
+              <select
+                value={formData.activity_type}
+                onChange={(e) => setFormData({ ...formData, activity_type: e.target.value as ActivityType })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <option value="outdoor">{t("landing:outdoor", "Outdoor")}</option>
+                <option value="indoor">{t("landing:indoor", "Indoor")}</option>
+                <option value="virtual">{t("landing:virtual", "Virtual")}</option>
+                <option value="mixed">{t("landing:mixed", "Mixed")}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Assessments — the 3 ways a teacher can assess this activity,
+            grouped in one place instead of scattered across the form
+            (state/curriculum standards used to live under a "Share this
+            activity" toggle, taxonomy under Academic Information, rubric at
+            the very bottom). Up to all 3 can be applied together. */}
+        <div className="border-b border-gray-200 pb-6">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-xl font-bold text-gray-900">{t('components_teacher_activitymanager.assessments', 'Assessments')}</h2>
+            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {/* Taxonomy always carries a value (defaults to the first
+                  level), so it counts as always-applied; standards and
+                  rubric start empty and count only once the teacher picks one. */}
+              {((formData.curriculum_unit_ids || []).length > 0 ? 1 : 0) + (selectedRubricId ? 1 : 0) + 1}/3 {t('components_teacher_activitymanager.applied', 'applied')}
+            </span>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">{t('components_teacher_activitymanager.assessments_intro', 'Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.')}</p>
+
+          <div className="space-y-5">
+            {/* 1. State / Curriculum Standards */}
+            <div className="rounded-lg border border-gray-200 p-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                📐 {t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards')}{' '}
+                <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
+              </label>
+              <CurriculumMapper
+                selectedUnits={formData.curriculum_unit_ids || []}
+                onUnitsChange={(unitIds) => setFormData((p) => ({ ...p, curriculum_unit_ids: unitIds }))}
+                subject={formData.subject}
+                gradeLevel={formData.grade_level}
+              />
+            </div>
+
+            {/* 2. Taxonomy — two-level picker */}
+            <div className="rounded-lg border border-gray-200 p-4 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <label className="block text-sm font-semibold text-gray-700">{t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
+                <label className="block text-sm font-semibold text-gray-700">🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
                 <button
                   type="button"
                   onClick={handleAutoClassify}
@@ -1087,39 +1103,32 @@ const ActivityManager = () => {
               )}
             </div>
 
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:estimated_duration_minutes", "Estimated Duration (minutes)")}
-
+            {/* 3. Rubric — filter-as-you-type once the list gets long */}
+            <div className="rounded-lg border border-gray-200 p-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                📋 {t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric')}{' '}
+                <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
               </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.estimated_duration_minutes}
-                onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.estimated_duration_minutes ? 'border-red-500' : 'border-gray-300'}`
-                } />
-              
-              {errors.estimated_duration_minutes &&
-              <p className="text-red-500 text-sm mt-1">{errors.estimated_duration_minutes}</p>
-              }
-            </div>
-
-            {/* Activity Type */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activity_type", "Activity Type")}
-
-              </label>
+              {rubrics.length > 6 && (
+                <input
+                  type="text"
+                  value={rubricFilter}
+                  onChange={(e) => setRubricFilter(e.target.value)}
+                  placeholder={t('components_teacher_activitymanager.filter_rubrics', 'Filter rubrics…')}
+                  className="w-full px-3 py-1.5 mb-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
               <select
-                value={formData.activity_type}
-                onChange={(e) => setFormData({ ...formData, activity_type: e.target.value as ActivityType })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                
-                <option value="outdoor">{t("landing:outdoor", "Outdoor")}</option>
-                <option value="indoor">{t("landing:indoor", "Indoor")}</option>
-                <option value="virtual">{t("landing:virtual", "Virtual")}</option>
-                <option value="mixed">{t("landing:mixed", "Mixed")}</option>
+                value={selectedRubricId}
+                onChange={(e) => setSelectedRubricId(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
+                {rubrics
+                  .filter(r => r.title.toLowerCase().includes(rubricFilter.trim().toLowerCase()))
+                  .map((r) => (
+                    <option key={r.id} value={r.id}>{r.title}</option>
+                  ))}
               </select>
             </div>
           </div>
@@ -1343,37 +1352,6 @@ const ActivityManager = () => {
           )}
         </div>
 
-        {/* Rubric Picker */}
-        <div className="border-b border-gray-200 pb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Attach Rubric <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span></label>
-          <select
-            value={selectedRubricId}
-            onChange={(e) => setSelectedRubricId(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
-            {rubrics.map((r) => (
-              <option key={r.id} value={r.id}>{r.title}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Curriculum Alignment — curriculum_unit_ids is read/written on
-            load/save but had no picker UI anywhere reachable in the app
-            (only the removed EnhancedActivityBuilder.tsx rendered this). */}
-        <div className="border-b border-gray-200 pb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {t('components_teacher_activitymanager.curriculum_alignment', 'Curriculum Alignment')}{' '}
-            <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
-          </label>
-          <CurriculumMapper
-            selectedUnits={formData.curriculum_unit_ids || []}
-            onUnitsChange={(unitIds) => setFormData((p) => ({ ...p, curriculum_unit_ids: unitIds }))}
-            subject={formData.subject}
-            gradeLevel={formData.grade_level}
-          />
-        </div>
-
         {/* Buttons */}
         <div className="flex gap-3 pt-6 border-t border-gray-200">
           <button
@@ -1420,6 +1398,24 @@ const ActivityManager = () => {
           </button>
         </div>
       </form>
+
+        {/* Peri AI sidebar — persistent, not a collapsible panel: reacts to
+            whatever subject/objective/location is filled in on the left,
+            teacher explicitly clicks a card to add it (see
+            handleAISuggestionSelected) — nothing here auto-applies. */}
+        <aside className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-6 bg-purple-50 rounded-lg p-4 border border-purple-100">
+          <h2 className="text-lg font-bold text-purple-900 mb-1">{t('components_teacher_activitymanager.peri_ai_activity_suggestions', '✨ Peri AI Activity Suggestions')}</h2>
+          <OllamaLessonSuggestions
+            subject={formData.subject}
+            gradeLevel={formData.grade_level}
+            taxonomyType={taxonomyType}
+            locationName={formData.location_name}
+            latitude={formData.location_latitude}
+            longitude={formData.location_longitude}
+            onSuggestionSelected={handleAISuggestionSelected}
+          />
+        </aside>
+      </div>
 
       {/* Quick Preview Modal */}
       {showQuickPreview && (
