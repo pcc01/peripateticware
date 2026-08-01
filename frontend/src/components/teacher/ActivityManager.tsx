@@ -11,6 +11,7 @@ import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
 import { WikiLocationInfo } from './WikiLocationInfo';
 import CurriculumMapper from './CurriculumMapper';
+import styles from './ActivityManager.module.css';
 
 // ── Backend-payload normalization ─────────────────────────────────────────────
 // The backend expects bloom_level as an integer (1-6) and activity_type as one of
@@ -193,6 +194,20 @@ const ActivityManager = () => {
   };
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Collapsible form chapters — Context starts open (it feeds Peri AI),
+  // the rest start closed to cut initial scroll length. A chapter is forced
+  // open regardless of this state whenever one of its own fields has a
+  // validation error, so a failed submit never hides the reason why.
+  const [openSections, setOpenSections] = useState({
+    context: true, basic: false, academic: false, assessments: false, materials: false, additional: false,
+  });
+  const toggleSection = (key: keyof typeof openSections) => (e: React.SyntheticEvent<HTMLDetailsElement>) => {
+    setOpenSections(s => ({ ...s, [key]: (e.target as HTMLDetailsElement).open }));
+  };
+  const contextHasError = !!(errors.subject || errors.location_name || errors.location_latitude || errors.location_longitude);
+  const basicHasError = !!(errors.title || errors.description);
+  const academicHasError = !!(errors.grade_level || errors.difficulty_level || errors.estimated_duration_minutes);
 
   // 14e.3 — Privacy compliance badge: debounced check when location or grade changes
   useEffect(() => {
@@ -618,11 +633,11 @@ const ActivityManager = () => {
   };
 
   return (
-    <div className="max-w-[100rem] mx-auto p-6">
+    <div className="max-w-[100rem] mx-auto p-4">
       <h1 className="text-2xl font-bold mb-2">
         {isEditing ? 'Edit Activity' : 'Create Activity'}
       </h1>
-      <p className="text-gray-600 mb-6">
+      <p className="text-[var(--text-muted)] mb-6">
         {isEditing ? 'Update your activity details' : 'Create a new educational activity'}
       </p>
 
@@ -657,7 +672,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, dataMinimization: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.this_activity_only_collects_data_necessa', 'This activity only collects data necessary for the educational purpose')}</span>
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.this_activity_only_collects_data_necessa', 'This activity only collects data necessary for the educational purpose')}</span>
               </label>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
@@ -666,7 +681,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, locationPurpose: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.location_data_is_used_only_to_verify_stu', 'Location data is used only to verify student presence at the activity site')}</span>
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.location_data_is_used_only_to_verify_stu', 'Location data is used only to verify student presence at the activity site')}</span>
               </label>
               <label className="flex items-start gap-2 cursor-pointer">
                 <input
@@ -675,7 +690,7 @@ const ActivityManager = () => {
                   onChange={e => setPrivacyChecks(p => ({ ...p, parentalConsent: e.target.checked }))}
                   className="mt-0.5 accent-yellow-600"
                 />
-                <span className="text-sm text-gray-700">{t('components_teacher_activitymanager.parental_or_guardian_consent_is_in_place', 'Parental or guardian consent is in place where required by law')}</span>
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.parental_or_guardian_consent_is_in_place', 'Parental or guardian consent is in place where required by law')}</span>
               </label>
               <button
                 type="button"
@@ -694,11 +709,58 @@ const ActivityManager = () => {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-      <form onSubmit={handleSubmit} className="flex-1 min-w-0 space-y-6 bg-white rounded-lg p-8 shadow">
+      {/* Peri AI header — sticky banner pinned above both columns while
+          they scroll beneath it, not a sidebar: reacts to whatever
+          subject/objective/location is filled in on the form, teacher
+          explicitly clicks a card to add it (see handleAISuggestionSelected)
+          — nothing here auto-applies. */}
+      <aside className="w-full mb-4 sticky top-0 z-10 bg-purple-50 rounded-lg p-4 border-t-[3px] border-purple-300 shadow-sm">
+        <h2 className="text-lg font-bold text-purple-900 mb-1">{t('components_teacher_activitymanager.peri_ai_activity_suggestions', '✨ Peri AI Activity Suggestions')}</h2>
+        <OllamaLessonSuggestions
+          layout="horizontal"
+          subject={formData.subject}
+          gradeLevel={formData.grade_level}
+          taxonomyType={taxonomyType}
+          locationName={formData.location_name}
+          latitude={formData.location_latitude}
+          longitude={formData.location_longitude}
+          onSuggestionSelected={handleAISuggestionSelected}
+        />
+      </aside>
+
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        {/* Context column — read-only background/reference material, pulled
+            out of the form so a long Wikidata synopsis (description,
+            architect/date, nearby points of interest, etc.) doesn't push
+            the rest of the form's fields far down the page. Always visible
+            once a location is set — no extra click needed to see it. */}
+        <div className={`w-full lg:w-80 flex-shrink-0 p-4 ${styles.journal}`}>
+          <h2 className={`text-lg font-bold text-[var(--text)] mb-1 ${styles.journalTitle}`}>{t('components_teacher_activitymanager.background_context', '📖 Background & Context')}</h2>
+          {formData.location_latitude && formData.location_longitude ? (
+            <WikiLocationInfo
+              latitude={formData.location_latitude}
+              longitude={formData.location_longitude}
+              subject={formData.subject}
+              locationName={formData.location_name}
+              onInfoLoaded={(info) => {
+                setFormData(f => ({
+                  ...f,
+                  location_wiki_data: info,
+                  location_info: info.description || '',
+                }));
+              }}
+            />
+          ) : (
+            <p className="text-sm text-[var(--text-faint)] mt-2">
+              {t('components_teacher_activitymanager.add_a_location_to_see_background', 'Add a location above to see background information about it here.')}
+            </p>
+          )}
+        </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 min-w-0 bg-[var(--surface)] rounded-lg p-6 shadow">
         {/* Error Alert */}
         {submitError &&
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 mb-6">
             <p className="font-semibold">{t("landing:error", "Error")}</p>
             <p>{submitError}</p>
           </div>
@@ -709,18 +771,22 @@ const ActivityManager = () => {
             and location can be the reason the activity exists at all (a
             field trip to a specific place), so they come before title/
             description rather than after. */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">{t('components_teacher_activitymanager.context', 'Context')}</h2>
-          <p className="text-sm text-gray-400 mb-4">{t('components_teacher_activitymanager.subject_location_and_objectives_peri_ai_', 'Subject, location, and objectives — Peri AI uses these to generate activity suggestions.')}</p>
+        <details className={styles.chapter} open={openSections.context || contextHasError} onToggle={toggleSection('context')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t('components_teacher_activitymanager.context', 'Context')}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
+          <p className="text-sm text-[var(--text-faint)] mb-4">{t('components_teacher_activitymanager.subject_location_and_objectives_peri_ai_', 'Subject, location, and objectives — Peri AI uses these to generate activity suggestions.')}</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {/* Subject */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:subject", "Subject")}<span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:subject", "Subject")}<span className="text-red-500">*</span></label>
               <select
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.subject ? 'border-red-500' : 'border-gray-300'}`}>
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${errors.subject ? 'border-red-500' : 'border-[var(--border)]'}`}>
                 <option value="Science">{t("landing:science", "Science")}</option>
                 <option value="Math">{t("landing:math", "Math")}</option>
                 <option value="Language">{t('components_teacher_activitymanager.language_arts', 'Language Arts')}</option>
@@ -736,35 +802,35 @@ const ActivityManager = () => {
 
             {/* Location Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:location_name", "Location Name")}
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:location_name", "Location Name")}
                 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.location_name}
                 onChange={(e) => handleLocationNameChange(e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.location_name ? 'border-red-500' : 'border-gray-300'}`
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+                errors.location_name ? 'border-red-500' : 'border-[var(--border)]'}`
                 }
                 placeholder={t('components_teacher_activitymanager.placeholder_eg_lincoln_park_city_museum', 'e.g., Lincoln Park, City Museum…')} />
               {errors.location_name && <p className="text-red-500 text-sm mt-1">{errors.location_name}</p>}
-              {geoStatus && <p className="text-xs text-blue-500 mt-1 italic">{geoStatus}</p>}
+              {geoStatus && <p className="text-xs text-[var(--primary)] mt-1 italic">{geoStatus}</p>}
             </div>
           </div>
 
           {/* Lat / Lng — secondary, collapsible feel via small text */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
+              <label className="block text-xs text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
               <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_latitude', 'Location latitude')} value={formData.location_latitude || ''}
                 onChange={(e) => { const lat = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_latitude:lat})); handleLatLngChange(lat,formData.location_longitude); }}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="47.6839" />
+                className="w-full px-3 py-1.5 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" placeholder="47.6839" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
+              <label className="block text-xs text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
               <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_longitude', 'Location longitude')} value={formData.location_longitude || ''}
                 onChange={(e) => { const lng = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_longitude:lng})); handleLatLngChange(formData.location_latitude,lng); }}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-400" placeholder="-122.3081" />
+                className="w-full px-3 py-1.5 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" placeholder="-122.3081" />
             </div>
           </div>
 
@@ -772,7 +838,7 @@ const ActivityManager = () => {
           <button
             type="button"
             onClick={() => setShowLocationTools(v => !v)}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium mb-3"
+            className="text-sm text-[var(--primary)] hover:text-[var(--primary-deep)] font-medium mb-3"
           >
             {showLocationTools ? '▼' : '▶'} {t('components_teacher_activitymanager.location', '📍 Location')}
           </button>
@@ -790,13 +856,13 @@ const ActivityManager = () => {
                 />
                 <span style={{ fontWeight: 600 }}>{t('components_teacher_activitymanager.enable_live_gps_tracking_during_this_act', '📍 Enable live GPS tracking during this activity')}</span>
               </label>
-              <p className="text-xs text-gray-500 mt-1" style={{ marginLeft: 26 }}>{t('components_teacher_activitymanager.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1" style={{ marginLeft: 26 }}>{t('components_teacher_activitymanager.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
 
               {/* Homeschool self-consent — the parent IS the account holder, so
                   consent is collected here rather than via the async per-student
                   parent-consent flow used for org/school accounts. */}
               {gpsEnabled && currentUser?.role?.toLowerCase() === 'homeschool' && (
-                <div className="mt-2 p-3 rounded-lg border border-gray-200 bg-gray-50" style={{ marginLeft: 26 }}>
+                <div className="mt-2 p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-alt)]" style={{ marginLeft: 26 }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
                     <input
                       type="checkbox"
@@ -813,17 +879,17 @@ const ActivityManager = () => {
 
           {/* Learning Objectives */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:learning_objectives", "Learning Objectives")}</label>
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:learning_objectives", "Learning Objectives")}</label>
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
                 value={newObjective}
                 onChange={(e) => setNewObjective(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 placeholder={t("landing:eg_understand_photosynthesis_process", "e.g., Understand photosynthesis process")}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddObjective())} />
               <button type="button" onClick={handleAddObjective}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">
+                className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] font-semibold">
                 {t("landing:activitymanager.add", "Add")}
               </button>
             </div>
@@ -836,15 +902,20 @@ const ActivityManager = () => {
               ))}
             </div>
           </div>
-        </div>
+          </div>
+        </details>
 
         {/* Basic Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:basic_information", "Basic Information")}</h2>
+        <details className={styles.chapter} open={openSections.basic || basicHasError} onToggle={toggleSection('basic')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t("landing:basic_information", "Basic Information")}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
 
           {/* Title */}
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.title", "Title")}
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.title", "Title")}
               <span className="text-red-500">*</span>
             </label>
             <input
@@ -852,49 +923,54 @@ const ActivityManager = () => {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.title ? 'border-red-500' : 'border-gray-300'}`
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+              errors.title ? 'border-red-500' : 'border-[var(--border)]'}`
               }
               placeholder={t("landing:enter_activity_title", "Enter activity title")}
               maxLength={200} />
 
             {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            <p className="text-gray-500 text-xs mt-1">{formData.title?.length || 0}/200</p>
+            <p className="text-[var(--text-muted)] text-xs mt-1">{formData.title?.length || 0}/200</p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.description", "Description")}
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.description", "Description")}
               <span className="text-red-500">*</span>
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.description ? 'border-red-500' : 'border-gray-300'}`
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+              errors.description ? 'border-red-500' : 'border-[var(--border)]'}`
               }
               placeholder={t("landing:enter_activity_description", "Enter activity description")}
               rows={4} />
             {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-            <p className="text-gray-500 text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
+            <p className="text-[var(--text-muted)] text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
           </div>
-        </div>
+          </div>
+        </details>
 
         {/* Academic Information Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:academic_information", "Academic Information")}</h2>
+        <details className={styles.chapter} open={openSections.academic || academicHasError} onToggle={toggleSection('academic')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t("landing:academic_information", "Academic Information")}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Grade Level */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activitymanager.grade_level", "Grade Level")}
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.grade_level", "Grade Level")}
                 <span className="text-red-500">*</span>
               </label>
               <select
                 value={formData.grade_level}
                 onChange={(e) => setFormData({ ...formData, grade_level: parseInt(e.target.value) })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.grade_level ? 'border-red-500' : 'border-gray-300'}`
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+                errors.grade_level ? 'border-red-500' : 'border-[var(--border)]'}`
                 }>
                 
                 {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) =>
@@ -906,7 +982,7 @@ const ActivityManager = () => {
 
             {/* Difficulty Level */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:difficulty_level", "Difficulty Level:")}
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:difficulty_level", "Difficulty Level:")}
                 {formData.difficulty_level}/5
               </label>
               <div className="flex items-center gap-4">
@@ -918,7 +994,7 @@ const ActivityManager = () => {
                   onChange={(e) => setFormData({ ...formData, difficulty_level: parseInt(e.target.value) })}
                   className="flex-1" />
                 
-                <span className="text-sm font-semibold text-gray-600">
+                <span className="text-sm font-semibold text-[var(--text-muted)]">
                   {'★'.repeat(formData.difficulty_level || 3)}{'☆'.repeat(5 - (formData.difficulty_level || 3))}
                 </span>
               </div>
@@ -926,7 +1002,7 @@ const ActivityManager = () => {
 
             {/* Duration */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:estimated_duration_minutes", "Estimated Duration (minutes)")}
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:estimated_duration_minutes", "Estimated Duration (minutes)")}
 
               </label>
               <input
@@ -934,8 +1010,8 @@ const ActivityManager = () => {
                 min="1"
                 value={formData.estimated_duration_minutes}
                 onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.estimated_duration_minutes ? 'border-red-500' : 'border-gray-300'}`
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+                errors.estimated_duration_minutes ? 'border-red-500' : 'border-[var(--border)]'}`
                 } />
               
               {errors.estimated_duration_minutes &&
@@ -945,13 +1021,13 @@ const ActivityManager = () => {
 
             {/* Activity Type */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:activity_type", "Activity Type")}
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activity_type", "Activity Type")}
 
               </label>
               <select
                 value={formData.activity_type}
                 onChange={(e) => setFormData({ ...formData, activity_type: e.target.value as ActivityType })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
                 
                 <option value="outdoor">{t("landing:outdoor", "Outdoor")}</option>
                 <option value="indoor">{t("landing:indoor", "Indoor")}</option>
@@ -960,31 +1036,34 @@ const ActivityManager = () => {
               </select>
             </div>
           </div>
-        </div>
+          </div>
+        </details>
 
         {/* Assessments — the 3 ways a teacher can assess this activity,
             grouped in one place instead of scattered across the form
             (state/curriculum standards used to live under a "Share this
             activity" toggle, taxonomy under Academic Information, rubric at
             the very bottom). Up to all 3 can be applied together. */}
-        <div className="border-b border-gray-200 pb-6">
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xl font-bold text-gray-900">{t('components_teacher_activitymanager.assessments', 'Assessments')}</h2>
-            <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+        <details className={styles.chapter} open={openSections.assessments} onToggle={toggleSection('assessments')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t('components_teacher_activitymanager.assessments', 'Assessments')}</h2>
+            <span className={styles.chapterMeta}>
               {/* Taxonomy always carries a value (defaults to the first
                   level), so it counts as always-applied; standards and
                   rubric start empty and count only once the teacher picks one. */}
               {((formData.curriculum_unit_ids || []).length > 0 ? 1 : 0) + (selectedRubricId ? 1 : 0) + 1}/3 {t('components_teacher_activitymanager.applied', 'applied')}
             </span>
-          </div>
-          <p className="text-sm text-gray-400 mb-4">{t('components_teacher_activitymanager.assessments_intro', 'Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.')}</p>
+          </summary>
+          <div className={styles.chapterBody}>
+          <p className="text-sm text-[var(--text-faint)] mb-4">{t('components_teacher_activitymanager.assessments_intro', 'Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.')}</p>
 
           <div className="space-y-5">
             {/* 1. State / Curriculum Standards */}
-            <div className="rounded-lg border border-gray-200 p-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <div className="rounded-lg border border-[var(--border)] p-4">
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">
                 📐 {t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards')}{' '}
-                <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
+                <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
               </label>
               <CurriculumMapper
                 selectedUnits={formData.curriculum_unit_ids || []}
@@ -995,14 +1074,14 @@ const ActivityManager = () => {
             </div>
 
             {/* 2. Taxonomy — two-level picker */}
-            <div className="rounded-lg border border-gray-200 p-4 space-y-2">
+            <div className="rounded-lg border border-[var(--border)] p-4 space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <label className="block text-sm font-semibold text-gray-700">🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
+                <label className="block text-sm font-semibold text-[var(--text)]">🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
                 <button
                   type="button"
                   onClick={handleAutoClassify}
                   disabled={classifyLoading}
-                  className="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 font-semibold disabled:opacity-50 whitespace-nowrap"
+                  className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold disabled:opacity-50 whitespace-nowrap"
                 >
                   {classifyLoading ? 'Classifying…' : '✨ Auto-classify'}
                 </button>
@@ -1019,7 +1098,7 @@ const ActivityManager = () => {
                   setTaxonomySuggestion(null);
                   setClassifyError('');
                 }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
                 {Object.entries(TAXONOMIES).map(([key, tx]) => (
                   <option key={key} value={key}>{tx.label}</option>
                 ))}
@@ -1027,30 +1106,30 @@ const ActivityManager = () => {
               <select
                 value={formData.bloom_level}
                 onChange={(e) => setFormData(f => ({ ...f, bloom_level: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
                 {TAXONOMIES[taxonomyType]?.levels.map(lvl => (
                   <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
                 ))}
               </select>
               {classifyError && <p className="text-red-500 text-xs mt-1">{classifyError}</p>}
               {taxonomySuggestion && (
-                <div className="mt-1 p-2 rounded-lg border border-indigo-200 bg-indigo-50 text-xs">
-                  <p className="text-indigo-800">
+                <div className="mt-1 p-2 rounded-lg border border-purple-200 bg-purple-50 text-xs">
+                  <p className="text-purple-800">
                     <span className="font-semibold">AI suggests:</span> {taxonomySuggestion.label}
-                    {taxonomySuggestion.rationale && <span className="text-indigo-600"> — {taxonomySuggestion.rationale}</span>}
+                    {taxonomySuggestion.rationale && <span className="text-purple-600"> — {taxonomySuggestion.rationale}</span>}
                   </p>
                   <div className="mt-1 flex gap-2">
                     <button
                       type="button"
                       onClick={acceptTaxonomySuggestion}
-                      className="px-2 py-0.5 rounded bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+                      className="px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-700"
                     >
                       Accept
                     </button>
                     <button
                       type="button"
                       onClick={() => setTaxonomySuggestion(null)}
-                      className="px-2 py-0.5 rounded border border-indigo-300 text-indigo-700 hover:bg-indigo-100"
+                      className="px-2 py-0.5 rounded border border-purple-300 text-purple-700 hover:bg-purple-100"
                     >
                       Dismiss
                     </button>
@@ -1060,10 +1139,10 @@ const ActivityManager = () => {
             </div>
 
             {/* 3. Rubric — filter-as-you-type once the list gets long */}
-            <div className="rounded-lg border border-gray-200 p-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <div className="rounded-lg border border-[var(--border)] p-4">
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">
                 📋 {t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric')}{' '}
-                <span className="text-gray-400 font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
+                <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
               </label>
               {rubrics.length > 6 && (
                 <input
@@ -1071,13 +1150,13 @@ const ActivityManager = () => {
                   value={rubricFilter}
                   onChange={(e) => setRubricFilter(e.target.value)}
                   placeholder={t('components_teacher_activitymanager.filter_rubrics', 'Filter rubrics…')}
-                  className="w-full px-3 py-1.5 mb-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 mb-2 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 />
               )}
               <select
                 value={selectedRubricId}
                 onChange={(e) => setSelectedRubricId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               >
                 <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
                 {rubrics
@@ -1088,24 +1167,31 @@ const ActivityManager = () => {
               </select>
             </div>
           </div>
-        </div>
 
-        {/* Location Radius */}
-        <div className="border-b border-gray-200 pb-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:location_radius_meters", "Location Radius (meters)")}</label>
-          <input
-            type="number" min="1"
-            value={formData.location_radius_meters}
-            onChange={(e) => setFormData({ ...formData, location_radius_meters: parseInt(e.target.value) || 500 })}
-            className="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="500" />
-        </div>
+          {/* Location Radius — geofence used to verify student presence,
+              grouped here with the other verification/assessment settings. */}
+          <div className="mt-5 pt-5 border-t border-[var(--border)]">
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:location_radius_meters", "Location Radius (meters)")}</label>
+            <input
+              type="number" min="1"
+              value={formData.location_radius_meters}
+              onChange={(e) => setFormData({ ...formData, location_radius_meters: parseInt(e.target.value) || 500 })}
+              className="w-48 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="500" />
+          </div>
+          </div>
+        </details>
+
         {/* Materials Section */}
-        <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:materials_resources", "Materials & Resources")}</h2>
+        <details className={styles.chapter} open={openSections.materials} onToggle={toggleSection('materials')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t("landing:materials_resources", "Materials & Resources")}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:materials_needed", "Materials Needed")}
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:materials_needed", "Materials Needed")}
 
             </label>
             <div className="flex gap-2 mb-3">
@@ -1113,14 +1199,14 @@ const ActivityManager = () => {
                 type="text"
                 value={newMaterial}
                 onChange={(e) => setNewMaterial(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 placeholder={t("landing:eg_microscopes_beakers_worksheets", "e.g., Microscopes, Beakers, Worksheets")}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMaterial())} />
               
               <button
                 type="button"
                 onClick={handleAddMaterial}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">{t("landing:activitymanager.add", "Add")}
+                className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] font-semibold">{t("landing:activitymanager.add", "Add")}
 
 
               </button>
@@ -1129,13 +1215,13 @@ const ActivityManager = () => {
               {(formData.materials_needed || []).map((material, index) =>
               <div
                 key={index}
-                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
+                className="bg-[var(--primary-muted)] text-[var(--primary-deep)] px-3 py-1 rounded-full flex items-center gap-2">
                 
                   <span>{material}</span>
                   <button
                   type="button"
                   onClick={() => handleRemoveMaterial(index)}
-                  className="font-bold hover:text-blue-900">
+                  className="font-bold hover:text-[var(--primary-deep)]">
                   
                     ✕
                   </button>
@@ -1145,7 +1231,7 @@ const ActivityManager = () => {
           </div>
 
           <div className="mt-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{t("landing:additional_resources", "Additional Resources")}
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:additional_resources", "Additional Resources")}
 
             </label>
             <div className="flex gap-2 mb-3">
@@ -1153,14 +1239,14 @@ const ActivityManager = () => {
                 type="text"
                 value={newResource}
                 onChange={(e) => setNewResource(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 placeholder={t("landing:eg_online_videos_pdf_guides_websites", "e.g., Online videos, PDF guides, websites")}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddResource())} />
               
               <button
                 type="button"
                 onClick={handleAddResource}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">{t("landing:activitymanager.add", "Add")}
+                className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] font-semibold">{t("landing:activitymanager.add", "Add")}
 
 
               </button>
@@ -1183,14 +1269,19 @@ const ActivityManager = () => {
               )}
             </div>
           </div>
-        </div>
+          </div>
+        </details>
 
         {/* Additional Options */}
-        <div className="pb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{t("landing:additional_options", "Additional Options")}</h2>
+        <details className={styles.chapter} open={openSections.additional} onToggle={toggleSection('additional')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t("landing:additional_options", "Additional Options")}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
 
           {/* Shareable toggle */}
-          <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 mb-3">
+          <div className="flex items-center p-3 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-alt)] mb-3">
             <input
               type="checkbox"
               id="shareable"
@@ -1210,7 +1301,7 @@ const ActivityManager = () => {
                   : { ...f, is_shareable: false });
               }}
               className="w-4 h-4" />
-            <label htmlFor="shareable" className="ml-3 text-sm font-semibold text-gray-700 cursor-pointer flex-1">
+            <label htmlFor="shareable" className="ml-3 text-sm font-semibold text-[var(--text)] cursor-pointer flex-1">
               {t("landing:make_this_activity_shareable_with_other_", "Make this activity shareable with other teachers")}
             </label>
           </div>
@@ -1232,7 +1323,7 @@ const ActivityManager = () => {
               </p>
               {/* Scope */}
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">{t('components_teacher_activitymanager.share_with', 'Share with')}</label>
+                <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.share_with', 'Share with')}</label>
                 <div className="flex gap-2">
                   {(['org', 'all'] as const).map(s => (
                     <button
@@ -1253,24 +1344,24 @@ const ActivityManager = () => {
               </div>              {/* Language / State / Discipline */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('components_teacher_activitymanager.language', 'Language')}</label>
+                  <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.language', 'Language')}</label>
                   <input
                     type="text"
                     placeholder={t('components_teacher_activitymanager.placeholder_eg_english', 'e.g. English')}
                     value={formData.language ?? ''}
                     onChange={e => setFormData({ ...formData, language: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('components_teacher_activitymanager.state_standard', 'State standard')}</label>
+                  <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.state_standard', 'State standard')}</label>
                   {isOrgTeacher ? (
                     /* Org/district teacher — admin controls state standards */
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
                       {formData.state_standard ? (
-                        <p className="text-sm font-medium text-gray-700 mb-1">{formData.state_standard}</p>
+                        <p className="text-sm font-medium text-[var(--text)] mb-1">{formData.state_standard}</p>
                       ) : (
-                        <p className="text-sm text-gray-400 italic mb-1">{t('components_teacher_activitymanager.not_set_by_administrator', 'Not set by administrator')}</p>
+                        <p className="text-sm text-[var(--text-faint)] italic mb-1">{t('components_teacher_activitymanager.not_set_by_administrator', 'Not set by administrator')}</p>
                       )}
                       <p className="text-xs text-amber-700">{t('components_teacher_activitymanager.state_standards_for_your_school_or_distr', 'State standards for your school or district are managed by your administrator. Contact them to update this setting.')}</p>
                     </div>
@@ -1279,7 +1370,7 @@ const ActivityManager = () => {
                     <select
                       value={formData.state_standard ?? ''}
                       onChange={e => setFormData({ ...formData, state_standard: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       <option value="">{t('components_teacher_activitymanager.none', 'None')}</option>
                       {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
@@ -1291,11 +1382,11 @@ const ActivityManager = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1">{t('components_teacher_activitymanager.discipline', 'Discipline')}</label>
+                  <label className="block text-xs font-semibold text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.discipline', 'Discipline')}</label>
                   <select
                     value={formData.discipline ?? ''}
                     onChange={e => setFormData({ ...formData, discipline: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   >
                     <option value="">{t('components_teacher_activitymanager.none', 'None')}</option>
                     {['STEM','Humanities','Arts','Social Studies','Physical Education','Foreign Language','Computer Science','Career & Technical'].map(d => (
@@ -1306,10 +1397,11 @@ const ActivityManager = () => {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </details>
 
         {/* Buttons */}
-        <div className="flex gap-3 pt-6 border-t border-gray-200">
+        <div className="flex gap-3 pt-6 border-t border-[var(--border)]">
           <button
             type="button"
             onClick={() => setShowQuickPreview(true)}
@@ -1338,7 +1430,7 @@ const ActivityManager = () => {
           <button
             type="submit"
             disabled={isSubmitting || loading}
-            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+            className="flex-1 px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
             {isSubmitting || loading ?
             <span className="flex items-center justify-center">
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>{t("landing:saving", "Saving...")}
@@ -1350,55 +1442,10 @@ const ActivityManager = () => {
             type="button"
             onClick={() => navigate('/teacher/activities')}
             disabled={isSubmitting}
-            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold disabled:opacity-50">{t("landing:cancel", "Cancel")}
+            className="flex-1 px-6 py-3 border border-[var(--border)] text-[var(--text)] rounded-lg hover:bg-[var(--surface-alt)] transition-colors font-semibold disabled:opacity-50">{t("landing:cancel", "Cancel")}
           </button>
         </div>
       </form>
-
-        {/* Context column — read-only background/reference material, pulled
-            out of the form so a long Wikidata synopsis (description,
-            architect/date, nearby points of interest, etc.) doesn't push
-            the rest of the form's fields far down the page. Always visible
-            once a location is set — no extra click needed to see it. */}
-        <div className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-6 bg-gray-50 rounded-lg p-4 border border-gray-200 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">{t('components_teacher_activitymanager.background_context', '📖 Background & Context')}</h2>
-          {formData.location_latitude && formData.location_longitude ? (
-            <WikiLocationInfo
-              latitude={formData.location_latitude}
-              longitude={formData.location_longitude}
-              subject={formData.subject}
-              locationName={formData.location_name}
-              onInfoLoaded={(info) => {
-                setFormData(f => ({
-                  ...f,
-                  location_wiki_data: info,
-                  location_info: info.description || '',
-                }));
-              }}
-            />
-          ) : (
-            <p className="text-sm text-gray-400 mt-2">
-              {t('components_teacher_activitymanager.add_a_location_to_see_background', 'Add a location above to see background information about it here.')}
-            </p>
-          )}
-        </div>
-
-        {/* Peri AI sidebar — persistent, not a collapsible panel: reacts to
-            whatever subject/objective/location is filled in on the left,
-            teacher explicitly clicks a card to add it (see
-            handleAISuggestionSelected) — nothing here auto-applies. */}
-        <aside className="w-full lg:w-80 flex-shrink-0 lg:sticky lg:top-6 bg-purple-50 rounded-lg p-4 border border-purple-100">
-          <h2 className="text-lg font-bold text-purple-900 mb-1">{t('components_teacher_activitymanager.peri_ai_activity_suggestions', '✨ Peri AI Activity Suggestions')}</h2>
-          <OllamaLessonSuggestions
-            subject={formData.subject}
-            gradeLevel={formData.grade_level}
-            taxonomyType={taxonomyType}
-            locationName={formData.location_name}
-            latitude={formData.location_latitude}
-            longitude={formData.location_longitude}
-            onSuggestionSelected={handleAISuggestionSelected}
-          />
-        </aside>
       </div>
 
       {/* Quick Preview Modal */}

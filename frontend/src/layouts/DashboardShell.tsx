@@ -167,7 +167,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-auto" style={{ background: 'var(--bg, #f9f6f1)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 32px', fontFamily: 'var(--font-body, sans-serif)' }}>
+        <div style={{ maxWidth: 'var(--max-width, 1200px)', margin: '0 auto', padding: '40px 21px', fontFamily: 'var(--font-body, sans-serif)' }}>
           {children}
         </div>
       </main>

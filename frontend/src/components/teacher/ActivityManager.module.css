@@ -1,0 +1,94 @@
+/* Collapsible form "chapters" — six sections read like tabbed pages in a
+   field notebook rather than one long scrolling sheet. Native <details>
+   for free keyboard support and screen-reader state announcement. */
+.chapter {
+  border-bottom: 1px solid var(--border);
+}
+
+.chapter:last-of-type {
+  border-bottom: none;
+}
+
+.chapterSummary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.9rem 0;
+}
+
+.chapterSummary::-webkit-details-marker {
+  display: none;
+}
+
+.chapterSummary::marker {
+  content: '';
+}
+
+.chapterSummary:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.chevron {
+  color: var(--primary);
+  transition: transform var(--duration-base, 250ms) var(--ease-in-out, ease);
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+
+.chapter[open] > .chapterSummary .chevron {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}
+
+.chapterTitle {
+  font-family: var(--font-head);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+
+.chapterMeta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.chapterBody {
+  padding: 0 0 1.5rem 1.6rem;
+}
+
+/* Background & Context rail — styled like a page torn from a field
+   notebook: warm paper tone, a bound left margin, faint ruled lines. Signals
+   "reference material" distinctly from the live form next to it. */
+.journal {
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 1.55rem,
+      var(--border-light) 1.55rem,
+      var(--border-light) calc(1.55rem + 1px)
+    ),
+    var(--surface-alt);
+  border-left: 3px solid var(--secondary);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+}
+
+.journalTitle {
+  font-family: var(--font-head);
+  font-style: italic;
+}

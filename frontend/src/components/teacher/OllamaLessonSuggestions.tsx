@@ -22,6 +22,10 @@ interface OllamaLessonSuggestionsProps {
   latitude?: number;
   longitude?: number;
   onSuggestionSelected: (suggestion: AcceptedSuggestion) => void;
+  // 'horizontal' renders the suggestion cards as a scrollable row instead of
+  // a stacked list — used when this panel sits in a full-width header
+  // rather than a sidebar.
+  layout?: 'vertical' | 'horizontal';
 }
 
 interface Suggestion {
@@ -53,6 +57,7 @@ export const OllamaLessonSuggestions = ({
   latitude,
   longitude,
   onSuggestionSelected,
+  layout = 'vertical',
 }: OllamaLessonSuggestionsProps) => {
   const { t } = useTranslation('landing');
 
@@ -178,7 +183,7 @@ export const OllamaLessonSuggestions = ({
         disabled={isLoading || !canGenerate}
         style={{
           padding: '8px 20px', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem',
-          background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer',
+          background: '#9333ea', color: '#fff', border: 'none', cursor: 'pointer',
           opacity: (isLoading || !canGenerate) ? 0.6 : 1,
         }}>
         {isLoading ? t('components_teacher_ollamalessonsuggestions.generating', 'Generating…') : t('components_teacher_ollamalessonsuggestions.ask_peri', '✨ Ask Peri')}
@@ -199,12 +204,14 @@ export const OllamaLessonSuggestions = ({
 
       {generated && suggestions.length > 0 && (
         <>
-          <div className={styles.suggestionsList} style={{ marginTop: '0.75rem' }}>
+          <div className={`${styles.suggestionsList} ${layout === 'horizontal' ? styles.horizontal : ''}`} style={{ marginTop: '0.75rem' }}>
             {suggestions.map((s, i) => (
-              <div
+              <button
                 key={i}
+                type="button"
                 className={`${styles.suggestionCard} ${selected.has(s.title) ? styles.selected : ''}`}
                 onClick={() => handleSelect(s)}
+                aria-pressed={selected.has(s.title)}
               >
                 <div className={styles.suggestionHeader}>
                   <h4>{s.title}</h4>
@@ -218,7 +225,7 @@ export const OllamaLessonSuggestions = ({
                     ? t('components_teacher_ollamalessonsuggestions.added', '✓ Added to activity')
                     : t('components_teacher_ollamalessonsuggestions.add_to_activity', '+ Add to activity')}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
           <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
@@ -226,7 +233,7 @@ export const OllamaLessonSuggestions = ({
               type="button"
               onClick={fetchSuggestions}
               disabled={isLoading}
-              style={{ padding: '6px 14px', borderRadius: 6, fontSize: '0.82rem', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', opacity: isLoading ? 0.6 : 1 }}>
+              style={{ padding: '6px 14px', borderRadius: 6, fontSize: '0.82rem', background: '#9333ea', color: '#fff', border: 'none', cursor: 'pointer', opacity: isLoading ? 0.6 : 1 }}>
               {t('components_teacher_ollamalessonsuggestions.regenerate', '🔄 Regenerate')}
             </button>
           </div>
