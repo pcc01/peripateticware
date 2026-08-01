@@ -886,12 +886,20 @@ class MultiBackendLocationService:
     def __init__(self):
         backend_config = os.getenv(
             "LOCATION_BACKEND",
-            # Try Overpass first (best when it's reachable — structured POI
-            # types), then Wikipedia geosearch (reliable, real enrichable
-            # places, no OSM dependency), then bare Nominatim geocoding as
-            # the last resort (name/address only, never enriched — this is
-            # what was producing the "placeholder" panels).
-            "openstreetmap,wikipedia,nominatim"  # Free defaults
+            # Wikipedia geosearch first: it finds real, named, documented
+            # places directly (no OSM tag-filter dependency), which is what
+            # well-known landmarks need. Overpass's default tag filters
+            # (see _build_osm_filters below) don't include tourism=attraction
+            # — the tag most famous landmarks (e.g. the Space Needle) actually
+            # carry — so OSM often returns a nearby-but-wrong POI (a museum,
+            # a park) instead of the landmark itself. Since search_nearby
+            # below returns the FIRST backend with any non-empty results,
+            # putting OSM first meant that wrong-but-non-empty result won
+            # outright and Wikipedia was never even tried. Wikipedia first
+            # avoids that; Overpass remains useful as a fallback for POIs
+            # with no Wikipedia article, and bare Nominatim geocoding is the
+            # last resort (name/address only, never enriched).
+            "wikipedia,openstreetmap,nominatim"  # Free defaults
         )
         
         self.backend_names = [b.strip() for b in backend_config.split(",")]
