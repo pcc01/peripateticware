@@ -4,7 +4,14 @@
     <header>
       <meta-group category="w3c-prov-jsonld">
         <meta type="provenance-graph">{
-  &quot;@context&quot;: {},
+  &quot;@context&quot;: {
+    &quot;prov&quot;: &quot;http://www.w3.org/ns/prov#&quot;,
+    &quot;xsd&quot;: &quot;http://www.w3.org/2001/XMLSchema#&quot;,
+    &quot;actor&quot;: &quot;prov:wasAssociatedWith&quot;,
+    &quot;generated_by&quot;: &quot;prov:wasGeneratedBy&quot;,
+    &quot;used_source&quot;: &quot;prov:used&quot;,
+    &quot;derived_from&quot;: &quot;prov:wasDerivedFrom&quot;
+  },
   &quot;@graph&quot;: [
     {
       &quot;@id&quot;: &quot;agent:OLLAMA-mistral_Profile__Application_UI_Strings_|_Temp__0.0&quot;,

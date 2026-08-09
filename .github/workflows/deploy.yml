@@ -17,7 +17,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          # i18next-parser (npx-installed fresh each run, unpinned) currently
+          # pulls in undici@7.x, which requires Node >=20.18.1 — 18 crashes
+          # the i18n:extract step with "ReferenceError: File is not defined"
+          # before the translation sync step is ever reached.
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -33,7 +37,13 @@ jobs:
         run: pip install requests
 
       - name: Run localization pipeline (tag → extract → XLIFF/W3C PROV sync)
-        run: cd frontend && npm run i18n:run-all
+        # i18n:run-all:ci uses --provider MICROSOFT (translate_sync.py's
+        # MS_TRANSLATOR_KEY/REGION path). Plain i18n:run-all defaults to
+        # OLLAMA, which shells out to a local `ollama` binary — not installed
+        # on a GitHub-hosted runner, and even if it were, there'd be no route
+        # to a model to run. Local `npm run i18n:run-all` is untouched for
+        # dev machines that do have Ollama running.
+        run: cd frontend && npm run i18n:run-all:ci
         env:
           OLLAMA_MODEL_TEXT: ${{ secrets.OLLAMA_MODEL_TEXT || 'mistral' }}
           MS_TRANSLATOR_KEY: ${{ secrets.MS_TRANSLATOR_KEY }}

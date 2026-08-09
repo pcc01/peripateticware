@@ -966,9 +966,39 @@ def save_json(path: Path, data: dict):
 
 def get_timestamp() -> str: return datetime.now(timezone.utc).isoformat()
 
+# The real JSON-LD context for the provenance graph. Was previously inlined
+# as literal Markdown link syntax — "[http://...](http://...)" instead of a
+# bare URI — which would have made @context unresolvable even on the one
+# code path that used to reach it (see the guard fix below).
+_PROV_CONTEXT = {
+    "prov": "http://www.w3.org/ns/prov#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "actor": "prov:wasAssociatedWith",
+    "generated_by": "prov:wasGeneratedBy",
+    "used_source": "prov:used",
+    "derived_from": "prov:wasDerivedFrom",
+}
+
 def build_or_update_prov_graph(key: str, src: str, tgt: str, actor: str, ts: str, version: int, existing_graph: dict = None) -> dict:
-    if not existing_graph or not isinstance(existing_graph, dict) or "@graph" not in existing_graph:
-        existing_graph = {"@context": {"prov": "[http://www.w3.org/ns/prov#](http://www.w3.org/ns/prov#)", "xsd": "[http://www.w3.org/2001/XMLSchema#](http://www.w3.org/2001/XMLSchema#)", "actor": "prov:wasAssociatedWith", "generated_by": "prov:wasGeneratedBy", "used_source": "prov:used", "derived_from": "prov:wasDerivedFrom"}, "@graph": []}
+    # BUG (found across the last 3 i18n-pipeline sessions): this used to only
+    # populate @context when "@graph" was entirely absent from existing_graph.
+    # But parse_existing_xliff_with_prov's not-found-file default — and the
+    # --reset default below — both hand back {"@context": {}, "@graph": []}:
+    # "@graph" IS present (as an empty list), so that branch never ran, on
+    # any run, ever. Every .xlf's provenance graph shipped with @context: {}
+    # while @graph entries kept referencing prov:Agent / actor / generated_by
+    # / used_source / derived_from — undefined terms in an empty context, so
+    # none of it was resolvable JSON-LD despite looking structurally right.
+    # Fix: check whether @context itself is actually populated, independent
+    # of whether @graph exists, and backfill it in place either way — this
+    # self-heals existing .xlf files (with real prov entries in @graph
+    # already) the next time they're parsed and re-synced, no reset needed.
+    if not existing_graph or not isinstance(existing_graph, dict):
+        existing_graph = {"@context": dict(_PROV_CONTEXT), "@graph": []}
+    else:
+        if not existing_graph.get("@context"):
+            existing_graph["@context"] = dict(_PROV_CONTEXT)
+        existing_graph.setdefault("@graph", [])
     g_list = existing_graph["@graph"]
     agent_id = f"agent:{actor.replace(' ', '_').replace(':', '_').replace('[', '').replace(']', '')}"
     if not any(isinstance(node, dict) and node.get("@id") == agent_id for node in g_list):
