@@ -27,7 +27,7 @@ export const CookiePolicyPage: React.FC = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 prose prose-gray">
-        <p className="text-sm text-gray-500 mb-8">{t('cookiepolicypage.last_updated_may_2026', 'Last updated: May 2026')}</p>
+        <p className="text-sm text-gray-500 mb-8">{t('cookiepolicypage.last_updated_may_2026', 'Last updated: August 2026')}</p>
 
         <h2>{t('cookiepolicypage.what_are_cookies', 'What Are Cookies?')}</h2>
         <p>{t('cookiepolicypage.cookies_are_small_text_files_placed_on_y', 'Cookies are small text files placed on your device by a website. Peripateticware uses a minimal set of cookies strictly necessary to operate the platform.')}</p>
@@ -49,7 +49,7 @@ export const CookiePolicyPage: React.FC = () => {
         </ul>
 
         <h3>{t('cookiepolicypage.analytics_amp_performance', 'Analytics &amp; Performance')}</h3>
-        <p>{t('cookiepolicypage.peripateticware_does_not_currently_use_t', 'Peripateticware does not currently use third-party analytics cookies. When server-side metrics are enabled they are processed without setting any cookies.')}</p>
+        <p>{t('cookiepolicypage.peripateticware_does_not_currently_use_t', 'Peripateticware uses Google Analytics (GA4) on our marketing site and teacher/parent/admin/homeschool dashboards to understand how the Service is discovered and used — but only after you say yes. Nothing loads and no request is made to Google until you click Accept on the cookie banner; declining (or simply not answering) keeps analytics fully off. Google Signals and ad personalization are turned off unconditionally — this data is never used to build advertising audiences. Analytics is never active on student accounts or student-facing pages, regardless of your choice. Your choice is remembered for about 6 months, after which you\'ll be asked again, and you can change it anytime via the "Cookie preferences" link that stays available at the bottom of the page.')}</p>
 
         <h3>{t('cookiepolicypage.advertising', 'Advertising')}</h3>
         <p>{t('cookiepolicypage.peripateticware_is_adfree_we_do_not_plac', 'Peripateticware is ad-free. We do not place any advertising cookies.')}</p>

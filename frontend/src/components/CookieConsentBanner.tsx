@@ -1,29 +1,60 @@
 // Copyright (c) 2026 Paul Christopher Cerda
-// Block 14g.2 — Minimal CCPA/GDPR cookie consent banner
-// Only functional cookies (auth token) are used — no tracking.
+// Block 14g.2 — CCPA/GDPR cookie consent banner
+// Functional cookies (auth token) are always on. GA4 site analytics is
+// strictly opt-in: nothing loads until Accept is clicked here, and consent
+// can be withdrawn just as easily via the "Cookie preferences" reopener
+// that replaces this banner once a choice is on file. Also hard-blocked on
+// student routes/sessions regardless of this choice — see utils/analytics.ts.
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-
-const STORAGE_KEY = 'ppw_cookie_consent'
+import { getStoredConsent, recordConsent, type ConsentChoice } from '../utils/analytics'
 
 const CookieConsentBanner: React.FC = () => {
   const { t } = useTranslation('landing')
   const [visible, setVisible] = useState(false)
+  const [current, setCurrent] = useState<ConsentChoice | null>(null)
 
   useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) {
+    const stored = getStoredConsent()
+    setCurrent(stored)
+    if (!stored) {
       // Small delay so the page renders first
       const timer = setTimeout(() => setVisible(true), 800)
       return () => clearTimeout(timer)
     }
   }, [])
 
-  const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'accepted')
+  const respond = (accepted: boolean) => {
+    recordConsent(accepted)
+    setCurrent(accepted ? 'accepted' : 'declined')
     setVisible(false)
   }
 
-  if (!visible) return null
+  if (!visible) {
+    if (!current) return null
+    // Reopen affordance — always reachable, on every page, so withdrawing
+    // consent later is exactly as easy as giving it was.
+    return (
+      <button
+        onClick={() => setVisible(true)}
+        aria-label={t('cookie_preferences', 'Cookie preferences')}
+        style={{
+          position: 'fixed',
+          bottom: 12,
+          left: 12,
+          zIndex: 49,
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 8,
+          padding: '6px 10px',
+          cursor: 'pointer',
+          opacity: 0.85,
+        }}
+      >🍪 {t('cookie_preferences', 'Cookie preferences')}</button>
+    )
+  }
 
   return (
     <div
@@ -58,17 +89,31 @@ const CookieConsentBanner: React.FC = () => {
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', flex: 1, margin: 0 }}>
           🍪 {t(
             'cookie_notice',
-            'This site uses cookies only for login authentication — no tracking or advertising cookies. '
+            'We use essential cookies for login. Site analytics is off by default — enable it below if you\'re OK with it. We never place ads on student accounts. '
+          )}
+          {current && (
+            <strong>
+              {current === 'accepted'
+                ? t('cookie_status_on', 'Currently: analytics cookies enabled. ')
+                : t('cookie_status_off', 'Currently: analytics cookies declined. ')}
+            </strong>
           )}
           <a href="/cookies" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
             {t('learn_more', 'Learn more')}
           </a>
         </p>
-        <button
-          onClick={dismiss}
-          className="ml-4 px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition flex-shrink-0"
-          style={{ background: 'var(--primary)', color: '#ffffff', border: 'none', cursor: 'pointer' }}
-        >{t('components_cookieconsentbanner.got_it', 'Got it')}</button>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={() => respond(false)}
+            className="px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition"
+            style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}
+          >{t('components_cookieconsentbanner.decline', 'Decline')}</button>
+          <button
+            onClick={() => respond(true)}
+            className="px-4 py-2 text-sm font-semibold rounded-lg hover:opacity-90 transition"
+            style={{ background: 'var(--primary)', color: '#ffffff', border: 'none', cursor: 'pointer' }}
+          >{t('components_cookieconsentbanner.accept', 'Accept')}</button>
+        </div>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { I18nextProvider } from 'react-i18next'
 import i18n from './config/i18n'
 import axios from 'axios'
 import { useAuthStore } from './stores/auth'
+import { initAnalytics, trackPageview } from './utils/analytics'
 
 import './design-system.css'
 import { useSkin } from './hooks/useSkin'
@@ -324,6 +325,12 @@ const App: React.FC = () => {
   useGlobalPrivacyControl()
 
   useEffect(() => { useAuthStore.getState().checkAuth() }, [])
+
+  // GA4 — buyer-funnel analytics (marketing site + teacher/parent/admin/
+  // homeschool dashboards). Guarded in utils/analytics.ts against ever
+  // firing on student routes or student sessions. See that file for why.
+  useEffect(() => { initAnalytics() }, [])
+  useEffect(() => { trackPageview(location.pathname) }, [location.pathname])
 
   // RTL support — set dir attribute on <html> whenever language changes
   useEffect(() => {
