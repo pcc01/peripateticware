@@ -286,11 +286,8 @@ const StudentActivityDetailPage: React.FC = () => {
       {gpsConsentPending && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="max-w-sm w-full mx-4 rounded-2xl p-6 shadow-xl bg-white">
-            <h2 className="text-lg font-bold mb-2 text-gray-900">Location Sharing</h2>
-            <p className="text-sm mb-4 text-gray-600">
-              Your teacher wants to see your location during this activity so they can track
-              fieldwork progress. Your location is only shared while the session is active.
-            </p>
+            <h2 className="text-lg font-bold mb-2 text-gray-900">{t('pages_studentactivitydetailpage.location_sharing', 'Location Sharing')}</h2>
+            <p className="text-sm mb-4 text-gray-600">{t('pages_studentactivitydetailpage.your_teacher_wants_to_see_your_location_', 'Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.')}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => handleGpsConsent(true)}
@@ -333,7 +330,7 @@ const StudentActivityDetailPage: React.FC = () => {
 
               {wiki?.features?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Notable Features</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">{t('pages_studentactivitydetailpage.notable_features', 'Notable Features')}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {wiki.features.map((f: string, i: number) => (
                       <span key={i} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{f}</span>
@@ -345,13 +342,13 @@ const StudentActivityDetailPage: React.FC = () => {
               {(wiki?.architectOrArtist || wiki?.constructionDate || wiki?.historicalSignificance) && (
                 <div className="mb-4 space-y-1.5 text-sm">
                   {wiki?.architectOrArtist && (
-                    <p><span className="font-semibold text-gray-600">Architect/Artist:</span> <span className="text-gray-800">{wiki.architectOrArtist}</span></p>
+                    <p><span className="font-semibold text-gray-600">{t('pages_studentactivitydetailpage.architectartist', 'Architect/Artist:')}</span> <span className="text-gray-800">{wiki.architectOrArtist}</span></p>
                   )}
                   {wiki?.constructionDate && (
-                    <p><span className="font-semibold text-gray-600">Constructed:</span> <span className="text-gray-800">{wiki.constructionDate}</span></p>
+                    <p><span className="font-semibold text-gray-600">{t('pages_studentactivitydetailpage.constructed', 'Constructed:')}</span> <span className="text-gray-800">{wiki.constructionDate}</span></p>
                   )}
                   {wiki?.historicalSignificance && (
-                    <p><span className="font-semibold text-gray-600">Historical Significance:</span> <span className="text-gray-800">{wiki.historicalSignificance}</span></p>
+                    <p><span className="font-semibold text-gray-600">{t('pages_studentactivitydetailpage.historical_significance', 'Historical Significance:')}</span> <span className="text-gray-800">{wiki.historicalSignificance}</span></p>
                   )}
                 </div>
               )}
@@ -368,7 +365,7 @@ const StudentActivityDetailPage: React.FC = () => {
 
               {wiki?.learningOpportunities?.length > 0 && (
                 <div className="mb-2 bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-green-700 mb-1.5">Learning Opportunities</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-700 mb-1.5">{t('pages_studentactivitydetailpage.learning_opportunities', 'Learning Opportunities')}</p>
                   <ul className="space-y-1">
                     {wiki.learningOpportunities.map((lo: string, i: number) => (
                       <li key={i} className="text-sm text-green-800 flex gap-1.5"><span className="text-green-400">•</span>{lo}</li>
@@ -379,7 +376,7 @@ const StudentActivityDetailPage: React.FC = () => {
 
               {wiki?.nearbyPoints?.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Nearby Points of Interest</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">{t('pages_studentactivitydetailpage.nearby_points_of_interest', 'Nearby Points of Interest')}</p>
                   <ul className="space-y-1">
                     {wiki.nearbyPoints.map((poi: { name: string; type: string }, i: number) => (
                       <li key={i} className="text-sm text-gray-700 flex justify-between gap-2">
@@ -392,7 +389,7 @@ const StudentActivityDetailPage: React.FC = () => {
               )}
 
               {!description && !wiki?.features?.length && !wiki?.learningOpportunities?.length && (
-                <p className="text-sm text-gray-500">No background info was saved for this location.</p>
+                <p className="text-sm text-gray-500">{t('pages_studentactivitydetailpage.no_background_info_was_saved_for_this_lo', 'No background info was saved for this location.')}</p>
               )}
 
               <button

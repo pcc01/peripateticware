@@ -234,17 +234,13 @@ export default function InviteStudentsPanel({ classroomId, onDone }: Props) {
       {/* Add by Email tab */}
       {tab === 'add' && (
         <div>
-          <p className="text-sm text-gray-500 mb-4">
-            Already know the student's email? Enter it here. If they already have an account,
-            they're added to this classroom right away and notified in-app — no email is sent.
-            If there's no account yet, an invite email goes out instead.
-          </p>
+          <p className="text-sm text-gray-500 mb-4">{t('components_teacher_invitestudentspanel.already_know_the_students_email_enter_it', 'Already know the student\'s email? Enter it here. If they already have an account, they\'re added to this classroom right away and notified in-app — no email is sent. If there\'s no account yet, an invite email goes out instead.')}</p>
           <div className="flex gap-2 mb-3">
             <input
               type="email"
               value={addEmail}
               onChange={e => setAddEmail(e.target.value)}
-              placeholder="student@email.com"
+              placeholder={t('components_teacher_invitestudentspanel.placeholder_studentemailcom', 'student@email.com')}
               onKeyDown={e => { if (e.key === 'Enter' && !addLoading) addByEmail(); }}
               className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />

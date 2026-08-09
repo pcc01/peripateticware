@@ -16,6 +16,7 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   children: React.ReactNode;
@@ -62,13 +63,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
             color: '#1f2937',
           }}
         >
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-            Something went wrong
-          </h1>
-          <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: 480 }}>
-            An unexpected error occurred and this page couldn't be displayed.
-            You can try again, or reload the app.
-          </p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>{t('components_errorboundary.something_went_wrong', 'Something went wrong')}</h1>
+          <p style={{ color: '#6b7280', marginBottom: '1.5rem', maxWidth: 480 }}>{t('components_errorboundary.an_unexpected_error_occurred_and_this_pa', 'An unexpected error occurred and this page couldn\'t be displayed. You can try again, or reload the app.')}</p>
           {this.state.error?.message && (
             <pre
               style={{
@@ -99,9 +95,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 fontSize: '0.875rem',
                 cursor: 'pointer',
               }}
-            >
-              Try again
-            </button>
+            >{t('components_errorboundary.try_again', 'Try again')}</button>
             <button
               onClick={this.handleReload}
               style={{
@@ -114,9 +108,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 fontSize: '0.875rem',
                 cursor: 'pointer',
               }}
-            >
-              Reload page
-            </button>
+            >{t('components_errorboundary.reload_page', 'Reload page')}</button>
           </div>
         </div>
       );

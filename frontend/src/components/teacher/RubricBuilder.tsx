@@ -277,10 +277,10 @@ const RubricBuilder: React.FC = () => {
                   value={aiForm.taxonomy_type}
                   onChange={e => setAiForm(f => ({ ...f, taxonomy_type: e.target.value }))}
                 >
-                  <option value="blooms">Bloom's Revised</option>
-                  <option value="dok">DOK (Webb's)</option>
-                  <option value="solo">SOLO</option>
-                  <option value="marzano">Marzano's</option>
+                  <option value="blooms">{t('components_teacher_rubricbuilder.blooms_revised', 'Bloom\'s Revised')}</option>
+                  <option value="dok">{t('components_teacher_rubricbuilder.dok_webbs', 'DOK (Webb\'s)')}</option>
+                  <option value="solo">{t('components_teacher_rubricbuilder.solo', 'SOLO')}</option>
+                  <option value="marzano">{t('components_teacher_rubricbuilder.marzanos', 'Marzano\'s')}</option>
                 </select>
               </div>
               <div>
@@ -290,7 +290,7 @@ const RubricBuilder: React.FC = () => {
                   style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface-alt)' }}
                   value={aiForm.taxonomy_level}
                   onChange={e => setAiForm(f => ({ ...f, taxonomy_level: e.target.value }))}
-                  placeholder="e.g. analyze, dok3, relational, analysis"
+                  placeholder={t('components_teacher_rubricbuilder.placeholder_eg_analyze_dok3_relational_analysis', 'e.g. analyze, dok3, relational, analysis')}
                 />
               </div>
             </div>

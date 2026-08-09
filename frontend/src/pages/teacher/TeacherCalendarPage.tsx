@@ -128,17 +128,17 @@ const TeacherCalendarPage: React.FC = () => {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem', marginBottom: 24 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Title</label>
-              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. River study field trip"
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachercalendarpage.title', 'Title')}</label>
+              <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('pages_teacher_teachercalendarpage.placeholder_eg_river_study_field_trip', 'e.g. River study field trip')}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Date</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachercalendarpage.date', 'Date')}</label>
               <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Type</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachercalendarpage.type', 'Type')}</label>
               <select value={eventType} onChange={e => setEventType(e.target.value as any)}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
                 {EVENT_TYPES.map(tp => <option key={tp} value={tp}>{tp.replace('_', ' ')}</option>)}
@@ -146,7 +146,7 @@ const TeacherCalendarPage: React.FC = () => {
             </div>
           </div>
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Description (optional)</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachercalendarpage.description_optional', 'Description (optional)')}</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
               style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }} />
           </div>

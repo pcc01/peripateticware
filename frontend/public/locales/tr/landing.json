@@ -1376,16 +1376,26 @@
     "loading_rule_details": "Yüklüyor...",
     "add_update_jurisdiction": "Görev Ekle/Güncelle"
   },
+  "components_cookieconsentbanner": {
+    "accept": "Kabul Et",
+    "decline": "Reddet"
+  },
+  "cookie_consent_title": "Çerez bildirimi",
+  "cookie_notice": "Giriş için gerekli çerezleri kullanıyoruz. Site analitiği varsayılan olarak kapalıdır — kabul ediyorsanız aşağıdan etkinleştirin. Öğrenci hesaplarına asla reklam yerleştirmeyiz. ",
+  "cookie_preferences": "Çerez tercihleri",
+  "cookie_status_off": "Şu anda: analiz çerezleri reddedildi. ",
+  "cookie_status_on": "Şu anda: analiz çerezleri etkin. ",
+  "learn_more": "Daha fazla bilgi",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "May 2026 itibarıyla son güncelleme",
+    "last_updated_may_2026": "Ağustos 2026 itibarıyla son güncelleme",
     "what_are_cookies": "Çerezler Nedir?",
     "cookies_are_small_text_files_placed_on_y": "Çerezler, bir web sitesi tarafından cihaza yerleştirilen küçük metin dosyalarıdır. Peripateticware, platformu işlemek için gereken minimum çerez setini kullanır.",
     "cookies_we_use": "Çerezlerimiz",
     "strictly_necessary": "Mutatakip Zorunlu",
     "these_cookies_are_essential_for_the_serv": "Bu çerezler hizmetin işlemesi için gereklidırlar. Devre dışı bırakılmazlar.",
     "analytics_amp_performance": "Analitikler ve Performans",
-    "peripateticware_does_not_currently_use_t": "PeripatetikWare şu anda üçüncü taraf analitik çerezleri kullanmaz. Sunucu tarafı metrikler etkinleştirildiğinde, herhangi bir çerez ayarlamadan işlenir.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware, Hizmetin nasıl keşfedildiğini ve kullanıldığını anlamak için pazarlama sitemizde ve öğretmen/veli/yönetici/ev okulu panolarında Google Analytics (GA4) kullanır — ancak yalnızca onayınızdan sonra. Çerez bildiriminde Kabul Et'e tıklamadığınız sürece hiçbir şey yüklenmez ve Google'a hiçbir istek gönderilmez; reddetmek (veya yanıt vermemek) analizleri tamamen kapalı tutar. Google Signals ve reklam kişiselleştirmesi koşulsuz olarak devre dışıdır — bu veriler asla reklam kitleleri oluşturmak için kullanılmaz. Seçiminizden bağımsız olarak analiz, öğrenci hesaplarında veya öğrenciye yönelik sayfalarda asla etkin değildir. Seçiminiz yaklaşık 6 ay boyunca hatırlanır, bundan sonra tekrar sorulursunuz ve sayfanın altında her zaman bulunan \"Çerez tercihleri\" bağlantısı üzerinden istediğiniz zaman değiştirebilirsiniz.",
     "advertising": "Reklam",
     "peripateticware_is_adfree_we_do_not_plac": "PeripatetikWare reklamsızdır. Herhangi bir reklam çerezini yerleştirmemiz yoktur.",
     "managing_cookies": "Çerez Yönetimi",
@@ -1539,8 +1549,6 @@
     "that_link_is_invalid_please_try_again": "O bağlantı geçersizdir. Lütfen tekrar deneyin.",
     "or": "ya da"
   },
-  "cookie_consent_title": "Çerez uyarısı",
-  "learn_more": "Öğren",
   "homeschool": {
     "cta": "Başlat Ev Okulu",
     "secondary_cta": "Görünüm",
@@ -1870,7 +1878,6 @@
     "placeholder_studentexamplecom": "student@example.com"
   },
   "age_confirmation": "Onurlu şu ki, ben 13 yaş ve üzeriyim veya bu hesap için ebeveyn izni vardır.",
-  "cookie_notice": "Bu siten sadece giriş kimlik doğrulamasını için çerezler kullanır - izleme veya reklam amaçlı çerez yoktur.",
   "homeschool_section_title": "Evde Öğrenen Aileler İçin Her Şey",
   "homeschool_section_desc": "PeripatetikWare evokulu öğretmen ve ebeveyn olarak tek bir hesaptan yönetirsiniz. Çocuklarınızın hesapları için hiçbir bağlantı kodu veya idari işlem yoktur.",
   "hs_feat_children_title": "Çok Çocuk Yönetimi",
@@ -2994,9 +3001,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "Kapat"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Anladım"
   },
   "components_localeswitcher": {
     "aria_label_select_language": "Dil seç"

@@ -1115,7 +1115,7 @@ const ActivityManager = () => {
               {taxonomySuggestion && (
                 <div className="mt-1 p-2 rounded-lg border border-purple-200 bg-purple-50 text-xs">
                   <p className="text-purple-800">
-                    <span className="font-semibold">AI suggests:</span> {taxonomySuggestion.label}
+                    <span className="font-semibold">{t('components_teacher_activitymanager.ai_suggests', 'AI suggests:')}</span> {taxonomySuggestion.label}
                     {taxonomySuggestion.rationale && <span className="text-purple-600"> — {taxonomySuggestion.rationale}</span>}
                   </p>
                   <div className="mt-1 flex gap-2">
@@ -1123,9 +1123,7 @@ const ActivityManager = () => {
                       type="button"
                       onClick={acceptTaxonomySuggestion}
                       className="px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-700"
-                    >
-                      Accept
-                    </button>
+                    >{t('components_teacher_activitymanager.accept', 'Accept')}</button>
                     <button
                       type="button"
                       onClick={() => setTaxonomySuggestion(null)}

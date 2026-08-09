@@ -1419,16 +1419,26 @@
     "loading_rule_details": "Chargement des détails de la règle...",
     "add_update_jurisdiction": "Ajouter/Mettre à jour la juridiction"
   },
+  "components_cookieconsentbanner": {
+    "accept": "Accepter",
+    "decline": "Refuser"
+  },
+  "cookie_consent_title": "Avis relatif aux cookies",
+  "cookie_notice": "Nous utilisons des cookies essentiels pour la connexion. Les analyses du site sont désactivées par défaut — activez-les ci-dessous si cela vous convient. Nous ne diffusons jamais de publicité sur les comptes élèves. ",
+  "cookie_preferences": "Préférences relatives aux cookies",
+  "cookie_status_off": "Actuellement : cookies d'analyse refusés. ",
+  "cookie_status_on": "Actuellement : cookies d'analyse activés. ",
+  "learn_more": "En savoir plus",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "Mai 2026",
+    "last_updated_may_2026": "Août 2026",
     "what_are_cookies": "Qu'est-ce qu'un cookie ?",
     "cookies_are_small_text_files_placed_on_y": "Les cookies sont de petits fichiers texte placés sur votre appareil par un site web. Peripateticware utilise un ensemble minimal de cookies strictement nécessaires pour faire fonctionner la plateforme.",
     "cookies_we_use": "Cookies que nous utilisons",
     "strictly_necessary": "Strictement Nécessaire",
     "these_cookies_are_essential_for_the_serv": "Ces cookies sont essentiels pour que le service fonctionne. Ils ne peuvent pas être désactivés.",
     "analytics_amp_performance": "Analyse et Performances",
-    "peripateticware_does_not_currently_use_t": "Peripateticware n'utilise pas actuellement de cookies d'analyse tiers. Lorsque les métriques côté serveur sont activées, elles sont traitées sans définir de cookies.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware utilise Google Analytics (GA4) sur notre site marketing ainsi que sur les tableaux de bord enseignants/parents/administrateurs/école à la maison afin de comprendre comment le Service est découvert et utilisé — mais uniquement après votre accord. Rien n'est chargé et aucune requête n'est envoyée à Google tant que vous n'avez pas cliqué sur Accepter dans la bannière de cookies ; refuser (ou simplement ne pas répondre) maintient les analyses entièrement désactivées. Google Signals et la personnalisation des annonces sont désactivés de manière inconditionnelle — ces données ne servent jamais à créer des audiences publicitaires. Les analyses ne sont jamais actives sur les comptes élèves ni sur les pages destinées aux élèves, quel que soit votre choix. Votre choix est mémorisé pendant environ 6 mois, après quoi il vous sera à nouveau demandé, et vous pouvez le modifier à tout moment via le lien « Préférences relatives aux cookies » toujours disponible en bas de page.",
     "advertising": "Publicité",
     "peripateticware_is_adfree_we_do_not_plac": "Peripateticware est sans publicité. Nous n'installons aucun cookie publicitaire.",
     "managing_cookies": "Gérer les cookies",
@@ -1628,8 +1638,6 @@
     "that_link_is_invalid_please_try_again": "Ce lien est invalide. Veuillez réessayer.",
     "or": "ou"
   },
-  "cookie_consent_title": "Avis sur les cookies",
-  "learn_more": "Apprendre plus",
   "homeschool": {
     "cta": "Démarrer l'instruction à domicile",
     "secondary_cta": "Voir comment ça fonctionne",
@@ -1985,7 +1993,6 @@
   "view_audit_log": "Voir le journal d'audit",
   "collect_photos": "Photos et enregistrements audio (stockés en toute sécurité sur notre serveur)",
   "age_confirmation": "Je confirme être âgé de 13 ans ou plus, ou avoir l'autorisation parentale pour créer ce compte.",
-  "cookie_notice": "Ce site utilise des cookies uniquement pour l'authentification de connexion - pas de cookies de suivi ou publicitaires.",
   "homeschool_section_title": "Tout ce dont une famille qui fait l'école à la maison a besoin",
   "homeschool_section_desc": "Peripateticware considère les parents qui font l'école à la maison comme enseignant et parent en un seul compte. Vous avez le contrôle direct sur les comptes de vos enfants - pas de codes de lien, pas de bureaucratie.",
   "hs_feat_children_title": "Multi-enfants",
@@ -2666,9 +2673,6 @@
     "i_am_a": "Je suis un...",
     "school_organization_optional": "École/organisation (facultatif)",
     "anything_else_optional": "Autre chose ? (facultatif)"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Compris"
   },
   "persona_tab": {
     "student": "Élève",

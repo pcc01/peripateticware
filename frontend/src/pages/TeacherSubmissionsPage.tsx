@@ -300,9 +300,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                       </div>
                   )}
                     {(!selectedSubmission.evidence || selectedSubmission.evidence.length === 0) && (
-                      <p className="text-xs text-gray-500">
-                        Evidence detail isn't available for this submission yet.
-                      </p>
+                      <p className="text-xs text-gray-500">{t('pages_teachersubmissionspage.evidence_detail_isnt_available_for_this_', 'Evidence detail isn\'t available for this submission yet.')}</p>
                     )}
                   </div>
                 </div>

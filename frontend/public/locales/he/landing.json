@@ -987,8 +987,6 @@
     "that_link_is_invalid_please_try_again": "הקישור אינו חוקי. נא לנסות שוב.",
     "or": "ע\""
   },
-  "cookie_consent_title": "עדכון קוקי",
-  "learn_more": "למד יותר",
   "homeschool": {
     "cta": "התחל לימודי בית",
     "secondary_cta": "ראו כיצד זה עובד",
@@ -1654,7 +1652,6 @@
   "email_teacherexamplecom": "דוא\"ל: teacher@example.com",
   "provide_constructive_feedback": "אנא ספק משוב מתקן...",
   "age_confirmation": "אני מאשר/ת שאני בן/בת 13 ומעלה או שיש לי הסכמה הורית ליצירת חשבון זה.",
-  "cookie_notice": "האתר משתמש בעוגיות רק לצורך אימות התחברות - אין עוגיות לעקיבה או פרסום.",
   "homeschool_section_title": "כל מה שאם משפחה בית ספרית צריכה",
   "homeschool_section_desc": "פריפטטיקוור טופל את הורים שמחנכים את ילדיהם בבית כמורה ואב/אם ביחד חשבון אחד. אתה בעל החשבונות של ילדיך ישירות - ללא קודים קישור, ללא בירוקרטיה.",
   "hs_feat_children_title": "ניהול רב-ילדים",
@@ -1832,16 +1829,26 @@
     "add_update_jurisdiction": "עדכן/הוסף סמכות"
   },
   "audit_logs_enabled": "אודיט לוגס מופעלים",
+  "components_cookieconsentbanner": {
+    "accept": "אישור",
+    "decline": "דחייה"
+  },
+  "cookie_consent_title": "הודעת עוגיות",
+  "cookie_notice": "אנו משתמשים בעוגיות חיוניות לצורך התחברות. ניתוח נתוני האתר כבוי כברירת מחדל — הפעילו אותו למטה אם אתם מסכימים. אנחנו לעולם לא מציגים פרסומות בחשבונות תלמידים. ",
+  "cookie_preferences": "העדפות עוגיות",
+  "cookie_status_off": "כרגע: עוגיות ניתוח נדחו. ",
+  "cookie_status_on": "כרגע: עוגיות ניתוח מופעלות. ",
+  "learn_more": "למידע נוסף",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "מאזן אחרון: מאי 2026",
+    "last_updated_may_2026": "עדכון אחרון: אוגוסט 2026",
     "what_are_cookies": "מה זה קוקיז?",
     "cookies_are_small_text_files_placed_on_y": "קוקיז הם קבצים טקסט קטנים המוצבים על מכשיר שלך על ידי אתר אינטרנט. Peripateticware משתמש בסט מינימלי של קוקיז, הדרושים באופן בלעדי לפעולת הפלטפורמה.",
     "cookies_we_use": "בִּיסְקִיִים שֶׁאֲנַחְנוּ מִשְׂטָמִים",
     "strictly_necessary": "строго נדרש",
     "these_cookies_are_essential_for_the_serv": "אלה קוקיז חיוניים עבור השירות לפעול. הם לא ניתן לבטל.",
     "analytics_amp_performance": "אנליטיקה & ביצועים",
-    "peripateticware_does_not_currently_use_t": "פריפטטיקוור לא משתמש בשגרה בעכבריים של תלת-צדדיות. כאשר המטריקות של צד-שרת מופעלות, הן מטופלות מבלי לקבוע עכברים.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware משתמשת ב-Google Analytics (GA4) באתר השיווק שלנו ובלוחות הבקרה למורים/הורים/מנהלי מערכת/הומסקולינג כדי להבין כיצד השירות מתגלה ומשמש — אך רק לאחר שתאשרו זאת. שום דבר לא נטען ושום בקשה לא נשלחת ל-Google עד שתלחצו על 'אישור' בהודעת העוגיות; דחייה (או פשוט אי-מענה) משאירה את הניתוח כבוי לחלוטין. Google Signals והתאמה אישית של פרסומות כבויים ללא תנאי — נתונים אלה לעולם אינם משמשים לבניית קהלי פרסום. הניתוח לעולם אינו פעיל בחשבונות תלמידים או בעמודים המיועדים לתלמידים, ללא קשר לבחירתכם. הבחירה שלכם נשמרת למשך כשישה חודשים, ולאחר מכן תתבקשו שוב, ותוכלו לשנות אותה בכל עת דרך הקישור 'העדפות עוגיות' הזמין תמיד בתחתית העמוד.",
     "advertising": "פרסום",
     "peripateticware_is_adfree_we_do_not_plac": "פריפטטיקוור הוא ללא פרסומות. לא מציבים קוקיי פרסום כלשהם.",
     "managing_cookies": "ניהול קוקיז",
@@ -3021,9 +3028,6 @@
   },
   "components_landing_storysection": {
     "alt_a_student_walking_through_the_forest_wit": "סטודנט צועד ביער עם מכשיר מובייל"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "הבנתי"
   },
   "persona_tab_plural": {
     "student": "תלמידים",

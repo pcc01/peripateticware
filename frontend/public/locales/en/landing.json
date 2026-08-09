@@ -335,6 +335,36 @@
   "competencies": "Competencies",
   "competency_progress": "Competency Progress",
   "completed": "completed",
+  "compliance": {
+    "ccpa": {
+      "name": "California Consumer Privacy Act",
+      "region": "California, US"
+    },
+    "coppa": {
+      "name": "Children's Online Privacy Protection Act",
+      "region": "United States"
+    },
+    "ferpa": {
+      "name": "Family Educational Rights and Privacy Act",
+      "region": "United States"
+    },
+    "gdpr": {
+      "name": "General Data Protection Regulation",
+      "region": "European Union"
+    },
+    "lgpd": {
+      "name": "Lei Geral de Proteção de Dados",
+      "region": "Brazil"
+    },
+    "pipeda": {
+      "name": "Personal Information Protection and Electronic Documents Act",
+      "region": "Canada"
+    }
+  },
+  "components_cookieconsentbanner": {
+    "accept": "Accept",
+    "decline": "Decline"
+  },
   "components_teacher_invitestudentspanel": {
     "enter_student_emails_one_per_line_or_com": "Enter student emails (one per line, or comma-separated). Each student gets their own invite link by email.",
     "generate_a_link_anyone_can_use_to_join_t": "Generate a link anyone can use to join this classroom. Good for in-person signup — show it on a screen or print it as a QR code.",
@@ -354,6 +384,11 @@
   "contact_us": "Contact Us",
   "content_management": "Content Management",
   "conversation_starters": "Conversation Starters",
+  "cookie_consent_title": "Cookie notice",
+  "cookie_notice": "We use essential cookies for login. Site analytics is off by default — enable it below if you're OK with it. We never place ads on student accounts. ",
+  "cookie_preferences": "Cookie preferences",
+  "cookie_status_off": "Currently: analytics cookies declined. ",
+  "cookie_status_on": "Currently: analytics cookies enabled. ",
   "cookiepolicypage": {
     "advertising": "Advertising",
     "analytics_amp_performance": "Analytics &amp; Performance",
@@ -366,9 +401,9 @@
     "cookies_are_small_text_files_placed_on_y": "Cookies are small text files placed on your device by a website. Peripateticware uses a minimal set of cookies strictly necessary to operate the platform.",
     "cookies_we_use": "Cookies We Use",
     "i18nextlng_desc": "Remembers your chosen language preference.",
-    "last_updated_may_2026": "Last updated: May 2026",
+    "last_updated_may_2026": "Last updated: August 2026",
     "managing_cookies": "Managing Cookies",
-    "peripateticware_does_not_currently_use_t": "Peripateticware does not currently use third-party analytics cookies. When server-side metrics are enabled they are processed without setting any cookies.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware uses Google Analytics (GA4) on our marketing site and teacher/parent/admin/homeschool dashboards to understand how the Service is discovered and used — but only after you say yes. Nothing loads and no request is made to Google until you click Accept on the cookie banner; declining (or simply not answering) keeps analytics fully off. Google Signals and ad personalization are turned off unconditionally — this data is never used to build advertising audiences. Analytics is never active on student accounts or student-facing pages, regardless of your choice. Your choice is remembered for about 6 months, after which you'll be asked again, and you can change it anytime via the \"Cookie preferences\" link that stays available at the bottom of the page.",
     "peripateticware_is_adfree_we_do_not_plac": "Peripateticware is ad-free. We do not place any advertising cookies.",
     "questions": "Questions?",
     "strictly_necessary": "Strictly Necessary",
@@ -687,6 +722,7 @@
   "latest_evidence": "📸 Latest Evidence",
   "latest_reflection": "💭 Latest Reflection",
   "learn_about_the_topic_and_what_youll_be_": "Learn about the topic and what you'll be investigating. Ask questions and prepare for your\\n              field work.",
+  "learn_more": "Learn more",
   "learning": "📚 Learning",
   "learning_in_motion": "Learning in Motion",
   "learning_insights": "🎓 Learning Insights",
@@ -744,28 +780,6 @@
   "medium": "Medium",
   "meet_peri": {
     "badge": "Meet Peri",
-    "step": {
-      "1": {
-        "phase": "Engage",
-        "desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking."
-      },
-      "2": {
-        "phase": "Observe",
-        "desc": "Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague."
-      },
-      "3": {
-        "phase": "Analyse",
-        "desc": "Peri asks comparison and classification questions. What's similar? What's different? What pattern do you see?"
-      },
-      "4": {
-        "phase": "Explain",
-        "desc": "Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints."
-      },
-      "5": {
-        "phase": "Apply",
-        "desc": "Peri asks what this means for a new situation. Knowledge becomes portable."
-      }
-    },
     "exchange": {
       "1": {
         "text": "You're at the creek bank. Before we measure anything — what's the first thing you notice about the water right here versus ten feet upstream?"
@@ -781,6 +795,28 @@
       },
       "5": {
         "text": "That's the right direction. What could you measure or photograph here to support that idea?"
+      }
+    },
+    "step": {
+      "1": {
+        "desc": "Peri sets the scene and asks your child what they notice. No right answer yet — just looking.",
+        "phase": "Engage"
+      },
+      "2": {
+        "desc": "Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague.",
+        "phase": "Observe"
+      },
+      "3": {
+        "desc": "Peri asks comparison and classification questions. What's similar? What's different? What pattern do you see?",
+        "phase": "Analyse"
+      },
+      "4": {
+        "desc": "Your child proposes a cause or mechanism. Peri tests it with evidence questions, not hints.",
+        "phase": "Explain"
+      },
+      "5": {
+        "desc": "Peri asks what this means for a new situation. Knowledge becomes portable.",
+        "phase": "Apply"
       }
     }
   },
@@ -1017,34 +1053,8 @@
   "preferences": "Preferences",
   "preview_activity": "Preview Activity",
   "pricing": {
-    "personal": {
-      "title": "Personal",
-      "subtitle": "For individual students",
-      "price": "Free",
-      "description": "Get started with outdoor learning",
-      "feature": {
-        "1": "Geo-tagged observations",
-        "2": "AI-powered reflection prompts",
-        "3": "Progress tracking"
-      },
-      "cta": "Start Free"
-    },
-    "school": {
-      "title": "School",
-      "subtitle": "For teachers & classrooms",
-      "description": "Full classroom management",
-      "feature": {
-        "1": "Activity builder",
-        "2": "Student management",
-        "3": "Assessment rubrics",
-        "4": "Parent portal"
-      },
-      "cta": "Contact Sales"
-    },
     "district": {
-      "title": "District",
-      "subtitle": "For entire districts",
-      "price": "Custom",
+      "cta": "Contact Sales",
       "description": "Enterprise features & support",
       "feature": {
         "1": "Unlimited teachers & students",
@@ -1053,7 +1063,77 @@
         "4": "Privacy compliance",
         "5": "Advanced analytics"
       },
-      "cta": "Contact Sales"
+      "price": "Custom",
+      "subtitle": "For entire districts",
+      "title": "District"
+    },
+    "personal": {
+      "cta": "Start Free",
+      "description": "Get started with outdoor learning",
+      "feature": {
+        "1": "Geo-tagged observations",
+        "2": "AI-powered reflection prompts",
+        "3": "Progress tracking"
+      },
+      "price": "Free",
+      "subtitle": "For individual students",
+      "title": "Personal"
+    },
+    "school": {
+      "cta": "Contact Sales",
+      "description": "Full classroom management",
+      "feature": {
+        "1": "Activity builder",
+        "2": "Student management",
+        "3": "Assessment rubrics",
+        "4": "Parent portal"
+      },
+      "subtitle": "For teachers & classrooms",
+      "title": "School"
+    }
+  },
+  "pricing_nav_label": "Pricing",
+  "pricing_tier": {
+    "contact_footer_link": "contact us",
+    "contact_footer_pre": "Contact our team for pricing details and to find the right plan —",
+    "contact_for_pricing": "Contact us for pricing",
+    "contact_team": "Contact Team",
+    "district": {
+      "feature": {
+        "1": "District-wide deployment",
+        "2": "Custom integrations",
+        "3": "Dedicated onboarding",
+        "4": "Priority + SLA support"
+      },
+      "name": "District"
+    },
+    "homeschool": {
+      "feature": {
+        "1": "Family accounts",
+        "2": "Portfolio PDF export",
+        "3": "State compliance reports",
+        "4": "Standards mapping"
+      },
+      "name": "Homeschool"
+    },
+    "personal": {
+      "feature": {
+        "1": "Individual classrooms",
+        "2": "Core activity types",
+        "3": "Peri AI",
+        "4": "Evidence capture",
+        "5": "Portfolio view"
+      },
+      "name": "Personal"
+    },
+    "school": {
+      "feature": {
+        "1": "Multiple classrooms",
+        "2": "Multi-admin",
+        "3": "Org analytics",
+        "4": "Priority support"
+      },
+      "name": "School"
     }
   },
   "primary": "Primary",
@@ -1587,75 +1667,5 @@
   "work_with_teammates_share_observations_a": "Work with teammates, share observations, and learn from each other's discoveries.",
   "work_with_your_teammates_and_share_your_": "Work with your teammates and share your observations and ideas.",
   "works_across_5_continents_we_handle_the_": "Works across 5 continents. We handle the legal complexity. You handle the learning.",
-  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant.",
-  "pricing_nav_label": "Pricing",
-  "pricing_tier": {
-    "personal": {
-      "name": "Personal",
-      "feature": {
-        "1": "Individual classrooms",
-        "2": "Core activity types",
-        "3": "Peri AI",
-        "4": "Evidence capture",
-        "5": "Portfolio view"
-      }
-    },
-    "school": {
-      "name": "School",
-      "feature": {
-        "1": "Multiple classrooms",
-        "2": "Multi-admin",
-        "3": "Org analytics",
-        "4": "Priority support"
-      }
-    },
-    "district": {
-      "name": "District",
-      "feature": {
-        "1": "District-wide deployment",
-        "2": "Custom integrations",
-        "3": "Dedicated onboarding",
-        "4": "Priority + SLA support"
-      }
-    },
-    "homeschool": {
-      "name": "Homeschool",
-      "feature": {
-        "1": "Family accounts",
-        "2": "Portfolio PDF export",
-        "3": "State compliance reports",
-        "4": "Standards mapping"
-      }
-    },
-    "contact_for_pricing": "Contact us for pricing",
-    "contact_team": "Contact Team",
-    "contact_footer_pre": "Contact our team for pricing details and to find the right plan —",
-    "contact_footer_link": "contact us"
-  },
-  "compliance": {
-    "ferpa": {
-      "name": "Family Educational Rights and Privacy Act",
-      "region": "United States"
-    },
-    "coppa": {
-      "name": "Children's Online Privacy Protection Act",
-      "region": "United States"
-    },
-    "gdpr": {
-      "name": "General Data Protection Regulation",
-      "region": "European Union"
-    },
-    "ccpa": {
-      "name": "California Consumer Privacy Act",
-      "region": "California, US"
-    },
-    "lgpd": {
-      "name": "Lei Geral de Proteção de Dados",
-      "region": "Brazil"
-    },
-    "pipeda": {
-      "name": "Personal Information Protection and Electronic Documents Act",
-      "region": "Canada"
-    }
-  }
+  "write_down_what_you_observe_even_small_d": "Write down what you observe, even small details that might seem unimportant."
 }

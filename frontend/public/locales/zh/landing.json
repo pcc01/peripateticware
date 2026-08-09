@@ -991,8 +991,6 @@
     "that_link_is_invalid_please_try_again": "无效链接。请重试。",
     "or": "或"
   },
-  "cookie_consent_title": "饼干通知",
-  "learn_more": "学习更多",
   "homeschool": {
     "cta": "开始在家上课",
     "secondary_cta": "看看它的工作原理",
@@ -1654,7 +1652,6 @@
   "email_teacherexamplecom": "教师邮箱：teacher@example.com",
   "provide_constructive_feedback": "提供有建设性的反馈...",
   "age_confirmation": "确认我已满13岁或有父母同意创建此账号。",
-  "cookie_notice": "此网站仅使用cookie进行登录验证，不收集或使用追踪和广告cookie。",
   "homeschool_section_title": "全家庭居家学习必备",
   "homeschool_section_desc": "流浪者软件将家庭教师视为老师和父母，统一在一个账号中。您直接拥有子女的账号——无需链接码，也无需官僚主义。",
   "hs_feat_children_title": "多子女管理",
@@ -1831,16 +1828,26 @@
     "add_update_jurisdiction": "更新/添加管辖权"
   },
   "audit_logs_enabled": "审计日志已启用",
+  "components_cookieconsentbanner": {
+    "accept": "接受",
+    "decline": "拒绝"
+  },
+  "cookie_consent_title": "Cookie 提示",
+  "cookie_notice": "我们使用必要的 Cookie 用于登录。网站分析默认关闭 — 如果您同意,请在下方启用。我们绝不在学生账户中投放广告。 ",
+  "cookie_preferences": "Cookie 偏好设置",
+  "cookie_status_off": "当前状态:已拒绝分析 Cookie。",
+  "cookie_status_on": "当前状态:已启用分析 Cookie。",
+  "learn_more": "了解更多",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "五月更新",
+    "last_updated_may_2026": "最后更新:2026年8月",
     "what_are_cookies": "“什么是 cookie ？”",
     "cookies_are_small_text_files_placed_on_y": "小型文本文件“cookies”存储在您的设备上，由网站创建。Peripateticware仅使用少量必需的cookie来运行平台。",
     "cookies_we_use": "“我们使用的cookie”",
     "strictly_necessary": "严格必要",
     "these_cookies_are_essential_for_the_serv": "必须使用这些 cookie 来运行服务。它们无法被禁用。",
     "analytics_amp_performance": "分析与性能",
-    "peripateticware_does_not_currently_use_t": "当前，Peripateticware未使用第三方分析cookie。启用服务器端指标时，它们会被处理而不设置任何cookie。",
+    "peripateticware_does_not_currently_use_t": "Peripateticware 在我们的营销网站以及教师/家长/管理员/家庭教育仪表板中使用 Google Analytics (GA4),以了解服务是如何被发现和使用的 — 但仅在您同意之后。在您点击 Cookie 提示中的\"接受\"之前,不会加载任何内容,也不会向 Google 发送任何请求;拒绝(或者只是不作回应)会使分析功能完全保持关闭。Google Signals 和广告个性化功能无条件关闭 — 这些数据绝不会用于构建广告受众。无论您的选择如何,分析功能绝不会在学生账户或面向学生的页面上启用。您的选择会被记住约 6 个月,此后系统会再次询问您,您也可以随时通过页面底部始终可见的\"Cookie 偏好设置\"链接进行更改。",
     "advertising": "广告",
     "peripateticware_is_adfree_we_do_not_plac": "无广告。我们不会放置任何广告cookie。",
     "managing_cookies": "管理cookie",
@@ -2901,9 +2908,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "关闭对话框"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "得到了"
   },
   "components_localeswitcher": {
     "aria_label_select_language": "选择语言"

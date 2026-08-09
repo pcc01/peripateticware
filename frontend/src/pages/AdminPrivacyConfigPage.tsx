@@ -109,9 +109,9 @@ function QuickSetupByLocationCard() {
             onChange={e => { setCountry(e.target.value); setSubdivision('') }}
             style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
           >
-            <option value="">— Select —</option>
+            <option value="">{t('pages_adminprivacyconfigpage.select', '— Select —')}</option>
             {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
-            <option value="OTHER">Other (enter 2-letter code below)</option>
+            <option value="OTHER">{t('pages_adminprivacyconfigpage.other_enter_2letter_code_below', 'Other (enter 2-letter code below)')}</option>
           </select>
         </label>
 
@@ -121,7 +121,7 @@ function QuickSetupByLocationCard() {
             <input
               value={otherCountryCode}
               onChange={e => setOtherCountryCode(e.target.value.toUpperCase().slice(0, 2))}
-              placeholder="e.g. DE, FR, GB"
+              placeholder={t('pages_adminprivacyconfigpage.placeholder_eg_de_fr_gb', 'e.g. DE, FR, GB')}
               maxLength={2}
               style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
             />
@@ -137,14 +137,14 @@ function QuickSetupByLocationCard() {
                 onChange={e => setSubdivision(e.target.value)}
                 style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
               >
-                <option value="">— Select —</option>
+                <option value="">{t('pages_adminprivacyconfigpage.select', '— Select —')}</option>
                 {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             ) : (
               <input
                 value={subdivision}
                 onChange={e => setSubdivision(e.target.value)}
-                placeholder="e.g. Ontario, Bavaria"
+                placeholder={t('pages_adminprivacyconfigpage.placeholder_eg_ontario_bavaria', 'e.g. Ontario, Bavaria')}
                 style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
               />
             )}
@@ -156,7 +156,7 @@ function QuickSetupByLocationCard() {
           <input
             value={region}
             onChange={e => setRegion(e.target.value)}
-            placeholder="District or local law"
+            placeholder={t('pages_adminprivacyconfigpage.placeholder_district_or_local_law', 'District or local law')}
             style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem 0.6rem', fontSize: '0.9rem' }}
           />
         </label>
@@ -183,12 +183,9 @@ function QuickSetupByLocationCard() {
 
       {resolved && (
         <div style={{ marginTop: 14 }}>
-          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: 8 }}>
-            Applied to your organization (admins can remove any of these below in "Active Jurisdictions",
-            or override with a custom rule via the form further down):
-          </p>
+          <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: 8 }}>{t('pages_adminprivacyconfigpage.applied_to_your_organization_admins_can_', 'Applied to your organization (admins can remove any of these below in "Active Jurisdictions", or override with a custom rule via the form further down):')}</p>
           {resolved.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: '#888' }}>No jurisdiction found for that location yet — the system will note this for future discovery.</p>
+            <p style={{ fontSize: '0.85rem', color: '#888' }}>{t('pages_adminprivacyconfigpage.no_jurisdiction_found_for_that_location_', 'No jurisdiction found for that location yet — the system will note this for future discovery.')}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {resolved.map(r => (
@@ -203,9 +200,7 @@ function QuickSetupByLocationCard() {
                   <strong style={{ whiteSpace: 'nowrap' }}>{r.short_name || r.jurisdiction_id}</strong>
                   <span style={{ color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.full_name}</span>
                   {!r.is_verified && (
-                    <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: 4, padding: '0.05rem 0.4rem', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>
-                      pending review
-                    </span>
+                    <span style={{ background: '#fef3c7', color: '#92400e', borderRadius: 4, padding: '0.05rem 0.4rem', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>{t('pages_adminprivacyconfigpage.pending_review', 'pending review')}</span>
                   )}
                 </div>
               ))}

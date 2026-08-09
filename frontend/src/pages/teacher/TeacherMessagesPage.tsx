@@ -297,7 +297,7 @@ const TeacherMessagesPage: React.FC = () => {
           <textarea
             value={replyBody}
             onChange={e => setReplyBody(e.target.value)}
-            placeholder="Write a reply…"
+            placeholder={t('pages_teacher_teachermessagespage.placeholder_write_a_reply', 'Write a reply…')}
             rows={3}
             data-testid="reply-body-input"
             style={{ flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', fontFamily: 'inherit', resize: 'vertical' }}
@@ -359,7 +359,7 @@ const TeacherMessagesPage: React.FC = () => {
         <div data-testid="announcements-panel">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div style={{ minWidth: 200 }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Classroom</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.classroom', 'Classroom')}</label>
               <select
                 value={annClassroomId}
                 onChange={e => setAnnClassroomId(e.target.value)}
@@ -381,17 +381,17 @@ const TeacherMessagesPage: React.FC = () => {
           {annComposing && (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem', marginBottom: 24 }}>
               <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Title</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.title', 'Title')}</label>
                 <input
                   value={annTitle}
                   onChange={e => setAnnTitle(e.target.value)}
-                  placeholder="e.g. Field trip Friday"
+                  placeholder={t('pages_teacher_teachermessagespage.placeholder_eg_field_trip_friday', 'e.g. Field trip Friday')}
                   data-testid="announcement-title-input"
                   style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', boxSizing: 'border-box' }}
                 />
               </div>
               <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Message</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.message', 'Message')}</label>
                 <textarea
                   value={annBody}
                   onChange={e => setAnnBody(e.target.value)}
@@ -415,12 +415,12 @@ const TeacherMessagesPage: React.FC = () => {
           )}
 
           {annError && <div style={{ background: '#fee2e2', color: '#b91c1c', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>{annError}</div>}
-          {annLoading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
+          {annLoading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teachermessagespage.loading', 'Loading…')}</p>}
 
           {!annLoading && announcements.length === 0 && !annError && (
             <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}>
               <Megaphone size={32} style={{ marginBottom: 10, opacity: 0.5 }} />
-              <p>No announcements yet for this classroom.</p>
+              <p>{t('pages_teacher_teachermessagespage.no_announcements_yet_for_this_classroom', 'No announcements yet for this classroom.')}</p>
             </div>
           )}
 
@@ -454,48 +454,46 @@ const TeacherMessagesPage: React.FC = () => {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.25rem', marginBottom: 24 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Classroom</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.classroom', 'Classroom')}</label>
               <select value={classroomId} onChange={e => setClassroomId(e.target.value)}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
                 {classrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Send to</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.send_to', 'Send to')}</label>
               <select value={audience} onChange={e => setAudience(e.target.value as any)} data-testid="message-audience-select"
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
-                <option value="parent">A specific student's parent</option>
-                <option value="student">A specific student</option>
-                <option value="all_parents">👨‍👩‍👧 All parents (bulk message)</option>
-                <option value="all_students">🧑‍🎓 All students (bulk message)</option>
+                <option value="parent">{t('pages_teacher_teachermessagespage.a_specific_students_parent', 'A specific student\'s parent')}</option>
+                <option value="student">{t('pages_teacher_teachermessagespage.a_specific_student', 'A specific student')}</option>
+                <option value="all_parents">{t('pages_teacher_teachermessagespage.all_parents_bulk_message', '👨‍👩‍👧 All parents (bulk message)')}</option>
+                <option value="all_students">{t('pages_teacher_teachermessagespage.all_students_bulk_message', '🧑‍🎓 All students (bulk message)')}</option>
               </select>
             </div>
           </div>
 
           {(audience === 'student' || audience === 'parent') && (
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Student</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.student', 'Student')}</label>
               <select value={studentId} onChange={e => setStudentId(e.target.value)}
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
-                <option value="">Choose a student…</option>
+                <option value="">{t('pages_teacher_teachermessagespage.choose_a_student', 'Choose a student…')}</option>
                 {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
               {audience === 'parent' && studentId && !parents.some(p => p.student_id === studentId) && (
-                <p style={{ color: '#b45309', fontSize: '0.78rem', marginTop: 6 }}>
-                  No linked parent found for this student yet.
-                </p>
+                <p style={{ color: '#b45309', fontSize: '0.78rem', marginTop: 6 }}>{t('pages_teacher_teachermessagespage.no_linked_parent_found_for_this_student_', 'No linked parent found for this student yet.')}</p>
               )}
             </div>
           )}
 
           <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Subject</label>
-            <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="e.g. Field trip reminder"
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.subject', 'Subject')}</label>
+            <input value={subject} onChange={e => setSubject(e.target.value)} placeholder={t('pages_teacher_teachermessagespage.placeholder_eg_field_trip_reminder', 'e.g. Field trip reminder')}
               data-testid="message-subject-input"
               style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', boxSizing: 'border-box' }} />
           </div>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>Message</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.message', 'Message')}</label>
             <textarea value={body} onChange={e => setBody(e.target.value)} rows={5}
               data-testid="message-body-input"
               style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }} />
@@ -512,12 +510,12 @@ const TeacherMessagesPage: React.FC = () => {
       )}
 
       {error && <div style={{ background: '#fee2e2', color: '#b91c1c', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>{error}</div>}
-      {loading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
+      {loading && <p style={{ color: 'var(--text-muted)' }}>{t('pages_teacher_teachermessagespage.loading', 'Loading…')}</p>}
 
       {!loading && conversations.length === 0 && !error && (
         <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12 }}>
           <MessageSquare size={32} style={{ marginBottom: 10, opacity: 0.5 }} />
-          <p>No messages yet. Use "New Message" to reach a student, a parent, or the whole class.</p>
+          <p>{t('pages_teacher_teachermessagespage.no_messages_yet_use_new_message_to_reach', 'No messages yet. Use "New Message" to reach a student, a parent, or the whole class.')}</p>
         </div>
       )}
 

@@ -976,8 +976,6 @@
     "that_link_is_invalid_please_try_again": "Esse link é inválido. Tente novamente.",
     "or": "ou"
   },
-  "cookie_consent_title": "Aviso de cookie",
-  "learn_more": "Aprender mais",
   "homeschool": {
     "cta": "Iniciar Ensino em Casa",
     "secondary_cta": "Ver como funciona",
@@ -1639,7 +1637,6 @@
   "email_teacherexamplecom": "E-mail: teacher@example.com",
   "provide_constructive_feedback": "Forneça feedback construtivo...",
   "age_confirmation": "Eu confirmo que tenho 13 anos de idade ou mais, ou que tenho o consentimento dos meus pais para criar esta conta.",
-  "cookie_notice": "Este site utiliza cookies apenas para autenticação de login - sem cookies de rastreamento ou publicidade.",
   "homeschool_section_title": "Tudo o que uma família de homeschool precisa",
   "homeschool_section_desc": "O Peripateticware trata pais que ensinam em casa como tanto professor quanto pai em uma única conta. Você tem o controle direto das contas dos seus filhos - sem códigos de ligação e sem burocracia.",
   "hs_feat_children_title": "Múltiplo Gerenciamento de Crianças",
@@ -1816,16 +1813,26 @@
     "add_update_jurisdiction": "Adicionar/Atualizar Jurisdição"
   },
   "audit_logs_enabled": "Logs de Auditoria Habilitados",
+  "components_cookieconsentbanner": {
+    "accept": "Aceitar",
+    "decline": "Recusar"
+  },
+  "cookie_consent_title": "Aviso de cookies",
+  "cookie_notice": "Usamos cookies essenciais para login. As análises do site estão desativadas por padrão — ative abaixo se você concordar. Nunca exibimos anúncios em contas de estudantes. ",
+  "cookie_preferences": "Preferências de cookies",
+  "cookie_status_off": "Atualmente: cookies de análise recusados. ",
+  "cookie_status_on": "Atualmente: cookies de análise ativados. ",
+  "learn_more": "Saiba mais",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "Última atualização: maio de 2026",
+    "last_updated_may_2026": "Última atualização: agosto de 2026",
     "what_are_cookies": "O que são cookies?",
     "cookies_are_small_text_files_placed_on_y": "Cookies são pequenos arquivos de texto colocados em seu dispositivo por um site. O Peripateticware utiliza um conjunto mínimo de cookies estritamente necessários para operar a plataforma.",
     "cookies_we_use": "Cookies que usamos",
     "strictly_necessary": "Estritamente Necessário",
     "these_cookies_are_essential_for_the_serv": "Esses cookies são essenciais para que o Serviço funcione. Eles não podem ser desativados.",
     "analytics_amp_performance": "Análise e Desempenho",
-    "peripateticware_does_not_currently_use_t": "O Peripateticware não utiliza atualmente cookies de análise de terceiros. Quando as métricas do lado do servidor são ativadas, elas são processadas sem definir nenhum cookie.",
+    "peripateticware_does_not_currently_use_t": "O Peripateticware usa o Google Analytics (GA4) em nosso site de marketing e nos painéis de professores/pais/administradores/educação domiciliar para entender como o Serviço é descoberto e utilizado — mas somente depois que você autorizar. Nada é carregado e nenhuma solicitação é enviada ao Google até que você clique em Aceitar no aviso de cookies; recusar (ou simplesmente não responder) mantém as análises totalmente desativadas. O Google Signals e a personalização de anúncios estão desativados incondicionalmente — esses dados nunca são usados para criar públicos de anúncios. As análises nunca ficam ativas em contas de estudantes ou em páginas voltadas para estudantes, independentemente da sua escolha. Sua escolha é lembrada por cerca de 6 meses, após os quais você será perguntado novamente, e pode alterá-la a qualquer momento pelo link \"Preferências de cookies\", sempre disponível na parte inferior da página.",
     "advertising": "Anúncios",
     "peripateticware_is_adfree_we_do_not_plac": "O Peripateticware é livre de anúncios. Não colocamos nenhum cookie de publicidade.",
     "managing_cookies": "Gerenciar Cookies",
@@ -2889,9 +2896,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "Fechar janela"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Entendi"
   },
   "components_localeswitcher": {
     "aria_label_select_language": "Selecionar idioma"

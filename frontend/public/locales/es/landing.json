@@ -1595,6 +1595,16 @@
     "title": "Importar Normas de Aprendizaje",
     "description": "Subir un archivo PDF o CSV con los estándares de aprendizaje para tu disciplina — Common Core, NGSS, estándares estatales o tu propio marco personalizado. Una vez guardado, puedes etiquetar actividades en función de estos estándares y seguir la cobertura del estudiante."
   },
+  "components_cookieconsentbanner": {
+    "accept": "Aceptar",
+    "decline": "Rechazar"
+  },
+  "cookie_consent_title": "Aviso de cookies",
+  "cookie_notice": "Utilizamos cookies esenciales para el inicio de sesión. Las analíticas del sitio están desactivadas de forma predeterminada — actívalas abajo si estás de acuerdo. Nunca colocamos anuncios en cuentas de estudiantes. ",
+  "cookie_preferences": "Preferencias de cookies",
+  "cookie_status_off": "Actualmente: cookies de análisis rechazadas. ",
+  "cookie_status_on": "Actualmente: cookies de análisis activadas. ",
+  "learn_more": "Más información",
   "cookiepolicypage": {
     "back_to_home": "← Volver al Inicio",
     "auth_token_desc": "Almacena tu JWT de sesión. Caduca después de 24 horas.",
@@ -1602,14 +1612,14 @@
     "i18nextlng_desc": "Recuerda tu preferencia de idioma elegida.",
     "questions": "?¿",
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "Mayo de 2026",
+    "last_updated_may_2026": "Agosto de 2026",
     "what_are_cookies": "¿Qué son las cookies?",
     "cookies_are_small_text_files_placed_on_y": "Las cookies son pequeños archivos de texto que se colocan en su dispositivo por un sitio web. Peripateticware utiliza un conjunto mínimo de cookies estrictamente necesarias para operar la plataforma.",
     "cookies_we_use": "Cookies que utilizamos",
     "strictly_necessary": "Estrictamente Necesario",
     "these_cookies_are_essential_for_the_serv": "Estos cookies son esenciales para que el servicio funcione. No se pueden desactivar.",
     "analytics_amp_performance": "Análisis e Interpretación",
-    "peripateticware_does_not_currently_use_t": "No se utilizan actualmente cookies de análisis de terceros en Peripateticware. Cuando se habilitan las métricas del lado del servidor, se procesan sin establecer cookies.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware utiliza Google Analytics (GA4) en nuestro sitio de marketing y en los paneles de profesores/padres/administradores/educación en casa para entender cómo se descubre y utiliza el Servicio — pero solo después de que lo autorices. No se carga nada ni se realiza ninguna solicitud a Google hasta que hagas clic en Aceptar en el aviso de cookies; rechazar (o simplemente no responder) mantiene las analíticas completamente desactivadas. Google Signals y la personalización de anuncios están desactivadas de forma incondicional — estos datos nunca se usan para crear audiencias publicitarias. Las analíticas nunca están activas en cuentas de estudiantes ni en páginas dirigidas a estudiantes, independientemente de tu elección. Tu elección se recuerda durante unos 6 meses, tras los cuales se te volverá a preguntar, y puedes cambiarla en cualquier momento mediante el enlace «Preferencias de cookies» disponible siempre en la parte inferior de la página.",
     "advertising": "Publicidad",
     "peripateticware_is_adfree_we_do_not_plac": "No se muestran anuncios en Peripateticware. No colocamos cookies publicitarios.",
     "managing_cookies": "Gestionar cookies",
@@ -1628,8 +1638,6 @@
     "that_link_is_invalid_please_try_again": "Ese enlace es inválido. Inténtelo de nuevo.",
     "or": "o"
   },
-  "cookie_consent_title": "Notificación de cookies",
-  "learn_more": "Aprender más",
   "homeschool": {
     "cta": "Iniciar homeschooling",
     "secondary_cta": "Ver cómo funciona",
@@ -1985,7 +1993,6 @@
   "view_audit_log": "Ver registro de auditoría",
   "collect_photos": "Fotos y grabaciones de audio (almacenadas de forma segura en nuestro servidor)",
   "age_confirmation": "Confirmo que tengo 13 años o más, o que tengo el consentimiento parental para crear esta cuenta.",
-  "cookie_notice": "Este sitio utiliza cookies solo para la autenticación de inicio de sesión — ninguna cookie de seguimiento o publicitaria.",
   "homeschool_section_title": "Todo lo que una familia de educación en el hogar necesita",
   "homeschool_section_desc": "Peripateticware considera a los padres de la educación en el hogar como tanto maestro como padre en una sola cuenta. Usted es dueño directamente de las cuentas de sus hijos - sin códigos de enlace ni burocracia.",
   "hs_feat_children_title": "Gestión Multihijo",
@@ -3072,9 +3079,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "Cerrar ventana"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Entendido"
   },
   "pages_termspage": {
     "helloperipateticwarecom": "hello@peripateticware.com"

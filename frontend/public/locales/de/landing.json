@@ -1457,7 +1457,6 @@
     "that_link_is_invalid_please_try_again": "Dieser Link ist ungültig. Bitte versuchen Sie es erneut.",
     "or": "oder"
   },
-  "cookie_consent_title": "Cookies Hinweis",
   "learn_more": "Mehr erfahren",
   "homeschool": {
     "cta": "Start Homeschooling",
@@ -1800,16 +1799,25 @@
     "placeholder_search_by_name_or_email": "Suchen nach Name oder E-Mail...",
     "placeholder_studentexamplecom": "student@example.com"
   },
+  "components_cookieconsentbanner": {
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen"
+  },
+  "cookie_consent_title": "Cookie-Hinweis",
+  "cookie_notice": "Wir verwenden essenzielle Cookies für die Anmeldung. Website-Analysen sind standardmäßig deaktiviert — aktivieren Sie sie unten, wenn Sie damit einverstanden sind. Wir schalten niemals Werbung auf Schülerkonten. ",
+  "cookie_preferences": "Cookie-Einstellungen",
+  "cookie_status_off": "Aktuell: Analyse-Cookies abgelehnt. ",
+  "cookie_status_on": "Aktuell: Analyse-Cookies aktiviert. ",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "Mai 2026",
+    "last_updated_may_2026": "August 2026",
     "what_are_cookies": "Cookies",
     "cookies_are_small_text_files_placed_on_y": "Cookies sind kleine Textdateien, die von einer Website auf Ihrem Gerät abgelegt werden. Peripateticware verwendet eine minimale Menge an Cookies, die strikt notwendig sind, um die Plattform zu betreiben.",
     "cookies_we_use": "Cookies wir verwenden",
     "strictly_necessary": "Streng notwendig",
     "these_cookies_are_essential_for_the_serv": "\"Diese Cookies sind für die Funktionsweise des Dienstes erforderlich und können nicht deaktiviert werden.\"\n\n(Preserved template variables exactly without syntax alterations, provided only the translated value string text in fluent German.)",
     "analytics_amp_performance": "Analyse &amp; Leistung",
-    "peripateticware_does_not_currently_use_t": "Peripateticware verwendet derzeit keine Drittanbieter-Analyse-Cookies. Wenn serverseitige Metriken aktiviert sind, werden sie ohne das Setzen von Cookies verarbeitet.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware verwendet Google Analytics (GA4) auf unserer Marketing-Website und den Dashboards für Lehrkräfte/Eltern/Admins/Homeschooling, um zu verstehen, wie der Dienst entdeckt und genutzt wird — aber erst, nachdem Sie zugestimmt haben. Es wird nichts geladen und keine Anfrage an Google gesendet, bevor Sie im Cookie-Banner auf „Akzeptieren“ klicken; eine Ablehnung (oder einfach keine Antwort) hält die Analyse vollständig deaktiviert. Google Signals und Anzeigenpersonalisierung sind grundsätzlich deaktiviert — diese Daten werden niemals zum Aufbau von Werbezielgruppen verwendet. Die Analyse ist unabhängig von Ihrer Wahl niemals bei Schülerkonten oder auf schülerorientierten Seiten aktiv. Ihre Wahl wird etwa 6 Monate lang gespeichert; danach werden Sie erneut gefragt, und Sie können sie jederzeit über den Link „Cookie-Einstellungen“ am unteren Seitenrand ändern.",
     "advertising": "Werbung",
     "peripateticware_is_adfree_we_do_not_plac": "Peripateticware ist werbefrei. Wir setzen keine Werbecookies ein.",
     "managing_cookies": "Cookies verwalten",
@@ -1864,7 +1872,6 @@
     "go_back": "Zurück"
   },
   "age_confirmation": "Ich bestätige, dass ich mindestens 13 Jahre alt bin oder die Zustimmung meiner Eltern habe, um dieses Konto zu erstellen.",
-  "cookie_notice": "Diese Website verwendet Cookies nur zur Anmeldung - keine Tracking- oder Werbe-Cookies.",
   "homeschool_section_title": "Alles was eine Homeschool-Familie braucht",
   "homeschool_section_desc": "Peripateticware behandelt Homeschool-Eltern als Lehrer und Eltern in einem Account. Sie besitzen die Konten Ihrer Kinder direkt – keine Verlinkungscodes, keine Bürokratie.",
   "hs_feat_children_title": "Mehrfach-Kind-Verwaltung",
@@ -2962,9 +2969,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "Schließen"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Verstanden"
   },
   "persona_tab": {
     "student": "Schüler",

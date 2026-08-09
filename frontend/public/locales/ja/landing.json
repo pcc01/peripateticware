@@ -1419,16 +1419,26 @@
     "loading_rule_details": "「ルールの詳細を読み込んでいます…」",
     "add_update_jurisdiction": "追加/更新 管轄権"
   },
+  "components_cookieconsentbanner": {
+    "accept": "同意する",
+    "decline": "拒否する"
+  },
+  "cookie_consent_title": "Cookieに関するお知らせ",
+  "cookie_notice": "ログインには必須のCookieを使用しています。サイト解析はデフォルトでオフになっています — 同意いただける場合は以下で有効にしてください。生徒アカウントに広告を掲載することは一切ありません。 ",
+  "cookie_preferences": "Cookie設定",
+  "cookie_status_off": "現在: 解析Cookieは拒否されています。",
+  "cookie_status_on": "現在: 解析Cookieは有効になっています。",
+  "learn_more": "詳細を見る",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "5月2026年更新",
+    "last_updated_may_2026": "最終更新日: 2026年8月",
     "what_are_cookies": "クッキーとは何ですか？",
     "cookies_are_small_text_files_placed_on_y": "クッキーは、ウェブサイトによってデバイスに置かれる小さなテキストファイルです。Peripateticwareは、プラットフォームを動作させるために必要最低限のクッキーのセットを使用します。",
     "cookies_we_use": "クッキーの使用",
     "strictly_necessary": "厳しく必要な",
     "these_cookies_are_essential_for_the_serv": "「このクッキーはサービスを動作させるために必要です。無効化することはできません。」",
     "analytics_amp_performance": "分析とパフォーマンス",
-    "peripateticware_does_not_currently_use_t": "Peripateticwareでは現在、サードパーティの分析用クッキーは使用されていません。サーバーサイドの測定機能が有効になっている場合、クッキーを設定することなく処理が行われます。",
+    "peripateticware_does_not_currently_use_t": "Peripateticwareは、サービスがどのように発見され利用されているかを把握するため、マーケティングサイトおよび教師/保護者/管理者/ホームスクール向けダッシュボードでGoogleアナリティクス(GA4)を使用しています — ただし、これはお客様の同意後にのみ行われます。Cookieバナーで「同意する」をクリックするまでは、何も読み込まれず、Googleへのリクエストも一切送信されません。拒否する(または単に回答しない)場合、解析機能は完全にオフのままです。Googleシグナルと広告のパーソナライズは無条件で無効化されており、このデータが広告オーディエンスの構築に使用されることはありません。解析は、お客様の選択にかかわらず、生徒アカウントや生徒向けページで有効になることは決してありません。選択内容は約6か月間保持され、その後再度確認されます。ページ下部に常に表示される「Cookie設定」リンクからいつでも変更できます。",
     "advertising": "広告",
     "peripateticware_is_adfree_we_do_not_plac": "「パリペタティックウェアは広告無しです。我々は広告用クッキーを配置しません。」",
     "managing_cookies": "クッキーの管理",
@@ -1628,8 +1638,6 @@
     "that_link_is_invalid_please_try_again": "「そのリンクは無効です。再度お試しください。」",
     "or": "「または」"
   },
-  "cookie_consent_title": "クッキー通知",
-  "learn_more": "「もっと学ぶ」",
   "homeschool": {
     "cta": "はじめる",
     "secondary_cta": "見る",
@@ -1985,7 +1993,6 @@
   "view_audit_log": "「オーディットログを表示」",
   "collect_photos": "写真と音声録音（我々のサーバーに安全に保存）",
   "age_confirmation": "「私は、13歳以上であるか、または、このアカウントを作成するための親の同意を得ていることを確認します。」",
-  "cookie_notice": "このサイトは、ログイン認証にのみクッキーを使用します。追跡や広告用のクッキーはありません。",
   "homeschool_section_title": "「ホームスクール家族に必要な全て」",
   "homeschool_section_desc": "「パリペタティックウェアは、ホームスクールの両親を一つのアカウントで教師と保護者として扱います。子供たちのアカウントを直接所有し、リンクコードや手続きなしで管理します。」",
   "hs_feat_children_title": "多子管理",
@@ -2806,9 +2813,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "閉じる"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "分かった"
   },
   "persona_tab": {
     "student": "生徒",

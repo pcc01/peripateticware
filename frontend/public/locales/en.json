@@ -674,7 +674,10 @@
     "educational_opportunities": "📚 Educational Opportunities",
     "wikilocationinfo": {
       "latitude": "Latitude:",
-      "longitude": "Longitude:"
+      "longitude": "Longitude:",
+      "architect_or_artist": "Architect/Artist:",
+      "construction_date": "Constructed:",
+      "historical_significance": "Historical Significance:"
     },
     "view_on_google_maps": "🗺️ View on Google Maps",
     "teaching_tip": "Teaching Tip:",
@@ -787,7 +790,9 @@
       "loading": "Loading…",
       "no_active_jurisdictions_found_run_the_se": "No active jurisdictions found. Run the seed migration to add defaults.",
       "loading_rule_details": "Loading rule details…",
-      "add_update_jurisdiction": "Add / Update Jurisdiction"
+      "add_update_jurisdiction": "Add / Update Jurisdiction",
+      "quick_setup_by_location": "Quick Setup by Location",
+      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
     },
     "admin_settings": "Admin Settings",
     "back_to_dashboard": "← Back to Dashboard",
@@ -927,7 +932,12 @@
     "messages": {
       "no_progress_data": "No progress data available yet"
     },
-    "calendar": "📅 Calendar",
+    "calendar": {
+      "prev_month": "Previous month",
+      "next_month": "Next month",
+      "today": "Today",
+      "no_events_this_day": "Nothing scheduled for this day."
+    },
     "reports": "📋 Reports",
     "progress_overview": "- Progress Overview",
     "overall_progress": "Overall Progress",
@@ -1334,7 +1344,14 @@
       "status": "Status",
       "project_activities": "Project Activities",
       "activity": "Activity",
-      "back": "Back"
+      "back": "Back",
+      "planning": "Planning",
+      "completed": "Completed",
+      "archived": "Archived",
+      "not_found": "Project not found.",
+      "live_tracking": "Live Tracking",
+      "completion_report": "Completion Report",
+      "no_activities": "No activities linked to this project yet."
     },
     "active": "Active",
     "project_description": "Project Description",
@@ -1754,7 +1771,10 @@
       "aria_label_childs_full_name": "Child's full name",
       "aria_label_childs_email_address": "Child's email address",
       "aria_label_childs_password": "Child's password",
-      "aria_label_childs_grade_level_012": "Child's grade level (0-12)"
+      "aria_label_childs_grade_level_012": "Child's grade level (0-12)",
+      "remove_child": "Remove child",
+      "removing": "Removing…",
+      "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
       "loading": "Loading…",
@@ -1950,7 +1970,10 @@
       "invite_student": "+ Invite Student",
       "invitation_sent_the_student_will_get_an_": "Invitation sent. The student will get an email with a join link.",
       "placeholder_search_by_name_or_email": "Search by name or email…",
-      "placeholder_studentexamplecom": "student@example.com"
+      "placeholder_studentexamplecom": "student@example.com",
+      "add_a_student": "Add a Student",
+      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
+      "student_added": "Student added to the class and notified in-app."
     },
     "components_auth_signupscreen": {
       "you_can_change_this_later_in_your_organi": "You can change this later in your organisation settings.",
@@ -1981,7 +2004,12 @@
       "other": "🌍 Other",
       "yes_some_are_under_13": "Yes — some are under 13",
       "no_all_13": "No — all 13+",
-      "aria_label_back_to_login": "Back to login"
+      "aria_label_back_to_login": "Back to login",
+      "country_code": "2-letter country code",
+      "country_code_placeholder": "e.g. DE, FR, GB",
+      "state_province": "State / Province",
+      "select_state": "— Select state —",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria"
     },
     "choose_peripateticware": "Choose Peripateticware",
     "cta_title": "Ready to take learning outside?",
@@ -2016,7 +2044,17 @@
       "no_specific_frameworks_are_preselected_b": "No specific frameworks are pre-selected based on your answers. You can enable them any time in Settings.",
       "select_your_state": "— Select your state —",
       "student_data_is_never_sold_or_shared_wit": "🔒 Student data is never sold or shared with advertisers. You can export or delete all data at any time under Admin &gt; Privacy Configuration.",
-      "placeholder_2letter_country_code_eg_de_fr_gb": "2-letter country code, e.g. DE, FR, GB"
+      "placeholder_2letter_country_code_eg_de_fr_gb": "2-letter country code, e.g. DE, FR, GB",
+      "state_province": "State / Province",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "region_optional": "Region (optional)",
+      "region_placeholder": "A specific district or local law, if you know of one",
+      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
+      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
+      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
+      "something_not_right": "Something not right? Let us know",
+      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
+      "review_submitted": "Thanks — sent for review."
     },
     "components_student_extendedwritingpanel": {
       "extended_writing": "📝 Extended Writing",
@@ -2059,7 +2097,23 @@
       "aria_label_location_latitude": "Location latitude",
       "aria_label_location_longitude": "Location longitude",
       "placeholder_eg_english": "e.g. English",
-      "fieldwork_map": "Fieldwork Map"
+      "fieldwork_map": "Fieldwork Map",
+      "background_context": "📖 Background & Context",
+      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
+      "location": "📍 Location",
+      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
+      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
+      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
+      "min_10_characters": "Minimum 10 characters",
+      "assessments": "Assessments",
+      "applied": "applied",
+      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
+      "state_curriculum_standards": "State / Curriculum Standards",
+      "attach_rubric": "Attach Rubric",
+      "filter_rubrics": "Filter rubrics…",
+      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
+      "ai_suggests": "AI suggests:",
+      "accept": "Accept"
     },
     "components_teacher_enhancedactivitybuilder": {
       "locationbased_learning": "📍 Location-Based Learning",
@@ -2104,7 +2158,9 @@
       "upload_a_csv_or_spreadsheet_with_one_stu": "Upload a CSV or spreadsheet with one student email per row in the first column. Names, headers, and extra columns are ignored.",
       "title_copy_link": "Copy link",
       "placeholder_alexemailcom10mariaemailcom10jamesemailc": "alex@email.com&#10;maria@email.com&#10;james@email.com",
-      "title_copy_join_link": "Copy join link"
+      "title_copy_join_link": "Copy join link",
+      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead.",
+      "placeholder_studentemailcom": "student@email.com"
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "Subject",
@@ -2128,7 +2184,17 @@
       "placeholder_eg_24_students_pairs": "e.g. 24 students, pairs…",
       "aria_label_group_size": "Group size",
       "placeholder_eg_ell_students_stem": "e.g. ELL students, STEM…",
-      "aria_label_special_focus_or_differentiation": "Special focus or differentiation"
+      "aria_label_special_focus_or_differentiation": "Special focus or differentiation",
+      "peri_intro": "Peri will suggest activities for",
+      "grade": "grade",
+      "at": "at",
+      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
+      "generating": "Generating…",
+      "ask_peri": "✨ Ask Peri",
+      "added": "✓ Added to activity",
+      "add_to_activity": "+ Add to activity",
+      "tip": "Tip:",
+      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click."
     },
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "Upgrade to unlock this feature and more.",
@@ -2183,7 +2249,15 @@
       "change_log": "Change Log",
       "unique_identifier_stored_in_the_database": "Unique identifier stored in the database — generated automatically.",
       "title_generate_a_new_uuid": "Generate a new UUID",
-      "placeholder_what_changed_in_this_version": "What changed in this version?"
+      "placeholder_what_changed_in_this_version": "What changed in this version?",
+      "select": "— Select —",
+      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
+      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
+      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
+      "pending_review": "pending review",
+      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
+      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
+      "placeholder_district_or_local_law": "District or local law"
     },
     "pages_joinclassroompage": {
       "invite_not_found": "Invite Not Found",
@@ -2269,7 +2343,9 @@
       "aria_label_close_modal": "Close modal"
     },
     "components_cookieconsentbanner": {
-      "got_it": "Got it"
+      "got_it": "Got it",
+      "decline": "Decline",
+      "accept": "Accept"
     },
     "components_landing_storysection": {
       "alt_a_student_walking_through_the_forest_wit": "A student walking through the forest with a mobile device"
@@ -2766,7 +2842,9 @@
       "pending": "(pending)",
       "link_a_child_from_the_dashboard_to_see_t": "Link a child from the Dashboard to see their calendar.",
       "no_activities_found_for_this_child": "No activities found for this child.",
-      "activities_assigned_by_teachers_will_app": "Activities assigned by teachers will appear here."
+      "activities_assigned_by_teachers_will_app": "Activities assigned by teachers will appear here.",
+      "loading": "Loading…",
+      "refresh": "Refresh"
     },
     "gps_what_we_collect": "What location sharing means",
     "gps_only_during": "GPS coordinates shared only during the active fieldwork session",
@@ -2786,7 +2864,8 @@
       "done": "Done",
       "cancel": "Cancel",
       "sending": "Sending…",
-      "send": "Send Reply"
+      "send": "Send Reply",
+      "announcements_title": "Classroom Announcements"
     },
     "notifications": "Notifications",
     "activity_updates": "Updates about your children\\'s activities",
@@ -2933,14 +3012,25 @@
       "placeholder_reflection_title_optional": "Reflection title (optional)",
       "placeholder_write_your_reflection_here": "Write your reflection here…",
       "activity_submitted": "Activity Submitted!",
-      "great_work_your_teacher_will_review_your": "Great work. Your teacher will review your evidence and reflection."
+      "great_work_your_teacher_will_review_your": "Great work. Your teacher will review your evidence and reflection.",
+      "location_sharing": "Location Sharing",
+      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
+      "notable_features": "Notable Features",
+      "architectartist": "Architect/Artist:",
+      "constructed": "Constructed:",
+      "historical_significance": "Historical Significance:",
+      "learning_opportunities": "Learning Opportunities",
+      "nearby_points_of_interest": "Nearby Points of Interest",
+      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location."
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "Loading activities…",
       "placeholder_search_activities": "Search activities…",
       "make_sure_the_backend_is_running_and_you": "Make sure the backend is running and you are logged in.",
       "title_fieldwork_map": "Fieldwork Map — GPS locations submitted by students",
-      "title_preview_as_student": "Preview as Student"
+      "title_preview_as_student": "Preview as Student",
+      "tracking_settings": "Tracking Settings",
+      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
     },
     "professorFieldworkPage": {
       "back": "← Back",
@@ -3015,10 +3105,135 @@
       "reviewed": "✓ Reviewed",
       "approved": "✓ Approved",
       "placeholder_comment_on_the_field_observations_eviden": "Comment on the field observations, evidence quality, or what to focus on in the reflection...",
-      "your_feedback": "Your feedback:"
+      "your_feedback": "Your feedback:",
+      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet."
     },
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
+    },
+    "cookie_preferences": "Cookie preferences",
+    "cookie_status_on": "Currently: analytics cookies enabled. ",
+    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "components_errorboundary": {
+      "something_went_wrong": "Something went wrong",
+      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
+      "try_again": "Try again",
+      "reload_page": "Reload page"
+    },
+    "pricing_nav_label": "Pricing",
+    "components_teacher_projectcompletionreport": {
+      "status_completed": "Completed",
+      "status_in_progress": "In progress",
+      "status_not_started": "Not started",
+      "empty": "No activities linked to this project yet.",
+      "title_by_activity": "Completion by Activity",
+      "col_activity": "Activity",
+      "col_completed": "Completed",
+      "col_participants": "Participants",
+      "col_evidence": "Evidence",
+      "title_by_participant": "Completion by Participant",
+      "no_participants": "No one has started this project yet.",
+      "col_student": "Student",
+      "col_last_activity": "Last Activity"
+    },
+    "components_teacher_projectlivetracker": {
+      "not_configured": "No activities in this project have location tracking enabled.",
+      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab.",
+      "empty": "No one is currently active in this project.",
+      "empty_hint": "This updates automatically once a student starts a field session.",
+      "title_live_map": "Live Map",
+      "show_all": "Show everyone",
+      "active_now": "Active Now",
+      "live": "LIVE"
+    },
+    "generate_with_ai": "Generate with AI",
+    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
+    "activity_title": "Activity title",
+    "activity_description": "Activity description",
+    "learning_objectives_one_per_line": "Learning objectives (one per line)",
+    "grade_level": "Grade level",
+    "taxonomy_type": "Taxonomy type",
+    "taxonomy_level": "Taxonomy level",
+    "generating": "Generating…",
+    "generate_criteria": "Generate Criteria",
+    "components_teacher_rubricbuilder": {
+      "blooms_revised": "Bloom's Revised",
+      "dok_webbs": "DOK (Webb's)",
+      "solo": "SOLO",
+      "marzanos": "Marzano's",
+      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+    },
+    "ai_generated_overview": "🤖 AI-generated overview — verify details",
+    "looking_up_more_about_this_place": "Looking up more about this place…",
+    "learn_about_this_place": "Learn about this place",
+    "view_on_wikidata": "View on Wikidata",
+    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "pages_homeschool_homeschoolcalendarpage": {
+      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+    },
+    "pages_student_studentcalendarpage": {
+      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+    },
+    "announcements": "Announcements",
+    "projectCompletionReportPage": {
+      "back": "← Back to Project",
+      "title": "Completion Report",
+      "no_project_selected": "No project selected."
+    },
+    "projectLiveTrackingPage": {
+      "back": "← Back to Project",
+      "title": "Live Tracking",
+      "no_project_selected": "No project selected."
+    },
+    "projectnewpage": {
+      "new_project": "New Project",
+      "subtitle": "Set up a new learning project for your students."
+    },
+    "pages_teacher_teachercalendarpage": {
+      "title": "Calendar",
+      "subtitle": "Planned and completed activities for your class, plus any events you add.",
+      "date": "Date",
+      "type": "Type",
+      "description_optional": "Description (optional)",
+      "placeholder_eg_river_study_field_trip": "e.g. River study field trip"
+    },
+    "pages_teacher_teachermessagespage": {
+      "title": "Messages",
+      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
+      "classroom": "Classroom",
+      "message": "Message",
+      "loading": "Loading…",
+      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
+      "send_to": "Send to",
+      "a_specific_students_parent": "A specific student's parent",
+      "a_specific_student": "A specific student",
+      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
+      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
+      "student": "Student",
+      "choose_a_student": "Choose a student…",
+      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
+      "subject": "Subject",
+      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class.",
+      "placeholder_write_a_reply": "Write a reply…",
+      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
+      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder"
+    },
+    "pages_teacher_trackingsettings": {
+      "tier_trip": "Trip (fast)",
+      "tier_long_running": "Long-running (slow)",
+      "back": "← Back to Activities",
+      "title": "Tracking Settings",
+      "subtitle": "GPS live-tracking status across every activity in your account.",
+      "empty": "No activities yet.",
+      "select_all": "Select all",
+      "enable_selected": "Enable tracking",
+      "disable_selected": "Disable tracking",
+      "col_activity": "Activity",
+      "col_project": "Project",
+      "col_tier": "Poll cadence if live",
+      "col_tracking": "Tracking",
+      "on": "On",
+      "off": "Off"
     }
   }
 }

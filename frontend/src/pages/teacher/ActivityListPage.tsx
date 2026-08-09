@@ -267,7 +267,7 @@ const ActivityListPage: React.FC = () => {
                   <button
                     onClick={e => handlePublish(activity, e)}
                     disabled={publishingId === activity.id}
-                    title="Publish — makes this activity visible to students and eligible for the Shared Library"
+                    title={t('pages_teacher_activitylistpage.title_publish_makes_this_activity_visible_to_s', 'Publish — makes this activity visible to students and eligible for the Shared Library')}
                     style={{
                       background: publishingId === activity.id ? '#9ca3af' : '#4a7c59',
                       color: '#fff',

@@ -1371,16 +1371,26 @@
     "loading_rule_details": "Caricamento dei dettagli della regola...",
     "add_update_jurisdiction": "Aggiorna / Aggiungi Giurisdizione"
   },
+  "components_cookieconsentbanner": {
+    "accept": "Accetta",
+    "decline": "Rifiuta"
+  },
+  "cookie_consent_title": "Informativa sui cookie",
+  "cookie_notice": "Utilizziamo cookie essenziali per l'accesso. Le analisi del sito sono disattivate per impostazione predefinita — attivale qui sotto se sei d'accordo. Non mostriamo mai pubblicità sugli account studente. ",
+  "cookie_preferences": "Preferenze sui cookie",
+  "cookie_status_off": "Attualmente: cookie di analisi rifiutati. ",
+  "cookie_status_on": "Attualmente: cookie di analisi attivati. ",
+  "learn_more": "Scopri di più",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
-    "last_updated_may_2026": "Ultimo aggiornamento: Maggio 2026",
+    "last_updated_may_2026": "Ultimo aggiornamento: Agosto 2026",
     "what_are_cookies": "Cos'è un cookie?",
     "cookies_are_small_text_files_placed_on_y": "Cookie sono piccoli file di testo inseriti sul tuo dispositivo da un sito web. Peripateticware utilizza un insieme minimo di cookie strettamente necessari per far funzionare la piattaforma.",
     "cookies_we_use": "cookie",
     "strictly_necessary": "Strettamente Necessario",
     "these_cookies_are_essential_for_the_serv": "I questi cookie sono essenziali per il funzionamento del Servizio. Non possono essere disabilitati.",
     "analytics_amp_performance": "Analisi e Prestazioni",
-    "peripateticware_does_not_currently_use_t": "Il Peripateticware non utilizza attualmente cookie di terze parti per l'analisi. Quando le metriche lato server sono abilitate, vengono elaborate senza impostare alcun cookie.",
+    "peripateticware_does_not_currently_use_t": "Peripateticware utilizza Google Analytics (GA4) sul nostro sito di marketing e nelle dashboard per insegnanti/genitori/amministratori/homeschooling per capire come il Servizio viene scoperto e utilizzato — ma solo dopo il tuo consenso. Nulla viene caricato e nessuna richiesta viene inviata a Google finché non fai clic su Accetta nel banner dei cookie; rifiutare (o semplicemente non rispondere) mantiene le analisi completamente disattivate. Google Signals e la personalizzazione degli annunci sono disattivati incondizionatamente — questi dati non vengono mai utilizzati per creare segmenti di pubblico pubblicitari. Le analisi non sono mai attive sugli account studente o sulle pagine rivolte agli studenti, indipendentemente dalla tua scelta. La tua scelta viene ricordata per circa 6 mesi, dopodiché ti verrà chiesto di nuovo, e puoi modificarla in qualsiasi momento tramite il link \"Preferenze sui cookie\" sempre disponibile in fondo alla pagina.",
     "advertising": "Pubblicità",
     "peripateticware_is_adfree_we_do_not_plac": "Peripateticware è privo di pubblicità. Non utilizziamo cookie di pubblicità.",
     "managing_cookies": "Gestione dei cookie",
@@ -1508,8 +1518,6 @@
     "that_link_is_invalid_please_try_again": "Questo link non è valido. Riprova per favore.",
     "or": "o"
   },
-  "cookie_consent_title": "Avviso cookie",
-  "learn_more": "Impara di più",
   "homeschool": {
     "cta": "Inizia la homeschooling",
     "secondary_cta": "Vedi come funziona",
@@ -1865,7 +1873,6 @@
   "view_audit_log": "Visualizza registro di audit",
   "collect_photos": "Foto e registrazioni audio (archiviate in modo sicuro sul nostro server)",
   "age_confirmation": "Confermo di essere maggiorenne o di avere il consenso dei miei genitori per creare questo account.",
-  "cookie_notice": "Questo sito utilizza i cookie solo per l'autenticazione dell'accesso - non ci sono cookie di tracciamento o pubblicità.",
   "homeschool_section_title": "Tutto ciò che una famiglia di homeschooling ha bisogno",
   "homeschool_section_desc": "Peripateticware considera i genitori che insegnano a casa come sia insegnanti che genitori in un unico account. Gestisci direttamente gli account dei tuoi figli - senza codici di collegamento né burocrazia.",
   "hs_feat_children_title": "Gestione Multi-Bambini",
@@ -2632,9 +2639,6 @@
   },
   "components_common_modal": {
     "aria_label_close_modal": "Chiudi"
-  },
-  "components_cookieconsentbanner": {
-    "got_it": "Capito"
   },
   "persona_tab": {
     "student": "Studente",
