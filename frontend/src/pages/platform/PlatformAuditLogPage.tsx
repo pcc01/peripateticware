@@ -9,18 +9,19 @@ import { platformFetch } from '@/utils/platformFetch';
 
 interface AuditEntry {
   id: string;
-  actor_user_id: string;
+  actor_id: string;
   action: string;
-  target_org_id: string | null;
-  detail: Record<string, unknown>;
+  target_type: string | null;
+  target_id: string | null;
+  detail: Record<string, unknown> | null;
   created_at: string;
 }
 
 interface AuditResponse {
-  items: AuditEntry[];
+  entries: AuditEntry[];
   total: number;
   page: number;
-  page_size: number;
+  per_page: number;
 }
 
 export default function PlatformAuditLogPage() {
@@ -32,14 +33,14 @@ export default function PlatformAuditLogPage() {
 
   useEffect(() => {
     setLoading(true);
-    platformFetch(`/api/v1/platform/audit-log?page=${page}&page_size=25`)
+    platformFetch(`/api/v1/platform/audit-log?page=${page}&per_page=25`)
       .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(setData)
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [page]);
 
-  const totalPages = data ? Math.ceil(data.total / data.page_size) : 1;
+  const totalPages = data ? Math.ceil(data.total / data.per_page) : 1;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -68,25 +69,25 @@ export default function PlatformAuditLogPage() {
             {loading && (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t('pages_platform_platformauditlogpage.loading', 'Loading…')}</td></tr>
             )}
-            {!loading && data?.items.length === 0 && (
+            {!loading && data?.entries.length === 0 && (
               <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">{t('pages_platform_platformauditlogpage.no_audit_entries_yet', 'No audit entries yet.')}</td></tr>
             )}
-            {data?.items.map(entry => (
+            {data?.entries.map(entry => (
               <tr key={entry.id} className="hover:bg-gray-50">
                 <td className="px-4 py-2 text-gray-500 whitespace-nowrap font-mono text-xs">
                   {new Date(entry.created_at).toLocaleString()}
                 </td>
                 <td className="px-4 py-2 font-medium text-gray-800">{entry.action}</td>
-                <td className="px-4 py-2 text-gray-500 font-mono text-xs">{entry.actor_user_id?.slice(0, 8)}…</td>
+                <td className="px-4 py-2 text-gray-500 font-mono text-xs">{entry.actor_id?.slice(0, 8)}…</td>
                 <td className="px-4 py-2 text-gray-500 font-mono text-xs">
-                  {entry.target_org_id ? (
-                    <Link to={`/platform/orgs/${entry.target_org_id}`} className="text-blue-600 hover:underline">
-                      {entry.target_org_id.slice(0, 8)}…
+                  {entry.target_type === 'org' && entry.target_id ? (
+                    <Link to={`/platform/orgs/${entry.target_id}`} className="text-blue-600 hover:underline">
+                      {entry.target_id.slice(0, 8)}…
                     </Link>
-                  ) : '—'}
+                  ) : entry.target_id ? `${entry.target_type ?? ''} ${entry.target_id}`.trim() : '—'}
                 </td>
                 <td className="px-4 py-2 text-gray-400 text-xs font-mono truncate max-w-xs">
-                  {JSON.stringify(entry.detail)}
+                  {entry.detail ? JSON.stringify(entry.detail) : '—'}
                 </td>
               </tr>
             ))}
