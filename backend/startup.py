@@ -694,6 +694,21 @@ async def apply_core_schema_migrations(engine) -> None:
                 updated_at TIMESTAMP DEFAULT NOW()
             )
         """, "create ai_api_keys")
+        # platform_ai_ledger schema drift: database/init.sql (what actually ran
+        # against long-lived DBs, e.g. production) defines task_type/tokens_in/
+        # tokens_out; models/platform.py (what a fresh DB gets via ORM
+        # metadata.create_all, e.g. a new dev DB) defines feature/prompt_tokens/
+        # completion_tokens/total_tokens instead -- two real, different live
+        # schemas exist depending on how a given database was first created.
+        # Code (services/ai_router.py, routes/platform_admin.py,
+        # tasks/budget_monitor.py) reads/writes the models/platform.py names --
+        # additively add them here rather than rename/drop the init.sql
+        # columns, so this is a safe no-op on a DB that already has them and
+        # never touches or loses whatever the older columns hold.
+        await _exec_safepoint(conn, "ALTER TABLE platform_ai_ledger ADD COLUMN IF NOT EXISTS feature VARCHAR(80)")
+        await _exec_safepoint(conn, "ALTER TABLE platform_ai_ledger ADD COLUMN IF NOT EXISTS prompt_tokens INTEGER NOT NULL DEFAULT 0")
+        await _exec_safepoint(conn, "ALTER TABLE platform_ai_ledger ADD COLUMN IF NOT EXISTS completion_tokens INTEGER NOT NULL DEFAULT 0")
+        await _exec_safepoint(conn, "ALTER TABLE platform_ai_ledger ADD COLUMN IF NOT EXISTS total_tokens INTEGER NOT NULL DEFAULT 0")
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS homeschool_children (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
