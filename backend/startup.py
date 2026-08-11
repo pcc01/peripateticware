@@ -683,6 +683,17 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'complete'")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS last_processed_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS valid_until DATE")
+        # ai_api_keys — platform-level provider keys (routes/platform_admin.py
+        # PUT/GET /ai-keys). Defined in migrations/20260602_ai_routing_tables.py
+        # but that file lives outside alembic/versions/ and was never actually
+        # applied — this safepoint guarantees the table exists regardless.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS ai_api_keys (
+                provider VARCHAR(32) PRIMARY KEY,
+                encrypted_key TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """, "create ai_api_keys")
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS homeschool_children (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2152,6 +2163,25 @@ async def start_background_tasks(async_session, settings) -> None:
             logger.info("✅ Budget monitor jobs added to scheduler (hourly alert, 15-min anomaly, monthly summary)")
         except Exception as e:
             logger.warning(f"⊘ Budget monitor jobs not added: {e}")
+
+    # ── Beta trial expiry — daily at 03:00 UTC ────────────────────────────────
+    # Downgrades organizations.license_tier='beta' rows past their
+    # license_valid_until back to 'free'. See tasks/beta_expiry.py.
+    if _scheduler is not None:
+        try:
+            from tasks.beta_expiry import beta_expiry_check
+
+            _scheduler.add_job(
+                beta_expiry_check,
+                "cron",
+                hour=3,
+                minute=0,
+                id="beta_expiry_check",
+                replace_existing=True,
+            )
+            logger.info("✅ Beta expiry job scheduled (daily at 03:00 UTC)")
+        except Exception as e:
+            logger.warning(f"⊘ Beta expiry job not added: {e}")
 
     # ── Privacy legislation crawler ───────────────────────────────────────────
     # Previously IAPP_CRAWLER_SCHEDULE was defined in config but referenced

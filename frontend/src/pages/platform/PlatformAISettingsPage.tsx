@@ -52,10 +52,10 @@ export default function PlatformAISettingsPage() {
       .finally(() => setLoadingKeys(false));
 
     // Load orgs to show BYOK status
-    platformFetch('/api/v1/platform/orgs?page_size=200')
+    platformFetch('/api/v1/platform/orgs?per_page=100')
       .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
       .then(data => {
-        const items: OrgRow[] = (data.items ?? data).map((o: any) => ({
+        const items: OrgRow[] = (data.orgs ?? data.items ?? data).map((o: any) => ({
           id: o.id,
           name: o.name,
           license_tier: o.license_tier ?? 'starter',

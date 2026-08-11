@@ -80,6 +80,7 @@ MONTHLY_ESTIMATES: dict = {
     "district":           100.00,
     "district_byok":        0.00,
     "enterprise":          500.00,
+    "beta":                500.00,
 }
 
 
@@ -179,11 +180,11 @@ async def _send_threshold_alert(session: AsyncSession, org_id: str, admin_email:
     cap = float(budget_row[0]) if budget_row else None
 
     task_rows = (await session.execute(text("""
-        SELECT task_type, COUNT(*), SUM(tokens_in), SUM(tokens_out), SUM(cost_usd)
+        SELECT COALESCE(feature, 'unknown'), COUNT(*), SUM(prompt_tokens), SUM(completion_tokens), SUM(cost_usd)
         FROM   platform_ai_ledger
         WHERE  org_id = :org_id
           AND  created_at >= date_trunc('month', NOW() AT TIME ZONE 'UTC')
-        GROUP  BY task_type
+        GROUP  BY feature
         ORDER  BY SUM(cost_usd) DESC NULLS LAST
     """), {"org_id": org_id})).fetchall()
 

@@ -213,6 +213,15 @@ class Settings(BaseSettings):
     SIGNUP_MODE: str = os.getenv("SIGNUP_MODE", "open").lower()
     # Comma-separated list of valid invite codes, e.g. "beta-2026-a,beta-2026-b"
     BETA_INVITE_CODES: str = os.getenv("BETA_INVITE_CODES", "")
+    # Anyone who signs up through the invite gate above gets license_tier='beta'
+    # (full-access, same rank as 'enterprise' -- see TIER_ORDER in
+    # services/license_validator.py) for this many days from signup, tracked in
+    # organizations.license_valid_until. tasks/beta_expiry.py downgrades expired
+    # beta orgs to 'free' on a daily sweep. Change this value (and restart) to
+    # change the default for *future* signups; existing orgs keep whatever
+    # license_valid_until they were given unless extended via
+    # PUT /api/v1/platform/orgs/{org_id}/license.
+    BETA_TRIAL_DAYS: int = int(os.getenv("BETA_TRIAL_DAYS", "60"))
 
     # ── Beta Request → Google Sheet ───────────────────────────────────────────
     # Path to a Google Cloud service-account JSON key file (mounted into the

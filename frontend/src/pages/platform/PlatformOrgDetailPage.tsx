@@ -10,7 +10,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, AlertTriangle, CheckCircle, RefreshCw, UserCheck } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, CheckCircle, RefreshCw, UserCheck, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { platformFetch } from '@/utils/platformFetch';
 
@@ -22,6 +22,22 @@ interface OrgDetail {
   user_count: number; is_suspended: boolean;
   monthly_tokens_used: number; monthly_cost_usd: number;
   privacy_jurisdiction_ids: string[];
+  license_valid_until: string | null;
+}
+
+// Mirrors TIER_ORDER in backend/services/license_validator.py
+const ALL_TIERS = [
+  'free', 'trial', 'starter', 'homeschool_family', 'homeschool_coop',
+  'school', 'school_byok', 'district', 'district_byok', 'enterprise', 'beta',
+];
+
+function expiryLabel(validUntil: string | null): { text: string; tone: 'expired' | 'soon' | 'ok' | 'none' } {
+  if (!validUntil) return { text: 'No expiration', tone: 'none' };
+  const days = Math.ceil((new Date(validUntil).getTime() - Date.now()) / 86_400_000);
+  const date = new Date(validUntil).toLocaleDateString();
+  if (days < 0) return { text: `Expired ${date}`, tone: 'expired' };
+  if (days <= 14) return { text: `${date} (${days}d left)`, tone: 'soon' };
+  return { text: `${date} (${days}d left)`, tone: 'ok' };
 }
 
 export default function PlatformOrgDetailPage() {
@@ -32,6 +48,8 @@ export default function PlatformOrgDetailPage() {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [tierChoice, setTierChoice] = useState('');
+  const [customDays, setCustomDays] = useState('');
 
   const fetchOrg = async () => {
     setLoading(true);
@@ -53,6 +71,30 @@ export default function PlatformOrgDetailPage() {
     try {
       const res = await platformFetch(`/api/v1/platform/${path}`, { method: 'POST' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setMessage({ type: 'success', text: successMsg });
+      await fetchOrg();
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e.message });
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const doLicenseUpdate = async (
+    body: { tier?: string; extend_days?: number; clear_valid_until?: boolean },
+    successMsg: string,
+  ) => {
+    setActing(true); setMessage(null);
+    try {
+      const res = await platformFetch(`/api/v1/platform/orgs/${orgId}/license`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.detail?.message || err?.detail || `HTTP ${res.status}`);
+      }
       setMessage({ type: 'success', text: successMsg });
       await fetchOrg();
     } catch (e: any) {
@@ -125,6 +167,67 @@ export default function PlatformOrgDetailPage() {
         <Detail label="Max students"   value={String(org.max_students)} />
         <Detail label="Created"        value={new Date(org.created_at).toLocaleDateString()} />
         <Detail label="Privacy laws"   value={org.privacy_jurisdiction_ids.join(', ') || 'None set'} />
+      </div>
+
+      {/* License / trial expiration */}
+      <div className="bg-white rounded-2xl shadow border border-gray-100 p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4 text-gray-400" />
+          <h2 className="text-sm font-semibold text-gray-700">License</h2>
+          {(() => {
+            const { text, tone } = expiryLabel(org.license_valid_until);
+            const toneClass = tone === 'expired' ? 'text-red-600' : tone === 'soon' ? 'text-amber-600' : 'text-gray-500';
+            return <span className={`text-xs font-medium ml-1 ${toneClass}`}>{text}</span>;
+          })()}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => doLicenseUpdate({ extend_days: 30 }, 'Extended 30 days.')}
+            disabled={acting}
+            className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
+            +30 days
+          </button>
+          <button onClick={() => doLicenseUpdate({ extend_days: 60 }, 'Extended 60 days.')}
+            disabled={acting}
+            className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
+            +60 days
+          </button>
+          <div className="flex items-center gap-1">
+            <input
+              type="number" placeholder="days" value={customDays}
+              onChange={e => setCustomDays(e.target.value)}
+              className="w-16 text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              onClick={() => { const n = parseInt(customDays, 10); if (!isNaN(n)) doLicenseUpdate({ extend_days: n }, `Adjusted by ${n} days.`); }}
+              disabled={acting || !customDays}
+              className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
+              Apply
+            </button>
+          </div>
+          {org.license_valid_until && (
+            <button onClick={() => { if (confirm('Remove this org\'s expiration? Its current tier will never auto-downgrade.')) doLicenseUpdate({ clear_valid_until: true }, 'Expiration cleared.'); }}
+              disabled={acting}
+              className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
+              Clear expiration
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
+          <select value={tierChoice} onChange={e => setTierChoice(e.target.value)}
+            className="text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <option value="">Change tier to…</option>
+            {ALL_TIERS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <button
+            onClick={() => { if (tierChoice) doLicenseUpdate({ tier: tierChoice }, `Tier changed to ${tierChoice}.`); }}
+            disabled={acting || !tierChoice}
+            className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition">
+            Apply
+          </button>
+          <p className="text-xs text-gray-400">e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand.</p>
+        </div>
       </div>
 
       {/* Usage */}

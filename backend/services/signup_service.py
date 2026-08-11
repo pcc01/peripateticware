@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -64,6 +65,11 @@ class SignupData(BaseModel):
     has_under_13:     Optional[bool] = True  # default safe: assume under-13 present
     org_type_v2:      Optional[str] = None   # individual_teacher | homeschool_family | …
     ip_country_hint:  Optional[str] = None   # raw hint from /geo/hint (audit only)
+
+    # True when this signup passed the SIGNUP_MODE=invite_only beta gate in
+    # auth.py — grants the new org full-access license_tier='beta' for
+    # settings.BETA_TRIAL_DAYS instead of the normal free/trial tier.
+    is_beta:          bool = False
 
 
 async def create_user_and_org(
@@ -126,17 +132,33 @@ async def create_user_and_org(
         org_type_v1 = "school" if role_upper == "TEACHER" else "homeschool_family"
         has_under_13 = data.has_under_13 if data.has_under_13 is not None else True
 
+        # ── Beta signups get a full-access, time-limited tier instead of the
+        # normal free/trial one. license_valid_until is what
+        # tasks/beta_expiry.py checks to downgrade back to 'free' once the
+        # trial ends — see settings.BETA_TRIAL_DAYS.
+        if data.is_beta:
+            from core.config import settings as _cfg
+            tier, license_status = "beta", "active"
+            valid_until = datetime.utcnow() + timedelta(days=_cfg.BETA_TRIAL_DAYS)
+            max_teachers, max_classrooms, max_students, max_per_classroom = 999, 999, 9999, 999
+        else:
+            tier, license_status = "free", "trial"
+            valid_until = None
+            max_teachers, max_classrooms, max_students, max_per_classroom = 3, 1, 30, 30
+
         await db.execute(text("""
             INSERT INTO organizations
                 (id, slug, name, type, license_tier, license_status,
-                 max_teachers, max_classrooms, max_students,
+                 max_teachers, max_classrooms, max_students, max_students_per_classroom,
+                 license_valid_until,
                  contact_email, trial_started_at, created_at, updated_at,
                  country_code, subdivision_code, has_under_13_students,
                  org_type_v2, ip_country_hint,
                  privacy_jurisdiction_ids)
             VALUES
-                (:id, :slug, :name, :type, 'free', 'trial',
-                 3, 1, 30,
+                (:id, :slug, :name, :type, :tier, :status,
+                 :max_teachers, :max_classrooms, :max_students, :max_per_classroom,
+                 :valid_until,
                  :email, NOW(), NOW(), NOW(),
                  :cc, :sub, :u13,
                  :ot2, :hint,
@@ -146,6 +168,13 @@ async def create_user_and_org(
             "slug":  slug,
             "name":  school_name,
             "type":  org_type_v1,
+            "tier":  tier,
+            "status": license_status,
+            "max_teachers":     max_teachers,
+            "max_classrooms":   max_classrooms,
+            "max_students":     max_students,
+            "max_per_classroom": max_per_classroom,
+            "valid_until": valid_until,
             "email": str(data.email).lower(),
             "cc":    (data.country_code or "").upper() or None,
             "sub":   data.subdivision_code or None,

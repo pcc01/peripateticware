@@ -41,7 +41,6 @@ import ParentDashboard from './pages/ParentDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminPrivacyConfigPage from './pages/AdminPrivacyConfigPage'
 import AdminAuditLogPage from './pages/AdminAuditLogPage'
-import AdminAIConfigPage from './pages/admin/AdminAIConfigPage'
 import OrgAIConfigPage from './pages/org/admin/OrgAIConfigPage'
 import AdminHelpPage from './pages/admin/AdminHelpPage'
 
@@ -379,7 +378,7 @@ const App: React.FC = () => {
             <Route path="/platform/orgs/:orgId" element={<PlatformOrgDetailPage />} />
             <Route path="/platform/usage" element={<PlatformUsagePage />} />
             <Route path="/platform/audit-log" element={<PlatformAuditLogPage />} />
-            <Route path="/platform/ai-settings" element={<AdminAIConfigPage />} />
+            <Route path="/platform/ai-settings" element={<PlatformAISettingsPage />} />
           </Route>
 
           {/* STUDENT */}

@@ -49,6 +49,13 @@ TIER_ORDER: list[str] = [
     "district",
     "district_byok",
     "enterprise",
+    # 'beta' -- full-access, time-limited (organizations.license_valid_until).
+    # Ranked above 'enterprise' so it clears every make_require_min_tier() gate
+    # in the app, including any added later. Assigned at signup by
+    # services/signup_service.py to anyone who signs up through the
+    # SIGNUP_MODE=invite_only gate; downgraded to 'free' by
+    # tasks/beta_expiry.py once license_valid_until passes.
+    "beta",
 ]
 
 # Single source of truth for "which tiers may bring their own Ollama/Anthropic
@@ -65,6 +72,7 @@ BYOK_TIERS: frozenset[str] = frozenset([
     "district", "district_byok",
     "enterprise",
     "homeschool_family", "homeschool_coop",
+    "beta",
 ])
 
 

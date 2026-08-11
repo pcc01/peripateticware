@@ -86,6 +86,7 @@ TIER_BUDGET_DEFAULTS: dict[str, float] = {
     "district":        100.00,
     "district_byok":   100.00,
     "enterprise":      500.00,
+    "beta":            500.00,  # full access for the duration of the trial -- see license_validator.TIER_ORDER
 }
 
 
@@ -238,19 +239,22 @@ async def _write_ledger(
         if org_id is None:
             return
         try:
+            # Column names match the real platform_ai_ledger schema (models/platform.py):
+            # prompt_tokens/completion_tokens/total_tokens, feature (no task_type column).
             await db.execute(_text("""
                 INSERT INTO platform_ai_ledger
-                    (org_id, user_id, task_type, provider, model, tokens_in, tokens_out, cost_usd)
+                    (org_id, user_id, feature, provider, model, prompt_tokens, completion_tokens, total_tokens, cost_usd)
                 VALUES
-                    (:org_id, :user_id, :task_type, :provider, :model, :tokens_in, :tokens_out, :cost)
+                    (:org_id, :user_id, :feature, :provider, :model, :tokens_in, :tokens_out, :total_tokens, :cost)
             """), {
                 "org_id":     org_id,
                 "user_id":    user_id,
-                "task_type":  task_type,
+                "feature":    task_type,
                 "provider":   provider,
-                "model":      model,
+                "model":      model or provider or "unknown",
                 "tokens_in":  tokens_in,
                 "tokens_out": tokens_out,
+                "total_tokens": tokens_in + tokens_out,
                 "cost":       cost_usd or 0.0,
             })
             if hasattr(db, "commit"):
@@ -266,17 +270,24 @@ async def _write_ledger(
         factory = get_session_factory()
         async with factory() as session:
             try:
+                # :task_type binds into the `feature` column (platform_ai_ledger has no
+                # task_type column) -- param name kept as task_type since it matches this
+                # function's own positional argument name and existing test expectations.
+                # model falls back to provider -- platform_ai_ledger.model is NOT NULL and
+                # the positional (fire-and-forget) call sites don't always have a model string.
                 await session.execute(_text("""
                     INSERT INTO platform_ai_ledger
-                        (org_id, task_type, provider, tokens_in, tokens_out, cost_usd)
+                        (org_id, feature, provider, model, prompt_tokens, completion_tokens, total_tokens, cost_usd)
                     VALUES
-                        (:org_id, :task_type, :provider, :tokens_in, :tokens_out, :cost_usd)
+                        (:org_id, :task_type, :provider, :model, :tokens_in, :tokens_out, :total_tokens, :cost_usd)
                 """), {
                     "org_id":     org_id,
                     "task_type":  task_type,
                     "provider":   provider,
+                    "model":      model or provider or "unknown",
                     "tokens_in":  tokens_in,
                     "tokens_out": tokens_out,
+                    "total_tokens": tokens_in + tokens_out,
                     "cost_usd":   cost_usd,
                 })
             except Exception as exc:
@@ -527,7 +538,7 @@ class AIRouter:
                     cost = _calc_cost(AIProvider.ANTHROPIC_INSTANT, tokens_in, tokens_out)
                     asyncio.create_task(_write_ledger(
                         org_id, task_type, AIProvider.ANTHROPIC_INSTANT,
-                        tokens_in, tokens_out, cost,
+                        tokens_in, tokens_out, cost, model=model,
                     ))
                     logger.info(
                         f"[ai_router] anthropic_instant ok task={task_type} model={model} "
@@ -552,7 +563,7 @@ class AIRouter:
             tokens_in  = len(prompt) // 4
             tokens_out = len(text) // 4 if text else 0
             asyncio.create_task(_write_ledger(
-                org_id, task_type, AIProvider.OLLAMA, tokens_in, tokens_out, 0.0,
+                org_id, task_type, AIProvider.OLLAMA, tokens_in, tokens_out, 0.0, model=model,
             ))
             logger.info(f"[ai_router] ollama ok task={task_type} model={model}")
             return AIResult(

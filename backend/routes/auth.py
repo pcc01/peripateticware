@@ -414,6 +414,10 @@ async def signup(
         # already gated above). Config-driven — flip SIGNUP_MODE back to "open"
         # in .env to fully restore today's open signup with no code changes.
         from core.config import settings as _signup_cfg
+        # Anyone who clears this gate is, by definition, a beta signup — flows
+        # into SignupData.is_beta below, which grants the new org a full-access
+        # 'beta' license tier for settings.BETA_TRIAL_DAYS (see signup_service.py).
+        is_beta_signup = False
         if _signup_cfg.SIGNUP_MODE == "invite_only":
             _valid_codes = {c.strip() for c in _signup_cfg.BETA_INVITE_CODES.split(",") if c.strip()}
             if not body.invite_token or body.invite_token not in _valid_codes:
@@ -424,6 +428,7 @@ async def signup(
                         "access, or enter the invite code you were given."
                     ),
                 )
+            is_beta_signup = True
 
         # Create new user with uuid
         from sqlalchemy import text as _text
@@ -474,6 +479,7 @@ async def signup(
             has_under_13=getattr(body, 'has_under_13', True),
             org_type_v2=getattr(body, 'org_type_v2', None),
             ip_country_hint=getattr(body, 'ip_country_hint', None),
+            is_beta=is_beta_signup,
         )
         org_id = await _create_org(db, _signup_data, new_user_id=new_user_id)
 
