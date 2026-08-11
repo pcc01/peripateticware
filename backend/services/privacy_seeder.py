@@ -144,7 +144,15 @@ async def seed_privacy_jurisdictions(
                 ferpa_on = 'ferpa_us' in verified_ids
                 coppa_on = 'coppa_us' in verified_ids
                 pref_id  = str(uuid.uuid4())
-                now      = datetime.now(timezone.utc)
+                # user_privacy_preferences' 4 timestamp columns are all
+                # TIMESTAMP WITHOUT TIME ZONE (database/init.sql) -- asyncpg's
+                # naive-timestamp codec raises DataError on a tz-aware value
+                # ("can't subtract offset-naive and offset-aware datetimes"),
+                # which was silently swallowing this INSERT for every single
+                # signup (caught by the outer savepoint below as "non-fatal").
+                # Strip tzinfo before binding, same fix as other naive-TIMESTAMP
+                # columns elsewhere in this codebase (e.g. routes/platform_admin.py).
+                now      = datetime.now(timezone.utc).replace(tzinfo=None)
 
                 await db.execute(
                     text("""
