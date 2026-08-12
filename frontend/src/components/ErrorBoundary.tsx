@@ -16,9 +16,9 @@
  */
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: React.ReactNode;
 }
 
@@ -27,7 +27,12 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<Props, State> {
+// Class components can't call the useTranslation() hook directly (hooks only
+// work in function components), so this uses the withTranslation() HOC
+// instead, which injects `t` as a prop. This class must stay a class
+// component — React error boundaries (getDerivedStateFromError /
+// componentDidCatch) still require one as of React 19.
+class ErrorBoundaryBase extends React.Component<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -48,6 +53,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   };
 
   render() {
+    const { t } = this.props;
     if (this.state.hasError) {
       return (
         <div
@@ -118,4 +124,5 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 }
 
+export const ErrorBoundary = withTranslation()(ErrorBoundaryBase);
 export default ErrorBoundary;

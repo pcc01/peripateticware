@@ -1,6 +1,10 @@
 // src/types/teacher.ts - UPDATED
 // Activity is canonical in services/types.ts — re-exported here so all
 // existing `import { Activity } from '@/types/teacher'` call sites keep working.
+// (Needs both a local `import type` and a re-export: `export type {...} from`
+// alone only re-exports the name, it doesn't bring it into this file's own
+// scope, and this file also references `Activity` below.)
+import type { Activity } from '@/services/types'
 export type { Activity } from '@/services/types'
 
 export interface ActivityFormData {

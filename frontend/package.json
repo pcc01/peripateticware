@@ -28,6 +28,7 @@
     "i18n:run-all:ci": "npx run-s i18n:repair:check i18n:tag i18n:extract i18n:sync:ci",
     "build": "npm run i18n:run-all && tsc -b && vite build",
     "build:no-i18n": "tsc -b && vite build",
+    "prerender": "node scripts/prerender.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed --project=chromium",

@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# Logged-in app areas — nothing here is meant to be indexed, and most of it
+# 404s/redirects to login for a crawler with no session anyway.
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /parent/
+Disallow: /homeschool/
+Disallow: /admin/
+Disallow: /platform/
+Disallow: /session/
+
+# Auth/account utility flows — not content, nothing to index.
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /verify-email-pending
+Disallow: /privacy-confirmed
+Disallow: /parent-consent/
+Disallow: /maintenance
+Disallow: /do-not-sell
+
+Sitemap: https://peripateticware.com/sitemap.xml
