@@ -63,6 +63,32 @@ async def onboarding_status(
 
     org_id = str(current_user.org_id) if current_user.org_id else None
 
+    # No org means no checklist to show — mirror /dismiss's own stance
+    # ("no org yet — nothing to dismiss") instead of leaving `dismissed`
+    # at its unset False default below. Without this, an org-less account
+    # (e.g. seed_demo_users()/seed_homeschool_demo() in startup.py, which
+    # insert straight into `users` and never create/attach an
+    # organizations row) could never see dismissed:true from this endpoint
+    # no matter how many times /dismiss was called or all_done became
+    # true — classroom_created/student_invited/activity_created all
+    # require org_id too, so all_done's auto-dismiss fallback can't save
+    # it either. The mobile welcome wizard (app/homeschool-welcome.tsx)
+    # calls /dismiss then immediately re-checks /status on every
+    # (tabs)/_layout.tsx mount; a permanently-false dismissed here bounces
+    # the user straight back to the wizard's first step regardless of
+    # whether they tapped "Skip setup" or completed all three steps.
+    if org_id is None:
+        return {
+            "role":              current_user.role,
+            "email_verified":    current_user.is_active,
+            "classroom_created": True,
+            "student_invited":   True,
+            "activity_created":  True,
+            "all_done":          True,
+            "dismissed":         True,
+            "next_step":         None,
+        }
+
     # 1. email verified
     email_verified: bool = current_user.is_active
 
