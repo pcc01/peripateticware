@@ -47,6 +47,12 @@ export function useSpeech(options: UseSpeechOptions = {}) {
       language,
       voice,
       rate,
+      // iOS: keep AVSpeechSynthesizer on its own private session instead of
+      // riding the app's shared AVAudioSession. CaptureSheet configures that
+      // shared session for mic recording (and it can be left in a
+      // .playAndRecord/silenced-by-default state), which was silently
+      // muting read-aloud playback with no error.
+      useApplicationAudioSession: false,
       onDone: () => { if (tokenRef.current === token) setSpeaking(false); },
       onStopped: () => { if (tokenRef.current === token) setSpeaking(false); },
       onError: () => { if (tokenRef.current === token) setSpeaking(false); },
