@@ -180,6 +180,11 @@ export default function CaptureSheet({
     } finally {
       setRecording(null);
       setRecordingDuration(0);
+      // Leaving the shared session in recording mode (allowsRecordingIOS)
+      // can mute/misroute other audio consumers (e.g. read-aloud TTS,
+      // capture-preview playback) until the app restarts. Restore normal
+      // playback mode now that recording has stopped.
+      Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
     }
   };
 
