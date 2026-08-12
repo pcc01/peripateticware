@@ -83,6 +83,18 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// Google Maps API key: never hardcode it in AndroidManifest.xml (it's a committed
+// file). Loaded from mobile/android/local.properties (gitignored, dev machines) with
+// a fallback to the GOOGLE_MAPS_API_KEY env var (CI/EAS secret). Empty is allowed so a
+// key-less debug build still compiles — the map just won't render, per the manifest
+// comment. See mobile/android/local.properties.example.
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+def googleMapsApiKey = localProps.getProperty('GOOGLE_MAPS_API_KEY') ?: System.getenv('GOOGLE_MAPS_API_KEY') ?: ''
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -101,6 +113,8 @@ android {
         versionName "1.0.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
+        manifestPlaceholders = [GOOGLE_MAPS_API_KEY: googleMapsApiKey]
 
         // Detox: use DetoxJUnitRunner as the Android instrumentation runner.
         testInstrumentationRunner 'com.wix.detox.DetoxJUnitRunner'

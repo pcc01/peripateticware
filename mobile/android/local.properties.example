@@ -1,0 +1,10 @@
+# Copy this file to local.properties (gitignored — never commit real values)
+# and fill in your own keys for local Android builds.
+
+# sdk.dir=/path/to/Android/sdk
+
+# Google Maps Android SDK key. Must have "Maps SDK for Android" enabled and be
+# restricted (Android app restriction: package com.peripateticware.app + your
+# debug/release SHA-1) in Google Cloud Console. Same value as GOOGLE_MAPS_API_KEY
+# in the repo root .env — kept separate here because Gradle reads this file, not .env.
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
