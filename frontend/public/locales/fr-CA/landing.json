@@ -143,7 +143,7 @@
     "adminexamplecom": "admin@example.com"
   },
   "pages_licensingpage": {
-    "individual_educators_using_it_in_their_o": "Éducateurs individuels l'utilisant dans leur propre salle de classe'}, {",
+    "individual_educators_using_it_in_their_o": "Éducateurs individuels l'utilisant dans leur propre salle de classe",
     "these_are_related_but_distinct_using_per": "Ces éléments sont liés mais distincts : l'utilisation de peripateticware.com n'exige pas de connaître ou de se soucier de la licence source ci-dessous, et la licence source est ce qui réglemente toute personne exécutant sa propre copie du code - y compris le fait qu'elle permette à Paul, en tant que titulaire de la licence, d'exploitation de cette SaaS en premier lieu.",
     "faq": "FAQ",
     "the_source_license_bsl_11_apache_20": "La licence source : BSL 1.1 → Apache 2.0",
@@ -170,18 +170,13 @@
       }
     },
     "district": {
-      "title": "Région scolaire'}, {",
+      "title": "Région scolaire",
       "subtitle": "Pour l'ensemble des districts",
-      "price": "Personnalisé",
-      "description": "False"
+      "price": "Personnalisé"
     }
   },
-  "components_landing_loginmodal": {
-    "aria_label_authentication": "False"
-  },
-  "components_landing_storysection": {
-    "alt_a_student_walking_through_the_forest_wit": "False"
-  },
+  "components_landing_loginmodal": {},
+  "components_landing_storysection": {},
   "meet_peri": {
     "step": {
       "1": {
@@ -195,7 +190,7 @@
     "platform_operator_secret": "Platform operator secret"
   },
   "curriculumImportPage": {
-    "title": "Importer les normes académiques de l'État'}, {"
+    "title": "Importer les normes académiques de l'État"
   },
   "pages_donotsellpage": {
     "under_the_california_consumer_privacy_ac": "Conformément à la loi de protection de la vie privée des consommateurs de la Californie (CCPA) et à la loi sur les droits à la vie privée de la Californie (CPRA), les résidents de la Californie ont le droit de se désinscrire de la vente ou du partage de leurs informations personnelles. Peripateticware ne vend pas de données personnelles, mais vous pouvez soumettre cette demande pour enregistrer formellement vos préférences.",
@@ -209,7 +204,7 @@
   },
   "gps_expires": "Le consentement expire automatiquement à la fin de l'activité (maximum 30 jours)",
   "pages_teacher_teacherwelcomepage": {
-    "invite_your_first_students": "Inviter vos premiers étudiants'}, {",
+    "invite_your_first_students": "Inviter vos premiers étudiants",
     "placeholder_studentexamplecom": "student@example.com"
   },
   "pages_adminprivacyconfigpage": {
@@ -244,7 +239,7 @@
     "no_audit_entries_yet": "Aucune entrée d'audit pour le moment."
   },
   "pages_privacyenginepage": {
-    "privacy_engine": "Moteur de confidentialité'}, {",
+    "privacy_engine": "Moteur de confidentialité",
     "click_any_framework_to_see_the_specific_": "Cliquez sur tout cadre pour voir les règles spécifiques que Peripateticware applique.",
     "key_rules_enforced": "Règles clés appliquées",
     "peripateticwares_privacy_engine_enforces": "Le moteur de confidentialité de Peripateticware applique FERPA, COPPA, GDPR et SOC 2 grâce à un système de règles configurables — ainsi, chaque opération sur les données est conforme par défaut, quelle que soit la juridiction dans laquelle votre école fonctionne.",
@@ -263,9 +258,7 @@
   },
   "gps_only_during": "Les coordonnées GPS sont partagées uniquement pendant la session de terrain active",
   "gps_teacher_only": "Visible seulement à l'enseignant de la classe — pas aux autres étudiants ou au public",
-  "pages_teacher_teacherclassroompage": {
-    "class_full_upgrade_to_add_more": "None"
-  },
+  "pages_teacher_teacherclassroompage": {},
   "pages_privacyconfirmationpage": {
     "privacy_set_up": "Configuration de la confidentialit√©",
     "weve_automatically_applied_the_right_pro": "Nous avons appliqu√© automatiquement les bonnes mesures de protection pour vos √©l√®ves en fonction de votre emplacement.",

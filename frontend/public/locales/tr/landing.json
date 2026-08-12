@@ -1359,7 +1359,7 @@
   "capture_photosvideo": "Foto/Video Çek",
   "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",
   "eg_butterfly_photos": "Kelebek fotoğrafları",
-  "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.\n\n(Preserved template variables: {count}, %s, $t(...))",
+  "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.",
   "what_does_photosynthesis_do": "Fotosentez ne yapar?",
   "this_comprehensive_project_guides_studen": "Bu kapsamlı proje öğrencilere bir semestr boyunca yerel ekosistemleri keşfetmeye yönelik bir araştırma yolculuğu sunar. Öğrenciler alan gözlemleri yapacaklar, verileri toplayacaklar ve elden gelen deneyimler aracılığıyla ekolojik ilkeleri anlayacaklar.",
   "standardsaligned_auditready": "Standartlara Uygun, Denetim Hazır",
@@ -2607,7 +2607,7 @@
     "title": "İçe Aktarma Öğrenme Standartları",
     "description": "PDF veya CSV biçiminde öğrenme standartlarını yükleyin - Ortak Yaratım, NGSS, eyalet standartları veya özel çerçevesi. Kaydedildikten sonra, bu standartlara etiketli aktiviteler oluşturabilir ve öğrenci kapsamını izleyebilirsiniz."
   },
-  "marzano": "['Marzan']",
+  "marzano": "Marzano",
   "pages_donotsellpage": {
     "under_the_california_consumer_privacy_ac": "California Tüketici Gizlilik Yasası (CCPA) ve California Gizlilik Hakları Yasası (CPRA)'na göre, Kaliforniya vatandaşları kişisel bilgilerinin satış veya paylaşımından vazgeçmek için hakkı vardır. Peripateticware kişisel verileri satmaz, ancak tercihinizi resmi olarak kaydetmek için bu isteği gönderebilirsiniz.",
     "email_address": "e-posta adresi",

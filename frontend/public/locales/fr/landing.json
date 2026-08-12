@@ -1612,7 +1612,7 @@
   },
   "extractionWizard": {
     "step_upload": "Télécharger",
-    "step_parse": "Télécharger'}, {",
+    "step_parse": "Télécharger",
     "step_review": "Examen",
     "step_save": "Enregistrer"
   },
@@ -2585,7 +2585,7 @@
     "supported_frameworks": "Cadre pris en charge",
     "click_any_framework_to_see_the_specific_": "Cliquez sur n'importe quel cadre pour voir les règles spécifiques que Peripateticware applique.",
     "what_institutions_can_configure": "Quelles institutions peuvent configurer",
-    "within_the_bounds_of_the_applicable_law_": "\"Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :\"\n\n(Note: I've preserved the template variable exactly as it appears in the input string.)",
+    "within_the_bounds_of_the_applicable_law_": "Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :",
     "questions_about_compliance_for_your_dist": "Des questions sur la conformité pour votre district ?",
     "our_team_can_walk_you_through_how_the_en": "Notre équipe peut vous guider sur la façon dont le moteur est cartographié aux exigences de votre juridiction.",
     "currently_active": "Actuellement actif:",

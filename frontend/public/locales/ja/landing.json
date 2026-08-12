@@ -1137,7 +1137,7 @@
   "enable_sound_effects": "「サウンドエフェクトを有効化」",
   "email_adminexamplecom": "メールアドレス：admin@example.com",
   "password_last_changed_30_days_ago": "パスワードは、30日前に最後に変更されました。",
-  "postgresql_16_pgvector": "['PostgreSQL 16 + pgvector (ポストグレSQL 16 + pgvector)']",
+  "postgresql_16_pgvector": "PostgreSQL 16 + pgvector (ポストグレSQL 16 + pgvector)",
   "oops_the_page_youre_looking_for_doesnt_e": "「お探しのページが見つかりませんでした。または、移動しました。」",
   "stay_connected_with_your_childs_outdoor_": "「子供の野外学習の旅と繋がりましょう」",
   "monitor_your_childs_progress_through_act": "「子供の活動の進みを監視し、完了したタスクを見て、リアルタイムで成果を祝え」",
@@ -1336,7 +1336,7 @@
     "go_back": "戻る"
   },
   "coppa": "コピーア",
-  "ferpa": "['フェルパ']",
+  "ferpa": "フェルパ",
   "privacy_first": {
     "badge": "プライバシーとコンプライアンス"
   },
