@@ -152,6 +152,12 @@ export function recordConsent(accepted: boolean): void {
   if (accepted && !gpcActive()) {
     ensureScriptLoaded()
     gtag('consent', 'update', { analytics_storage: 'granted' })
+    // The route-change effect in App.tsx only fires trackPageview on
+    // location.pathname changes, so without this, the page the visitor is
+    // already on when they click Accept is never counted — only their next
+    // navigation would be. Goes through the same blocked() guard as any
+    // other trackPageview call, so child-surface/student/GPC checks still apply.
+    if (typeof window !== 'undefined') trackPageview(window.location.pathname)
   } else {
     gtag('consent', 'update', { analytics_storage: 'denied' })
     clearAnalyticsCookies()
