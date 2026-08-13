@@ -65,6 +65,54 @@ def _invite_expires() -> datetime:
     return _now() + timedelta(days=14)
 
 
+async def _student_org_eligible(db: AsyncSession, org_id: str, student_id: str) -> bool:
+    """
+    FERPA's "school official" exception (and COPPA's parallel school-official
+    consent exception) both hinge on the teacher/school having a legitimate
+    existing educational relationship with the student -- that's what lets a
+    school skip case-by-case consent for its own roster in the first place.
+    add_student()/add_student_by_email() enroll an *existing* account with no
+    invite/join-link step, so this is the one place that boundary actually
+    gets enforced: a student already affiliated with a different,
+    unrelated org has no such relationship with THIS org, so a teacher here
+    can't reach into another school's roster just by knowing a UUID or
+    email. A student with no org at all yet (brand new / never enrolled
+    anywhere) is fine to pick up -- that's a legitimate first enrollment,
+    not a cross-tenant reach.
+    """
+    rows = (await db.execute(text(
+        "SELECT org_id FROM organization_members WHERE user_id = :sid"
+    ), {"sid": student_id})).scalars().all()
+    if not rows:
+        return True  # unaffiliated — legitimate first enrollment
+    return any(str(r) == org_id for r in rows)
+
+
+async def _notify_linked_parents(db: AsyncSession, student_id: str, title: str, message: str) -> None:
+    """
+    Best-effort transparency notification to any parent(s) already
+    APPROVED-linked to this student (see routes/parent.py's link_child()/
+    routes/student.py's parent-requests for that flow) when a teacher
+    enrolls their child in a classroom. Enrollment itself isn't gated on
+    this — a teacher needs their real roster to function, and the
+    student's own account was already properly consented/verified at
+    signup (see accept_invite()'s COPPA under-13 parental-consent gate
+    above) — this exists to satisfy FERPA's separate right of parental
+    access to what's in a child's educational record, not to add a new
+    consent requirement.
+    """
+    try:
+        parent_ids = (await db.execute(text(
+            "SELECT parent_id FROM parent_child_links WHERE child_id = CAST(:cid AS uuid) AND status = 'approved'"
+        ), {"cid": student_id})).scalars().all()
+        for pid in parent_ids:
+            db.add(Notification(id=uuid4(), user_id=pid, title=title, message=message))
+        if parent_ids:
+            await db.flush()
+    except Exception:
+        logger.warning("Parent notification failed for student %s (non-blocking)", student_id, exc_info=True)
+
+
 async def _get_or_create_org(db: AsyncSession, teacher: User) -> str:
     """Return teacher's org_id, auto-creating a personal org if they don't have one."""
     if teacher.org_id:
@@ -867,12 +915,17 @@ async def add_student(
         raise HTTPException(status_code=404, detail="Classroom not found")
     org_id = str(row[1])
 
-    # Validate the student exists
+    # Validate the target is actually a student account — previously this
+    # only checked the id existed at all, so a teacher could "enroll" any
+    # user regardless of role, including another teacher or an admin.
     student = (await db.execute(text(
-        "SELECT id FROM users WHERE id = :sid"
+        "SELECT id, full_name FROM users WHERE id = :sid AND role = 'STUDENT'"
     ), {"sid": body.student_id})).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student account not found")
+
+    if not await _student_org_eligible(db, org_id, body.student_id):
+        raise HTTPException(status_code=403, detail="That student belongs to a different school and can't be added here.")
 
     # Enforce class size limit
     current_count = (await db.execute(text(
@@ -908,6 +961,11 @@ async def add_student(
         VALUES (:mid, :oid, :uid, 'member', NOW())
         ON CONFLICT (org_id, user_id) DO NOTHING
     """), {"mid": str(uuid4()), "oid": org_id, "uid": body.student_id})
+    await _notify_linked_parents(
+        db, body.student_id,
+        title="Added to a classroom",
+        message=f"{student[1] or 'Your child'} was added to a new classroom.",
+    )
     await db.commit()
     return {"success": True, "classroom_id": classroom_id, "student_id": body.student_id}
 
@@ -955,6 +1013,15 @@ async def add_student_by_email(
     )).scalar_one_or_none()
 
     if existing and (existing.role or "").upper() == "STUDENT":
+        if not existing.is_active:
+            # Pending parental consent (COPPA under-13 gate in accept_invite
+            # above) or otherwise deactivated — nothing to enroll into an
+            # active roster yet.
+            raise HTTPException(status_code=403, detail="That account isn't active yet.")
+
+        if not await _student_org_eligible(db, org_id, str(existing.id)):
+            raise HTTPException(status_code=403, detail="That student belongs to a different school and can't be added here.")
+
         already = (await db.execute(text(
             "SELECT 1 FROM classroom_students WHERE classroom_id = :cid AND student_id = :sid"
         ), {"cid": classroom_id, "sid": str(existing.id)})).first()
@@ -1002,6 +1069,11 @@ async def add_student_by_email(
             title="Added to a classroom",
             message=f"You've been added to {classroom_name}.",
         ))
+        await _notify_linked_parents(
+            db, str(existing.id),
+            title="Added to a classroom",
+            message=f"{existing.full_name or 'Your child'} was added to {classroom_name}.",
+        )
 
         await db.commit()
         return {
