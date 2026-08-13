@@ -13,6 +13,15 @@
 // submissions list (app/teacher-submissions.tsx), since both numbers are
 // drawn from the same underlying session data; "Classes" opens a read-only
 // class list (app/teacher-classes.tsx).
+//
+// Two more entry points: the header's "+ Scavenger hunt" button opens
+// app/teacher-create-scavenger-hunt.tsx (in-field authoring of a discovery-
+// type activity — general activity creation otherwise stays web-only, see
+// that screen's own header comment for why this type is the exception),
+// and a "Proposals" stat card opens app/teacher-proposals.tsx (approving/
+// rejecting the reverse-scavenger-hunt challenges students submit from
+// (tabs)/propose.tsx — backend has had this endpoint with no mobile screen
+// calling it until now).
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
@@ -21,6 +30,7 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchTeacherDashboard, TeacherDashboard } from '@/src/api/teacher';
+import { fetchPendingProposals } from '@/src/api/proposalReview';
 
 const STATUS_COLOR_KEY: Record<string, 'accent' | 'textMuted' | 'warn'> = {
   published: 'accent',
@@ -33,12 +43,14 @@ const STAT_DESTINATION: Record<string, string> = {
   pending: '/teacher-submissions',
   active: '/teacher-activities',
   classes: '/teacher-classes',
+  proposals: '/teacher-proposals',
 };
 
 export default function TeacherDashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [data, setData] = useState<TeacherDashboard | null>(null);
+  const [proposalCount, setProposalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
@@ -52,18 +64,31 @@ export default function TeacherDashboardScreen() {
     }
   }, []);
 
-  useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+  const loadProposalCount = useCallback(() => {
+    fetchPendingProposals().then((p) => setProposalCount(p.length)).catch(() => {});
+  }, []);
+
+  useEffect(() => { load().finally(() => setLoading(false)); loadProposalCount(); }, [load, loadProposalCount]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), Promise.resolve(loadProposalCount())]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadProposalCount]);
 
   return (
     <SafeAreaView testID="teacher-dashboard-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('teacherDashboard.title', 'Teacher Dashboard')}</Text>
+      <View style={[styles.header, styles.headerRow]}>
+        <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>{t('teacherDashboard.title', 'Teacher Dashboard')}</Text>
+        <TouchableOpacity
+          testID="teacher-dashboard-create-scavenger-hunt"
+          onPress={() => router.push('/teacher-create-scavenger-hunt')}
+          style={[styles.createBtn, { borderColor: theme.accent }]}
+        >
+          <Text style={[styles.createBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+            {t('teacherDashboard.newScavengerHunt', '+ Scavenger hunt')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -85,6 +110,7 @@ export default function TeacherDashboardScreen() {
               { key: 'classes', label: t('teacherDashboard.stats.classes', 'Classes'), value: data.total_classes, emoji: '🏫' },
               { key: 'active', label: t('teacherDashboard.stats.active', 'Active'), value: data.active_activities, emoji: '📍' },
               { key: 'pending', label: t('teacherDashboard.stats.pending', 'Pending'), value: data.pending_submissions, emoji: '📥' },
+              { key: 'proposals', label: t('teacherDashboard.stats.proposals', 'Proposals'), value: proposalCount, emoji: '🧭' },
             ].map((stat) => (
               <TouchableOpacity
                 key={stat.key}
@@ -106,7 +132,7 @@ export default function TeacherDashboardScreen() {
             <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('teacherDashboard.recentLabel', 'RECENT ACTIVITIES')}</Text>
             {data.activities.length === 0 ? (
               <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
-                {t('teacherDashboard.noActivities', "You haven't created any activities yet — use the web app to build one.")}
+                {t('teacherDashboard.noActivities', "You haven't created any activities yet — tap + Scavenger hunt above, or use the web app to build other activity types.")}
               </Text>
             ) : (
               data.activities.map((a) => (
@@ -145,7 +171,10 @@ export default function TeacherDashboardScreen() {
 const styles = StyleSheet.create({
   root:        { flex: 1 },
   header:      { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  title:       { fontSize: 28, fontWeight: '700' },
+  headerRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  title:       { fontSize: 28, fontWeight: '700', flexShrink: 1 },
+  createBtn:      { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, flexShrink: 0 },
+  createBtnText:  { fontSize: 12, fontWeight: '700' },
   center:      { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   emptyText:   { fontSize: 14, textAlign: 'center', lineHeight: 22 },
   statsRow:    { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },

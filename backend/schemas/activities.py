@@ -5,10 +5,20 @@
 """Pydantic schemas for activity and project endpoints"""
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 from uuid import UUID
 from enum import Enum
+
+
+class DiscoveryModeEnum(str, Enum):
+    """Only meaningful when activity_type=DISCOVERY. Mirrors
+    schemas/activities_extended.py's DiscoveryModeEnum (kept as a separate
+    definition here rather than imported, matching how ActivityTypeEnum
+    below is also self-contained rather than shared) — must stay in sync
+    if either changes."""
+    LOCATION_BASED = "location_based"
+    TASK_BASED     = "task_based"
 
 
 class ActivityTypeEnum(str, Enum):
@@ -117,6 +127,23 @@ class ActivityBase(BaseModel):
     # field (no network round-trip at click-time — it ships in the same
     # GET .../activities/{id} payload the app already loaded).
     location_wiki_data: Optional[dict] = Field(None, description="Structured Wikidata/Wikipedia place info (name, description, architect/artist, construction date, historical significance, keywords, learning opportunities, wikidata_id)")
+
+    # ── Discovery / scavenger-hunt mode (Phase 3) ───────────────────────────────
+    # Only meaningful when activity_type=DISCOVERY. These columns have existed
+    # on the Activity model since Phase 3, but this is the first schema/route
+    # wiring that actually lets a client set them at creation time — neither
+    # web's activity builder nor this schema (before this change) ever
+    # exposed them, so every discovery-typed activity that existed before
+    # this was created with all of these left at their column defaults.
+    discovery_mode: Optional[DiscoveryModeEnum] = Field(None, description="'location_based' = teacher specifies a location; 'task_based' = student finds it anywhere")
+    discovery_task_description: Optional[str] = Field(None, max_length=2000)
+    discovery_location_required: bool = False
+    discovery_documentation_requirements: Optional[Dict[str, Any]] = Field(None, description='e.g. {"photos": true, "notes": true, "bloom_stage": true}')
+    discovery_success_criteria: Optional[str] = Field(None, max_length=2000)
+    discovery_difficulty_level: Optional[int] = Field(None, ge=1, le=4)
+    discovery_time_limit_minutes: Optional[int] = Field(None, ge=1)
+    discovery_location_gps_capture_enabled: bool = True
+    discovery_location_sharing_rules: Optional[Dict[str, Any]] = Field(None, description='e.g. {"only_on_submission": true, "require_permission": true}')
 
     @field_validator('learning_objectives', mode='before')
     @classmethod

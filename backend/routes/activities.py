@@ -129,6 +129,20 @@ async def create_activity(
         created_locale=created_locale,
         state_standard=getattr(activity, "state_standard", None),
         discipline=getattr(activity, "discipline", None),
+        # Discovery / scavenger-hunt mode — only meaningful when
+        # activity_type=DISCOVERY, but harmless to set regardless (columns
+        # default to None/False for every other type). Previously these
+        # were accepted by no schema at all and dropped before reaching
+        # here even if a client tried to send them.
+        discovery_mode=(activity.discovery_mode.value if getattr(activity, "discovery_mode", None) else None),
+        discovery_task_description=getattr(activity, "discovery_task_description", None),
+        discovery_location_required=getattr(activity, "discovery_location_required", False),
+        discovery_documentation_requirements=getattr(activity, "discovery_documentation_requirements", None),
+        discovery_success_criteria=getattr(activity, "discovery_success_criteria", None),
+        discovery_difficulty_level=getattr(activity, "discovery_difficulty_level", None),
+        discovery_time_limit_minutes=getattr(activity, "discovery_time_limit_minutes", None),
+        discovery_location_gps_capture_enabled=getattr(activity, "discovery_location_gps_capture_enabled", True),
+        discovery_location_sharing_rules=getattr(activity, "discovery_location_sharing_rules", None),
         status=ActivityStatus.DRAFT,
     )
 
