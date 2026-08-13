@@ -31,8 +31,16 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView testID="progress-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, styles.headerRow]}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('tabs.achievements', 'Achievements')}</Text>
+        <TouchableOpacity
+          testID="progress-calendar-open"
+          onPress={() => router.push('/student-calendar')}
+          style={styles.calendarBtn}
+          accessibilityLabel={t('studentCalendar.title', 'My Calendar')}
+        >
+          <Text style={{ fontSize: 20 }}>📅</Text>
+        </TouchableOpacity>
       </View>
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
@@ -137,7 +145,9 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   root:        { flex: 1 },
   header:      { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
+  headerRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   title:       { fontSize: 28, fontWeight: '700' },
+  calendarBtn: { padding: 4 },
   center:      { alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   statsRow:    { flexDirection: 'row', gap: 10 },
   statCard:    { flex: 1, alignItems: 'center', padding: 14, borderWidth: 1, gap: 4 },
