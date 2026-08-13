@@ -1354,7 +1354,11 @@
     "ccpa_card_desc": "Kaliforniya Tüketici Gizliliği Yasası. Kaliforniya’da ikamet eden kişiler için geçerlidir. Öğrenciler ve veliler, istedikleri zaman kişisel bilgilerinin açıklanmasını, silinmesini veya bu bilgilerin satışından vazgeçilmesini talep edebilirler.",
     "coppa_card_desc": "Çocukların Çevrimiçi Gizliliğinin Korunmasına İlişkin Yasa. Amerika Birleşik Devletleri’nde 13 yaşın altındaki kullanıcılar için geçerlidir. Reşit olmayanlardan herhangi bir kişisel veri toplanmadan önce ebeveyn onayı alınır.",
     "custom_policy_card_title": "Özel Politika",
-    "custom_policy_card_desc": "Yargı bölgesine özgü bir kurala mı ihtiyacınız var? Yöneticiler, herhangi bir bölge, okul veya kuruluş için özel gizlilik kuralları oluşturup yayınlayabilir."
+    "custom_policy_card_desc": "Yargı bölgesine özgü bir kurala mı ihtiyacınız var? Yöneticiler, herhangi bir bölge, okul veya kuruluş için özel gizlilik kuralları oluşturup yayınlayabilir.",
+    "ccpa_card_title": "CCPA",
+    "coppa_card_title": "COPPA",
+    "ferpa_card_title": "FERPA",
+    "gdpr_card_title": "GDPR"
   },
   "capture_photosvideo": "Foto/Video Çek",
   "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",

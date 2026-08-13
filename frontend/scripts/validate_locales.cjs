@@ -86,6 +86,11 @@ const ALLOWLIST_WORDS = new Set([
   "peri", "peripateticware", "ferpa", "coppa", "gdpr", "ccpa", "lgpd", "pipeda", "pdpa",
   "ok", "id", "url", "api", "pdf", "csv", "png", "jpg", "mp4", "mp3", "txt", "sla", "gps",
   "email", "ios", "android", "postgresql", "pgvector",
+  // tech/product/standards acronyms and proper nouns that are legitimately
+  // untranslated in any locale
+  "json", "sql", "jwt", "lms", "faq", "cta", "ccss", "ngss", "teks",
+  "iphone", "google", "ollama", "leaflet", "bloom", "marzano",
+  "securepassword",
 ]);
 
 // Literal byte sequences that only show up when UTF-8 text gets decoded as
@@ -102,7 +107,7 @@ const MOJIBAKE_SEQUENCES = [
 function hasMojibake(str) {
   return MOJIBAKE_SEQUENCES.some((seq) => str.includes(seq));
 }
-const META_LEAK_RE = /\((?:preserved|translation|translated|note:|as an ai|i cannot|i'm unable)/i;
+const META_LEAK_RE = /\((?:preserv|translation|translated|note:|please note|as an ai|i cannot|i'm unable)/i;
 // A string whose ENTIRE value is a stringified Python/JS list or a bare
 // pipeline sentinel — e.g. "['Marzameto']" or "False" — never a legitimate
 // translated string. Deliberately anchored (^...$) so real prose that merely
@@ -140,7 +145,14 @@ function isSkippedKey(key) {
 }
 
 function containsLatinWord(str) {
-  const words = str.match(/[A-Za-z]{3,}/g);
+  // Strip i18next interpolation placeholders ({{count}}, {count}, %s-style)
+  // and example email addresses (demo-account labels like
+  // "teacher@example.com" are placeholder data, not leaked prose) before
+  // scanning for real leaked English words.
+  const withoutPlaceholders = str
+    .replace(/\{\{[^}]*\}\}|\{[^}]*\}/g, " ")
+    .replace(/[\w.+-]+@[\w.-]+\.\w+/g, " ");
+  const words = withoutPlaceholders.match(/[A-Za-z]{3,}/g);
   if (!words) return null;
   for (const w of words) {
     if (!ALLOWLIST_WORDS.has(w.toLowerCase())) return w;
@@ -278,7 +290,11 @@ function main() {
 
         if (trimmed.length > 0 && val === baseVal && baseVal.trim().length > 1) {
           const bareWord = trimmed.toLowerCase();
-          if (!ALLOWLIST_WORDS.has(bareWord) && !/^\{\{.*\}\}$/.test(trimmed)) {
+          // Not translation targets even when byte-identical to en: example
+          // email addresses (placeholder format, not prose), and bare numbers/
+          // HTTP status codes.
+          const isNonTranslatable = /^[\w.+-]+@[\w.-]+\.\w+$/.test(trimmed) || /^\d+$/.test(trimmed);
+          if (!ALLOWLIST_WORDS.has(bareWord) && !isNonTranslatable && !/^\{\{.*\}\}$/.test(trimmed)) {
             logWarn(`${label}: identical to en — likely untranslated — "${val.slice(0, 60)}"`);
             warnCount++;
           }

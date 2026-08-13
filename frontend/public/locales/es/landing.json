@@ -1015,8 +1015,8 @@
     "gdpr_card_desc": "descripción de la tarjeta gdpr",
     "ccpa_card_title": "CCPA",
     "ccpa_card_desc": "descripción de la tarjeta ccpa",
-    "custom_policy_card_title": "Custom Policy",
-    "custom_policy_card_desc": "Need a jurisdiction-specific rule? Administrators can author and publish custom privacy rules scoped to any region, school, or organisation.",
+    "custom_policy_card_title": "Política personalizada",
+    "custom_policy_card_desc": "¿Necesita una regla específica para una jurisdicción? Los administradores pueden crear y publicar reglas de privacidad personalizadas para cualquier región, escuela u organización.",
     "cta_section_title": "Construido para ganar tu confianza, no solo tu cumplimiento de casillas",
     "cta_section_subtitle": "Ve exactamente cómo se maneja la información de los estudiantes en cada paso del proceso",
     "cta_section_desc": "Lea la documentación técnica completa o comuníquese con cualquier pregunta sobre cómo Peripateticware protege la privacidad del estudiante.",
@@ -1324,7 +1324,7 @@
   "builtin_rubrics": "Rúbricas Incorporadas",
   "use_ours_or_build_your_own_grade_by_rubr": "Usa el nuestro o crea el tuyo propio. Califica por rúbrica. Autopuebla informes.",
   "reports_ready": "Listos",
-  "evidence_organized_by_standard_growth_ch": "\"Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.\"\n\n(Please note that the template variables have been preserved exactly as they appear in the input string.)",
+  "evidence_organized_by_standard_growth_ch": "Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.",
   "parents_kids_connected": "Padres e Hijos Conectados",
   "weekly_digests_go_to_families_parents_me": "Los resúmenes semanales se envían a las familias. Los padres te envían mensajes directamente. Sin trabajo adicional. Sucede automáticamente.",
   "we_send_parents_what_happened_in_your_cl": "Enviamos a los padres lo que sucedió en tu clase: fotos, habilidades desarrolladas y hitos logrados. No necesitas hacer nada.",
@@ -2976,7 +2976,7 @@
       "name": "Colegio",
       "feature": {
         "1": "Aulas múltiples",
-        "2": "Multi-admin",
+        "2": "Múltiples administradores",
         "3": "Análisis de la organización",
         "4": "Prioridad"
       }

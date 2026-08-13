@@ -1611,7 +1611,7 @@
   "your_class_in_the_field": "Sua turma no campo",
   "every_activity_automatically_tagged_agai": "Todas as atividades são automaticamente etiquetadas de acordo com os padrões. Sua estrutura ou a nossa.",
   "use_ours_or_build_your_own_grade_by_rubr": "Use o nosso ou crie o seu próprio. Avalie por critérios. Preencha relatórios automaticamente.",
-  "evidence_organized_by_standard_growth_ch": "\"Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.\"\n\n(Preserving template variables exactly as they appear in the input string.)",
+  "evidence_organized_by_standard_growth_ch": "Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.",
   "parents_kids_connected": "Pais & Crianças Conectados",
   "weekly_digests_go_to_families_parents_me": "Os resumos semanais são enviados para famílias. Os pais lhe enviam mensagens diretamente. Sem trabalho adicional. Isso acontece automaticamente.",
   "we_send_parents_what_happened_in_your_cl": "Enviamos aos pais o que aconteceu na sua turma: fotos, habilidades desenvolvidas, marcos alcançados. \\n Você não precisa fazer nada.",
@@ -1893,7 +1893,11 @@
     "ccpa_card_desc": "Lei de Privacidade do Consumidor da Califórnia. Aplica-se aos residentes da Califórnia. Alunos e pais podem solicitar o acesso, a exclusão ou a recusa à venda de informações pessoais a qualquer momento.",
     "coppa_card_desc": "Lei de Proteção à Privacidade Online das Crianças. Aplica-se a usuários menores de 13 anos nos Estados Unidos. O consentimento dos pais é obtido antes da coleta de quaisquer dados pessoais de menores.",
     "custom_policy_card_title": "Política Personalizada",
-    "custom_policy_card_desc": "Precisa de uma regra específica para uma jurisdição? Os administradores podem criar e publicar regras de privacidade personalizadas para qualquer região, escola ou organização."
+    "custom_policy_card_desc": "Precisa de uma regra específica para uma jurisdição? Os administradores podem criar e publicar regras de privacidade personalizadas para qualquer região, escola ou organização.",
+    "ccpa_card_title": "CCPA",
+    "coppa_card_title": "COPPA",
+    "ferpa_card_title": "FERPA",
+    "gdpr_card_title": "GDPR"
   },
   "capture_photosvideo": "Fotografar/vídeo",
   "take_photos_record_videos_and_capture_au": "Fotografar, gravar vídeos e capturar áudio para documentar suas observações e descobertas.",
@@ -3048,5 +3052,6 @@
     "step_upload": "Fazer upload"
   },
   "seattle_wa": "Seattle, WA",
-  "pricing_nav_label": "Preços"
+  "pricing_nav_label": "Preços",
+  "marzano": "Marzano"
 }

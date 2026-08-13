@@ -1,4 +1,5 @@
 {
+  "500": "500",
   "approuter": {
     "page_not_found": "Pagina non trovata",
     "projects": "Progetti",
@@ -1348,8 +1349,12 @@
     "coppa_card_desc": "Legge sulla protezione della privacy dei bambini online. Si applica agli utenti under 13 negli Stati Uniti. Il consenso dei genitori viene ottenuto prima di raccogliere qualsiasi dato personale dai minori.",
     "gdpr_card_desc": "Regolamento generale sulla protezione dei dati. Si applica alle scuole e agli studenti nell'Unione europea. I dati vengono elaborati solo su basi legali; studenti e genitori hanno il diritto completo di accesso e cancellazione.",
     "ccpa_card_desc": "Legge sulla privacy dei consumatori della California. Si applica ai residenti in California. Studenti e genitori possono richiedere la divulgazione, la cancellazione o il recesso dalla vendita di informazioni personali in qualsiasi momento.",
-    "custom_policy_card_title": "Custom Policy",
-    "custom_policy_card_desc": "Need a jurisdiction-specific rule? Administrators can author and publish custom privacy rules scoped to any region, school, or organisation."
+    "custom_policy_card_title": "Policy personalizzata",
+    "custom_policy_card_desc": "Hai bisogno di una regola specifica per una giurisdizione? Gli amministratori possono creare e pubblicare regole sulla privacy personalizzate per qualsiasi regione, scuola o organizzazione.",
+    "ccpa_card_title": "CCPA",
+    "coppa_card_title": "COPPA",
+    "ferpa_card_title": "FERPA",
+    "gdpr_card_title": "GDPR"
   },
   "capture_photosvideo": "Fotografa/fai video",
   "take_photos_record_videos_and_capture_au": "Fai foto, registra video e cattura l'audio per documentare le tue osservazioni e scoperte.",
@@ -3038,5 +3043,7 @@
   "team_1_role": "Fondatore e PM",
   "database": "Database",
   "video": "Video",
-  "pricing_nav_label": "Prezzi"
+  "pricing_nav_label": "Prezzi",
+  "marzano": "Marzano",
+  "m": "m"
 }

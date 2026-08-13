@@ -1028,7 +1028,11 @@
     "ccpa_card_desc": "Kalifornisches Verbraucherdatenschutzgesetz (California Consumer Privacy Act). Gilt für Einwohner Kaliforniens. Schüler und Eltern können jederzeit Auskunft, Löschung oder den Verzicht auf den Verkauf personenbezogener Daten beantragen.",
     "coppa_card_desc": "Gesetz zum Schutz der Privatsphäre von Kindern im Internet (Children’s Online Privacy Protection Act). Gilt für Nutzer unter 13 Jahren in den Vereinigten Staaten. Vor der Erhebung personenbezogener Daten von Minderjährigen wird die Zustimmung der Eltern eingeholt.",
     "custom_policy_card_title": "Individuelle Richtlinie",
-    "custom_policy_card_desc": "Benötigen Sie eine regionsspezifische Regel? Administratoren können individuelle Datenschutzrichtlinien für jede Region, Schule oder Organisation erstellen und veröffentlichen."
+    "custom_policy_card_desc": "Benötigen Sie eine regionsspezifische Regel? Administratoren können individuelle Datenschutzrichtlinien für jede Region, Schule oder Organisation erstellen und veröffentlichen.",
+    "ccpa_card_title": "CCPA",
+    "coppa_card_title": "COPPA",
+    "ferpa_card_title": "FERPA",
+    "gdpr_card_title": "GDPR"
   },
   "loading_your_projects": "Lade Ihre Projekte...",
   "retry": "Wiederholen",
@@ -2939,7 +2943,7 @@
       }
     },
     "homeschool": {
-      "name": "Homeschool",
+      "name": "Hausunterricht",
       "feature": {
         "1": "Familienkonten",
         "2": "Portfoliodokumentexport",
@@ -3041,5 +3045,6 @@
   "radius": "Radius",
   "video": "Video",
   "name": "Name",
-  "pricing_nav_label": "Preise"
+  "pricing_nav_label": "Preise",
+  "pe": "PE"
 }

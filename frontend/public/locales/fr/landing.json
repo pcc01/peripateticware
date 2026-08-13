@@ -218,7 +218,7 @@
   "uploading_audio": "Chargement de l'audio...",
   "audio_recorded": "Enregistrement audio (",
   "audiocapture": {
-    "s": "\"f)\"\n\n(Preserving the template variable \"{count}\" exactly as requested.)"
+    "s": "f)"
   },
   "audio_recording": "Enregistrement audio",
   "max": "Maximum",
@@ -239,7 +239,7 @@
   "fieldnoteeditor": {
     "title": "Titre",
     "location": "Lieu",
-    "s": "\"f)\"\n\n(Preserving the template variable \"{count}\" exactly as requested.)",
+    "s": "f)",
     "add_audio": "Ajouter l'audio",
     "all_statuses": "Tous les statuts",
     "captures": "prises",
@@ -1387,8 +1387,8 @@
     "gdpr_card_desc": "RGPD",
     "ccpa_card_title": "CCPA",
     "ccpa_card_desc": "CCPA",
-    "custom_policy_card_title": "Custom Policy",
-    "custom_policy_card_desc": "Need a jurisdiction-specific rule? Administrators can author and publish custom privacy rules scoped to any region, school, or organisation.",
+    "custom_policy_card_title": "Politique personnalisée",
+    "custom_policy_card_desc": "Besoin d'une règle spécifique à une juridiction ? Les administrateurs peuvent créer et publier des règles de confidentialité personnalisées pour toute région, école ou organisation.",
     "cta_section_title": "Conçu pour gagner votre confiance, pas seulement votre case à cocher de conformité",
     "cta_section_subtitle": "Voir comment les données des étudiants sont traitées à chaque étape",
     "cta_section_desc": "Consultez la documentation technique complète ou contactez-nous pour toute question concernant la manière dont Peripateticware protège la vie privée des étudiants.",

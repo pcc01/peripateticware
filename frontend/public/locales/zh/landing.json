@@ -1410,7 +1410,7 @@
   "in_production_integrate_leaflet_or_googl": "在正式版本中，请在此处集成 Leaflet 或 Google Maps。\\n 用户可以点击地图来选择位置。",
   "for_now_use_manual_coordinate_entry_belo": "现在，请在下方手动输入坐标。",
   "aipowered_lesson_suggestions": "人工智能推荐课程",
-  "ollama_is_analyzing_your_location_and_ac": "Olllama 正在分析您的位置和活动，以推荐相关的练习变化",
+  "ollama_is_analyzing_your_location_and_ac": "Ollama 正在分析您的位置和活动，以推荐相关的练习变化",
   "generating_suggestions": "生成建议中...",
   "showing_fallback_suggestions_instead": "显示备用建议。",
   "regenerate_suggestions": "重新生成建议",
@@ -1442,7 +1442,7 @@
   "she_advanced_in_3_competencies_this_week": "她本周在3个领域取得了进展。",
   "field_observation_riverside_park": "河畔公园字段观察",
   "i_noticed_how_different_plants_adapt_to_": "植物在阴影下的适应方式各不相同。",
-  "talk_tonight_prompts": "聊天 tonight 提示",
+  "talk_tonight_prompts": "💬 今晚聊天话题",
   "view_evidence_and_reflections_here": "查看证据和反思点击这里。",
   "messages_with_teachers": "教师消息",
   "manage_your_preferences_here": "管理您的偏好设置。",
@@ -1571,7 +1571,7 @@
   "read_the_activity_goal_see_where_you_are": "阅读活动目标。查看地图上您的位置。熟悉即将探索的内容。",
   "aristotelian_prompts": "对话提示",
   "ai_thinking_partner": "人工智能助手",
-  "review_what_you_captured_answer_reflecti": "回顾您的收集。回答反思问题。建立您的端folio。赚取徽章。",
+  "review_what_you_captured_answer_reflecti": "回顾您的收集。回答反思问题。建立您的作品集。赚取徽章。",
   "build_your_portfolio": "构建您的组合",
   "capture_evidence_the_way_that_makes_sens": "抓取证据，让它有意义。照片、草图、语音笔记、视频——无论是什么讲述故事的方式。",
   "geotagged_and_timestamped_add_captions_a": "地理标记和时间戳。添加说明。注释。",
@@ -1908,7 +1908,11 @@
     "ccpa_card_desc": "《加利福尼亚州消费者隐私法》。适用于加利福尼亚州居民。学生和家长可随时要求披露、删除个人信息，或选择不允许出售其个人信息。",
     "coppa_card_desc": "《儿童在线隐私保护法》。适用于美国境内13岁以下的用户。在收集未成年人的任何个人数据之前，均须征得家长同意。",
     "custom_policy_card_title": "自定义政策",
-    "custom_policy_card_desc": "需要针对特定司法管辖区的规则吗？管理员可以为任何地区、学校或组织创建并发布自定义隐私规则。"
+    "custom_policy_card_desc": "需要针对特定司法管辖区的规则吗？管理员可以为任何地区、学校或组织创建并发布自定义隐私规则。",
+    "ccpa_card_title": "CCPA",
+    "coppa_card_title": "COPPA",
+    "ferpa_card_title": "FERPA",
+    "gdpr_card_title": "GDPR"
   },
   "capture_photosvideo": "拍照/录像",
   "take_photos_record_videos_and_capture_au": "拍照、录像和录音以记录您的观察和发现。",
@@ -2451,7 +2455,7 @@
     "if_students_follow_their_curiosity_throu": "如果学生在现实地点遵循自己的好奇心，学习拱门、圆柱和天文导航，因为他们正站在教堂或港口附近，如何评估他们学到了什么，以满足课程要求？如何同时生成校长想要的数字表格，又尊重学生实际理解的复杂性？",
     "the_document_left_that_question_open_the": "学术界对“户外学习”长期缺乏明确的定义或可行的计划，这种情况持续了近二十年。",
     "the_first_part_was_solved_by_smartphones": "第一部分由智能手机解决。照片、音频、GPS坐标、时间戳——一个学生在溪流边可以在十分钟内记录的证据，比一日游笔记本能容纳的多。剩下的是第二部分：结构化询问，不仅记录经验，还深化了它。",
-    "thats_where_peri_comes_in_peri_is_peripa": "Peri是Peripateticware的AI指南，名称源自亚里士多德方法。它不回答问题，而是提出问题。它遵循五阶段询问序列——吸引、观察、分析、解释、应用，这是亚里士多德在吕克昂使用的方法，也是认知科学以来被证明通向真正理解而不是简单记忆的路径。Peri会就学生的观察提出下一个合适的问题。当学生回答正确时，Peri会检测 Implications。当学生模糊不清时，Peri会要求提供证据。",
+    "thats_where_peri_comes_in_peri_is_peripa": "Peri是Peripateticware的AI指南，名称源自亚里士多德方法。它不回答问题，而是提出问题。它遵循五阶段询问序列——吸引、观察、分析、解释、应用，这是亚里士多德在吕克昂使用的方法，也是认知科学以来被证明通向真正理解而不是简单记忆的路径。Peri会就学生的观察提出下一个合适的问题。当学生回答正确时，Peri会检测其含义。当学生模糊不清时，Peri会要求提供证据。",
     "the_result_is_an_artifact_a_field_journa": "“结果是一件艺术品：包含捕获、扩展分析和询问记录的日志条目。教师可以看到学生得出的结论，也能看到他们是如何得出的。与布卢姆税率表对齐的评分标准，以及CCSS、NGSS、TEKS或自定义标准，使任何课程协调员都能阅读该评估。电子表格和真实学习终于占据同一份文档。”",
     "the_2007_paper_described_a_choose_your_o": "该2007年论文描述了一个“自选冒险”式学习模型，其中学生跟随岔路，追求自己的兴趣，通过真正好奇心的侧门而不是指令的前门遇到核心课程概念。该论文承认这“有些混乱”，并需要新的教学设计、新的评估工具和愿意放弃一些控制权换取真实参与的老师。",
     "peripateticware_doesnt_fully_solve_the_c": "Peripateticware並不能完全解決混亂，那種張力是真實的，可能是永久性的。它做的是為老師提供足夠的結構以保持理智（設計活動、學習目標、完成階段、老師批准工作流程），同時又給予學生足夠的自由去真正地前進（GPS觸發內容、學生提議活動、自主田野筆記、同伴項目）。",
@@ -2961,7 +2965,7 @@
     "down_for_maintenance": "维护中",
     "peripateticware_is_briefly_offline_while": "在进行改进时，Peripateticware暂时离线。您的工作是安全的——我们很快就会回来。"
   },
-  "field_journal_desc": "學生不僅完成活動，還記錄它。野外日誌是原始觀察轉化為結構化知識的地方。回到辦公桌前，學生通過延伸分析、個人反思和連接已有知識來擴展筆記。老師可以查看、回覆並將條目提交給學生的永久端Folio。",
+  "field_journal_desc": "學生不僅完成活動，還記錄它。野外日誌是原始觀察轉化為結構化知識的地方。回到辦公桌前，學生通過延伸分析、個人反思和連接已有知識來擴展筆記。老師可以查看、回覆並將條目提交給學生的永久作品集。",
   "config_constants": {
     "openstreetmap": "开源地图"
   },
@@ -2993,7 +2997,7 @@
   },
   "field_journal_feature_1": "抓拍现场 — 照片、音频和书面笔记，精确到地点的地理标签",
   "field_journal_feature_2": "拓展您的桌面思维 — 四个结构化部分（分析、反省、连接、问题）指导活动后更深入的思考",
-  "field_journal_feature_3": "“教师反馈内置，老师可标注并批准提交；通过项目自动添加至 порт folio”",
+  "field_journal_feature_3": "教师反馈内置——老师可标注并批准提交；已批准的记录会自动归入作品集",
   "pricing_tier": {
     "personal": {
       "name": "个性化",
