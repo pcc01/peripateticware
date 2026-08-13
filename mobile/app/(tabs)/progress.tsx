@@ -31,16 +31,8 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView testID="progress-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
-      <View style={[styles.header, styles.headerRow]}>
+      <View style={styles.header}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('tabs.achievements', 'Achievements')}</Text>
-        <TouchableOpacity
-          testID="progress-calendar-open"
-          onPress={() => router.push('/student-calendar')}
-          style={styles.calendarBtn}
-          accessibilityLabel={t('studentCalendar.title', 'My Calendar')}
-        >
-          <Text style={{ fontSize: 20 }}>📅</Text>
-        </TouchableOpacity>
       </View>
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
@@ -50,18 +42,30 @@ export default function ProgressScreen() {
           contentContainerStyle={{ padding: 16, gap: 16 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
         >
-          {/* Stats row */}
+          {/* Stats row — Calendar is the one real click-through tile here;
+              Activities/Captures/Day streak are plain display values (no
+              detail screen exists for any of them yet), so only Calendar
+              gets an onPress/testID and the tap affordance. */}
           <View style={styles.statsRow}>
             {[
-              { label: t('progress.stats.activities', 'Activities'), value: data?.total_activities_completed ?? 0, emoji: '🏅' },
-              { label: t('progress.stats.captures', 'Captures'),  value: data?.total_captures ?? 0,              emoji: '📷' },
-              { label: t('progress.stats.dayStreak', 'Day streak'), value: data?.current_streak_days ?? 0,        emoji: '🔥' },
+              { key: 'activities', label: t('progress.stats.activities', 'Activities'), value: data?.total_activities_completed ?? 0, emoji: '🏅' },
+              { key: 'captures',   label: t('progress.stats.captures', 'Captures'),  value: data?.total_captures ?? 0,              emoji: '📷' },
+              { key: 'streak',     label: t('progress.stats.dayStreak', 'Day streak'), value: data?.current_streak_days ?? 0,        emoji: '🔥' },
+              { key: 'calendar',   label: t('studentCalendar.title', 'My Calendar'), value: '→', emoji: '📅', onPress: () => router.push('/student-calendar') },
             ].map((stat) => (
-              <View key={stat.label} style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
+              <TouchableOpacity
+                key={stat.key}
+                testID={stat.key === 'calendar' ? 'progress-calendar-open' : undefined}
+                onPress={stat.onPress}
+                disabled={!stat.onPress}
+                activeOpacity={stat.onPress ? 0.7 : 1}
+                accessibilityRole={stat.onPress ? 'button' : undefined}
+                style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
+              >
                 <Text style={styles.statEmoji}>{stat.emoji}</Text>
                 <Text style={[styles.statValue, { fontFamily: theme.fontHead, color: theme.text }]}>{stat.value}</Text>
                 <Text style={[styles.statLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{stat.label.toUpperCase()}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
 
@@ -145,9 +149,7 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   root:        { flex: 1 },
   header:      { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  headerRow:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   title:       { fontSize: 28, fontWeight: '700' },
-  calendarBtn: { padding: 4 },
   center:      { alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },
   statsRow:    { flexDirection: 'row', gap: 10 },
   statCard:    { flex: 1, alignItems: 'center', padding: 14, borderWidth: 1, gap: 4 },
