@@ -1405,7 +1405,7 @@
     "contact": "Contatto",
     "back_to_home": "Indietro alla Home",
     "auth_token_desc": "Memorizza il tuo token JWT di sessione. Scade dopo 24 ore.",
-    "auth_user_desc": "Memorizza il tuo profilo utente di base (nome, ruolo). Cancellato all'uscita.",
+    "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
     "i18nextlng_desc": "Ricorda la tua preferenza linguistica scelta.",
     "questions": "Domande?"
   },

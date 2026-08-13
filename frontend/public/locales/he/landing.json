@@ -1858,7 +1858,7 @@
     "contact": "צור קשר",
     "back_to_home": "בית",
     "auth_token_desc": "שומר את טוקן סשן שלך. מתפוגג לאחר 24 שעות.",
-    "auth_user_desc": "חוסם פרופיל משתמש בסיסי (שם, תפקיד). נקייה בעת יציאה.",
+    "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
     "i18nextlng_desc": "זוכר את העדפתך בשפה",
     "questions": "שאלות?"
   },

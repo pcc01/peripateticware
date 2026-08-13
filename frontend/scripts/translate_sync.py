@@ -183,6 +183,29 @@ LEGAL_DNT_KEY_RE = re.compile(
     r'(^|[._])(termspage|terms|tos|legal|eula|policy|policies|agreement|clause|disclaimer)([._]|$)',
     re.IGNORECASE)
 
+# The word-boundary regex above only locks a key if ONE OF ITS SUB-KEYS
+# happens to contain a trigger word — found (2026-08) to be inconsistent
+# for the actual legal *pages*: cookiepolicypage.cookie_policy matches
+# (contains "policy"), but cookiepolicypage.auth_user_desc doesn't (no
+# trigger word at all) and was translated instead of staying English, same
+# policy violation this whole mechanism exists to prevent. Lock these three
+# entire page namespaces by PREFIX instead, regardless of what any
+# individual sub-key happens to be named. privacypage is the actual legal
+# Privacy Policy document; privacy.* (no "page") is unrelated Privacy
+# Engine marketing/feature copy on the landing page and must stay
+# translatable — do not add it here.
+LEGAL_DNT_PAGE_PREFIXES = {"termspage", "cookiepolicypage", "privacypage"}
+
+# The word-boundary regex's flip-side false positive: "policy" inside
+# privacy.custom_policy_card_title/desc (a landing-page card describing the
+# *feature* of authoring a custom policy — Privacy Engine marketing copy,
+# not the legal document itself) matched and got silently forced back to
+# English on every sync run. Explicit override, checked before the regex.
+LEGAL_DNT_FALSE_POSITIVE_KEYS = {
+    "privacy.custom_policy_card_title",
+    "privacy.custom_policy_card_desc",
+}
+
 # ─── Latin / lorem-ipsum placeholder detection (by VALUE, not key) ──────────
 # Paul uses Latin filler wherever real content doesn't exist yet. Filler must
 # never be machine-translated (it would become fabricated-sounding content),
@@ -392,7 +415,14 @@ def is_do_not_translate(key: str, value: str) -> bool:
         return True
     if any(p.search(key) for p in DO_NOT_TRANSLATE_KEY_PATTERNS):
         return True
-    # Legal content: English-only in every locale for now (see LEGAL_DNT_KEY_RE).
+    if key in LEGAL_DNT_FALSE_POSITIVE_KEYS:
+        return False
+    # Legal content: English-only in every locale for now. Whole-page lock
+    # first (every key under termspage./cookiepolicypage./privacypage.,
+    # regardless of sub-key wording), then the word-boundary fallback for
+    # legal terms scattered elsewhere (footer.terms_link, eula.section2, ...).
+    if key.split(".")[0] in LEGAL_DNT_PAGE_PREFIXES:
+        return True
     if LEGAL_DNT_KEY_RE.search(key):
         return True
     if isinstance(value, str) and DEMO_EMAIL_FULL_RE.match(value.strip()):

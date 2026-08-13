@@ -75,7 +75,36 @@ const FALLBACK_CHAINS = {
 const SKIP_KEY_PATTERNS = [
   /^team_[1-9]_/,
   /^testimonial_[1-9]_/,
+  // Word-boundary fallback for legal terms scattered outside the three page
+  // namespaces below (footer.terms_link, eula.section2, ...). Mirrors
+  // scripts/translate_sync.py's LEGAL_DNT_KEY_RE. NOTE: this alone is not
+  // sufficient to skip cookiepolicypage.*/termspage.*/privacypage.*
+  // consistently (a sub-key with no trigger word, e.g.
+  // cookiepolicypage.auth_user_desc, wouldn't match) — see
+  // LEGAL_PAGE_PREFIXES below, which is the actual page-level lock.
+  /(^|[._])(termspage|terms|tos|legal|eula|policy|policies|agreement|clause|disclaimer)([._]|$)/i,
 ];
+
+// Whole-page English-only lock (2026-07 product decision, Paul) — every key
+// under these three namespaces stays English in every locale regardless of
+// what any individual sub-key is named. Mirrors
+// scripts/translate_sync.py's LEGAL_DNT_PAGE_PREFIXES exactly; that's what
+// actually enforces the lock at translation time, this just needs to agree
+// with it or the validator flags correct-by-design English as "likely
+// untranslated" noise. privacypage is the real legal Privacy Policy
+// document; privacy.* (no "page") is unrelated Privacy Engine
+// marketing/feature copy on the landing page and must stay checked.
+const LEGAL_PAGE_PREFIXES = new Set(["termspage", "cookiepolicypage", "privacypage"]);
+
+// The flip side: "policy" inside privacy.custom_policy_card_title/desc
+// matches the word-boundary regex above even though it's landing-page
+// marketing copy describing the custom-policy *feature*, not legal
+// boilerplate. Mirrors scripts/translate_sync.py's
+// LEGAL_DNT_FALSE_POSITIVE_KEYS — these must stay checked, never skipped.
+const LEGAL_FALSE_POSITIVE_KEYS = new Set([
+  "privacy.custom_policy_card_title",
+  "privacy.custom_policy_card_desc",
+]);
 
 // Brand names, acronyms, and other strings that are legitimately identical
 // or Latin-script across every locale on purpose. Mirrors
@@ -141,6 +170,8 @@ function typeOf(v) {
 }
 
 function isSkippedKey(key) {
+  if (LEGAL_FALSE_POSITIVE_KEYS.has(key)) return false;
+  if (LEGAL_PAGE_PREFIXES.has(key.split(".")[0])) return true;
   return SKIP_KEY_PATTERNS.some((re) => re.test(key));
 }
 
