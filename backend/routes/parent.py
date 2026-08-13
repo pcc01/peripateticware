@@ -64,6 +64,11 @@ class ChildLinkResponse(BaseModel):
     child_avatar: Optional[str] = None
     relationship: str
     linked_at: str
+    # 'pending' | 'approved' | 'denied' — see link_child()'s docstring.
+    # Included (rather than filtering server-side) so the parent's own
+    # dashboard can show what it's waiting on instead of the child just
+    # silently never appearing.
+    status: str = "approved"
 
     class Config:
         from_attributes = True
@@ -316,7 +321,16 @@ async def link_child(
     current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Link a child to this parent account by the child's email address."""
+    """
+    Request a link between this parent account and a child's account by
+    email. This does NOT grant access by itself — it creates a
+    status='pending' row that the child must approve from their own app
+    (see routes/student.py's GET/POST /student/parent-requests) before any
+    of this parent's endpoints will return that child's data. Every
+    authorization check below (progress/activities/reports) requires
+    status='approved', not just row-existence, so a pending or denied row
+    grants nothing on its own.
+    """
     from sqlalchemy import select as _sel
     # NOTE: do not import a ParentChildLink ORM model here — it does not exist.
     # This flow uses raw SQL against the parent_child_links table (created in main.py
@@ -331,23 +345,55 @@ async def link_child(
             raise HTTPException(status_code=404, detail="No account found with that email address.")
         if str(child.id) == str(current_user.id):
             raise HTTPException(status_code=400, detail="Cannot link your own account.")
+        if child.role != "STUDENT":
+            raise HTTPException(status_code=400, detail="That account isn't a student account.")
 
-        # Upsert the parent-child relationship
-        await db.execute(text("""
-            INSERT INTO parent_child_links (parent_id, child_id, relationship, linked_at)
-            VALUES (:pid, :cid, :rel, NOW())
-            ON CONFLICT (parent_id, child_id) DO UPDATE SET relationship = EXCLUDED.relationship
-        """), {"pid": str(current_user.id), "cid": str(child.id), "rel": body.relationship})
+        # Insert as pending. On a repeat request: leave an already-pending
+        # or already-approved row untouched (a duplicate call can't
+        # silently re-grant or reset anything); only a previously-denied
+        # row is reopened to pending, so a child who says no can't be
+        # spammed into a different outcome by repeated identical requests,
+        # but a genuine mistake ("I meant to approve that") isn't permanent.
+        row = (await db.execute(text("""
+            INSERT INTO parent_child_links (parent_id, child_id, relationship, status, linked_at)
+            VALUES (:pid, :cid, :rel, 'pending', NOW())
+            ON CONFLICT (parent_id, child_id) DO UPDATE SET
+                relationship = EXCLUDED.relationship,
+                status = CASE WHEN parent_child_links.status = 'denied' THEN 'pending' ELSE parent_child_links.status END
+            RETURNING status
+        """), {"pid": str(current_user.id), "cid": str(child.id), "rel": body.relationship})).scalar_one()
         await db.commit()
 
+        try:
+            await log_access(
+                actor_id=str(current_user.id),
+                actor_role=current_user.role,
+                action="PARENT_LINK_REQUEST",
+                data_type="parent_child_link",
+                student_id=str(child.id),
+                rules_applied=[],
+                compliance_status="COMPLIANT",
+                db=db,
+                notes=f"parent_id={current_user.id} child_id={child.id} status={row}",
+            )
+        except Exception as _audit_err:
+            import logging as _log
+            _log.getLogger(__name__).warning("Privacy audit failed (non-blocking): %s", _audit_err)
+
+        messages = {
+            "pending":  f"Request sent to {child.full_name or child.email}. They'll need to approve it in their app before you can see their progress.",
+            "approved": f"Already linked to {child.full_name or child.email}.",
+        }
         return {
             "success": True,
-            "message": f"Linked to {child.full_name or child.email}.",
+            "status": row,
+            "message": messages.get(row, f"Request sent to {child.full_name or child.email}."),
             "child": {
                 "id":           str(child.id),
                 "name":         child.full_name or child.email,
                 "email":        child.email,
                 "relationship": body.relationship,
+                "status":       row,
                 "linked_at":    datetime.utcnow().isoformat(),
             }
         }
@@ -362,10 +408,17 @@ async def list_parent_children(
     current_user: User = Depends(_get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get all children linked to parent"""
+    """
+    Get all children linked to parent, at any status. Deliberately not
+    filtered to status='approved' here — the parent's dashboard needs to
+    show pending/denied rows too (so a request they sent doesn't just
+    vanish with no explanation). Every endpoint that actually returns a
+    child's data (progress/activities/reports below) does its own
+    status='approved' check independently of this list.
+    """
     try:
         rows = (await db.execute(text("""
-            SELECT u.id AS child_id, u.full_name, u.email, l.relationship, l.linked_at
+            SELECT u.id AS child_id, u.full_name, u.email, l.relationship, l.linked_at, l.status
             FROM parent_child_links l
             JOIN users u ON u.id = l.child_id
             WHERE l.parent_id = :pid
@@ -378,6 +431,7 @@ async def list_parent_children(
                 child_name=r["full_name"] or r["email"],
                 relationship=r["relationship"] or "guardian",
                 linked_at=(r["linked_at"].isoformat() if r["linked_at"] else ""),
+                status=r["status"] or "approved",
             )
             for r in rows
         ]
@@ -406,7 +460,7 @@ async def get_child_progress(
         # get_child_activities()/get_weekly_report() below. Without this any
         # logged-in parent could read any other family's child's progress.
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid) AND status = 'approved'"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(status_code=403, detail="Not authorized to view this child's progress")
@@ -474,7 +528,7 @@ async def get_child_activities(
 
         # Verify authorization via parent_child_links
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid) AND status = 'approved'"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized to view this child's activities")
@@ -528,7 +582,7 @@ async def get_weekly_report(
     try:
         # Verify child link
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid) AND status = 'approved'"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized")
@@ -581,7 +635,7 @@ async def get_monthly_report(
     try:
         # Verify child link
         link = (await db.execute(text(
-            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)"
+            "SELECT 1 FROM parent_child_links WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid) AND status = 'approved'"
         ), {"pid": str(current_user.id), "cid": child_id})).fetchone()
         if not link:
             raise HTTPException(403, "Not authorized")

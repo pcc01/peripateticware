@@ -626,6 +626,109 @@ async def get_student_announcements(
 
 
 # ==============================================================================
+# PARENT LINK REQUESTS — child-side consent for routes/parent.py's link_child()
+#
+# A parent linking by email only creates a status='pending' row in
+# parent_child_links — see that endpoint's docstring. Nothing about that
+# request grants the parent any access until the child themselves approves
+# it here. This is the only place status can move to 'approved' or
+# 'denied'; there's no parent-side or admin-side override.
+# ==============================================================================
+
+class ParentLinkRequestResponse(BaseModel):
+    parent_id: str
+    parent_name: str
+    parent_email: str
+    relationship: str
+    requested_at: str
+
+
+@router.get("/parent-requests", response_model=List[ParentLinkRequestResponse])
+async def list_parent_requests(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Pending parent-link requests waiting on this student's approval."""
+    try:
+        rows = (await db.execute(text("""
+            SELECT p.id AS parent_id, p.full_name, p.email, l.relationship, l.linked_at
+            FROM parent_child_links l
+            JOIN users p ON p.id = l.parent_id
+            WHERE l.child_id = CAST(:cid AS uuid) AND l.status = 'pending'
+            ORDER BY l.linked_at DESC
+        """), {"cid": str(current_user.id)})).mappings().all()
+        return [
+            ParentLinkRequestResponse(
+                parent_id=str(r["parent_id"]),
+                parent_name=r["full_name"] or r["email"],
+                parent_email=r["email"],
+                relationship=r["relationship"] or "guardian",
+                requested_at=(r["linked_at"].isoformat() if r["linked_at"] else ""),
+            )
+            for r in rows
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _resolve_parent_request(
+    parent_id: str, new_status: str, current_user: User, db: AsyncSession,
+) -> dict:
+    from uuid import UUID as _UUID
+    try:
+        _UUID(parent_id)  # validates format, prevents injection
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid parent_id format")
+
+    result = await db.execute(text("""
+        UPDATE parent_child_links
+        SET status = :status
+        WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid) AND status = 'pending'
+    """), {"status": new_status, "pid": parent_id, "cid": str(current_user.id)})
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="No pending request from that account.")
+    await db.commit()
+
+    try:
+        from services.privacy_engine import log_access
+        await log_access(
+            actor_id=str(current_user.id),
+            actor_role=current_user.role,
+            action=f"PARENT_LINK_{new_status.upper()}",
+            data_type="parent_child_link",
+            student_id=str(current_user.id),
+            rules_applied=[],
+            compliance_status="COMPLIANT",
+            db=db,
+            notes=f"parent_id={parent_id} child_id={current_user.id} status={new_status}",
+        )
+    except Exception:
+        logger.warning("Privacy audit failed for parent-link %s (non-blocking)", new_status, exc_info=True)
+
+    return {"success": True, "status": new_status, "parent_id": parent_id}
+
+
+@router.post("/parent-requests/{parent_id}/approve")
+async def approve_parent_request(
+    parent_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Grant a pending parent an ongoing view of this student's progress."""
+    return await _resolve_parent_request(parent_id, "approved", current_user, db)
+
+
+@router.post("/parent-requests/{parent_id}/deny")
+async def deny_parent_request(
+    parent_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Decline a pending parent-link request."""
+    return await _resolve_parent_request(parent_id, "denied", current_user, db)
+
+
+# ==============================================================================
 # BACKGROUND: ASR TRANSCRIPTION
 # ==============================================================================
 

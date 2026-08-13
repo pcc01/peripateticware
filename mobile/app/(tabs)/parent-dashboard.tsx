@@ -6,9 +6,14 @@
 // parent needs *before* anything else on this screen means anything, and
 // making them detour to a browser just to type an email address was the
 // actual friction, not anything web-specific about the flow itself — see
-// src/api/parent.ts's linkChild() for the (email-only, no verification
-// step) backend call this wraps. See app/(tabs)/_layout.tsx for how this
-// tab is shown only when the signed-in account's role is PARENT.
+// src/api/parent.ts's linkChild() for the backend call this wraps. Linking
+// only ever *requests* a link now — the child has to approve it from their
+// own app (app/(tabs)/settings.tsx's parent-requests section) before any
+// progress data here becomes visible; a pending/denied child never gets a
+// fetchChildProgress() call, both because the backend would 403 it and
+// because showing stats for a child who hasn't consented would defeat the
+// point. See app/(tabs)/_layout.tsx for how this tab is shown only when
+// the signed-in account's role is PARENT.
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
@@ -19,14 +24,16 @@ import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, Lin
 
 function ChildCard({ child, theme, t }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any }) {
   const [progress, setProgress] = useState<ChildProgress | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(child.status !== 'pending');
+  const pending = child.status === 'pending';
 
   useEffect(() => {
+    if (pending) return; // nothing to fetch — see file header comment
     fetchChildProgress(child.child_id)
       .then(setProgress)
       .catch(() => setProgress(null))
       .finally(() => setLoading(false));
-  }, [child.child_id]);
+  }, [child.child_id, pending]);
 
   return (
     <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
@@ -36,9 +43,20 @@ function ChildCard({ child, theme, t }: { child: LinkedChild; theme: any; t: (k:
           <Text style={[styles.childName, { fontFamily: theme.fontHead, color: theme.text }]}>{child.child_name}</Text>
           <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{child.relationship}</Text>
         </View>
+        {pending && (
+          <View style={[styles.pendingBadge, { borderColor: theme.warn }]}>
+            <Text style={[styles.pendingBadgeText, { color: theme.warn, fontFamily: theme.fontMono }]}>
+              {t('parentDashboard.pendingBadge', 'AWAITING APPROVAL')}
+            </Text>
+          </View>
+        )}
       </View>
 
-      {loading ? (
+      {pending ? (
+        <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody, textAlign: 'left' }]}>
+          {t('parentDashboard.pendingBody', "{{name}} needs to approve this from their own app before their progress shows up here.", { name: child.child_name })}
+        </Text>
+      ) : loading ? (
         <ActivityIndicator color={theme.accent} style={{ marginVertical: 10 }} />
       ) : !progress ? (
         <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
@@ -87,12 +105,12 @@ function LinkChildModal({
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [linkedName, setLinkedName] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<{ name: string; alreadyApproved: boolean } | null>(null);
 
   // Reset to a blank form each time the modal is (re)opened rather than
   // carrying over the previous attempt's state (error, success screen).
   useEffect(() => {
-    if (visible) { setEmail(''); setError(null); setLinkedName(null); setSubmitting(false); }
+    if (visible) { setEmail(''); setError(null); setSentTo(null); setSubmitting(false); }
   }, [visible]);
 
   const submit = async () => {
@@ -102,7 +120,7 @@ function LinkChildModal({
     setError(null);
     try {
       const result = await apiLinkChild(trimmed);
-      setLinkedName(result.child?.name || trimmed);
+      setSentTo({ name: result.child?.name || trimmed, alreadyApproved: result.status === 'approved' });
       onLinked();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('parentDashboard.linkChild.genericError', 'Could not link that account. Check the email and try again.'));
@@ -119,14 +137,18 @@ function LinkChildModal({
       >
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={[styles.modalCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}>
-          {linkedName ? (
+          {sentTo ? (
             <View style={{ alignItems: 'center', gap: 10 }}>
-              <Text style={{ fontSize: 40 }}>✅</Text>
+              <Text style={{ fontSize: 40 }}>{sentTo.alreadyApproved ? '✅' : '📬'}</Text>
               <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text, textAlign: 'center' }]}>
-                {t('parentDashboard.linkChild.successTitle', 'Linked!')}
+                {sentTo.alreadyApproved
+                  ? t('parentDashboard.linkChild.successTitle', 'Linked!')
+                  : t('parentDashboard.linkChild.pendingTitle', 'Request sent')}
               </Text>
               <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted, textAlign: 'center' }]}>
-                {t('parentDashboard.linkChild.successBody', '{{name}} now appears on your dashboard.', { name: linkedName })}
+                {sentTo.alreadyApproved
+                  ? t('parentDashboard.linkChild.successBody', '{{name}} now appears on your dashboard.', { name: sentTo.name })
+                  : t('parentDashboard.linkChild.pendingBody', "{{name}} needs to approve this from their own app before their progress appears on your dashboard.", { name: sentTo.name })}
               </Text>
               <TouchableOpacity
                 testID="parent-link-child-done"
@@ -142,7 +164,7 @@ function LinkChildModal({
                 {t('parentDashboard.linkChild.title', 'Link a child')}
               </Text>
               <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted, textAlign: 'left', marginBottom: 16 }]}>
-                {t('parentDashboard.linkChild.body', "Enter your child's Peripateticware email address. Their progress will appear on this dashboard right away.")}
+                {t('parentDashboard.linkChild.body', "Enter your child's Peripateticware email address. They'll need to approve the request in their own app before their progress appears here.")}
               </Text>
               <TextInput
                 testID="parent-link-child-email"
@@ -189,6 +211,11 @@ export default function ParentDashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  // Denied requests aren't shown at all — a declined child isn't "in
+  // limbo" the way pending is, and the parent can always send a fresh
+  // request (see link_child()'s docstring: a re-request reopens a denied
+  // row to pending, it isn't blocked).
+  const visibleChildren = children.filter((c) => c.status !== 'denied');
 
   const load = useCallback(async () => {
     try {
@@ -235,7 +262,7 @@ export default function ParentDashboardScreen() {
           contentContainerStyle={{ padding: 16, gap: 12 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
         >
-          {children.length === 0 ? (
+          {visibleChildren.length === 0 ? (
             <View style={styles.center}>
               <Text style={styles.emptyEmoji}>👨‍👩‍👧</Text>
               <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
@@ -250,7 +277,7 @@ export default function ParentDashboardScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            children.map((child) => <ChildCard key={child.id} child={child} theme={theme} t={t} />)
+            visibleChildren.map((child) => <ChildCard key={child.id} child={child} theme={theme} t={t} />)
           )}
         </ScrollView>
       )}
@@ -277,6 +304,8 @@ const styles = StyleSheet.create({
   card:         { padding: 14, borderWidth: 1, gap: 10 },
   cardHeaderRow:{ flexDirection: 'row', alignItems: 'center', gap: 10 },
   avatarEmoji:  { fontSize: 32 },
+  pendingBadge:     { borderWidth: 1, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 3 },
+  pendingBadgeText: { fontSize: 8, letterSpacing: 0.6, fontWeight: '700' },
   childName:    { fontSize: 17, fontWeight: '700' },
   childMeta:    { fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase' },
   statsRow:     { flexDirection: 'row', justifyContent: 'space-around' },

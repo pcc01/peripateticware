@@ -1,7 +1,8 @@
-// app/(tabs)/settings.tsx — Theme picker + logout
+// app/(tabs)/settings.tsx — Theme picker + logout, plus (STUDENT accounts
+// only) any pending parent-link requests awaiting approval.
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,79 @@ import { LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
 import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
 import LanguagePicker from '@/src/components/LanguagePicker';
 import VoicePicker from '@/src/components/VoicePicker';
+import { fetchParentRequests, approveParentRequest, denyParentRequest, ParentLinkRequest } from '@/src/api/parentLinkRequests';
+
+// Only ever rendered for STUDENT accounts (see the section's own guard
+// below) — a parent's link request needs the CHILD's consent, not the
+// parent's, so this has no reason to exist on any other role's Settings.
+// Renders nothing at all when there's nothing pending, rather than an
+// always-visible empty section — this is a transient "someone's asking"
+// surface, not a permanent settings item.
+function ParentRequestsSection({ theme, t }: { theme: any; t: (k: string, d: string, o?: any) => any }) {
+  const [requests, setRequests] = useState<ParentLinkRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actingOn, setActingOn] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    fetchParentRequests().then(setRequests).catch(() => setRequests([])).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const respond = async (parentId: string, approve: boolean) => {
+    setActingOn(parentId);
+    try {
+      await (approve ? approveParentRequest(parentId) : denyParentRequest(parentId));
+      setRequests((prev) => prev.filter((r) => r.parent_id !== parentId));
+    } catch {
+      Alert.alert(t('common.error', 'Something went wrong'), t('settings.parentRequests.actionError', 'Please try again.'));
+    } finally {
+      setActingOn(null);
+    }
+  };
+
+  if (loading || requests.length === 0) return null;
+
+  return (
+    <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
+      <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+        {t('settings.parentRequests.label', 'PARENT REQUESTS')}
+      </Text>
+      {requests.map((req) => (
+        <View key={req.parent_id} style={[styles.requestRow, { borderColor: theme.border, borderRadius: theme.radiusSm }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.requestName, { fontFamily: theme.fontBody, color: theme.text }]} numberOfLines={1}>
+              {req.parent_name}
+            </Text>
+            <Text style={[styles.optionDesc, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+              {t('settings.parentRequests.body', '{{email}} wants to see your progress as your {{relationship}}.', { email: req.parent_email, relationship: req.relationship })}
+            </Text>
+          </View>
+          {actingOn === req.parent_id ? (
+            <ActivityIndicator color={theme.accent} />
+          ) : (
+            <View style={styles.requestActions}>
+              <TouchableOpacity
+                testID={`parent-request-deny-${req.parent_id}`}
+                onPress={() => respond(req.parent_id, false)}
+                style={[styles.requestBtn, { borderColor: theme.warn }]}
+              >
+                <Text style={{ color: theme.warn, fontFamily: theme.fontBody, fontWeight: '600' }}>{t('common.deny', 'Deny')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID={`parent-request-approve-${req.parent_id}`}
+                onPress={() => respond(req.parent_id, true)}
+                style={[styles.requestBtn, { backgroundColor: theme.accent, borderColor: theme.accent }]}
+              >
+                <Text style={{ color: '#fff', fontFamily: theme.fontBody, fontWeight: '600' }}>{t('common.approve', 'Approve')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { theme, themeName, setTheme } = useTheme();
@@ -100,6 +174,8 @@ export default function SettingsScreen() {
           </View>
         )}
 
+        {user?.role === 'STUDENT' && <ParentRequestsSection theme={theme} t={t} />}
+
         {/* Theme picker */}
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
           <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.themeLabel', 'THEME')}</Text>
@@ -173,4 +249,8 @@ const styles = StyleSheet.create({
   checkmark:    { fontSize: 16, fontWeight: '700' },
   logoutBtn:    { borderWidth: 1, padding: 14, alignItems: 'center' },
   logoutLabel:  { fontSize: 15, fontWeight: '600' },
+  requestRow:     { flexDirection: 'row', alignItems: 'center', padding: 10, borderWidth: 1, gap: 10 },
+  requestName:    { fontSize: 14, fontWeight: '600' },
+  requestActions: { flexDirection: 'row', gap: 8 },
+  requestBtn:     { borderWidth: 1, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6 },
 });

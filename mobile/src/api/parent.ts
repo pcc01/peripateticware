@@ -8,6 +8,8 @@
 
 import { apiFetch } from './client';
 
+export type LinkStatus = 'pending' | 'approved' | 'denied';
+
 export interface LinkedChild {
   id: string;
   child_id: string;
@@ -15,6 +17,11 @@ export interface LinkedChild {
   child_avatar?: string | null;
   relationship: string;
   linked_at: string;
+  // Absent from responses predating this field only in already-cached
+  // clients mid-rollout; the backend always sends it now. Treat a missing
+  // value as 'approved' (matches the DB column's own migration default
+  // for pre-existing rows — see backend/startup.py).
+  status?: LinkStatus;
 }
 
 export interface CompetencyProgress {
@@ -44,15 +51,18 @@ export async function fetchChildProgress(childId: string): Promise<ChildProgress
 
 export interface LinkChildResult {
   success: boolean;
+  status: LinkStatus;
   message: string;
-  child: { id: string; name: string; email: string; relationship: string; linked_at: string };
+  child: { id: string; name: string; email: string; relationship: string; status: LinkStatus; linked_at: string };
 }
 
-// Links an existing student account to this parent by email — no code/
-// verification step despite routes/linking.py's mock endpoints suggesting
-// one exists (that router is dead code, shadowed by this same path being
-// registered first in main.py; see backend/routes/parent.py's link_child
-// for the real, DB-backed implementation). Mirrors web's
+// Requests a link to an existing student account by email — does NOT grant
+// access by itself. Creates a status='pending' row the child must approve
+// from their own app (src/api/parentLinkRequests.ts) before any progress
+// data becomes visible; see backend/routes/parent.py's link_child()
+// docstring for the full flow and why routes/linking.py's mock endpoints
+// (same path, but dead code — shadowed by this router registering first
+// in main.py) aren't what's actually running. Mirrors web's
 // useParentStore.linkChild(), which also only ever sends the email —
 // relationship always defaults to "guardian" server-side.
 export async function linkChild(childEmail: string): Promise<LinkChildResult> {

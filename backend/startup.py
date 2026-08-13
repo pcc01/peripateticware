@@ -464,6 +464,19 @@ async def apply_parent_activity_submission_migrations(engine) -> None:
             await _c.execute(text(
                 "ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS relationship VARCHAR(50) DEFAULT 'guardian'"
             ))
+            # Child-side consent gate. Default 'approved' here on purpose —
+            # this ALTER only back-fills *existing* rows (all of which were
+            # created by the old instant-link flow with no consent step at
+            # all), and flipping them to 'pending' would retroactively lock
+            # already-established families out of data they already had
+            # access to. routes/parent.py's link_child() overrides this
+            # default with an explicit 'pending' on every INSERT going
+            # forward, so only *new* link requests actually require the
+            # child's approval (see routes/student.py's parent-requests
+            # endpoints for the approve/deny side).
+            await _c.execute(text(
+                "ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'approved'"
+            ))
             await _c.execute(text(
                 "ALTER TABLE parent_child_links ADD COLUMN IF NOT EXISTS linked_at TIMESTAMPTZ DEFAULT NOW()"
             ))
