@@ -40,6 +40,20 @@ SOURCE_LANG_CODE = "en"
 _ANSI_ESCAPE_RE = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 _CONTROL_CHAR_RE = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
 
+# A trailing "(Preserved template variables exactly as given.)" /
+# "(Translation notes: ...)" / "(Note: the template variables were kept
+# as-is.)" block — models append this to explain themselves even when asked
+# for a bare string, and it must never end up in a saved translation.
+# clean_llm_chatter() strips it; looks_like_garbage() also checks for it as
+# a second line of defense in case a future prompt/model change produces a
+# shape clean_llm_chatter doesn't anticipate. Mirrors
+# frontend/scripts/validate_locales.cjs's META_LEAK_RE, which is what
+# surfaced this bug — every match it found in committed locale files was a
+# string this regex would have caught before it was ever written to disk.
+META_COMMENTARY_RE = re.compile(
+    r'\n\n\((?:preserv|translation|translated|note:|please note|as an ai|i cannot|i\'m unable)',
+    re.IGNORECASE)
+
 
 def strip_control_sequences(text: str) -> str:
     """Strips ANSI escape codes and other non-printable control characters
@@ -90,8 +104,9 @@ def looks_like_garbage(text, src: str) -> bool:
     """Catches the concrete corruption patterns found in production locale
     files: non-string JSON values stringified (str(False) == 'False'),
     repeated placeholder-token hallucination spam ('%s', '$t{...}'), a
-    translation wrapped in a stringified list/array repr, or a response
-    wildly longer than anything a real translation of the source would be."""
+    translation wrapped in a stringified list/array repr, leaked
+    translator/LLM meta-commentary, or a response wildly longer than
+    anything a real translation of the source would be."""
     if not isinstance(text, str):
         return True
     stripped = text.strip()
@@ -103,6 +118,15 @@ def looks_like_garbage(text, src: str) -> bool:
         return True
     if (stripped.startswith('["') and stripped.endswith('"]')) or \
        (stripped.startswith("['") and stripped.endswith("']")):
+        return True
+    # Belt-and-suspenders alongside clean_llm_chatter's own stripping: a
+    # trailing "(Preserved template variables exactly as given.)" /
+    # "(Translation notes: ...)" / "(Note: ...)" block is never legitimate
+    # translated content, no matter how clean_llm_chatter changes over time.
+    # Found in production as short as ~75 chars total, which the length
+    # check below (max(80, len(src)*4)) does NOT reliably catch for short
+    # source strings — this is the actual bug that let it through.
+    if META_COMMENTARY_RE.search(stripped):
         return True
     if len(stripped) > max(80, len(src) * 4):
         return True
@@ -711,10 +735,18 @@ class UniversalOrchestrator:
             return ""
         if text.startswith("```"):
             text = re.sub(r"^```[a-zA-Z]*\n|```$", "", text).strip()
+        # Strip a trailing meta-commentary block BEFORE the quote-unwrap step
+        # below, since the model's answer is typically quoted ("Ghost") and
+        # the commentary comes after the closing quote — e.g.
+        # '"غُوْس"\n\n(Preserved template variables exactly without syntax
+        # alterations)' — so text no longer ends with a quote character until
+        # this runs first. Found via looks_like_garbage()/clean_llm_chatter()
+        # both missing this shape in production (see META_COMMENTARY_RE).
+        text = re.sub(r'\n\n\([\s\S]*\)\s*$', '', text).strip()
         if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
             text = text[1:-1].strip()
         chatter_prefixes = [
-            r"^here\s+is\s+the\s+translation:?", r"^translation:?", 
+            r"^here\s+is\s+the\s+translation:?", r"^translation:?",
             r"^spanish:?", r"^french:?", r"^localized\s+text:?"
         ]
         for prefix in chatter_prefixes:
