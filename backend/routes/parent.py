@@ -441,6 +441,53 @@ async def list_parent_children(
         return []
 
 
+@router.delete("/children/{child_id}")
+async def unlink_child(
+    child_id: str,
+    current_user: User = Depends(_get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Remove this parent's link to a child, at any status (pending, approved,
+    or denied). The child gets no notification and doesn't need to approve
+    this — unlinking is unilateral on the parent's side, same as declining
+    a request is unilateral on the child's side. A parent can always send a
+    fresh request afterward, which the child would need to approve again
+    from scratch (see link_child()'s docstring).
+    """
+    try:
+        from uuid import UUID as _UUID
+        _UUID(child_id)  # validates format, prevents injection
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid child_id format")
+
+    result = await db.execute(text("""
+        DELETE FROM parent_child_links
+        WHERE parent_id = CAST(:pid AS uuid) AND child_id = CAST(:cid AS uuid)
+    """), {"pid": str(current_user.id), "cid": child_id})
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="No link to that child found.")
+    await db.commit()
+
+    try:
+        await log_access(
+            actor_id=str(current_user.id),
+            actor_role=current_user.role,
+            action="PARENT_UNLINK",
+            data_type="parent_child_link",
+            student_id=child_id,
+            rules_applied=[],
+            compliance_status="COMPLIANT",
+            db=db,
+            notes=f"parent_id={current_user.id} child_id={child_id}",
+        )
+    except Exception:
+        import logging as _log
+        _log.getLogger(__name__).warning("Privacy audit failed for unlink (non-blocking)", exc_info=True)
+
+    return {"success": True, "child_id": child_id}
+
+
 # ============================================================================
 # PROGRESS ENDPOINTS
 # ============================================================================

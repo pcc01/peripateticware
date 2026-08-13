@@ -60,14 +60,20 @@ export interface LinkChildResult {
 // access by itself. Creates a status='pending' row the child must approve
 // from their own app (src/api/parentLinkRequests.ts) before any progress
 // data becomes visible; see backend/routes/parent.py's link_child()
-// docstring for the full flow and why routes/linking.py's mock endpoints
-// (same path, but dead code — shadowed by this router registering first
-// in main.py) aren't what's actually running. Mirrors web's
-// useParentStore.linkChild(), which also only ever sends the email —
-// relationship always defaults to "guardian" server-side.
+// docstring for the full flow. Mirrors web's useParentStore.linkChild(),
+// which also only ever sends the email — relationship always defaults to
+// "guardian" server-side.
 export async function linkChild(childEmail: string): Promise<LinkChildResult> {
   return apiFetch<LinkChildResult>('/api/v1/parent/link-child', {
     method: 'POST',
     body: JSON.stringify({ child_email: childEmail }),
   });
+}
+
+// Unilateral on the parent's side — no child approval needed to remove a
+// link, same as the child needs no parent approval to deny one. Works at
+// any status (pending/approved/denied); a parent can always re-request
+// afterward, which the child would need to approve from scratch.
+export async function unlinkChild(childId: string): Promise<{ success: boolean; child_id: string }> {
+  return apiFetch(`/api/v1/parent/children/${childId}`, { method: 'DELETE' });
 }

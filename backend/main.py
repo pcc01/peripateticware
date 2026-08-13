@@ -584,12 +584,6 @@ except Exception as e:
     print(f"Warning: could not register parent_router: {e}")
 
 try:
-    from routes.linking import router as linking_router
-    app.include_router(linking_router)                            # router prefix="/api/v1/parent/children"
-except Exception as e:
-    print(f"Warning: could not register linking_router: {e}")
-
-try:
     from routes.notifications import router as notifications_router
     app.include_router(notifications_router)                      # router prefix="/api/v1/parent/notifications"
 except Exception as e:

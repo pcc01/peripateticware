@@ -16,15 +16,16 @@
 // the signed-in account's role is PARENT.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
+import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, unlinkChild as apiUnlinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
 
-function ChildCard({ child, theme, t }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any }) {
+function ChildCard({ child, theme, t, onUnlinked }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any; onUnlinked: () => void }) {
   const [progress, setProgress] = useState<ChildProgress | null>(null);
   const [loading, setLoading] = useState(child.status !== 'pending');
+  const [unlinking, setUnlinking] = useState(false);
   const pending = child.status === 'pending';
 
   useEffect(() => {
@@ -34,6 +35,32 @@ function ChildCard({ child, theme, t }: { child: LinkedChild; theme: any; t: (k:
       .catch(() => setProgress(null))
       .finally(() => setLoading(false));
   }, [child.child_id, pending]);
+
+  const confirmUnlink = () => {
+    Alert.alert(
+      t('parentDashboard.unlink.confirmTitle', 'Unlink {{name}}?', { name: child.child_name }),
+      pending
+        ? t('parentDashboard.unlink.confirmBodyPending', 'This cancels the pending request.')
+        : t('parentDashboard.unlink.confirmBody', "You'll stop seeing {{name}}'s progress. You can send a new request later.", { name: child.child_name }),
+      [
+        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+        {
+          text: t('parentDashboard.unlink.confirmAction', 'Unlink'),
+          style: 'destructive',
+          onPress: async () => {
+            setUnlinking(true);
+            try {
+              await apiUnlinkChild(child.child_id);
+              onUnlinked();
+            } catch {
+              Alert.alert(t('common.error', 'Something went wrong'), t('parentDashboard.unlink.error', 'Could not unlink right now. Try again.'));
+              setUnlinking(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
@@ -95,6 +122,19 @@ function ChildCard({ child, theme, t }: { child: LinkedChild; theme: any; t: (k:
           </Text>
         </>
       )}
+
+      <TouchableOpacity
+        testID={`parent-dashboard-unlink-${child.child_id}`}
+        onPress={confirmUnlink}
+        disabled={unlinking}
+        style={styles.unlinkBtn}
+      >
+        {unlinking ? <ActivityIndicator color={theme.warn} size="small" /> : (
+          <Text style={[styles.unlinkBtnText, { color: theme.warn, fontFamily: theme.fontBody }]}>
+            {pending ? t('parentDashboard.unlink.cancelRequest', 'Cancel request') : t('parentDashboard.unlink.action', 'Unlink')}
+          </Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 }
@@ -277,7 +317,7 @@ export default function ParentDashboardScreen() {
               </TouchableOpacity>
             </View>
           ) : (
-            visibleChildren.map((child) => <ChildCard key={child.id} child={child} theme={theme} t={t} />)
+            visibleChildren.map((child) => <ChildCard key={child.id} child={child} theme={theme} t={t} onUnlinked={load} />)
           )}
         </ScrollView>
       )}
@@ -317,6 +357,8 @@ const styles = StyleSheet.create({
   barBg:        { height: 6 },
   barFill:      { height: 6 },
   lastActive:   { fontSize: 10, letterSpacing: 0.4, marginTop: 4 },
+  unlinkBtn:     { alignSelf: 'flex-start', marginTop: 4 },
+  unlinkBtnText: { fontSize: 12, fontWeight: '600' },
   linkChildBtn:     { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   linkChildBtnText: { fontSize: 12, fontWeight: '700' },
   modalBackdrop:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 },
