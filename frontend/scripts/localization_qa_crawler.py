@@ -53,6 +53,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -69,6 +70,48 @@ except ImportError:
 FRONTEND_DIR = Path(__file__).parent.parent
 APP_TSX = FRONTEND_DIR / "src" / "App.tsx"
 LOCALES_DIR = FRONTEND_DIR / "public" / "locales"
+STRUCTURAL_VALIDATOR = Path(__file__).parent / "validate_locales.cjs"
+
+
+def run_structural_precheck() -> bool:
+    """Runs scripts/validate_locales.cjs before the (slow, live-app +
+    Ollama-dependent) crawl starts. This crawler's own checks are semantic —
+    byte-identical-to-English (free) and LLM-quality-flagged (needs the live
+    crawl) — neither of which reliably catches structural pipeline
+    corruption: a 2026-08 audit found leaked LLM meta-commentary,
+    stringified-list/JSON-fragment artifacts, type mismatches, and mojibake
+    that were NOT byte-identical to English (so the free check missed them)
+    and are not guaranteed to be flagged by the quality evaluator either.
+    Running the free, instant, no-Ollama-needed structural check first means
+    those bugs get caught even by a plain `npm run i18n:qa` with no live app
+    running, and avoids spending LLM evaluation time scoring content that's
+    already known to be corrupted. Returns True if clean (or the validator
+    couldn't be run at all, e.g. no Node on PATH — not this crawler's job to
+    enforce that), False if it found structural errors.
+    """
+    if not STRUCTURAL_VALIDATOR.exists():
+        return True
+    print("Running structural pre-check (scripts/validate_locales.cjs)...")
+    try:
+        result = subprocess.run(
+            ["node", str(STRUCTURAL_VALIDATOR)],
+            cwd=FRONTEND_DIR, capture_output=True, text=True, timeout=60,
+        )
+    except (OSError, subprocess.TimeoutExpired) as e:
+        print(f"  (skipped — could not run node: {e})")
+        return True
+    print(result.stdout.strip())
+    if result.returncode != 0:
+        print(
+            "\n  ⚠️  Structural corruption found above — fix these before a live-crawl\n"
+            "  QA pass, since it can't distinguish 'genuinely bad translation' from\n"
+            "  'known-corrupt pipeline artifact' and will waste Ollama evaluation time\n"
+            "  scoring content that's already known to be broken.\n"
+            "  Run `npm run i18n:validate` for the full report, or pass\n"
+            "  --skip-structural-check to crawl anyway.\n"
+        )
+        return False
+    return True
 
 DEFAULT_MODEL = "hf.co/s3nh/Unbabel-TowerInstruct-7B-v0.1-GGUF:Q4_K_M"
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
@@ -649,11 +692,19 @@ def main() -> None:
                     help="Report output path (default: qa/localization_qa_<timestamp>.json)")
     ap.add_argument("--skip-preflight", action="store_true",
                     help="Skip the one-shot Ollama reachability check before crawling")
+    ap.add_argument("--skip-structural-check", action="store_true",
+                    help="Skip the fast validate_locales.cjs pre-check and crawl even if it "
+                         "finds structural corruption (type mismatches, leaked LLM chatter, "
+                         "JSON-fragment artifacts, mojibake)")
     ap.add_argument("--preflight-timeout", type=int, default=120,
                     help="Seconds to wait for the preflight check before retrying with a longer "
                          "timeout (default: 120). Raise this if you know your hardware is slow to "
                          "load large models.")
     args = ap.parse_args()
+
+    if not args.skip_structural_check:
+        if not run_structural_precheck():
+            sys.exit(1)
 
     locales = args.locales.split(",") if args.locales else discover_locales()
     public_routes = args.routes.split(",") if args.routes else discover_public_routes()
