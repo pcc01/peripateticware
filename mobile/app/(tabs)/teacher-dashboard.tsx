@@ -14,14 +14,18 @@
 // drawn from the same underlying session data; "Classes" opens a read-only
 // class list (app/teacher-classes.tsx).
 //
-// Two more entry points: the header's "+ Scavenger hunt" button opens
+// Three more entry points: the header's "+ Scavenger hunt" button opens
 // app/teacher-create-scavenger-hunt.tsx (in-field authoring of a discovery-
 // type activity — general activity creation otherwise stays web-only, see
-// that screen's own header comment for why this type is the exception),
-// and a "Proposals" stat card opens app/teacher-proposals.tsx (approving/
+// that screen's own header comment for why this type is the exception);
+// a "Proposals" stat card opens app/teacher-proposals.tsx (approving/
 // rejecting the reverse-scavenger-hunt challenges students submit from
 // (tabs)/propose.tsx — backend has had this endpoint with no mobile screen
-// calling it until now).
+// calling it until now); a "Messages" stat card opens app/teacher-
+// messages.tsx (parent↔teacher messaging — backend/routes/
+// teacher_communication.py was built specifically to feed the parent
+// portal's existing Messages page, but had no mobile UI on this side
+// either).
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
@@ -31,6 +35,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchTeacherDashboard, TeacherDashboard } from '@/src/api/teacher';
 import { fetchPendingProposals } from '@/src/api/proposalReview';
+import { fetchTeacherConversations } from '@/src/api/teacherMessages';
 
 const STATUS_COLOR_KEY: Record<string, 'accent' | 'textMuted' | 'warn'> = {
   published: 'accent',
@@ -44,6 +49,7 @@ const STAT_DESTINATION: Record<string, string> = {
   active: '/teacher-activities',
   classes: '/teacher-classes',
   proposals: '/teacher-proposals',
+  messages: '/teacher-messages',
 };
 
 export default function TeacherDashboardScreen() {
@@ -51,6 +57,7 @@ export default function TeacherDashboardScreen() {
   const { t } = useTranslation();
   const [data, setData] = useState<TeacherDashboard | null>(null);
   const [proposalCount, setProposalCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
@@ -68,13 +75,21 @@ export default function TeacherDashboardScreen() {
     fetchPendingProposals().then((p) => setProposalCount(p.length)).catch(() => {});
   }, []);
 
-  useEffect(() => { load().finally(() => setLoading(false)); loadProposalCount(); }, [load, loadProposalCount]);
+  const loadUnreadMessageCount = useCallback(() => {
+    fetchTeacherConversations().then((c) => setUnreadMessageCount(c.filter((x) => x.unread).length)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    load().finally(() => setLoading(false));
+    loadProposalCount();
+    loadUnreadMessageCount();
+  }, [load, loadProposalCount, loadUnreadMessageCount]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([load(), Promise.resolve(loadProposalCount())]);
+    await Promise.all([load(), Promise.resolve(loadProposalCount()), Promise.resolve(loadUnreadMessageCount())]);
     setRefreshing(false);
-  }, [load, loadProposalCount]);
+  }, [load, loadProposalCount, loadUnreadMessageCount]);
 
   return (
     <SafeAreaView testID="teacher-dashboard-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
@@ -111,6 +126,7 @@ export default function TeacherDashboardScreen() {
               { key: 'active', label: t('teacherDashboard.stats.active', 'Active'), value: data.active_activities, emoji: '📍' },
               { key: 'pending', label: t('teacherDashboard.stats.pending', 'Pending'), value: data.pending_submissions, emoji: '📥' },
               { key: 'proposals', label: t('teacherDashboard.stats.proposals', 'Proposals'), value: proposalCount, emoji: '🧭' },
+              { key: 'messages', label: t('teacherDashboard.stats.messages', 'Messages'), value: unreadMessageCount, emoji: '✉️' },
             ].map((stat) => (
               <TouchableOpacity
                 key={stat.key}

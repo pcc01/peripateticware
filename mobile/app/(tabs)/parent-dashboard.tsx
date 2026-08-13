@@ -1,15 +1,16 @@
 // app/(tabs)/parent-dashboard.tsx — read-only summary for PARENT accounts,
-// plus linking a child by email. Messaging and weekly/monthly report
-// exports stay web-only; this mirrors why students are mobile-only for
-// field capture — each surface does the one thing it's actually good for.
-// Linking moved off that web-only list because it's the one action a
-// parent needs *before* anything else on this screen means anything, and
-// making them detour to a browser just to type an email address was the
-// actual friction, not anything web-specific about the flow itself — see
-// src/api/parent.ts's linkChild() for the backend call this wraps. Linking
-// only ever *requests* a link now — the child has to approve it from their
-// own app (app/(tabs)/settings.tsx's parent-requests section) before any
-// progress data here becomes visible; a pending/denied child never gets a
+// plus linking a child by email and messaging their teacher(s). Weekly/
+// monthly report exports stay web-only; this mirrors why students are
+// mobile-only for field capture — each surface does the one thing it's
+// actually good for. Linking and messaging moved off that web-only list
+// because they're things a parent needs *before or during* anything else
+// on this screen means much, and making them detour to a browser for
+// either was the actual friction, not anything web-specific about either
+// flow — see src/api/parent.ts's linkChild() and src/api/parentMessages.ts
+// for the backend calls this wraps. Linking only ever *requests* a link
+// now — the child has to approve it from their own app
+// (app/(tabs)/settings.tsx's parent-requests section) before any progress
+// data here becomes visible; a pending/denied child never gets a
 // fetchChildProgress() call, both because the backend would 403 it and
 // because showing stats for a child who hasn't consented would defeat the
 // point. See app/(tabs)/_layout.tsx for how this tab is shown only when
@@ -22,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, unlinkChild as apiUnlinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
 import { fetchNotifications, markNotificationRead, ParentNotification } from '@/src/api/notifications';
+import { fetchParentMessages, replyToParentMessage, ParentMessage } from '@/src/api/parentMessages';
 
 function ChildCard({ child, theme, t, onUnlinked }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any; onUnlinked: () => void }) {
   const [progress, setProgress] = useState<ChildProgress | null>(null);
@@ -323,6 +325,123 @@ function NotificationsModal({
   );
 }
 
+function MessagesModal({
+  visible, onClose, theme, t,
+}: { visible: boolean; onClose: () => void; theme: any; t: (k: string, d: string, o?: any) => any }) {
+  const [items, setItems] = useState<ParentMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [replyTo, setReplyTo] = useState<ParentMessage | null>(null);
+  const [replyBody, setReplyBody] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetchParentMessages().then(setItems).catch(() => setItems([])).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { if (visible) load(); }, [visible, load]);
+
+  const submitReply = async () => {
+    if (!replyTo || !replyBody.trim()) return;
+    setSending(true);
+    try {
+      await replyToParentMessage(replyTo.id, replyBody.trim());
+      setReplyTo(null);
+      setReplyBody('');
+    } catch {
+      Alert.alert(t('common.error', 'Something went wrong'), t('parentDashboard.messages.replyError', 'Could not send your reply.'));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.notifCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}
+        >
+          <View style={styles.notifHeader}>
+            <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
+              {t('parentDashboard.messages.title', 'Messages')}
+            </Text>
+            <TouchableOpacity testID="parent-messages-close" onPress={onClose} hitSlop={12}>
+              <Text style={{ fontSize: 18, color: theme.textMuted }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <ActivityIndicator color={theme.accent} style={{ marginVertical: 24 }} />
+          ) : items.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody, marginVertical: 24 }]}>
+              {t('parentDashboard.messages.empty', 'No messages from teachers yet.')}
+            </Text>
+          ) : (
+            <FlatList
+              data={items}
+              keyExtractor={(m) => m.id}
+              style={{ maxHeight: 420 }}
+              renderItem={({ item: m }) => (
+                <View style={[styles.notifRow, { borderColor: theme.border }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.notifTitle, { fontFamily: theme.fontBody, color: theme.text, fontWeight: '700' }]}>{m.from_teacher_name}</Text>
+                    <Text style={[styles.notifTitle, { fontFamily: theme.fontBody, color: theme.text, fontSize: 13 }]}>{m.subject}</Text>
+                    <Text style={[styles.notifBody, { fontFamily: theme.fontBody, color: theme.textMuted }]}>{m.body}</Text>
+                    <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 4 }]}>
+                      {new Date(m.created_at).toLocaleString()}
+                    </Text>
+                    <TouchableOpacity testID={`parent-message-reply-${m.id}`} onPress={() => setReplyTo(m)} style={{ marginTop: 6, alignSelf: 'flex-start' }}>
+                      <Text style={{ color: theme.accent, fontFamily: theme.fontBody, fontWeight: '600', fontSize: 12 }}>
+                        {t('parentDashboard.messages.reply', 'Reply')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            />
+          )}
+        </TouchableOpacity>
+      </TouchableOpacity>
+
+      <Modal visible={!!replyTo} animationType="slide" transparent onRequestClose={() => setReplyTo(null)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalBackdrop}>
+          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setReplyTo(null)} />
+          <View style={[styles.modalCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}>
+            <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
+              {t('parentDashboard.messages.replyTo', 'Reply to {{name}}', { name: replyTo?.from_teacher_name })}
+            </Text>
+            <TextInput
+              testID="parent-message-reply-input"
+              value={replyBody}
+              onChangeText={setReplyBody}
+              placeholder={t('parentDashboard.messages.replyPlaceholder', 'Write your reply…')}
+              placeholderTextColor={theme.textFaint}
+              multiline
+              style={[styles.input, styles.multilineInput, { borderColor: theme.border, color: theme.text, backgroundColor: theme.surface, marginTop: 12 }]}
+            />
+            <View style={styles.modalFooter}>
+              <TouchableOpacity testID="parent-message-reply-cancel" onPress={() => setReplyTo(null)} style={styles.modalGhostBtn}>
+                <Text style={{ color: theme.textMuted, fontFamily: theme.fontBody }}>{t('common.cancel', 'Cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="parent-message-reply-submit"
+                onPress={submitReply}
+                disabled={sending || !replyBody.trim()}
+                style={[styles.modalPrimaryBtn, { backgroundColor: theme.accent, opacity: sending || !replyBody.trim() ? 0.6 : 1 }]}
+              >
+                {sending ? <ActivityIndicator color="#fff" size="small" /> : (
+                  <Text style={styles.modalPrimaryBtnText}>{t('parentDashboard.messages.send', 'Send')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </Modal>
+  );
+}
+
 export default function ParentDashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -332,6 +451,7 @@ export default function ParentDashboardScreen() {
   const [error, setError] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [messagesModalOpen, setMessagesModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   // Denied requests aren't shown at all — a declined child isn't "in
   // limbo" the way pending is, and the parent can always send a fresh
@@ -365,6 +485,14 @@ export default function ParentDashboardScreen() {
       <View style={[styles.header, styles.headerRow]}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('parentDashboard.title', 'My Children')}</Text>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            testID="parent-dashboard-messages-open"
+            onPress={() => setMessagesModalOpen(true)}
+            style={styles.bellBtn}
+            accessibilityLabel={t('parentDashboard.messages.title', 'Messages')}
+          >
+            <Text style={{ fontSize: 20 }}>✉️</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             testID="parent-dashboard-notifications-open"
             onPress={() => setNotifModalOpen(true)}
@@ -437,6 +565,12 @@ export default function ParentDashboardScreen() {
         theme={theme}
         t={t}
       />
+      <MessagesModal
+        visible={messagesModalOpen}
+        onClose={() => setMessagesModalOpen(false)}
+        theme={theme}
+        t={t}
+      />
     </SafeAreaView>
   );
 }
@@ -483,6 +617,7 @@ const styles = StyleSheet.create({
   modalCard:      { width: '100%', maxWidth: 440, borderWidth: 1, padding: 20 },
   modalTitle:     { fontSize: 19, fontWeight: '700', marginBottom: 6 },
   input:          { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, marginBottom: 4 },
+  multilineInput: { minHeight: 90, textAlignVertical: 'top' },
   errorText:      { color: '#dc2626', fontSize: 12, marginTop: 6 },
   modalFooter:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginTop: 16 },
   modalGhostBtn:  { paddingVertical: 8, paddingHorizontal: 4 },

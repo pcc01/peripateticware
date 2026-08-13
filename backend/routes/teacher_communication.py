@@ -21,6 +21,13 @@ Routes (prefix: /api/v1/teacher, registered in main.py):
   GET  /messages/{conversation_id}              Full thread for one conversation
   POST /messages                                Send a new message (one recipient, or a classroom-wide broadcast)
   POST /messages/{conversation_id}/reply         Reply within an existing conversation
+
+Every parent_child_links join below filters status='approved' — a
+pending (not-yet-approved-by-the-child) or denied link grants no access
+anywhere else in the app (see routes/parent.py's link_child() docstring
+and the progress/activities/reports authorization checks there), so a
+teacher's recipient list shouldn't be able to message a parent who hasn't
+actually been confirmed as this student's parent yet either.
 """
 
 from __future__ import annotations
@@ -141,7 +148,7 @@ async def _resolve_recipients(
         rows = (await db.execute(text("""
             SELECT DISTINCT p.id, COALESCE(p.full_name, p.email) AS name
             FROM classroom_students cs
-            JOIN parent_child_links pcl ON pcl.child_id = cs.student_id
+            JOIN parent_child_links pcl ON pcl.child_id = cs.student_id AND pcl.status = 'approved'
             JOIN users p ON p.id = pcl.parent_id
             WHERE cs.classroom_id = :cid AND cs.student_id = :sid
         """), {"cid": classroom_id, "sid": student_id})).mappings().all()
@@ -153,7 +160,7 @@ async def _resolve_recipients(
         rows = (await db.execute(text("""
             SELECT DISTINCT p.id, COALESCE(p.full_name, p.email) AS name
             FROM classroom_students cs
-            JOIN parent_child_links pcl ON pcl.child_id = cs.student_id
+            JOIN parent_child_links pcl ON pcl.child_id = cs.student_id AND pcl.status = 'approved'
             JOIN users p ON p.id = pcl.parent_id
             WHERE cs.classroom_id = :cid
         """), {"cid": classroom_id})).mappings().all()
@@ -186,7 +193,7 @@ async def list_recipients(
                p.email AS parent_email, s.id AS student_id, COALESCE(s.full_name, s.email) AS student_name
         FROM classroom_students cs
         JOIN users s ON s.id = cs.student_id
-        JOIN parent_child_links pcl ON pcl.child_id = s.id
+        JOIN parent_child_links pcl ON pcl.child_id = s.id AND pcl.status = 'approved'
         JOIN users p ON p.id = pcl.parent_id
         WHERE cs.classroom_id = :cid
         ORDER BY parent_name
