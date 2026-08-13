@@ -57,6 +57,21 @@ FROM dev AS build
 ENV NODE_ENV=production
 RUN npx vite build
 
+# Prerender public marketing/legal routes to static HTML for crawlers/bots
+# (see scripts/prerender.mjs — no SSR framework, so a plain fetch of any
+# route otherwise returns an almost-empty <div id="root">). Needs a real
+# Chromium, installed here as its own layer so it's cached independently of
+# the app source above.
+RUN npx playwright install --with-deps chromium
+
+# This image builds in isolation with no live backend reachable, so skip
+# /privacy-engine here — it fetches on mount with no fallback UI and would
+# otherwise bake in a permanent loading-state snapshot. Every other public
+# route is static or degrades gracefully without a backend. See
+# scripts/prerender.mjs's top comment for detail.
+ENV PRERENDER_SKIP_ROUTES=/privacy-engine
+RUN npm run prerender
+
 # ─────────────────────────────────────────────────────────────────────────────
 # production — nginx serving the SPA on :3000 (loopback-published in prod;
 # cloudflared is the only consumer).

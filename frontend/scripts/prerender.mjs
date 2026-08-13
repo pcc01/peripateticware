@@ -38,7 +38,11 @@
 //       * /privacy-engine calls GET /api/v1/privacy/status and has no
 //         fallback UI if that call never resolves — prerender this route
 //         with the backend actually running, or its snapshot will capture
-//         a permanent loading state.
+//         a permanent loading state. The prod frontend image builds in
+//         isolation with no live backend, so the Dockerfile skips this one
+//         route via PRERENDER_SKIP_ROUTES (see below) rather than bake in a
+//         broken snapshot; it stays plain client-rendered SPA there, same
+//         as before this script existed.
 //       * /privacy also calls a privacy-status endpoint but degrades
 //         gracefully to static content if the call fails, so it's safe to
 //         prerender without a backend if you have to.
@@ -61,6 +65,18 @@ const DIST = path.join(ROOT, 'dist');
 // Public, indexable routes only. Keep this in sync with the public <Route>
 // entries in src/App.tsx — anything wrapped in <ProtectedRoute> does NOT
 // belong here.
+//
+// PRERENDER_SKIP_ROUTES: comma-separated paths to omit from this run, e.g.
+// "/privacy-engine". Exists for the prod frontend image build, which builds
+// in isolation with no live backend reachable — see the /privacy-engine
+// gotcha above. The Dockerfile's build stage sets this; a post-deploy run
+// against the live stack should leave it unset to prerender everything.
+const SKIP = new Set(
+  (process.env.PRERENDER_SKIP_ROUTES ?? '')
+    .split(',')
+    .map((r) => r.trim())
+    .filter(Boolean)
+);
 const ROUTES = [
   '/',
   '/about/origin',
@@ -72,7 +88,7 @@ const ROUTES = [
   '/request-beta',
   '/login',
   '/signup',
-];
+].filter((route) => !SKIP.has(route));
 
 /**
  * Every page starts from index.html's static, sitewide <title>/<meta
