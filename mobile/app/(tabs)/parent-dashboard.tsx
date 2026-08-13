@@ -16,11 +16,12 @@
 // the signed-in account's role is PARENT.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, unlinkChild as apiUnlinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
+import { fetchNotifications, markNotificationRead, ParentNotification } from '@/src/api/notifications';
 
 function ChildCard({ child, theme, t, onUnlinked }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any; onUnlinked: () => void }) {
   const [progress, setProgress] = useState<ChildProgress | null>(null);
@@ -243,6 +244,85 @@ function LinkChildModal({
   );
 }
 
+function NotificationsModal({
+  visible, onClose, onReadStateChanged, theme, t,
+}: { visible: boolean; onClose: () => void; onReadStateChanged: () => void; theme: any; t: (k: string, d: string, o?: any) => any }) {
+  const [items, setItems] = useState<ParentNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetchNotifications().then(setItems).catch(() => setItems([])).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { if (visible) load(); }, [visible, load]);
+
+  const handleTap = async (n: ParentNotification) => {
+    if (n.read_at) return;
+    // Optimistic — the list re-fetches from the server next time the modal
+    // opens anyway, this just avoids a round-trip before the dot disappears.
+    setItems((prev) => prev.map((i) => (i.id === n.id ? { ...i, read_at: new Date().toISOString() } : i)));
+    try {
+      await markNotificationRead(n.id);
+      onReadStateChanged();
+    } catch {
+      load(); // roll back the optimistic update by refetching real state
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.notifCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}
+        >
+          <View style={styles.notifHeader}>
+            <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
+              {t('parentDashboard.notifications.title', 'Notifications')}
+            </Text>
+            <TouchableOpacity testID="parent-notifications-close" onPress={onClose} hitSlop={12}>
+              <Text style={{ fontSize: 18, color: theme.textMuted }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <ActivityIndicator color={theme.accent} style={{ marginVertical: 24 }} />
+          ) : items.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody, marginVertical: 24 }]}>
+              {t('parentDashboard.notifications.empty', "You're all caught up.")}
+            </Text>
+          ) : (
+            <FlatList
+              data={items}
+              keyExtractor={(n) => n.id}
+              style={{ maxHeight: 420 }}
+              renderItem={({ item: n }) => (
+                <TouchableOpacity
+                  testID={`parent-notification-${n.id}`}
+                  onPress={() => handleTap(n)}
+                  style={[styles.notifRow, { borderColor: theme.border }]}
+                >
+                  {!n.read_at && <View style={[styles.unreadDot, { backgroundColor: theme.accent }]} />}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.notifTitle, { fontFamily: theme.fontBody, color: theme.text, fontWeight: n.read_at ? '500' : '700' }]}>
+                      {n.title}
+                    </Text>
+                    <Text style={[styles.notifBody, { fontFamily: theme.fontBody, color: theme.textMuted }]}>{n.body}</Text>
+                    <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 4 }]}>
+                      {new Date(n.created_at).toLocaleString()}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+}
+
 export default function ParentDashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -251,6 +331,8 @@ export default function ParentDashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   // Denied requests aren't shown at all — a declined child isn't "in
   // limbo" the way pending is, and the parent can always send a fresh
   // request (see link_child()'s docstring: a re-request reopens a denied
@@ -266,27 +348,46 @@ export default function ParentDashboardScreen() {
     }
   }, []);
 
-  useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+  const loadUnreadCount = useCallback(() => {
+    fetchNotifications(true).then((items) => setUnreadCount(items.length)).catch(() => {});
+  }, []);
+
+  useEffect(() => { load().finally(() => setLoading(false)); loadUnreadCount(); }, [load, loadUnreadCount]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), Promise.resolve(loadUnreadCount())]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadUnreadCount]);
 
   return (
     <SafeAreaView testID="parent-dashboard-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, styles.headerRow]}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>{t('parentDashboard.title', 'My Children')}</Text>
-        <TouchableOpacity
-          testID="parent-dashboard-link-child-open"
-          onPress={() => setLinkModalOpen(true)}
-          style={[styles.linkChildBtn, { borderColor: theme.accent }]}
-        >
-          <Text style={[styles.linkChildBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
-            {t('parentDashboard.linkChild.headerButton', '+ Link a child')}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            testID="parent-dashboard-notifications-open"
+            onPress={() => setNotifModalOpen(true)}
+            style={styles.bellBtn}
+            accessibilityLabel={t('parentDashboard.notifications.title', 'Notifications')}
+          >
+            <Text style={{ fontSize: 20 }}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={[styles.unreadBadge, { backgroundColor: theme.warn }]}>
+                <Text style={styles.unreadBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="parent-dashboard-link-child-open"
+            onPress={() => setLinkModalOpen(true)}
+            style={[styles.linkChildBtn, { borderColor: theme.accent }]}
+          >
+            <Text style={[styles.linkChildBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+              {t('parentDashboard.linkChild.headerButton', '+ Link a child')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
@@ -329,6 +430,13 @@ export default function ParentDashboardScreen() {
         theme={theme}
         t={t}
       />
+      <NotificationsModal
+        visible={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        onReadStateChanged={loadUnreadCount}
+        theme={theme}
+        t={t}
+      />
     </SafeAreaView>
   );
 }
@@ -361,6 +469,16 @@ const styles = StyleSheet.create({
   unlinkBtnText: { fontSize: 12, fontWeight: '600' },
   linkChildBtn:     { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   linkChildBtnText: { fontSize: 12, fontWeight: '700' },
+  headerActions:  { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  bellBtn:        { padding: 4, position: 'relative' },
+  unreadBadge:      { position: 'absolute', top: -2, right: -4, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  unreadBadgeText:  { color: '#fff', fontSize: 9, fontWeight: '700' },
+  notifCard:      { width: '100%', maxWidth: 440, maxHeight: '80%', borderWidth: 1, padding: 20 },
+  notifHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  notifRow:       { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingVertical: 10, borderBottomWidth: 1 },
+  unreadDot:      { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  notifTitle:     { fontSize: 14, marginBottom: 2 },
+  notifBody:      { fontSize: 12, lineHeight: 17 },
   modalBackdrop:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 },
   modalCard:      { width: '100%', maxWidth: 440, borderWidth: 1, padding: 20 },
   modalTitle:     { fontSize: 19, fontWeight: '700', marginBottom: 6 },
