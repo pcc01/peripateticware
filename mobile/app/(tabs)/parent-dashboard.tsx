@@ -19,6 +19,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, unlinkChild as apiUnlinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
@@ -126,18 +127,31 @@ function ChildCard({ child, theme, t, onUnlinked }: { child: LinkedChild; theme:
         </>
       )}
 
-      <TouchableOpacity
-        testID={`parent-dashboard-unlink-${child.child_id}`}
-        onPress={confirmUnlink}
-        disabled={unlinking}
-        style={styles.unlinkBtn}
-      >
-        {unlinking ? <ActivityIndicator color={theme.warn} size="small" /> : (
-          <Text style={[styles.unlinkBtnText, { color: theme.warn, fontFamily: theme.fontBody }]}>
-            {pending ? t('parentDashboard.unlink.cancelRequest', 'Cancel request') : t('parentDashboard.unlink.action', 'Unlink')}
-          </Text>
+      <View style={styles.cardActionsRow}>
+        {!pending && (
+          <TouchableOpacity
+            testID={`parent-dashboard-calendar-${child.child_id}`}
+            onPress={() => router.push({ pathname: '/child-calendar', params: { childId: child.child_id, childName: child.child_name } })}
+            style={styles.calendarBtn}
+          >
+            <Text style={[styles.calendarBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+              {t('parentDashboard.viewCalendar', '📅 Calendar')}
+            </Text>
+          </TouchableOpacity>
         )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          testID={`parent-dashboard-unlink-${child.child_id}`}
+          onPress={confirmUnlink}
+          disabled={unlinking}
+          style={styles.unlinkBtn}
+        >
+          {unlinking ? <ActivityIndicator color={theme.warn} size="small" /> : (
+            <Text style={[styles.unlinkBtnText, { color: theme.warn, fontFamily: theme.fontBody }]}>
+              {pending ? t('parentDashboard.unlink.cancelRequest', 'Cancel request') : t('parentDashboard.unlink.action', 'Unlink')}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -601,6 +615,9 @@ const styles = StyleSheet.create({
   lastActive:   { fontSize: 10, letterSpacing: 0.4, marginTop: 4 },
   unlinkBtn:     { alignSelf: 'flex-start', marginTop: 4 },
   unlinkBtnText: { fontSize: 12, fontWeight: '600' },
+  cardActionsRow:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
+  calendarBtn:     { alignSelf: 'flex-start' },
+  calendarBtnText: { fontSize: 12, fontWeight: '600' },
   linkChildBtn:     { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
   linkChildBtnText: { fontSize: 12, fontWeight: '700' },
   headerActions:  { flexDirection: 'row', alignItems: 'center', gap: 10 },

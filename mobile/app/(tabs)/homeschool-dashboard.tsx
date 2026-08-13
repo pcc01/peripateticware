@@ -8,10 +8,17 @@
 // only, since a homeschool parent tracking individual kids is the one
 // thing TEACHER's tabs genuinely don't cover. Adding/editing children,
 // standards coverage, and portfolio export stay web-only.
+//
+// Each card's "📅 Calendar" button opens app/child-calendar.tsx — same
+// screen (tabs)/parent-dashboard.tsx uses, since backend/routes/
+// calendar.py's child_id path is shared by PARENT and HOMESCHOOL alike
+// (unlike the classroom_id path, which is TEACHER-only — see (tabs)/
+// teacher-dashboard.tsx's own comment on that asymmetry).
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import {
@@ -71,6 +78,16 @@ function ChildCard({ child, theme, t }: { child: HomeschoolChild; theme: any; t:
           </Text>
         </>
       )}
+
+      <TouchableOpacity
+        testID={`homeschool-dashboard-calendar-${child.id}`}
+        onPress={() => router.push({ pathname: '/child-calendar', params: { childId: child.id, childName: child.full_name } })}
+        style={styles.calendarBtn}
+      >
+        <Text style={[styles.calendarBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+          {t('parentDashboard.viewCalendar', '📅 Calendar')}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -155,4 +172,6 @@ const styles = StyleSheet.create({
   barBg:        { height: 6 },
   barFill:      { height: 6 },
   progressLabel:{ fontSize: 10, letterSpacing: 0.4 },
+  calendarBtn:     { alignSelf: 'flex-start', marginTop: 4 },
+  calendarBtnText: { fontSize: 12, fontWeight: '600' },
 });

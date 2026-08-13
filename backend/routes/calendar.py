@@ -168,10 +168,13 @@ async def get_calendar_events(
     if role in ("PARENT", "HOMESCHOOL"):
         if not child_id:
             raise HTTPException(status_code=422, detail="child_id is required")
-        # Verify the link — either parent_child_links (parent) or
-        # homeschool_children (homeschool owner account)
+        # Verify the link — either parent_child_links (parent, gated on
+        # status='approved' same as every other parent_child_links read in
+        # the app — a pending/denied link grants nothing) or
+        # homeschool_children (homeschool owner account, no consent step
+        # since the homeschool parent creates that account directly).
         linked = (await db.execute(text("""
-            SELECT 1 FROM parent_child_links WHERE parent_id = :pid AND child_id = :cid
+            SELECT 1 FROM parent_child_links WHERE parent_id = :pid AND child_id = :cid AND status = 'approved'
             UNION
             SELECT 1 FROM homeschool_children WHERE parent_id = :pid AND child_id = :cid
         """), {"pid": str(current_user.id), "cid": child_id})).first()
