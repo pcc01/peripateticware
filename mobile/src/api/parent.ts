@@ -41,3 +41,23 @@ export async function fetchLinkedChildren(): Promise<LinkedChild[]> {
 export async function fetchChildProgress(childId: string): Promise<ChildProgress> {
   return apiFetch<ChildProgress>(`/api/v1/parent/children/${childId}/progress`);
 }
+
+export interface LinkChildResult {
+  success: boolean;
+  message: string;
+  child: { id: string; name: string; email: string; relationship: string; linked_at: string };
+}
+
+// Links an existing student account to this parent by email — no code/
+// verification step despite routes/linking.py's mock endpoints suggesting
+// one exists (that router is dead code, shadowed by this same path being
+// registered first in main.py; see backend/routes/parent.py's link_child
+// for the real, DB-backed implementation). Mirrors web's
+// useParentStore.linkChild(), which also only ever sends the email —
+// relationship always defaults to "guardian" server-side.
+export async function linkChild(childEmail: string): Promise<LinkChildResult> {
+  return apiFetch<LinkChildResult>('/api/v1/parent/link-child', {
+    method: 'POST',
+    body: JSON.stringify({ child_email: childEmail }),
+  });
+}
