@@ -2,13 +2,14 @@
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import Footer from './landing/Footer';
 import StorySection from './landing/StorySection';
 import { PhoneCarousel } from './PhoneCarousel';
 import { LocaleSwitcher } from './LocaleSwitcher';
+import { Seo } from './Seo';
 import './PhoneCarousel.css';
 import '../styles/landing.css';
 import '../styles/globals.css';
@@ -32,25 +33,7 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<HeroTab>('homeschool');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
-  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [selectedTeamMember, setSelectedTeamMember] = useState<number | null>(null);
-
-  // Team carousel auto-advance
-  useEffect(() => {
-    const teamInterval = setInterval(() => {
-      setCurrentTeamIndex((prev) => (prev + 1) % 4);
-    }, 5000);
-    return () => clearInterval(teamInterval);
-  }, []);
-
-  // Testimonials carousel auto-advance
-  useEffect(() => {
-    const testimInterval = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => (prev + 1) % 5);
-    }, 6000);
-    return () => clearInterval(testimInterval);
-  }, []);
 
   const handleNavigateToAuth = () => {
     navigate('/login');
@@ -299,19 +282,11 @@ export const LandingPage: React.FC = () => {
 
   };
 
+  // Solo founder — only real team member. Do not add placeholder/fake
+  // entries here; an empty or single-person team is more credible than
+  // fabricated colleagues.
   const teamMembers = [
-  { name: t('team_1_name'), role: t('team_1_role'), avatar: t('team_1_initial'), bio: t('team_1_bio') },
-  { name: t('team_2_name'), role: t('team_2_role'), avatar: t('team_2_initial'), bio: t('team_2_bio') },
-  { name: t('team_3_name'), role: t('team_3_role'), avatar: t('team_3_initial'), bio: t('team_3_bio') },
-  { name: t('team_4_name'), role: t('team_4_role'), avatar: t('team_4_initial'), bio: t('team_4_bio') }];
-
-
-  const testimonials = [
-  { quote: t('testimonial_1_text'), author: t('testimonial_1_author'), avatar: '👨‍🎓' },
-  { quote: t('testimonial_2_text'), author: t('testimonial_2_author'), avatar: '👩‍🏫' },
-  { quote: t('testimonial_3_text'), author: t('testimonial_3_author'), avatar: '👨‍👩‍👧' },
-  { quote: t('testimonial_4_text'), author: t('testimonial_4_author'), avatar: '👨‍🏫' },
-  { quote: t('testimonial_5_text'), author: t('testimonial_5_author'), avatar: '👩‍🎓' }];
+  { name: t('team_1_name'), role: t('team_1_role'), avatar: t('team_1_initial'), bio: t('team_1_bio') }];
 
 
   const pricingOptions: PricingOption[] = [
@@ -365,6 +340,11 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-page">
+      <Seo
+        title="Learning in Motion"
+        description="Peripateticware guides K-12 students through real-world, AI-assisted outdoor learning activities, with automatic state-standards tracking and one-click portfolios for homeschool families."
+        path="/"
+      />
       {/* Navigation */}
       <nav className="sticky top-0 z-50" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div className="landing-nav-inner">
@@ -608,9 +588,7 @@ export const LandingPage: React.FC = () => {
               aria-haspopup="dialog"
               style={{ cursor: 'pointer' }}>
 
-                {/* Only the avatar dims for inactive cards — name/role text stays at
-                    full opacity so it keeps AA-compliant contrast (WCAG 1.4.3). */}
-                <div className="team-avatar" style={{ opacity: idx === currentTeamIndex ? 1 : 0.5, transition: 'opacity 300ms ease' }}>{member.avatar}</div>
+                <div className="team-avatar">{member.avatar}</div>
                 <h4 className="h-card">{member.name}</h4>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{member.role}</p>
               </div>
@@ -720,56 +698,24 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Early access callout — replaces fabricated testimonials.
+          There are no real customers/testimonials yet; do not add placeholder
+          quotes here. Swap this block out for real testimonials as they come in. */}
       <section className="testimonials-section">
-        <div className="testimonials-inner">
+        <div className="testimonials-inner" style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto' }}>
           <h2 className="h-section text-center">
-            {t('testimonials_title')}
+            {t('early_access_title', "We're just getting started")}
           </h2>
-          <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ position: 'relative', minHeight: '300px' }}>
-              {testimonials.map((testimonial, idx) =>
-              <div
-                key={idx}
-                style={{
-                  opacity: idx === currentTestimonialIndex ? 1 : 0,
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  transition: 'opacity 300ms ease-in-out'
-                }}>
-                
-                  <div className="testimonial-card">
-                    <p className="body" style={{ fontStyle: 'italic', marginBottom: '16px' }}>
-                      "{testimonial.quote}"
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ fontSize: '2rem' }}>{testimonial.avatar}</div>
-                      <div>
-                        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{testimonial.author}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '24px' }}>
-              {testimonials.map((_, idx) =>
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setCurrentTestimonialIndex(idx)}
-                aria-label={t('components_landingpage.aria_label_show_testimonial', 'Show testimonial {{n}}', { n: idx + 1 })}
-                aria-current={idx === currentTestimonialIndex ? 'true' : undefined}
-                style={{
-                  width: '10px', height: '10px', borderRadius: '50%',
-                  background: idx === currentTestimonialIndex ? 'var(--primary)' : 'var(--border)',
-                  border: 'none', cursor: 'pointer', padding: 0,
-                }} />
-              )}
-            </div>
-          </div>
+          <p className="body" style={{ color: 'var(--text-muted)', margin: '1rem 0 1.75rem', lineHeight: 1.65 }}>
+            {t('early_access_desc', 'Peripateticware is in early access — we\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.')}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/request-beta')}
+            className="btn btn--primary">
+
+            {t('early_access_cta', 'Request Early Access')}
+          </button>
         </div>
       </section>
 

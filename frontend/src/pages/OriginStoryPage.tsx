@@ -12,11 +12,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Seo } from '../components/Seo';
 
 export default function OriginStoryPage() {
   const { t } = useTranslation('landing');
   return (
     <div style={{ maxWidth: '760px', margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
+      <Seo
+        title="From a White Paper to a Working Platform: 2007–2026"
+        description="In 2007, a McGraw-Hill white paper proposed GPS-guided outdoor learning years before the technology existed to build it. This is the story of how it became Peripateticware."
+        path="/about/origin"
+      />
       <Link
         to="/#about"
         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.875rem', marginBottom: '2.5rem' }}>
