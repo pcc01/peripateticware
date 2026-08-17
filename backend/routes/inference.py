@@ -532,6 +532,7 @@ async def rag_retrieve(
       ?jurisdiction_id=   only seeds indexed with this jurisdiction_id in
                           their metadata (set by scripts/backfill_standards_embeddings.py)
     """
+    import re
     import time as _time
     from sqlalchemy import text as _t
     from services.graph_retrieval import expand_seeds
@@ -608,19 +609,32 @@ async def rag_retrieve(
         # specific stemming across a corpus that ships Spanish/other
         # translations alongside English. Best-effort: a pre-migration
         # database (no FTS index yet) just falls back to vector-only.
-        try:
-            lexical_rows = (await db.execute(_t(f"""
-                SELECT {select_cols}
-                FROM rag_documents rd
-                WHERE to_tsvector('simple', rd.content) @@ plainto_tsquery('simple', :q)
-                {type_clause}
-                {jurisdiction_clause}
-                {retired_filter}
-                ORDER BY ts_rank(to_tsvector('simple', rd.content), plainto_tsquery('simple', :q)) DESC
-                LIMIT :k
-            """), {"q": query, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
-        except Exception as e:
-            logger.warning(f"rag_documents lexical query failed (FTS index may not exist yet): {e}")
+        #
+        # OR, not AND: plainto_tsquery('simple', query) ANDs every token
+        # together, and 'simple' has no stopword list, so a natural-language
+        # query like "figurative language in poetry analysis" required the
+        # literal words "in" AND "analysis" too -- zero real standards phrase
+        # it that way, so the lexical channel matched nothing (found testing
+        # this exact query on prod: 0 lexical rows, hybrid fusion had nothing
+        # to add). Tokenize ourselves and OR the terms via to_tsquery instead
+        # -- ts_rank still favors documents matching more terms, so this
+        # stays a meaningful ranking signal, just not an all-or-nothing filter.
+        lex_tokens = [w for w in re.findall(r"\w+", query.lower()) if len(w) >= 3]
+        if lex_tokens:
+            try:
+                lex_tsquery = " | ".join(lex_tokens)
+                lexical_rows = (await db.execute(_t(f"""
+                    SELECT {select_cols}
+                    FROM rag_documents rd
+                    WHERE to_tsvector('simple', rd.content) @@ to_tsquery('simple', :q)
+                    {type_clause}
+                    {jurisdiction_clause}
+                    {retired_filter}
+                    ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
+                    LIMIT :k
+                """), {"q": lex_tsquery, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+            except Exception as e:
+                logger.warning(f"rag_documents lexical query failed (FTS index may not exist yet): {e}")
         db_ms = int((_time.monotonic() - _t_db0) * 1000)
 
         # Reciprocal Rank Fusion: merge by *rank* within each list, not by
