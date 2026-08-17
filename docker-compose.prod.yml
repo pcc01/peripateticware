@@ -79,12 +79,16 @@ services:
     # scripts/backfill_standards_embeddings.py --all: `exec`'d processes
     # share the main container's cgroup with the 4 gunicorn workers, and
     # loading all ~561k StandardsItem ORM rows into memory at once (no
-    # server-side pagination) pushed total usage over the limit. Host has
-    # 26GB+ free at typical load (checked via `docker stats`/`free -h`
-    # before bumping this) — 3g gives real headroom for this and future
-    # batch/admin jobs without meaningfully touching what's actually
-    # available.
-    mem_limit: 3g
+    # server-side pagination) pushed total usage over the limit. Bumped to
+    # 3g first — measured (cgroup memory.stat) ~3.0GB of genuine anon
+    # memory from that one-time load alone, right up against the 3g cap
+    # with ~200MB headroom left for the 4 gunicorn workers plus whatever
+    # the batch loop itself needs as it runs — too tight to trust. Host has
+    # 26GB+ free at typical load (checked via `docker stats`/`free -h`) —
+    # 6g gives real margin without meaningfully touching what's available.
+    # The more correct fix is paginating that query instead of `.all()`ing
+    # the whole table — not done here, this is the pragmatic unblock.
+    mem_limit: 6g
     cpus: '2.0'
 
   postgres:
