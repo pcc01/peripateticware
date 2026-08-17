@@ -619,10 +619,41 @@ async def rag_retrieve(
         # to add). Tokenize ourselves and OR the terms via to_tsquery instead
         # -- ts_rank still favors documents matching more terms, so this
         # stays a meaningful ranking signal, just not an all-or-nothing filter.
-        lex_tokens = [w for w in re.findall(r"\w+", query.lower()) if len(w) >= 3]
+        #
+        # A length>=3 filter alone isn't enough: "and"/"with"/"the" are
+        # length-3+ connector words that appear in nearly every row, so
+        # OR-ing them in destroyed selectivity -- found on prod: 3 of 5
+        # eval queries (the ones containing "and") jumped to ~7.4s because
+        # ts_rank had to sort a near-full-table match set. Filter a small,
+        # deliberately English-only stopword list on top of the length
+        # check (the corpus is multilingual, but query text through this
+        # UI is overwhelmingly English -- not solving the general case here).
+        _STOPWORDS = {
+            "and", "the", "for", "with", "that", "this", "from", "into",
+            "are", "was", "were", "been", "being", "has", "have", "had",
+            "not", "but", "can", "will", "would", "should", "about", "its",
+            "you", "your", "our", "their", "his", "her", "them", "who",
+            "what", "when", "where", "why", "how", "all", "any", "each",
+        }
+        lex_tokens = [
+            w for w in re.findall(r"\w+", query.lower())
+            if len(w) >= 3 and w not in _STOPWORDS
+        ]
         if lex_tokens:
+            # Two-tier: try the AND-of-terms query first -- cheap, because
+            # requiring every term makes it selective enough for the GIN
+            # index + LIMIT to stay fast. Only fall back to the OR-of-terms
+            # query (each term matches independently, ranked by ts_rank)
+            # when AND finds literally nothing -- that's the rare case this
+            # channel exists for (a real phrase match whose exact wording
+            # doesn't co-occur with every query token), not the common one.
+            # Doing OR first was the previous version of this fix: correct,
+            # but ~2-7s on prod because ts_rank has to score every row
+            # matching ANY term before it can pick the top :k -- an OR
+            # query has none of the GIN-assisted early-termination an AND
+            # query gets. Only pay that cost when AND actually comes up empty.
+            lex_tsquery_and = " & ".join(lex_tokens)
             try:
-                lex_tsquery = " | ".join(lex_tokens)
                 lexical_rows = (await db.execute(_t(f"""
                     SELECT {select_cols}
                     FROM rag_documents rd
@@ -632,9 +663,25 @@ async def rag_retrieve(
                     {retired_filter}
                     ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
                     LIMIT :k
-                """), {"q": lex_tsquery, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+                """), {"q": lex_tsquery_and, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
             except Exception as e:
-                logger.warning(f"rag_documents lexical query failed (FTS index may not exist yet): {e}")
+                logger.warning(f"rag_documents lexical AND query failed (FTS index may not exist yet): {e}")
+
+            if not lexical_rows and len(lex_tokens) > 1:
+                lex_tsquery_or = " | ".join(lex_tokens)
+                try:
+                    lexical_rows = (await db.execute(_t(f"""
+                        SELECT {select_cols}
+                        FROM rag_documents rd
+                        WHERE to_tsvector('simple', rd.content) @@ to_tsquery('simple', :q)
+                        {type_clause}
+                        {jurisdiction_clause}
+                        {retired_filter}
+                        ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
+                        LIMIT :k
+                    """), {"q": lex_tsquery_or, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+                except Exception as e:
+                    logger.warning(f"rag_documents lexical OR fallback failed: {e}")
         db_ms = int((_time.monotonic() - _t_db0) * 1000)
 
         # Reciprocal Rank Fusion: merge by *rank* within each list, not by
