@@ -96,6 +96,31 @@ This is a full-stack, production-grade application with a web frontend, REST API
 
 ---
 
+## 🔧 GraphRAG Retrieval — Status & Recent Work (Aug 17, 2026)
+
+The GraphRAG pipeline described above is live in both environments; this is a running log of what's
+been fixed and what's still open, kept close to the code rather than buried in a separate tracker.
+Full detail: `PRD-graphrag-migration-2026-08-16.md`.
+
+**Done, this week** — found comparing local vs. prod retrieval on identical queries, root-caused, fixed, and verified on both databases:
+- **Retired-content leak fixed.** A framework literally titled `[RETIRED] Language Arts: Henry Teaching & Learning Standards` was surfacing as top-5 results. `is_retired` was set at ingest but never checked anywhere in retrieval — fixed in the seed query, the graph-expansion (ancestor/association) queries, and cascaded properly at ingest time going forward (`scripts/ingest_case_standards.py`). One-time cleanup (`scripts/retire_items_from_retired_frameworks.py`) retired 16,614 items across 18 frameworks on both databases — deliberately *not* the much larger `adoption_status='Deprecated'` bucket (89,928 items), since that value turned out to be agency-inconsistent (GCPS uses it on its entire *current* catalog) and unsafe to act on alone.
+- **Retrieval latency fixed.** Two full-table-scan queries, found by splitting `retrieval_time_ms` into `embed_ms`/`db_ms`/`expand_ms` and EXPLAIN-ANALYZing prod: no index on `standards_items.is_retired` (the retirement fix's own `NOT EXISTS` check was Seq Scanning ~561k rows every call) and no index on `standards_associations.destination_item_id` (Seq Scanning 669,858 rows every call for graph expansion). Both indexed. Prod's per-query latency: **623–690ms → 114–233ms**, faster than the pre-fix baseline, not just back to it.
+- **Quality-parity methodology built.** Local (Ollama) and prod (Voyage) embed with different models on different score scales, so raw relevance scores were never comparable. Built a keyword-derived ground truth (independent of either model) and measured precision/recall instead: **local 0.267/0.033, prod 0.313/0.029 avg** — statistically comparable. The apparent "prod is worse" read from raw scores alone was not supported once measured properly.
+
+**In progress — hybrid (vector + lexical) retrieval:**
+Investigating the two lowest-scoring eval categories surfaced one real, narrow gap: for *"figurative
+language in poetry analysis"*, prod's pure vector search returns items about "poetic technique" (rhyme,
+stanza) instead of the literal concept the query asked about, because nothing in Stage 1 has a
+lexical-match signal — if a phrase match isn't among the embedding model's nearest neighbors, it's
+just gone, and that's provider-dependent (Ollama happened to surface one hit here; Voyage surfaced
+zero). Scoped fix, not yet built: add a Postgres full-text (GIN) index over `rag_documents.content`,
+run it as a second Stage-1 candidate channel alongside the existing pgvector search, and merge the two
+ranked lists via Reciprocal Rank Fusion (RRF) rather than trying to normalize two incompatible score
+scales. Touches `routes/inference.py`'s seed query for every `rag-retrieve` call, so it ships behind
+thorough local + prod verification before merge, same as the fixes above.
+
+---
+
 ## 🚀 Quick Start (Docker)
 
 ### Prerequisites
