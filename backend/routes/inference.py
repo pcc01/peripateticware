@@ -553,21 +553,35 @@ async def rag_retrieve(
         try:
             rows = (await db.execute(_t(f"""
                 SELECT
-                    id::text,
-                    source_type,
-                    source_id,
-                    source_name,
-                    chunk_index,
-                    content,
-                    metadata,
-                    node_type,
-                    node_id::text,
-                    1 - (embedding <=> CAST(:emb AS vector)) AS relevance_score
-                FROM rag_documents
-                WHERE embedding IS NOT NULL
+                    rd.id::text,
+                    rd.source_type,
+                    rd.source_id,
+                    rd.source_name,
+                    rd.chunk_index,
+                    rd.content,
+                    rd.metadata,
+                    rd.node_type,
+                    rd.node_id::text,
+                    1 - (rd.embedding <=> CAST(:emb AS vector)) AS relevance_score
+                FROM rag_documents rd
+                WHERE rd.embedding IS NOT NULL
                 {type_clause}
                 {jurisdiction_clause}
-                ORDER BY embedding <=> CAST(:emb AS vector)
+                -- A framework retired/deprecated after this row was embedded (or
+                -- one that never should have cascaded is_retired down to its
+                -- items at ingest time) shouldn't keep surfacing as a live
+                -- standard -- see the [RETIRED]-framework leak found 2026-08-17
+                -- comparing local vs prod. rd.node_id has no FK (see
+                -- 20260816c_rag_documents_node_link.py), so this stays a plain
+                -- NOT EXISTS rather than a join.
+                AND NOT (
+                    rd.node_type = 'standards_item'
+                    AND EXISTS (
+                        SELECT 1 FROM standards_items si
+                        WHERE si.id = rd.node_id AND si.is_retired = true
+                    )
+                )
+                ORDER BY rd.embedding <=> CAST(:emb AS vector)
                 LIMIT :k
             """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
 
