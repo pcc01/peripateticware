@@ -257,3 +257,23 @@ Verified all three cases directly against real + constructed data:
 - Simulating a CASE framework landing for that same synthetic Wyoming jurisdiction → the previously-authoritative upload correctly flips to `False`.
 
 Nothing downstream (retrieval ranking, coverage display) reads this flag yet — same as the original PRD's own framing, it's a precedence signal for future consumers, not yet wired into ranking logic. That remains a natural next step, not done here.
+
+---
+
+## 12. Graph-expansion latency: found, fixed (2026-08-17)
+
+Requested by Paul: a real query ("How do I teach students to understand ratios and proportional relationships?") run against the live pipeline, compared to what the flat pre-migration system would have returned.
+
+**Quality result:** genuinely better, not marginally — same 5 top matches as flat vector search (same embeddings), plus ancestor-chain context for each, plus one real prerequisite catch a similarity search alone would never surface: *"Demonstrate a ratio relationship with whole numbers using pictures or numbers"* (an earlier-grade foundational skill, correctly reached via a `precedes` edge — it doesn't share much vocabulary with the query, so cosine similarity wouldn't have ranked it highly on its own).
+
+**Latency result — a real problem, found and fixed in the same pass:** `services/graph_retrieval.py::expand_seeds` looped over each seed and issued up to 3 separate queries per seed (ancestors, associations, aligned content) — an N+1 pattern. Measured against real data: **955ms–2.8s** for a 5-seed request, confirmed consistent across repeated trials (not a fluke/cold-cache artifact). Fixed by batching: `_fetch_ancestors_batch`/`_fetch_associations_batch`/`_fetch_aligned_content_batch` now each run **one query covering every seed at once** (a single recursive CTE seeded with all seed ids for ancestors; `ROW_NUMBER() OVER (PARTITION BY seed_id ...)` instead of a plain `LIMIT` for the other two, so per-seed result caps survive batching without starving richly-connected seeds). SQLAlchemy's `bindparam(..., expanding=True)` handles the variable-length UUID list safely (verified directly — same reasoning as the `routes/homeschool.py` fix in Phase 4, avoiding raw `= ANY(:param)` array binding).
+
+**Result: 955ms-2.8s → 85-188ms — roughly 15-20x**, same result set (verified: same ancestor chains, same prerequisite catch, item count consistent). Full backend test suite stayed green (267 passed, 1 pre-existing unrelated failure) through the change.
+
+### Further latency/quality options surfaced, not implemented (would need a scoping decision)
+
+- **Query result caching** (Redis, already in the stack) for repeated/near-duplicate queries — meaningful for a classroom where many students ask similar things, but needs a TTL/invalidation strategy decision (standards data changes rarely; a long TTL is probably fine, but that's a product call, not just an engineering one).
+- **Richer association-type coverage.** `_fetch_associations_batch` only gives 3 relation labels distinct meaning (`ancestor`/`prerequisite`/catch-all `cross_reference`); the real ingested data has more CASE association types (`isPartOf`, `ext:isAlignedTo`, `exemplar`, `ext:hasSubstitute`, `replacedBy`) currently all folded into `cross_reference`. `replacedBy` in particular is arguably its own category (a superseded/deprecated standard) worth surfacing distinctly rather than lumped in as "related."
+- **Jurisdiction-aware result labels.** A `cross_reference` result's `full_statement` doesn't currently say *which* state/framework it's from — a teacher comparing "my state's version vs. Texas's" would need to click through rather than see it at a glance. Would need joining `standards_frameworks.jurisdiction_id → jurisdictions.name` into the expansion queries.
+- **Use `is_authoritative_over_uploads` in ranking** (§11) — now that the flag is set correctly, nothing yet prefers an authoritative framework's standards over a demoted upload's when both could plausibly match a query. Not urgent (few jurisdictions have both today) but will matter more as CASE coverage grows.
+- **HNSW index tuning** for the base vector search (`ef_search`, currently pgvector defaults) — not investigated; the base search is already fast (60-90ms) at current data volume, so likely not the next bottleneck, but worth revisiting once the full ~561k-row backfill completes and the index is at final size.
