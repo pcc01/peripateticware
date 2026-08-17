@@ -56,6 +56,25 @@ class PasswordRequirements(BaseModel):
     special_characters: str = "@$!%*?&"
 
 
+async def _resettable_user(db: AsyncSession, user_id_str: Optional[str]) -> Optional[User]:
+    """Look up a user by id for the reset flow — missing, inactive, and
+    soft-deleted accounts all resolve to None (treated identically by
+    callers) so neither response distinguishes "no such account" from
+    "account exists but is disabled"."""
+    if not user_id_str:
+        return None
+    from uuid import UUID
+    try:
+        user_id = UUID(user_id_str)
+    except (TypeError, ValueError):
+        return None
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or not user.is_active or user.deleted_at is not None:
+        return None
+    return user
+
+
 def _validate_password_strength(password: str) -> list:
     errors = []
     if len(password) < 8:
@@ -85,13 +104,19 @@ async def forgot_password(
     result = await db.execute(select(User).where(User.email_index == _blind_index(request.email)))
     user = result.scalar_one_or_none()
 
-    if user:
+    if user and user.is_active and user.deleted_at is None:
         token = SignedURL.generate(
             purpose="password_reset",
             payload={"user_id": str(user.id), "email": user.email},
         )
         await send_password_reset_email(user.email, token)
         logger.info("Password reset email sent to user %s", user.id)
+    elif user:
+        # Deactivated/soft-deleted account — deliberately not sent a reset
+        # email (they have no business getting back into a disabled
+        # account), but the response below stays identical either way so
+        # this doesn't become a side channel for "is this account active?"
+        logger.info("Password reset requested for inactive/deleted user %s — skipped", user.id)
 
     return ForgotPasswordResponse(
         success=True,
@@ -101,20 +126,32 @@ async def forgot_password(
 
 
 @router.get("/reset/{token}", response_model=ResetTokenValidation)
-async def validate_reset_token(token: str) -> ResetTokenValidation:
+async def validate_reset_token(
+    token: str,
+    db: AsyncSession = Depends(get_db),
+) -> ResetTokenValidation:
     """Validate a reset token before showing the new-password form."""
     try:
         data = await SignedURL.validate(token, purpose="password_reset")  # preview only — do not consume
-        return ResetTokenValidation(
-            token=token,
-            valid=True,
-            email=data.get("email"),
-            expires_in_minutes=SignedURL.expires_in_minutes(token),
-        )
     except SignedURLExpired:
         return ResetTokenValidation(token=token, valid=False)
     except SignedURLError:
         raise HTTPException(status_code=400, detail="Invalid token")
+
+    # A token can be well-formed and unexpired but still point at an
+    # account that's since been deactivated/deleted (or, in principle, one
+    # that no longer exists) — same "invalid" response as an expired
+    # token, not a distinct message, so this preview endpoint can't be
+    # used to probe an account's active/deleted status.
+    if not await _resettable_user(db, data.get("user_id")):
+        return ResetTokenValidation(token=token, valid=False)
+
+    return ResetTokenValidation(
+        token=token,
+        valid=True,
+        email=data.get("email"),
+        expires_in_minutes=SignedURL.expires_in_minutes(token),
+    )
 
 
 @router.post("/reset", response_model=ResetPasswordResponse)
@@ -136,19 +173,24 @@ async def reset_password(
 
     from uuid import UUID
     try:
-        user_id = UUID(data["user_id"])
+        UUID(data["user_id"])
     except (KeyError, ValueError):
         raise HTTPException(status_code=400, detail="Invalid token payload")
 
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    # Covers both "no such user" and "user has since been deactivated /
+    # soft-deleted" — same message as the expired/tampered branches above,
+    # so this can't be used to confirm an account's active status. Note
+    # the token was already consumed by SignedURL.validate(consume=True)
+    # above, so even a retry with the same token can't be used to keep
+    # probing this account.
+    user = await _resettable_user(db, data.get("user_id"))
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=400, detail="This reset link is no longer valid. Please request a new one.")
 
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     user.hashed_password = pwd_context.hash(request.new_password)
     await db.commit()
-    logger.info("Password reset for user %s", user_id)
+    logger.info("Password reset for user %s", user.id)
 
     return ResetPasswordResponse(success=True, message="Password reset successfully. You can now log in.")
