@@ -53,13 +53,13 @@ This is a full-stack, production-grade application with a web frontend, REST API
 - **Roles:** Teacher, Student, Parent, Admin, Homeschool, Platform (super-admin)
 - **Activity Engine:** Full CRUD for location-based learning activities with Bloom's taxonomy levels
 - **Student Features:** Field notes, self-initiated projects, peer projects, reverse scavenger hunt proposals
-- **AI Integration:** Ollama (local) for inference, Whisper for audio transcription (ASR), standards parsing
-- **RAG Pipeline:** pgvector semantic search over uploaded standards, rubrics, and homeschool state requirements; `nomic-embed-text` embeddings; auto-indexed on upload; manual ingest endpoint
+- **AI Integration:** Provider-agnostic — Ollama (local, default), Anthropic Claude API, or OpenAI/OpenAI-compatible (Azure OpenAI, vLLM, LiteLLM, etc.), selectable globally or per-agent; Whisper for audio transcription (ASR); standards parsing
+- **GraphRAG Pipeline:** Two-stage retrieval over the standards graph — pgvector semantic search finds seed matches, then graph expansion (`standards_items.parent_id` hierarchy, `standards_associations` typed cross-edges, `content_alignments`) pulls in ancestors, cross-jurisdiction equivalents, prerequisites, and already-aligned content. Powers standards, rubrics, and homeschool state requirements search; every result is tagged with *why* it's relevant (direct match vs. structural context), not just a similarity score. CASE-standard ingest (`scripts/ingest_case_standards.py`) and teacher/homeschool PDF uploads both feed the same graph (`services/standards_graph_fold.py`)
 - **Privacy & Compliance Engine:** FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA, POPIA, LPDC, AEPD rule enforcement; DSR portal (access, download, deletion, correction, opt-out); consent management; soft-delete with scheduled purge
 - **Field-Level Encryption:** Fernet symmetric encryption + HMAC blind index on student PII (email, full name, GPS coordinates, notification payloads); backfill script included
 - **Breach Notification:** GDPR Art. 33/34 workflow — `BreachIncident` model, 7 admin endpoints, DPA notification, hourly overdue-incident checker
 - **Email Service:** SMTP-backed transactional email (verification, password reset, parent consent)
-- **Standards & Rubrics:** Upload PDFs/CSVs; AI extracts criteria; coverage reporting; semantic search via RAG
+- **Standards & Rubrics:** Upload PDFs/CSVs; AI extracts criteria; coverage reporting (unions manual mappings and AI-suggested graph alignments); GraphRAG semantic + structural search
 - **Export Service:** Portfolio PDF and activity log CSV generation; Cloudflare R2 storage with local fallback
 - **Subscription Tiers:** Starter, School, Homeschool Family tiers enforced via 402 gates; Paddle billing integration; `UpgradeCTA` modal wired globally
 - **Admin Panel:** User management, fine-grained RBAC, audit logs, env editor, privacy config, AI rate-limit enforcement
@@ -99,7 +99,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 ### Prerequisites
 - Docker Desktop
 - Git
-- Ollama running on the host (`ollama serve`)
+- An AI provider: Ollama running on the host (`ollama serve`, default) — or skip it and configure a Claude/OpenAI API key instead (see [AI Configuration](#-ai-configuration))
 
 ### 1. Clone
 ```bash
@@ -258,7 +258,7 @@ peripateticware/
 | Backend | FastAPI, SQLAlchemy (async), PostgreSQL + pgvector, Redis, Alembic, APScheduler |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, Zustand, react-router-dom v6 |
 | Mobile | React Native, Expo SDK 54, Expo Router, SQLite, expo-av, expo-location |
-| AI | Ollama (local LLM + Whisper ASR + nomic-embed-text), optional Claude API fallback |
+| AI | Provider-agnostic: Ollama (local LLM + Whisper ASR + embeddings), Anthropic Claude API, or OpenAI/OpenAI-compatible — global or per-agent |
 | Storage | Cloudflare R2 (boto3 S3-compatible); local `/app/uploads` fallback |
 | Payments | Paddle billing; tiered subscription enforcement via structured 402 responses |
 | Infrastructure | Docker Compose, Nginx, pgbouncer (config ready) |
@@ -267,12 +267,14 @@ peripateticware/
 
 ## 🤖 AI Configuration
 
+Every AI call — text generation, vision (scanned-PDF OCR), and embeddings — routes through a shared provider abstraction (`backend/agents/provider.py`, `backend/services/embedding_service.py`). No component hard-requires Ollama; a deployment can run entirely against a hosted or self-hosted API instead. `LLM_PROVIDER` sets the default; `EMBEDDING_PROVIDER` (blank = inherits `LLM_PROVIDER`) sets embeddings separately since Anthropic has no embeddings endpoint of its own. Per-agent overrides (`AGENT_<NAME>_PROVIDER`) take precedence over the global default.
+
 ### Ollama (local — default)
 ```bash
 # On host machine
 ollama pull mistral                          # text inference
-ollama pull karanchopda333/whisper:latest   # audio transcription
-ollama pull nomic-embed-text                 # embeddings for RAG pipeline
+ollama pull karanchopda333/whisper:latest    # audio transcription
+ollama pull qwen3-embedding:0.6b             # embeddings for the standards GraphRAG pipeline
 ollama serve
 ```
 
@@ -281,16 +283,34 @@ ollama serve
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://host.docker.internal:11434
 OLLAMA_MODEL_TEXT=mistral
+OLLAMA_MODEL_VISION=llava
 ASR_ENABLED=true
 OLLAMA_MODEL_AUDIO=karanchopda333/whisper:latest
-OLLAMA_MODEL_EMBED=nomic-embed-text
+
+EMBEDDING_PROVIDER=ollama
+EMBEDDING_MODEL=qwen3-embedding:0.6b   # truncated to 384 dims via Ollama's `dimensions` param (Matryoshka)
 ```
 
-### Claude API (cloud fallback)
+### Claude API (cloud)
 ```env
 LLM_PROVIDER=claude
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 CLAUDE_MODEL=claude-sonnet-4-20250514
+# Embeddings: Anthropic has no embeddings endpoint — set EMBEDDING_PROVIDER=openai
+# (below) and point OPENAI_BASE_URL at Voyage AI or another compatible host.
+```
+
+### OpenAI / OpenAI-compatible (cloud or self-hosted)
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-xxxxx
+OPENAI_MODEL=gpt-4o-mini
+# Points at real OpenAI by default — override to target Azure OpenAI, vLLM,
+# LiteLLM proxy, LM Studio, or any other OpenAI-wire-compatible server.
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small   # dimensions truncated to 384 to match the vector(384) columns
 ```
 
 ### Switch providers
@@ -410,8 +430,8 @@ Peripateticware launches. Teachers create location-based activities. Students ex
 
 ---
 
-**Build Date:** June 2026
-**Status:** Production-ready core — web app stable, mobile built and field-tested, RAG pipeline live
+**Build Date:** June 2026 (GraphRAG migration: August 2026 — see `PRD-graphrag-migration-2026-08-16.md`)
+**Status:** Production-ready core — web app stable, mobile built and field-tested, GraphRAG pipeline live
 **License:** Business Source License 1.1 → Apache 2.0 (May 2030)
 
 **Welcome to the future of location-based learning. 🌍📚**

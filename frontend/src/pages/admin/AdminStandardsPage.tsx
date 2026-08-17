@@ -22,6 +22,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
+import StandardsExplorer from '@/components/shared/StandardsExplorer';
 
 interface StandardsSet {
   id: string;
@@ -215,6 +216,11 @@ const AdminStandardsPage: React.FC = () => {
           <span><strong style={{ color: '#a16207' }}>{sets.filter(s => !s.is_expired && (s.days_until_expiry ?? 999) <= 30).length}</strong> expiring within 30 days</span>
         </div>
       )}
+
+      {/* ── Standards graph search ──────────────────────────────────────── */}
+      <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid var(--border)' }}>
+        <StandardsExplorer />
+      </div>
     </div>
   );
 };

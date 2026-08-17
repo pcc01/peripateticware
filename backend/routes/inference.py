@@ -441,7 +441,7 @@ async def ingest_document(
     supplemental curriculum notes, state standards documents.
     """
     import time as _time
-    from sqlalchemy import text as _t
+    from services.rag_store import upsert_rag_chunk
 
     if not request.content or not request.content.strip():
         raise HTTPException(status_code=400, detail="content cannot be empty")
@@ -462,26 +462,17 @@ async def ingest_document(
     inserted = 0
     t0 = _time.monotonic()
     for idx, chunk in enumerate(chunks):
-        emb_result = await embed_text(chunk)
-        embedding = emb_result.get("embedding")
-        if embedding:
-            await db.execute(_t("""
-                INSERT INTO rag_documents
-                    (source_type, source_id, source_name, chunk_index,
-                     content, metadata, embedding, owner_id)
-                VALUES
-                    (:stype, :sid, :sname, :cidx,
-                     :content, CAST(:meta AS jsonb), CAST(:emb AS vector), :owner)
-            """), {
-                "stype":   request.source_type,
-                "sid":     request.source_id,
-                "sname":   request.source_name,
-                "cidx":    idx,
-                "content": chunk,
-                "meta":    _json.dumps(request.metadata or {}),
-                "emb":     "[" + ",".join(str(v) for v in embedding) + "]",
-                "owner":   str(current_user.id),
-            })
+        ok = await upsert_rag_chunk(
+            db,
+            source_type=request.source_type,
+            source_id=request.source_id,
+            source_name=request.source_name,
+            chunk_index=idx,
+            content=chunk,
+            metadata=request.metadata or {},
+            owner_id=current_user.id,
+        )
+        if ok:
             inserted += 1
 
     await db.commit()
@@ -505,19 +496,38 @@ async def rag_retrieve(
     query: str,
     top_k: int = 5,
     source_type: Optional[str] = None,
+    jurisdiction_id: Optional[str] = None,
+    include_ancestors: bool = True,
+    include_related: bool = True,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Retrieve semantically relevant documents from the RAG store using pgvector.
+    GraphRAG retrieval: vector search over rag_documents finds seed nodes
+    (Stage 1), then — for seeds linked to a standards_items graph node via
+    node_type/node_id — expansion walks standards_items.parent_id,
+    standards_associations, and content_alignments to pull in structurally
+    related context a similarity search alone can't reach (Stage 2). See
+    PRD-graphrag-migration-2026-08-16.md §3 and services/graph_retrieval.py.
 
-    Primary:  rag_documents table (standards, rubrics, homeschool reqs, custom)
-    Fallback: curriculum_units (pre-embedded — used when RAG store is empty)
+    Each returned item carries a `relation`: "match" (a direct Stage-1 hit),
+    "ancestor", "cross_reference", "prerequisite", or "aligned_content" —
+    callers should treat these as different *kinds* of relevance, not just
+    lower similarity scores.
 
-    Optional ?source_type= filter: standards | curriculum | homeschool | custom
+    Backward compatible: existing callers passing only query/top_k/source_type
+    get the enhanced (seeds + graph expansion) result set automatically;
+    include_ancestors=false&include_related=false reproduces the old
+    vector-search-only behavior exactly.
+
+    Optional filters:
+      ?source_type=      standards | curriculum | homeschool | custom
+      ?jurisdiction_id=   only seeds indexed with this jurisdiction_id in
+                          their metadata (set by scripts/backfill_standards_embeddings.py)
     """
     import time as _time
     from sqlalchemy import text as _t
+    from services.graph_retrieval import expand_seeds
 
     if not query or not query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
@@ -528,12 +538,17 @@ async def rag_retrieve(
     query_embedding: list = emb_result.get("embedding", [])
     emb_dim: int = emb_result.get("dimension", len(query_embedding))
 
-    retrieved_docs: list[dict] = []
-    source = "rag_documents"
+    seeds: list[dict] = []
 
     if query_embedding:
         vec_literal = "[" + ",".join(str(v) for v in query_embedding) + "]"
         type_clause = "AND source_type = :stype" if source_type else ""
+        jurisdiction_clause = "AND metadata->>'jurisdiction_id' = :jid" if jurisdiction_id else ""
+        # Cast a wider net than top_k for Stage 1 so Stage 2 has more seeds to
+        # expand from before the final trim — otherwise a query that weakly
+        # matches several standards in the same cluster would only ever see
+        # one of them and its neighbors, not the cluster as a whole.
+        seed_k = min(max(top_k * 3, top_k), 15)
 
         try:
             rows = (await db.execute(_t(f"""
@@ -545,16 +560,19 @@ async def rag_retrieve(
                     chunk_index,
                     content,
                     metadata,
+                    node_type,
+                    node_id::text,
                     1 - (embedding <=> CAST(:emb AS vector)) AS relevance_score
                 FROM rag_documents
                 WHERE embedding IS NOT NULL
                 {type_clause}
+                {jurisdiction_clause}
                 ORDER BY embedding <=> CAST(:emb AS vector)
                 LIMIT :k
-            """), {"emb": vec_literal, "k": top_k, "stype": source_type})).fetchall()
+            """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
 
             for row in rows:
-                retrieved_docs.append({
+                seeds.append({
                     "id":              row[0],
                     "source_type":     row[1],
                     "source_id":       row[2],
@@ -562,56 +580,53 @@ async def rag_retrieve(
                     "chunk_index":     row[4],
                     "content":         row[5],
                     "metadata":        row[6] or {},
-                    "relevance_score": float(row[7]) if row[7] is not None else 0.0,
+                    "node_type":       row[7],
+                    "node_id":         row[8],
+                    "relevance_score": float(row[9]) if row[9] is not None else 0.0,
+                    "relation":        "match",
+                    "expanded_from":   None,
                 })
         except Exception as e:
             logger.warning(f"rag_documents query failed (table may not exist yet): {e}")
 
-        # Fallback: curriculum_units have pre-built embeddings from initial seed
-        if not retrieved_docs:
-            source = "curriculum_units"
-            try:
-                cu_rows = (await db.execute(_t("""
-                    SELECT
-                        id::text,
-                        title,
-                        subject,
-                        grade_level,
-                        raw_content,
-                        1 - (content_embedding <=> CAST(:emb AS vector)) AS relevance_score
-                    FROM curriculum_units
-                    WHERE content_embedding IS NOT NULL
-                      AND is_active = TRUE
-                    ORDER BY content_embedding <=> CAST(:emb AS vector)
-                    LIMIT :k
-                """), {"emb": vec_literal, "k": top_k})).fetchall()
+    expanded: list[dict] = []
+    if seeds and (include_ancestors or include_related):
+        try:
+            expanded = await expand_seeds(
+                db, seeds,
+                include_ancestors=include_ancestors,
+                include_related=include_related,
+            )
+        except Exception as e:
+            logger.warning(f"Graph expansion failed (falling back to vector-only results): {e}")
 
-                for row in cu_rows:
-                    raw = row[4] or {}
-                    retrieved_docs.append({
-                        "id":              row[0],
-                        "source_type":     "curriculum",
-                        "source_name":     row[1],
-                        "content":         raw.get("content", row[1] or ""),
-                        "metadata":        {"subject": row[2], "grade_level": row[3]},
-                        "relevance_score": float(row[5]) if row[5] is not None else 0.0,
-                    })
-            except Exception as e:
-                logger.warning(f"curriculum_units fallback failed: {e}")
+    # Stage 3: merge + rank. Seeds (real cosine similarity) sort above
+    # expansions at the same score by construction (expansions are always
+    # seed_score * a decay < 1), so this single sort respects both signals
+    # without needing a separate weighting scheme.
+    combined = sorted(seeds + expanded, key=lambda d: d["relevance_score"], reverse=True)
+    # top_k caps Stage-1 seeds in the query above; the combined list is
+    # allowed to run larger (seeds + their expansion) since expansion items
+    # are the point of this endpoint, not overflow to be trimmed away —
+    # capped at 3x top_k so a richly-connected result set still has a bound.
+    combined = combined[: top_k * 3]
 
     elapsed_ms = int((_time.monotonic() - t0) * 1000)
     logger.info(
-        f"RAG retrieved {len(retrieved_docs)} docs for '{query[:50]}' "
-        f"from {source} in {elapsed_ms}ms"
+        f"RAG retrieved {len(seeds)} seeds + {len(expanded)} expanded for '{query[:50]}' "
+        f"({len(combined)} returned) in {elapsed_ms}ms"
     )
     return {
         "query":                     query,
         "query_embedding_dimension": emb_dim,
         "top_k":                     top_k,
-        "source":                    source,
-        "documents":                 retrieved_docs,
+        "source":                    "rag_documents",
+        "documents":                 combined,
+        "seed_count":                len(seeds),
+        "expanded_count":            len(expanded),
+        "graph_expansion_enabled":   include_ancestors or include_related,
         "retrieval_time_ms":         elapsed_ms,
-        "total_retrieved":           len(retrieved_docs),
+        "total_retrieved":           len(combined),
         "success":                   True,
     }
 

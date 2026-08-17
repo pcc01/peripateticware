@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
+import StandardsExplorer from '@/components/shared/StandardsExplorer';
 
 interface StandardsSet {
   id: string;
@@ -125,6 +126,12 @@ export const TeacherStandardsPage: React.FC = () => {
       <Section title={t('pages_teacher_teacherstandardspage.title_my_discipline_standards', 'My Discipline Standards')} items={myStandards} showDelete />
       <Section title={t('pages_teacher_teacherstandardspage.title_schoolwide_global_standards', 'School-wide / Global Standards')} items={globalStandards} showDelete={false} />
       <Section title={t('pages_teacher_teacherstandardspage.title_my_rubrics', 'My Rubrics')} items={rubrics} showDelete />
+
+      {sets.length > 0 && (
+        <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid var(--border)' }}>
+          <StandardsExplorer />
+        </div>
+      )}
     </div>
   );
 };

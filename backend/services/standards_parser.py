@@ -71,27 +71,29 @@ async def extract_criteria(
 
     try:
         from core.config import settings
-        import ollama as _ollama
+        from agents import provider as _provider
 
-        model = settings.OLLAMA_MODEL_TEXT or "mistral"
+        # Routes through the same provider abstraction every agent uses
+        # (resolve_provider -> dispatch), instead of a direct, Ollama-only
+        # client — a server with no local Ollama (Claude/OpenAI API key
+        # only) can extract standards too. Resolution order: per-feature
+        # env var -> global LLM_PROVIDER -> "ollama" default.
+        prov = _provider.resolve_provider("AGENT_STANDARDS_EXTRACTION_PROVIDER", "ollama")
+        model = _provider.resolve_model(prov) or _provider.default_model(prov)
         try:
-            # The bare module-level ollama.chat() defaults to 127.0.0.1:11434
-            # and ignores settings.OLLAMA_BASE_URL entirely — inside this app's
-            # Docker container that's nothing (Ollama runs on the host, reached
-            # via host.docker.internal), so every call here failed with a
-            # connection error regardless of OLLAMA_BASE_URL being set
-            # correctly. An explicit Client(host=...) is what actually reads it.
-            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
-            response = client.chat(
-                model=model,
+            raw = await _provider.dispatch(
+                prov,
                 messages=[{"role": "user", "content": prompt}],
-                options={"temperature": 0.1},   # Low temp for structured output
+                model=model,
+                max_tokens=4096,
+                timeout=120,
+                temperature=0.1,   # low temp for structured JSON output
             )
         except Exception as e:
-            logger.error("Ollama call failed during criteria extraction (model=%s): %s", model, e, exc_info=True)
+            logger.error("%s call failed during criteria extraction (model=%s): %s", prov, model, e, exc_info=True)
             return [], f"AI extraction service unavailable ({type(e).__name__}: {e}). Add criteria manually or retry once it's back."
 
-        raw = response["message"]["content"].strip()
+        raw = raw.strip()
 
         # Strip markdown code fences if present
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)

@@ -4,7 +4,7 @@
 
 """SQLAlchemy models for Peripateticware"""
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, Date, Boolean, ForeignKey, Text, JSON, Enum, Index, UniqueConstraint
+from sqlalchemy import Column, String, Integer, BigInteger, Float, DateTime, Date, Boolean, ForeignKey, Text, JSON, Enum, Index, UniqueConstraint, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import relationship
@@ -1394,7 +1394,262 @@ class RagDocument(Base):
     chunk_index = Column(Integer,     nullable=False, default=0)     # 0-based position within source
     content     = Column(Text,        nullable=False)                # raw text of this chunk
     metadata_   = Column("metadata", JSONB, default=dict)            # {grade_level, subject, state_code, …}
-    embedding   = Column(Vector(384), nullable=True)                 # 384-dim nomic-embed / all-MiniLM
+    embedding   = Column(Vector(384), nullable=True)                 # 384-dim, provider-configurable (see embedding_service.py)
     owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    # Graph-aware retrieval link (migration 20260816c_rag_documents_node_link,
+    # PRD-graphrag-migration-2026-08-16.md §4.3): which exact graph node this
+    # chunk represents, so retrieval can expand from it via
+    # standards_items.parent_id / standards_associations / content_alignments
+    # instead of only ever doing flat vector search. FK-less by design — see
+    # that migration's docstring. Nullable: chunks indexed before this
+    # migration, or without a real graph node, are still findable by vector
+    # search alone, just not expandable.
+    node_type   = Column(String(50), nullable=True)   # standards_item|jurisdiction|activity|curriculum_unit
+    node_id     = Column(UUID(as_uuid=True), nullable=True)
     created_at  = Column(DateTime, default=datetime.utcnow)
     updated_at  = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_rag_documents_node", "node_type", "node_id"),
+    )
+
+
+# ============================================================================
+# CASE-SHAPED STANDARDS GRAPH  (migration 20260807_case_standards.py)
+#
+# These tables were created by that migration but never had ORM models —
+# scripts/ingest_case_standards.py already imports Jurisdiction/
+# StandardsSource/StandardsFramework/StandardsItem/StandardsAssociation from
+# this module (has since the migration landed) and would ImportError on the
+# very first line that touches them. Columns/constraints here mirror that
+# migration's DDL exactly; do not drift the two without a follow-up migration.
+#
+# This is also the graph substrate PRD-graphrag-migration-2026-08-16.md's
+# retrieval rewrite (§3) walks: standards_items.parent_id for hierarchy,
+# standards_associations for typed cross-edges, jurisdictions.parent_id for
+# place hierarchy.
+# ============================================================================
+
+class Jurisdiction(Base):
+    """One row per place or issuing agency: country, state/province, county,
+    city, district, or non-geographic organization (WIDA, College Board,
+    etc. — not every CASE issuing agency has a single geographic home).
+    Self-referencing parent_id gives the place hierarchy content_alignments'
+    graph expansion walks (US -> Idaho -> a district)."""
+    __tablename__ = "jurisdictions"
+
+    id                 = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    country_code       = Column(String(4),   nullable=False)             # ISO 3166-1: US, ...
+    subdivision_code   = Column(String(20),  nullable=True)              # ISO 3166-2: US-ID, or synthetic
+    parent_id          = Column(UUID(as_uuid=True), ForeignKey("jurisdictions.id", ondelete="SET NULL"),
+                                 nullable=True, index=True)
+    level              = Column(String(20),  nullable=False)             # country|state|county|city|district|organization
+    name               = Column(String(300), nullable=False)
+    name_local         = Column(String(300), nullable=True)
+    is_issuing_agency  = Column(Boolean, nullable=False, default=False)
+    external_ref       = Column(String(50),  nullable=True, index=True)  # source's own short code, e.g. 'GA'
+    created_at         = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at         = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    parent   = relationship("Jurisdiction", remote_side=[id])
+
+    __table_args__ = (
+        CheckConstraint(
+            "level IN ('country','state','county','city','district','organization')",
+            name="ck_jurisdictions_level",
+        ),
+        UniqueConstraint("country_code", "subdivision_code", name="uq_jurisdictions_country_subdivision"),
+        Index("idx_jurisdictions_country_code", "country_code"),
+    )
+
+
+class StandardsSource(Base):
+    """Polling registry: one row per upstream CASE server or aggregator mirror."""
+    __tablename__ = "standards_sources"
+
+    id                  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name                = Column(String(300), nullable=False)
+    source_type         = Column(String(20),  nullable=False)   # case_api|html_page|pdf|ecs_index
+    base_url            = Column(String(500), nullable=False)
+    jurisdiction_id     = Column(UUID(as_uuid=True), ForeignKey("jurisdictions.id", ondelete="SET NULL"),
+                                  nullable=True, index=True)
+    is_authoritative    = Column(Boolean, nullable=False, default=True)   # agency's own server vs. mirror
+    poll_frequency_days = Column(Integer, nullable=False, default=7)
+    last_polled_at      = Column(DateTime, nullable=True)
+    last_changed_at     = Column(DateTime, nullable=True)
+    last_status         = Column(String(500), nullable=True)
+    content_hash        = Column(String(64),  nullable=True)
+    created_at          = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at          = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    jurisdiction = relationship("Jurisdiction")
+
+    __table_args__ = (
+        CheckConstraint(
+            "source_type IN ('case_api','html_page','pdf','ecs_index')",
+            name="ck_standards_sources_type",
+        ),
+    )
+
+
+class StandardsFramework(Base):
+    """CASE CFDocument — a standards framework (e.g. 'Idaho Content Standards
+    for Mathematics, 2021')."""
+    __tablename__ = "standards_frameworks"
+
+    id     = Column(UUID(as_uuid=True), primary_key=True)  # = CASE identifier GUID; never re-minted
+    source_id      = Column(UUID(as_uuid=True), ForeignKey("standards_sources.id", ondelete="RESTRICT"),
+                             nullable=False)
+    jurisdiction_id = Column(UUID(as_uuid=True), ForeignKey("jurisdictions.id", ondelete="SET NULL"),
+                              nullable=True, index=True)
+    title           = Column(String(500), nullable=False)
+    subject         = Column(String(200), nullable=True, index=True)   # widened by 20260807b_widen_standards_subject
+    version         = Column(String(50),  nullable=True)
+    adoption_status = Column(String(50),  nullable=True)
+    official_source_url = Column(String(1000), nullable=False)
+    case_uri             = Column(String(1000), nullable=True)
+    last_change_datetime = Column(DateTime, nullable=True)
+    is_authoritative_over_uploads = Column(Boolean, nullable=False, default=True)
+    raw        = Column(JSONB, nullable=False)   # full CFDocument, for forward-compat
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    source       = relationship("StandardsSource")
+    jurisdiction = relationship("Jurisdiction")
+    items        = relationship("StandardsItem", back_populates="framework",
+                                 cascade="all, delete-orphan")
+
+
+class StandardsItem(Base):
+    """CASE CFItem — a single standard/cluster/domain within a framework.
+    parent_id denormalizes the isChildOf association for cheap hierarchy
+    walks without joining standards_associations."""
+    __tablename__ = "standards_items"
+
+    id           = Column(UUID(as_uuid=True), primary_key=True)  # = CASE GUID; the alignment key
+    framework_id = Column(UUID(as_uuid=True), ForeignKey("standards_frameworks.id", ondelete="CASCADE"),
+                           nullable=False, index=True)
+    human_coding_scheme = Column(String(200), nullable=True)     # 'CCSS.MATH.4.NF.A.1'
+    full_statement       = Column(Text, nullable=False)
+    education_levels     = Column(ARRAY(String(10)), nullable=True)   # CASE educationLevel, e.g. ['04']
+    item_type            = Column(String(50), nullable=True)     # 'Standard', 'Cluster', 'Domain', ...
+    parent_id            = Column(UUID(as_uuid=True), ForeignKey("standards_items.id", ondelete="SET NULL"),
+                                   nullable=True, index=True)
+    list_enumeration      = Column(String(50), nullable=True)    # ordering within parent
+    last_change_datetime  = Column(DateTime, nullable=True)
+    is_retired            = Column(Boolean, nullable=False, default=False)  # soft-delete; never hard-delete a GUID with alignments
+    raw        = Column(JSONB, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    framework = relationship("StandardsFramework", back_populates="items")
+    parent    = relationship("StandardsItem", remote_side=[id])
+    revisions = relationship("StandardsItemRevision", back_populates="item",
+                              cascade="all, delete-orphan")
+
+    __table_args__ = (
+        Index("idx_standards_items_education_levels", "education_levels", postgresql_using="gin"),
+    )
+
+
+class StandardsAssociation(Base):
+    """CASE CFAssociation — typed cross-edges beyond the denormalized
+    isChildOf parent_id: exactMatchOf, isRelatedTo, precedes, etc.
+    origin/destination are plain UUID columns (no FK) matching the original
+    migration — CASE associations can reference items across frameworks that
+    may not have been ingested yet, so a hard FK would block partial ingest."""
+    __tablename__ = "standards_associations"
+
+    id                  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    framework_id        = Column(UUID(as_uuid=True), ForeignKey("standards_frameworks.id", ondelete="CASCADE"),
+                                  nullable=False, index=True)
+    origin_item_id      = Column(UUID(as_uuid=True), nullable=False, index=True)
+    destination_item_id = Column(UUID(as_uuid=True), nullable=False)
+    association_type    = Column(String(50), nullable=False)   # isChildOf|exactMatchOf|isRelatedTo|precedes|...
+    raw                 = Column(JSONB, nullable=True)
+
+    framework = relationship("StandardsFramework")
+
+
+class StandardsItemRevision(Base):
+    """Change log / review queue for upstream standards edits — feeds the
+    admin 'upstream changes' queue (PRD §9, §10)."""
+    __tablename__ = "standards_item_revisions"
+
+    id            = Column(BigInteger, primary_key=True, autoincrement=True)
+    item_id       = Column(UUID(as_uuid=True), ForeignKey("standards_items.id", ondelete="CASCADE"),
+                            nullable=False, index=True)
+    detected_at   = Column(DateTime, default=datetime.utcnow, nullable=False)
+    change_type   = Column(String(20), nullable=False)   # added|text_changed|moved|retired
+    old_value     = Column(JSONB, nullable=True)
+    new_value     = Column(JSONB, nullable=True)
+    review_status = Column(String(20), nullable=False, default="pending", index=True)  # pending|acknowledged|realigned
+
+    item = relationship("StandardsItem", back_populates="revisions")
+
+    __table_args__ = (
+        CheckConstraint(
+            "change_type IN ('added','text_changed','moved','retired')",
+            name="ck_standards_item_revisions_change_type",
+        ),
+    )
+
+
+# ============================================================================
+# CONTENT <-> STANDARDS ALIGNMENT
+# (PRD-standards-alignment-engine-2026-07-31_1.md §7.3, finished per
+#  PRD-graphrag-migration-2026-08-16.md §4.1 — the missing link between
+#  Activity/CurriculumUnit content and the standards_items graph.)
+# ============================================================================
+
+class ContentAlignment(Base):
+    """
+    Content <-> standard edge. Polymorphic on content_type because both
+    Activity and CurriculumUnit are alignable content types today (a hard FK
+    to activities.id alone would miss CurriculumUnit) — same reasoning as
+    ActivityStandardsMap, which this table supersedes for CASE-sourced
+    standards. ActivityStandardsMap stays as the legacy read path for
+    existing rows / teacher-uploaded StandardsSet criteria until the
+    StandardsSet graph fold (plan §4.2 / §6 Phase 3) is done.
+
+    Learner-facing surfaces must read only status='approved' rows.
+    """
+    __tablename__ = "content_alignments"
+
+    id           = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    content_id   = Column(UUID(as_uuid=True), nullable=False, index=True)
+    content_type = Column(String(50), nullable=False)   # 'activity' | 'curriculum_unit'
+    item_id      = Column(UUID(as_uuid=True), ForeignKey("standards_items.id"), nullable=False, index=True)
+
+    alignment_type = Column(String(50), nullable=False, default="teaches")  # teaches|assesses|requires|extends
+    method         = Column(String(20), nullable=False)                    # ai_suggested|manual
+    confidence     = Column(Float, nullable=True)                          # model confidence for ai_suggested
+    status         = Column(String(20), nullable=False, default="suggested")  # suggested|approved|rejected
+
+    reviewed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    rationale   = Column(Text, nullable=True)   # model or reviewer explanation, shown in admin UI
+
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    item     = relationship("StandardsItem")
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+
+    __table_args__ = (
+        CheckConstraint(
+            "alignment_type IN ('teaches','assesses','requires','extends')",
+            name="ck_content_alignments_type",
+        ),
+        CheckConstraint(
+            "method IN ('ai_suggested','manual')",
+            name="ck_content_alignments_method",
+        ),
+        CheckConstraint(
+            "status IN ('suggested','approved','rejected')",
+            name="ck_content_alignments_status",
+        ),
+        UniqueConstraint("content_id", "item_id", "alignment_type", name="uq_content_alignment"),
+        Index("idx_content_alignments_content", "content_id", "content_type"),
+        Index("idx_content_alignments_item_approved", "item_id",
+              postgresql_where=status == "approved"),
+    )

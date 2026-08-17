@@ -47,7 +47,6 @@ Endpoints
 
 import asyncio
 import hashlib
-import json as _json
 import logging
 import uuid
 from datetime import date, datetime
@@ -84,7 +83,8 @@ async def _index_standards_set_criteria(
     the HTTP response.  Uses a fresh DB session to avoid using a closed one.
     """
     from core.database import async_session
-    from services.embedding_service import embed_text as _embed
+    from services.rag_store import upsert_rag_chunk, delete_rag_chunks
+    from services.standards_graph_fold import materialize_standards_set
 
     set_id   = str(standards_set.id)
     set_name = standards_set.name
@@ -105,10 +105,15 @@ async def _index_standards_set_criteria(
 
     try:
         async with async_session() as session:
+            # Fold into the standards graph first (services/standards_graph_fold.py) —
+            # gives every criterion a real standards_items row (with category-grouped
+            # hierarchy) so graph-expansion retrieval can walk it like any CASE-ingested
+            # standard, not just find it via flat vector search. Returns criterion_id ->
+            # standards_items.id so the rag_documents rows below can link to their node.
+            criterion_node_ids = await materialize_standards_set(session, standards_set)
+
             # Remove stale chunks for this source so we don't accumulate duplicates
-            await session.execute(text(
-                "DELETE FROM rag_documents WHERE source_id = :sid AND source_type = :stype"
-            ), {"sid": set_id, "stype": rag_source_type})
+            await delete_rag_chunks(session, source_type=rag_source_type, source_id=set_id)
 
             inserted = 0
             for idx, criterion in enumerate(criteria):
@@ -124,35 +129,27 @@ async def _index_standards_set_criteria(
                 if not chunk_text:
                     continue
 
-                emb_result = await _embed(chunk_text)
-                embedding  = emb_result.get("embedding")
-                if not embedding:
-                    continue
-
-                await session.execute(text("""
-                    INSERT INTO rag_documents
-                        (source_type, source_id, source_name, chunk_index,
-                         content, metadata, embedding, owner_id)
-                    VALUES
-                        (:stype, :sid, :sname, :cidx,
-                         :content, CAST(:meta AS jsonb), CAST(:emb AS vector), :owner)
-                """), {
-                    "stype":   rag_source_type,
-                    "sid":     set_id,
-                    "sname":   set_name,
-                    "cidx":    idx,
-                    "content": chunk_text,
-                    "meta":    _json.dumps({
-                        "criterion_id":  criterion.get("id") or criterion.get("code", ""),
+                criterion_id = criterion.get("id") or criterion.get("code", "")
+                ok = await upsert_rag_chunk(
+                    session,
+                    source_type=rag_source_type,
+                    source_id=set_id,
+                    source_name=set_name,
+                    chunk_index=idx,
+                    content=chunk_text,
+                    metadata={
+                        "criterion_id":  criterion_id,
                         "state_code":    standards_set.state_code,
                         "set_type":      src_type,
                         "weight":        criterion.get("weight"),
                         "required":      criterion.get("required"),
-                    }),
-                    "emb":     "[" + ",".join(str(v) for v in embedding) + "]",
-                    "owner":   str(owner_id),
-                })
-                inserted += 1
+                    },
+                    owner_id=owner_id,
+                    node_type="standards_item",
+                    node_id=criterion_node_ids.get(str(criterion_id)),
+                )
+                if ok:
+                    inserted += 1
 
             await session.commit()
             logger.info(
@@ -579,7 +576,7 @@ async def map_activity_to_criterion(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    await _get_set(set_id, current_user, db)
+    standards_set = await _get_set(set_id, current_user, db)
     existing = (await db.execute(
         select(ActivityStandardsMap).where(
             ActivityStandardsMap.activity_id      == UUID(body.activity_id),
@@ -600,6 +597,50 @@ async def map_activity_to_criterion(
             notes            = body.notes,
             mapped_by        = current_user.id,
         ))
+
+    # Also write to content_alignments — the graph-shaped replacement for
+    # ActivityStandardsMap (plan §4.2). ActivityStandardsMap stays the
+    # write path for now (nothing reads content_alignments exclusively
+    # yet — see get_coverage below, which unions both), this is additive.
+    # materialize_standards_set() is idempotent (deterministic ids) and
+    # cheap, so calling it here rather than trusting the fire-and-forget
+    # background indexing task (routes/standards.py's
+    # _index_standards_set_criteria) to have already run avoids a race
+    # where a teacher maps a criterion before its standards_items row exists
+    # — content_alignments.item_id is a real FK, it would otherwise 500.
+    try:
+        from models.database import ContentAlignment
+        from services.standards_graph_fold import materialize_standards_set
+
+        criterion_node_ids = await materialize_standards_set(db, standards_set)
+        item_id = criterion_node_ids.get(body.criterion_id)
+        if item_id:
+            existing_alignment = (await db.execute(
+                select(ContentAlignment).where(
+                    ContentAlignment.content_id == UUID(body.activity_id),
+                    ContentAlignment.item_id    == item_id,
+                    ContentAlignment.alignment_type == "teaches",
+                )
+            )).scalar_one_or_none()
+            if existing_alignment:
+                existing_alignment.rationale = body.notes
+            else:
+                db.add(ContentAlignment(
+                    content_id      = UUID(body.activity_id),
+                    content_type    = "activity",
+                    item_id         = item_id,
+                    alignment_type  = "teaches",
+                    method          = "manual",
+                    status          = "approved",   # direct teacher action — no separate review step in this flow
+                    reviewed_by     = current_user.id,
+                    reviewed_at     = datetime.utcnow(),
+                    rationale       = body.notes,
+                ))
+    except Exception as e:
+        # Non-fatal: ActivityStandardsMap (above) is still the authoritative
+        # write for this endpoint's contract; content_alignments is additive.
+        logger.warning(f"content_alignments dual-write failed for set {set_id}: {e}")
+
     await db.commit()
     return {"status": "mapped"}
 
@@ -666,15 +707,66 @@ async def get_coverage(
     }
 
     criteria = s.criteria or []
+
+    # content_alignments (the graph-shaped write path — see
+    # map_activity_to_criterion) also counts toward coverage, unioned with
+    # the legacy ActivityStandardsMap rows above (plan §4.2/§6 Phase 3:
+    # "a view can union both for the coverage-report query during
+    # transition"). criterion_item_id() is a pure deterministic derivation
+    # (no DB access) so this read endpoint doesn't need materialization to
+    # have run first — it just needs to know what id materialization *would*
+    # assign, to match existing content_alignments rows against it.
+    from models.database import ContentAlignment
+    from services.standards_graph_fold import criterion_item_id
+
+    item_id_to_cid: dict = {}
+    for c in criteria:
+        cid = c.get("id") or c.get("code", "")
+        if cid:
+            item_id_to_cid[criterion_item_id(set_id, str(cid))] = cid
+
+    alignments = []
+    if item_id_to_cid:
+        alignments = (await db.execute(
+            select(ContentAlignment).where(
+                ContentAlignment.item_id.in_(item_id_to_cid.keys()),
+                ContentAlignment.status == "approved",
+                ContentAlignment.content_type == "activity",
+            )
+        )).scalars().all()
+
+    # alignment_type has no direct coverage_level equivalent — approximate
+    # so _best_level_from_levels() can treat a mixed ActivityStandardsMap/ContentAlignment
+    # set uniformly. "teaches" is the common case from the dual-write in
+    # map_activity_to_criterion above.
+    _ALIGNMENT_TYPE_TO_LEVEL = {"extends": "exceeds", "assesses": "full", "requires": "full", "teaches": "partial"}
+
     coverage = {}
     for c in criteria:
-        cid      = c.get("id") or c.get("code", "")
-        relevant = [m for m in maps if m.criterion_id == cid and str(m.activity_id) in completed_ids]
+        cid = c.get("id") or c.get("code", "")
+
+        map_hits = [m for m in maps if m.criterion_id == cid and str(m.activity_id) in completed_ids]
+        map_activity_ids = {str(m.activity_id) for m in map_hits}
+
+        # Dedupe against ActivityStandardsMap: once map_activity_to_criterion
+        # writes both, the same (activity, criterion) pair shouldn't count twice.
+        alignment_hits = [
+            a for a in alignments
+            if item_id_to_cid.get(a.item_id) == cid
+            and str(a.content_id) in completed_ids
+            and str(a.content_id) not in map_activity_ids
+        ]
+
+        levels = [m.coverage_level for m in map_hits] + [
+            _ALIGNMENT_TYPE_TO_LEVEL.get(a.alignment_type, "partial") for a in alignment_hits
+        ]
+        times_addressed = len(map_hits) + len(alignment_hits)
+
         coverage[cid] = {
             "criterion":       c,
-            "times_addressed": len(relevant),
-            "best_level":      _best_level(relevant),
-            "met":             len(relevant) > 0,
+            "times_addressed": times_addressed,
+            "best_level":      _best_level_from_levels(levels),
+            "met":             times_addressed > 0,
         }
 
     total = len(criteria)
@@ -714,7 +806,7 @@ async def _get_set(set_id: UUID, user: User, db: AsyncSession) -> StandardsSet:
 
 _LEVEL_ORDER = {"partial": 1, "full": 2, "exceeds": 3}
 
-def _best_level(maps: list) -> Optional[str]:
-    if not maps:
+def _best_level_from_levels(levels: list) -> Optional[str]:
+    if not levels:
         return None
-    return max((m.coverage_level for m in maps), key=lambda l: _LEVEL_ORDER.get(l, 0))
+    return max(levels, key=lambda l: _LEVEL_ORDER.get(l, 0))

@@ -112,9 +112,7 @@ class BaseAgent(ABC):
         """
         prov = self._resolved_provider()
         model_override = self._resolved_model(prov)
-        model_used = model_override or (
-            settings.CLAUDE_MODEL if prov == "claude" else settings.OLLAMA_MODEL_TEXT
-        )
+        model_used = model_override or _provider.default_model(prov)
         run_id = uuid.uuid4()
         start = time.monotonic()
 

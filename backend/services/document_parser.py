@@ -74,8 +74,9 @@ def _extract_pdf_text(file_bytes: bytes) -> ParsedDocument:
 
 async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
     """
-    OCR a scanned PDF using Ollama vision model.
-    Renders each page as a PNG with Pillow then sends to llava/minicpm-v.
+    OCR a scanned PDF using whichever vision-capable LLM provider is
+    configured (see agents/provider.py). Renders each page as a PNG with
+    Pillow/PyMuPDF then sends it as an image content part.
     Falls back to empty string on any error so the caller can degrade gracefully.
     """
     import base64
@@ -88,7 +89,7 @@ async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
         has_fitz = False
 
     from core.config import settings
-    import ollama as _ollama
+    from agents import provider as _provider
 
     pages_text = []
     warnings = []
@@ -107,23 +108,25 @@ async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
         result.warnings = warnings
         return result
 
-    model = settings.OLLAMA_MODEL_VISION or "llava"
-    # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
-    # settings.OLLAMA_BASE_URL — nothing listens there inside this app's
-    # Docker container (Ollama runs on the host, via host.docker.internal).
-    ollama_client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
+    # Resolution order: AGENT_DOCUMENT_OCR_PROVIDER -> LLM_PROVIDER -> "ollama".
+    # Ollama's default text model isn't vision-capable, so it gets its
+    # dedicated OLLAMA_MODEL_VISION (llava/minicpm-v etc.); Claude and
+    # OpenAI's configured default chat models are already vision-capable,
+    # so no separate vision-model setting is needed for those two.
+    prov = _provider.resolve_provider("AGENT_DOCUMENT_OCR_PROVIDER", "ollama")
+    model = (settings.OLLAMA_MODEL_VISION or "llava") if prov == "ollama" else None
+
+    ocr_prompt = "Extract all text from this document page exactly as it appears. Output only the text, no commentary."
     for i, img_bytes in enumerate(page_images):
         try:
             b64 = base64.b64encode(img_bytes).decode()
-            response = ollama_client.chat(
+            text = await _provider.dispatch(
+                prov,
+                messages=[{"role": "user", "content": ocr_prompt}],
                 model=model,
-                messages=[{
-                    "role": "user",
-                    "content": "Extract all text from this document page exactly as it appears. Output only the text, no commentary.",
-                    "images": [b64],
-                }],
+                images=[b64],
             )
-            pages_text.append(response["message"]["content"].strip())
+            pages_text.append(text.strip())
         except Exception as e:
             logger.warning("OCR failed for page %d: %s", i + 1, e)
             pages_text.append("")
