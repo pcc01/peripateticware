@@ -81,15 +81,20 @@ class Settings(BaseSettings):
 
     # ── Embeddings ────────────────────────────────────────────────────────────
     # Blank = inherit LLM_PROVIDER (same resolution order as agents/provider.py's
-    # resolve_provider). A server that only has an Anthropic or OpenAI key and no
-    # local Ollama should set EMBEDDING_PROVIDER=openai explicitly — Anthropic
-    # itself has no embeddings endpoint (they point customers at Voyage AI /
-    # OpenAI-shaped providers), so "claude" is not a valid embedding provider;
+    # resolve_provider). A server that only has an Anthropic key and no local
+    # Ollama should set EMBEDDING_PROVIDER=voyage or =openai explicitly —
+    # Anthropic itself has no embeddings endpoint; Voyage AI is Anthropic's own
+    # recommended embeddings partner (and supports input_type=query/document
+    # asymmetric embeddings, which neither Ollama nor OpenAI's API offers) —
     # "openai" (real OpenAI, Azure OpenAI, or any OpenAI-compatible embeddings
-    # server via OPENAI_BASE_URL) covers that case instead.
+    # server via OPENAI_BASE_URL) is the other option. "claude" is not a valid
+    # embedding provider and falls back to "openai" (see embedding_service.py).
     EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "")
-    # Blank = provider default (ollama -> all-MiniLM-L6-v2, openai -> text-embedding-3-small).
+    # Blank = provider default (ollama -> all-MiniLM-L6-v2, openai ->
+    # text-embedding-3-small, voyage -> voyage-4).
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "")
+    VOYAGE_API_KEY: str = os.getenv("VOYAGE_API_KEY", "")
+    VOYAGE_BASE_URL: str = os.getenv("VOYAGE_BASE_URL", "https://api.voyageai.com/v1")
 
     # ── AI Batch Processing ───────────────────────────────────────────────────
     AI_BATCH_CRON: str = os.getenv("AI_BATCH_CRON", "0 1 * * *")   # default: 1 AM UTC

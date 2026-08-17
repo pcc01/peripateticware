@@ -171,7 +171,7 @@ async def run(
             # One batched HTTP call for up to BATCH_SIZE texts at once —
             # see BATCH_SIZE's comment above for why this replaced the
             # original one-request-per-item (N-way concurrent) approach.
-            embed_results = await embed_texts(texts)
+            embed_results = await embed_texts(texts, input_type="document")
 
             for it, chunk_text, result in zip(batch, texts, embed_results):
                 embedding = result.get("embedding")

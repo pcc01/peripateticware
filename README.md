@@ -296,8 +296,8 @@ EMBEDDING_MODEL=qwen3-embedding:0.6b   # truncated to 384 dims via Ollama's `dim
 LLM_PROVIDER=claude
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 CLAUDE_MODEL=claude-sonnet-4-20250514
-# Embeddings: Anthropic has no embeddings endpoint — set EMBEDDING_PROVIDER=openai
-# (below) and point OPENAI_BASE_URL at Voyage AI or another compatible host.
+# Anthropic has no embeddings endpoint — set EMBEDDING_PROVIDER=voyage
+# (Anthropic's own recommended embeddings partner, see below) or =openai.
 ```
 
 ### OpenAI / OpenAI-compatible (cloud or self-hosted)
@@ -312,6 +312,18 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 EMBEDDING_PROVIDER=openai
 EMBEDDING_MODEL=text-embedding-3-small   # dimensions truncated to 384 to match the vector(384) columns
 ```
+
+### Voyage AI (embeddings only, cloud)
+Anthropic's own recommended embeddings partner — pairs naturally with `LLM_PROVIDER=claude`, since Claude has no embeddings endpoint of its own. Supports `input_type=query`/`document` asymmetric embeddings (tuned separately for search queries vs. indexed content), which neither Ollama nor OpenAI's API offers — a real retrieval-quality edge for the standards GraphRAG pipeline specifically.
+```env
+EMBEDDING_PROVIDER=voyage
+VOYAGE_API_KEY=pa-xxxxx
+EMBEDDING_MODEL=voyage-4
+# Voyage's output_dimension is a fixed enum (256/512/1024/2048) rather than
+# the arbitrary truncation Ollama/OpenAI support — 384 isn't one of them.
+VECTOR_DIMENSION=512
+```
+Changing `VECTOR_DIMENSION` resizes `rag_documents.embedding` on the next `alembic upgrade` (existing embeddings at the old dimension are cleared, not converted) — re-run `scripts/backfill_standards_embeddings.py` afterward.
 
 ### Switch providers
 ```bash
