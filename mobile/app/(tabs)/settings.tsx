@@ -14,6 +14,7 @@ import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
 import LanguagePicker from '@/src/components/LanguagePicker';
 import VoicePicker from '@/src/components/VoicePicker';
 import { fetchParentRequests, approveParentRequest, denyParentRequest, ParentLinkRequest } from '@/src/api/parentLinkRequests';
+import { requestPasswordReset } from '@/src/api/passwordReset';
 
 // Only ever rendered for STUDENT accounts (see the section's own guard
 // below) — a parent's link request needs the CHILD's consent, not the
@@ -94,6 +95,7 @@ export default function SettingsScreen() {
   const [locale, setLocale] = useState<string>(DEFAULT_LOCALE);
   const [switchingLocale, setSwitchingLocale] = useState(false);
   const [localeError, setLocaleError] = useState<string | null>(null);
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   // NOTE: THEMES used to be a module-level `const` built by calling t() once
   // at import time — that froze the theme labels/descriptions at whichever
@@ -151,6 +153,29 @@ export default function SettingsScreen() {
     setSwitchingLocale(false);
   };
 
+  // Mirrors the web app's own logged-in "change password" affordance
+  // (HomeschoolSettingsPage) — there's no authenticated current-password ->
+  // new-password endpoint anywhere in this codebase, only the public
+  // email-link reset flow (backend/routes/reset.py). Rather than invent a
+  // one-off endpoint, reuse that same flow here: fire the reset email at
+  // the account's own address, then finish setting the new password on
+  // the web (the email links to FRONTEND_URL/reset-password?token=...).
+  const handleResetPassword = async () => {
+    if (!user?.email || resettingPassword) return;
+    setResettingPassword(true);
+    try {
+      await requestPasswordReset(user.email);
+      Alert.alert(
+        t('settings.password.sentTitle', 'Check your inbox'),
+        t('settings.password.sentBody', "We've sent a password reset link to {{email}}. It expires in 60 minutes.", { email: user.email })
+      );
+    } catch {
+      Alert.alert(t('common.error', 'Something went wrong'), t('settings.password.error', 'Please try again.'));
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert(t('settings.signOut.title', 'Sign out'), t('settings.signOut.confirm', 'Are you sure?'), [
       { text: t('common.cancel', 'Cancel'), style: 'cancel' },
@@ -171,6 +196,35 @@ export default function SettingsScreen() {
             <Text style={[styles.userRole, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
               {user.role === 'STUDENT' ? t('settings.role.student', 'Student') : user.role}
             </Text>
+          </View>
+        )}
+
+        {/* Password reset — sends the same email-link reset used on the web
+            (POST /api/v1/public/password/forgot). See handleResetPassword
+            above for why this isn't a direct current/new-password form. */}
+        {user?.email && (
+          <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
+            <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+              {t('settings.passwordLabel', 'PASSWORD')}
+            </Text>
+            <Text style={[styles.optionDesc, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+              {t('settings.password.desc', "We'll email you a link to set a new password.")}
+            </Text>
+            {resettingPassword ? (
+              <ActivityIndicator color={theme.accent} />
+            ) : (
+              <TouchableOpacity
+                testID="reset-password-btn"
+                onPress={handleResetPassword}
+                style={[styles.resetPasswordBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('settings.password.button', 'Reset password')}
+              >
+                <Text style={[styles.resetPasswordLabel, { color: theme.accent, fontFamily: theme.fontBody }]}>
+                  {t('settings.password.button', 'Reset password')}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -249,6 +303,8 @@ const styles = StyleSheet.create({
   checkmark:    { fontSize: 16, fontWeight: '700' },
   logoutBtn:    { borderWidth: 1, padding: 14, alignItems: 'center' },
   logoutLabel:  { fontSize: 15, fontWeight: '600' },
+  resetPasswordBtn:   { borderWidth: 1, padding: 12, alignItems: 'center' },
+  resetPasswordLabel: { fontSize: 14, fontWeight: '600' },
   requestRow:     { flexDirection: 'row', alignItems: 'center', padding: 10, borderWidth: 1, gap: 10 },
   requestName:    { fontSize: 14, fontWeight: '600' },
   requestActions: { flexDirection: 'row', gap: 8 },
