@@ -67,10 +67,20 @@ services:
     # `!override` REPLACES the base list (a plain [] would merge = keep the
     # dev source mount). Prod runs the code baked into the image; only data
     # volumes + the Google service-account secret are mounted.
+    #
+    # `./logs:/app/logs` is a host bind mount (not a named volume) so
+    # long-running one-off scripts (e.g. backfill_standards_embeddings.py,
+    # run via `docker compose exec -d backend ... > /app/logs/foo.log`) stay
+    # readable straight off the host filesystem — `docker logs` only covers
+    # the main container process and is wiped on every `up -d` recreation
+    # (container recreation also kills anything still attached from a prior
+    # `docker exec -d`), so it's useless for tracking a detached backfill
+    # across a redeploy. A file under this bind mount survives both.
     volumes: !override
       - media_files:/app/media
       - uploads_dev:/app/uploads
       - ./secrets:/run/secrets:ro
+      - ./logs:/app/logs
     # Loopback only — cloudflared is the sole consumer
     ports: !override
       - "127.0.0.1:8000:8000"
