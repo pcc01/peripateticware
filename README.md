@@ -53,7 +53,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 - **Roles:** Teacher, Student, Parent, Admin, Homeschool, Platform (super-admin)
 - **Activity Engine:** Full CRUD for location-based learning activities with Bloom's taxonomy levels
 - **Student Features:** Field notes, self-initiated projects, peer projects, reverse scavenger hunt proposals
-- **AI Integration:** Provider-agnostic — Ollama (local, default), Anthropic Claude API, or OpenAI/OpenAI-compatible (Azure OpenAI, vLLM, LiteLLM, etc.), selectable globally or per-agent; Whisper for audio transcription (ASR); standards parsing
+- **AI Integration:** Provider-agnostic — Ollama (local, default), Anthropic Claude API, or OpenAI/OpenAI-compatible (Azure OpenAI, vLLM, LiteLLM, etc.), selectable globally or per-agent; embeddings additionally support Voyage AI (Anthropic's recommended embeddings partner, with asymmetric query/document embeddings); Whisper for audio transcription (ASR); standards parsing
 - **GraphRAG Pipeline:** Two-stage retrieval over the standards graph — pgvector semantic search finds seed matches, then graph expansion (`standards_items.parent_id` hierarchy, `standards_associations` typed cross-edges, `content_alignments`) pulls in ancestors, cross-jurisdiction equivalents, prerequisites, and already-aligned content. Powers standards, rubrics, and homeschool state requirements search; every result is tagged with *why* it's relevant (direct match vs. structural context), not just a similarity score. CASE-standard ingest (`scripts/ingest_case_standards.py`) and teacher/homeschool PDF uploads both feed the same graph (`services/standards_graph_fold.py`)
 - **Privacy & Compliance Engine:** FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA, POPIA, LPDC, AEPD rule enforcement; DSR portal (access, download, deletion, correction, opt-out); consent management; soft-delete with scheduled purge
 - **Field-Level Encryption:** Fernet symmetric encryption + HMAC blind index on student PII (email, full name, GPS coordinates, notification payloads); backfill script included
@@ -99,7 +99,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 ### Prerequisites
 - Docker Desktop
 - Git
-- An AI provider: Ollama running on the host (`ollama serve`, default) — or skip it and configure a Claude/OpenAI API key instead (see [AI Configuration](#-ai-configuration))
+- An AI provider: Ollama running on the host (`ollama serve`, default) — or skip it and configure a Claude/OpenAI API key instead (a Voyage AI key too, if using Claude for generation — see [AI Configuration](#-ai-configuration))
 
 ### 1. Clone
 ```bash
@@ -258,7 +258,7 @@ peripateticware/
 | Backend | FastAPI, SQLAlchemy (async), PostgreSQL + pgvector, Redis, Alembic, APScheduler |
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, Zustand, react-router-dom v6 |
 | Mobile | React Native, Expo SDK 54, Expo Router, SQLite, expo-av, expo-location |
-| AI | Provider-agnostic: Ollama (local LLM + Whisper ASR + embeddings), Anthropic Claude API, or OpenAI/OpenAI-compatible — global or per-agent |
+| AI | Provider-agnostic: Ollama (local LLM + Whisper ASR + embeddings), Anthropic Claude API, or OpenAI/OpenAI-compatible — global or per-agent; embeddings also support Voyage AI |
 | Storage | Cloudflare R2 (boto3 S3-compatible); local `/app/uploads` fallback |
 | Payments | Paddle billing; tiered subscription enforcement via structured 402 responses |
 | Infrastructure | Docker Compose, Nginx, pgbouncer (config ready) |
