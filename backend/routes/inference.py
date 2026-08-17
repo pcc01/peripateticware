@@ -374,7 +374,7 @@ async def process_multimodal_input(
         
         # Step 4: Generate embedding for the extracted text
         extracted_text = inference_result.get("text", "")
-        embedding_result = await embed_text(extracted_text) if extracted_text else {
+        embedding_result = await embed_text(extracted_text, input_type="document") if extracted_text else {
             "embedding": [0.0] * settings.VECTOR_DIMENSION,
             "dimension": settings.VECTOR_DIMENSION
         }
@@ -534,7 +534,7 @@ async def rag_retrieve(
 
     t0 = _time.monotonic()
 
-    emb_result = await embed_text(query)
+    emb_result = await embed_text(query, input_type="query")
     query_embedding: list = emb_result.get("embedding", [])
     emb_dim: int = emb_result.get("dimension", len(query_embedding))
 

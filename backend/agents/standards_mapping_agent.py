@@ -140,7 +140,7 @@ class StandardsMappingAgent(BaseAgent):
                 from services.graph_retrieval import expand_seeds
                 from sqlalchemy import text as _t
 
-                emb_result = await embed_text(payload.submission_text)
+                emb_result = await embed_text(payload.submission_text, input_type="query")
                 query_embedding = emb_result.get("embedding")
 
                 if query_embedding:

@@ -58,7 +58,7 @@ async def upsert_rag_chunk(
     if not content or not content.strip():
         return False
 
-    emb_result = await embed_text(content)
+    emb_result = await embed_text(content, input_type="document")
     embedding = emb_result.get("embedding")
     if not embedding:
         logger.warning(
