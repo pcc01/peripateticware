@@ -75,7 +75,16 @@ services:
     ports: !override
       - "127.0.0.1:8000:8000"
     restart: always
-    mem_limit: 1g
+    # Was 1g — OOM-killed (SIGKILL, no traceback) running
+    # scripts/backfill_standards_embeddings.py --all: `exec`'d processes
+    # share the main container's cgroup with the 4 gunicorn workers, and
+    # loading all ~561k StandardsItem ORM rows into memory at once (no
+    # server-side pagination) pushed total usage over the limit. Host has
+    # 26GB+ free at typical load (checked via `docker stats`/`free -h`
+    # before bumping this) — 3g gives real headroom for this and future
+    # batch/admin jobs without meaningfully touching what's actually
+    # available.
+    mem_limit: 3g
     cpus: '2.0'
 
   postgres:
