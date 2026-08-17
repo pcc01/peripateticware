@@ -37,15 +37,29 @@ services:
 
   backend:
     # Production: gunicorn with 4 UvicornWorkers (no --reload)
+    #
+    # `alembic upgrade head &&` runs once, before gunicorn forks its workers,
+    # so there's no multi-worker race on it (unlike the advisory-lock dance
+    # main.py needs for its startup.py inline-SQL patches, which run inside
+    # each worker). Most schema changes in this app ship as those idempotent
+    # startup.py patches instead of Alembic migrations (this project's deploy
+    # path historically never ran `alembic upgrade` at all — see
+    # startup.py's "TODO: convert to Alembic migrations" note) — but a few
+    # migrations (20260807_case_standards, 20260816_rag_documents,
+    # 20260816b_content_alignments, 20260816c_rag_documents_node_link) only
+    # exist as Alembic revisions with no startup.py fallback, so they need
+    # this to actually land on a real deploy. `alembic upgrade head` is a
+    # no-op once applied (tracked in alembic_version), so this is safe to
+    # leave in permanently rather than pull back out after this one deploy.
     command: >
-      gunicorn main:app
+      sh -c "alembic upgrade head && gunicorn main:app
       --workers 4
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
       --timeout 120
       --graceful-timeout 30
       --log-level info
-      --access-logfile -
+      --access-logfile -"
     environment:
       ENVIRONMENT: production
       DEBUG: 'false'
