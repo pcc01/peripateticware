@@ -182,7 +182,7 @@ async def _fetch_ancestors_batch(db: AsyncSession, seed_node_ids: list[UUID], *,
                    parent.full_statement, parent.item_type, 1 AS depth
             FROM standards_items child
             JOIN standards_items parent ON parent.id = child.parent_id
-            WHERE child.id IN :seed_ids
+            WHERE child.id IN :seed_ids AND parent.is_retired = false
 
             UNION ALL
 
@@ -191,7 +191,7 @@ async def _fetch_ancestors_batch(db: AsyncSession, seed_node_ids: list[UUID], *,
             FROM ancestors a
             JOIN standards_items cur ON cur.id = a.id
             JOIN standards_items next_parent ON next_parent.id = cur.parent_id
-            WHERE a.depth < :max_depth
+            WHERE a.depth < :max_depth AND next_parent.is_retired = false
         )
         SELECT seed_id, id, framework_id, human_coding_scheme, full_statement, item_type, depth
         FROM ancestors
@@ -242,6 +242,7 @@ async def _fetch_associations_batch(db: AsyncSession, seed_node_ids: list[UUID],
             FROM standards_associations sa
             JOIN standards_items si
               ON si.id = (CASE WHEN sa.origin_item_id IN :seed_ids THEN sa.destination_item_id ELSE sa.origin_item_id END)
+              AND si.is_retired = false
             WHERE (sa.origin_item_id IN :seed_ids OR sa.destination_item_id IN :seed_ids)
               AND NOT (sa.destination_item_id IN :seed_ids AND sa.association_type = 'isChildOf')
         )

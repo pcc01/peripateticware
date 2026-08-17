@@ -67,6 +67,27 @@ log = logging.getLogger("ingest_case_standards")
 
 DEFAULT_SOURCE_FILE = Path(__file__).resolve().parent.parent / "config" / "case_standards_sources.json"
 CASE_API_VERSIONS = ("ims/case/v1p1", "ims/case/v1p0")  # try v1.1 first, fall back to v1.0 (e.g. case.nd.gov only serves v1p0)
+
+# CASE's adoptionStatus is agency free text, not a fixed enum. "Retired" is a
+# trustworthy signal -- but "Deprecated" is NOT: spot-checked 2026-08-17, GCPS
+# sets adoption_status="Deprecated" across its *entire current* 2025-2026 AKS
+# catalog (every subject, lastChangeDateTime 3 weeks old) while Kentucky uses
+# the same value only for frameworks its own title already calls "(Retired)".
+# One agency's "Deprecated" means "live"; another's means "dead" -- the field
+# alone isn't safe to act on. What IS safe: adoption_status literally
+# "retired" (exact), or the framework's own title saying so ("[RETIRED]",
+# "(Retired)", "REPEALED", etc.) -- self-declared, human-curated, and every
+# genuinely-retired framework checked had one or both. See the [RETIRED]
+# framework leak found 2026-08-17 comparing local vs prod GraphRAG retrieval.
+import re as _re
+
+_RETIRED_TITLE_RE = _re.compile(r"retired|repealed", _re.IGNORECASE)
+
+
+def _framework_is_retired(adoption_status: Optional[str], title: Optional[str]) -> bool:
+    if adoption_status and adoption_status.strip().lower() == "retired":
+        return True
+    return bool(title) and bool(_RETIRED_TITLE_RE.search(title))
 PAGE_SIZE = 100
 HTTP_TIMEOUT = 30.0
 
@@ -272,6 +293,8 @@ async def upsert_framework(db, source: StandardsSource, jurisdiction_id, cf_doc:
     if demoted:
         log.info("  demoted %d upload-sourced framework(s) in this jurisdiction (CASE framework now authoritative)", demoted)
 
+    fw_is_retired = _framework_is_retired(fw.adoption_status, fw.title)
+
     cf_items = package.get("CFItems", [])
     id_map: dict[str, uuid.UUID] = {}
     for item in cf_items:
@@ -292,6 +315,10 @@ async def upsert_framework(db, source: StandardsSource, jurisdiction_id, cf_doc:
         it.list_enumeration = item.get("listEnumeration")
         it.last_change_datetime = _parse_dt(item.get("lastChangeDateTime"))
         it.raw = item
+        # Cascade the framework's retirement down to its items -- never
+        # un-retire something upstream flagged some other way (only OR in).
+        if fw_is_retired:
+            it.is_retired = True
     await db.flush()
 
     # associations: use isChildOf to set parent_id (denormalized), keep the rest as rows
