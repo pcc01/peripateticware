@@ -503,22 +503,29 @@ async def rag_retrieve(
     current_user: User = Depends(get_current_user),
 ):
     """
-    GraphRAG retrieval: vector search over rag_documents finds seed nodes
-    (Stage 1), then — for seeds linked to a standards_items graph node via
-    node_type/node_id — expansion walks standards_items.parent_id,
-    standards_associations, and content_alignments to pull in structurally
-    related context a similarity search alone can't reach (Stage 2). See
-    PRD-graphrag-migration-2026-08-16.md §3 and services/graph_retrieval.py.
+    GraphRAG retrieval: hybrid vector + lexical search over rag_documents
+    finds seed nodes (Stage 1 — pgvector cosine search and Postgres
+    full-text search, fused by Reciprocal Rank Fusion so a literal phrase
+    match isn't lost just because it wasn't among the embedding model's
+    nearest neighbors, see 20260817c_rag_documents_fulltext.py), then — for
+    seeds linked to a standards_items graph node via node_type/node_id —
+    expansion walks standards_items.parent_id, standards_associations, and
+    content_alignments to pull in structurally related context a similarity
+    search alone can't reach (Stage 2). See PRD-graphrag-migration-2026-08-16.md
+    §3 and services/graph_retrieval.py.
 
     Each returned item carries a `relation`: "match" (a direct Stage-1 hit),
     "ancestor", "cross_reference", "prerequisite", or "aligned_content" —
     callers should treat these as different *kinds* of relevance, not just
-    lower similarity scores.
+    lower similarity scores. `relevance_score` on a "match" item is an RRF
+    score (higher = more relevant), not a raw 0-1 cosine similarity, once
+    the lexical channel contributes to it.
 
     Backward compatible: existing callers passing only query/top_k/source_type
-    get the enhanced (seeds + graph expansion) result set automatically;
-    include_ancestors=false&include_related=false reproduces the old
-    vector-search-only behavior exactly.
+    get the enhanced (hybrid seeds + graph expansion) result set automatically.
+    include_ancestors=false&include_related=false skips Stage 2 only — Stage 1
+    itself has been hybrid since 2026-08-17, so this no longer reproduces pure
+    vector-search-only behavior (a lexical-only match can still surface).
 
     Optional filters:
       ?source_type=      standards | curriculum | homeschool | custom
@@ -553,31 +560,13 @@ async def rag_retrieve(
         # one of them and its neighbors, not the cluster as a whole.
         seed_k = min(max(top_k * 3, top_k), 15)
 
-        _t_db0 = _time.monotonic()
-        try:
-            rows = (await db.execute(_t(f"""
-                SELECT
-                    rd.id::text,
-                    rd.source_type,
-                    rd.source_id,
-                    rd.source_name,
-                    rd.chunk_index,
-                    rd.content,
-                    rd.metadata,
-                    rd.node_type,
-                    rd.node_id::text,
-                    1 - (rd.embedding <=> CAST(:emb AS vector)) AS relevance_score
-                FROM rag_documents rd
-                WHERE rd.embedding IS NOT NULL
-                {type_clause}
-                {jurisdiction_clause}
-                -- A framework retired/deprecated after this row was embedded (or
-                -- one that never should have cascaded is_retired down to its
-                -- items at ingest time) shouldn't keep surfacing as a live
-                -- standard -- see the [RETIRED]-framework leak found 2026-08-17
-                -- comparing local vs prod. rd.node_id has no FK (see
-                -- 20260816c_rag_documents_node_link.py), so this stays a plain
-                -- NOT EXISTS rather than a join.
+        # A framework retired/deprecated after this row was embedded (or one
+        # that never should have cascaded is_retired down to its items at
+        # ingest time) shouldn't keep surfacing as a live standard -- see the
+        # [RETIRED]-framework leak found 2026-08-17 comparing local vs prod.
+        # rd.node_id has no FK (see 20260816c_rag_documents_node_link.py),
+        # so this stays a plain NOT EXISTS rather than a join.
+        retired_filter = """
                 AND NOT (
                     rd.node_type = 'standards_item'
                     AND EXISTS (
@@ -585,28 +574,89 @@ async def rag_retrieve(
                         WHERE si.id = rd.node_id AND si.is_retired = true
                     )
                 )
+        """
+        select_cols = """
+                    rd.id::text, rd.source_type, rd.source_id, rd.source_name,
+                    rd.chunk_index, rd.content, rd.metadata, rd.node_type, rd.node_id::text
+        """
+
+        _t_db0 = _time.monotonic()
+        vector_rows: list = []
+        lexical_rows: list = []
+        try:
+            vector_rows = (await db.execute(_t(f"""
+                SELECT {select_cols}
+                FROM rag_documents rd
+                WHERE rd.embedding IS NOT NULL
+                {type_clause}
+                {jurisdiction_clause}
+                {retired_filter}
                 ORDER BY rd.embedding <=> CAST(:emb AS vector)
                 LIMIT :k
             """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
-
-            for row in rows:
-                seeds.append({
-                    "id":              row[0],
-                    "source_type":     row[1],
-                    "source_id":       row[2],
-                    "source_name":     row[3],
-                    "chunk_index":     row[4],
-                    "content":         row[5],
-                    "metadata":        row[6] or {},
-                    "node_type":       row[7],
-                    "node_id":         row[8],
-                    "relevance_score": float(row[9]) if row[9] is not None else 0.0,
-                    "relation":        "match",
-                    "expanded_from":   None,
-                })
         except Exception as e:
-            logger.warning(f"rag_documents query failed (table may not exist yet): {e}")
+            logger.warning(f"rag_documents vector query failed (table may not exist yet): {e}")
+
+        # Stage 1b, hybrid lexical channel: pure vector search has a real
+        # failure mode where a literal phrase match just isn't among the
+        # embedding model's nearest neighbors -- and which phrases that
+        # happens to is provider-dependent (found comparing local/Ollama vs
+        # prod/Voyage on "figurative language in poetry analysis": Voyage's
+        # neighbors were all about "poetic technique", missing every item
+        # that actually says "figurative language"). 'simple' text-search
+        # config to match idx_rag_documents_content_fts -- no language-
+        # specific stemming across a corpus that ships Spanish/other
+        # translations alongside English. Best-effort: a pre-migration
+        # database (no FTS index yet) just falls back to vector-only.
+        try:
+            lexical_rows = (await db.execute(_t(f"""
+                SELECT {select_cols}
+                FROM rag_documents rd
+                WHERE to_tsvector('simple', rd.content) @@ plainto_tsquery('simple', :q)
+                {type_clause}
+                {jurisdiction_clause}
+                {retired_filter}
+                ORDER BY ts_rank(to_tsvector('simple', rd.content), plainto_tsquery('simple', :q)) DESC
+                LIMIT :k
+            """), {"q": query, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+        except Exception as e:
+            logger.warning(f"rag_documents lexical query failed (FTS index may not exist yet): {e}")
         db_ms = int((_time.monotonic() - _t_db0) * 1000)
+
+        # Reciprocal Rank Fusion: merge by *rank* within each list, not by
+        # score -- cosine similarity and ts_rank are on incompatible scales
+        # (the same problem that made comparing local/prod raw scores
+        # meaningless, see the P2 quality-parity work in the README).
+        # relevance_score below is therefore an RRF score, not a raw cosine
+        # similarity, once a lexical channel is in play -- still "higher is
+        # more relevant" for sorting/decay purposes, just not a 0-1 score.
+        RRF_K = 60  # standard constant (Cormack et al., 2009) -- not tuned here
+        rrf_scores: dict[str, float] = {}
+        row_by_id: dict[str, tuple] = {}
+        for rank, row in enumerate(vector_rows, start=1):
+            rrf_scores[row[0]] = rrf_scores.get(row[0], 0.0) + 1.0 / (RRF_K + rank)
+            row_by_id[row[0]] = row
+        for rank, row in enumerate(lexical_rows, start=1):
+            rrf_scores[row[0]] = rrf_scores.get(row[0], 0.0) + 1.0 / (RRF_K + rank)
+            row_by_id.setdefault(row[0], row)
+
+        ranked_ids = sorted(rrf_scores, key=lambda i: rrf_scores[i], reverse=True)[:seed_k]
+        for doc_id in ranked_ids:
+            row = row_by_id[doc_id]
+            seeds.append({
+                "id":              row[0],
+                "source_type":     row[1],
+                "source_id":       row[2],
+                "source_name":     row[3],
+                "chunk_index":     row[4],
+                "content":         row[5],
+                "metadata":        row[6] or {},
+                "node_type":       row[7],
+                "node_id":         row[8],
+                "relevance_score": rrf_scores[doc_id],
+                "relation":        "match",
+                "expanded_from":   None,
+            })
 
     expanded: list[dict] = []
     if seeds and (include_ancestors or include_related):
