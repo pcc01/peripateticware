@@ -56,7 +56,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 - **AI Integration:** Provider-agnostic — Ollama (local, default), Anthropic Claude API, or OpenAI/OpenAI-compatible (Azure OpenAI, vLLM, LiteLLM, etc.), selectable globally or per-agent; embeddings additionally support Voyage AI (Anthropic's recommended embeddings partner, with asymmetric query/document embeddings); Whisper for audio transcription (ASR); standards parsing
 - **GraphRAG Retrieval:** Two-stage retrieval over the standards graph — pgvector semantic search (embeddings) finds seed matches, then graph expansion (`standards_items.parent_id` hierarchy, `standards_associations` typed cross-edges, `content_alignments`) pulls in ancestors, cross-jurisdiction equivalents, prerequisites, and already-aligned content. Powers standards, rubrics, and homeschool state requirements search; every result is tagged with *why* it's relevant (direct match vs. structural context), not just a similarity score. CASE-standard ingest (`scripts/ingest_case_standards.py`) and teacher/homeschool PDF uploads both feed the same graph (`services/standards_graph_fold.py`)
 - **Grounded LLM Classification:** Retrieval and reasoning are deliberately separate stages. GraphRAG retrieval (above) only *finds* candidate standards — it's `agents/standards_mapping_agent.py` that *judges* them: an LLM classifies which retrieved candidates actually apply to a given student submission, returning a decision (applies/partially/no), a rationale, and a confidence score per standard. The output is then hard-filtered against the exact candidate set retrieval returned, so the LLM can never claim a standard it wasn't actually shown — a real code-level hallucination guardrail, not just a prompt instruction
-- **Privacy & Compliance Engine:** FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA, POPIA, LPDC, AEPD rule enforcement; DSR portal (access, download, deletion, correction, opt-out); consent management; soft-delete with scheduled purge
+- **Global Privacy & Compliance Engine:** Not just the 9 named laws enforced out of the box (FERPA, COPPA, GDPR, CCPA, LGPD, PIPEDA, POPIA, LPDC, AEPD) — the resolver covers **235 countries/territories**: 183 with a confirmed real privacy law (resolved via hand-maintained crawler adapters or the catalog) and 52 confirmed-no-law countries mapped to a GDPR baseline (`scripts/seed_no_legislation_countries_to_gdpr.py`), sourced from an IAPP directory snapshot. Any country with no existing match is handled by an AI discovery pipeline (`services/privacy_discovery_service.py`) that synthesizes a jurisdiction entry on demand — with a country-consistency guard that rejects (rather than stores) and flags to an admin any result that drifts onto the wrong country, so a bad AI answer never silently becomes live compliance policy. DSR portal (access, download, deletion, correction, opt-out); consent management; soft-delete with scheduled purge
 - **Field-Level Encryption:** Fernet symmetric encryption + HMAC blind index on student PII (email, full name, GPS coordinates, notification payloads); backfill script included
 - **Breach Notification:** GDPR Art. 33/34 workflow — `BreachIncident` model, 7 admin endpoints, DPA notification, hourly overdue-incident checker
 - **Email Service:** SMTP-backed transactional email (verification, password reset, parent consent)
@@ -65,6 +65,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 - **Subscription Tiers:** Starter, School, Homeschool Family tiers enforced via 402 gates; Paddle billing integration; `UpgradeCTA` modal wired globally
 - **Admin Panel:** User management, fine-grained RBAC, audit logs, env editor, privacy config, AI rate-limit enforcement
 - **Homeschool Persona:** Multi-child management, state reporting standards, coverage dashboards, ExtractionWizard for requirements
+- **Built to Extend, Not Fork:** New AI providers plug in by pointing `*_BASE_URL` at any OpenAI-wire-compatible endpoint — no code changes. New privacy jurisdictions land as a JSON config file (`backend/config/jurisdictions/`) or are synthesized automatically by the discovery pipeline above — no code changes. New standards frameworks feed the same graph as CASE via `scripts/ingest_case_standards.py` — no schema changes. Extensibility here means a config file or an adapter, not a fork.
 
 ### Frontend — React + TypeScript + Vite
 - **Five Role Dashboards:** Teacher, Student, Parent, Admin, Homeschool — each with sidebar nav, stat cards, and role-specific tools
@@ -78,7 +79,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 - **Parent Dashboard:** Child progress, link-child flow, messages, notifications, weekly/monthly reports, calendar
 - **Privacy Pages:** Cookie consent banner, Do Not Sell page, DSR portal, privacy confirmation flow
 - **Auth Flows:** Signup → email verification → login; forgot/reset password
-- **Internationalization:** 11 locales (en, es, fr, de, it, pt-br, zh, ja, ar, he, tu) with RTL support
+- **Internationalization:** 13 locales (en, es, fr, fr-CA, de, it, pt-BR, zh, ja, ko, ar, he, tr) spanning 5 writing systems (Latin, CJK/Han, Hangul, Arabic, Hebrew), with RTL support for Arabic and Hebrew
 - **Design System:** Three visual themes (Field Guide, Terrain, Atmosphere); WCAG 2.1 AA accessible
 
 ### Mobile — React Native (Expo SDK 54)
@@ -410,6 +411,7 @@ On **May 1, 2030**, the license automatically converts to **Apache 2.0** (fully 
 | `FIXPLAN.md` | Prioritized fix queue |
 | `docs/guides/USER_GUIDE.md` | End-user guide |
 | `docs/diagrams/ARCHITECTURE.md` | System architecture diagrams |
+| `docs/accessibility/wcag-aa-audit.md` | WCAG 2.1 AA audit: violations found/fixed, aria-attribute coverage, axe-core CI setup |
 | `backend/docs/` | Phase build summaries and specs |
 | `FAQ.md` | Frequently asked questions |
 
