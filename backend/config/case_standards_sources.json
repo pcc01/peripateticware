@@ -1,0 +1,79 @@
+{
+  "_comment": "Seed registry for jurisdictions + standards_sources (migration 20260807_case_standards). Loaded by backend/scripts/ingest_case_standards.py. Discovered by browsing https://rosetta.commongoodlt.com/<code> agency pages on 2026-08-07 -- 'status':'open' entries have their own publicly-documented CASE server per Rosetta's agency page (free, no registration, per Rosetta's own text: 'This issuing agency publishes and maintains the source of truth for its CASE frameworks on their own CASE server'). 'status':'pending_registration' entries are agency-published (green on Rosetta) but Rosetta does not disclose a direct server URL for them -- Rosetta's page says to email support@commongoodlt.com for access; a web search for an independent public endpoint for each came up empty on 2026-08-07. 'status':'rosetta_managed' (South Carolina) is BLUE on Rosetta -- not agency-published at all, CASE frameworks are authored/maintained by Common Good Learning Tools and available only via Rosetta registration.",
+
+  "jurisdictions": [
+    {"key": "US",    "level": "country", "country_code": "US", "subdivision_code": null,   "parent_key": null, "name": "United States",                                            "is_issuing_agency": false, "external_ref": null},
+
+    {"key": "US-AK", "level": "state", "country_code": "US", "subdivision_code": "US-AK", "parent_key": "US", "name": "Alaska",         "is_issuing_agency": false, "external_ref": "AK"},
+    {"key": "US-ID", "level": "state", "country_code": "US", "subdivision_code": "US-ID", "parent_key": "US", "name": "Idaho",          "is_issuing_agency": false, "external_ref": "ID"},
+    {"key": "US-MT", "level": "state", "country_code": "US", "subdivision_code": "US-MT", "parent_key": "US", "name": "Montana",        "is_issuing_agency": false, "external_ref": "MT"},
+    {"key": "US-ND", "level": "state", "country_code": "US", "subdivision_code": "US-ND", "parent_key": "US", "name": "North Dakota",   "is_issuing_agency": false, "external_ref": "ND"},
+    {"key": "US-MN", "level": "state", "country_code": "US", "subdivision_code": "US-MN", "parent_key": "US", "name": "Minnesota",      "is_issuing_agency": false, "external_ref": "MN"},
+    {"key": "US-WI", "level": "state", "country_code": "US", "subdivision_code": "US-WI", "parent_key": "US", "name": "Wisconsin",      "is_issuing_agency": false, "external_ref": "WI"},
+    {"key": "US-IL", "level": "state", "country_code": "US", "subdivision_code": "US-IL", "parent_key": "US", "name": "Illinois",       "is_issuing_agency": false, "external_ref": "IL"},
+    {"key": "US-IN", "level": "state", "country_code": "US", "subdivision_code": "US-IN", "parent_key": "US", "name": "Indiana",        "is_issuing_agency": false, "external_ref": "IN"},
+    {"key": "US-MD", "level": "state", "country_code": "US", "subdivision_code": "US-MD", "parent_key": "US", "name": "Maryland",       "is_issuing_agency": false, "external_ref": "MD"},
+    {"key": "US-DE", "level": "state", "country_code": "US", "subdivision_code": "US-DE", "parent_key": "US", "name": "Delaware",       "is_issuing_agency": false, "external_ref": "DE"},
+    {"key": "US-AZ", "level": "state", "country_code": "US", "subdivision_code": "US-AZ", "parent_key": "US", "name": "Arizona",        "is_issuing_agency": false, "external_ref": "AZ"},
+    {"key": "US-AR", "level": "state", "country_code": "US", "subdivision_code": "US-AR", "parent_key": "US", "name": "Arkansas",       "is_issuing_agency": false, "external_ref": "AR"},
+    {"key": "US-KY", "level": "state", "country_code": "US", "subdivision_code": "US-KY", "parent_key": "US", "name": "Kentucky",       "is_issuing_agency": false, "external_ref": "KY"},
+    {"key": "US-VA", "level": "state", "country_code": "US", "subdivision_code": "US-VA", "parent_key": "US", "name": "Virginia",       "is_issuing_agency": false, "external_ref": "VA"},
+    {"key": "US-NC", "level": "state", "country_code": "US", "subdivision_code": "US-NC", "parent_key": "US", "name": "North Carolina", "is_issuing_agency": false, "external_ref": "NC"},
+    {"key": "US-OK", "level": "state", "country_code": "US", "subdivision_code": "US-OK", "parent_key": "US", "name": "Oklahoma",       "is_issuing_agency": false, "external_ref": "OK"},
+    {"key": "US-AL", "level": "state", "country_code": "US", "subdivision_code": "US-AL", "parent_key": "US", "name": "Alabama",        "is_issuing_agency": false, "external_ref": "AL"},
+    {"key": "US-GA", "level": "state", "country_code": "US", "subdivision_code": "US-GA", "parent_key": "US", "name": "Georgia",        "is_issuing_agency": false, "external_ref": "GA"},
+    {"key": "US-TX", "level": "state", "country_code": "US", "subdivision_code": "US-TX", "parent_key": "US", "name": "Texas",          "is_issuing_agency": false, "external_ref": "TX"},
+    {"key": "US-FL", "level": "state", "country_code": "US", "subdivision_code": "US-FL", "parent_key": "US", "name": "Florida",        "is_issuing_agency": false, "external_ref": "FL"},
+    {"key": "US-SC", "level": "state", "country_code": "US", "subdivision_code": "US-SC", "parent_key": "US", "name": "South Carolina", "is_issuing_agency": false, "external_ref": "SC"},
+
+    {"key": "CCSD",  "level": "district", "country_code": "US", "subdivision_code": null, "parent_key": "US-GA", "name": "Columbia County School District",  "is_issuing_agency": true, "external_ref": "CCSD"},
+    {"key": "FCBOE", "level": "district", "country_code": "US", "subdivision_code": null, "parent_key": "US-GA", "name": "Fayette County Public Schools",     "is_issuing_agency": true, "external_ref": "FCBOE"},
+    {"key": "GCPS",  "level": "district", "country_code": "US", "subdivision_code": null, "parent_key": "US-GA", "name": "Gwinnett County Public Schools",    "is_issuing_agency": true, "external_ref": "GCPS"},
+    {"key": "HCS",   "level": "district", "country_code": "US", "subdivision_code": null, "parent_key": "US-GA", "name": "Henry County Schools",              "is_issuing_agency": true, "external_ref": "HCS"},
+
+    {"key": "IACET", "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US", "name": "International Accreditors for Continuing Education and Training", "is_issuing_agency": true, "external_ref": "IACET"},
+    {"key": "SAT",   "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US", "name": "College Board",                                                   "is_issuing_agency": true, "external_ref": "SAT"},
+    {"key": "ACT",   "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US", "name": "ACT, Inc.",                                                        "is_issuing_agency": true, "external_ref": "ACT"},
+    {"key": "WIDA",  "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US", "name": "WIDA",                                                             "is_issuing_agency": true, "external_ref": "WIDA"},
+    {"key": "DLM",   "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US", "name": "University of Kansas Center for Research (Dynamic Learning Maps)", "is_issuing_agency": true, "external_ref": "DLM"},
+    {"key": "NSQ",   "level": "organization", "country_code": "US", "subdivision_code": null, "parent_key": "US-GA", "name": "QM Quality Matters / Virtual Learning Leadership Alliance / Digital Learning Collaborative", "is_issuing_agency": true, "external_ref": "NSQ"}
+  ],
+
+  "sources": [
+    {"name": "Idaho State Dept of Education CASE server",        "jurisdiction_key": "US-ID", "base_url": "https://nest.edu.idaho.gov",          "status": "open", "is_authoritative": true},
+    {"name": "Montana Office of Public Instruction CASE server", "jurisdiction_key": "US-MT", "base_url": "https://mt-satchel.commongoodlt.com", "status": "open", "is_authoritative": true},
+    {"name": "North Dakota Dept of Public Instruction CASE server", "jurisdiction_key": "US-ND", "base_url": "https://case.nd.gov",              "status": "open", "is_authoritative": true},
+    {"name": "Wisconsin DPI CASE server",                        "jurisdiction_key": "US-WI", "base_url": "https://wisestandards.dpi.wi.gov",   "status": "open", "is_authoritative": true},
+    {"name": "Indiana Dept of Education CASE server",            "jurisdiction_key": "US-IN", "base_url": "https://api.resourcehub.in.gov",     "status": "open", "is_authoritative": true},
+    {"name": "Delaware Dept of Education CASE server",           "jurisdiction_key": "US-DE", "base_url": "https://de.satchelcommons.com",      "status": "open", "is_authoritative": true},
+    {"name": "Arizona Dept of Education CASE server",            "jurisdiction_key": "US-AZ", "base_url": "https://standards.azed.gov",         "status": "open", "is_authoritative": true},
+    {"name": "Kentucky Dept of Education CASE server",           "jurisdiction_key": "US-KY", "base_url": "https://ky.satchelcommons.com",      "status": "open", "is_authoritative": true},
+    {"name": "Virginia Dept of Education CASE server",           "jurisdiction_key": "US-VA", "base_url": "https://va.satchelcommons.com",      "status": "open", "is_authoritative": true},
+    {"name": "North Carolina DPI CASE server",                   "jurisdiction_key": "US-NC", "base_url": "https://nc-satchel.commongoodlt.com","status": "open", "is_authoritative": true},
+    {"name": "Oklahoma State Dept of Education CASE server",     "jurisdiction_key": "US-OK", "base_url": "https://ok-satchel.commongoodlt.com","status": "open", "is_authoritative": true},
+    {"name": "Alabama State Dept of Education CASE server",      "jurisdiction_key": "US-AL", "base_url": "https://alabamastandards.org",       "status": "open", "is_authoritative": true},
+    {"name": "Georgia Dept of Education CASE server (SuitCASE)", "jurisdiction_key": "US-GA", "base_url": "https://case.georgiastandards.org",  "status": "open", "is_authoritative": true},
+    {"name": "Texas Education Agency CASE server",               "jurisdiction_key": "US-TX", "base_url": "https://teks-api.texasgateway.org",  "status": "open", "is_authoritative": true},
+    {"name": "Florida CPALMS CASE server",                       "jurisdiction_key": "US-FL", "base_url": "https://www.cpalms.org",             "status": "open", "is_authoritative": true},
+
+    {"name": "Columbia County School District CASE server",  "jurisdiction_key": "CCSD",  "base_url": "https://ccsd.satchelcommons.com",  "status": "open", "is_authoritative": true},
+    {"name": "Fayette County Public Schools CASE server",     "jurisdiction_key": "FCBOE", "base_url": "https://fcboe.satchelcommons.com", "status": "open", "is_authoritative": true},
+    {"name": "Gwinnett County Public Schools CASE server",    "jurisdiction_key": "GCPS",  "base_url": "https://gcps.commongoodlt.com",    "status": "open", "is_authoritative": true},
+    {"name": "Henry County Schools CASE server",              "jurisdiction_key": "HCS",   "base_url": "https://hcs.satchelcommons.com",   "status": "open", "is_authoritative": true},
+
+    {"name": "IACET CASE server",  "jurisdiction_key": "IACET", "base_url": "https://iacet.satchelcommons.com", "status": "open", "is_authoritative": true},
+    {"name": "WIDA CASE server",   "jurisdiction_key": "WIDA",  "base_url": "https://standards.wida.us",        "status": "open", "is_authoritative": true},
+    {"name": "Dynamic Learning Maps CASE server (shared Satchel instance)", "jurisdiction_key": "DLM", "base_url": "https://satchel.commongoodlt.com", "status": "open", "is_authoritative": true},
+    {"name": "NSQ / Georgia-hosted CASE server", "jurisdiction_key": "NSQ", "base_url": "https://case.georgiastandards.org", "status": "open", "is_authoritative": true},
+
+    {"name": "Alaska Dept of Education & Early Development (via Rosetta Exchange)", "jurisdiction_key": "US-AK", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Green on Rosetta (agency-published) but no direct server URL disclosed; email support@commongoodlt.com per Rosetta's agency page. No independent public CASE endpoint found via web search 2026-08-07."},
+    {"name": "Minnesota Dept of Education (via Rosetta Exchange)", "jurisdiction_key": "US-MN", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska: green, no disclosed server URL, email support@commongoodlt.com."},
+    {"name": "Illinois State Board of Education (via Rosetta Exchange)", "jurisdiction_key": "US-IL", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska."},
+    {"name": "Maryland Dept of Education (via Rosetta Exchange)", "jurisdiction_key": "US-MD", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska."},
+    {"name": "Arkansas Dept of Education / Virtual Arkansas (via Rosetta Exchange)", "jurisdiction_key": "US-AR", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska."},
+    {"name": "College Board / SAT (via Rosetta Exchange)", "jurisdiction_key": "SAT", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska."},
+    {"name": "ACT, Inc. (via Rosetta Exchange)", "jurisdiction_key": "ACT", "base_url": "https://rosetta.commongoodlt.com", "status": "pending_registration", "is_authoritative": false, "notes": "Same as Alaska."},
+
+    {"name": "South Carolina (Rosetta-managed mirror, not agency-published)", "jurisdiction_key": "US-SC", "base_url": "https://rosetta.commongoodlt.com", "status": "rosetta_managed", "is_authoritative": false, "notes": "Blue on Rosetta: frameworks authored/maintained by Common Good Learning Tools, available only via Rosetta registration -- not a free self-serve agency export like the 'open' sources above."}
+  ]
+}

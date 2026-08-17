@@ -62,18 +62,42 @@ export const inferenceService = {
   },
 
   /**
-   * Retrieve relevant documents from the RAG system
-   * Uses vector search to find similar curriculum content
+   * GraphRAG retrieval: vector search over rag_documents for seed matches,
+   * plus (by default) graph expansion — ancestors, cross-references,
+   * prerequisites, aligned content — via services/graph_retrieval.py on the
+   * backend. See RagRetrieveResponse / RagDocument for the response shape;
+   * each document's `relation` says which kind of result it is.
+   *
+   * NOTE: this previously unwrapped the response as `response.data.data`,
+   * but /inference/rag-retrieve returns its payload directly (no `{data:
+   * ...}` envelope) — fixed to `response.data`. Caught here because this
+   * function had no real caller yet to have surfaced the bug.
    */
-  async ragRetrieve(query: string, topK: number = 5): Promise<RagRetrieveResponse> {
+  async ragRetrieve(
+    query: string,
+    options: {
+      topK?: number
+      sourceType?: string
+      jurisdictionId?: string
+      includeAncestors?: boolean
+      includeRelated?: boolean
+    } = {}
+  ): Promise<RagRetrieveResponse> {
     try {
-      const response = await apiClient.get<{ data: RagRetrieveResponse }>(
+      const response = await apiClient.get<RagRetrieveResponse>(
         '/inference/rag-retrieve',
         {
-          params: { query, top_k: topK },
+          params: {
+            query,
+            top_k: options.topK ?? 5,
+            source_type: options.sourceType,
+            jurisdiction_id: options.jurisdictionId,
+            include_ancestors: options.includeAncestors,
+            include_related: options.includeRelated,
+          },
         }
       )
-      return response.data.data
+      return response.data
     } catch (error) {
       console.error('Failed to retrieve RAG documents:', error)
       throw error
@@ -86,11 +110,11 @@ export const inferenceService = {
    */
   async generateTextEmbedding(text: string): Promise<TextEmbeddingResponse> {
     try {
-      const response = await apiClient.post<{ data: TextEmbeddingResponse }>(
+      const response = await apiClient.post<TextEmbeddingResponse>(
         '/inference/text-embedding',
         { text }
       )
-      return response.data.data
+      return response.data
     } catch (error) {
       console.error('Failed to generate text embedding:', error)
       throw error

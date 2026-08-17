@@ -68,10 +68,28 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    # Base URL for OpenAI-shaped chat/embeddings APIs. Overriding this is how
+    # a server with no Ollama and no Anthropic key points the "openai"
+    # provider at anything that speaks the OpenAI wire format instead —
+    # Azure OpenAI, vLLM, LiteLLM proxy, LM Studio, text-embeddings-inference,
+    # etc. Left at the real OpenAI endpoint by default.
+    OPENAI_BASE_URL: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
     CLAUDE_API_KEY: str = os.getenv("CLAUDE_API_KEY", "")          # legacy alias
     ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
     CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5-20251001")  # legacy alias
     CLAUDE_MAX_TOKENS: int = int(os.getenv("CLAUDE_MAX_TOKENS", "1024"))
+
+    # ── Embeddings ────────────────────────────────────────────────────────────
+    # Blank = inherit LLM_PROVIDER (same resolution order as agents/provider.py's
+    # resolve_provider). A server that only has an Anthropic or OpenAI key and no
+    # local Ollama should set EMBEDDING_PROVIDER=openai explicitly — Anthropic
+    # itself has no embeddings endpoint (they point customers at Voyage AI /
+    # OpenAI-shaped providers), so "claude" is not a valid embedding provider;
+    # "openai" (real OpenAI, Azure OpenAI, or any OpenAI-compatible embeddings
+    # server via OPENAI_BASE_URL) covers that case instead.
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "")
+    # Blank = provider default (ollama -> all-MiniLM-L6-v2, openai -> text-embedding-3-small).
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "")
 
     # ── AI Batch Processing ───────────────────────────────────────────────────
     AI_BATCH_CRON: str = os.getenv("AI_BATCH_CRON", "0 1 * * *")   # default: 1 AM UTC
@@ -283,9 +301,17 @@ class Settings(BaseSettings):
     DEFAULT_PEER_PROJECT_APPROVAL_MODE: str = os.getenv("DEFAULT_PEER_PROJECT_APPROVAL_MODE", "teacher_gate")
 
     # ── Agent Layer ───────────────────────────────────────────────────────────
-    # Per-agent provider overrides. Blank = inherit LLM_PROVIDER. "ollama" | "claude".
+    # Per-agent provider overrides. Blank = inherit LLM_PROVIDER. "ollama" | "claude" | "openai".
     AGENT_STANDARDS_INGESTION_PROVIDER: str = os.getenv("AGENT_STANDARDS_INGESTION_PROVIDER", "")
     AGENT_STANDARDS_MAPPING_PROVIDER: str = os.getenv("AGENT_STANDARDS_MAPPING_PROVIDER", "")
+    # services/standards_parser.py's extract_criteria() — the teacher/homeschool
+    # upload-and-extract path (not a BaseAgent subclass, called directly from
+    # routes/standards.py, so it needs its own override rather than reusing
+    # AGENT_STANDARDS_INGESTION_PROVIDER which belongs to the separate,
+    # currently-unwired StandardsIngestionAgent).
+    AGENT_STANDARDS_EXTRACTION_PROVIDER: str = os.getenv("AGENT_STANDARDS_EXTRACTION_PROVIDER", "")
+    # services/document_parser.py's scanned-PDF OCR fallback (vision call).
+    AGENT_DOCUMENT_OCR_PROVIDER: str = os.getenv("AGENT_DOCUMENT_OCR_PROVIDER", "")
     AGENT_RUBRIC_SCORING_PROVIDER: str = os.getenv("AGENT_RUBRIC_SCORING_PROVIDER", "")
     AGENT_ACTIVITY_REVIEW_PROVIDER: str = os.getenv("AGENT_ACTIVITY_REVIEW_PROVIDER", "")
     AGENT_COMPLIANCE_PROVIDER: str = os.getenv("AGENT_COMPLIANCE_PROVIDER", "claude")
@@ -293,6 +319,7 @@ class Settings(BaseSettings):
     # Per-agent model overrides (blank = use provider default)
     AGENT_OLLAMA_MODEL: str = os.getenv("AGENT_OLLAMA_MODEL", "")
     AGENT_CLAUDE_MODEL: str = os.getenv("AGENT_CLAUDE_MODEL", "")
+    AGENT_OPENAI_MODEL: str = os.getenv("AGENT_OPENAI_MODEL", "")
 
     # Agent run safety limits
     AGENT_MAX_RETRIES: int = int(os.getenv("AGENT_MAX_RETRIES", "2"))

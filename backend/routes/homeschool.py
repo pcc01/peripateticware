@@ -405,6 +405,8 @@ async def coverage_summary(
         {"uid": current_user.id},
     )).mappings().all()
 
+    from services.standards_graph_fold import criterion_item_id
+
     result_sets = []
     for s in sets:
         set_id = str(s["id"])
@@ -436,6 +438,57 @@ async def coverage_summary(
                 "coverage_level": m["coverage_level"],
                 "notes":          m["notes"] or "",
             })
+
+        # Union in content_alignments — the graph-shaped write path (see
+        # routes/standards.py::map_activity_to_criterion, PRD-graphrag-
+        # migration-2026-08-16.md §4.2/Phase 3). criterion_item_id() is a
+        # pure deterministic derivation (no DB write), so this read
+        # endpoint doesn't need materialize_standards_set() to have run —
+        # it only needs to know what id materialization *would* assign, to
+        # match existing content_alignments rows against each criterion.
+        item_id_to_cid = {
+            criterion_item_id(set_id, str(cid)): cid
+            for c in criteria if (cid := (c.get("id") or c.get("code", "")))
+        }
+        if item_id_to_cid:
+            # ORM select rather than raw text() here specifically because a
+            # variable-length UUID list bound into a raw `= ANY(:param)`
+            # array parameter is easy to get subtly wrong with asyncpg's
+            # array-type inference; SQLAlchemy's .in_() handles it correctly
+            # regardless of list length.
+            from sqlalchemy import select as _select
+            from models.database import ContentAlignment, Activity
+
+            alignment_rows = (await db.execute(
+                _select(ContentAlignment, Activity.title, Activity.subject)
+                .join(Activity, Activity.id == ContentAlignment.content_id)
+                .where(
+                    ContentAlignment.item_id.in_(item_id_to_cid.keys()),
+                    ContentAlignment.status == "approved",
+                    ContentAlignment.content_type == "activity",
+                    Activity.teacher_id == current_user.id,
+                )
+            )).all()
+
+            _ALIGNMENT_TYPE_TO_LEVEL = {"extends": "exceeds", "assesses": "full", "requires": "full", "teaches": "partial"}
+            for ca, activity_title, activity_subject in alignment_rows:
+                cid = item_id_to_cid.get(ca.item_id)
+                if not cid:
+                    continue
+                activity_id = str(ca.content_id)
+                # Dedupe against ActivityStandardsMap: once
+                # map_activity_to_criterion writes both, the same
+                # (activity, criterion) pair shouldn't count twice.
+                already = {row["activity_id"] for row in by_criterion.get(cid, [])}
+                if activity_id in already:
+                    continue
+                by_criterion.setdefault(cid, []).append({
+                    "activity_id":    activity_id,
+                    "activity_title": activity_title,
+                    "subject":        activity_subject,
+                    "coverage_level": _ALIGNMENT_TYPE_TO_LEVEL.get(ca.alignment_type, "partial"),
+                    "notes":          ca.rationale or "",
+                })
 
         # Build per-criterion summary
         criteria_summary = []

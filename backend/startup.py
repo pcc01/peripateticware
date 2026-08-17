@@ -1174,7 +1174,14 @@ async def apply_billing_column_migrations(engine) -> None:
 
 
 async def apply_rag_documents_table(engine) -> None:
-    """Create rag_documents table and pgvector HNSW index for semantic retrieval."""
+    """Create rag_documents table and pgvector HNSW index for semantic retrieval.
+
+    As of migration 20260816_rag_documents, this table is Alembic-managed —
+    this function is now a defensive fallback (everything here is
+    IF NOT EXISTS / idempotent) for any environment that runs the app
+    without ever running `alembic upgrade`, not the primary bootstrap path.
+    Schema changes to this table belong in a new Alembic migration, not here.
+    """
     try:
         async with engine.begin() as conn:
             # Ensure pgvector extension is enabled

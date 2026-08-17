@@ -102,12 +102,14 @@ class StandardsMappingAgent(BaseAgent):
         That's backwards: an empty candidate set means the LLM had nothing to
         ground its answer in, so every code it returned is by definition
         invented and should be stripped -- not passed through unfiltered.
-        Since run_with_retrieval()'s retrieval step is currently stubbed to
-        always return zero candidates (see its comment above), that early
-        return meant this anti-hallucination filter was a permanent no-op in
-        every real call path. The plain list-comprehension filter below
-        already handles candidate_codes == set() correctly on its own
-        (nothing is "in" an empty set), so the special case is unnecessary.
+        run_with_retrieval()'s retrieval step now does a real pgvector query
+        (see above — it used to be permanently stubbed to zero candidates,
+        which made this filter a permanent no-op in every real call path),
+        but a `db`-less caller or a genuinely empty rag_documents store still
+        hits the zero-candidates case, so this still matters. The plain
+        list-comprehension filter below already handles candidate_codes ==
+        set() correctly on its own (nothing is "in" an empty set), so the
+        special case is unnecessary.
         """
         filtered = [m for m in output.mappings if m.code in candidate_codes]
         if len(filtered) != len(output.mappings):
@@ -118,19 +120,73 @@ class StandardsMappingAgent(BaseAgent):
 
     async def run_with_retrieval(self, payload: StandardsMappingInput, *, user_id=None, db=None):
         """
-        Full pipeline: embed -> retrieve -> classify.
+        Full pipeline: embed -> retrieve (vector search + graph expansion) -> classify.
         Validates that returned codes exist in retrieval results.
+
+        Retrieval requires a live `db` session (a real pgvector query against
+        rag_documents, same store/shape as routes/inference.py's
+        /rag-retrieve and services/graph_retrieval.py's expansion). Without
+        one, falls back to zero candidates — same degrade-to-empty behavior
+        as before this was wired up, rather than erroring.
         """
-        candidates = []
+        candidates: list[dict] = []
         candidate_codes: set = set()
-        try:
-            from services.embedding_service import embed_text
-            emb_result = await embed_text(payload.submission_text)
-            # In a full implementation, query pgvector here.
-            # For now, candidates remain empty — the agent returns empty mappings.
-            logger.debug("StandardsMapping embedding dim=%s", emb_result.get("dimension"))
-        except Exception as exc:
-            logger.warning("StandardsMapping: embedding/retrieval failed: %s", exc)
+
+        if db is None:
+            logger.debug("StandardsMapping: no db session provided, skipping retrieval (empty candidate set)")
+        else:
+            try:
+                from services.embedding_service import embed_text
+                from services.graph_retrieval import expand_seeds
+                from sqlalchemy import text as _t
+
+                emb_result = await embed_text(payload.submission_text)
+                query_embedding = emb_result.get("embedding")
+
+                if query_embedding:
+                    vec_literal = "[" + ",".join(str(v) for v in query_embedding) + "]"
+                    rows = (await db.execute(_t("""
+                        SELECT content, source_name, metadata, node_type, node_id::text,
+                               1 - (embedding <=> CAST(:emb AS vector)) AS score
+                        FROM rag_documents
+                        WHERE embedding IS NOT NULL AND source_type = 'standards'
+                        ORDER BY embedding <=> CAST(:emb AS vector)
+                        LIMIT :k
+                    """), {"emb": vec_literal, "k": payload.top_k})).fetchall()
+
+                    seeds: list[dict] = []
+                    for row in rows:
+                        meta = row[2] or {}
+                        code = meta.get("human_coding_scheme") or meta.get("criterion_id") or row[1] or ""
+                        if not code or code in candidate_codes:
+                            continue
+                        candidates.append({"code": code, "title": row[1] or code, "description": row[0] or ""})
+                        candidate_codes.add(code)
+                        seeds.append({
+                            "id": None, "node_type": row[3], "node_id": row[4],
+                            "relevance_score": float(row[5]) if row[5] is not None else 0.0,
+                        })
+
+                    # Graph expansion — a mapping decision benefits from the
+                    # same ancestor/cross-reference context /rag-retrieve
+                    # surfaces, not just the top-k nearest chunks. Skips
+                    # cleanly (empty expansion) for seeds with no linked
+                    # graph node — see services/graph_retrieval.py.
+                    if seeds:
+                        expanded = await expand_seeds(db, seeds, include_ancestors=True, include_related=True)
+                        for item in expanded:
+                            code = item.get("source_name") or ""
+                            if not code or code in candidate_codes:
+                                continue
+                            candidates.append({"code": code, "title": code, "description": item.get("content") or ""})
+                            candidate_codes.add(code)
+
+                logger.debug(
+                    "StandardsMapping: retrieved %d candidates (embedding dim=%s)",
+                    len(candidates), emb_result.get("dimension"),
+                )
+            except Exception as exc:
+                logger.warning("StandardsMapping: embedding/retrieval failed: %s", exc)
 
         # Build messages with whatever candidates we have
         messages = self.build_messages(payload, candidates=candidates)

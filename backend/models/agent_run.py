@@ -5,7 +5,7 @@
 """AgentRun ORM model — audit log for every agent execution."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -46,9 +46,18 @@ class AgentRun(Base):
     status = Column(String(20), nullable=False, default="success")  # "success" | "error"
     error = Column(Text, nullable=True)
 
+    # naive UTC, matching this codebase's convention everywhere else (see
+    # e.g. every `default=datetime.utcnow` in models/database.py) and the
+    # actual DB column (`TIMESTAMP WITHOUT TIME ZONE`, migration
+    # 20260612_add_agent_runs.py) — the previous timezone-aware default
+    # (`datetime.now(timezone.utc)`) made every single insert here fail
+    # with an asyncpg "can't subtract offset-naive and offset-aware
+    # datetimes" error, silently swallowed by _audit()'s non-fatal
+    # try/except in agents/base_agent.py, so every agent run's audit
+    # record was quietly never written.
     created_at = Column(
         DateTime,
-        default=lambda: datetime.now(timezone.utc),
+        default=datetime.utcnow,
         index=True,
     )
 

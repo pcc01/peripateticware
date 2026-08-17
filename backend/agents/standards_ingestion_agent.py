@@ -93,28 +93,61 @@ class StandardsIngestionAgent(BaseAgent):
         db=None,
     ):
         """
-        Run extraction then embed + upsert each record.
-        Returns AgentResult; embedding failures are logged but non-fatal.
+        Run extraction then embed + upsert each record into rag_documents so
+        it's actually retrievable — this used to compute an embedding per
+        record and discard the result (never wrote to rag_documents), which
+        made every ingestion through this agent invisible to /rag-retrieve.
+
+        Returns AgentResult; embedding/persistence failures are logged but
+        non-fatal (the extraction result is still returned either way).
         """
         result = await self.run(payload, user_id=user_id, db=db)
         if result.status != "success" or result.output is None:
             return result
 
+        if db is None:
+            logger.warning(
+                "ingest_and_embed: no db session provided — extracted %d "
+                "records will not be persisted to rag_documents",
+                len(result.output.records),
+            )
+            return result
+
         records: StandardsIngestionOutput = result.output
         try:
-            from services.embedding_service import embed_text
-            from datetime import datetime, timezone
+            from services.rag_store import upsert_rag_chunk
 
-            for rec in records.records:
-                embed_text_content = f"{rec.code} {rec.title} {rec.description}"
-                try:
-                    _emb = await embed_text(embed_text_content)
-                    logger.debug(
-                        "Embedded standard %s (%d dims)",
-                        rec.code, _emb.get("dimension", 0)
-                    )
-                except Exception as emb_err:
-                    logger.warning("Embed failed for %s: %s", rec.code, emb_err)
+            source_id = payload.source_name
+            indexed = 0
+            for idx, rec in enumerate(records.records):
+                chunk_text = f"{rec.code} {rec.title} {rec.description}".strip()
+                ok = await upsert_rag_chunk(
+                    db,
+                    source_type="standards",
+                    source_id=source_id,
+                    source_name=payload.source_name,
+                    chunk_index=idx,
+                    content=chunk_text,
+                    metadata={
+                        "code":         rec.code,
+                        "grade_level":  rec.grade_level,
+                        "parent_code":  rec.parent_code,
+                        "bloom_level":  rec.bloom_level,
+                        "jurisdiction": payload.jurisdiction,
+                        "framework":    payload.framework,
+                    },
+                    owner_id=user_id,
+                )
+                if ok:
+                    indexed += 1
+                else:
+                    logger.warning("Embed/index failed for standard %s", rec.code)
+
+            await db.commit()
+            logger.info(
+                "StandardsIngestionAgent: indexed %d/%d records from '%s' into rag_documents",
+                indexed, len(records.records), payload.source_name,
+            )
         except Exception as exc:
             logger.warning("Post-extraction embedding step failed: %s", exc)
 

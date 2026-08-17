@@ -159,16 +159,47 @@ async def create_curriculum_unit(
             bloom_level=request.bloom_level,
             marzano_level=request.marzano_level,
             raw_content=request.content,
-            content_embedding=[0.0] * 384,  # Placeholder
+            # content_embedding intentionally left null here — this column used
+            # to be seeded with a fake [0.0]*384 "placeholder" vector that was
+            # never replaced with a real one, which made it a false positive
+            # for any pgvector similarity search that read it (a zero vector
+            # has undefined cosine similarity — see /rag-retrieve, which used
+            # to have a fallback query against exactly this column). Real
+            # retrieval for curriculum content now goes through rag_documents
+            # below, same as every other RAG source.
             created_by=current_user.id
         )
-        
+
         db.add(unit)
         await db.commit()
         await db.refresh(unit)
-        
+
+        # Index into the shared RAG store so this unit is retrievable via
+        # /rag-retrieve (and, later, graph expansion) like every other source.
+        from services.rag_store import upsert_rag_chunk
+        chunk_text = " — ".join(
+            p for p in (request.title, request.description) if p
+        ).strip()
+        if chunk_text:
+            indexed = await upsert_rag_chunk(
+                db,
+                source_type="curriculum",
+                source_id=str(unit.id),
+                source_name=unit.title,
+                content=chunk_text,
+                metadata={
+                    "subject":       unit.subject,
+                    "grade_level":   unit.grade_level,
+                    "bloom_level":   unit.bloom_level,
+                    "marzano_level": unit.marzano_level,
+                },
+                owner_id=current_user.id,
+            )
+            if indexed:
+                await db.commit()
+
         logger.info(f"Created curriculum unit: {unit.id}")
-        
+
         return CurriculumResponse(
             curriculum_id=str(unit.id),
             title=unit.title,
