@@ -40,6 +40,20 @@ stays the source of truth for the teacher-facing UI; this module gives the
 same content a second, graph-shaped representation for retrieval. See the
 plan doc §4.2 for the eventual (not-yet-done) direction of making the graph
 the primary representation and this JSONB the legacy read path instead.
+
+Authoritativeness policy (Paul, 2026-08-17): an uploaded framework is
+authoritative (is_authoritative_over_uploads=True) for its jurisdiction
+until a real CASE-ingested framework exists for that same jurisdiction —
+determined here, on materialize/refresh, by resolving StandardsSet.state_code
+to a jurisdictions row (matching scripts/ingest_case_standards.py's own
+seeding convention: country_code='US', subdivision_code=f'US-{code}') and
+checking whether any standards_frameworks row for that jurisdiction comes
+from a non-upload source. The reverse direction — a CASE framework arriving
+*after* an upload was already marked authoritative — is handled on the
+ingest side instead (scripts/ingest_case_standards.py's
+_demote_uploads_for_jurisdiction, called right after a CASE framework is
+upserted), since that's the side where the state actually changes; waiting
+for the upload to happen to get refreshed again isn't reliable.
 """
 
 from __future__ import annotations
@@ -56,6 +70,7 @@ from models.database import (
     StandardsSource,
     StandardsFramework,
     StandardsItem,
+    Jurisdiction,
 )
 
 logger = logging.getLogger(__name__)
@@ -109,20 +124,85 @@ async def _get_or_create_upload_source(db: AsyncSession) -> StandardsSource:
     return src
 
 
+async def _resolve_or_create_jurisdiction(db: AsyncSession, state_code: Optional[str]) -> Optional[Jurisdiction]:
+    """
+    Resolve a StandardsSet.state_code (e.g. 'TX') to its jurisdictions row,
+    matching scripts/ingest_case_standards.py's own seeding convention
+    (country_code='US', subdivision_code=f'US-{code}', level='state',
+    external_ref=code) so the two paths land on the same row.
+
+    Creates the row if this state has no CASE presence yet (e.g. a
+    homeschool state-reporting upload for a state nobody's CASE-ingested).
+    Deterministic id is safe here even though ingest_case_standards.py mints
+    random uuid4 ids for jurisdictions it creates — that script looks rows
+    up by (country_code, external_ref) before creating, not by id, so
+    whichever path gets there first just gets reused by the other; no
+    duplicate-jurisdiction risk either way.
+    """
+    if not state_code or not state_code.strip():
+        return None
+    code = state_code.strip().upper()
+
+    existing = (await db.execute(
+        select(Jurisdiction).where(
+            Jurisdiction.country_code == "US",
+            Jurisdiction.subdivision_code == f"US-{code}",
+        )
+    )).scalar_one_or_none()
+    if existing:
+        return existing
+
+    j = Jurisdiction(
+        id=uuid.uuid5(_NAMESPACE, f"jurisdiction:US-{code}"),
+        country_code="US",
+        subdivision_code=f"US-{code}",
+        level="state",
+        name=code,   # best-effort fallback name; a subsequent CASE ingest's own registry entry has the real one
+        external_ref=code,
+    )
+    db.add(j)
+    await db.flush()
+    return j
+
+
+async def _is_authoritative(db: AsyncSession, jurisdiction_id: "uuid.UUID | None", upload_source_id: uuid.UUID) -> bool:
+    """True unless a non-upload (i.e. real CASE-ingested) framework already
+    exists for this jurisdiction. No jurisdiction resolved (state_code blank
+    or unrecognized) -> can't check for conflicts, defaults to authoritative
+    rather than silently downgrading content nobody can point to a
+    superseding source for."""
+    if jurisdiction_id is None:
+        return True
+    existing = (await db.execute(
+        select(StandardsFramework.id).where(
+            StandardsFramework.jurisdiction_id == jurisdiction_id,
+            StandardsFramework.source_id != upload_source_id,
+        ).limit(1)
+    )).first()
+    return existing is None
+
+
 async def _get_or_create_framework(db: AsyncSession, standards_set: StandardsSet, source: StandardsSource) -> StandardsFramework:
+    jurisdiction = await _resolve_or_create_jurisdiction(db, standards_set.state_code)
+    jurisdiction_id = jurisdiction.id if jurisdiction else None
+    is_authoritative = await _is_authoritative(db, jurisdiction_id, source.id)
+
     fw = await db.get(StandardsFramework, standards_set.id)
     if fw:
         fw.title = standards_set.name
         fw.subject = _SET_TYPE_LABEL.get(standards_set.type, standards_set.type)
+        fw.jurisdiction_id = jurisdiction_id
+        fw.is_authoritative_over_uploads = is_authoritative
         return fw
 
     fw = StandardsFramework(
         id=standards_set.id,   # same id as the StandardsSet it represents — see module docstring
         source_id=source.id,
+        jurisdiction_id=jurisdiction_id,
         title=standards_set.name,
         subject=_SET_TYPE_LABEL.get(standards_set.type, standards_set.type),
         official_source_url=f"internal://standards-sets/{standards_set.id}",
-        is_authoritative_over_uploads=False,
+        is_authoritative_over_uploads=is_authoritative,
         raw={"standards_set_id": str(standards_set.id), "type": standards_set.type, "state_code": standards_set.state_code},
     )
     db.add(fw)

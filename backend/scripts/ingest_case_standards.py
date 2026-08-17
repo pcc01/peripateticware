@@ -210,6 +210,36 @@ def _parse_dt(value: Optional[str]) -> Optional[datetime]:
         return None
 
 
+async def _demote_uploads_for_jurisdiction(db, jurisdiction_id) -> int:
+    """
+    Authoritativeness policy (Paul, 2026-08-17): an uploaded framework
+    (services/standards_graph_fold.py) is authoritative for its jurisdiction
+    only until a real CASE framework exists for the same jurisdiction. This
+    function is the "a CASE framework just arrived" half of that: called
+    right after upsert_framework above commits one, it demotes any
+    upload-sourced (standards_sources.source_type == 'pdf') framework that
+    was marked authoritative for the same jurisdiction — the CASE framework
+    now takes precedence. The other half (an upload materializing when no
+    CASE framework exists yet) lives in standards_graph_fold.py itself.
+    """
+    if jurisdiction_id is None:
+        return 0
+    rows = (await db.execute(
+        select(StandardsFramework)
+        .join(StandardsSource, StandardsSource.id == StandardsFramework.source_id)
+        .where(
+            StandardsFramework.jurisdiction_id == jurisdiction_id,
+            StandardsFramework.is_authoritative_over_uploads == True,  # noqa: E712
+            StandardsSource.source_type == "pdf",
+        )
+    )).scalars().all()
+    for fw in rows:
+        fw.is_authoritative_over_uploads = False
+    if rows:
+        await db.flush()
+    return len(rows)
+
+
 async def upsert_framework(db, source: StandardsSource, jurisdiction_id, cf_doc: dict, package: dict) -> StandardsFramework:
     # CASE GUIDs come back as plain strings; the PK columns are typed UUID, and
     # mixing str with real uuid.UUID objects in the same flush breaks
@@ -237,6 +267,10 @@ async def upsert_framework(db, source: StandardsSource, jurisdiction_id, cf_doc:
     fw.last_change_datetime = _parse_dt(cf_doc.get("lastChangeDateTime"))
     fw.raw = cf_doc
     await db.flush()
+
+    demoted = await _demote_uploads_for_jurisdiction(db, jurisdiction_id)
+    if demoted:
+        log.info("  demoted %d upload-sourced framework(s) in this jurisdiction (CASE framework now authoritative)", demoted)
 
     cf_items = package.get("CFItems", [])
     id_map: dict[str, uuid.UUID] = {}

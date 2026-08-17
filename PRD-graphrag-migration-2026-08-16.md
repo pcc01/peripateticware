@@ -243,6 +243,17 @@ Replace `/rag-retrieve`'s body with the two-stage flow (§3); keep the route sig
 
 ## 10. Open questions for Paul
 
-1. Phase 3 (folding `StandardsSet` into the graph) is the highest-risk, highest-value piece — confirm appetite for a feature-flagged parallel-write period vs. a harder cutover.
-2. Should uploaded rubric/homeschool criteria ever be eligible for `is_authoritative_over_uploads = true`, or should uploads always defer to a matching CASE framework when one exists for that jurisdiction+subject (as the original PRD's precedence flag implies)?
-3. Priority: is closing the `standards_mapping_agent` stub (real anti-hallucination filtering) more urgent than the full `StandardsSet` graph fold? They're separable — Phase 2 alone already fixes it.
+1. ~~Phase 3 (folding `StandardsSet` into the graph) is the highest-risk, highest-value piece — confirm appetite for a feature-flagged parallel-write period vs. a harder cutover.~~ **Resolved:** turned out purely additive, no flag needed — done, see Phase 3.
+2. ~~Should uploaded rubric/homeschool criteria ever be eligible for `is_authoritative_over_uploads = true`...~~ **Resolved 2026-08-17:** an upload is authoritative for its jurisdiction until a CASE framework exists for that same jurisdiction; a subsequent CASE ingest demotes it. **Implemented and verified** (§11).
+3. ~~Priority: is closing the `standards_mapping_agent` stub...~~ **Resolved:** done, see Phase 3.
+
+## 11. Authoritativeness policy implementation (2026-08-17)
+
+Per Paul's decision on open question #2 above: `services/standards_graph_fold.py::_get_or_create_framework` now resolves `StandardsSet.state_code` to a `jurisdictions` row (get-or-create, matching `scripts/ingest_case_standards.py`'s own seeding convention — `country_code='US'`, `subdivision_code=f'US-{code}'` — so both paths land on the same row regardless of which runs first) and sets `is_authoritative_over_uploads = True` unless a non-upload-sourced (`standards_sources.source_type != 'pdf'`, i.e. a real CASE) framework already exists for that jurisdiction. The reverse direction lives on the ingest side: `ingest_case_standards.py::_demote_uploads_for_jurisdiction`, called right after a CASE framework is upserted, demotes any currently-authoritative upload-sourced framework in the same jurisdiction.
+
+Verified all three cases directly against real + constructed data:
+- Re-materializing the real North Dakota math upload (which has genuine CASE data already ingested for ND) → correctly `False`.
+- A synthetic Wyoming upload (a state with zero CASE presence in this dataset) → correctly `True`.
+- Simulating a CASE framework landing for that same synthetic Wyoming jurisdiction → the previously-authoritative upload correctly flips to `False`.
+
+Nothing downstream (retrieval ranking, coverage display) reads this flag yet — same as the original PRD's own framing, it's a precedence signal for future consumers, not yet wired into ranking logic. That remains a natural next step, not done here.
