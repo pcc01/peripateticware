@@ -537,8 +537,11 @@ async def rag_retrieve(
     emb_result = await embed_text(query, input_type="query")
     query_embedding: list = emb_result.get("embedding", [])
     emb_dim: int = emb_result.get("dimension", len(query_embedding))
+    embed_ms = int((_time.monotonic() - t0) * 1000)
 
     seeds: list[dict] = []
+    db_ms = 0
+    expand_ms = 0
 
     if query_embedding:
         vec_literal = "[" + ",".join(str(v) for v in query_embedding) + "]"
@@ -550,6 +553,7 @@ async def rag_retrieve(
         # one of them and its neighbors, not the cluster as a whole.
         seed_k = min(max(top_k * 3, top_k), 15)
 
+        _t_db0 = _time.monotonic()
         try:
             rows = (await db.execute(_t(f"""
                 SELECT
@@ -602,9 +606,11 @@ async def rag_retrieve(
                 })
         except Exception as e:
             logger.warning(f"rag_documents query failed (table may not exist yet): {e}")
+        db_ms = int((_time.monotonic() - _t_db0) * 1000)
 
     expanded: list[dict] = []
     if seeds and (include_ancestors or include_related):
+        _t_expand0 = _time.monotonic()
         try:
             expanded = await expand_seeds(
                 db, seeds,
@@ -613,6 +619,7 @@ async def rag_retrieve(
             )
         except Exception as e:
             logger.warning(f"Graph expansion failed (falling back to vector-only results): {e}")
+        expand_ms = int((_time.monotonic() - _t_expand0) * 1000)
 
     # Stage 3: merge + rank. Seeds (real cosine similarity) sort above
     # expansions at the same score by construction (expansions are always
@@ -628,7 +635,8 @@ async def rag_retrieve(
     elapsed_ms = int((_time.monotonic() - t0) * 1000)
     logger.info(
         f"RAG retrieved {len(seeds)} seeds + {len(expanded)} expanded for '{query[:50]}' "
-        f"({len(combined)} returned) in {elapsed_ms}ms"
+        f"({len(combined)} returned) in {elapsed_ms}ms "
+        f"(embed={embed_ms}ms db={db_ms}ms expand={expand_ms}ms)"
     )
     return {
         "query":                     query,
@@ -640,6 +648,15 @@ async def rag_retrieve(
         "expanded_count":            len(expanded),
         "graph_expansion_enabled":   include_ancestors or include_related,
         "retrieval_time_ms":         elapsed_ms,
+        # Breakdown for diagnosing where retrieval_time_ms actually goes --
+        # added 2026-08-17 after finding prod ~2.8x slower than local at
+        # identical data scale with no obvious single cause (network hop to
+        # a hosted embedding provider vs local sidecar? DB/index tuning?
+        # graph-expansion query cost?). Sum of the three ~= retrieval_time_ms,
+        # modulo the Stage-3 sort/trim which isn't separately timed.
+        "embed_ms":                  embed_ms,
+        "db_ms":                     db_ms,
+        "expand_ms":                 expand_ms,
         "total_retrieved":           len(combined),
         "success":                   True,
     }
