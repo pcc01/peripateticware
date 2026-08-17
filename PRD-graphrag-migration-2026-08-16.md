@@ -277,3 +277,28 @@ Requested by Paul: a real query ("How do I teach students to understand ratios a
 - **Jurisdiction-aware result labels.** A `cross_reference` result's `full_statement` doesn't currently say *which* state/framework it's from — a teacher comparing "my state's version vs. Texas's" would need to click through rather than see it at a glance. Would need joining `standards_frameworks.jurisdiction_id → jurisdictions.name` into the expansion queries.
 - **Use `is_authoritative_over_uploads` in ranking** (§11) — now that the flag is set correctly, nothing yet prefers an authoritative framework's standards over a demoted upload's when both could plausibly match a query. Not urgent (few jurisdictions have both today) but will matter more as CASE coverage grows.
 - **HNSW index tuning** for the base vector search (`ef_search`, currently pgvector defaults) — not investigated; the base search is already fast (60-90ms) at current data volume, so likely not the next bottleneck, but worth revisiting once the full ~561k-row backfill completes and the index is at final size.
+
+---
+
+## 13. GPU/embedding throughput: batching beats concurrency (2026-08-17)
+
+Requested by Paul: reduce how long the remaining backfill takes. Checked GPU placement first (`/api/ps`: `size_vram == size`, the whole `qwen3-embedding:0.6b` model is resident in VRAM — not a CPU-fallback problem) before looking at request patterns.
+
+**Finding:** Ollama's `/api/embed` accepts a *list* of texts in `input`, not just a single string — embedding many texts in one request is dramatically more efficient than the same count of concurrent single-text requests, on the same GPU:
+
+| Approach | ms/item |
+|---|---|
+| 20 concurrent single-item requests | 193ms |
+| 2 concurrent batches of 10 | 122ms |
+| 1 batch of 20 | 109ms |
+| 1 batch of 100 | **14ms** |
+| 1 batch of 200 | 14.5ms (no further gain) |
+| 1 batch of 400 | **fails** — Ollama's internal tokenizer subprocess connection refused |
+
+Batch=100 is ~13x more efficient per item than the original one-request-per-item pattern (with up to 24-way client concurrency) — the GPU does one batched forward pass instead of many small ones, and per-request overhead is paid once instead of N times. There's a real ceiling somewhere between 200 and 400 (an internal Ollama instability, not a client-side limit); 100 is a deliberately conservative choice with margin, not the measured maximum.
+
+**Implemented:** `services/embedding_service.py` gained `_embed_batch_with_ollama`/`_embed_batch_with_openai` (OpenAI's `/embeddings` also accepts a batched `input` array; response items carry an `index` field, sorted on explicitly rather than trusted to come back in submission order) and `EmbeddingService.embed_texts()` — previously dead code (imported in `routes/inference.py`, never actually called — verified before changing its behavior) that looped calling `embed_text()` once per item — now chunks into batches of `_MAX_BATCH_SIZE` (100) and does one provider call per chunk. `scripts/backfill_standards_embeddings.py` rewritten to match: `BATCH_SIZE = 100`, one `embed_texts()` call per DB-commit batch, the old semaphore/`--concurrency` machinery removed entirely (batching replaced what concurrency was trying to achieve, more effectively).
+
+**Result, restarted against the live backfill:** the old process (still running the pre-batching code — a fresh process pickup was needed to load the change) was stopped and a new one launched; **stable 52-55 items/sec** sustained across 5,600+ items with no decay (vs. the connection-pooling fix's ~18 items/sec plateau from §11's predecessor finding — batching also incidentally eliminates the earlier per-request-connection-churn issue almost entirely, since 100x fewer HTTP requests means 100x fewer connection-setup events). **ETA dropped from ~8.5 hours to ~2.2 hours** for the remaining ~422k items. Fully resumable — stopping and restarting the script picks up exactly where it left off, verified during this same restart.
+
+Full backend test suite green throughout (267 passed, 1 pre-existing unrelated failure).

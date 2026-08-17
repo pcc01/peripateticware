@@ -56,6 +56,24 @@ _DEFAULT_MODEL = {
     "openai": "text-embedding-3-small",
 }
 
+# Max texts per batched /api/embed (or /embeddings) call.
+#
+# Found via a live throughput comparison (scripts/backfill_standards_embeddings.py):
+# sending one text per request, even 20-24 concurrently, cost ~185ms/item
+# against Ollama + qwen3-embedding:0.6b. A single request with N texts in
+# its `input` array is dramatically more efficient per item — 25ms/item at
+# batch=25, 14ms/item at batch=100 (~13x better than one-at-a-time) — the
+# GPU does one batched forward pass instead of N separate ones, and
+# per-request overhead is paid once instead of N times.
+#
+# 100 is a deliberately conservative ceiling, not the true limit: batch=200
+# still worked (14.5ms/item, no better than 100), but batch=400 made
+# Ollama's internal tokenizer subprocess connection fail outright ("dial
+# tcp 127.0.0.1:<port>: connectex: ... actively refused") — a real
+# instability somewhere between 200 and 400. Staying at 100 keeps a solid
+# margin below that without giving up meaningful throughput.
+_MAX_BATCH_SIZE = 100
+
 
 def _resolve_embedding_provider() -> str:
     """EMBEDDING_PROVIDER -> LLM_PROVIDER -> 'ollama'. "claude" is remapped
@@ -135,21 +153,55 @@ class EmbeddingService:
     @staticmethod
     async def embed_texts(texts: List[str]) -> List[Dict]:
         """
-        Generate embeddings for multiple texts
+        Generate embeddings for multiple texts via batched provider calls
+        (see _MAX_BATCH_SIZE) rather than one request per text — see that
+        constant's comment for the measured throughput difference.
 
         Args:
             texts: List of texts to embed
 
         Returns:
-            List of embedding results
+            List of embedding results, same order and length as `texts`.
         """
-        embeddings = []
+        results: List[Optional[Dict]] = [None] * len(texts)
 
-        for text in texts:
-            embedding = await EmbeddingService.embed_text(text)
-            embeddings.append(embedding)
+        # Empty strings never hit the network — same placeholder shape as
+        # embed_text()'s empty-text case.
+        indexed_nonempty = [(i, t.strip()[:512]) for i, t in enumerate(texts) if t and t.strip()]
+        for i, t in enumerate(texts):
+            if not (t and t.strip()):
+                results[i] = {
+                    "text": "",
+                    "embedding": [0.0] * settings.VECTOR_DIMENSION,
+                    "dimension": settings.VECTOR_DIMENSION,
+                    "error": "Empty text",
+                }
 
-        return embeddings
+        provider = _resolve_embedding_provider()
+
+        for start in range(0, len(indexed_nonempty), _MAX_BATCH_SIZE):
+            chunk = indexed_nonempty[start:start + _MAX_BATCH_SIZE]
+            chunk_indices = [i for i, _ in chunk]
+            chunk_texts = [t for _, t in chunk]
+
+            try:
+                if provider == "openai":
+                    chunk_results = await EmbeddingService._embed_batch_with_openai(chunk_texts)
+                else:
+                    chunk_results = await EmbeddingService._embed_batch_with_ollama(chunk_texts)
+            except Exception as e:
+                logger.error(f"Batch embedding error: {e}")
+                chunk_results = [None] * len(chunk_texts)
+
+            for pos, (idx, text) in enumerate(chunk):
+                r = chunk_results[pos] if pos < len(chunk_results) else None
+                if not r or not r.get("embedding"):
+                    # Same per-item resilience as embed_text(): fall back to
+                    # mock rather than letting one bad batch drop items.
+                    r = await EmbeddingService._embed_mock(text)
+                results[idx] = r
+
+        return results  # type: ignore[return-value]
 
     @staticmethod
     async def _embed_with_ollama(text: str) -> Dict:
@@ -318,6 +370,128 @@ class EmbeddingService:
                 "embedding": None,
                 "error": str(e),
             }
+
+    @staticmethod
+    async def _embed_batch_with_ollama(texts: List[str]) -> List[Optional[Dict]]:
+        """
+        Embed multiple texts in a single Ollama /api/embed request (`input`
+        as a list rather than a string) — see _MAX_BATCH_SIZE's comment for
+        why this matters. Returns one result dict per input text, same
+        order, `None` for any text whose embedding didn't come back at the
+        right dimension (caller falls back to mock for those individually).
+        """
+        model = _resolve_embedding_model("ollama")
+        try:
+            client = _get_http_client()
+            response = await client.post(
+                f"{settings.OLLAMA_BASE_URL}/api/embed",
+                json={
+                    "model": model,
+                    "input": texts,
+                    "dimensions": settings.VECTOR_DIMENSION,
+                },
+                timeout=90,   # a full 100-text batch can take longer than the client's default 30s
+            )
+
+            if response.status_code != 200:
+                logger.warning(f"Ollama batch embed error: {response.status_code} {response.text[:200]}")
+                return [None] * len(texts)
+
+            data = response.json()
+            embeddings = data.get("embeddings", [])
+            if len(embeddings) != len(texts):
+                logger.error(
+                    "Ollama batch embed count mismatch: sent %d texts, got %d embeddings back",
+                    len(texts), len(embeddings),
+                )
+                return [None] * len(texts)
+
+            results: List[Optional[Dict]] = []
+            for text, embedding in zip(texts, embeddings):
+                if len(embedding) != settings.VECTOR_DIMENSION:
+                    logger.error(
+                        "Ollama batch embedding dim mismatch: model=%s got %d, expected %d",
+                        model, len(embedding), settings.VECTOR_DIMENSION,
+                    )
+                    results.append(None)
+                    continue
+                results.append({
+                    "text": text, "embedding": embedding, "dimension": len(embedding),
+                    "model": model, "provider": "ollama",
+                })
+            logger.info(f"Batch-embedded {len(texts)} texts with Ollama: model={model}")
+            return results
+
+        except Exception as e:
+            logger.warning(f"Ollama batch embedding error: {e}")
+            return [None] * len(texts)
+
+    @staticmethod
+    async def _embed_batch_with_openai(texts: List[str]) -> List[Optional[Dict]]:
+        """
+        Embed multiple texts in a single OpenAI-shaped /embeddings request.
+        OpenAI's response includes an `index` per item — sorted on explicitly
+        rather than trusted to come back in submission order, per their own
+        API contract (usually is, but "usually" isn't a guarantee worth
+        silently relying on for a batch response we then zip against input
+        order).
+        """
+        model = _resolve_embedding_model("openai")
+        base_url = settings.OPENAI_BASE_URL.rstrip("/")
+        api_key = settings.OPENAI_API_KEY
+
+        if not api_key:
+            return [None] * len(texts)
+
+        try:
+            client = _get_http_client()
+            response = await client.post(
+                f"{base_url}/embeddings",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "input": texts,
+                    "dimensions": settings.VECTOR_DIMENSION,
+                },
+                timeout=90,
+            )
+
+            if response.status_code != 200:
+                logger.warning(f"OpenAI batch embed error: {response.status_code} {response.text[:200]}")
+                return [None] * len(texts)
+
+            data = response.json()
+            items = sorted(data.get("data", []), key=lambda d: d.get("index", 0))
+            if len(items) != len(texts):
+                logger.error(
+                    "OpenAI batch embed count mismatch: sent %d texts, got %d embeddings back",
+                    len(texts), len(items),
+                )
+                return [None] * len(texts)
+
+            results: List[Optional[Dict]] = []
+            for text, item in zip(texts, items):
+                embedding = item.get("embedding")
+                if not embedding or len(embedding) != settings.VECTOR_DIMENSION:
+                    logger.error(
+                        "OpenAI batch embedding dim mismatch: got %s, expected %d",
+                        len(embedding) if embedding else None, settings.VECTOR_DIMENSION,
+                    )
+                    results.append(None)
+                    continue
+                results.append({
+                    "text": text, "embedding": embedding, "dimension": len(embedding),
+                    "model": model, "provider": "openai",
+                })
+            logger.info(f"Batch-embedded {len(texts)} texts with OpenAI-shaped API: model={model}")
+            return results
+
+        except Exception as e:
+            logger.warning(f"OpenAI batch embedding error: {e}")
+            return [None] * len(texts)
 
     @staticmethod
     async def _embed_mock(text: str) -> Dict:

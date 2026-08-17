@@ -52,15 +52,24 @@ from sqlalchemy import select, text as _t  # noqa: E402
 
 from core.database import get_session_factory  # noqa: E402
 from models.database import StandardsItem, StandardsFramework, Jurisdiction  # noqa: E402
-from services.embedding_service import embed_text  # noqa: E402
+from services.embedding_service import embed_texts  # noqa: E402
 from services.rag_store import indexed_node_ids  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 log = logging.getLogger("backfill_standards_embeddings")
 
-BATCH_SIZE = 50
+# Matches services/embedding_service.py's _MAX_BATCH_SIZE — one DB-commit
+# batch here maps to exactly one batched embed_texts() call (one HTTP
+# request), which is where the real throughput win is. Originally this
+# script embedded one item at a time with N-way concurrency (a semaphore +
+# asyncio.gather of individual embed_text() calls); a live comparison found
+# a single batched request beats even 20-24 concurrent single-item requests
+# by roughly an order of magnitude (~185ms/item concurrent-singles vs.
+# ~14ms/item batched at this size) — see embedding_service.py's
+# _MAX_BATCH_SIZE comment and PRD-graphrag-migration-2026-08-16.md §13 for
+# the measured numbers.
+BATCH_SIZE = 100
 NODE_TYPE = "standards_item"
-DEFAULT_CONCURRENCY = 8
 
 
 async def _ancestor_path(db, item: StandardsItem, cache: dict[UUID, Optional[StandardsItem]]) -> list[str]:
@@ -97,20 +106,12 @@ def _chunk_text(item: StandardsItem, ancestors: list[str]) -> str:
     return " — ".join(p for p in parts if p).strip()
 
 
-async def _embed_one(sem: asyncio.Semaphore, item: StandardsItem, chunk_text: str) -> tuple[StandardsItem, str, Optional[list[float]], Optional[str]]:
-    """Concurrency-gated embed call. Returns (item, chunk_text, embedding_or_None, error_or_None)."""
-    async with sem:
-        result = await embed_text(chunk_text)
-        return item, chunk_text, result.get("embedding"), result.get("error")
-
-
 async def run(
     *,
     framework_id: Optional[UUID],
     jurisdiction_ref: Optional[str],
     limit: Optional[int],
     dry_run: bool,
-    concurrency: int,
 ) -> None:
     session_factory = get_session_factory()
     ancestor_cache: dict[UUID, Optional[StandardsItem]] = {}
@@ -156,27 +157,27 @@ async def run(
         t0 = time.monotonic()
         indexed = 0
         failed = 0
-        sem = asyncio.Semaphore(concurrency)
 
         for batch_start in range(0, len(todo), BATCH_SIZE):
             batch = todo[batch_start: batch_start + BATCH_SIZE]
 
             # Ancestor-path resolution is DB-bound but cached and cheap
-            # (shallow trees) — stays sequential; only the embedding HTTP
-            # calls (the actual bottleneck) run concurrently below.
+            # (shallow trees) — stays sequential.
             texts: list[str] = []
             for it in batch:
                 ancestors = await _ancestor_path(db, it, ancestor_cache)
                 texts.append(_chunk_text(it, ancestors))
 
-            results = await asyncio.gather(*[
-                _embed_one(sem, it, txt) for it, txt in zip(batch, texts)
-            ])
+            # One batched HTTP call for up to BATCH_SIZE texts at once —
+            # see BATCH_SIZE's comment above for why this replaced the
+            # original one-request-per-item (N-way concurrent) approach.
+            embed_results = await embed_texts(texts)
 
-            for it, chunk_text, embedding, error in results:
+            for it, chunk_text, result in zip(batch, texts, embed_results):
+                embedding = result.get("embedding")
                 if not embedding:
                     failed += 1
-                    log.warning("Embed failed for standards_item %s (%s): %s", it.id, it.human_coding_scheme, error)
+                    log.warning("Embed failed for standards_item %s (%s): %s", it.id, it.human_coding_scheme, result.get("error"))
                     continue
                 framework = frameworks.get(it.framework_id)
                 await db.execute(_t("""
@@ -229,9 +230,6 @@ def main() -> None:
     scope.add_argument("--all", action="store_true", help="Every non-retired standards_item — slow/costly, confirm provider first")
     parser.add_argument("--limit", type=int, default=None, help="Cap the number of candidate items (applied before the already-indexed filter)")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be indexed without writing/embedding")
-    parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
-                         help=f"Concurrent embedding requests in flight (default {DEFAULT_CONCURRENCY}). "
-                              "DB writes stay sequential regardless — only the embedding HTTP calls parallelize.")
     args = parser.parse_args()
 
     fw_id = UUID(args.framework_id) if args.framework_id else None
@@ -240,7 +238,6 @@ def main() -> None:
         jurisdiction_ref=args.jurisdiction,
         limit=args.limit,
         dry_run=args.dry_run,
-        concurrency=args.concurrency,
     ))
 
 
