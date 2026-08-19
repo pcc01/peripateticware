@@ -459,6 +459,10 @@ backend/docs/SPRINT_TRACK_1_STATUS.md
 backend/docs/SPRINT_TRACK_2_STATUS.md
 backend/docs/SPRINT_TRACK_3_STATUS.md
 
+# ── Local-only content-management guide (account permissions, known test
+#    credentials — 2026-08-19) ──
+CONTENT_MANAGEMENT_GUIDE.md
+
 # ── Generated QA / test-run artifacts (not source — 2026-07-16) ──
 frontend/qa/
 /test-results/
