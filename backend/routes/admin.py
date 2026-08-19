@@ -10,9 +10,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import os
 import json
-import hashlib
-import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from functools import lru_cache
 import bcrypt
 import httpx
@@ -20,7 +18,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, delete, text
+from sqlalchemy import select, func, text
 from core.database import get_db
 from core.dependencies import get_current_user
 
@@ -44,7 +42,7 @@ async def log_admin_action(
     Insert a row into admin_audit_logs. Non-blocking — errors are logged but never raised.
 
     Args:
-        admin_id:  UUID string from verify_admin_token_db(); None for unauthenticated attempts
+        admin_id:  current_user.id (str) from the JWT; None for unauthenticated attempts
         action:    short verb+noun, e.g. "create_user", "delete_user", "update_env", "login", "logout"
         resource:  the affected resource identifier, e.g. user_id, env key name, class id
         details:   arbitrary JSON dict with before/after values or other context
@@ -81,11 +79,6 @@ async def log_admin_action(
 # ============================================================================
 # MODELS
 # ============================================================================
-
-class AdminLogin(BaseModel):
-    username: str
-    password: str
-
 
 class AdminUser(BaseModel):
     id: str
@@ -178,148 +171,23 @@ def mask_sensitive_value(key: str, value: str) -> tuple[str, bool]:
 
 
 # ============================================================================
-# IN-MEMORY ADMIN DATABASE (for demo - use PostgreSQL in production)
+# LEGACY ADMIN AUTH -- RETIRED 2026-08-19
 # ============================================================================
-
-DEMO_ADMIN = {
-    "id": "admin-001",
-    "username": "admin",
-    "password_hash": bcrypt.hashpw(b"admin123", bcrypt.gensalt()).decode(),
-    "role": "admin",
-    "created_at": datetime.now(),
-}
-
-def verify_password(plain_password: str, password_hash: str) -> bool:
-    """Verify password against bcrypt hash"""
-    return bcrypt.checkpw(plain_password.encode(), password_hash.encode())
-
-
-def generate_session_token() -> str:
-    """Generate a secure session token"""
-    return secrets.token_urlsafe(32)
-
-
-def hash_token(token: str) -> str:
-    """SHA-256 hash of token for safe storage in DB"""
-    return hashlib.sha256(token.encode()).hexdigest()
-
-
-async def verify_admin_token_db(token: str, db: AsyncSession) -> str:
-    """Verify admin session token against DB — returns admin_id string."""
-    from models.database import AdminSession, AdminUserModel
-    if not token:
-        raise HTTPException(status_code=401, detail="Admin token required")
-    token_hash = hash_token(token)
-    result = await db.execute(
-        select(AdminSession).where(
-            AdminSession.token_hash == token_hash,
-            AdminSession.expires_at > datetime.now(timezone.utc).replace(tzinfo=None),
-        )
-    )
-    session = result.scalar_one_or_none()
-    if not session:
-        raise HTTPException(status_code=401, detail="Invalid or expired admin session")
-    return str(session.admin_id)
-
-
+# This used to be a second, parallel login system (its own /auth/login,
+# DB-persisted AdminSession tokens, and a hardcoded DEMO_ADMIN fallback --
+# username "admin", password "admin123" -- that activated whenever the
+# admin_users table was empty). That fallback was a live, unauthenticated
+# path to full production .env read/write (see /env below) reachable by
+# anyone who knew the default credential; found and closed 2026-08-19.
+#
+# Every route below now uses the same JWT + role=ADMIN auth as the rest
+# of /admin/*, matching how the frontend (AdminSystemPage.tsx, and
+# AdminSettingsPage.tsx after this change) already calls them via the
+# normal authenticated API client -- there's no reason for env/LLM-test/
+# audit-log management to be a separate login from everything else under
+# /admin. admin_users and admin_sessions tables are left in place
+# (harmless, nothing reads them anymore) rather than dropped.
 # ============================================================================
-# AUTHENTICATION
-# ============================================================================
-
-@router.post("/auth/login", response_model=Dict[str, Any])
-async def admin_login(
-    credentials: AdminLogin,
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-):
-    """Login to admin panel — creates a DB-persisted session."""
-    from models.database import AdminUserModel, AdminSession
-
-    # Look up admin user in DB first; fall back to DEMO_ADMIN if table is empty
-    result = await db.execute(
-        select(AdminUserModel).where(AdminUserModel.username == credentials.username)
-    )
-    db_admin = result.scalar_one_or_none()
-
-    if db_admin:
-        if not verify_password(credentials.password, db_admin.password_hash):
-            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        if not db_admin.is_active:
-            await log_admin_action(db, str(db_admin.id), "login_failed", details={"username": credentials.username, "reason": "inactive"}, success=False, request=request)
-            raise HTTPException(status_code=401, detail="Account inactive")
-        admin_id = str(db_admin.id)
-        db_admin.last_login = datetime.now()
-    else:
-        # Fall back to in-code DEMO_ADMIN (first boot before migrations run)
-        if credentials.username != DEMO_ADMIN["username"]:
-            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        if not verify_password(credentials.password, DEMO_ADMIN["password_hash"]):
-            await log_admin_action(db, None, "login_failed", details={"username": credentials.username}, success=False, request=request)
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        admin_id = DEMO_ADMIN["id"]
-
-    # Create DB-persisted session
-    token = generate_session_token()
-    token_hash = hash_token(token)
-    expires_at = datetime.now() + timedelta(hours=8)
-
-    session = AdminSession(
-        id=uuid4(),
-        admin_id=admin_id if db_admin is None else db_admin.id,
-        token_hash=token_hash,
-        expires_at=expires_at,
-        created_at=datetime.now(),
-    )
-    db.add(session)
-    try:
-        await db.commit()
-    except Exception:
-        # Graceful fallback if admin_sessions table doesn't exist yet
-        await db.rollback()
-
-    await log_admin_action(db, admin_id, "login", success=True, request=request)
-
-    return {
-        "token": token,
-        "user": {
-            "id": admin_id,
-            "username": credentials.username,
-            "role": "admin",
-        },
-        "expires_at": expires_at.isoformat(),
-    }
-
-
-@router.post("/auth/logout")
-async def admin_logout(
-    token: str = None,
-    request: Request = None,
-    db: AsyncSession = Depends(get_db),
-):
-    """Logout from admin panel — deletes DB session."""
-    admin_id = None
-    if token:
-        from models.database import AdminSession
-        token_hash = hash_token(token)
-        # Resolve admin_id before deleting the session
-        try:
-            admin_id = await verify_admin_token_db(token, db)
-        except Exception:
-            pass
-        await db.execute(delete(AdminSession).where(AdminSession.token_hash == token_hash))
-        try:
-            await db.commit()
-        except Exception:
-            await db.rollback()
-    await log_admin_action(db, admin_id, "logout", request=request)
-    return {"message": "Logged out"}
-
-
-async def verify_admin_token(token: str = None, db: AsyncSession = Depends(get_db)) -> str:
-    """FastAPI dependency — verifies admin token against DB, returns admin_id."""
-    return await verify_admin_token_db(token, db)
 
 
 # ============================================================================
@@ -327,9 +195,9 @@ async def verify_admin_token(token: str = None, db: AsyncSession = Depends(get_d
 # ============================================================================
 
 @router.get("/env", response_model=list[EnvCategory])
-async def get_env_variables(token: str = None, db: AsyncSession = Depends(get_db)):
+async def get_env_variables(current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Get all environment variables grouped by category"""
-    await verify_admin_token_db(token, db)
+    _require_admin_role(current_user)
 
     env_vars: Dict[str, list] = {}
 
@@ -370,12 +238,13 @@ async def get_env_variables(token: str = None, db: AsyncSession = Depends(get_db
 async def update_env_variable(
     key: str,
     body: Dict[str, str] = Body(...),
-    token: str = None,
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
 ):
     """Update an environment variable (with confirmation)"""
-    admin_id = await verify_admin_token_db(token, db)
+    _require_admin_role(current_user)
+    admin_id = str(current_user.id)
 
     new_value = body.get("value", "")
 
@@ -423,9 +292,9 @@ async def update_env_variable(
 # ============================================================================
 
 @router.post("/llm/test", response_model=LLMTestResponse)
-async def test_llm_provider(request: LLMTestRequest, token: str = None, db: AsyncSession = Depends(get_db)):
+async def test_llm_provider(request: LLMTestRequest, current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Test LLM provider (Ollama or Claude)"""
-    await verify_admin_token_db(token, db)
+    _require_admin_role(current_user)
 
     start_time = datetime.now()
 
@@ -547,33 +416,69 @@ def _require_admin_role(current_user) -> None:
         raise HTTPException(status_code=403, detail="Admin role required")
 
 
+async def _admin_org_ids(current_user, db: AsyncSession) -> Optional[List[Any]]:
+    """
+    Returns the org_ids `current_user` should be scoped to for /admin/*
+    data views, or None to mean "no filter, see everything" (only when
+    is_platform_admin -- matches "only the platform admin has access to
+    overall prod/SaaS data" everywhere else in this app).
+
+    organization_members is the canonical membership source (not
+    users.org_id/primary_org_id -- see the 2026-08-19 org-scoping
+    migration's docstring for why those are inconsistently populated
+    across accounts and not trustworthy here). An admin with zero
+    memberships gets an empty list back, which every caller below must
+    treat as "show nothing" -- fail closed, not fail open.
+    """
+    if getattr(current_user, "is_platform_admin", False):
+        return None
+    result = await db.execute(
+        text("SELECT org_id FROM organization_members WHERE user_id = :uid"),
+        {"uid": str(current_user.id)},
+    )
+    return [row[0] for row in result.all()]
+
+
 @router.get("/dashboard")
 async def admin_dashboard(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Admin overview dashboard — user counts, activity counts, system status."""
+    """Admin overview dashboard — user counts, activity counts, system status.
+    Scoped to the caller's org(s) unless is_platform_admin (see _admin_org_ids)."""
     from models.database import User, Activity, LearningSession
     _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
 
     # Consolidated into 2 queries instead of 7 sequential round-trips.
+    # member_filter: empty string (no filter, platform admin) or a WHERE
+    # clause restricting to users who are members of one of org_ids --
+    # org_ids being an empty list correctly matches zero rows via = ANY().
     from sqlalchemy import text as _text
-    user_row = (await db.execute(_text("""
+    member_filter = "" if org_ids is None else \
+        "WHERE id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+    user_row = (await db.execute(_text(f"""
         SELECT
             COUNT(*)                                                        AS total_users,
             COUNT(*) FILTER (WHERE UPPER(role::text) = 'TEACHER')         AS teachers,
             COUNT(*) FILTER (WHERE UPPER(role::text) = 'STUDENT')         AS students,
             COUNT(*) FILTER (WHERE UPPER(role::text) = 'PARENT')          AS parents
         FROM users
-    """))).mappings().one()
+        {member_filter}
+    """), {} if org_ids is None else {"org_ids": org_ids})).mappings().one()
 
-    act_row = (await db.execute(_text("""
+    teacher_filter = "" if org_ids is None else \
+        "WHERE teacher_id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+    session_filter = "" if org_ids is None else \
+        "WHERE user_id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+    act_row = (await db.execute(_text(f"""
         SELECT
             COUNT(*)                                                        AS total_activities,
             COUNT(*) FILTER (WHERE LOWER(status::text) = 'published')     AS published,
-            (SELECT COUNT(*) FROM learning_sessions)                       AS sessions
+            (SELECT COUNT(*) FROM learning_sessions {session_filter})        AS sessions
         FROM activities
-    """))).mappings().one()
+        {teacher_filter}
+    """), {} if org_ids is None else {"org_ids": org_ids})).mappings().one()
 
     total_users      = int(user_row["total_users"] or 0)
     teachers         = int(user_row["teachers"]    or 0)
@@ -616,12 +521,24 @@ async def list_admin_users(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all users with pagination."""
+    """List all users with pagination. Scoped to the caller's org(s)
+    unless is_platform_admin (see _admin_org_ids)."""
     from models.database import User
+    from sqlalchemy import exists as _exists
     _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
 
-    total = (await db.execute(select(func.count()).select_from(User))).scalar() or 0
-    result = await db.execute(select(User).offset(skip).limit(limit).order_by(User.created_at.desc()))
+    query = select(User)
+    count_query = select(func.count()).select_from(User)
+    if org_ids is not None:
+        member_of_scope = text(
+            "EXISTS (SELECT 1 FROM organization_members om WHERE om.user_id = users.id AND om.org_id = ANY(:org_ids))"
+        ).bindparams(org_ids=org_ids)
+        query = query.where(member_of_scope)
+        count_query = count_query.where(member_of_scope)
+
+    total = (await db.execute(count_query)).scalar() or 0
+    result = await db.execute(query.offset(skip).limit(limit).order_by(User.created_at.desc()))
     users = result.scalars().all()
 
     return {
@@ -692,6 +609,17 @@ async def update_admin_user(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    # Seed/demo accounts (admin, test_admin, teacher@example.com, etc.) are
+    # protected from mutation through the admin panel -- see the
+    # 2026-08-19 org-scoping migration's PROTECTED_USERNAMES. Blocking the
+    # action outright, rather than relying only on the startup-time seed
+    # upsert to eventually reconcile a change, means the next tester never
+    # sees a broken/altered fixture even between deploys.
+    if getattr(user, "is_protected", False):
+        raise HTTPException(
+            status_code=403,
+            detail="This is a protected demo/test account and cannot be modified.",
+        )
     update_data = {f: body[f] for f in ("full_name", "role", "is_active") if f in body}
     for field, value in update_data.items():
         setattr(user, field, value)
@@ -719,6 +647,11 @@ async def delete_admin_user(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if getattr(user, "is_protected", False):
+        raise HTTPException(
+            status_code=403,
+            detail="This is a protected demo/test account and cannot be removed.",
+        )
     await db.delete(user)
     await db.commit()
     await log_admin_action(db, str(current_user.id), "delete_user", resource=user_id, request=request)
@@ -729,10 +662,14 @@ async def list_admin_classes(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all classrooms across all teachers."""
+    """List all classrooms. Scoped to the caller's org(s) unless
+    is_platform_admin (see _admin_org_ids) -- classrooms.org_id is a
+    direct column here, so no organization_members join needed."""
     _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
     from sqlalchemy import text as _t
-    result = await db.execute(_t("""
+    org_filter = "" if org_ids is None else "WHERE c.org_id = ANY(:org_ids)"
+    result = await db.execute(_t(f"""
         SELECT c.id, c.name, c.grade_level, c.subject,
                c.is_active, c.created_at,
                u.full_name AS teacher_name, u.email AS teacher_email,
@@ -742,9 +679,10 @@ async def list_admin_classes(
         LEFT JOIN users u ON u.id = c.teacher_id
         LEFT JOIN organizations o ON o.id = c.org_id
         LEFT JOIN classroom_students cs ON cs.classroom_id = c.id
+        {org_filter}
         GROUP BY c.id, u.full_name, u.email, o.name
         ORDER BY c.name
-    """))
+    """), {} if org_ids is None else {"org_ids": org_ids})
     rows = result.mappings().all()
     return [
         {
@@ -768,17 +706,23 @@ async def admin_analytics(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """System-wide analytics snapshot."""
+    """Analytics snapshot. Scoped to the caller's org(s) unless
+    is_platform_admin (see _admin_org_ids)."""
     from models.database import User, Activity, LearningSession
     from sqlalchemy import text as _text
     _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
 
+    member_scope = "" if org_ids is None else \
+        "AND id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+    session_scope = "" if org_ids is None else \
+        "AND user_id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
     # Single consolidated query instead of 2 sequential round-trips.
-    row = (await db.execute(_text("""
+    row = (await db.execute(_text(f"""
         SELECT
-            (SELECT COUNT(*) FROM users WHERE is_active = true)                 AS active_users,
-            (SELECT COUNT(*) FROM learning_sessions WHERE status = 'completed') AS completed_sessions
-    """))).mappings().one()
+            (SELECT COUNT(*) FROM users WHERE is_active = true {member_scope})                 AS active_users,
+            (SELECT COUNT(*) FROM learning_sessions WHERE status = 'completed' {session_scope}) AS completed_sessions
+    """), {} if org_ids is None else {"org_ids": org_ids})).mappings().one()
     active_users       = int(row["active_users"]       or 0)
     completed_sessions = int(row["completed_sessions"] or 0)
 
@@ -796,25 +740,31 @@ async def admin_analytics(
 
 @router.get("/audit-logs")
 async def get_audit_logs(
-    token: str = None,
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
     action: Optional[str] = Query(None),
     admin_id: Optional[str] = Query(None),
     success: Optional[bool] = Query(None),
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     request: Request = None,
 ):
     """
-    List admin audit log entries. Requires admin auth token.
+    List admin audit log entries. Requires role=ADMIN, scoped to the
+    caller's org(s) unless is_platform_admin (see _admin_org_ids).
     Supports filtering by action, admin_id, and success flag.
     """
-    await verify_admin_token_db(token, db)
+    _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
 
     from models.database import AdminAuditLog
     from sqlalchemy import select as _sel, desc
 
     q = _sel(AdminAuditLog)
+    if org_ids is not None:
+        q = q.where(text(
+            "admin_id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+        ).bindparams(org_ids=org_ids))
     if action:
         q = q.where(AdminAuditLog.action == action)
     if admin_id:
@@ -848,21 +798,28 @@ async def get_audit_logs(
 
 @router.get("/audit-logs/summary")
 async def audit_log_summary(
-    token: str = None,
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Summary of recent admin actions grouped by action type."""
-    await verify_admin_token_db(token, db)
+    """Summary of recent admin actions grouped by action type. Scoped to
+    the caller's org(s) unless is_platform_admin (see _admin_org_ids)."""
+    _require_admin_role(current_user)
+    org_ids = await _admin_org_ids(current_user, db)
 
-    rows = (await db.execute(text("""
+    query = """
         SELECT action, COUNT(*) AS count,
                MAX(created_at) AS last_seen,
                SUM(CASE WHEN success = false THEN 1 ELSE 0 END) AS failures
         FROM admin_audit_logs
         WHERE created_at > NOW() - INTERVAL '30 days'
-        GROUP BY action
-        ORDER BY count DESC
-    """))).mappings().all()
+    """
+    params: Dict[str, Any] = {}
+    if org_ids is not None:
+        query += " AND admin_id IN (SELECT user_id FROM organization_members WHERE org_id = ANY(:org_ids))"
+        params["org_ids"] = org_ids
+    query += " GROUP BY action ORDER BY count DESC"
+
+    rows = (await db.execute(text(query), params)).mappings().all()
 
     return {
         "period": "last_30_days",

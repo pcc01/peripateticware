@@ -44,6 +44,12 @@ class User(Base):
     # passwords and must not automatically get content-editing access just
     # by having that role. See core.dependencies.get_current_content_admin.
     is_content_admin = Column(Boolean, default=False, nullable=False, server_default='false')
+    # Blocks PUT/DELETE /admin/users/{id} outright (see routes/admin.py) --
+    # set on seed/demo/test accounts (admin, test_admin, teacher@example.com,
+    # etc.) so a tester's own actions can't delete or alter a fixture the
+    # next tester needs to find intact. See the 2026-08-19 org-scoping
+    # migration's PROTECTED_USERNAMES for the full list.
+    is_protected = Column(Boolean, default=False, nullable=False, server_default='false')
     invite_token_used = Column(String(128), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

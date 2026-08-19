@@ -1509,22 +1509,32 @@ async def seed_demo_users(engine) -> None:
             # persist in a long-lived local dev DB; a fresh CI database hits
             # this raw INSERT for the first time and exposes it. Computing
             # email_index here so every seeded row is actually loginable.
+            # is_protected=TRUE on every row (both the initial INSERT and the
+            # ON CONFLICT reconciliation) -- these are seed/demo accounts a
+            # tester could delete/modify through the admin panel mid-test;
+            # is_protected blocks that outright (routes/admin.py PUT/DELETE
+            # /users/{id}), and re-asserting it here on every startup means
+            # it can't be silently lost even if a row got recreated some
+            # other way. See the 2026-08-19 org-scoping migration for the
+            # column itself and the same reconciliation on the @test.local
+            # and admin@example.com accounts below.
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
-                                   hashed_password, role, is_active)
+                                   hashed_password, role, is_active, is_protected)
                 VALUES
                   ('homeschool@example.com',:ei_hs,'homeschool','Sarah','Rivera','Sarah Rivera',
-                   :pw,'HOMESCHOOL',TRUE),
+                   :pw,'HOMESCHOOL',TRUE,TRUE),
                   ('student@example.com',:ei_student,'student','Alex','Johnson','Alex Johnson',
-                   :pw,'STUDENT',TRUE),
+                   :pw,'STUDENT',TRUE,TRUE),
                   ('teacher@example.com',:ei_teacher,'teacher','Jane','Smith','Jane Smith',
-                   :pw,'TEACHER',TRUE),
+                   :pw,'TEACHER',TRUE,TRUE),
                   ('parent@example.com',:ei_parent,'parent','Margaret','Brown','Margaret Brown',
-                   :pw,'PARENT',TRUE)
+                   :pw,'PARENT',TRUE,TRUE)
                 ON CONFLICT (email) DO UPDATE SET
                     hashed_password = EXCLUDED.hashed_password,
                     email_index     = EXCLUDED.email_index,
-                    is_active       = TRUE
+                    is_active       = TRUE,
+                    is_protected    = TRUE
             """), {
                 "pw": _PW,
                 "ei_hs":      blind_index("homeschool@example.com"),
@@ -1549,15 +1559,25 @@ async def seed_demo_admin_account(engine) -> None:
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
             # See the email_index note in seed_demo_users() above — same bug,
             # same fix.
+            # is_protected=TRUE (see seed_demo_users()'s comment on the same
+            # pattern) -- this account being reachable/live on prod at all is
+            # a deliberate call (see main.py), NOT this function running
+            # there (it still only runs in dev); is_protected is what
+            # actually stops a tester from deleting/altering it wherever it
+            # exists. Also forcing is_content_admin=FALSE on every startup:
+            # nobody should be able to leave content-admin access granted on
+            # this account by testing something that flips it mid-session.
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
-                                   hashed_password, role, is_active)
+                                   hashed_password, role, is_active, is_protected, is_content_admin)
                 VALUES ('admin@example.com',:ei,'admin','Paul','Admin','Paul Christopher Cerda',
-                        :pw,'ADMIN',TRUE)
+                        :pw,'ADMIN',TRUE,TRUE,FALSE)
                 ON CONFLICT (email) DO UPDATE SET
-                    hashed_password = EXCLUDED.hashed_password,
-                    email_index     = EXCLUDED.email_index,
-                    is_active       = TRUE
+                    hashed_password  = EXCLUDED.hashed_password,
+                    email_index      = EXCLUDED.email_index,
+                    is_active        = TRUE,
+                    is_protected     = TRUE,
+                    is_content_admin = FALSE
             """), {"pw": _PW, "ei": blind_index("admin@example.com")})
         logger.info("✅ Demo admin account ensured (admin@example.com, SecurePass123!) — dev only")
     except Exception as e:
@@ -1648,26 +1668,34 @@ async def seed_test_accounts(engine) -> None:
             # Same email_index bug as seed_demo_users() above — these are the
             # accounts mobile/e2e.js Detox and Maestro suites log in as, so
             # this alone would have blocked every mobile E2E run on a fresh DB.
+            # is_protected=TRUE + is_content_admin=FALSE on every row, every
+            # startup -- see seed_demo_users()'s comment on the same pattern.
+            # test_admin/test_platform are role=ADMIN specifically, so
+            # forcing is_content_admin=FALSE here also closes off a tester
+            # granting themselves blog/pages access mid-test and having it
+            # silently stick around.
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
-                                   hashed_password, role, is_active)
+                                   hashed_password, role, is_active, is_protected, is_content_admin)
                 VALUES
                   ('student@test.local',:ei_student,'test_student','Test','Student','Test Student',
-                   :pw,'STUDENT',TRUE),
+                   :pw,'STUDENT',TRUE,TRUE,FALSE),
                   ('teacher@test.local',:ei_teacher,'test_teacher','Test','Teacher','Test Teacher',
-                   :pw,'TEACHER',TRUE),
+                   :pw,'TEACHER',TRUE,TRUE,FALSE),
                   ('parent@test.local',:ei_parent,'test_parent','Test','Parent','Test Parent',
-                   :pw,'PARENT',TRUE),
+                   :pw,'PARENT',TRUE,TRUE,FALSE),
                   ('admin@test.local',:ei_admin,'test_admin','Test','Admin','Test Admin',
-                   :pw,'ADMIN',TRUE),
+                   :pw,'ADMIN',TRUE,TRUE,FALSE),
                   ('homeschool@test.local',:ei_hs,'test_homeschool','Test','Homeschool','Test Homeschool',
-                   :pw,'HOMESCHOOL',TRUE),
+                   :pw,'HOMESCHOOL',TRUE,TRUE,FALSE),
                   ('platform@test.local',:ei_platform,'test_platform','Test','Platform','Test Platform',
-                   :pw,'ADMIN',TRUE)
+                   :pw,'ADMIN',TRUE,TRUE,FALSE)
                 ON CONFLICT (email) DO UPDATE SET
-                    hashed_password = EXCLUDED.hashed_password,
-                    email_index     = EXCLUDED.email_index,
-                    is_active       = TRUE
+                    hashed_password  = EXCLUDED.hashed_password,
+                    email_index      = EXCLUDED.email_index,
+                    is_active        = TRUE,
+                    is_protected     = TRUE,
+                    is_content_admin = FALSE
             """), {
                 "pw": _TEST_PW,
                 "ei_student": blind_index("student@test.local"),
