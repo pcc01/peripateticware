@@ -13,9 +13,9 @@
  * new tool.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { adminGetPost, adminCreatePost, adminUpdatePost, BlogPostInput } from '@/services/blogService';
+import { adminGetPost, adminCreatePost, adminUpdatePost, adminUploadBlogImage, BlogPostInput } from '@/services/blogService';
 import { renderBlogContent } from '@/utils/blogMarkdown';
 
 const EMPTY: BlogPostInput = {
@@ -39,6 +39,24 @@ const AdminBlogEditorPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const url = await adminUploadBlogImage(file);
+      update('cover_image_url', url);
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Could not upload that image.');
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -129,8 +147,38 @@ const AdminBlogEditorPage: React.FC = () => {
         </div>
 
         <div>
-          <label style={labelStyle}>Cover Image URL <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(optional)</span></label>
-          <input style={inputStyle} value={form.cover_image_url} onChange={(e) => update('cover_image_url', e.target.value)} placeholder="https://…" />
+          <label style={labelStyle}>Cover Image <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(optional — upload a file, or paste a URL if it's already hosted somewhere)</span></label>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              style={{ ...inputStyle, flex: 1 }}
+              value={form.cover_image_url}
+              onChange={(e) => update('cover_image_url', e.target.value)}
+              placeholder="https://… or upload a file"
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleImageFileChange}
+              style={{ display: 'none' }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingImage}
+              style={{ padding: '9px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text)', whiteSpace: 'nowrap', opacity: uploadingImage ? 0.6 : 1 }}
+            >
+              {uploadingImage ? 'Uploading…' : 'Upload…'}
+            </button>
+          </div>
+          {form.cover_image_url && (
+            <img
+              src={form.cover_image_url}
+              alt=""
+              style={{ marginTop: 10, maxWidth: '100%', maxHeight: 160, borderRadius: 8, border: '1px solid var(--border)', display: 'block' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
         </div>
 
         <div>

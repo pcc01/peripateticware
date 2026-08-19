@@ -481,6 +481,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Local-disk upload fallback serving ───────────────────────────────────────
+# routes/student_activities.py's _save_file() (and routes/blog.py's
+# _save_blog_image()) write to settings.UPLOAD_DIR whenever CF_R2_ACCOUNT_ID
+# isn't configured (local dev), returning a "/uploads/..." URL -- but until
+# now nothing ever mounted that directory for HTTP serving, so every one of
+# those URLs 404'd in the browser. Prod always has R2 configured, so this is
+# a no-op there in practice; harmless to mount unconditionally as a fallback.
+import os as _os
+_os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+
 # ============================================================================
 # ROUTE REGISTRATION
 # Routes removed from this file at some point; restored here.

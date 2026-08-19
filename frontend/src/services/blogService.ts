@@ -77,3 +77,14 @@ export async function adminUpdatePost(id: string, input: Partial<BlogPostInput>)
 export async function adminDeletePost(id: string) {
   await axiosInstance.delete(`/admin/blog/posts/${id}`);
 }
+
+/** Uploads a cover image (JPEG/PNG/WEBP/GIF, max 5MB) and returns its URL
+ *  to fill into BlogPostInput.cover_image_url. */
+export async function adminUploadBlogImage(file: File): Promise<string> {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await axiosInstance.post<{ url: string }>('/admin/blog/upload-image', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data.url;
+}
