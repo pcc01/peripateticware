@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
+import apiClient from '@/config/api';
 import styles from './SettingsPages.module.css';
-
-const ADMIN_TOKEN_KEY = 'admin_panel_token';
 
 export const AdminSettingsPage = () => {
   const { t } = useTranslation('landing');
@@ -14,13 +13,11 @@ export const AdminSettingsPage = () => {
   const navigate = useNavigate();
   const { logout } = useAuthStore();
 
-  // Admin panel auth (separate from main JWT)
-  const [adminToken, setAdminToken] = useState<string>(localStorage.getItem(ADMIN_TOKEN_KEY) || '');
-  const [adminLoginUsername, setAdminLoginUsername] = useState('admin');
-  const [adminLoginPassword, setAdminLoginPassword] = useState('');
-  const [adminLoginError, setAdminLoginError] = useState('');
-
-  // Env vars loaded from backend
+  // Env vars loaded from backend -- auth is the main JWT via apiClient
+  // (auto-attached, see config/api.ts), same as every other /admin/* page.
+  // Previously a separate admin_panel_token login against
+  // /admin/auth/login, retired 2026-08-19 along with the legacy
+  // admin_users session system it depended on.
   const [envCategories, setEnvCategories] = useState<any[]>([]);
   const [editingEnv, setEditingEnv] = useState<Record<string, string>>({});
   const [envSaveStatus, setEnvSaveStatus] = useState<Record<string, string>>({});
@@ -30,23 +27,15 @@ export const AdminSettingsPage = () => {
   const [newKeyStatus, setNewKeyStatus] = useState('');
 
   const handleAddConfigKey = async () => {
-    if (!newKeyName.trim() || !adminToken) return;
+    if (!newKeyName.trim()) return;
     setNewKeyStatus('saving');
     try {
-      const res = await fetch(`/api/v1/admin/env/${newKeyName.trim()}?token=${adminToken}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: newKeyValue }),
-      });
-      if (res.ok) {
-        setNewKeyStatus('saved');
-        setNewKeyName('');
-        setNewKeyValue('');
-        loadEnvVars();
-        setTimeout(() => setNewKeyStatus(''), 2000);
-      } else {
-        setNewKeyStatus('error');
-      }
+      await apiClient.post(`/api/v1/admin/env/${newKeyName.trim()}`, { value: newKeyValue });
+      setNewKeyStatus('saved');
+      setNewKeyName('');
+      setNewKeyValue('');
+      loadEnvVars();
+      setTimeout(() => setNewKeyStatus(''), 2000);
     } catch {
       setNewKeyStatus('error');
     }
@@ -68,45 +57,17 @@ export const AdminSettingsPage = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
-  // Load env vars when token is available
+  // Load env vars on mount -- apiClient's interceptor attaches the JWT;
+  // its response interceptor already redirects to /login on a 401.
   useEffect(() => {
-    if (adminToken) loadEnvVars();
-  }, [adminToken]);
-
-  const handleAdminLogin = async () => {
-    setAdminLoginError('');
-    try {
-      const res = await fetch('/api/v1/admin/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: adminLoginUsername, password: adminLoginPassword }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setAdminLoginError(err.detail || 'Login failed');
-        return;
-      }
-      const data = await res.json();
-      const token = data.token;
-      localStorage.setItem(ADMIN_TOKEN_KEY, token);
-      setAdminToken(token);
-      setAdminLoginPassword('');
-    } catch {
-      setAdminLoginError('Could not connect to admin API');
-    }
-  };
+    loadEnvVars();
+  }, []);
 
   const loadEnvVars = async () => {
     setEnvLoading(true);
     try {
-      const res = await fetch(`/api/v1/admin/env?token=${adminToken}`);
-      if (res.status === 401) {
-        localStorage.removeItem(ADMIN_TOKEN_KEY);
-        setAdminToken('');
-        return;
-      }
-      const data = await res.json();
-      setEnvCategories(Array.isArray(data) ? data : []);
+      const res = await apiClient.get('/api/v1/admin/env');
+      setEnvCategories(Array.isArray(res.data) ? res.data : []);
     } catch {
       setEnvCategories([]);
     } finally {
@@ -123,12 +84,7 @@ export const AdminSettingsPage = () => {
     if (value === undefined) return;
     setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saving' }));
     try {
-      const res = await fetch(`/api/v1/admin/env/${key}?token=${adminToken}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value }),
-      });
-      if (!res.ok) throw new Error('Save failed');
+      await apiClient.post(`/api/v1/admin/env/${key}`, { value });
       setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saved' }));
       setTimeout(() => setEnvSaveStatus((prev) => ({ ...prev, [key]: '' })), 2000);
       setEditingEnv((prev) => { const n = { ...prev }; delete n[key]; return n; });
@@ -302,38 +258,10 @@ export const AdminSettingsPage = () => {
         {/* ── Environment Variable Editor ─────────────────────────── */}
         <section className={styles.section}>
           <h2>{t('pages_adminsettingspage.environment_variables', '⚙️ Environment Variables')}</h2>
-          {!adminToken ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 320 }}>
-              <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>{t('pages_adminsettingspage.log_in_with_the_admin_panel_credentials_', 'Log in with the admin panel credentials to view and edit environment variables.')}</p>
-              <input
-                type="text"
-                placeholder={t('pages_adminsettingspage.placeholder_username', 'Username')}
-                value={adminLoginUsername}
-                onChange={(e) => setAdminLoginUsername(e.target.value)}
-                style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
-              />
-              <input
-                type="password"
-                placeholder={t('pages_adminsettingspage.placeholder_password', 'Password')}
-                value={adminLoginPassword}
-                onChange={(e) => setAdminLoginPassword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-                style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
-              />
-              {adminLoginError && <p style={{ color: '#dc2626', fontSize: '0.8rem' }}>{adminLoginError}</p>}
-              <button onClick={handleAdminLogin} className={styles.primaryBtn}>{t('pages_adminsettingspage.unlock_env_panel', 'Unlock Env Panel')}</button>
-            </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
                 <button onClick={loadEnvVars} className={styles.secondaryBtn} disabled={envLoading}>
                   {envLoading ? 'Loading…' : '↻ Refresh'}
-                </button>
-                <button
-                  onClick={() => { localStorage.removeItem('admin_panel_token'); setAdminToken(''); setEnvCategories([]); }}
-                  className={styles.secondaryBtn}
-                >
-                  Lock Panel
                 </button>
               </div>
               {envCategories.map((cat: any) => (
@@ -372,7 +300,6 @@ export const AdminSettingsPage = () => {
               )}
 
               {/* Add Configuration Key */}
-              {adminToken && (
                 <div style={{ marginTop: 20, padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10 }}>
                   <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#166534', margin: '0 0 12px' }}>{t('pages_adminsettingspage.add_configuration_key', '➕ Add Configuration Key')}</h3>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -400,9 +327,7 @@ export const AdminSettingsPage = () => {
                   </div>
                   <p style={{ fontSize: '0.75rem', color: '#166534', marginTop: 8 }}>{t('pages_adminsettingspage.key_names_are_autouppercased_value_is_sa', 'Key names are auto-uppercased. Value is saved immediately and loaded on next server restart.')}</p>
                 </div>
-              )}
-            </div>
-          )}
+          </div>
         </section>
 
         {/* Logout removed \u2014 available in the sidebar (DashboardShell). */}

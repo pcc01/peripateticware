@@ -4,7 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import apiClient from '@/config/api';
 
-interface EnvCategory { category: string; keys: { key: string; value: string; description?: string }[] }
+// Matches backend/routes/admin.py's EnvCategory/EnvVar response shape --
+// "variables", not "keys" (pre-existing mismatch found 2026-08-19 while
+// migrating this page off the legacy admin auth: since apiClient.get()
+// returns untyped data, TypeScript never caught envData.keys always
+// being undefined, so this page's env list has silently never rendered).
+interface EnvCategory { category: string; variables: { key: string; value: string; description?: string; encrypted?: boolean }[] }
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div style={{ marginBottom: 32 }}>
@@ -34,7 +39,7 @@ export const AdminSystemPage: React.FC = () => {
     if (!newKey.trim()) return;
     setAddingKey(true);
     try {
-      await apiClient.post('/api/v1/admin/env', { key: newKey.trim(), value: newVal, description: newDesc });
+      await apiClient.post(`/api/v1/admin/env/${newKey.trim()}`, { value: newVal });
       setAddStatus('✓ Added — restart backend to apply');
       setNewKey(''); setNewVal(''); setNewDesc('');
       setTimeout(() => setAddStatus(''), 5000);
@@ -56,7 +61,7 @@ export const AdminSystemPage: React.FC = () => {
     if (!(key in edits)) return;
     setSaving(key);
     try {
-      await apiClient.post('/api/v1/admin/env', { key, value: edits[key] });
+      await apiClient.post(`/api/v1/admin/env/${key}`, { value: edits[key] });
       setSaved(key);
       setTimeout(() => setSaved(null), 2000);
     } catch { /* ignore */ }
@@ -103,7 +108,7 @@ export const AdminSystemPage: React.FC = () => {
       {envData.map(cat => (
         <Section key={cat.category} title={cat.category}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {cat.keys.map(item => {
+            {cat.variables.map(item => {
               const val = item.key in edits ? edits[item.key] : item.value;
               const isSaved = saved === item.key;
               return (
