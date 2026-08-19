@@ -722,3 +722,11 @@ try:
     app.include_router(breach_router, prefix="/api/v1")           # router prefix="/breach"
 except Exception as e:
     print(f"Warning: could not register breach_router: {e}")
+
+# ── Blog ──────────────────────────────────────────────────────────────────────
+try:
+    from routes.blog import router as blog_router, admin_router as blog_admin_router
+    app.include_router(blog_router, prefix="/api/v1")              # router prefix="/blog"
+    app.include_router(blog_admin_router, prefix="/api/v1")        # router prefix="/admin/blog"
+except Exception as e:
+    print(f"Warning: could not register blog_router: {e}")

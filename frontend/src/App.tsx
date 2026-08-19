@@ -30,6 +30,8 @@ import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import CookiePolicyPage from './pages/CookiePolicyPage'
 import DoNotSellPage from './pages/DoNotSellPage'
+import BlogListPage from './pages/BlogListPage'
+import BlogPostPage from './pages/BlogPostPage'
 import LoginScreen from './components/auth/LoginScreen'
 import SignUpScreen from './components/auth/SignUpScreen'
 import RequestBetaPage from './components/auth/RequestBetaPage'
@@ -134,6 +136,8 @@ import TeacherStandardsPage from './pages/teacher/TeacherStandardsPage'
 import TeacherSessionMonitorPage from './pages/teacher/TeacherSessionMonitorPage'
 import CurriculumImportPage from './pages/admin/CurriculumImportPage'
 import AdminStandardsPage from './pages/admin/AdminStandardsPage'
+import AdminBlogPage from './pages/admin/AdminBlogPage'
+import AdminBlogEditorPage from './pages/admin/AdminBlogEditorPage'
 import ParentMessagesPage from './pages/ParentMessagesPage'
 import NotFoundPage from './pages/NotFoundPage'
 import MaintenancePage from './pages/MaintenancePage'
@@ -356,6 +360,8 @@ const App: React.FC = () => {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/privacy-engine" element={<PrivacyEnginePage />} />
           <Route path="/about/origin" element={<OriginStoryPage />} />
+          <Route path="/blog" element={<BlogListPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
           <Route path="/do-not-sell" element={<DoNotSellPage />} />
@@ -475,6 +481,9 @@ const App: React.FC = () => {
           <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettingsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/curriculum/import" element={<ProtectedRoute requiredRole="admin"><AdminLayout><CurriculumImportPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/standards" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminStandardsPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/ai-config" element={<ProtectedRoute requiredRole="admin"><AdminLayout><OrgAIConfigPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />
