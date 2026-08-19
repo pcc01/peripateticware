@@ -244,6 +244,30 @@ async def get_current_platform_admin(
 require_platform_admin = get_current_platform_admin
 
 
+async def get_current_content_admin(
+    current_user: User = Depends(get_current_admin),
+) -> User:
+    """
+    Dependency: requires role=ADMIN AND users.is_content_admin = True.
+    Use this on /admin/blog and /admin/pages routes instead of plain
+    get_current_admin.
+
+    role=ADMIN alone is deliberately NOT sufficient here -- ADMIN-role
+    test/demo seed accounts (test_admin, admin@example.com, etc.) exist
+    with published, well-known passwords (see startup.py's
+    seed_test_accounts / seed_demo_admin_account) and must not
+    automatically get content-editing access just by having that role.
+    is_content_admin is an independent flag, same pattern as
+    is_platform_admin above, granted explicitly per account.
+    """
+    if not getattr(current_user, "is_content_admin", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Content admin access required.",
+        )
+    return current_user
+
+
 # ── Resource ownership helpers ────────────────────────────────────────────────
 
 def require_owns_resource(

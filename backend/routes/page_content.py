@@ -12,8 +12,9 @@ Two routers:
                     content} map the frontend's usePageBlocks() hook
                     indexes directly. No auth required.
   admin_router   -- prefix /api/v1/admin/pages. Full CRUD + version
-                    history, gated behind get_current_admin -- same gate
-                    as routes/blog.py's admin_router.
+                    history, gated behind get_current_content_admin
+                    (role=ADMIN AND is_content_admin) -- same gate as
+                    routes/blog.py's admin_router.
 """
 
 import logging
@@ -25,7 +26,7 @@ from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.dependencies import get_current_admin
+from core.dependencies import get_current_content_admin
 from models.page_content import PageBlock, PageBlockVersion, PageBlockStatus, PageBlockSource
 from models.user import User
 from schemas.page_content import (
@@ -81,7 +82,7 @@ async def admin_list_blocks(
     page_key: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     query = select(PageBlock)
     if page_key:
@@ -97,7 +98,7 @@ async def admin_list_blocks(
 @admin_router.get("/page-keys", response_model=list[str])
 async def admin_list_page_keys(
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     result = await db.execute(select(PageBlock.page_key).distinct().order_by(PageBlock.page_key))
     return [row[0] for row in result.all()]
@@ -107,7 +108,7 @@ async def admin_list_page_keys(
 async def admin_get_block(
     block_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     block = await db.get(PageBlock, block_id)
     if block is None:
@@ -128,7 +129,7 @@ async def admin_get_block(
 async def admin_create_block(
     body: PageBlockUpsert,
     db: AsyncSession = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(get_current_content_admin),
 ):
     existing = await db.execute(
         select(PageBlock.id).where(PageBlock.block_key == body.block_key, PageBlock.locale == body.locale)
@@ -171,7 +172,7 @@ async def admin_update_block(
     block_id: UUID,
     body: PageBlockUpdate,
     db: AsyncSession = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(get_current_content_admin),
 ):
     block = await db.get(PageBlock, block_id)
     if block is None:
@@ -209,7 +210,7 @@ async def admin_update_block(
 async def admin_delete_block(
     block_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     block = await db.get(PageBlock, block_id)
     if block is None:
