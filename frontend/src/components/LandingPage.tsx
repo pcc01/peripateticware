@@ -357,6 +357,7 @@ export const LandingPage: React.FC = () => {
             <a href="#features" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:features", "Features")}</a>
             <a href="#pricing" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:pricing_nav_label", "Pricing")}</a>
             <a href="#about" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:about", "About")}</a>
+            <Link to="/blog" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>{t("landing:blog", "Blog")}</Link>
           </div>
 
           <div className="landing-nav-actions">
@@ -392,6 +393,7 @@ export const LandingPage: React.FC = () => {
             <a href="#features">{t("landing:features", "Features")}</a>
             <a href="#pricing">{t("landing:pricing_nav_label", "Pricing")}</a>
             <a href="#about">{t("landing:about", "About")}</a>
+            <Link to="/blog">{t("landing:blog", "Blog")}</Link>
             <div className="landing-mobile-menu-actions">
               <button onClick={handleNavigateToAuth} className="btn btn--primary">{t("landing:login", "Login")}</button>
               <button onClick={() => navigate('/signup')} className="btn btn--ghost">{t("landing:sign_up", "Sign Up")}</button>
