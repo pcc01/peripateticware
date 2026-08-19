@@ -13,8 +13,8 @@ Two routers:
                     indexes directly. No auth required.
   admin_router   -- prefix /api/v1/admin/pages. Full CRUD + version
                     history, gated behind get_current_content_admin
-                    (role=ADMIN AND is_content_admin) -- same gate as
-                    routes/blog.py's admin_router.
+                    (users.is_content_admin=True -- independent of role)
+                    -- same gate as routes/blog.py's admin_router.
 """
 
 import logging

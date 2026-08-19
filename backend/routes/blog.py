@@ -9,7 +9,8 @@ Two routers:
   router        -- public, prefix /api/v1/blog. Only ever returns
                     status='published' posts. No auth required.
   admin_router   -- prefix /api/v1/admin/blog. Sees drafts and published
-                    posts, gated behind get_current_content_admin (role=ADMIN AND is_content_admin).
+                    posts, gated behind get_current_content_admin
+                    (users.is_content_admin=True -- independent of role).
 
 Content is a lightweight markdown subset (see models/blog.py's docstring);
 the frontend renders it itself rather than trusting/injecting raw HTML.
