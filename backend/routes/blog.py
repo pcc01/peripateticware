@@ -19,11 +19,12 @@ the frontend renders it itself rather than trusting/injecting raw HTML.
 import logging
 import re
 import unicodedata
+import uuid as _uuid
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -89,6 +90,81 @@ async def _unique_slug(db: AsyncSession, base: str, exclude_id: Optional[UUID] =
         n += 1
 
 
+_ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+_MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+async def _save_blog_image(upload: UploadFile) -> str:
+    """
+    Persist an uploaded cover image and return its public URL. Same
+    storage backend as routes/student_activities.py's _save_file()
+    (Cloudflare R2 in prod, local UPLOAD_DIR fallback in dev, now served
+    via main.py's /uploads static mount) -- duplicated here rather than
+    imported since that function is keyed on session_id, not a generic
+    key prefix; not worth a shared-module refactor for one more caller.
+    """
+    import core.config as _cfg
+    settings = _cfg.settings
+
+    if upload.content_type not in _ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported image type '{upload.content_type}'. Use JPEG, PNG, WEBP, or GIF.",
+        )
+
+    file_bytes = await upload.read()
+    if len(file_bytes) > _MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="Image too large (max 5 MB).")
+
+    # Sanitise filename -- same rules as _save_file() (blocks path traversal).
+    safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", upload.filename or "image")
+    safe_name = safe_name.lstrip(".")
+    safe_name = re.sub(r"\.\.", "_", safe_name)
+    safe_name = (safe_name or "image")[:200]
+    key = f"blog-covers/{_uuid.uuid4()}/{safe_name}"
+
+    if not settings.CF_R2_ACCOUNT_ID:
+        import os
+        dest_dir = f"{settings.UPLOAD_DIR}/blog-covers"
+        os.makedirs(dest_dir, exist_ok=True)
+        dest = f"{settings.UPLOAD_DIR}/{key}"
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with open(dest, "wb") as fh:
+            fh.write(file_bytes)
+        return f"/uploads/{key}"
+
+    import asyncio
+    import boto3
+    from botocore.exceptions import BotoCoreError, ClientError
+
+    endpoint_url = f"https://{settings.CF_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+    def _upload():
+        client = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=settings.CF_R2_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.CF_R2_SECRET_ACCESS_KEY,
+            region_name="auto",
+        )
+        client.put_object(
+            Bucket=settings.CF_R2_BUCKET_NAME,
+            Key=key,
+            Body=file_bytes,
+            ContentType=upload.content_type,
+        )
+
+    try:
+        await asyncio.to_thread(_upload)
+    except (BotoCoreError, ClientError) as exc:
+        logger.error(f"R2 blog image upload failed: {exc}")
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {exc}")
+
+    if settings.CF_R2_PUBLIC_URL:
+        return f"{settings.CF_R2_PUBLIC_URL.rstrip('/')}/{key}"
+    return f"r2://{settings.CF_R2_BUCKET_NAME}/{key}"
+
+
 # ============================================================================
 # Public routes
 # ============================================================================
@@ -132,6 +208,17 @@ async def get_published_post(slug: str, db: AsyncSession = Depends(get_db)):
 # ============================================================================
 # Admin routes
 # ============================================================================
+
+@admin_router.post("/upload-image")
+async def admin_upload_blog_image(
+    file: UploadFile = File(...),
+    _admin: User = Depends(get_current_content_admin),
+):
+    """Uploads a cover image and returns its URL for the editor's Cover
+    Image field to use -- see _save_blog_image() for storage details."""
+    url = await _save_blog_image(file)
+    return {"url": url}
+
 
 @admin_router.get("/posts", response_model=BlogPostListResponse)
 async def admin_list_posts(
