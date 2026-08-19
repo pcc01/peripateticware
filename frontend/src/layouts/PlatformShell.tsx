@@ -2,11 +2,14 @@
 // Shared shell for all /platform/* pages — provides back nav + logout icon.
 
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link, Navigate } from 'react-router-dom';
 import { LogOut, ArrowLeft, LayoutDashboard, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
-import { getPlatformSecret, setPlatformSecret, PLATFORM_SECRET_CLEARED_EVENT } from '@/utils/platformFetch';
+import {
+  getPlatformSecret, setPlatformSecret, clearPlatformSecret,
+  isPlatformAdminToken, platformFetch, PLATFORM_SECRET_CLEARED_EVENT,
+} from '@/utils/platformFetch';
 import { useTranslation } from 'react-i18next';
 
 const PLATFORM_NAV = [
@@ -22,14 +25,43 @@ const PLATFORM_NAV = [
  * (second factor on top of JWT + is_platform_admin) whenever
  * PLATFORM_API_SECRET is configured on the backend. The secret is entered
  * here once per browser session and held in sessionStorage only.
+ *
+ * Submitting VERIFIES the secret against the backend (a cheap, side-effect-
+ * free platform-admin call) before calling onDone() -- previously onDone()
+ * fired immediately on submit, so an incorrect secret (or "continue without
+ * one" on an environment where a secret IS configured) still rendered the
+ * full shell/nav; only the individual pages' own data fetches then failed.
+ * That meant page structure and feature existence were visible to anyone
+ * who could reach this form, whether or not they actually had the secret.
  */
 function PlatformSecretGate({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation('landing');
   const [value, setValue] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = (secret: string) => {
+  const submit = async (secret: string) => {
+    setError(null);
+    setVerifying(true);
     setPlatformSecret(secret);
-    onDone();
+    try {
+      const res = await platformFetch('/api/v1/platform/maintenance');
+      if (res.ok) {
+        onDone();
+        return;
+      }
+      clearPlatformSecret();
+      setError(
+        res.status === 403
+          ? (secret ? 'Incorrect secret.' : 'A platform secret is required in this environment.')
+          : `Could not verify (HTTP ${res.status}).`
+      );
+    } catch {
+      clearPlatformSecret();
+      setError('Could not reach the server to verify.');
+    } finally {
+      setVerifying(false);
+    }
   };
 
   return (
@@ -46,22 +78,28 @@ function PlatformSecretGate({ onDone }: { onDone: () => void }) {
           Enter the <code>PLATFORM_API_SECRET</code> for this environment. It is kept in this
           tab's session only and sent as <code>X-Platform-Secret</code> with platform-admin requests.
         </p>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-md px-3 py-2 text-xs mb-3">{error}</div>
+        )}
         <input
           type="password"
           autoFocus
           value={value}
+          disabled={verifying}
           onChange={e => setValue(e.target.value)}
           placeholder={t('layouts_platformshell.placeholder_platform_secret', 'Platform secret')}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50"
         />
         <button
           type="submit"
-          className="w-full bg-gray-900 text-white rounded-md py-2 text-sm font-medium hover:bg-gray-700 transition"
-        >{t('layouts_platformshell.continue', 'Continue')}</button>
+          disabled={verifying}
+          className="w-full bg-gray-900 text-white rounded-md py-2 text-sm font-medium hover:bg-gray-700 transition disabled:opacity-50"
+        >{verifying ? 'Verifying…' : t('layouts_platformshell.continue', 'Continue')}</button>
         <button
           type="button"
+          disabled={verifying}
           onClick={() => submit('')}
-          className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600"
+          className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-50"
         >
           Continue without a secret (dev — secret not configured)
         </button>
@@ -74,7 +112,7 @@ export default function PlatformShell() {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuthStore();
+  const { logout, token, isAuthenticated } = useAuthStore();
   useSessionSecurity();
   const [secretEntered, setSecretEntered] = useState(() => getPlatformSecret() !== null);
 
@@ -89,6 +127,21 @@ export default function PlatformShell() {
   }, []);
 
   const isRoot = location.pathname === '/platform';
+
+  // Route guard: nothing before this point required auth at all -- App.tsx
+  // never wraps /platform/* in ProtectedRoute (unlike /admin/*), so an
+  // unauthenticated or merely-logged-in-but-not-platform-admin visitor could
+  // reach this component and see the secret gate / full shell chrome, even
+  // though every actual data request behind it would 401/403 server-side.
+  // No user data was ever exposed by that (the real boundary, get_current_
+  // platform_admin, was always correctly enforced per-request) -- but page
+  // structure and feature existence shouldn't be visible to begin with.
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!isPlatformAdminToken(token)) {
+    return <Navigate to="/" replace />;
+  }
 
   if (!secretEntered) {
     return <PlatformSecretGate onDone={() => setSecretEntered(true)} />;
