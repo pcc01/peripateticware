@@ -29,6 +29,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
         { icon: '📄', label: 'Import Standards',  path: '/admin/curriculum/import' },
         { icon: '📋', label: t('nav.rubrics', 'Rubrics'),           path: '/admin/rubrics' },
         { icon: '📝', label: t('nav.blog', 'Blog'),                 path: '/admin/blog' },
+        { icon: '🖼️', label: t('nav.pages', 'Pages'),                path: '/admin/pages' },
       ],
     },
     {

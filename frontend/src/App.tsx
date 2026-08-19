@@ -138,6 +138,8 @@ import CurriculumImportPage from './pages/admin/CurriculumImportPage'
 import AdminStandardsPage from './pages/admin/AdminStandardsPage'
 import AdminBlogPage from './pages/admin/AdminBlogPage'
 import AdminBlogEditorPage from './pages/admin/AdminBlogEditorPage'
+import AdminPagesPage from './pages/admin/AdminPagesPage'
+import AdminPageBlockEditorPage from './pages/admin/AdminPageBlockEditorPage'
 import ParentMessagesPage from './pages/ParentMessagesPage'
 import NotFoundPage from './pages/NotFoundPage'
 import MaintenancePage from './pages/MaintenancePage'
@@ -484,6 +486,9 @@ const App: React.FC = () => {
           <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPagesPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/ai-config" element={<ProtectedRoute requiredRole="admin"><AdminLayout><OrgAIConfigPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />

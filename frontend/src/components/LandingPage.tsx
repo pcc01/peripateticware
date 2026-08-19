@@ -10,6 +10,7 @@ import StorySection from './landing/StorySection';
 import { PhoneCarousel } from './PhoneCarousel';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { Seo } from './Seo';
+import { usePageBlocks } from '../hooks/usePageBlocks';
 import './PhoneCarousel.css';
 import '../styles/landing.css';
 import '../styles/globals.css';
@@ -34,6 +35,12 @@ export const LandingPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<HeroTab>('homeschool');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedTeamMember, setSelectedTeamMember] = useState<number | null>(null);
+
+  // Admin-editable overrides (see /admin/pages) for this page's copy blocks.
+  // block() prefers an admin edit for the active locale, falling back to
+  // the existing i18n-translated/hardcoded value when no override exists
+  // (i.e. every non-English locale today, since only 'en' blocks are seeded).
+  const { block } = usePageBlocks('landing', (i18n.language || 'en').split('-')[0]);
 
   const handleNavigateToAuth = () => {
     navigate('/login');
@@ -62,10 +69,10 @@ export const LandingPage: React.FC = () => {
       image: '👨‍👩‍👧‍👦'
     },
     homeschool: {
-      headline: t('homeschool.headline', 'The World Is Your Classroom.'),
-      intro: t('homeschool.intro', 'Peripateticware is built for homeschool families who learn by doing. Peri — your Aristotelian AI guide — leads each child through real-world activities with structured questions that deepen understanding, not just fill in answers. Track state standards automatically, and generate portfolio reports in one click.'),
-      cta: t('homeschool.cta', 'Start Free — No Credit Card'),
-      secondary_cta: t('homeschool.secondary_cta', 'See a Sample Activity'),
+      headline: block('landing.hero.homeschool.headline', t('homeschool.headline', 'The World Is Your Classroom.')),
+      intro: block('landing.hero.homeschool.intro', t('homeschool.intro', 'Peripateticware is built for homeschool families who learn by doing. Peri — your Aristotelian AI guide — leads each child through real-world activities with structured questions that deepen understanding, not just fill in answers. Track state standards automatically, and generate portfolio reports in one click.')),
+      cta: block('landing.hero.homeschool.cta', t('homeschool.cta', 'Start Free — No Credit Card')),
+      secondary_cta: block('landing.hero.homeschool.secondary_cta', t('homeschool.secondary_cta', 'See a Sample Activity')),
       image: '🏡'
     }
   };

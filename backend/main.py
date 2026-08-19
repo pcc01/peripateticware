@@ -730,3 +730,11 @@ try:
     app.include_router(blog_admin_router, prefix="/api/v1")        # router prefix="/admin/blog"
 except Exception as e:
     print(f"Warning: could not register blog_router: {e}")
+
+# ── Page Content (WYSIWYG-lite page copy editor) ─────────────────────────────
+try:
+    from routes.page_content import router as page_content_router, admin_router as page_content_admin_router
+    app.include_router(page_content_router, prefix="/api/v1")       # router prefix="/pages"
+    app.include_router(page_content_admin_router, prefix="/api/v1") # router prefix="/admin/pages"
+except Exception as e:
+    print(f"Warning: could not register page_content_router: {e}")
