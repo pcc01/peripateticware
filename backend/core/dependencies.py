@@ -245,20 +245,22 @@ require_platform_admin = get_current_platform_admin
 
 
 async def get_current_content_admin(
-    current_user: User = Depends(get_current_admin),
+    current_user: User = Depends(get_current_user),
 ) -> User:
     """
-    Dependency: requires role=ADMIN AND users.is_content_admin = True.
-    Use this on /admin/blog and /admin/pages routes instead of plain
-    get_current_admin.
+    Dependency: requires users.is_content_admin = True. Use this on
+    /admin/blog and /admin/pages routes instead of get_current_admin.
 
-    role=ADMIN alone is deliberately NOT sufficient here -- ADMIN-role
-    test/demo seed accounts (test_admin, admin@example.com, etc.) exist
-    with published, well-known passwords (see startup.py's
-    seed_test_accounts / seed_demo_admin_account) and must not
-    automatically get content-editing access just by having that role.
-    is_content_admin is an independent flag, same pattern as
-    is_platform_admin above, granted explicitly per account.
+    Deliberately independent of role -- NOT "role=ADMIN AND
+    is_content_admin" (that was this function's first cut, corrected
+    2026-08-19 once it turned out the real intended content editors are
+    role=TEACHER accounts, not role=ADMIN ones). Same pattern as
+    is_platform_admin above, which has never required role=ADMIN either.
+    role=ADMIN test/demo seed accounts (test_admin, admin@example.com,
+    etc.) exist with published, well-known passwords and must not
+    automatically get content-editing access just by having that role --
+    is_content_admin is the sole, independent gate, granted explicitly
+    per account regardless of what role that account otherwise has.
     """
     if not getattr(current_user, "is_content_admin", False):
         raise HTTPException(
