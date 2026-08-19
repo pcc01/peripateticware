@@ -1,12 +1,12 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 // Shared shell for all /platform/* pages — provides back nav + logout icon.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { LogOut, ArrowLeft, LayoutDashboard, KeyRound } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
-import { getPlatformSecret, setPlatformSecret } from '@/utils/platformFetch';
+import { getPlatformSecret, setPlatformSecret, PLATFORM_SECRET_CLEARED_EVENT } from '@/utils/platformFetch';
 import { useTranslation } from 'react-i18next';
 
 const PLATFORM_NAV = [
@@ -77,6 +77,16 @@ export default function PlatformShell() {
   const { logout } = useAuthStore();
   useSessionSecurity();
   const [secretEntered, setSecretEntered] = useState(() => getPlatformSecret() !== null);
+
+  // platformFetch's self-heal clears sessionStorage on a "wrong secret" 403
+  // and fires this event -- without listening here, secretEntered (set once
+  // on mount) never learns that happened, so every /platform/* page keeps
+  // 403ing with no way back to the entry prompt except a hard reload.
+  useEffect(() => {
+    const onCleared = () => setSecretEntered(false);
+    window.addEventListener(PLATFORM_SECRET_CLEARED_EVENT, onCleared);
+    return () => window.removeEventListener(PLATFORM_SECRET_CLEARED_EVENT, onCleared);
+  }, []);
 
   const isRoot = location.pathname === '/platform';
 
