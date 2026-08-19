@@ -37,6 +37,13 @@ class User(Base):
     signup_country_code = Column(String(10), nullable=True)
     state_code = Column(String(10), nullable=True)  # P1-5: homeschool state reporting
     is_platform_admin = Column(Boolean, default=False, nullable=False)
+    # Gates /admin/blog and /admin/pages -- deliberately independent of
+    # role='ADMIN' (same pattern as is_platform_admin above). role=ADMIN
+    # alone is NOT sufficient: ADMIN-role test/demo seed accounts
+    # (test_admin, admin@example.com) exist with published, well-known
+    # passwords and must not automatically get content-editing access just
+    # by having that role. See core.dependencies.get_current_content_admin.
+    is_content_admin = Column(Boolean, default=False, nullable=False, server_default='false')
     invite_token_used = Column(String(128), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

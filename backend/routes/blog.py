@@ -9,7 +9,7 @@ Two routers:
   router        -- public, prefix /api/v1/blog. Only ever returns
                     status='published' posts. No auth required.
   admin_router   -- prefix /api/v1/admin/blog. Sees drafts and published
-                    posts, gated behind get_current_admin (UserRole.ADMIN).
+                    posts, gated behind get_current_content_admin (role=ADMIN AND is_content_admin).
 
 Content is a lightweight markdown subset (see models/blog.py's docstring);
 the frontend renders it itself rather than trusting/injecting raw HTML.
@@ -27,7 +27,7 @@ from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.dependencies import get_current_admin
+from core.dependencies import get_current_content_admin
 from models.blog import BlogPost, BlogPostStatus
 from models.user import User
 from schemas.blog import (
@@ -139,7 +139,7 @@ async def admin_list_posts(
     status_filter: Optional[str] = Query(None, alias="status", pattern="^(draft|published)$"),
     search: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     query = select(BlogPost)
     if status_filter:
@@ -166,7 +166,7 @@ async def admin_list_posts(
 async def admin_get_post(
     post_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     post = await db.get(BlogPost, post_id)
     if post is None:
@@ -178,7 +178,7 @@ async def admin_get_post(
 async def admin_create_post(
     body: BlogPostCreate,
     db: AsyncSession = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(get_current_content_admin),
 ):
     base_slug = _slugify(body.slug or body.title)
     slug = await _unique_slug(db, base_slug)
@@ -214,7 +214,7 @@ async def admin_update_post(
     post_id: UUID,
     body: BlogPostUpdate,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     post = await db.get(BlogPost, post_id)
     if post is None:
@@ -260,7 +260,7 @@ async def admin_update_post(
 async def admin_delete_post(
     post_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _admin: User = Depends(get_current_admin),
+    _admin: User = Depends(get_current_content_admin),
 ):
     post = await db.get(BlogPost, post_id)
     if post is None:

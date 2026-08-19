@@ -297,7 +297,23 @@ const SignupGateWrapper: React.FC = () => {
   return <SignUpScreenWrapper />
 }
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string | string[] }> = ({ children, requiredRole }) => {
+/** Decodes the `is_content_admin` claim out of a JWT without verifying its
+ *  signature (browser-side only -- same technique layouts/PlatformShell.tsx's
+ *  isPlatformAdminToken() uses). role='admin' alone is NOT sufficient for
+ *  /admin/blog or /admin/pages: ADMIN-role test/demo seed accounts
+ *  (test_admin, admin@example.com) exist with published passwords and must
+ *  not automatically get content-editing access just by having that role. */
+function isContentAdminToken(token: string | null): boolean {
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload?.is_content_admin === true
+  } catch {
+    return false
+  }
+}
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: string | string[]; requireContentAdmin?: boolean }> = ({ children, requiredRole, requireContentAdmin }) => {
   if (!authService.isAuthenticated()) return <Navigate to="/login" replace />
   if (requiredRole) {
     const user = authService.getUser()
@@ -305,6 +321,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: strin
     const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
     if (!allowed.includes(userRole ?? '') && userRole !== 'admin') return <Navigate to="/" replace />
   }
+  if (requireContentAdmin && !isContentAdminToken(authService.getToken())) return <Navigate to="/admin" replace />
   return <>{children}</>
 }
 
@@ -483,12 +500,12 @@ const App: React.FC = () => {
           <Route path="/admin/settings" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminSettingsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/curriculum/import" element={<ProtectedRoute requiredRole="admin"><AdminLayout><CurriculumImportPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/standards" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminStandardsPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/pages" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPagesPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/pages/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
-          <Route path="/admin/pages/:id" element={<ProtectedRoute requiredRole="admin"><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminBlogPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog/new" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog/:id" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminBlogEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminPagesPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages/new" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/pages/:id" element={<ProtectedRoute requiredRole="admin" requireContentAdmin><AdminLayout><AdminPageBlockEditorPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/ai-config" element={<ProtectedRoute requiredRole="admin"><AdminLayout><OrgAIConfigPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricsPage /></AdminLayout></ProtectedRoute>} />
           <Route path="/admin/rubrics/new" element={<ProtectedRoute requiredRole="admin"><AdminLayout><RubricBuilder /></AdminLayout></ProtectedRoute>} />

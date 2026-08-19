@@ -309,7 +309,7 @@ async def login(
         
         # Create JWT token - FIXED: use data= parameter
         token = create_access_token(
-            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False))}
+            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False)), "is_content_admin": bool(getattr(user, "is_content_admin", False))}
         )
         
         logger.info(f"âœ… Login successful: {user.email} ({user.role})")
@@ -506,7 +506,7 @@ async def signup(
         except Exception as _e:
             logger.warning("Verification email failed (non-blocking): %s", _e)
 
-        token = create_access_token(data={"sub": str(new_user.id), "is_platform_admin": False})
+        token = create_access_token(data={"sub": str(new_user.id), "is_platform_admin": False, "is_content_admin": False})
         
         logger.info(f"âœ… Signup successful: {body.email}")
         
@@ -664,7 +664,7 @@ async def refresh_token(
         
         # Create new token - FIXED: use data= parameter
         new_token = create_access_token(
-            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False))}
+            data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False)), "is_content_admin": bool(getattr(user, "is_content_admin", False))}
         )
 
         # Rotation: revoke the OLD token now that a new one exists, so a
