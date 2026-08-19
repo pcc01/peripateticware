@@ -16,6 +16,10 @@
 import { useAuthStore } from '@/stores/auth';
 
 const SECRET_KEY = 'pw_platform_secret';
+/** Fired whenever clearPlatformSecret() runs, so PlatformShell (which only
+ * reads sessionStorage once, on mount) can react without requiring a full
+ * page reload -- see clearPlatformSecret()'s docstring below. */
+export const PLATFORM_SECRET_CLEARED_EVENT = 'pw:platform-secret-cleared';
 
 /** null = never asked this session; '' = user chose to continue without one */
 export function getPlatformSecret(): string | null {
@@ -26,8 +30,17 @@ export function setPlatformSecret(secret: string): void {
   sessionStorage.setItem(SECRET_KEY, secret);
 }
 
+/**
+ * Clears the stored secret AND notifies any mounted PlatformShell via a
+ * window event. Without the event, PlatformShell's `secretEntered` state
+ * (set once from sessionStorage on mount) never learns the stored value
+ * was invalidated -- client-side nav between /platform/* tabs doesn't
+ * remount the shell, so every subsequent request keeps 403ing with no UI
+ * path back to the entry prompt short of a manual hard refresh.
+ */
 export function clearPlatformSecret(): void {
   sessionStorage.removeItem(SECRET_KEY);
+  window.dispatchEvent(new Event(PLATFORM_SECRET_CLEARED_EVENT));
 }
 
 /**

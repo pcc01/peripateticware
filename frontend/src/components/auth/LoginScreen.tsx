@@ -12,7 +12,11 @@ import { useAuthStore } from '../../stores/auth';
 import { SyntheticEvent } from 'react';
 
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email or username'),
+  // Doubles as "email or username" -- see backend/routes/auth.py's login()
+  // for the matching lookup. A strict .email() here (or type="email" on the
+  // <input>, changed below) would reject a plain username before the
+  // request is even sent, which is what was actually happening.
+  email: z.string().min(1, 'Please enter a valid email or username'),
   password: z.string().min(1, 'Password is required'),
   rememberMe: z.boolean().optional(),
 });
@@ -129,10 +133,13 @@ export default function LoginScreen({
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <label htmlFor="login-email-field" className="block text-sm font-medium text-gray-700 mb-2">{t('auth.email_label')}</label>
+              <label htmlFor="login-email-field" className="block text-sm font-medium text-gray-700 mb-2">{t('auth.email_label', 'Email or Username')}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input {...register('email')} type="email" placeholder={t('auth.email_placeholder')}
+                {/* type="text", not "email" -- type="email" triggers the browser's
+                    own native validation (independent of Zod above), which
+                    silently blocks submitting a plain username too. */}
+                <input {...register('email')} type="text" autoComplete="username" placeholder={t('auth.email_placeholder', 'you@example.com or username')}
                   id="login-email-field"
                   aria-describedby={errors.email ? "login-email-error" : undefined}
                   aria-invalid={!!errors.email}

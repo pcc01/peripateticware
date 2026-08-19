@@ -241,14 +241,24 @@ async def login(
     
     try:
         user = None
-        
-        # Try email first (if provided)
+
+        # `email` doubles as "email or username" -- the login form's copy has
+        # long promised this ("Please enter a valid email or username") but
+        # the lookup itself never actually checked username, so a username
+        # always 401'd. Only try the email-index lookup when the value looks
+        # email-shaped; either way, fall back to an exact username match.
         if body.email:
-            result = await db.execute(
-                select(User).where(User.email_index == _blind_index(body.email.lower()))
-            )
-            user = result.scalar_one_or_none()
-        
+            if "@" in body.email:
+                result = await db.execute(
+                    select(User).where(User.email_index == _blind_index(body.email.lower()))
+                )
+                user = result.scalar_one_or_none()
+            if not user:
+                result = await db.execute(
+                    select(User).where(User.username == body.email)
+                )
+                user = result.scalar_one_or_none()
+
         # Try id if email didn't work (if provided) — cast to UUID so asyncpg accepts it
         if not user and body.id:
             try:
