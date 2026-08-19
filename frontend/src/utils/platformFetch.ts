@@ -44,6 +44,27 @@ export function clearPlatformSecret(): void {
 }
 
 /**
+ * Decodes the `is_platform_admin` claim out of a JWT without verifying its
+ * signature (browser-side only -- same technique hooks/useSessionSecurity.ts
+ * already uses for `exp`). Used by PlatformShell as a client-side route
+ * guard: the real enforcement is server-side (get_current_platform_admin on
+ * every /platform/* request), but nothing today stops an unauthenticated or
+ * non-platform-admin user from navigating to /platform and seeing the shell
+ * UI itself (nav tabs, page chrome, disabled action buttons) even though
+ * every actual data request behind it 403s. This closes that off at the
+ * route level instead of relying on every page's own error state.
+ */
+export function isPlatformAdminToken(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload?.is_platform_admin === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * fetch() wrapper for platform-admin endpoints.
  * Attaches Authorization + X-Platform-Secret automatically.
  *
