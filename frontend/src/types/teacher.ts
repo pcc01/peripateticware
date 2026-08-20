@@ -168,6 +168,11 @@ export interface CreateActivityInput {
   state_standard?: string
   discipline?: string
   curriculum_unit_ids?: string[]
+  // Author's choice: 'ai_chat' = students can open-ended chat with AI-backed
+  // Peri during this activity, on top of the curated question bank;
+  // 'curated_only' = curated bank only, no live AI call. Defaults to
+  // 'ai_chat' on the backend when omitted.
+  ai_interaction_mode?: 'ai_chat' | 'curated_only'
   // GPS live-map feature: whether this activity prompts students for
   // location-sharing self-consent (13+) at session start.
   discovery_location_gps_capture_enabled?: boolean

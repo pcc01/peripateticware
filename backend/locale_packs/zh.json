@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "详情",
+      "discoveryLabel": "🔎 寻宝",
+      "discoveryObjectiveLabel": "目标",
+      "discoveryRequirementsLabel": "你需要记录",
+      "discoveryRequirementsSpeech": "你需要用{{items}}记录这个。",
+      "discoverySuccessLabel": "成功的标准",
       "periIntro": "今天你将要做的事情如下。请先逐一阅读，然后出发。",
       "startCta": "准备好了 — 让我们走"
     },

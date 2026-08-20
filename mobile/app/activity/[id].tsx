@@ -304,6 +304,7 @@ export default function ActivityScreen() {
           visible={showChat}
           onClose={() => setShowChat(false)}
           theme={theme}
+          activityId={activity.id}
           activityTitle={activity.title}
           activitySubject={activity.subject}
           currentPrompt={question?.question_text}
@@ -583,17 +584,19 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
           </>
         )}
       </View>
-      <TouchableOpacity
-        testID="ask-peri-btn"
-        onPress={onAskPeri}
-        style={[styles.askPeriBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
-        accessibilityRole="button"
-        accessibilityLabel={t('activity.inquiry.askPeri', 'Ask Peri')}
-      >
-        <Text style={[styles.askPeriLabel, { fontFamily: theme.fontBody, color: theme.accent }]}>
-          💬 {t('activity.inquiry.askPeri', 'Ask Peri')}
-        </Text>
-      </TouchableOpacity>
+      {activity.ai_interaction_mode !== 'curated_only' && (
+        <TouchableOpacity
+          testID="ask-peri-btn"
+          onPress={onAskPeri}
+          style={[styles.askPeriBtn, { borderColor: theme.accent, borderRadius: theme.radiusSm }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('activity.inquiry.askPeri', 'Ask Peri')}
+        >
+          <Text style={[styles.askPeriLabel, { fontFamily: theme.fontBody, color: theme.accent }]}>
+            💬 {t('activity.inquiry.askPeri', 'Ask Peri')}
+          </Text>
+        </TouchableOpacity>
+      )}
       <Btn label={t('activity.inquiry.doneCta', 'Done capturing — reflect')} onPress={onNext} theme={theme} />
     </View>
   );

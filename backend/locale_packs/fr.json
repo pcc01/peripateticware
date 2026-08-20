@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "Détails",
+      "discoveryLabel": "🔎 CHASSE AU TRÉSOR",
+      "discoveryObjectiveLabel": "OBJECTIF",
+      "discoveryRequirementsLabel": "VOUS DEVREZ DOCUMENTER",
+      "discoveryRequirementsSpeech": "Vous devrez documenter cela avec {{items}}.",
+      "discoverySuccessLabel": "À QUOI RESSEMBLE LA RÉUSSITE",
       "periIntro": "Faites une pause pour lire ce que vous allez faire aujourd'hui avant de sortir.",
       "startCta": "Prêt — allons-y"
     },

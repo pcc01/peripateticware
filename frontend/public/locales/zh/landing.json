@@ -2033,7 +2033,14 @@
     "parental_or_guardian_consent_is_in_place": "法定要求时已获监护人同意",
     "student_view_preview": "学生预览",
     "privacy_settings_confirmed": "隐私设置已确认 ✓",
-    "fieldwork_map": "地图"
+    "fieldwork_map": "地图",
+    "ai_interaction_label": "学生与AI的互动",
+    "ai_interaction_intro": "选择在本活动的探究阶段如何引导学生。",
+    "ai_interaction_chat_label": "AI聊天(推荐)",
+    "ai_interaction_chat_note": "学生可以在活动中借助AI自由向佩里追问后续问题——非常适合开放式探索。佩里依然从不直接给出答案,只会提出下一个引导性问题。需要连接互联网。",
+    "ai_interaction_curated_label": "仅使用精选题库",
+    "ai_interaction_curated_note": "学生只能从存储在设备上的固定、预先编写的题库中获取问题——没有实时AI调用,也没有\"问佩里\"聊天功能。完全可离线使用,且为每位学生提供完全相同的措辞,这在需要保持一致性,或者您只是希望此活动中不涉及AI时会很有用。",
+    "ai_interaction_footnote": "注:即使在AI聊天模式下,精选题库也有助于构建佩里的提问——此设置仅控制在此基础上是否可使用自由式AI对话。"
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "地点名称",
@@ -2352,7 +2359,7 @@
     "peripateticware_began_as_a_white_paper_w": "“McGraw-Hill Education内部起草的《漫游软件》白皮书，主张GPS启用的移动设备将改变学习方式——学生在真实场所行走，受结构化询问指导，能以教科书无法做到的方式学习。”",
     "guided_inquiry_that_leads_to_real_knowle": "引导查询，带来真知",
     "sample_exchange_creek_study_grade_5": "流动交换——溪流研究，五年级",
-    "peri_never_gives_the_answer_it_asks_the_": "Peri从不给出答案，它总是问下一个正确的问题。—— 问题来自精心挑选的库；AI响应需要在本地运行Ollama或使用Anthropic API密钥。",
+    "peri_never_gives_the_answer_it_asks_the_": "佩里从不直接给出答案,而是提出下一个正确的问题。——每个问题都来自精选题库,教师可以为任何活动开启自由式AI对话,以便更深入地追问。",
     "built_from_a_2007_idea_that_took_until_2": "在2007年萌生的想法，直到2026年才变为可能",
     "the_paper_named_one_problem_it_couldnt_s": "在一場名為「評估」的挑戰面前，這份報告無法提供解決方案。如何衡量在溪床、教堂拱門或城市公園學習而來的成就？到了2026年，人工智慧終於為我們帶來了答案。",
     "from_the_original_2007_paper": "原文（2007年论文）",

@@ -123,6 +123,7 @@ async def create_activity(
         location_wiki_data=getattr(activity, "location_wiki_data", None),
         suggested_lessons=getattr(activity, "suggested_lessons", []),
         activity_type=ActivityType(activity.activity_type.value),
+        ai_interaction_mode=activity.ai_interaction_mode.value,
         is_shareable=activity.is_shareable,
         share_scope=getattr(activity, "share_scope", "org") or "org",
         language=getattr(activity, "language", None),
@@ -325,6 +326,8 @@ async def update_activity(
     # Convert enum values
     if "activity_type" in update_data and update_data["activity_type"]:
         update_data["activity_type"] = ActivityType(update_data["activity_type"].value)
+    if "ai_interaction_mode" in update_data and update_data["ai_interaction_mode"]:
+        update_data["ai_interaction_mode"] = update_data["ai_interaction_mode"].value
 
     # Handle ActivityBuilder fields explicitly
     for field in ("assessment_type", "location_info", "suggested_lessons"):

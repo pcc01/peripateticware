@@ -48,6 +48,12 @@ export interface Activity {
   learning_objectives?: string[];
   phases?: ActivityPhases;
   discovery?: ActivityDiscoveryDetail | null;
+  // Author's choice (backend/schemas/activities.py's AIInteractionModeEnum):
+  // 'ai_chat' = "Ask Peri" AI conversation available; 'curated_only' =
+  // curated question bank only, no live AI call. Defaults to 'ai_chat' on
+  // the backend for every existing activity, so treat a missing value the
+  // same way here.
+  ai_interaction_mode?: 'ai_chat' | 'curated_only';
 }
 
 export interface ActivitiesResponse {

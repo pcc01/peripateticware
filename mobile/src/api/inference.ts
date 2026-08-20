@@ -16,6 +16,10 @@ export interface ChatResponse {
 export async function chatWithPeri(params: {
   message: string;
   history: ChatMessage[];
+  // Looked up server-side to enforce the activity's ai_interaction_mode --
+  // a hidden "Ask Peri" button is a UI convenience, not real enforcement.
+  // Omit for chat outside any specific activity (e.g. general help).
+  activityId?: string;
   activityTitle?: string;
   activitySubject?: string;
   currentPrompt?: string;
@@ -31,6 +35,7 @@ export async function chatWithPeri(params: {
     body: JSON.stringify({
       message: params.message,
       history: params.history,
+      activity_id: params.activityId,
       system_context: systemContext || undefined,
     }),
   });

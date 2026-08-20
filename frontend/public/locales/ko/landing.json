@@ -1417,7 +1417,14 @@
     "parental_or_guardian_consent_is_in_place": "부모 또는 보호자의 동의가 법률에 따라 필요한 경우 있습니다.",
     "student_view_preview": "👁 학생 시각화 미리보기",
     "privacy_settings_confirmed": "개인정보 설정 확인 ✓",
-    "fieldwork_map": "필드워크 맵"
+    "fieldwork_map": "필드워크 맵",
+    "ai_interaction_label": "학생 AI 상호작용",
+    "ai_interaction_intro": "이 활동의 탐구 단계에서 학생들에게 어떻게 질문을 제시할지 선택하세요.",
+    "ai_interaction_chat_label": "AI 채팅 (권장)",
+    "ai_interaction_chat_note": "학생들은 활동 중 AI 기반으로 페리에게 자유롭게 후속 질문을 할 수 있습니다 — 개방형 탐구에 적합합니다. 페리는 여전히 절대 직접 답을 주지 않고, 다음 안내 질문만 던집니다. 인터넷 연결이 필요합니다.",
+    "ai_interaction_curated_label": "엄선된 질문 은행만 사용",
+    "ai_interaction_curated_note": "학생들은 기기에 저장된 고정된 사전 작성 질문 은행에서만 질문을 받습니다 — 실시간 AI 호출이 없고 \"페리에게 질문하기\" 채팅도 없습니다. 완전히 오프라인으로 작동하며 모든 학생에게 동일한 문구를 제공합니다. 이는 일관성을 위해 중요할 수 있으며, 혹은 이 활동에 AI를 아예 포함시키고 싶지 않은 경우에도 유용합니다.",
+    "ai_interaction_footnote": "참고: 엄선된 질문 은행은 AI 채팅 모드에서도 페리의 질문 구성에 도움을 줍니다 — 이 설정은 그 위에 자유 형식 AI 대화를 사용할 수 있는지 여부만 제어합니다."
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "지점명",
@@ -2611,7 +2618,7 @@
   "components_landingpage": {
     "guided_inquiry_that_leads_to_real_knowle": "지도적인 조사로 실제 지식에 이르는 안내",
     "sample_exchange_creek_study_grade_5": "샘플 교환 — 덫 연구, 5학년",
-    "peri_never_gives_the_answer_it_asks_the_": "페리는 대답을 내려주지 않습니다. 다음 적절한 질문을 던집니다. — 질문은 수집된 데이터베이스에서 선택됩니다; AI 응답을 위해 Ollama를 로컬에서 실행하거나 Anthropic API 키가 필요합니다.",
+    "peri_never_gives_the_answer_it_asks_the_": "페리는 절대 답을 알려주지 않습니다. 다음으로 옳은 질문을 던질 뿐입니다. — 모든 질문은 엄선된 질문 은행에서 나오며, 교사는 모든 활동에서 더 깊이 있는 후속 대화를 위해 자유 형식 AI 대화를 켤 수 있습니다.",
     "built_from_a_2007_idea_that_took_until_2": "2007년의 아이디어로부터 만들어졌으며, 2026년까지 가능하게 되었습니다",
     "the_paper_named_one_problem_it_couldnt_s": "논문은 해결할 수 없는 한 가지 문제를 언급했습니다. — 교육이 덫 골목, 성당 아래, 도시 공원에서 발생하는 것을 어떻게 평가할까요? 2026년에 AI는 우리에게 대답을 주었습니다.",
     "from_the_original_2007_paper": "원본 2007년 논문에서",

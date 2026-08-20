@@ -69,6 +69,24 @@ def _coerce_activity_type(v):
     return v
 
 
+class AIInteractionModeEnum(str, Enum):
+    """
+    Author's choice for how students get prompted during this activity --
+    surfaced in the activity builder with explanatory copy so the tradeoff is
+    clear at creation time, not just a hidden default (see
+    ActivityBase.ai_interaction_mode's description below for the copy shown).
+
+    AI_CHAT       -- students can open-ended chat with AI-backed Peri
+                     (POST /inference/chat), on top of the curated bank.
+    CURATED_ONLY  -- students only get prompts from the curated, on-device
+                     question bank (aristotelian_questions) -- no live AI
+                     call, works fully offline, identical wording for every
+                     student on a retry.
+    """
+    AI_CHAT       = "ai_chat"
+    CURATED_ONLY  = "curated_only"
+
+
 class ActivityStatusEnum(str, Enum):
     """Activity status"""
     DRAFT = "draft"
@@ -110,6 +128,24 @@ class ActivityBase(BaseModel):
     solo_level: Optional[int] = Field(None, ge=1, le=5, description="SOLO taxonomy level (1-5)")
     rubric_id: Optional[UUID] = None
     activity_type: ActivityTypeEnum = ActivityTypeEnum.INQUIRY
+    # Author's choice, shown with explanatory copy in the builder (2026-08-20
+    # -- previously every activity silently got AI chat with no way to turn
+    # it off, and the landing page still described AI as something that
+    # "requires Ollama running locally or an Anthropic API key" even after
+    # this deployment's own key was configured -- see LandingPage.tsx).
+    ai_interaction_mode: AIInteractionModeEnum = Field(
+        default=AIInteractionModeEnum.AI_CHAT,
+        description=(
+            "'ai_chat' = students can open-ended chat with AI-backed Peri during "
+            "this activity, in addition to the curated question bank. "
+            "'curated_only' = students only see prompts from the curated, "
+            "on-device question bank -- no live AI call, works fully offline, "
+            "same wording every time. The curated bank also seeds/structures "
+            "the AI's prompts when ai_chat is enabled; this setting only "
+            "controls whether free-form AI conversation is available on top "
+            "of that."
+        ),
+    )
     is_shareable: bool = False
     share_scope: str = Field(default='org', description="'org' = share with same org only, 'all' = share globally")
     language: Optional[str] = Field(None, max_length=50, description="Content language, e.g. 'English', 'Spanish'")
@@ -206,6 +242,7 @@ class ActivityUpdate(BaseModel):
     solo_level: Optional[int] = Field(None, ge=1, le=5)
     rubric_id: Optional[UUID] = None
     activity_type: Optional[ActivityTypeEnum] = None
+    ai_interaction_mode: Optional[AIInteractionModeEnum] = None
     is_shareable: Optional[bool] = None
     share_scope: Optional[str] = None
     language: Optional[str] = Field(None, max_length=50)
