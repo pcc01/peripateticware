@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "AYNLARI",
+      "discoveryLabel": "🔎 HAZİNE AVI",
+      "discoveryObjectiveLabel": "HEDEF",
+      "discoveryRequirementsLabel": "BELGELEMEN GEREKENLER",
+      "discoveryRequirementsSpeech": "Bunu {{items}} ile belgelemen gerekecek.",
+      "discoverySuccessLabel": "BAŞARI NASIL GÖRÜNÜR",
       "periIntro": "Günün ne yapacağınızı aşağıda gösteriyoruz. Çıkış yapmadan önce lütfen okuyunuz.",
       "startCta": "Hazır oldum — çalışmalarıza başlayalım"
     },

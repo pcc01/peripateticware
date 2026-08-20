@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "תפריטים",
+      "discoveryLabel": "🔎 מציאת אוצר",
+      "discoveryObjectiveLabel": "מטרה",
+      "discoveryRequirementsLabel": "תצטרכו לתעד",
+      "discoveryRequirementsSpeech": "תצטרכו לתעד את זה עם {{items}}.",
+      "discoverySuccessLabel": "כך נראית הצלחה",
       "periIntro": "כאן מה תעשית היום. קרא לחשב לפני שתצא.",
       "startCta": "אני הופעל — נסו נמצא"
     },

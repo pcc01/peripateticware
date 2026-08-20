@@ -2027,7 +2027,14 @@
     "aria_label_location_latitude": "Breite",
     "aria_label_location_longitude": "Breite",
     "placeholder_eg_english": "e.g. Deutsch",
-    "fieldwork_map": "Kartierung"
+    "fieldwork_map": "Kartierung",
+    "ai_interaction_label": "KI-Interaktion der Schüler",
+    "ai_interaction_intro": "Wählen Sie, wie Schüler während der Untersuchungsphase dieser Aktivität angeleitet werden.",
+    "ai_interaction_chat_label": "KI-Chat (empfohlen)",
+    "ai_interaction_chat_note": "Schüler können Peri während der Aktivität frei Folgefragen stellen, unterstützt durch KI — gut für offenes Erkunden. Peri gibt weiterhin nie direkt die Antwort, sondern stellt nur die nächste leitende Frage. Erfordert eine Internetverbindung.",
+    "ai_interaction_curated_label": "Nur kuratierte Fragensammlung",
+    "ai_interaction_curated_note": "Schüler erhalten nur Fragen aus einer festen, vorgeschriebenen Fragensammlung, die auf dem Gerät gespeichert ist — kein Live-KI-Aufruf, kein „Peri fragen\"-Chat. Funktioniert vollständig offline und gibt jedem Schüler denselben Wortlaut, was für Konsistenz wichtig sein kann oder wenn Sie einfach lieber keine KI in dieser Aktivität einsetzen möchten.",
+    "ai_interaction_footnote": "Hinweis: Die kuratierte Fragensammlung hilft auch dabei, Peris Fragen selbst im KI-Chat-Modus zu strukturieren — diese Einstellung steuert nur, ob zusätzlich ein freies KI-Gespräch verfügbar ist."
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "Standortname",
@@ -2346,7 +2353,7 @@
     "peripateticware_began_as_a_white_paper_w": "Peripateticware begann als ein Weißbuch, das innerhalb von McGraw-Hill Education verfasst wurde. Es argumentierte, dass GPS-fähige mobile Geräte das Lernen transformieren würden - dass Schüler, die durch reale Orte gehen und durch strukturierte Untersuchungen geführt werden, auf eine Weise lernen können, wie es Texte nie ermöglichten.",
     "guided_inquiry_that_leads_to_real_knowle": "Gezielter Fragestellungsprozess, der zu echter Erkenntnis führt.",
     "sample_exchange_creek_study_grade_5": "Creek-Studie – Klasse 5",
-    "peri_never_gives_the_answer_it_asks_the_": "Peri gibt nie die Antwort. Es stellt die nächste richtige Frage. – Fragen werden aus einer kuratierten Sammlung gezogen; AI-Antworten erfordern Ollama, das lokal läuft, oder einen Anthropic API-Schlüssel.",
+    "peri_never_gives_the_answer_it_asks_the_": "Peri gibt niemals die Antwort. Sie stellt die nächste richtige Frage. — Jede Frage stammt aus einer kuratierten Sammlung, und Lehrkräfte können bei jeder Aktivität ein freies KI-Gespräch für vertiefende Nachfragen aktivieren.",
     "built_from_a_2007_idea_that_took_until_2": "Erstellt aus einer Idee von 2007, die bis 2026 realisierbar war",
     "the_paper_named_one_problem_it_couldnt_s": "Ein Problem konnte der Papier nicht lösen: die Bewertung. Wie beurteilt man Lernen, das in einem Bachbett oder unter einem Kathedralbogen oder auf einem Stadtpark stattfindet? Erst im Jahr 2026 gab es von KI endlich eine Antwort.",
     "from_the_original_2007_paper": "Von dem Original-Papier aus dem Jahr 2007",

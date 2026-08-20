@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "تفاصيل",
+      "discoveryLabel": "🔎 البحث عن الكنز",
+      "discoveryObjectiveLabel": "الهدف",
+      "discoveryRequirementsLabel": "ستحتاج إلى توثيق",
+      "discoveryRequirementsSpeech": "ستحتاج إلى توثيق هذا باستخدام {{items}}.",
+      "discoverySuccessLabel": "هكذا يبدو النجاح",
       "periIntro": "هناك ما ستفعله أورد اليوم. قراءة محتوى بعضه قبل الخروج.",
       "startCta": "جاهز — للذهب"
     },

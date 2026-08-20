@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "세부 정보",
+      "discoveryLabel": "🔎 보물찾기",
+      "discoveryObjectiveLabel": "목표",
+      "discoveryRequirementsLabel": "기록해야 할 것",
+      "discoveryRequirementsSpeech": "{{items}}(으)로 이것을 기록해야 합니다.",
+      "discoverySuccessLabel": "성공의 기준",
       "periIntro": "오늘은 이렇게 할 것입니다. 출발하기 전에 잠깐 읽어보세요.",
       "startCta": "준비되었습니다. 가자"
     },

@@ -2018,7 +2018,14 @@
     "parental_or_guardian_consent_is_in_place": "Consentimento dos pais ou tutor está presente onde exigido por lei",
     "student_view_preview": "Olhar de Aluno",
     "privacy_settings_confirmed": "Configurações de privacidade confirmadas ✓",
-    "fieldwork_map": "Mapa de campo"
+    "fieldwork_map": "Mapa de campo",
+    "ai_interaction_label": "Interação do aluno com IA",
+    "ai_interaction_intro": "Escolha como os alunos serão guiados durante a fase de Investigação desta atividade.",
+    "ai_interaction_chat_label": "Chat com IA (recomendado)",
+    "ai_interaction_chat_note": "Os alunos podem fazer perguntas de acompanhamento livremente à Peri durante a atividade, com tecnologia de IA — ótimo para exploração aberta. A Peri continua nunca dando a resposta diretamente, apenas faz a próxima pergunta orientadora. Requer conexão com a internet.",
+    "ai_interaction_curated_label": "Somente banco de perguntas selecionado",
+    "ai_interaction_curated_note": "Os alunos recebem apenas perguntas de um banco fixo e pré-escrito, armazenado no dispositivo — sem chamada de IA ao vivo, sem chat \"Perguntar à Peri\". Funciona totalmente offline e dá a mesma redação a todos os alunos, o que pode importar para consistência, ou se você simplesmente preferir que a IA não faça parte desta atividade.",
+    "ai_interaction_footnote": "Observação: o banco de perguntas selecionado também ajuda a estruturar as perguntas da Peri mesmo no modo Chat com IA — esta configuração controla apenas se a conversa livre com IA está disponível além disso."
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "Localização",
@@ -2337,7 +2344,7 @@
     "peripateticware_began_as_a_white_paper_w": "O Peripateticware começou como um artigo branco escrito dentro da McGraw-Hill Education. Ele argumentava que dispositivos móveis com GPS habilitado transformariam o aprendizado - que estudantes caminhando por lugares reais, guiados por inquirição estruturada, poderiam aprender de uma forma que os livros didáticos nunca permitiram.",
     "guided_inquiry_that_leads_to_real_knowle": "A descoberta guiada que leva ao verdadeiro conhecimento",
     "sample_exchange_creek_study_grade_5": "Creek Study - Amostra do Grade 5",
-    "peri_never_gives_the_answer_it_asks_the_": "Peri nunca dá a resposta. Faz a próxima pergunta certa. — As perguntas são selecionadas de um banco cuidadosamente escolhido; as respostas da IA exigem o Ollama rodando localmente ou uma chave de API da Anthropic.",
+    "peri_never_gives_the_answer_it_asks_the_": "A Peri nunca dá a resposta. Ela faz a próxima pergunta certa. — Cada pergunta vem de um banco selecionado, e os professores podem ativar a conversa livre com IA para aprofundar qualquer atividade.",
     "built_from_a_2007_idea_that_took_until_2": "Ideia de 2007 virou realidade em 2026",
     "the_paper_named_one_problem_it_couldnt_s": "A revista nomeou um problema que não conseguia resolver: avaliação. Como você avalia o aprendizado que acontece em uma cama de rio, ou em uma arcada de catedral, ou em um parque da cidade? Em 2026, a IA finalmente nos deu a resposta.",
     "from_the_original_2007_paper": "A partir do papel original de 2007",

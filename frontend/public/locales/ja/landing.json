@@ -2144,7 +2144,14 @@
     "aria_label_location_latitude": "緯度",
     "aria_label_location_longitude": "経度",
     "placeholder_eg_english": "「例：英語」",
-    "fieldwork_map": "地図"
+    "fieldwork_map": "地図",
+    "ai_interaction_label": "生徒とAIのやり取り",
+    "ai_interaction_intro": "このアクティビティの「探究」フェーズで、生徒にどのように問いかけるかを選択してください。",
+    "ai_interaction_chat_label": "AIチャット(推奨)",
+    "ai_interaction_chat_note": "生徒はアクティビティ中、AIを活用してペリに自由にフォローアップの質問ができます — オープンエンドな探究に最適です。ペリはこの場合も決して直接答えを教えず、次の導きとなる問いを投げかけるだけです。インターネット接続が必要です。",
+    "ai_interaction_curated_label": "厳選された質問バンクのみ",
+    "ai_interaction_curated_note": "生徒はデバイスに保存された固定の、あらかじめ用意された質問バンクからのみ問いかけを受け取ります — リアルタイムのAI呼び出しはなく、「ペリに質問する」チャットもありません。完全にオフラインで動作し、すべての生徒に同一の文言を提供します。これは一貫性を保つ上で重要な場合や、単にこのアクティビティにAIを関与させたくない場合に役立ちます。",
+    "ai_interaction_footnote": "注: 厳選された質問バンクは、AIチャットモードであってもペリの問いかけを構成する助けとなります — この設定は、それに加えて自由なAI対話が利用できるかどうかのみを制御します。"
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "地名",
@@ -2463,7 +2470,7 @@
     "peripateticware_began_as_a_white_paper_w": "パリペタティックウェアは、マクグロヒル・エデュケーション内で執筆された白書として始まりました。それは、GPSを搭載したモバイルデバイスが学習を変えるだろうと主張し、実地の場所を歩きながら構造化された調査に従って学ぶことで、テキストブックでは決してできないように学べることを提唱しました。",
     "guided_inquiry_that_leads_to_real_knowle": "「真実の知識へ導く指南」",
     "sample_exchange_creek_study_grade_5": "「サンプル交換 - クリーク研究、学年5」",
-    "peri_never_gives_the_answer_it_asks_the_": "「パリは答えを与えない。次の正しい質問をする。— 質問はカーソルからクールされたバンクに引き出される。AIの回答はローカルでオラマーを実行するか、アノスピックAPIキーが必要。」",
+    "peri_never_gives_the_answer_it_asks_the_": "ペリは決して答えを教えません。次の正しい問いを投げかけるのです。— すべての質問は厳選された質問バンクから出題され、教師は各アクティビティでAIとの自由な対話を有効にして、さらに深く掘り下げることができます。",
     "built_from_a_2007_idea_that_took_until_2": "「2007年のアイデアが、実現可能になったのは2026年まで待たねばならなかった」",
     "the_paper_named_one_problem_it_couldnt_s": "問題を解決できなかった紙の一つに、評価というものがあった。川底や大聖堂のアーチで、都市公園で起きる学習をどう評価するかという問いだった。しかし、2026年にAIがついに答えを出してくれた。",
     "from_the_original_2007_paper": "「元々、2007年の論文」",

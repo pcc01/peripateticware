@@ -1994,7 +1994,7 @@
     "peripateticware_began_as_a_white_paper_w": "PeripatetikWare, McGraw-Hill Eğitim tarafından yazılan bir beyaz kağıt olarak başlayarak, mobil cihazların yerleşik GPS'yi öğrenmenin gerçek yerleri dolaşan öğrencilere nasıl dönüştüreceğini savunuyordu - bu şekilde öğrenciler, metinler gibi öğrenebilirdi.",
     "guided_inquiry_that_leads_to_real_knowle": "Rehberli soruşturma gerçek bilgiye yol açar",
     "sample_exchange_creek_study_grade_5": "Creek Araştırması - Sınav Örneği, Sınıf 5",
-    "peri_never_gives_the_answer_it_asks_the_": "Piri cevabı vermiyor, soru sormak için askar. Sorular bir seçkin kaynaktan çıkarılır; AI yanıtları yerinde veya Anthropic API anahtarının kullanılması gereken yerde verilmektedir.",
+    "peri_never_gives_the_answer_it_asks_the_": "Peri asla cevabı vermez. Bir sonraki doğru soruyu sorar. — Her soru özenle seçilmiş bir soru bankasından gelir ve öğretmenler herhangi bir etkinlikte daha derin takip için serbest AI sohbetini açabilir.",
     "built_from_a_2007_idea_that_took_until_2": "Oluşturulan fikirden 2026'ya kadar mümkün olana kadar 9 yıl sürdü",
     "the_paper_named_one_problem_it_couldnt_s": "Çizerler bir çözemeyeceği problemi adlandırmıştı: değerlendirme. Çamur yatağında ya da katedrale gömlekli arkın içinde, ya da şehir parkında meydana gelen öğrenimi nasıl değerlendireceğinizi neyi buldu AI sonucunda 2026 yılında cevabı buldu.",
     "from_the_original_2007_paper": "Orijinal 2007 makalesinden",
@@ -2265,7 +2265,14 @@
     "aria_label_location_latitude": "Enlem",
     "aria_label_location_longitude": "Enlem",
     "placeholder_eg_english": "e.g. Türkçe",
-    "fieldwork_map": "Harita Çalışma"
+    "fieldwork_map": "Harita Çalışma",
+    "ai_interaction_label": "Öğrenci AI Etkileşimi",
+    "ai_interaction_intro": "Öğrencilerin bu etkinliğin Araştırma aşamasında nasıl yönlendirileceğini seçin.",
+    "ai_interaction_chat_label": "AI Sohbeti (önerilen)",
+    "ai_interaction_chat_note": "Öğrenciler etkinlik sırasında Peri'ye AI destekli olarak özgürce takip soruları sorabilir — açık uçlu keşif için idealdir. Peri yine de asla doğrudan cevabı vermez, yalnızca bir sonraki yönlendirici soruyu sorar. İnternet bağlantısı gerektirir.",
+    "ai_interaction_curated_label": "Yalnızca Seçilmiş Soru Bankası",
+    "ai_interaction_curated_note": "Öğrenciler yalnızca cihazda saklanan sabit, önceden yazılmış bir soru bankasından sorular alır — canlı AI çağrısı yok, \"Peri'ye Sor\" sohbeti yok. Tamamen çevrimdışı çalışır ve her öğrenciye aynı ifadeyi verir; bu tutarlılık açısından önemli olabilir veya bu etkinlikte AI'nin yer almasını istemiyorsanız tercih edebilirsiniz.",
+    "ai_interaction_footnote": "Not: seçilmiş soru bankası, AI Sohbeti modunda bile Peri'nin sorularını yapılandırmaya yardımcı olur — bu ayar yalnızca bunun üzerine serbest AI sohbetinin kullanılabilir olup olmadığını denetler."
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "Konum Adı",

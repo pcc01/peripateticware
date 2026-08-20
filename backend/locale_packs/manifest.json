@@ -1,50 +1,50 @@
 {
   "ar": {
-    "version": "9669e28a3ce8",
-    "updatedAt": "2026-07-30T13:37:46.214Z"
+    "updatedAt": "2026-08-20T16:48:34.073Z",
+    "version": "e47287b620e7"
   },
   "de": {
-    "version": "4c70e758c621",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.077Z",
+    "version": "656231844949"
   },
   "es": {
-    "version": "9a5ff4672231",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
-  },
-  "fr-CA": {
-    "version": "cd291fa4c9e4",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.069Z",
+    "version": "9b4adcd0e343"
   },
   "fr": {
-    "version": "c1528b3ea070",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.071Z",
+    "version": "bc5dd3d5f48c"
+  },
+  "fr-CA": {
+    "updatedAt": "2026-08-20T16:48:34.072Z",
+    "version": "1aedf69e8daa"
   },
   "he": {
-    "version": "fad117fd2b1a",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.076Z",
+    "version": "7d458135cab6"
   },
   "it": {
-    "version": "679a8a6ebed9",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.077Z",
+    "version": "b4d3fdbd1306"
   },
   "ja": {
-    "version": "d00033265ceb",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.073Z",
+    "version": "38540740969c"
   },
   "ko": {
-    "version": "c846ae47a4cd",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.075Z",
+    "version": "959839c11a01"
   },
   "pt-BR": {
-    "version": "8e952f8b1e32",
-    "updatedAt": "2026-07-30T13:37:46.215Z"
+    "updatedAt": "2026-08-20T16:48:34.075Z",
+    "version": "13152c91fbb4"
   },
   "tr": {
-    "version": "67b76266edad",
-    "updatedAt": "2026-07-30T13:37:46.216Z"
+    "updatedAt": "2026-08-20T16:48:34.078Z",
+    "version": "0f3b48f5a26c"
   },
   "zh": {
-    "version": "7c73559ec37f",
-    "updatedAt": "2026-07-30T13:37:46.216Z"
+    "updatedAt": "2026-08-20T16:48:34.079Z",
+    "version": "8a1c477c5945"
   }
 }

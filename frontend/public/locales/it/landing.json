@@ -2029,7 +2029,14 @@
     "parental_or_guardian_consent_is_in_place": "Il consenso dei genitori o tutori è presente laddove richiesto dalla legge",
     "student_view_preview": "Occhiello Anteprima della visualizzazione dello studente",
     "privacy_settings_confirmed": "Impostazioni privacy confermate ✓",
-    "fieldwork_map": "Mappa"
+    "fieldwork_map": "Mappa",
+    "ai_interaction_label": "Interazione IA dello studente",
+    "ai_interaction_intro": "Scegli come gli studenti verranno guidati durante la fase di Indagine di questa attività.",
+    "ai_interaction_chat_label": "Chat IA (consigliato)",
+    "ai_interaction_chat_note": "Gli studenti possono fare liberamente domande di approfondimento a Peri durante l'attività, basata sull'IA — ottima per l'esplorazione aperta. Peri continua a non dare mai la risposta direttamente, pone solo la prossima domanda guida. Richiede una connessione internet.",
+    "ai_interaction_curated_label": "Solo raccolta di domande curata",
+    "ai_interaction_curated_note": "Gli studenti ricevono domande solo da una raccolta fissa e pre-scritta, salvata sul dispositivo — nessuna chiamata IA in tempo reale, nessuna chat \"Chiedi a Peri\". Funziona completamente offline e offre a ogni studente lo stesso testo, il che può essere importante per la coerenza, o se preferite semplicemente che l'IA non faccia parte di questa attività.",
+    "ai_interaction_footnote": "Nota: la raccolta di domande curata aiuta anche a strutturare le domande di Peri anche in modalità Chat IA — questa impostazione controlla solo se la conversazione libera con l'IA è disponibile in aggiunta."
   },
   "components_teacher_enhancedactivitybuilder": {
     "location_name": "Luogo",
@@ -2348,7 +2355,7 @@
     "peripateticware_began_as_a_white_paper_w": "Peripateticware ha avuto inizio come un documento bianco scritto all'interno di McGraw-Hill Education. Argomentava che i dispositivi mobili dotati di GPS avrebbero trasformato l'apprendimento - che gli studenti camminando attraverso luoghi reali, guidati da indagini strutturate, potevano imparare in un modo che i libri di testo non permettevano mai.",
     "guided_inquiry_that_leads_to_real_knowle": "Impariamo insieme la vera conoscenza",
     "sample_exchange_creek_study_grade_5": "Studio di confronto - Studio della Creek, classe 5",
-    "peri_never_gives_the_answer_it_asks_the_": "mai non risponde, ma ti guida con la prossima domanda giusta",
+    "peri_never_gives_the_answer_it_asks_the_": "Peri non dà mai la risposta. Pone la prossima domanda giusta. — Ogni domanda proviene da una raccolta curata, e gli insegnanti possono attivare una conversazione libera con l'IA per approfondire qualsiasi attività.",
     "built_from_a_2007_idea_that_took_until_2": "Idea nata nel 2007, realizzabile solo dal 2026",
     "the_paper_named_one_problem_it_couldnt_s": "Un giornale ha elencato un problema che non riusciva a risolvere: la valutazione. Come si può valutare l'apprendimento che avviene in un letto di creek, o sotto un arco di cattedrale, o in un parco cittadino? Nel 2026, l'IA ci ha finalmente dato la risposta.",
     "from_the_original_2007_paper": "Dal documento originale del 2007",

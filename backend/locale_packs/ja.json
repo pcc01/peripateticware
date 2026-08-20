@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "詳細",
+      "discoveryLabel": "🔎 宝探し",
+      "discoveryObjectiveLabel": "目標",
+      "discoveryRequirementsLabel": "記録が必要なもの",
+      "discoveryRequirementsSpeech": "{{items}}でこれを記録する必要があります。",
+      "discoverySuccessLabel": "成功の基準",
       "periIntro": "今日は以下の作業を行います。出発前に読み通してください。",
       "startCta": "準備完了 - 行く"
     },

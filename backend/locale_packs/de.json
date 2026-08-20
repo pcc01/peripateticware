@@ -2,6 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "DETAILS",
+      "discoveryLabel": "🔎 SCHNITZELJAGD",
+      "discoveryObjectiveLabel": "ZIEL",
+      "discoveryRequirementsLabel": "DAS MÜSST IHR DOKUMENTIEREN",
+      "discoveryRequirementsSpeech": "Ihr müsst dies mit {{items}} dokumentieren.",
+      "discoverySuccessLabel": "SO SIEHT ERFOLG AUS",
       "periIntro": "Hier sehen Sie, was Ihr heute tun wird. Nehmen Sie eine Minute Zeit, um es vor dem Ausgehen durchzulesen.",
       "startCta": "Bereit — los gehen"
     },
