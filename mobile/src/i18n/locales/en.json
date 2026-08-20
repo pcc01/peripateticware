@@ -11,7 +11,12 @@
     "brief": {
       "startCta": "I'm ready — let's go",
       "periIntro": "Here's what you'll be doing today. Take a moment to read through before heading out.",
-      "detailsLabel": "DETAILS"
+      "detailsLabel": "DETAILS",
+      "discoveryLabel": "🔎 SCAVENGER HUNT",
+      "discoveryObjectiveLabel": "OBJECTIVE",
+      "discoveryRequirementsLabel": "YOU'LL NEED TO DOCUMENT",
+      "discoveryRequirementsSpeech": "You'll need to document this with {{items}}.",
+      "discoverySuccessLabel": "SUCCESS LOOKS LIKE"
     },
     "orient": {
       "readyCta": "I'm oriented — begin inquiry",

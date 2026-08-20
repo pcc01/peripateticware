@@ -3,6 +3,33 @@ import { cacheActivities, getCachedActivities, getCachedActivity } from '@/src/d
 
 import { apiFetch } from './client';
 
+export interface ActivityPhaseDetail {
+  title: string;
+  instructions: string;
+  due_date: string;
+}
+
+export interface ActivityPhases {
+  orient: ActivityPhaseDetail;
+  inquiry: ActivityPhaseDetail;
+  reflect: ActivityPhaseDetail;
+}
+
+// Discovery/scavenger-hunt specific content (backend/schemas/student_
+// activities.py's ActivityDiscoveryDetail) -- only present when
+// activity_type === 'discovery'. This is the teacher/AI-authored task
+// itself (e.g. "take photos of 8 native plants in Central Park"), distinct
+// from the generic description/learning_objectives every activity has.
+export interface ActivityDiscoveryDetail {
+  task_description: string;
+  mode?: 'location_based' | 'task_based' | null;
+  documentation_requirements?: Record<string, boolean> | null;
+  success_criteria?: string | null;
+  difficulty_level?: number | null;
+  time_limit_minutes?: number | null;
+  location_required: boolean;
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -18,6 +45,9 @@ export interface Activity {
   location_radius_meters?: number;
   bloom_level?: string;
   status: string;
+  learning_objectives?: string[];
+  phases?: ActivityPhases;
+  discovery?: ActivityDiscoveryDetail | null;
 }
 
 export interface ActivitiesResponse {

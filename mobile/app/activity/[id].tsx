@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { fetchActivity, Activity } from '@/src/api/activities';
+import { fetchActivity, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
@@ -34,6 +34,41 @@ const PHASE_LABELS: Record<Phase, string> = {
   brief: 'Brief', orient: 'Orient', inquiry: 'Inquire', reflect: 'Reflect',
 };
 const PHASES: Phase[] = ['orient', 'inquiry', 'reflect'];
+
+// ── Discovery (scavenger hunt) content helpers ──────────────────────────────
+// documentation_requirements is a free-form {key: boolean} map (see
+// backend/models/database.py's discovery_documentation_requirements comment,
+// e.g. {"photos": true, "notes": true}) -- map known keys to a friendly
+// label, and fall back to humanizing anything unrecognized so a new
+// requirement type added later still renders instead of silently vanishing.
+const DISCOVERY_REQUIREMENT_LABELS: Record<string, string> = {
+  photos: 'photos', photo: 'photos',
+  notes: 'notes', note: 'notes',
+  video: 'video',
+  audio: 'voice recordings',
+  bloom_stage: 'bloom stage',
+  measurement: 'measurements',
+};
+
+function discoveryRequirementLabels(requirements?: Record<string, boolean> | null): string[] {
+  if (!requirements) return [];
+  return Object.entries(requirements)
+    .filter(([, needed]) => !!needed)
+    .map(([key]) => DISCOVERY_REQUIREMENT_LABELS[key] ?? key.replace(/_/g, ' '));
+}
+
+// Objective always first -- both here (spoken order) and in the section's
+// visual layout below -- per product decision: a scavenger hunt always
+// leads with what the student is actually trying to find/do.
+function discoverySpeechText(discovery: ActivityDiscoveryDetail, t: (k: string, d: string, o?: any) => string): string {
+  const parts = [discovery.task_description];
+  const reqs = discoveryRequirementLabels(discovery.documentation_requirements);
+  if (reqs.length > 0) {
+    parts.push(t('activity.brief.discoveryRequirementsSpeech', "You'll need to document this with {{items}}.", { items: reqs.join(', ') }));
+  }
+  if (discovery.success_criteria) parts.push(discovery.success_criteria);
+  return parts.filter(Boolean).join('. ');
+}
 
 export default function ActivityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -374,7 +409,67 @@ function BriefPhase({ activity, theme, onStart }: any) {
           {activity.bloom_level && <Chip label={activity.bloom_level} theme={theme} />}
         </View>
       </View>
+
+      {activity.discovery && <DiscoverySection discovery={activity.discovery} theme={theme} t={t} />}
+
       <Btn label={t('activity.brief.startCta', "I'm ready — let's go")} onPress={onStart} theme={theme} />
+    </View>
+  );
+}
+
+// ── Discovery (scavenger hunt) section ──────────────────────────────────────
+// Its own card, separate from the generic title/description card above --
+// this is the actual mission ("take photos of 8 native plants in Central
+// Park"), not boilerplate. Objective always leads, both visually and in the
+// text SpeakerButton reads aloud (see discoverySpeechText above).
+function DiscoverySection({ discovery, theme, t }: { discovery: ActivityDiscoveryDetail; theme: any; t: any }) {
+  const requirementLabels = discoveryRequirementLabels(discovery.documentation_requirements);
+
+  return (
+    <View
+      testID="activity-discovery-section"
+      style={[styles.card, { backgroundColor: theme.accentMuted, borderColor: theme.accent, borderRadius: theme.radius }]}
+    >
+      <View style={styles.titleRow}>
+        <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.accent, flex: 1 }]}>
+          {t('activity.brief.discoveryLabel', '🔎 SCAVENGER HUNT')}
+        </Text>
+        <SpeakerButton
+          testID="activity-discovery-speaker"
+          text={discoverySpeechText(discovery, t)}
+          theme={theme}
+          size={22}
+        />
+      </View>
+
+      <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 6 }]}>
+        {t('activity.brief.discoveryObjectiveLabel', 'OBJECTIVE')}
+      </Text>
+      <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text }]}>
+        {discovery.task_description}
+      </Text>
+
+      {requirementLabels.length > 0 && (
+        <>
+          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 8 }]}>
+            {t('activity.brief.discoveryRequirementsLabel', "YOU'LL NEED TO DOCUMENT")}
+          </Text>
+          <View style={styles.metaRow}>
+            {requirementLabels.map((label) => <Chip key={label} label={label} theme={theme} />)}
+          </View>
+        </>
+      )}
+
+      {!!discovery.success_criteria && (
+        <>
+          <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 8 }]}>
+            {t('activity.brief.discoverySuccessLabel', 'SUCCESS LOOKS LIKE')}
+          </Text>
+          <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+            {discovery.success_criteria}
+          </Text>
+        </>
+      )}
     </View>
   );
 }
