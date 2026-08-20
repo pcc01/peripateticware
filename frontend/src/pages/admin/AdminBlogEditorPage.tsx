@@ -13,6 +13,15 @@
  * with a toolbar that inserts the syntax so nobody has to memorize it, a
  * quick raw side-by-side preview while typing, and a "Full Preview" that
  * shows the post exactly as BlogPostPage will render it.
+ *
+ * Draft safety net: the form is autosaved to localStorage a couple seconds
+ * after every change (see AUTOSAVE_DEBOUNCE_MS below) and offered back for
+ * restore the next time this URL loads, if the browser tab is still around
+ * to load it -- so an idle-timeout logout, a crash, or an accidental
+ * navigation away doesn't cost unsaved writing. The autosaved copy is
+ * cleared the moment a real save succeeds. See also useSessionSecurity's
+ * silent token refresh, which now keeps an actively-editing session alive
+ * past the JWT's 60-minute expiry in the first place.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -20,6 +29,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { adminGetPost, adminCreatePost, adminUpdatePost, adminUploadBlogImage, BlogPostInput } from '@/services/blogService';
 import { renderBlogContent } from '@/utils/blogMarkdown';
 import { BlogPostView } from '@/components/BlogPostView';
+import { fmtDateTime } from '@/utils/date';
 
 const EMPTY: BlogPostInput = {
   title: '',
@@ -36,10 +46,23 @@ interface SelectionTransform {
   selEnd: number;
 }
 
+interface StoredDraft {
+  title: string;
+  excerpt: string;
+  content: string;
+  cover_image_url: string;
+  status: 'draft' | 'published';
+  tagsText: string;
+  savedAt: string; // ISO timestamp
+}
+
+const AUTOSAVE_DEBOUNCE_MS = 1500;
+
 const AdminBlogEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const navigate = useNavigate();
+  const draftKey = `blog_draft:${id || 'new'}`;
 
   const [form, setForm] = useState<BlogPostInput>(EMPTY);
   const [tagsText, setTagsText] = useState('');
@@ -48,6 +71,7 @@ const AdminBlogEditorPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [recoverableDraft, setRecoverableDraft] = useState<StoredDraft | null>(null);
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
@@ -58,6 +82,7 @@ const AdminBlogEditorPage: React.FC = () => {
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const savedSelection = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const replaceTarget = useRef<{ index: number; length: number; alt: string } | null>(null);
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -252,7 +277,17 @@ const AdminBlogEditorPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      // New post: any autosaved draft under this key is unsaved work in
+      // its own right (there's no server copy yet), so always offer it.
+      try {
+        const raw = localStorage.getItem(draftKey);
+        if (raw) setRecoverableDraft(JSON.parse(raw));
+      } catch {
+        localStorage.removeItem(draftKey); // corrupt entry, don't keep offering it
+      }
+      return;
+    }
     adminGetPost(id)
       .then((post) => {
         setForm({
@@ -265,12 +300,77 @@ const AdminBlogEditorPage: React.FC = () => {
         });
         setTagsText(post.tags.join(', '));
         setSlug(post.slug);
+
+        // Only offer the autosaved draft if it's newer than the post's
+        // last real save -- otherwise it's just an earlier autosave that
+        // already made it to the server (or a stale one from a different
+        // abandoned session), and re-offering it would be a false alarm.
+        try {
+          const raw = localStorage.getItem(draftKey);
+          if (raw) {
+            const draft: StoredDraft = JSON.parse(raw);
+            if (new Date(draft.savedAt).getTime() > new Date(post.updated_at).getTime()) {
+              setRecoverableDraft(draft);
+            } else {
+              localStorage.removeItem(draftKey);
+            }
+          }
+        } catch {
+          localStorage.removeItem(draftKey);
+        }
       })
       .catch((e) => setError(e?.response?.data?.detail || 'Could not load this post.'))
       .finally(() => setLoading(false));
   }, [id]);
 
   const update = (field: keyof BlogPostInput, value: any) => setForm((f) => ({ ...f, [field]: value }));
+
+  const restoreDraft = () => {
+    if (!recoverableDraft) return;
+    setForm({
+      title: recoverableDraft.title,
+      excerpt: recoverableDraft.excerpt,
+      content: recoverableDraft.content,
+      cover_image_url: recoverableDraft.cover_image_url,
+      status: recoverableDraft.status,
+      tags: [], // recomputed from tagsText at save time regardless
+    });
+    setTagsText(recoverableDraft.tagsText);
+    setRecoverableDraft(null);
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem(draftKey);
+    setRecoverableDraft(null);
+  };
+
+  // Autosave, debounced -- skipped while there's a pending restore/discard
+  // decision so it can't silently overwrite the very draft being offered.
+  useEffect(() => {
+    if (loading || recoverableDraft) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => {
+      if (!form.title.trim() && !form.content.trim()) return; // nothing worth saving yet
+      const draft: StoredDraft = {
+        title: form.title,
+        excerpt: form.excerpt || '',
+        content: form.content,
+        cover_image_url: form.cover_image_url || '',
+        status: form.status,
+        tagsText,
+        savedAt: new Date().toISOString(),
+      };
+      try {
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+      } catch {
+        // localStorage full/unavailable (e.g. private browsing) -- nothing
+        // more to do; the in-memory form is still intact for this tab.
+      }
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => {
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    };
+  }, [form, tagsText, loading, recoverableDraft, draftKey]);
 
   const save = async (publish?: boolean) => {
     if (!form.title.trim() || !form.content.trim()) {
@@ -289,10 +389,12 @@ const AdminBlogEditorPage: React.FC = () => {
         await adminUpdatePost(id, payload);
       } else {
         const created = await adminCreatePost(payload);
+        localStorage.removeItem(draftKey); // "new" draft is now a real, saved post
         navigate(`/admin/blog/${created.id}`, { replace: true });
         setSaving(false);
         return;
       }
+      localStorage.removeItem(draftKey);
       navigate('/admin/blog');
     } catch (e: any) {
       setError(e?.response?.data?.detail || 'Could not save this post.');
@@ -336,6 +438,30 @@ const AdminBlogEditorPage: React.FC = () => {
       {error && (
         <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: '#fee2e2', color: '#b91c1c', fontSize: '0.85rem' }}>
           {error}
+        </div>
+      )}
+
+      {recoverableDraft && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'var(--primary-muted, #fef3c7)', color: 'var(--text)', fontSize: '0.85rem' }}>
+          <span>
+            Found unsaved changes from {fmtDateTime(recoverableDraft.savedAt)} that never made it to a save (likely a session timeout). Restore them?
+          </span>
+          <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+            <button
+              type="button"
+              onClick={restoreDraft}
+              style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--primary)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
+            >
+              Restore
+            </button>
+            <button
+              type="button"
+              onClick={discardDraft}
+              style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text)' }}
+            >
+              Discard
+            </button>
+          </div>
         </div>
       )}
 
