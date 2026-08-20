@@ -52,6 +52,7 @@ from schemas.student_activities import (
     StudentActivityDetail,
     ActivityPhaseDetail,
     ActivityPhases,
+    ActivityDiscoveryDetail,
     ActivityTeacher,
     StudentPaginatedActivityResponse,
     StartSessionRequest,
@@ -265,12 +266,33 @@ async def get_student_activity(
         ),
     )
 
+    # Discovery/scavenger-hunt activities carry their real task in
+    # discovery_task_description (e.g. "take photos of 8 native plants in
+    # Central Park") rather than the generic description/learning_objectives
+    # every activity has -- previously computed nowhere and never sent to
+    # the student. task_description is required on the schema (mirrors the
+    # DB: discovery activities are never created without it, see
+    # discoveryActivities.ts's CreateDiscoveryActivityInput), so this only
+    # attaches when there's real content, not just a matching activity_type.
+    discovery = None
+    if activity.activity_type == "discovery" and activity.discovery_task_description:
+        discovery = ActivityDiscoveryDetail(
+            task_description=activity.discovery_task_description,
+            mode=getattr(activity, "discovery_mode", None),
+            documentation_requirements=getattr(activity, "discovery_documentation_requirements", None),
+            success_criteria=getattr(activity, "discovery_success_criteria", None),
+            difficulty_level=getattr(activity, "discovery_difficulty_level", None),
+            time_limit_minutes=getattr(activity, "discovery_time_limit_minutes", None),
+            location_required=bool(getattr(activity, "discovery_location_required", False)),
+        )
+
     return StudentActivityDetail(
         **summary,
         location=activity.location_name,
         due_date=due_str,
         teacher=ActivityTeacher(name=teacher_name),
         phases=phases,
+        discovery=discovery,
         location_info=activity.location_info,
         location_wiki_data=getattr(activity, "location_wiki_data", None),
         resources=activity.resources or [],

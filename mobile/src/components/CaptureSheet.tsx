@@ -188,6 +188,28 @@ export default function CaptureSheet({
     }
   };
 
+  // Closing the sheet (✕ button, iOS swipe-to-dismiss, Android back) while a
+  // recording is still in progress skips stopRecording() entirely -- onClose
+  // is a bare callback with no idea a recording is active. That left the
+  // shared iOS audio session stuck in allowsRecordingIOS: true for the rest
+  // of the app session: the exact same silent-TTS bug the Aug 11 fix closed
+  // for the normal stop-button path (see useSpeech.ts), just reached by
+  // abandoning the sheet instead of tapping stop. Discard (don't upload --
+  // the student never confirmed this recording) and restore the session
+  // whenever the sheet closes with an active recording.
+  React.useEffect(() => {
+    if (visible || !recording) return;
+    if (timerRef.current) clearInterval(timerRef.current);
+    const rec = recording;
+    setRecording(null);
+    setRecordingDuration(0);
+    rec.stopAndUnloadAsync()
+      .catch(() => {})
+      .finally(() => {
+        Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
+      });
+  }, [visible, recording]);
+
   // ── Note ──────────────────────────────────────────────────────────────────
   const submitNote = async () => {
     if (!noteText.trim()) return;

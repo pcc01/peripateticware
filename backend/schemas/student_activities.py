@@ -60,6 +60,26 @@ class ActivityPhases(BaseModel):
     reflect: ActivityPhaseDetail
 
 
+class ActivityDiscoveryDetail(BaseModel):
+    """
+    Discovery / scavenger-hunt specific content (Activity.discovery_* columns
+    -- see models/database.py). Only present when activity_type='discovery';
+    None for every other activity type. This is the actual "take photos of 8
+    native plants in Central Park" task the teacher or AI wrote -- distinct
+    from the generic description/learning_objectives every activity has, and
+    previously dropped entirely by this endpoint (see get_student_activity's
+    comment). Frontend contract: when rendering or reading this aloud,
+    task_description (the objective) always comes first.
+    """
+    task_description:           str
+    mode:                        Optional[str]           = None  # 'location_based' | 'task_based'
+    documentation_requirements:  Optional[Dict[str, Any]] = None  # e.g. {"photos": true, "notes": true}
+    success_criteria:            Optional[str]            = None
+    difficulty_level:            Optional[int]            = None
+    time_limit_minutes:          Optional[int]            = None
+    location_required:           bool                     = False
+
+
 class ActivityTeacher(BaseModel):
     name: str
 
@@ -80,6 +100,7 @@ class StudentActivityDetail(StudentActivitySummary):
     due_date:          Optional[str]           = None   # ISO string
     teacher:           Optional[ActivityTeacher] = None
     phases:            Optional[ActivityPhases]  = None
+    discovery:         Optional[ActivityDiscoveryDetail] = None
     resources:         List[Dict]              = []
     suggested_lessons: Optional[List]          = []
     marzano_level:     Optional[int]           = None
