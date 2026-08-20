@@ -16,6 +16,10 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   theme: Theme;
+  // Sent to the backend so it can enforce the activity's
+  // ai_interaction_mode server-side (a hidden button is a UI convenience,
+  // not real enforcement -- see routes/inference.py's /chat).
+  activityId?: string;
   activityTitle?: string;
   activitySubject?: string;
   currentPrompt?: string;
@@ -29,7 +33,7 @@ interface DisplayMessage {
 
 export default function PeriChatSheet({
   visible, onClose, theme,
-  activityTitle, activitySubject, currentPrompt,
+  activityId, activityTitle, activitySubject, currentPrompt,
 }: Props) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -61,6 +65,7 @@ export default function PeriChatSheet({
       const res = await chatWithPeri({
         message: text,
         history,
+        activityId,
         activityTitle,
         activitySubject,
         currentPrompt,

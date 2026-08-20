@@ -131,6 +131,7 @@ const ActivityManager = () => {
     curriculum_unit_ids: [],
     bloom_level: 'understand',
     activity_type: 'outdoor',
+    ai_interaction_mode: 'ai_chat',
     is_shareable: false,
     share_scope: 'org' as 'org' | 'all',
     language: '',
@@ -376,6 +377,7 @@ const ActivityManager = () => {
           curriculum_unit_ids: activity.curriculum_unit_ids,
           bloom_level: activity.bloom_level,
           activity_type: activity.activity_type,
+          ai_interaction_mode: ((activity as any).ai_interaction_mode as 'ai_chat' | 'curated_only') ?? 'ai_chat',
           is_shareable: activity.is_shareable,
           share_scope: (activity.share_scope as 'org' | 'all') ?? 'org',
           language: activity.language ?? '',
@@ -1277,6 +1279,66 @@ const ActivityManager = () => {
             <h2 className={styles.chapterTitle}>{t("landing:additional_options", "Additional Options")}</h2>
           </summary>
           <div className={styles.chapterBody}>
+
+          {/* AI interaction mode — added 2026-08-20 alongside the landing
+              page copy fix (previously described AI as needing local Ollama
+              or a self-supplied Anthropic key, even after this deployment's
+              own key was configured). Author's choice, shown with explicit
+              tradeoff notes per product decision: this shouldn't be a hidden
+              default a teacher has to discover by accident. */}
+          <div className="p-4 border border-[var(--border)] rounded-lg mb-3">
+            <label className="block text-sm font-semibold text-[var(--text)] mb-1">
+              {t('components_teacher_activitymanager.ai_interaction_label', 'Student AI Interaction')}
+            </label>
+            <p className="text-xs text-[var(--text-muted)] mb-3">
+              {t('components_teacher_activitymanager.ai_interaction_intro', "Choose how students get prompted during this activity's Inquiry phase.")}
+            </p>
+            <div className="grid grid-cols-1 gap-2">
+              {([
+                {
+                  value: 'ai_chat' as const,
+                  icon: '💬',
+                  label: t('components_teacher_activitymanager.ai_interaction_chat_label', 'AI Chat (recommended)'),
+                  note: t(
+                    'components_teacher_activitymanager.ai_interaction_chat_note',
+                    "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection."
+                  ),
+                },
+                {
+                  value: 'curated_only' as const,
+                  icon: '📖',
+                  label: t('components_teacher_activitymanager.ai_interaction_curated_label', 'Curated Question Bank Only'),
+                  note: t(
+                    'components_teacher_activitymanager.ai_interaction_curated_note',
+                    "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \"Ask Peri\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity."
+                  ),
+                },
+              ]).map((opt) => {
+                const selected = (formData.ai_interaction_mode ?? 'ai_chat') === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, ai_interaction_mode: opt.value })}
+                    className="text-left px-4 py-3 rounded-lg border transition"
+                    style={{
+                      background: selected ? 'var(--primary-muted)' : 'white',
+                      borderColor: selected ? 'var(--primary)' : '#d1d5db',
+                    }}
+                  >
+                    <div className="text-sm font-semibold text-[var(--text)]">{opt.icon} {opt.label}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-1">{opt.note}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-[var(--text-muted)] mt-2 italic">
+              {t(
+                'components_teacher_activitymanager.ai_interaction_footnote',
+                "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that."
+              )}
+            </p>
+          </div>
 
           {/* Shareable toggle */}
           <div className="flex items-center p-3 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-alt)] mb-3">

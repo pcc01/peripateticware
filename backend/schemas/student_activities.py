@@ -43,6 +43,11 @@ class StudentActivitySummary(BaseModel):
     learning_objectives:         List[Any]     = []
     assessment_type:             Optional[str] = None
     activity_type:               Optional[str] = None
+    # Author's choice (schemas/activities.py's AIInteractionModeEnum):
+    # 'ai_chat' = "Ask Peri" AI conversation available; 'curated_only' =
+    # curated question bank only, no live AI call. Client uses this to
+    # decide whether to show the Ask Peri entry point at all.
+    ai_interaction_mode:         str           = "ai_chat"
 
     class Config:
         from_attributes = True

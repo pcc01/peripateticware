@@ -302,6 +302,15 @@ class Activity(Base):
     activity_type = Column(String(50), default="inquiry")  # inquiry | field_observation | hands_on | project | discussion | experiment | discovery
     suggested_lessons = Column(JSONB, default=list)
 
+    # Author's choice: 'ai_chat' = students can open-ended chat with
+    # AI-backed Peri during this activity (on top of the curated question
+    # bank); 'curated_only' = students only get prompts from the curated,
+    # on-device bank -- no live AI call. Defaults to 'ai_chat' to match
+    # pre-2026-08-20 behavior (every activity had AI chat, with no way to
+    # turn it off) for existing rows. See schemas/activities.py's
+    # AIInteractionModeEnum for the full tradeoff shown to teachers.
+    ai_interaction_mode = Column(String(20), default="ai_chat", nullable=False, server_default="ai_chat")
+
     # =========================================================================
     # DISCOVERY / SCAVENGER HUNT (Phase 3 — only used when activity_type=DISCOVERY)
     # =========================================================================

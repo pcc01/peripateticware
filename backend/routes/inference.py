@@ -6,8 +6,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
+from uuid import UUID
 from core.rate_limit import ai_rate_limit
 import httpx
 from core.database import get_db
@@ -309,6 +310,108 @@ async def process_inquiry(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process inquiry"
         )
+
+
+# ── Free-form Peri chat ("Ask Peri") ───────────────────────────────────────────
+# Mobile's PeriChatSheet.tsx has called POST /inference/chat since it shipped
+# (M-8) -- this route never existed, so every "Ask Peri" tap 404'd in
+# production with no visible error surfaced beyond the chat sheet's generic
+# "I couldn't connect right now" fallback message. Added 2026-08-20 alongside
+# the ai_interaction_mode activity setting this exists to gate.
+
+class ChatTurn(BaseModel):
+    role: str     # 'user' | 'assistant'
+    content: str
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000)
+    history: List[ChatTurn] = []
+    # Looked up server-side to enforce the activity's ai_interaction_mode --
+    # the mobile client already hides "Ask Peri" for curated_only activities,
+    # but that's a UI convenience, not enforcement; this closes the gap for
+    # anyone calling the API directly. Omit for chat with no specific
+    # activity context.
+    activity_id: Optional[UUID] = None
+    system_context: Optional[str] = None
+
+
+class ChatResponse(BaseModel):
+    response: str
+    confidence: Optional[float] = None
+
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat_with_peri(
+    request: ChatRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    org_id: Optional[str] = Depends(ai_rate_limit),
+):
+    """
+    Free-form conversational chat with Peri -- distinct from /inquiry's
+    structured "generate the next guiding question" flow. Used by the
+    mobile app's "Ask Peri" button during an activity's Inquiry phase.
+    """
+    if request.activity_id:
+        from models.database import Activity
+        try:
+            act_row = (await db.execute(
+                _select(Activity.ai_interaction_mode).where(Activity.id == request.activity_id)
+            )).fetchone()
+        except Exception as lookup_err:
+            # DB hiccup, activity already deleted, etc. -- fail open rather
+            # than blocking chat over a lookup problem unrelated to the
+            # actual ai_interaction_mode setting (same fail-open pattern as
+            # process_inquiry's session-ownership check above). activity_id
+            # is already a validated UUID by the time we get here (Pydantic
+            # coerces or 422s before this handler runs).
+            logger.warning(f"ai_interaction_mode lookup skipped: {lookup_err}")
+            act_row = None
+        if act_row and act_row[0] == "curated_only":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="AI chat is turned off for this activity — its author chose the curated question bank only.",
+            )
+
+    from services.prompt_library import SYSTEM_PERI
+
+    # _call_llm_inference takes one flattened prompt string, not a real
+    # multi-turn messages array (see its docstring) -- render the last few
+    # turns as a plain transcript so the model still has conversational
+    # context. Capped at 10 turns: plenty for a short field-activity chat,
+    # keeps the prompt (and cost) bounded regardless of how long a student
+    # leaves the chat sheet open.
+    transcript_lines = [
+        f"{'Student' if turn.role == 'user' else 'Peri'}: {turn.content}"
+        for turn in request.history[-10:]
+    ]
+    context_block = f"{request.system_context}\n\n" if request.system_context else ""
+    prompt = (
+        f"{context_block}"
+        + ("\n".join(transcript_lines) + "\n" if transcript_lines else "")
+        + f"Student: {request.message}\nPeri:"
+    )
+
+    try:
+        result = await _call_llm_inference(
+            inquiry={},
+            explicit_prompt=prompt,
+            system=SYSTEM_PERI,
+            temperature=0.7,
+            num_predict=220,
+            max_tokens=220,
+        )
+    except ProviderUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI chat is temporarily unavailable — please try again shortly.",
+        )
+
+    reply = (result.get("question") or "").strip() or (
+        "I'm not sure how to respond to that — can you tell me more about what you're observing?"
+    )
+    return ChatResponse(response=reply, confidence=result.get("confidence"))
 
 
 @router.post("/multimodal-process")

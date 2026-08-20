@@ -132,6 +132,7 @@ def _activity_to_summary(a: Activity) -> dict:
         "learning_objectives":        getattr(a, "learning_objectives", None) or [],
         "assessment_type":            getattr(a, "assessment_type", None),
         "activity_type":              getattr(a, "activity_type", None),
+        "ai_interaction_mode":        getattr(a, "ai_interaction_mode", None) or "ai_chat",
     }
 
 

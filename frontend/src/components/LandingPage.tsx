@@ -518,7 +518,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
               ))}
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center', fontStyle: 'italic' }}>{t('components_landingpage.peri_never_gives_the_answer_it_asks_the_', 'Peri never gives the answer. It asks the next right question. — Questions are drawn from a curated bank; AI responses require Ollama running locally or an Anthropic API key.')}</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center', fontStyle: 'italic' }}>{t('components_landingpage.peri_never_gives_the_answer_it_asks_the_', "Peri never gives the answer. It asks the next right question. — Every question is drawn from a curated bank, and teachers can turn on free-form AI conversation for deeper follow-up on any activity.")}</p>
             </div>
           </div>
         </section>
