@@ -2,14 +2,23 @@
 /**
  * useSessionSecurity
  *
- * Handles two concerns for authenticated pages:
+ * Handles three concerns for authenticated pages:
  *
  * 1. Idle timeout  — user gets a 2-minute warning after IDLE_MINUTES of no
  *    mouse/keyboard/touch activity, then is logged out automatically.
  *
- * 2. Token expiry  — decodes the JWT exp claim on mount and on every focus
+ * 2. Silent token refresh — the backend's access token (ACCESS_TOKEN_EXPIRE_
+ *    MINUTES, 60 by default) is short relative to how long someone might
+ *    spend writing a single blog post or lesson plan. While the user is
+ *    NOT idle, the token is refreshed in the background a few minutes
+ *    before it expires, so being actively present never trips the expiry
+ *    logout below and loses whatever's unsaved on screen.
+ *
+ * 3. Token expiry  — decodes the JWT exp claim on mount and on every focus
  *    event; triggers forced logout (with a toast) the moment the token
- *    expires, even if the user is actively typing.
+ *    actually expires. With #2 in place this should now only fire for a
+ *    token that expired while the tab was idle or backgrounded (silent
+ *    refresh only runs for an active user), not mid-edit.
  *
  * Usage — call once near the root of each authenticated layout:
  *
@@ -20,12 +29,14 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
+import { authApi } from '@/services/api';
 import { useTranslation } from 'react-i18next';
 
 // ── Configuration ────────────────────────────────────────────────────────────
-const IDLE_MINUTES      = 30;           // warn after this many idle minutes
-const WARN_SECONDS      = 120;          // countdown before auto-logout (seconds)
-const CHECK_INTERVAL_MS = 10_000;       // how often to poll idle + expiry
+const IDLE_MINUTES        = 30;         // warn after this many idle minutes
+const WARN_SECONDS        = 120;        // countdown before auto-logout (seconds)
+const CHECK_INTERVAL_MS   = 10_000;     // how often to poll idle + expiry
+const REFRESH_LEAD_SECONDS = 300;       // silently refresh once this close to expiry (if active)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -82,12 +93,13 @@ function removeWarningBanner() {
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useSessionSecurity() {
-  const { token, logout } = useAuthStore();
+  const { token, logout, setToken } = useAuthStore();
   const navigate = useNavigate();
 
   const lastActivityRef = useRef<number>(Date.now());
   const warningShownRef  = useRef<boolean>(false);
   const cleanupBannerRef = useRef<(() => void) | null>(null);
+  const refreshingRef    = useRef<boolean>(false);
 
   /** Reset idle timer on any user activity */
   const resetActivity = useCallback(() => {
@@ -105,6 +117,24 @@ export function useSessionSecurity() {
     navigate(`/login?reason=${reason}`);
   }, [logout, navigate]);
 
+  /** Exchange the still-valid token for a fresh one, extending the session
+   *  without interrupting whatever the user is doing. Silent no-op on
+   *  failure -- the next expiry check just falls through to doLogout as
+   *  before, so this can never make things worse than the old behavior. */
+  const tryRefresh = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
+    try {
+      const { access_token } = await authApi.refreshToken();
+      setToken(access_token);
+    } catch {
+      // Token may have just expired, or the network hiccuped -- either way,
+      // the interval's own expiry check handles the fallback.
+    } finally {
+      refreshingRef.current = false;
+    }
+  }, [setToken]);
+
   useEffect(() => {
     if (!token) return;
 
@@ -120,9 +150,18 @@ export function useSessionSecurity() {
 
       // ── Token expiry check ───────────────────────────────────────────────
       const exp = getTokenExp(token);
-      if (exp !== null && now / 1000 >= exp) {
-        doLogout('expired');
-        return;
+      if (exp !== null) {
+        const secondsLeft = exp - now / 1000;
+        if (secondsLeft <= 0) {
+          doLogout('expired');
+          return;
+        }
+        // Still-present user, token nearing expiry -- refresh quietly rather
+        // than waiting for the wall clock to force a logout mid-edit. Not
+        // done while idle: an idle tab should still expire on schedule.
+        if (secondsLeft <= REFRESH_LEAD_SECONDS && idleMin < IDLE_MINUTES) {
+          tryRefresh();
+        }
       }
 
       // ── Idle warning + countdown ─────────────────────────────────────────
@@ -168,5 +207,5 @@ export function useSessionSecurity() {
       window.removeEventListener('focus', onFocus);
       removeWarningBanner();
     };
-  }, [token, resetActivity, doLogout]);
+  }, [token, resetActivity, doLogout, tryRefresh]);
 }
