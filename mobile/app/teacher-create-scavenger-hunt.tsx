@@ -58,6 +58,14 @@ export default function CreateScavengerHuntScreen() {
 
   const [saving, setSaving] = useState(false);
 
+  // expo-location's getCurrentPositionAsync has no built-in timeout -- on a
+  // weak/slow GPS fix (indoors, poor sky view) it can hang indefinitely
+  // with the button just stuck on "locating" and zero feedback, which reads
+  // as "the location was never found" rather than "still trying." Race it
+  // against a manual timeout so a bad fix fails visibly instead of hanging
+  // forever.
+  const LOCATION_TIMEOUT_MS = 15000;
+
   const captureLocation = async () => {
     setLocating(true);
     setLocationError(null);
@@ -67,10 +75,19 @@ export default function CreateScavengerHuntScreen() {
         setLocationError(t('createScavengerHunt.locationDenied', 'Location permission is needed to capture where this challenge is.'));
         return;
       }
-      const pos = await Location.getCurrentPositionAsync({});
+      const pos = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('LOCATION_TIMEOUT')), LOCATION_TIMEOUT_MS)
+        ),
+      ]);
       setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
-    } catch {
-      setLocationError(t('createScavengerHunt.locationError', "Couldn't get your location. Try again."));
+    } catch (err) {
+      setLocationError(
+        err instanceof Error && err.message === 'LOCATION_TIMEOUT'
+          ? t('createScavengerHunt.locationTimeout', "Couldn't get a GPS fix within 15 seconds — try moving somewhere with a clearer view of the sky, then try again.")
+          : t('createScavengerHunt.locationError', "Couldn't get your location. Try again.")
+      );
     } finally {
       setLocating(false);
     }
