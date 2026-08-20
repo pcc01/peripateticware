@@ -83,6 +83,9 @@ const AdminBlogEditorPage: React.FC = () => {
   const savedSelection = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const replaceTarget = useRef<{ index: number; length: number; alt: string } | null>(null);
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Content-only JSON snapshot of the form as first loaded (server data, or
+  // EMPTY for a new post) -- see the autosave effect below for why.
+  const initialSnapshotRef = useRef<string | null>(null);
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -278,8 +281,19 @@ const AdminBlogEditorPage: React.FC = () => {
 
   useEffect(() => {
     if (!id) {
-      // New post: any autosaved draft under this key is unsaved work in
-      // its own right (there's no server copy yet), so always offer it.
+      // New post: nothing's loaded from a server, so the "unchanged" form
+      // is just EMPTY -- snapshot it so the very first real keystroke is
+      // recognized as a change and autosave activates immediately.
+      initialSnapshotRef.current = JSON.stringify({
+        title: EMPTY.title,
+        excerpt: EMPTY.excerpt || '',
+        content: EMPTY.content,
+        cover_image_url: EMPTY.cover_image_url || '',
+        status: EMPTY.status,
+        tagsText: '',
+      });
+      // Any autosaved draft under this key is unsaved work in its own
+      // right (there's no server copy yet), so always offer it.
       try {
         const raw = localStorage.getItem(draftKey);
         if (raw) setRecoverableDraft(JSON.parse(raw));
@@ -290,6 +304,7 @@ const AdminBlogEditorPage: React.FC = () => {
     }
     adminGetPost(id)
       .then((post) => {
+        const loadedTagsText = post.tags.join(', ');
         setForm({
           title: post.title,
           excerpt: post.excerpt || '',
@@ -298,8 +313,16 @@ const AdminBlogEditorPage: React.FC = () => {
           status: post.status,
           tags: post.tags,
         });
-        setTagsText(post.tags.join(', '));
+        setTagsText(loadedTagsText);
         setSlug(post.slug);
+        initialSnapshotRef.current = JSON.stringify({
+          title: post.title,
+          excerpt: post.excerpt || '',
+          content: post.content,
+          cover_image_url: post.cover_image_url || '',
+          status: post.status,
+          tagsText: loadedTagsText,
+        });
 
         // Only offer the autosaved draft if it's newer than the post's
         // last real save -- otherwise it's just an earlier autosave that
@@ -344,22 +367,36 @@ const AdminBlogEditorPage: React.FC = () => {
     setRecoverableDraft(null);
   };
 
-  // Autosave, debounced -- skipped while there's a pending restore/discard
-  // decision so it can't silently overwrite the very draft being offered.
+  // Autosave, debounced. FIXED 2026-08-20: this used to skip entirely while
+  // recoverableDraft was set (to avoid overwriting the very draft being
+  // offered before the user chose Restore/Discard) -- but that meant if
+  // someone left the restore banner un-dismissed and just kept typing, NONE
+  // of that new typing was ever saved, silently, for the rest of the
+  // session. That's worse than the race it was guarding against. Now the
+  // guard only compares against a snapshot of the form as it was when this
+  // mount first loaded (server data, or EMPTY for a new post): nothing gets
+  // written until the live form actually diverges from that snapshot, which
+  // covers the original race (nothing's changed yet, so there's nothing to
+  // protect) without ever going silent once real edits start happening --
+  // restoring, discarding, or just typing over the old content all count.
   useEffect(() => {
-    if (loading || recoverableDraft) return;
+    if (loading) return;
     if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     autosaveTimer.current = setTimeout(() => {
       if (!form.title.trim() && !form.content.trim()) return; // nothing worth saving yet
-      const draft: StoredDraft = {
+      // Compared without a timestamp -- content-only, so it can actually
+      // match the snapshot taken at load time (a savedAt field would make
+      // this never equal, since it's freshly generated every tick).
+      const contentSnapshot = {
         title: form.title,
         excerpt: form.excerpt || '',
         content: form.content,
         cover_image_url: form.cover_image_url || '',
         status: form.status,
         tagsText,
-        savedAt: new Date().toISOString(),
       };
+      if (JSON.stringify(contentSnapshot) === initialSnapshotRef.current) return; // unchanged from what was loaded -- nothing new to protect
+      const draft: StoredDraft = { ...contentSnapshot, savedAt: new Date().toISOString() };
       try {
         localStorage.setItem(draftKey, JSON.stringify(draft));
       } catch {
@@ -370,7 +407,7 @@ const AdminBlogEditorPage: React.FC = () => {
     return () => {
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
     };
-  }, [form, tagsText, loading, recoverableDraft, draftKey]);
+  }, [form, tagsText, loading, draftKey]);
 
   const save = async (publish?: boolean) => {
     if (!form.title.trim() || !form.content.trim()) {
