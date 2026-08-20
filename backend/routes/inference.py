@@ -971,7 +971,15 @@ async def health_check():
                 except Exception:
                     llm_status = "unavailable"
         elif settings.LLM_PROVIDER.lower() == "claude":
-            llm_status = "available" if settings.CLAUDE_API_KEY else "no_key"
+            # Match agents/provider.py's call_claude() key resolution exactly
+            # (CLAUDE_API_KEY, then ANTHROPIC_API_KEY) -- this previously
+            # checked CLAUDE_API_KEY alone, so a deployment configured with
+            # only ANTHROPIC_API_KEY (the actual key name documented for
+            # setup, and what's set in prod) reported "no_key" here even
+            # though every real Claude call was working fine via that same
+            # fallback. Health-check-only bug -- found while verifying
+            # /inference/chat actually works in prod, not a functional break.
+            llm_status = "available" if (settings.CLAUDE_API_KEY or settings.ANTHROPIC_API_KEY) else "no_key"
         
         return {
             "status": "healthy",
