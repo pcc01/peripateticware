@@ -41,9 +41,11 @@ class BlogPost(Base):
     # excerpt on the frontend if left blank.
     excerpt = Column(Text, nullable=True)
     # Body copy. Stored as the lightweight markdown subset the frontend's
-    # renderBlogContent() understands (headings, bold/italic, links, lists,
-    # blockquotes, paragraphs) -- not full CommonMark, and never rendered
-    # as raw HTML on the frontend.
+    # renderBlogContent() understands (headings, bold/italic/strikethrough,
+    # inline code, fenced code blocks, links, images, ordered/unordered
+    # lists, blockquotes, horizontal rules, paragraphs) -- not full
+    # CommonMark (no tables/LaTeX), and never rendered as raw HTML on the
+    # frontend.
     content = Column(Text, nullable=False)
     cover_image_url = Column(String(500), nullable=True)
 
