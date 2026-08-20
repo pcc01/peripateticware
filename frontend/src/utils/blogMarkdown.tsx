@@ -6,25 +6,32 @@
  * Minimal, dependency-free renderer for the lightweight markdown subset
  * blog posts are written in (see backend/models/blog.py's docstring).
  *
- * Deliberately NOT a full CommonMark implementation and never touches
- * dangerouslySetInnerHTML -- every line is parsed into plain React
- * elements, so there's no HTML-injection surface even though post content
- * is admin-authored free text.
+ * Deliberately NOT a full CommonMark implementation (no tables, no LaTeX)
+ * and never touches dangerouslySetInnerHTML -- every line is parsed into
+ * plain React elements, so there's no HTML-injection surface even though
+ * post content is admin-authored free text.
  *
  * Supported:
- *   ## Heading / ### Subheading
+ *   # Title / ## Heading / ### Subheading
  *   > Blockquote
- *   - Bullet list item   (consecutive "- " lines group into one <ul>)
+ *   - Bullet list item     (consecutive "- "/"* " lines group into one <ul>)
+ *   1. Numbered list item  (consecutive "1. " lines group into one <ol>)
+ *   ``` fenced code block ```
+ *   ---  horizontal rule (three or more - or *, alone on a line)
  *   Blank-line-separated paragraphs
- *   Inline: **bold**, *italic*, [text](url)
+ *   Inline: **bold**, *italic*, ~~strikethrough~~, `code`,
+ *           [text](url), ![alt](url)
  */
 
 import React from 'react';
 
 function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
-  // Single pass over **bold**, *italic*, and [text](url) -- order matters
-  // (bold before italic) since *…* would otherwise also match inside **…**.
-  const pattern = /(\*\*(.+?)\*\*|\*(.+?)\*|\[(.+?)\]\((https?:\/\/[^\s)]+)\))/g;
+  // Single pass over the inline syntaxes -- order matters where prefixes
+  // overlap (bold before italic, since *…* would otherwise also match
+  // inside **…**; image before link is naturally safe since "![" can only
+  // start the image alternative).
+  const pattern =
+    /(!\[(.*?)\]\((https?:\/\/[^\s)]+)\))|(\[(.+?)\]\((https?:\/\/[^\s)]+)\))|(\*\*(.+?)\*\*)|(~~(.+?)~~)|(\*(.+?)\*)|(`([^`]+?)`)/g;
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -34,15 +41,41 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
     if (match.index > lastIndex) {
       nodes.push(text.slice(lastIndex, match.index));
     }
-    if (match[2] !== undefined) {
-      nodes.push(<strong key={`${keyPrefix}-${i++}`}>{match[2]}</strong>);
-    } else if (match[3] !== undefined) {
-      nodes.push(<em key={`${keyPrefix}-${i++}`}>{match[3]}</em>);
-    } else if (match[4] !== undefined) {
+    if (match[1] !== undefined) {
+      // ![alt](url)
       nodes.push(
-        <a key={`${keyPrefix}-${i++}`} href={match[5]} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>
-          {match[4]}
+        <img
+          key={`${keyPrefix}-${i++}`}
+          src={match[3]}
+          alt={match[2] || ''}
+          style={{ maxWidth: '100%', borderRadius: 8, display: 'block', margin: '0.5rem 0' }}
+        />
+      );
+    } else if (match[4] !== undefined) {
+      // [text](url)
+      nodes.push(
+        <a key={`${keyPrefix}-${i++}`} href={match[6]} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>
+          {match[5]}
         </a>
+      );
+    } else if (match[7] !== undefined) {
+      // **bold**
+      nodes.push(<strong key={`${keyPrefix}-${i++}`}>{match[8]}</strong>);
+    } else if (match[9] !== undefined) {
+      // ~~strikethrough~~
+      nodes.push(<del key={`${keyPrefix}-${i++}`}>{match[10]}</del>);
+    } else if (match[11] !== undefined) {
+      // *italic*
+      nodes.push(<em key={`${keyPrefix}-${i++}`}>{match[12]}</em>);
+    } else if (match[13] !== undefined) {
+      // `code`
+      nodes.push(
+        <code
+          key={`${keyPrefix}-${i++}`}
+          style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.9em', background: 'var(--surface-alt, rgba(127,127,127,0.15))', padding: '2px 5px', borderRadius: 4 }}
+        >
+          {match[14]}
+        </code>
       );
     }
     lastIndex = pattern.lastIndex;
@@ -56,6 +89,9 @@ export function renderBlogContent(content: string): React.ReactNode {
   const blocks: React.ReactNode[] = [];
   let paragraph: string[] = [];
   let listItems: string[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let inCodeBlock = false;
+  let codeLines: string[] = [];
   let key = 0;
 
   const flushParagraph = () => {
@@ -71,22 +107,60 @@ export function renderBlogContent(content: string): React.ReactNode {
 
   const flushList = () => {
     if (listItems.length === 0) return;
+    const Tag = listType === 'ol' ? 'ol' : 'ul';
     blocks.push(
-      <ul key={`ul-${key++}`} style={{ marginBottom: '1.25rem', paddingLeft: '1.5rem', lineHeight: 1.8, color: 'var(--text)' }}>
+      <Tag key={`list-${key++}`} style={{ marginBottom: '1.25rem', paddingLeft: '1.5rem', lineHeight: 1.8, color: 'var(--text)' }}>
         {listItems.map((item, idx) => (
           <li key={idx}>{renderInline(item, `li-${key}-${idx}`)}</li>
         ))}
-      </ul>
+      </Tag>
     );
     listItems = [];
+    listType = null;
   };
 
   for (const rawLine of lines) {
+    // Fenced code blocks preserve raw lines (including indentation/blank
+    // lines) until the closing ``` -- checked before any trimming/paragraph
+    // logic below since code content shouldn't be treated as prose.
+    if (rawLine.trim().startsWith('```')) {
+      if (!inCodeBlock) {
+        flushParagraph();
+        flushList();
+        inCodeBlock = true;
+        codeLines = [];
+      } else {
+        inCodeBlock = false;
+        blocks.push(
+          <pre
+            key={`code-${key++}`}
+            style={{ background: 'var(--surface-alt, rgba(127,127,127,0.12))', border: '1px solid var(--border)', borderRadius: 8, padding: '14px 16px', overflowX: 'auto', marginBottom: '1.25rem' }}
+          >
+            <code style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text)' }}>
+              {codeLines.join('\n')}
+            </code>
+          </pre>
+        );
+        codeLines = [];
+      }
+      continue;
+    }
+    if (inCodeBlock) {
+      codeLines.push(rawLine);
+      continue;
+    }
+
     const line = rawLine.trim();
 
     if (line === '') {
       flushParagraph();
       flushList();
+      continue;
+    }
+    if (/^(-{3,}|\*{3,})$/.test(line)) {
+      flushParagraph();
+      flushList();
+      blocks.push(<hr key={`hr-${key++}`} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '2rem 0' }} />);
       continue;
     }
     if (line.startsWith('### ')) {
@@ -109,6 +183,16 @@ export function renderBlogContent(content: string): React.ReactNode {
       );
       continue;
     }
+    if (line.startsWith('# ')) {
+      flushParagraph();
+      flushList();
+      blocks.push(
+        <h1 key={`h1-${key++}`} style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)', margin: '2.25rem 0 1rem' }}>
+          {renderInline(line.slice(2), `h1-${key}`)}
+        </h1>
+      );
+      continue;
+    }
     if (line.startsWith('> ')) {
       flushParagraph();
       flushList();
@@ -119,8 +203,18 @@ export function renderBlogContent(content: string): React.ReactNode {
       );
       continue;
     }
+    const orderedMatch = line.match(/^\d+\.\s+(.*)$/);
+    if (orderedMatch) {
+      flushParagraph();
+      if (listType === 'ul') flushList();
+      listType = 'ol';
+      listItems.push(orderedMatch[1]);
+      continue;
+    }
     if (line.startsWith('- ') || line.startsWith('* ')) {
       flushParagraph();
+      if (listType === 'ol') flushList();
+      listType = 'ul';
       listItems.push(line.slice(2));
       continue;
     }
@@ -139,11 +233,17 @@ export function renderBlogContent(content: string): React.ReactNode {
 export function plainTextExcerpt(content: string, maxLength = 180): string {
   const stripped = (content || '')
     .replace(/\r\n/g, '\n')
+    .replace(/```[\s\S]*?```/g, ' ')
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^>\s?/gm, '')
     .replace(/^[-*]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^(-{3,}|\*{3,})$/gm, '')
+    .replace(/!\[(.*?)\]\(.+?\)/g, '$1')
     .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`([^`]+?)`/g, '$1')
     .replace(/\[(.+?)\]\(.+?\)/g, '$1')
     .replace(/\n+/g, ' ')
     .trim();
