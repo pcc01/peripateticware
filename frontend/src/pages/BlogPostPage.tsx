@@ -70,6 +70,10 @@ export default function BlogPostPage() {
         title={post.title}
         content={post.content}
         coverImageUrl={post.cover_image_url}
+        coverImageCaption={post.cover_image_caption}
+        coverImageAttribution={post.cover_image_attribution}
+        coverImageWidth={post.cover_image_width}
+        coverImageHeight={post.cover_image_height}
         tags={post.tags}
         metaLine={`${fmtDate(post.published_at || post.created_at)}${post.author_name ? ` · ${post.author_name}` : ''}`}
       />

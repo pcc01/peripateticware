@@ -11,6 +11,10 @@ export interface BlogPost {
   excerpt: string | null;
   content: string;
   cover_image_url: string | null;
+  cover_image_caption: string | null;
+  cover_image_attribution: string | null;
+  cover_image_width: number | null;
+  cover_image_height: number | null;
   status: 'draft' | 'published';
   author_name: string | null;
   tags: string[];
@@ -19,7 +23,11 @@ export interface BlogPost {
   updated_at: string;
 }
 
-export type BlogPostSummary = Omit<BlogPost, 'content'>;
+// List views don't get the full content body, and don't need cover
+// caption/attribution (a thumbnail has no room for it) -- but dimensions
+// stay, so a list card can size its cover thumbnail to the real aspect
+// ratio without cropping too, same as the full post view.
+export type BlogPostSummary = Omit<BlogPost, 'content' | 'cover_image_caption' | 'cover_image_attribution'>;
 
 export interface BlogPostListResponse<T> {
   items: T[];
@@ -34,6 +42,10 @@ export interface BlogPostInput {
   excerpt?: string;
   content: string;
   cover_image_url?: string;
+  cover_image_caption?: string;
+  cover_image_attribution?: string;
+  cover_image_width?: number | null;
+  cover_image_height?: number | null;
   status: 'draft' | 'published';
   tags: string[];
 }
@@ -78,13 +90,24 @@ export async function adminDeletePost(id: string) {
   await axiosInstance.delete(`/admin/blog/posts/${id}`);
 }
 
-/** Uploads a cover image (JPEG/PNG/WEBP/GIF, max 5MB) and returns its URL
- *  to fill into BlogPostInput.cover_image_url. */
-export async function adminUploadBlogImage(file: File): Promise<string> {
+export interface UploadedBlogImage {
+  url: string;
+  /** Natural pixel dimensions after the server's resize step. 0 if the
+   *  server couldn't decode the file's dimensions (still uploaded fine --
+   *  just no aspect-ratio info to size a box with). */
+  width: number;
+  height: number;
+}
+
+/** Uploads an image (JPEG/PNG/WEBP/GIF, max 5MB; larger files are
+ *  downscaled server-side) and returns its URL plus natural dimensions --
+ *  used both for BlogPostInput.cover_image_url/width/height and for images
+ *  inserted into the post body. */
+export async function adminUploadBlogImage(file: File): Promise<UploadedBlogImage> {
   const form = new FormData();
   form.append('file', file);
-  const { data } = await axiosInstance.post<{ url: string }>('/admin/blog/upload-image', form, {
+  const { data } = await axiosInstance.post<UploadedBlogImage>('/admin/blog/upload-image', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return data.url;
+  return data;
 }

@@ -61,13 +61,16 @@ def _slugify(text: str) -> str:
 
 _MD_STRIP_RE = re.compile(r"^#{1,6}\s+|^>\s?|^[-*]\s+", re.MULTILINE)
 _MD_INLINE_RE = re.compile(r"\*\*(.+?)\*\*|\*(.+?)\*|\[(.+?)\]\(.+?\)")
+# Image caption/attribution tag line -- see blogMarkdown.tsx's _SOLO_IMAGE_RE.
+_MD_CAPTION_LINE_RE = re.compile(r"^\^.*$", re.MULTILINE)
 
 
 def _plain_excerpt(content: str, max_length: int = 180) -> str:
     """Mirrors frontend/src/utils/blogMarkdown.tsx's plainTextExcerpt() --
     used as the excerpt fallback when an admin leaves it blank, so list
     views and Seo meta descriptions never show up empty."""
-    text = _MD_STRIP_RE.sub("", content or "")
+    text = _MD_CAPTION_LINE_RE.sub("", content or "")
+    text = _MD_STRIP_RE.sub("", text)
     text = _MD_INLINE_RE.sub(lambda m: next(g for g in m.groups() if g is not None), text)
     text = " ".join(text.split())
     if len(text) <= max_length:
@@ -92,16 +95,69 @@ async def _unique_slug(db: AsyncSession, base: str, exclude_id: Optional[UUID] =
 
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 _MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+# Cap on the longer side, in pixels. Anything bigger gets downscaled before
+# storage -- keeps oversized phone-camera photos from bloating storage/
+# bandwidth and, combined with the width/height returned alongside the URL,
+# lets the frontend size the cover-image box to the real aspect ratio
+# instead of a fixed-crop object-fit: cover that was cutting off portrait
+# and unusually-tall/wide covers.
+_MAX_IMAGE_DIMENSION = 2000
+_PIL_FORMAT_BY_CONTENT_TYPE = {
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/webp": "WEBP",
+    # GIF deliberately excluded -- Pillow's resize only touches the first
+    # frame of an animated GIF, which would silently kill the animation.
+    # Dimensions are still read (see below), just not re-encoded/resized.
+}
 
 
-async def _save_blog_image(upload: UploadFile) -> str:
+def _read_and_resize_image(file_bytes: bytes, content_type: str) -> tuple[bytes, int, int]:
+    """Returns (possibly-downscaled bytes, width, height). Runs Pillow
+    synchronously -- called via asyncio.to_thread by callers so it doesn't
+    block the event loop. Falls back to the original bytes with dimensions
+    read best-effort if Pillow can't decode the file for any reason
+    (corrupt upload, format it doesn't support) rather than failing the
+    whole upload over a metadata nicety."""
+    from PIL import Image
+    import io
+
+    try:
+        with Image.open(io.BytesIO(file_bytes)) as img:
+            width, height = img.size
+            pil_format = _PIL_FORMAT_BY_CONTENT_TYPE.get(content_type)
+            if pil_format and max(width, height) > _MAX_IMAGE_DIMENSION:
+                scale = _MAX_IMAGE_DIMENSION / max(width, height)
+                new_size = (max(1, round(width * scale)), max(1, round(height * scale)))
+                resized = img.resize(new_size, Image.Resampling.LANCZOS)
+                if pil_format == "JPEG" and resized.mode in ("RGBA", "LA", "P"):
+                    # JPEG has no alpha channel -- flatten onto white first
+                    # (same pattern as input_normalization_service.py's image
+                    # normalization) instead of a bare .convert("RGB"), which
+                    # would render transparent areas black instead of white.
+                    rgb = Image.new("RGB", resized.size, (255, 255, 255))
+                    source = resized.convert("RGBA") if resized.mode == "P" else resized
+                    rgb.paste(source, mask=source.split()[-1] if source.mode in ("RGBA", "LA") else None)
+                    resized = rgb
+                save_kwargs = {"quality": 88} if pil_format == "JPEG" else {}
+                out = io.BytesIO()
+                resized.save(out, format=pil_format, **save_kwargs)
+                return out.getvalue(), new_size[0], new_size[1]
+            return file_bytes, width, height
+    except Exception as exc:  # noqa: BLE001 -- best-effort metadata, never fatal
+        logger.warning(f"Could not read blog image dimensions: {exc}")
+        return file_bytes, 0, 0
+
+
+async def _save_blog_image(upload: UploadFile) -> dict:
     """
-    Persist an uploaded cover image and return its public URL. Same
-    storage backend as routes/student_activities.py's _save_file()
-    (Cloudflare R2 in prod, local UPLOAD_DIR fallback in dev, now served
-    via main.py's /uploads static mount) -- duplicated here rather than
-    imported since that function is keyed on session_id, not a generic
-    key prefix; not worth a shared-module refactor for one more caller.
+    Persist an uploaded image (blog cover or in-body) and return
+    {"url", "width", "height"}. Same storage backend as
+    routes/student_activities.py's _save_file() (Cloudflare R2 in prod,
+    local UPLOAD_DIR fallback in dev, now served via main.py's /uploads
+    static mount) -- duplicated here rather than imported since that
+    function is keyed on session_id, not a generic key prefix; not worth a
+    shared-module refactor for one more caller.
     """
     import core.config as _cfg
     settings = _cfg.settings
@@ -115,6 +171,9 @@ async def _save_blog_image(upload: UploadFile) -> str:
     file_bytes = await upload.read()
     if len(file_bytes) > _MAX_IMAGE_BYTES:
         raise HTTPException(status_code=400, detail="Image too large (max 5 MB).")
+
+    import asyncio
+    file_bytes, width, height = await asyncio.to_thread(_read_and_resize_image, file_bytes, upload.content_type)
 
     # Sanitise filename -- same rules as _save_file() (blocks path traversal).
     safe_name = re.sub(r"[^a-zA-Z0-9._-]", "_", upload.filename or "image")
@@ -131,9 +190,8 @@ async def _save_blog_image(upload: UploadFile) -> str:
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, "wb") as fh:
             fh.write(file_bytes)
-        return f"/uploads/{key}"
+        return {"url": f"/uploads/{key}", "width": width, "height": height}
 
-    import asyncio
     import boto3
     from botocore.exceptions import BotoCoreError, ClientError
 
@@ -160,9 +218,12 @@ async def _save_blog_image(upload: UploadFile) -> str:
         logger.error(f"R2 blog image upload failed: {exc}")
         raise HTTPException(status_code=500, detail=f"Image upload failed: {exc}")
 
-    if settings.CF_R2_PUBLIC_URL:
-        return f"{settings.CF_R2_PUBLIC_URL.rstrip('/')}/{key}"
-    return f"r2://{settings.CF_R2_BUCKET_NAME}/{key}"
+    url = (
+        f"{settings.CF_R2_PUBLIC_URL.rstrip('/')}/{key}"
+        if settings.CF_R2_PUBLIC_URL
+        else f"r2://{settings.CF_R2_BUCKET_NAME}/{key}"
+    )
+    return {"url": url, "width": width, "height": height}
 
 
 # ============================================================================
@@ -214,10 +275,10 @@ async def admin_upload_blog_image(
     file: UploadFile = File(...),
     _admin: User = Depends(get_current_content_admin),
 ):
-    """Uploads a cover image and returns its URL for the editor's Cover
-    Image field to use -- see _save_blog_image() for storage details."""
-    url = await _save_blog_image(file)
-    return {"url": url}
+    """Uploads an image (used for both the Cover Image field and images
+    inserted into the post body) and returns its URL plus natural pixel
+    dimensions -- see _save_blog_image() for storage/resize details."""
+    return await _save_blog_image(file)
 
 
 @admin_router.get("/posts", response_model=BlogPostListResponse)
@@ -283,6 +344,10 @@ async def admin_create_post(
         excerpt=body.excerpt or _plain_excerpt(body.content),
         content=body.content,
         cover_image_url=body.cover_image_url,
+        cover_image_caption=body.cover_image_caption,
+        cover_image_attribution=body.cover_image_attribution,
+        cover_image_width=body.cover_image_width,
+        cover_image_height=body.cover_image_height,
         status=BlogPostStatus(body.status),
         tags=body.tags,
         author_id=admin.id,

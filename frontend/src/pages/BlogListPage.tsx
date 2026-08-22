@@ -70,7 +70,19 @@ export default function BlogListPage() {
                 <img
                   src={post.cover_image_url}
                   alt=""
-                  style={{ width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 12, marginBottom: '1rem' }}
+                  style={
+                    post.cover_image_width && post.cover_image_height
+                      ? {
+                          width: '100%',
+                          maxHeight: 320,
+                          aspectRatio: `${post.cover_image_width} / ${post.cover_image_height}`,
+                          objectFit: 'cover',
+                          borderRadius: 12,
+                          marginBottom: '1rem',
+                          display: 'block',
+                        }
+                      : { width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 12, marginBottom: '1rem', display: 'block' }
+                  }
                 />
               </Link>
             )}

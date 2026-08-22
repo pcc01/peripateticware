@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 
 from core.database import Base
@@ -48,6 +48,19 @@ class BlogPost(Base):
     # frontend.
     content = Column(Text, nullable=False)
     cover_image_url = Column(String(500), nullable=True)
+    # Caption/attribution shown under the cover image on the public post
+    # view (see BlogPostView.tsx) -- same idea as the inline
+    # `^caption | attribution` line routes/blog.py's body-image syntax
+    # supports, just for the one cover image instead of the markdown body.
+    cover_image_caption = Column(Text, nullable=True)
+    cover_image_attribution = Column(String(300), nullable=True)
+    # Natural pixel dimensions of the uploaded cover image, captured by
+    # _save_blog_image() at upload time. NULL for posts whose cover was set
+    # before this column existed, or via a pasted external URL rather than
+    # the upload button -- the frontend falls back to a fixed-crop display
+    # in that case since it has no aspect ratio to size the box to.
+    cover_image_width = Column(Integer, nullable=True)
+    cover_image_height = Column(Integer, nullable=True)
 
     # native_enum=False + values_callable: avoids relying on a Postgres native
     # enum type (see ProjectStatus.status in models/database.py for the same
