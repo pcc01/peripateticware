@@ -21,6 +21,22 @@
  *   Blank-line-separated paragraphs
  *   Inline: **bold**, *italic*, ~~strikethrough~~, `code`,
  *           [text](url), ![alt](url)
+ *
+ * Captioned images: an image that's alone on its own line, immediately
+ * followed by a line starting with "^", renders as a <figure> with a
+ * <figcaption> instead of a bare inline <img>:
+ *
+ *   ![alt text](url)
+ *   ^Caption text | Photo: Jane Doe
+ *
+ * The part before the first "|" is the caption, the part after is the
+ * attribution -- either half can be left empty (e.g. "^ | Photo: Jane Doe"
+ * for attribution with no caption). Omit the "|" entirely for a
+ * caption-only line. An image with no following "^" line (or one that
+ * appears mid-paragraph rather than alone on its own line) renders as a
+ * plain <img>, same as before this existed -- so older posts are
+ * unaffected. AdminBlogEditorPage's image toolbar generates this syntax;
+ * it's not meant to be hand-typed, though it's plain text either way.
  */
 
 import React from 'react';
@@ -84,6 +100,19 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   return nodes;
 }
 
+// A line containing nothing but a single ![alt](url) -- the trigger for
+// checking the following line for a "^caption | attribution" tag. Doesn't
+// match if there's any other text sharing the line (that image stays a
+// plain inline <img>, rendered via renderInline() as part of its paragraph).
+const _SOLO_IMAGE_RE = /^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/;
+
+function parseCaptionLine(line: string): { caption: string; attribution: string } {
+  const body = line.slice(1); // strip leading "^"
+  const barIndex = body.indexOf('|');
+  if (barIndex === -1) return { caption: body.trim(), attribution: '' };
+  return { caption: body.slice(0, barIndex).trim(), attribution: body.slice(barIndex + 1).trim() };
+}
+
 export function renderBlogContent(content: string): React.ReactNode {
   const lines = (content || '').replace(/\r\n/g, '\n').split('\n');
   const blocks: React.ReactNode[] = [];
@@ -119,7 +148,8 @@ export function renderBlogContent(content: string): React.ReactNode {
     listType = null;
   };
 
-  for (const rawLine of lines) {
+  for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+    const rawLine = lines[lineIdx];
     // Fenced code blocks preserve raw lines (including indentation/blank
     // lines) until the closing ``` -- checked before any trimming/paragraph
     // logic below since code content shouldn't be treated as prose.
@@ -156,6 +186,33 @@ export function renderBlogContent(content: string): React.ReactNode {
       flushParagraph();
       flushList();
       continue;
+    }
+    const soloImage = _SOLO_IMAGE_RE.exec(line);
+    if (soloImage) {
+      const nextLine = lines[lineIdx + 1]?.trim() ?? '';
+      if (nextLine.startsWith('^')) {
+        flushParagraph();
+        flushList();
+        const [, alt, url] = soloImage;
+        const { caption, attribution } = parseCaptionLine(nextLine);
+        blocks.push(
+          <figure key={`fig-${key++}`} style={{ margin: '1.75rem 0' }}>
+            <img src={url} alt={alt} style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
+            {(caption || attribution) && (
+              <figcaption style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.6rem', lineHeight: 1.5 }}>
+                {caption && <span>{caption}</span>}
+                {attribution && (
+                  <span style={{ display: caption ? 'block' : 'inline', marginTop: caption ? 2 : 0, fontStyle: 'italic' }}>
+                    {attribution}
+                  </span>
+                )}
+              </figcaption>
+            )}
+          </figure>
+        );
+        lineIdx += 1; // consume the "^caption" line too
+        continue;
+      }
     }
     if (/^(-{3,}|\*{3,})$/.test(line)) {
       flushParagraph();
@@ -239,6 +296,7 @@ export function plainTextExcerpt(content: string, maxLength = 180): string {
     .replace(/^[-*]\s+/gm, '')
     .replace(/^\d+\.\s+/gm, '')
     .replace(/^(-{3,}|\*{3,})$/gm, '')
+    .replace(/^\^.*$/gm, '') // image caption/attribution tag line -- see renderBlogContent's _SOLO_IMAGE_RE
     .replace(/!\[(.*?)\]\(.+?\)/g, '$1')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/~~(.+?)~~/g, '$1')

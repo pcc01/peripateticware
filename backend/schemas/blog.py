@@ -18,6 +18,10 @@ class BlogPostCreate(BaseModel):
     excerpt: Optional[str] = Field(None, max_length=2000)
     content: str = Field(..., min_length=1)
     cover_image_url: Optional[str] = Field(None, max_length=500)
+    cover_image_caption: Optional[str] = Field(None, max_length=2000)
+    cover_image_attribution: Optional[str] = Field(None, max_length=300)
+    cover_image_width: Optional[int] = Field(None, ge=1)
+    cover_image_height: Optional[int] = Field(None, ge=1)
     status: str = Field("draft", pattern="^(draft|published)$")
     tags: List[str] = Field(default_factory=list)
 
@@ -33,6 +37,10 @@ class BlogPostUpdate(BaseModel):
     excerpt: Optional[str] = Field(None, max_length=2000)
     content: Optional[str] = Field(None, min_length=1)
     cover_image_url: Optional[str] = Field(None, max_length=500)
+    cover_image_caption: Optional[str] = Field(None, max_length=2000)
+    cover_image_attribution: Optional[str] = Field(None, max_length=300)
+    cover_image_width: Optional[int] = Field(None, ge=1)
+    cover_image_height: Optional[int] = Field(None, ge=1)
     status: Optional[str] = Field(None, pattern="^(draft|published)$")
     tags: Optional[List[str]] = None
 
@@ -52,6 +60,10 @@ class BlogPostOut(BaseModel):
     excerpt: Optional[str] = None
     content: str
     cover_image_url: Optional[str] = None
+    cover_image_caption: Optional[str] = None
+    cover_image_attribution: Optional[str] = None
+    cover_image_width: Optional[int] = None
+    cover_image_height: Optional[int] = None
     status: str
     author_name: Optional[str] = None
     tags: List[str] = Field(default_factory=list)
@@ -64,12 +76,17 @@ class BlogPostOut(BaseModel):
 
 
 class BlogPostSummary(BaseModel):
-    """Trimmed post -- used by list views (no full content body)."""
+    """Trimmed post -- used by list views (no full content body). Cover
+    dimensions are included (unlike caption/attribution, not needed for a
+    thumbnail) so list cards can size the cover box to its real aspect
+    ratio without a crop, same as the full post view."""
     id: UUID
     slug: str
     title: str
     excerpt: Optional[str] = None
     cover_image_url: Optional[str] = None
+    cover_image_width: Optional[int] = None
+    cover_image_height: Optional[int] = None
     status: str
     author_name: Optional[str] = None
     tags: List[str] = Field(default_factory=list)

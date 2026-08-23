@@ -27,6 +27,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { adminGetPost, adminCreatePost, adminUpdatePost, adminUploadBlogImage, BlogPostInput } from '@/services/blogService';
+import { ImageCaptionModal, CaptionModalState } from '@/components/ImageCaptionModal';
 import { renderBlogContent } from '@/utils/blogMarkdown';
 import { BlogPostView } from '@/components/BlogPostView';
 import { fmtDateTime } from '@/utils/date';
@@ -36,6 +37,10 @@ const EMPTY: BlogPostInput = {
   excerpt: '',
   content: '',
   cover_image_url: '',
+  cover_image_caption: '',
+  cover_image_attribution: '',
+  cover_image_width: null,
+  cover_image_height: null,
   status: 'draft',
   tags: [],
 };
@@ -51,6 +56,10 @@ interface StoredDraft {
   excerpt: string;
   content: string;
   cover_image_url: string;
+  cover_image_caption: string;
+  cover_image_attribution: string;
+  cover_image_width: number | null;
+  cover_image_height: number | null;
   status: 'draft' | 'published';
   tagsText: string;
   savedAt: string; // ISO timestamp
@@ -76,12 +85,13 @@ const AdminBlogEditorPage: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingContentImage, setUploadingContentImage] = useState(false);
   const [replacingImageAt, setReplacingImageAt] = useState<number | null>(null);
+  const [captionModal, setCaptionModal] = useState<CaptionModalState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const contentImageInputRef = useRef<HTMLInputElement>(null);
   const replaceImageInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const savedSelection = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
-  const replaceTarget = useRef<{ index: number; length: number; alt: string } | null>(null);
+  const replaceTarget = useRef<{ index: number; length: number; alt: string; caption: string; attribution: string } | null>(null);
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Content-only JSON snapshot of the form as first loaded (server data, or
   // EMPTY for a new post) -- see the autosave effect below for why.
@@ -93,8 +103,16 @@ const AdminBlogEditorPage: React.FC = () => {
     setUploadingImage(true);
     setError(null);
     try {
-      const url = await adminUploadBlogImage(file);
-      update('cover_image_url', url);
+      const { url, width, height } = await adminUploadBlogImage(file);
+      setForm((f) => ({
+        ...f,
+        cover_image_url: url,
+        // A fresh upload has no dimension info to guess at otherwise -- but
+        // if Pillow couldn't read this particular file, fall back to the
+        // fixed-crop display rather than storing bogus 0x0 dimensions.
+        cover_image_width: width || null,
+        cover_image_height: height || null,
+      }));
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Could not upload that image.');
     } finally {
@@ -194,20 +212,12 @@ const AdminBlogEditorPage: React.FC = () => {
     setUploadingContentImage(true);
     setError(null);
     try {
-      const url = await adminUploadBlogImage(file);
-      const { start, end } = savedSelection.current;
-      const value = form.content;
-      const before = value.slice(0, start);
-      const after = value.slice(end);
-      const lead = before.length > 0 && !before.endsWith('\n') ? '\n\n' : '';
-      const trail = after.length > 0 && !after.startsWith('\n') ? '\n\n' : '';
-      const snippet = `${lead}![](${url})${trail}`;
-      update('content', before + snippet + after);
-      const pos = before.length + snippet.length;
-      requestAnimationFrame(() => {
-        contentRef.current?.focus();
-        contentRef.current?.setSelectionRange(pos, pos);
-      });
+      const { url } = await adminUploadBlogImage(file);
+      // Hand off to the caption modal rather than inserting straight away --
+      // savedSelection.current (set by openContentImagePicker) is read from
+      // there once the admin confirms (or leaves caption/attribution blank
+      // and just inserts the bare image).
+      setCaptionModal({ mode: 'insert', url, alt: '', caption: '', attribution: '' });
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Could not upload that image.');
     } finally {
@@ -216,15 +226,56 @@ const AdminBlogEditorPage: React.FC = () => {
     }
   };
 
-  // ── Body image management (delete / replace) ───────────────────────────
+  const confirmCaptionModal = () => {
+    if (!captionModal) return;
+    const alt = captionModal.alt.trim();
+    const caption = captionModal.caption.trim();
+    const attribution = captionModal.attribution.trim();
+    const captionLine = caption || attribution ? `\n^${caption}${attribution ? ` | ${attribution}` : ''}` : '';
+    const imageMarkdown = `![${alt}](${captionModal.url})${captionLine}`;
+
+    if (captionModal.mode === 'insert') {
+      const { start, end } = savedSelection.current;
+      const before = form.content.slice(0, start);
+      const after = form.content.slice(end);
+      const lead = before.length > 0 && !before.endsWith('\n') ? '\n\n' : '';
+      const trail = after.length > 0 && !after.startsWith('\n') ? '\n\n' : '';
+      const snippet = `${lead}${imageMarkdown}${trail}`;
+      update('content', before + snippet + after);
+      const pos = before.length + snippet.length;
+      requestAnimationFrame(() => {
+        contentRef.current?.focus();
+        contentRef.current?.setSelectionRange(pos, pos);
+      });
+    } else {
+      const { spanIndex, spanLength } = captionModal;
+      const before = form.content.slice(0, spanIndex);
+      const after = form.content.slice((spanIndex ?? 0) + (spanLength ?? 0));
+      update('content', before + imageMarkdown + after);
+    }
+    setCaptionModal(null);
+  };
+
+  // ── Body image management (edit caption / delete / replace) ────────────
   // Scanned fresh from form.content on every render, so offsets are always
-  // in sync with the live text -- no cache to go stale.
+  // in sync with the live text -- no cache to go stale. Matches a solo
+  // ![alt](url) line plus its optional following "^caption | attribution"
+  // line as one unit (mirrors blogMarkdown.tsx's renderer), so Remove/
+  // Replace/Edit all act on the image and its caption together.
   const imageMatches = React.useMemo(() => {
-    const re = /!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/g;
-    const results: { index: number; length: number; alt: string; url: string }[] = [];
+    const re = /^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$(?:\n(\^[^\n]*))?/gm;
+    const results: { index: number; length: number; alt: string; url: string; caption: string; attribution: string }[] = [];
     let m: RegExpExecArray | null;
     while ((m = re.exec(form.content)) !== null) {
-      results.push({ index: m.index, length: m[0].length, alt: m[1], url: m[2] });
+      let caption = '';
+      let attribution = '';
+      if (m[3]) {
+        const body = m[3].slice(1); // strip leading "^"
+        const bar = body.indexOf('|');
+        caption = bar === -1 ? body.trim() : body.slice(0, bar).trim();
+        attribution = bar === -1 ? '' : body.slice(bar + 1).trim();
+      }
+      results.push({ index: m.index, length: m[0].length, alt: m[1], url: m[2], caption, attribution });
     }
     return results;
   }, [form.content]);
@@ -235,7 +286,11 @@ const AdminBlogEditorPage: React.FC = () => {
     update('content', before + after);
   };
 
-  const openReplacePicker = (match: { index: number; length: number; alt: string }) => {
+  const openEditCaption = (img: { index: number; length: number; alt: string; url: string; caption: string; attribution: string }) => {
+    setCaptionModal({ mode: 'edit', url: img.url, alt: img.alt, caption: img.caption, attribution: img.attribution, spanIndex: img.index, spanLength: img.length });
+  };
+
+  const openReplacePicker = (match: { index: number; length: number; alt: string; caption: string; attribution: string }) => {
     replaceTarget.current = match;
     setReplacingImageAt(match.index);
     replaceImageInputRef.current?.click();
@@ -247,10 +302,14 @@ const AdminBlogEditorPage: React.FC = () => {
     if (!file || !target) return;
     setError(null);
     try {
-      const url = await adminUploadBlogImage(file);
+      const { url } = await adminUploadBlogImage(file);
       const before = form.content.slice(0, target.index);
       const after = form.content.slice(target.index + target.length);
-      update('content', `${before}![${target.alt}](${url})${after}`);
+      // Preserve the existing alt/caption/attribution -- only the file changes.
+      const captionLine = target.caption || target.attribution
+        ? `\n^${target.caption}${target.attribution ? ` | ${target.attribution}` : ''}`
+        : '';
+      update('content', `${before}![${target.alt}](${url})${captionLine}${after}`);
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Could not upload that image.');
     } finally {
@@ -260,7 +319,16 @@ const AdminBlogEditorPage: React.FC = () => {
     }
   };
 
-  const removeCoverImage = () => update('cover_image_url', '');
+  const removeCoverImage = () => {
+    setForm((f) => ({
+      ...f,
+      cover_image_url: '',
+      cover_image_caption: '',
+      cover_image_attribution: '',
+      cover_image_width: null,
+      cover_image_height: null,
+    }));
+  };
 
   const toolbarButtons: { label: string; title: string; action: () => void; disabled?: boolean }[] = [
     { label: 'H1', title: 'Heading', action: () => toggleLinePrefix('# ') },
@@ -289,6 +357,10 @@ const AdminBlogEditorPage: React.FC = () => {
         excerpt: EMPTY.excerpt || '',
         content: EMPTY.content,
         cover_image_url: EMPTY.cover_image_url || '',
+        cover_image_caption: EMPTY.cover_image_caption || '',
+        cover_image_attribution: EMPTY.cover_image_attribution || '',
+        cover_image_width: EMPTY.cover_image_width ?? null,
+        cover_image_height: EMPTY.cover_image_height ?? null,
         status: EMPTY.status,
         tagsText: '',
       });
@@ -310,6 +382,10 @@ const AdminBlogEditorPage: React.FC = () => {
           excerpt: post.excerpt || '',
           content: post.content,
           cover_image_url: post.cover_image_url || '',
+          cover_image_caption: post.cover_image_caption || '',
+          cover_image_attribution: post.cover_image_attribution || '',
+          cover_image_width: post.cover_image_width ?? null,
+          cover_image_height: post.cover_image_height ?? null,
           status: post.status,
           tags: post.tags,
         });
@@ -320,6 +396,10 @@ const AdminBlogEditorPage: React.FC = () => {
           excerpt: post.excerpt || '',
           content: post.content,
           cover_image_url: post.cover_image_url || '',
+          cover_image_caption: post.cover_image_caption || '',
+          cover_image_attribution: post.cover_image_attribution || '',
+          cover_image_width: post.cover_image_width ?? null,
+          cover_image_height: post.cover_image_height ?? null,
           status: post.status,
           tagsText: loadedTagsText,
         });
@@ -355,6 +435,10 @@ const AdminBlogEditorPage: React.FC = () => {
       excerpt: recoverableDraft.excerpt,
       content: recoverableDraft.content,
       cover_image_url: recoverableDraft.cover_image_url,
+      cover_image_caption: recoverableDraft.cover_image_caption,
+      cover_image_attribution: recoverableDraft.cover_image_attribution,
+      cover_image_width: recoverableDraft.cover_image_width,
+      cover_image_height: recoverableDraft.cover_image_height,
       status: recoverableDraft.status,
       tags: [], // recomputed from tagsText at save time regardless
     });
@@ -392,6 +476,10 @@ const AdminBlogEditorPage: React.FC = () => {
         excerpt: form.excerpt || '',
         content: form.content,
         cover_image_url: form.cover_image_url || '',
+        cover_image_caption: form.cover_image_caption || '',
+        cover_image_attribution: form.cover_image_attribution || '',
+        cover_image_width: form.cover_image_width ?? null,
+        cover_image_height: form.cover_image_height ?? null,
         status: form.status,
         tagsText,
       };
@@ -519,7 +607,13 @@ const AdminBlogEditorPage: React.FC = () => {
             <input
               style={{ ...inputStyle, flex: 1 }}
               value={form.cover_image_url}
-              onChange={(e) => update('cover_image_url', e.target.value)}
+              onChange={(e) => {
+                // Typed/pasted URL rather than an upload -- any previously
+                // known dimensions no longer describe whatever this new URL
+                // points to, so clear them rather than sizing the cover box
+                // to the wrong aspect ratio.
+                setForm((f) => ({ ...f, cover_image_url: e.target.value, cover_image_width: null, cover_image_height: null }));
+              }}
               placeholder="https://… or upload a file"
             />
             <input
@@ -554,6 +648,28 @@ const AdminBlogEditorPage: React.FC = () => {
               >
                 ×
               </button>
+            </div>
+          )}
+          {form.cover_image_url && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+              <div>
+                <label style={{ ...labelStyle, fontSize: '0.75rem' }}>Caption <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(optional — shown under the cover image)</span></label>
+                <input
+                  style={inputStyle}
+                  value={form.cover_image_caption}
+                  onChange={(e) => update('cover_image_caption', e.target.value)}
+                  placeholder="Sunrise over the ridge trail"
+                />
+              </div>
+              <div>
+                <label style={{ ...labelStyle, fontSize: '0.75rem' }}>Attribution <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(optional — e.g. photo credit)</span></label>
+                <input
+                  style={inputStyle}
+                  value={form.cover_image_attribution}
+                  onChange={(e) => update('cover_image_attribution', e.target.value)}
+                  placeholder="Photo: Jane Doe"
+                />
+              </div>
             </div>
           )}
         </div>
@@ -610,8 +726,16 @@ const AdminBlogEditorPage: React.FC = () => {
                 <div key={img.index} style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--border)', borderRadius: 6, padding: '4px 6px' }}>
                   <img src={img.url} alt={img.alt} style={{ width: 34, height: 34, objectFit: 'cover', borderRadius: 4 }} onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {img.alt || 'image'}
+                    {img.caption || img.alt || 'image'}
                   </span>
+                  <button
+                    type="button"
+                    title="Edit caption/attribution"
+                    onClick={() => openEditCaption(img)}
+                    style={{ padding: '2px 7px', borderRadius: 5, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.7rem', color: 'var(--text)' }}
+                  >
+                    Caption
+                  </button>
                   <button
                     type="button"
                     title="Replace this image"
@@ -637,6 +761,7 @@ const AdminBlogEditorPage: React.FC = () => {
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 0, marginBottom: 8 }}>
             Supports headings (<code># ## ###</code>), <code>**bold**</code>, <code>*italic*</code>, <code>~~strikethrough~~</code>, <code>`code`</code>,
             fenced code blocks, <code>[link](url)</code>, <code>![image](url)</code>, <code>- </code>/<code>1. </code> lists, <code>&gt; quote</code>, and <code>---</code> rules.
+            The 🖼 button prompts for an optional caption/attribution when inserting an image; use the <b>Caption</b> button above to add or edit one on an image already in the post.
           </p>
           <div style={{ display: showPreview ? 'grid' : 'block', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <textarea
@@ -693,12 +818,25 @@ const AdminBlogEditorPage: React.FC = () => {
                 title={form.title}
                 content={form.content}
                 coverImageUrl={form.cover_image_url}
+                coverImageCaption={form.cover_image_caption}
+                coverImageAttribution={form.cover_image_attribution}
+                coverImageWidth={form.cover_image_width}
+                coverImageHeight={form.cover_image_height}
                 tags={tagsText.split(',').map((t) => t.trim()).filter(Boolean)}
                 metaLine={form.status === 'published' ? 'Preview — published' : 'Preview — draft, not yet published'}
               />
             </div>
           </div>
         </div>
+      )}
+
+      {captionModal && (
+        <ImageCaptionModal
+          state={captionModal}
+          onChange={setCaptionModal}
+          onConfirm={confirmCaptionModal}
+          onCancel={() => setCaptionModal(null)}
+        />
       )}
     </div>
   );
