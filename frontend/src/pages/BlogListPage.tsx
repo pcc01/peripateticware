@@ -73,10 +73,14 @@ export default function BlogListPage() {
                   style={
                     post.cover_image_width && post.cover_image_height
                       ? {
+                          // object-fit: contain, not cover -- see BlogPostView.tsx's
+                          // coverImageStyle comment: cover would still crop a portrait
+                          // image here once maxHeight clamps below its ratio-derived height.
                           width: '100%',
                           maxHeight: 320,
                           aspectRatio: `${post.cover_image_width} / ${post.cover_image_height}`,
-                          objectFit: 'cover',
+                          objectFit: 'contain',
+                          background: 'var(--surface-alt, rgba(127,127,127,0.06))',
                           borderRadius: 12,
                           marginBottom: '1rem',
                           display: 'block',

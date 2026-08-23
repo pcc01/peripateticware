@@ -43,17 +43,26 @@ export function BlogPostView({
   tags,
   metaLine,
 }: BlogPostViewProps) {
-  // With real dimensions, the box's aspect-ratio exactly matches the image,
-  // so object-fit has nothing to crop -- it only kicks in as a safety net
-  // if the ratio-derived height would exceed COVER_MAX_HEIGHT (a very tall
-  // portrait cover), which still beats always cropping. Without known
-  // dimensions, fall back to the old fixed-crop behavior.
+  // aspect-ratio reserves the right amount of vertical space before the
+  // image loads (no layout jump) and, for the common landscape-ish cover,
+  // sizes the box to match the image exactly so there's nothing to crop.
+  // BUT: when that ratio-derived height would exceed COVER_MAX_HEIGHT (a
+  // portrait cover -- width stays 100% either way, CSS doesn't shrink it
+  // back down to match a clamped height), the box ends up wider than the
+  // image's own shape. object-fit: cover previously filled that mismatched
+  // box by cropping the image's top/bottom -- exactly the bug this feature
+  // was supposed to fix, just for portrait covers instead of landscape
+  // ones. object-fit: contain guarantees nothing is ever cropped in either
+  // case, at the cost of harmless letterboxing for the rare extreme-ratio
+  // cover; the background fills that letterbox space so it reads as
+  // intentional padding, not a rendering glitch.
   const coverImageStyle: React.CSSProperties = coverImageWidth && coverImageHeight
     ? {
         width: '100%',
         maxHeight: COVER_MAX_HEIGHT,
         aspectRatio: `${coverImageWidth} / ${coverImageHeight}`,
-        objectFit: 'cover',
+        objectFit: 'contain',
+        background: 'var(--surface-alt, rgba(127,127,127,0.06))',
         borderRadius: 14,
         display: 'block',
       }
