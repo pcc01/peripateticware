@@ -23,6 +23,7 @@ from core.cache import revoke_token
 from services.signed_url import SignedURL
 from services.email_service import send_verification_email, send_welcome_email
 from core.config import settings as _settings
+from core.http_rate_limiter import limiter
 
 # Token lifetime in seconds, derived from the single source of truth in config.
 _EXPIRES_IN_SECONDS = _settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
@@ -30,15 +31,6 @@ _EXPIRES_IN_SECONDS = _settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
 # Fixed bcrypt hash of a random string, used ONLY to burn ~constant CPU time on
 # a "user not found" login so response timing doesn't reveal which emails exist.
 _DUMMY_BCRYPT_HASH = "$2b$12$kbGP3qW.EsCoUuJCsTgdC.dt/hUWrpdn3aTSULvWhppa3LMuCyJrK"
-
-# Rate limiting handled by the global app-level limiter (registered in main.py).
-# Per-route limiters are disabled here to avoid the standalone Limiter instance
-# not being attached to app.state, which causes 500s.
-def _rate_limit(rate: str):
-    """No-op — global rate limiting via app.state.limiter in main.py."""
-    def noop(fn):
-        return fn
-    return noop
 
 logger = logging.getLogger(__name__)
 
@@ -205,7 +197,7 @@ async def auth_health():
 # ============================================================================
 
 @router.post("/login", response_model=TokenResponse, status_code=200)
-@_rate_limit("5/minute")
+@limiter.limit("5/minute")
 async def login(
     request: Request,
     body: LoginRequest,
@@ -338,7 +330,7 @@ async def login(
 # ============================================================================
 
 @router.post("/signup", response_model=TokenResponse, status_code=201)
-@_rate_limit("10/minute")
+@limiter.limit("10/minute")
 async def signup(
     request: Request,
     body: SignupRequest,
@@ -602,7 +594,7 @@ async def logout(authorization: Optional[str] = Header(None)):
 # ============================================================================
 
 @router.post("/refresh", response_model=TokenResponse)
-@_rate_limit("20/minute")
+@limiter.limit("20/minute")
 async def refresh_token(
     request: Request,
     authorization: Optional[str] = Header(None),

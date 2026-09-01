@@ -34,6 +34,34 @@ def _headers(api_key: str) -> dict:
     }
 
 
+def _system_block(system: str | None) -> list[dict] | None:
+    """
+    Wrap a plain system-prompt string in the content-block form with a
+    prompt-caching breakpoint, instead of sending it as a bare string.
+
+    Every instant-path system prompt in this codebase (agents/provider.py's
+    per-agent system.txt files, routes/inference.py's SYSTEM_PERI,
+    routes/rubrics.py's SYSTEM_STANDARDS_ANALYST) is 100% static across many
+    calls, and none of them were ever cached — this was the one place doing
+    so fixes it for every caller that routes through complete_instant()/
+    complete_instant_with_usage(), without touching each call site.
+
+    Caveat worth knowing, not a bug: Anthropic only actually caches a block
+    at or above a minimum length (roughly ~2048 tokens for Haiku models,
+    ~1024 for Sonnet/Opus). Several of this codebase's system prompts
+    (SYSTEM_PERI is ~170 tokens, SYSTEM_STANDARDS_ANALYST ~110) sit well
+    below that floor — cache_control is harmless on them (same behavior as
+    omitting it) but won't show a cache hit in `usage.cache_read_input_tokens`
+    until a prompt actually crosses the minimum. The per-agent system.txt
+    files (~250-350 tokens each) are the ones most likely to benefit, and
+    activity_generation_service.py's ~1.4KB template plus a teacher's
+    submitted context is the one most likely to cross it today.
+    """
+    if not system:
+        return None
+    return [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]
+
+
 # ── Instant path ───────────────────────────────────────────────────────────────
 
 async def complete_instant(
@@ -53,8 +81,9 @@ async def complete_instant(
         "max_tokens": max_tokens,
         "messages": messages,
     }
-    if system:
-        body["system"] = system
+    system_block = _system_block(system)
+    if system_block:
+        body["system"] = system_block
 
     async with httpx.AsyncClient(timeout=60) as client:
         resp = await client.post(
@@ -90,8 +119,9 @@ async def complete_instant_with_usage(
         "max_tokens": max_tokens,
         "messages":   messages,
     }
-    if system:
-        body["system"] = system
+    system_block = _system_block(system)
+    if system_block:
+        body["system"] = system_block
 
     async with httpx.AsyncClient(timeout=60) as client:
         resp = await client.post(
@@ -106,6 +136,9 @@ async def complete_instant_with_usage(
         text       = data["content"][0]["text"]
         tokens_in  = usage.get("input_tokens", 0)
         tokens_out = usage.get("output_tokens", 0)
+        # cache_read_input_tokens/cache_creation_input_tokens appear here on
+        # a cache hit/miss respectively once a system prompt crosses the
+        # minimum cacheable length — see _system_block()'s docstring.
         return text, tokens_in, tokens_out
 
     raise RuntimeError(
@@ -138,8 +171,9 @@ async def submit_batch(
             "max_tokens": req.get("max_tokens", max_tokens),
             "messages":   [{"role": "user", "content": req["prompt"]}],
         }
-        if req.get("system"):
-            msg_body["system"] = req["system"]
+        system_block = _system_block(req.get("system"))
+        if system_block:
+            msg_body["system"] = system_block
 
         batch_requests.append({
             "custom_id": str(req["custom_id"]),

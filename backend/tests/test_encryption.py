@@ -116,6 +116,50 @@ class TestEncryptionEnabled:
         assert len(key) == 44  # URL-safe base64 of 32 bytes + padding
         assert key.endswith("=")
 
+    def test_is_encrypted_true_for_ciphertext(self):
+        ct = self.enc.encrypt("secret@example.com")
+        assert self.enc.is_encrypted(ct) is True
+
+    def test_is_encrypted_false_for_plaintext(self):
+        """The exact case that mattered in prod: a row created before
+        FIELD_ENCRYPTION_KEY was set, or via a path that bypassed the ORM's
+        EncryptedString column, must be detected as plaintext so a backfill
+        script encrypts it — not skips it as "already done"."""
+        assert self.enc.is_encrypted("plain@example.com") is False
+
+    def test_is_encrypted_false_for_none_and_empty(self):
+        assert self.enc.is_encrypted(None) is False
+        assert self.enc.is_encrypted("") is False
+
+    def test_is_encrypted_prevents_double_encryption(self):
+        """The bug this function fixes: re-encrypting an already-encrypted
+        value double-wraps it, and decrypt() then only unwraps one layer —
+        returning ciphertext instead of the original plaintext."""
+        original = "double_encrypt_check@example.com"
+        once = self.enc.encrypt(original)
+        assert not self.enc.is_encrypted(original)  # plaintext: needs encrypting
+        assert self.enc.is_encrypted(once)           # already encrypted: must be skipped
+
+        # Simulate the bug a non-idempotent backfill would cause, to prove
+        # is_encrypted() is what stands between "safe to re-run" and this:
+        twice = self.enc.encrypt(once)
+        assert self.enc.decrypt(twice) == once != original
+
+
+class TestIsEncryptedDisabled:
+    """is_encrypted() must not misreport when encryption itself is off."""
+
+    def setup_method(self):
+        self.enc = _reload_encryption("")
+
+    def teardown_method(self):
+        os.environ.pop("FIELD_ENCRYPTION_KEY", None)
+
+    def test_is_encrypted_false_when_disabled(self):
+        # No key configured — nothing can be "already encrypted" under a key
+        # that doesn't exist, regardless of what the value looks like.
+        assert self.enc.is_encrypted("anything@example.com") is False
+
 
 class TestEncryptedStringTypeDecorator:
     """Test the SQLAlchemy TypeDecorator process_bind_param / process_result_value."""

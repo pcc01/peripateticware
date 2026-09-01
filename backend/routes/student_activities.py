@@ -45,7 +45,7 @@ from models.database import (
     User, UserRole, Activity, LearningSession,
 )
 from models.student_models import EvidenceCapture, NotebookEntry, ActivitySubmission
-from services.privacy_engine import log_access, enforce_on_submission
+from services.privacy_engine import log_access, enforce_or_raise, audit_submission
 from routes.sessions import _fire_location_event
 from schemas.student_activities import (
     StudentActivitySummary,
@@ -416,6 +416,22 @@ async def start_activity_session(
         logger.info("Resuming existing session %s for user %s", existing.id, current_user.id)
         return _session_response(existing, current_user)
 
+    # Privacy enforcement gate — this route persists GPS coordinates
+    # (location_latitude/longitude below) but, unlike add_evidence_capture,
+    # never went through enforce_on_submission() at all. Separate from (and
+    # in addition to) the COPPA-specific _check_gps_consent() gate applied
+    # later to location_update events (routes/sessions.py) — that one checks
+    # explicit parental consent for under-13 tracking; this one applies the
+    # jurisdiction-derived rules (data sharing, retention, sensitive-evidence
+    # consent) every other write path in this engine is subject to.
+    if body.location_latitude is not None and body.location_longitude is not None:
+        await enforce_or_raise(
+            student_id=str(current_user.id),
+            data_type="learning_session",
+            db=db,
+            evidence_types=["gps"],
+        )
+
     # Create new session
     # curriculum_id is nullable in some builds; use None if not required
     session = LearningSession(
@@ -547,22 +563,12 @@ async def add_evidence_capture(
     # In ENFORCEMENT_MODE=block this refuses non-compliant submissions; in
     # "log"/"warn" it never raises. Jurisdiction is derived from the student's
     # org inside enforce_on_submission().
-    try:
-        pre_enforcement = await enforce_on_submission(
-            student_id=str(current_user.id),
-            data_type="student_evidence",
-            evidence_types=[capture_type],
-            db=db,
-        )
-        if pre_enforcement.status == "BLOCKED":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=pre_enforcement.blocking_reason or "Submission blocked by privacy policy",
-            )
-    except HTTPException:
-        raise
-    except Exception as _pre_err:
-        logger.warning("Pre-write enforcement check failed (allowing): %s", _pre_err)
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_evidence",
+        db=db,
+        evidence_types=[capture_type],
+    )
 
     # Handle file upload
     file_url        = None
@@ -601,26 +607,15 @@ async def add_evidence_capture(
         )
 
     # Privacy audit — log-only, non-blocking
-    try:
-        enforcement = await enforce_on_submission(
-            student_id=str(current_user.id),
-            data_type="student_evidence",
-            evidence_types=[capture_type],
-            db=db,
-        )
-        await log_access(
-            actor_id=str(current_user.id),
-            actor_role="student",
-            action="EVIDENCE_SUBMIT",
-            data_type="student_evidence",
-            student_id=str(current_user.id),
-            rules_applied=enforcement.rules_applied,
-            compliance_status=enforcement.status,
-            db=db,
-            notes=f"capture_type={capture_type} session={session_id}",
-        )
-    except Exception as _audit_err:
-        logger.warning("Privacy audit failed (non-blocking): %s", _audit_err)
+    await audit_submission(
+        student_id=str(current_user.id),
+        actor_role="student",
+        action="EVIDENCE_SUBMIT",
+        data_type="student_evidence",
+        db=db,
+        evidence_types=[capture_type],
+        notes=f"capture_type={capture_type} session={session_id}",
+    )
 
     logger.info("Evidence capture %s added to session %s", capture.id, session_id)
     return EvidenceCaptureResponse(**capture.to_dict())
@@ -743,6 +738,13 @@ async def add_reflection(
     """
     session = await _get_owned_session(session_id, current_user, db)
 
+    # Free-text student data — same enforcement gate as evidence captures.
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_reflection",
+        db=db,
+    )
+
     entry = NotebookEntry(
         session_id          = session.id,
         student_id          = current_user.id,
@@ -756,6 +758,15 @@ async def add_reflection(
     db.add(entry)
     await db.commit()
     await db.refresh(entry)
+
+    await audit_submission(
+        student_id=str(current_user.id),
+        actor_role="student",
+        action="REFLECTION_SUBMIT",
+        data_type="student_reflection",
+        db=db,
+        notes=f"session={session_id}",
+    )
 
     logger.info("Reflection %s added to session %s", entry.id, session_id)
     return NotebookEntryResponse(**entry.to_dict())

@@ -8,7 +8,7 @@ Token TTL: 60 minutes (configurable in services/signed_url.py)
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +19,7 @@ from models.user import User
 from core.encryption import blind_index as _blind_index
 from services.signed_url import SignedURL, SignedURLError, SignedURLExpired
 from services.email_service import send_password_reset_email
+from core.http_rate_limiter import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -96,12 +97,14 @@ async def get_password_requirements() -> PasswordRequirements:
 
 
 @router.post("/forgot", response_model=ForgotPasswordResponse)
+@limiter.limit("5/minute")
 async def forgot_password(
-    request: ForgotPasswordRequest,
+    request: Request,
+    body: ForgotPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ) -> ForgotPasswordResponse:
     """Initiate password reset. Always returns success to prevent user enumeration."""
-    result = await db.execute(select(User).where(User.email_index == _blind_index(request.email)))
+    result = await db.execute(select(User).where(User.email_index == _blind_index(body.email)))
     user = result.scalar_one_or_none()
 
     if user and user.is_active and user.deleted_at is None:
@@ -121,7 +124,7 @@ async def forgot_password(
     return ForgotPasswordResponse(
         success=True,
         message="If an account exists with this email, you will receive a reset link shortly.",
-        email=request.email,
+        email=body.email,
     )
 
 
@@ -155,19 +158,21 @@ async def validate_reset_token(
 
 
 @router.post("/reset", response_model=ResetPasswordResponse)
+@limiter.limit("10/minute")
 async def reset_password(
-    request: ResetPasswordRequest,
+    request: Request,
+    body: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db),
 ) -> ResetPasswordResponse:
     """Reset password using a valid signed token."""
     try:
-        data = await SignedURL.validate(request.token, purpose="password_reset", consume=True)
+        data = await SignedURL.validate(body.token, purpose="password_reset", consume=True)
     except SignedURLExpired:
         raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
     except SignedURLError:
         raise HTTPException(status_code=400, detail="Invalid or tampered reset token.")
 
-    errors = _validate_password_strength(request.new_password)
+    errors = _validate_password_strength(body.new_password)
     if errors:
         raise HTTPException(status_code=400, detail={"errors": errors})
 
@@ -189,7 +194,7 @@ async def reset_password(
 
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    user.hashed_password = pwd_context.hash(request.new_password)
+    user.hashed_password = pwd_context.hash(body.new_password)
     await db.commit()
     logger.info("Password reset for user %s", user.id)
 

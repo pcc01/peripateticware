@@ -37,6 +37,7 @@ from models.database import (
     StudentCapture,
     Notification,
 )
+from services.privacy_engine import enforce_or_raise
 
 router = APIRouter()
 
@@ -276,6 +277,18 @@ async def create_field_note(
 ):
     if body.self_project_id:
         await _get_self_project_or_404(db, body.self_project_id, owner_id=current_user.id)
+
+    # Free-text + optional GPS student data — this whole file never went
+    # through enforce_on_submission() at all (confirmed: zero references to
+    # privacy_engine anywhere here), unlike the equivalent evidence-capture
+    # route in student_activities.py.
+    evidence_types = ["gps"] if (body.location_latitude is not None and body.location_longitude is not None) else None
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_field_note",
+        db=db,
+        evidence_types=evidence_types,
+    )
 
     note = StudentFieldNote(
         id=uuid4(),
@@ -608,15 +621,22 @@ async def list_self_projects(
     )
     projects = result.scalars().all()
 
-    # Enrich with field note counts
+    # Enrich with field note counts — one GROUP BY query for every project's
+    # count instead of one COUNT(*) query per project (N+1: a student with
+    # 20 self-projects was issuing 21 queries for this single GET).
+    counts_by_project_id: dict = {}
+    if projects:
+        counts_result = await db.execute(
+            select(StudentFieldNote.self_project_id, func.count())
+            .where(StudentFieldNote.self_project_id.in_([p.id for p in projects]))
+            .group_by(StudentFieldNote.self_project_id)
+        )
+        counts_by_project_id = dict(counts_result.all())
+
     items = []
     for p in projects:
-        count_result = await db.execute(
-            select(func.count()).where(StudentFieldNote.self_project_id == p.id)
-        )
-        count = count_result.scalar() or 0
         d = _serialize_self_project(p)
-        d["field_note_count"] = count
+        d["field_note_count"] = counts_by_project_id.get(p.id, 0)
         items.append(d)
     return {"items": items}
 
@@ -694,6 +714,15 @@ async def create_peer_project(
     settings = await _get_or_create_class_settings(db, class_id)
     if not settings.students_can_create_peer_projects:
         raise HTTPException(status_code=403, detail="Peer project creation is disabled for this class")
+
+    # Free-text + optional GPS student data — see create_field_note's comment.
+    evidence_types = ["gps"] if (body.location_latitude is not None and body.location_longitude is not None) else None
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_peer_project",
+        db=db,
+        evidence_types=evidence_types,
+    )
 
     project = StudentPeerProject(
         id=uuid4(),
@@ -991,6 +1020,14 @@ async def add_capture_to_response(
             status_code=400,
             detail="Unsupported file type. Allowed: JPEG, PNG, WEBP, HEIC, GIF.",
         )
+
+    # Media evidence — see create_field_note's comment on this file's gap.
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_peer_project_capture",
+        db=db,
+        evidence_types=["photo"],
+    )
 
     upload_dir = f"{settings.UPLOAD_DIR}/peer_project_responses"
     os.makedirs(upload_dir, exist_ok=True)

@@ -6,11 +6,13 @@
 
 from pydantic import BaseModel as _BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text, String
 from uuid import UUID
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
+import json
 import logging
 
 from core.database import get_db
@@ -596,7 +598,26 @@ async def generate_draft_activity_suggestions(
             detail=generation_result.get("error", "Generation failed"),
         )
 
-    suggestions = [
+    suggestions = _map_raw_suggestions_to_schema(generation_result.get("suggestions", []))
+
+    return ActivityGenerationResponse(
+        suggestions=suggestions,
+        location_name=generation_result.get("location", {}).get("name") or "No specific location",
+        subject=request.subject,
+        grade_level=request.grade_level,
+        taxonomy_framework=request.taxonomy_framework,
+        provider=generation_result.get("llm_model", service.llm_provider),
+        model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
+        generation_time_ms=int((time.monotonic() - started) * 1000),
+    )
+
+
+def _map_raw_suggestions_to_schema(raw_suggestions: List[Dict[str, Any]]) -> List["ActivitySuggestion"]:
+    """Shared by generate_draft_activity_suggestions (above) and its
+    streaming counterpart below — the ActivityGenerationService result
+    dicts -> ActivitySuggestion schema mapping, extracted so the two
+    endpoints can't drift apart on it."""
+    return [
         ActivitySuggestion(
             title=s.get("title", "Activity Suggestion"),
             description=s.get("description", ""),
@@ -613,18 +634,91 @@ async def generate_draft_activity_suggestions(
             materials_needed=s.get("materials_needed", []),
             location_context_summary=s.get("reasoning"),
         )
-        for s in generation_result.get("suggestions", [])
+        for s in raw_suggestions
     ]
 
-    return ActivityGenerationResponse(
-        suggestions=suggestions,
-        location_name=generation_result.get("location", {}).get("name") or "No specific location",
-        subject=request.subject,
-        grade_level=request.grade_level,
-        taxonomy_framework=request.taxonomy_framework,
-        provider=generation_result.get("llm_model", service.llm_provider),
-        model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
-        generation_time_ms=int((time.monotonic() - started) * 1000),
+
+@router.post("/generate-suggestions/stream")
+async def generate_draft_activity_suggestions_stream(
+    request: ActivityGenerationRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Streaming counterpart to POST /generate-suggestions (above) — same
+    request shape, same auth, same taxonomy-kwarg mapping. Instead of
+    awaiting the full generation and returning one JSON body, returns
+    text/event-stream: the model's raw text as it's generated (so the
+    frontend can show Peri "thinking" instead of a static spinner for the
+    whole round-trip), followed by one final event carrying the same
+    ActivityGenerationResponse-shaped structured result the non-streaming
+    endpoint returns.
+
+    SSE event shapes (each a `data: <json>\\n\\n` line):
+      {"type": "delta", "text": "..."}     — a chunk of raw generated text
+      {"type": "done", "result": {...}}    — final ActivityGenerationResponse, JSON-encoded
+      {"type": "error", "error": "..."}    — on failure; stream ends after this
+    """
+    _require_teacher(current_user, "Only teachers can generate activities")
+
+    import time
+    started = time.monotonic()
+
+    _TAXONOMY_LEVEL_KWARG = {
+        TaxonomyFramework.BLOOMS: "bloom_level",
+        TaxonomyFramework.MARZANO: "marzano_level",
+        TaxonomyFramework.DOK: "dok_level",
+        TaxonomyFramework.SOLO: "solo_level",
+    }
+    taxonomy_kwargs: Dict[str, Any] = {}
+    if request.desired_taxonomy_level is not None:
+        kwarg_name = _TAXONOMY_LEVEL_KWARG.get(request.taxonomy_framework)
+        if kwarg_name:
+            taxonomy_kwargs[kwarg_name] = request.desired_taxonomy_level
+
+    service = ActivityGenerationService(llm_provider=settings.LLM_PROVIDER.lower())
+
+    async def _event_stream():
+        async for event in service.generate_activity_suggestions_stream(
+            subject=request.subject,
+            grade_level=request.grade_level,
+            location_name=request.location_name,
+            latitude=request.location_latitude,
+            longitude=request.location_longitude,
+            additional_context=request.additional_context,
+            db=db,
+            num_suggestions=request.activity_count,
+            **taxonomy_kwargs,
+        ):
+            if event["type"] == "delta":
+                yield f"data: {json.dumps({'type': 'delta', 'text': event['text']})}\n\n"
+            elif event["type"] == "error":
+                yield f"data: {json.dumps({'type': 'error', 'error': event['error']})}\n\n"
+            elif event["type"] == "done":
+                result = event["result"]
+                suggestions = _map_raw_suggestions_to_schema(result.get("suggestions", []))
+                response = ActivityGenerationResponse(
+                    suggestions=suggestions,
+                    location_name=result.get("location", {}).get("name") or "No specific location",
+                    subject=request.subject,
+                    grade_level=request.grade_level,
+                    taxonomy_framework=request.taxonomy_framework,
+                    provider=result.get("llm_model", service.llm_provider),
+                    model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
+                    generation_time_ms=int((time.monotonic() - started) * 1000),
+                )
+                yield f"data: {json.dumps({'type': 'done', 'result': response.model_dump(mode='json')})}\n\n"
+
+    return StreamingResponse(
+        _event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            # nginx (frontend container's reverse proxy, see nginx.conf) buffers
+            # upstream responses by default, which would defeat streaming
+            # entirely — this header tells it to pass chunks through live.
+            "X-Accel-Buffering": "no",
+        },
     )
 
 

@@ -660,6 +660,19 @@ async def apply_core_schema_migrations(engine) -> None:
                 PRIMARY KEY (classroom_id, student_id)
             )
         """, "create classroom_students")
+        # classrooms/classroom_students live outside the ORM/Alembic entirely
+        # (raw SQL above), so they don't get index=True from a model
+        # declaration or Alembic's normal migration path — these three were
+        # found unindexed in a 2026-09 audit despite being the primary
+        # WHERE-filter columns in routes/classrooms.py's list_classrooms
+        # (WHERE c.teacher_id = :tid), get_classroom (WHERE c.id = :cid AND
+        # c.teacher_id = :tid), and my_classrooms (WHERE cs.student_id =
+        # :uid — the composite PK on (classroom_id, student_id) indexes
+        # lookups BY classroom_id, not by student_id alone, so that one
+        # needed its own index too).
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_classrooms_teacher_id ON classrooms(teacher_id)", "index classrooms.teacher_id")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_classrooms_org_id ON classrooms(org_id)", "index classrooms.org_id")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_classroom_students_student_id ON classroom_students(student_id)", "index classroom_students.student_id")
         # ── Standards & rubrics tables ─────────────────────────────────────
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS standards_sets (
@@ -2097,6 +2110,20 @@ def check_config_warnings(settings) -> None:
             "⚠  SECURITY: PLATFORM_API_SECRET is unset — the X-Platform-Secret "
             "second factor on /platform/* superadmin routes is disabled. Set it "
             "to a random value: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
+
+    # PADDLE_WEBHOOK_SECRET already fails closed at request time (see
+    # routes/paddle_webhook.py — a blank secret rejects every webhook outside
+    # ENVIRONMENT=development, so a forged subscription.created can't grant a
+    # free paid tier). Checked here too, as a boot-time warning rather than a
+    # second fatal gate, purely so a misconfigured deploy is visible in the
+    # startup log instead of only showing up the first time Paddle's webhook
+    # fires (or silently never firing at all, if Paddle isn't wired up yet).
+    if not getattr(settings, "PADDLE_WEBHOOK_SECRET", "") and is_prod:
+        logger.warning(
+            "⚠  SECURITY: PADDLE_WEBHOOK_SECRET is unset — billing webhooks will "
+            "be rejected (fail-closed, see routes/paddle_webhook.py), not forged. "
+            "Set it from your Paddle dashboard once billing is wired up."
         )
 
     if fatal and is_prod:

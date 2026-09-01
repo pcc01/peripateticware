@@ -53,6 +53,7 @@ services:
     # leave in permanently rather than pull back out after this one deploy.
     command: >
       sh -c "alembic upgrade head && gunicorn main:app
+      -c gunicorn.conf.py
       --workers 4
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
@@ -64,6 +65,13 @@ services:
       ENVIRONMENT: production
       DEBUG: 'false'
       LOG_LEVEL: INFO
+      # Required for core/encryption.py's decrypt-fallback Counter (and any
+      # future prometheus_client metric) to aggregate correctly across all 4
+      # gunicorn workers instead of each worker reporting its own fraction.
+      # /tmp is fine — gunicorn.conf.py's on_starting hook wipes and
+      # recreates this on every container start, it holds no state that
+      # needs to survive a restart.
+      PROMETHEUS_MULTIPROC_DIR: /tmp/prometheus_multiproc_dir
     # `!override` REPLACES the base list (a plain [] would merge = keep the
     # dev source mount). Prod runs the code baked into the image; only data
     # volumes + the Google service-account secret are mounted.

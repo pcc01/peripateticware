@@ -25,7 +25,7 @@ class StudentProfile(Base):
     __tablename__ = "student_profiles"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
 
     # Learning Persona (HOW)
     learning_style = Column(String(50))  # visual, auditory, kinesthetic
@@ -75,9 +75,14 @@ class LearningSession(Base):
     __tablename__ = "learning_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    # user_id/activity_id: joined/filtered in every teacher- and
+    # homeschool-dashboard query (routes/activities.py's teacher_dashboard,
+    # teacher_students, pending-submissions counts; routes/homeschool.py's
+    # homeschool_dashboard) with no supporting index — the single biggest
+    # missing-index finding in a 2026-09 audit.
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     curriculum_id = Column(UUID(as_uuid=True), ForeignKey("curriculum_units.id"), nullable=True)
-    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True, index=True)
 
     # Session data
     title = Column(String(255))
@@ -592,7 +597,7 @@ class CaptureAnnotation(Base):
 
     id         = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     capture_id = Column(UUID(as_uuid=True), ForeignKey("student_captures.id"), index=True)
-    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
 
     annotation_type  = Column(String(50))
     linked_objective = Column(String(255), nullable=True)
@@ -629,7 +634,7 @@ class NotebookFeedback(Base):
 
     id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     notebook_id = Column(UUID(as_uuid=True), ForeignKey("student_notebooks.id"), index=True)
-    teacher_id  = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    teacher_id  = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
 
     comment          = Column(Text, nullable=False)
     is_positive      = Column(Boolean, default=True)
@@ -775,7 +780,7 @@ class LocationSearchHistory(Base):
     cached_count   = Column(Integer, default=0)
     enriched_count = Column(Integer, default=0)
 
-    teacher_id  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    teacher_id  = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True)
     searched_at = Column(DateTime, default=datetime.utcnow, index=True)
 
@@ -867,7 +872,7 @@ class ComplianceCheck(Base):
     third_parties    = Column(ARRAY(String), default=list)
     activity_purpose = Column(String(255))
 
-    checked_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    checked_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     timestamp          = Column(DateTime, default=datetime.utcnow, index=True)
 
     activity = relationship("Activity", back_populates="compliance_checks")
@@ -1070,7 +1075,7 @@ class StudentFieldNote(Base):
 
     submitted_for_promotion_at = Column(DateTime, nullable=True)
     submitted_with_message     = Column(Text, nullable=True)
-    reviewed_by_teacher_id     = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    reviewed_by_teacher_id     = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     reviewed_at                = Column(DateTime, nullable=True)
     teacher_feedback           = Column(Text, nullable=True)
     promoted_activity_id       = Column(UUID(as_uuid=True), ForeignKey("activities.id"), nullable=True)
@@ -1137,7 +1142,7 @@ class StudentPeerProject(Base):
     status            = Column(String(30), default="draft", nullable=False)
     approval_required = Column(Boolean, default=True, nullable=False)
 
-    approved_by_teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    approved_by_teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
     approved_at            = Column(DateTime, nullable=True)
     teacher_feedback       = Column(Text, nullable=True)
     published_at           = Column(DateTime, nullable=True)

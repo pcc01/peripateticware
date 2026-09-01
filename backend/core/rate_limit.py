@@ -149,11 +149,14 @@ async def check_ai_rate_limit(
     results = await pipe.execute()
 
     count: int = results[2]
-    # Tracking only — never block. Log high usage for platform analytics.
     if count > limit:
         logger.info(
-            f"[rate_limit] High usage (tracking only): identity={identity} "
+            f"[rate_limit] Blocked: identity={identity} "
             f"count={count} limit={limit} window={_WINDOW_SECONDS}s"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded: {limit} requests per {_WINDOW_SECONDS}s. Please slow down.",
         )
 
 

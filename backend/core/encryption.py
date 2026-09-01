@@ -26,6 +26,7 @@ import os
 from typing import Any, Optional
 
 from cryptography.fernet import Fernet, InvalidToken
+from prometheus_client import Counter
 from sqlalchemy import String
 from sqlalchemy.engine.interfaces import Dialect
 from sqlalchemy.types import TypeDecorator
@@ -40,8 +41,46 @@ _encryption_enabled: bool = False
 # stored value was not a valid Fernet token). After the one-time migration
 # (backend/scripts/encrypt_existing_data.py) this should stay at ZERO — any
 # increase means a wrong/rotated key or genuinely corrupt data, NOT plaintext.
-# Scrape this via /metrics or log-alert on it.
+#
+# Two forms of the same counter, deliberately:
+#   - decrypt_fallback_count (plain int): per-process, used only in the log
+#     line below — cheap, no dependency on /metrics being scraped.
+#   - _decrypt_fallback_metric (Prometheus Counter): the one that's actually
+#     observable in production. Previously this comment said "scrape via
+#     /metrics" but nothing ever mounted a /metrics endpoint (prometheus-client
+#     was a pinned, unused dependency) and gunicorn's 4 worker processes each
+#     have an independent `decrypt_fallback_count`, so a wrong/rotated key
+#     was invisible short of grepping container logs for the literal string
+#     "decrypt() fallback". prometheus_client's multiprocess mode (see
+#     main.py's /metrics mount + gunicorn.conf.py's child_exit hook) is what
+#     actually aggregates this across all 4 workers.
 decrypt_fallback_count: int = 0
+
+
+def _get_or_create_counter(name: str, description: str) -> Counter:
+    """
+    Counter(name, ...) raises ValueError("Duplicated timeseries...") if a
+    collector with that name is already registered on the default global
+    REGISTRY — which happens the moment this module is imported a second
+    time in the same process. That's not a hypothetical: tests/test_encryption.py's
+    _reload_encryption() helper does exactly this (del sys.modules + re-import)
+    for test isolation, and hitting it crashed collection for unrelated test
+    files too (pytest running one process for the whole suite). Reuse the
+    already-registered collector instead of re-registering.
+    """
+    try:
+        return Counter(name, description)
+    except ValueError:
+        from prometheus_client import REGISTRY
+        return REGISTRY._names_to_collectors[name]  # type: ignore[return-value]
+
+
+_decrypt_fallback_metric = _get_or_create_counter(
+    "pii_decrypt_fallback_total",
+    "Count of decrypt() calls that fell back to returning a non-Fernet value "
+    "as-is. Should stay at zero after the one-time PII-encryption migration; "
+    "any increase means a wrong/rotated FIELD_ENCRYPTION_KEY or corrupt data.",
+)
 
 # When True, decrypt() raises instead of returning ciphertext on failure.
 # Set PII_DECRYPT_STRICT=true AFTER the migration completes so a wrong key
@@ -105,6 +144,7 @@ def decrypt(token: str) -> str:
         return _fernet.decrypt(token.encode()).decode()
     except (InvalidToken, Exception) as exc:
         decrypt_fallback_count += 1
+        _decrypt_fallback_metric.inc()
         logger.warning(
             "decrypt() fallback #%d — value is not a valid Fernet token "
             "(pre-migration plaintext, or WRONG/ROTATED KEY): %s",
@@ -125,6 +165,28 @@ def blind_index(value: str) -> str:
 def generate_key() -> str:
     """Generate a fresh Fernet key. Run once and store in FIELD_ENCRYPTION_KEY."""
     return Fernet.generate_key().decode()
+
+
+def is_encrypted(value: Optional[str]) -> bool:
+    """True if `value` is already a valid Fernet token under the current key.
+
+    One-time backfill scripts (backend/scripts/encrypt_existing_data.py) need
+    this to skip rows that are already encrypted — encrypt()/decrypt() alone
+    have no way to tell "already encrypted" apart from "plaintext that
+    happens to look odd," so a script that unconditionally re-encrypts every
+    row on every run will double-wrap already-encrypted values: decrypt()
+    then only unwraps the outer layer and returns ciphertext instead of the
+    real plaintext, a silent corruption discovered in prod (2026-09) where a
+    handful of rows created via a raw-SQL path had never been migrated
+    alongside the rest.
+    """
+    if not _encryption_enabled or _fernet is None or not value:
+        return False
+    try:
+        _fernet.decrypt(value.encode())
+        return True
+    except Exception:
+        return False
 
 
 class EncryptedString(TypeDecorator):

@@ -58,7 +58,14 @@ services:
   redis:
     ports:
       - "6379:6379"
-    command: redis-server --loglevel debug
+    # command: (not a list-merge — this REPLACES the base file's command
+    # entirely) needs its own --requirepass or a dev deploy silently loses
+    # the auth the base docker-compose.yml now sets, same trap as the
+    # ports: !override footgun already documented in docker-compose.prod.yml.
+    # Quoting matters here — see docker-compose.yml's redis service comment
+    # (unquoted + empty REDIS_PASSWORD leaves a dangling --requirepass with
+    # no argument, which is a fatal Redis config error, not a no-op).
+    command: redis-server --loglevel debug --requirepass "${REDIS_PASSWORD:-}"
 
 # Add development-only service: Mail Server (for email testing)
 # This allows viewing emails sent by the application without actually sending
