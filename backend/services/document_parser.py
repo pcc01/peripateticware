@@ -24,6 +24,7 @@ Public API
   parse_document(file_bytes, filename, mime_type) -> ParsedDocument
 """
 
+import asyncio
 import csv
 import io
 import logging
@@ -117,19 +118,36 @@ async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
     model = (settings.OLLAMA_MODEL_VISION or "llava") if prov == "ollama" else None
 
     ocr_prompt = "Extract all text from this document page exactly as it appears. Output only the text, no commentary."
-    for i, img_bytes in enumerate(page_images):
-        try:
-            b64 = base64.b64encode(img_bytes).decode()
-            text = await _provider.dispatch(
-                prov,
-                messages=[{"role": "user", "content": ocr_prompt}],
-                model=model,
-                images=[b64],
-            )
-            pages_text.append(text.strip())
-        except Exception as e:
-            logger.warning("OCR failed for page %d: %s", i + 1, e)
-            pages_text.append("")
+
+    # Bounded concurrency instead of one page at a time, serially — a
+    # multi-page scanned PDF previously paid the full round-trip latency of
+    # a vision-model call N times in a row before the user saw any result.
+    # 3 is a client-side soft cap, not a hard requirement: a local Ollama
+    # server queues requests internally rather than running them all in
+    # parallel regardless of what we send concurrently, so this mainly
+    # helps when the configured provider is Claude/OpenAI (a real remote
+    # API that benefits from actual parallelism).
+    _MAX_CONCURRENT_OCR_PAGES = 3
+    semaphore = asyncio.Semaphore(_MAX_CONCURRENT_OCR_PAGES)
+
+    async def _ocr_one_page(page_num: int, img_bytes: bytes) -> str:
+        async with semaphore:
+            try:
+                b64 = base64.b64encode(img_bytes).decode()
+                text = await _provider.dispatch(
+                    prov,
+                    messages=[{"role": "user", "content": ocr_prompt}],
+                    model=model,
+                    images=[b64],
+                )
+                return text.strip()
+            except Exception as e:
+                logger.warning("OCR failed for page %d: %s", page_num + 1, e)
+                return ""
+
+    pages_text = list(await asyncio.gather(*(
+        _ocr_one_page(i, img_bytes) for i, img_bytes in enumerate(page_images)
+    )))
 
     full_text = "\n\n".join(p for p in pages_text if p)
     return ParsedDocument(

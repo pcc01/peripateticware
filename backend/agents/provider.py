@@ -86,7 +86,18 @@ async def call_claude(
         "messages": api_messages,
     }
     if system_content:
-        payload["system"] = system_content
+        # Content-block form with a caching breakpoint, not a bare string.
+        # Every one of this codebase's 5 agents (activity_review,
+        # rubric_scoring, standards_ingestion, standards_mapping,
+        # compliance_report) loads a fully static system.txt per call —
+        # ~250-1400 chars each — and re-sends it uncached every single time.
+        # Same caveat as services/anthropic_client.py's _system_block(): a
+        # block only actually gets cached above a minimum length (~2048
+        # tokens for Haiku, ~1024 for Sonnet/Opus); cache_control is a no-op
+        # below that, not an error.
+        payload["system"] = [
+            {"type": "text", "text": system_content, "cache_control": {"type": "ephemeral"}}
+        ]
     if temperature is not None:
         payload["temperature"] = temperature
 
