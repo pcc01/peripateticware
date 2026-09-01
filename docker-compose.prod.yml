@@ -63,10 +63,19 @@ services:
     # a real prod deploy: alembic died with `FileNotFoundError:
     # /tmp/prometheus_multiproc_dir/counter_7.db`, taking the whole
     # container down before gunicorn ever got a chance to run its own fix.
+    # --workers 8 / cpus 4.0 below (was 4 / 2.0): a 2026-09 audit found the
+    # host this actually runs on has 12 cores / 30GB RAM with ~26GB free at
+    # typical load (checked via `free -h`/`docker stats`) — the prior limits
+    # were sized for a machine roughly a tenth that size. Keeping this
+    # container's existing workers:cpus ratio (2:1) rather than introducing
+    # a different heuristic; raising the ceiling doesn't force more usage,
+    # it just removes an artificial cap well below what the hardware can
+    # provide. Validate further with the repo's own LOAD_TEST_PLAN.md/k6
+    # setup rather than guessing further from here.
     command: >
       sh -c "mkdir -p /tmp/prometheus_multiproc_dir && alembic upgrade head && gunicorn main:app
       -c gunicorn.conf.py
-      --workers 4
+      --workers 8
       --worker-class uvicorn.workers.UvicornWorker
       --bind 0.0.0.0:8000
       --timeout 120
@@ -78,7 +87,7 @@ services:
       DEBUG: 'false'
       LOG_LEVEL: INFO
       # Required for core/encryption.py's decrypt-fallback Counter (and any
-      # future prometheus_client metric) to aggregate correctly across all 4
+      # future prometheus_client metric) to aggregate correctly across all 8
       # gunicorn workers instead of each worker reporting its own fraction.
       # /tmp is fine — gunicorn.conf.py's on_starting hook wipes and
       # recreates this on every container start, it holds no state that
@@ -119,7 +128,8 @@ services:
     # The more correct fix is paginating that query instead of `.all()`ing
     # the whole table — not done here, this is the pragmatic unblock.
     mem_limit: 6g
-    cpus: '2.0'
+    # Was 2.0 — see the --workers comment above the command: block for why.
+    cpus: '4.0'
 
   postgres:
     restart: always
@@ -128,21 +138,44 @@ services:
     # Server tuning via command args (NOT POSTGRES_INITDB_ARGS — initdb chokes
     # on GUC flags during first-time cluster init and the container never
     # becomes healthy on a fresh volume)
+    #
+    # shared_buffers/effective_cache_size/maintenance_work_mem raised in a
+    # 2026-09 audit — see the backend service's --workers comment above for
+    # the same "host has 12 cores/30GB, prior limits were sized for a much
+    # smaller machine" context. effective_cache_size is a query-planner hint
+    # (how much OS page cache Postgres should assume is available for its
+    # data), not an actual allocation, so it's safe to set generously; the
+    # other two DO allocate real memory, which is why mem_limit below is
+    # raised to match rather than left at the old 1g (shared_buffers alone
+    # would have exceeded that cap).
     command:
       - postgres
       - -c
-      - shared_buffers=256MB
+      - shared_buffers=2GB
       - -c
-      - effective_cache_size=512MB
+      - effective_cache_size=8GB
       - -c
-      - maintenance_work_mem=64MB
+      - maintenance_work_mem=256MB
       - -c
       - checkpoint_completion_target=0.9
       - -c
       - wal_buffers=16MB
       - -c
       - max_connections=100
-    mem_limit: 1g
+    # Was 1g — sized only for the old shared_buffers=256MB. shared_buffers
+    # (2GB) + maintenance_work_mem (256MB) + up to max_connections=100 *
+    # work_mem (4MB default = ~400MB worst case) + normal backend/OS
+    # overhead comfortably fits in 4g with real headroom, without reserving
+    # a large fraction of the host's 30GB for a database this size.
+    mem_limit: 4g
+    # shared_buffers itself doesn't need this (Postgres's main buffer pool
+    # is mmap-backed, not /dev/shm-backed, on modern Linux) — but parallel
+    # query workers' dynamic shared memory segments ARE /dev/shm-backed, and
+    # Docker's default is only 64MB. Never explicitly set before; harmless
+    # at any table size, but would surface as a confusing "could not resize
+    # shared memory segment" error the first time a parallel query plan
+    # actually got used against a table big enough to trigger one.
+    shm_size: 1g
 
   redis:
     restart: always

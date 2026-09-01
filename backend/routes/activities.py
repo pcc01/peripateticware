@@ -19,6 +19,7 @@ from core.database import get_db
 from core.config import settings
 from core.dependencies import get_current_user, get_current_teacher
 from core.encryption import decrypt as _decrypt
+from core.cache import get_cache, set_cache
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.assessment import TAXONOMY_DESCRIPTIONS
 from services.polling import poll_interval_seconds
@@ -974,6 +975,18 @@ async def teacher_dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """Summary stats for TeacherDashboard page."""
+    # Short-TTL cache: this endpoint runs 5 queries (2 of them table scans
+    # over learning_sessions/activities joins) on every dashboard load, but
+    # a dashboard tolerates a little staleness fine — a new activity or
+    # submission showing up up to 30s later is a non-issue for a summary
+    # view, and a plain TTL means no invalidation logic is needed anywhere
+    # else in the app (same low-effort pattern already used for
+    # budget:monthly:* in services/ai_router.py).
+    cache_key = f"teacher_dashboard:{current_user.id}"
+    cached = await get_cache(cache_key)
+    if cached is not None:
+        return cached
+
     # Activity counts
     total_act = (await db.execute(
         select(func.count()).where(Activity.teacher_id == current_user.id)
@@ -1022,7 +1035,7 @@ async def teacher_dashboard(
     except Exception:
         pending_sub_count = 0
 
-    return {
+    result = {
         # Field names match TeacherDashboardData frontend type
         "total_students": student_count,
         "total_classes": class_count,
@@ -1043,6 +1056,8 @@ async def teacher_dashboard(
         "classes": [],
         "recent_submissions": [],
     }
+    await set_cache(cache_key, result, ttl=30)
+    return result
 
 
 @router.get("/teacher/submissions")

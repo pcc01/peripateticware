@@ -2,7 +2,7 @@
  * Peripateticware App.tsx - COMPLETE INTEGRATION
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 import i18n from './config/i18n'
@@ -15,7 +15,7 @@ import { useSkin } from './hooks/useSkin'
 import { useGlobalPrivacyControl } from './hooks/useGlobalPrivacyControl'
 import CookieConsentBanner from './components/CookieConsentBanner'
 import UpgradeModal from './components/UpgradeModal'
-import ParentConsentPage from './pages/ParentConsentPage'
+const ParentConsentPage = React.lazy(() => import('./pages/ParentConsentPage'));
 import './styles/globals.css'
 import './styles/landing.css'
 
@@ -25,125 +25,125 @@ const DIRECTION_COLORS = {
   'atmosphere':  { primary: '#a89dd5', secondary: '#4a9ef0', background: '#141c17', name: 'Atmosphere' }
 }
 
-import LandingPage from './components/LandingPage'
-import PrivacyPage from './pages/PrivacyPage'
-import TermsPage from './pages/TermsPage'
-import CookiePolicyPage from './pages/CookiePolicyPage'
-import DoNotSellPage from './pages/DoNotSellPage'
-import BlogListPage from './pages/BlogListPage'
-import BlogPostPage from './pages/BlogPostPage'
-import LoginScreen from './components/auth/LoginScreen'
-import SignUpScreen from './components/auth/SignUpScreen'
-import RequestBetaPage from './components/auth/RequestBetaPage'
-import LicensingPage from './pages/LicensingPage'
+const LandingPage = React.lazy(() => import('./components/LandingPage'));
+const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
+const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const CookiePolicyPage = React.lazy(() => import('./pages/CookiePolicyPage'));
+const DoNotSellPage = React.lazy(() => import('./pages/DoNotSellPage'));
+const BlogListPage = React.lazy(() => import('./pages/BlogListPage'));
+const BlogPostPage = React.lazy(() => import('./pages/BlogPostPage'));
+const LoginScreen = React.lazy(() => import('./components/auth/LoginScreen'));
+const SignUpScreen = React.lazy(() => import('./components/auth/SignUpScreen'));
+const RequestBetaPage = React.lazy(() => import('./components/auth/RequestBetaPage'));
+const LicensingPage = React.lazy(() => import('./pages/LicensingPage'));
 
-import StudentDashboard from './pages/StudentDashboard'
-import TeacherDashboard from './pages/TeacherDashboard'
-import ParentDashboard from './pages/ParentDashboard'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminPrivacyConfigPage from './pages/AdminPrivacyConfigPage'
-import AdminAuditLogPage from './pages/AdminAuditLogPage'
-import OrgAIConfigPage from './pages/org/admin/OrgAIConfigPage'
-import AdminHelpPage from './pages/admin/AdminHelpPage'
+const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard'));
+const TeacherDashboard = React.lazy(() => import('./pages/TeacherDashboard'));
+const ParentDashboard = React.lazy(() => import('./pages/ParentDashboard'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminPrivacyConfigPage = React.lazy(() => import('./pages/AdminPrivacyConfigPage'));
+const AdminAuditLogPage = React.lazy(() => import('./pages/AdminAuditLogPage'));
+const OrgAIConfigPage = React.lazy(() => import('./pages/org/admin/OrgAIConfigPage'));
+const AdminHelpPage = React.lazy(() => import('./pages/admin/AdminHelpPage'));
 
-import ActivityListPage from './pages/teacher/ActivityListPage'
-import SharedLibraryPage from './pages/teacher/SharedLibraryPage'
-import TeacherClassroomPage from './pages/teacher/TeacherClassroomPage'
-import TeacherClassroomsPage from './pages/teacher/TeacherClassroomsPage'
-import TeacherMessagesPage from './pages/teacher/TeacherMessagesPage'
-import TeacherCalendarPage from './pages/teacher/TeacherCalendarPage'
-import TeacherWelcomePage from './pages/teacher/TeacherWelcomePage'
-import ProjectsPage from './pages/teacher/ProjectsPage'
-import ProjectDetailPage from './pages/teacher/ProjectDetailPage'
-import ProjectNewPage from './pages/teacher/ProjectNewPage'
-import ProjectLiveTrackingPage from './pages/teacher/ProjectLiveTrackingPage'
-import ProjectCompletionReportPage from './pages/teacher/ProjectCompletionReportPage'
-import TrackingSettingsPage from './pages/teacher/TrackingSettingsPage'
-import { TeacherTourPage } from './pages/teacher/TeacherTourPage'
-import ActivityManager from './components/teacher/ActivityManager'
-import { TeacherSettingsPage } from './pages/TeacherSettingsPage'
-import { TeacherApprovalDashboard } from './components/teacher/TeacherApprovalDashboard'
-import RubricsPage from './pages/teacher/RubricsPage'
-import ReflectionEditorPage from './pages/student/ReflectionEditorPage'
-import PrivacyEnginePage from './pages/PrivacyEnginePage'
-import PrivacyConfirmationPage from './pages/PrivacyConfirmationPage'
-import PlatformShell from './layouts/PlatformShell'
-import PlatformOverviewPage from './pages/platform/PlatformOverviewPage'
-import PlatformOrgsPage from './pages/platform/PlatformOrgsPage'
-import PlatformOrgDetailPage from './pages/platform/PlatformOrgDetailPage'
-import PlatformUsagePage from './pages/platform/PlatformUsagePage'
-import PlatformAuditLogPage from './pages/platform/PlatformAuditLogPage'
-import PlatformAISettingsPage from './pages/platform/PlatformAISettingsPage'
-import OriginStoryPage from './pages/OriginStoryPage'
-import RubricBuilder from './components/teacher/RubricBuilder'
-import StudentActivityPreview from './components/teacher/StudentActivityPreview'
-import { FieldNoteEditor as _FieldNoteEditor } from './components/student/FieldNoteEditor'
-import { SelfProjectView as _SelfProjectView } from './components/student/SelfProjectView'
-import { FieldNoteReview as _FieldNoteReview } from './components/teacher/FieldNoteReview'
-import TeacherSubmissionsPage from './pages/TeacherSubmissionsPage'
-import ProfessorFieldworkPage from './pages/teacher/ProfessorFieldworkPage'
+const ActivityListPage = React.lazy(() => import('./pages/teacher/ActivityListPage'));
+const SharedLibraryPage = React.lazy(() => import('./pages/teacher/SharedLibraryPage'));
+const TeacherClassroomPage = React.lazy(() => import('./pages/teacher/TeacherClassroomPage'));
+const TeacherClassroomsPage = React.lazy(() => import('./pages/teacher/TeacherClassroomsPage'));
+const TeacherMessagesPage = React.lazy(() => import('./pages/teacher/TeacherMessagesPage'));
+const TeacherCalendarPage = React.lazy(() => import('./pages/teacher/TeacherCalendarPage'));
+const TeacherWelcomePage = React.lazy(() => import('./pages/teacher/TeacherWelcomePage'));
+const ProjectsPage = React.lazy(() => import('./pages/teacher/ProjectsPage'));
+const ProjectDetailPage = React.lazy(() => import('./pages/teacher/ProjectDetailPage'));
+const ProjectNewPage = React.lazy(() => import('./pages/teacher/ProjectNewPage'));
+const ProjectLiveTrackingPage = React.lazy(() => import('./pages/teacher/ProjectLiveTrackingPage'));
+const ProjectCompletionReportPage = React.lazy(() => import('./pages/teacher/ProjectCompletionReportPage'));
+const TrackingSettingsPage = React.lazy(() => import('./pages/teacher/TrackingSettingsPage'));
+const TeacherTourPage = React.lazy(() => import('./pages/teacher/TeacherTourPage').then(m => ({ default: m.TeacherTourPage })));
+const ActivityManager = React.lazy(() => import('./components/teacher/ActivityManager'));
+const TeacherSettingsPage = React.lazy(() => import('./pages/TeacherSettingsPage').then(m => ({ default: m.TeacherSettingsPage })));
+const TeacherApprovalDashboard = React.lazy(() => import('./components/teacher/TeacherApprovalDashboard').then(m => ({ default: m.TeacherApprovalDashboard })));
+const RubricsPage = React.lazy(() => import('./pages/teacher/RubricsPage'));
+const ReflectionEditorPage = React.lazy(() => import('./pages/student/ReflectionEditorPage'));
+const PrivacyEnginePage = React.lazy(() => import('./pages/PrivacyEnginePage'));
+const PrivacyConfirmationPage = React.lazy(() => import('./pages/PrivacyConfirmationPage'));
+const PlatformShell = React.lazy(() => import('./layouts/PlatformShell'));
+const PlatformOverviewPage = React.lazy(() => import('./pages/platform/PlatformOverviewPage'));
+const PlatformOrgsPage = React.lazy(() => import('./pages/platform/PlatformOrgsPage'));
+const PlatformOrgDetailPage = React.lazy(() => import('./pages/platform/PlatformOrgDetailPage'));
+const PlatformUsagePage = React.lazy(() => import('./pages/platform/PlatformUsagePage'));
+const PlatformAuditLogPage = React.lazy(() => import('./pages/platform/PlatformAuditLogPage'));
+const PlatformAISettingsPage = React.lazy(() => import('./pages/platform/PlatformAISettingsPage'));
+const OriginStoryPage = React.lazy(() => import('./pages/OriginStoryPage'));
+const RubricBuilder = React.lazy(() => import('./components/teacher/RubricBuilder'));
+const StudentActivityPreview = React.lazy(() => import('./components/teacher/StudentActivityPreview'));
+const _FieldNoteEditor = React.lazy(() => import('./components/student/FieldNoteEditor').then(m => ({ default: m.FieldNoteEditor })));
+const _SelfProjectView = React.lazy(() => import('./components/student/SelfProjectView').then(m => ({ default: m.SelfProjectView })));
+const _FieldNoteReview = React.lazy(() => import('./components/teacher/FieldNoteReview').then(m => ({ default: m.FieldNoteReview })));
+const TeacherSubmissionsPage = React.lazy(() => import('./pages/TeacherSubmissionsPage'));
+const ProfessorFieldworkPage = React.lazy(() => import('./pages/teacher/ProfessorFieldworkPage'));
 
-import StudentHowItWorksPage from './pages/student/StudentHowItWorksPage'
-import StudentCalendarPage from './pages/student/StudentCalendarPage'
-import SessionPage from './pages/SessionPage'
-import { StudentSettingsPage } from './pages/StudentSettingsPage'
-import FieldNotesListPage from './pages/student/FieldNotesListPage'
-import SelfProjectsListPage from './pages/student/SelfProjectsListPage'
-import PeerProjectsListPage from './pages/student/PeerProjectsListPage'
-import PeerProjectDetailPage from './pages/student/PeerProjectDetailPage'
-import ProposalsListPage from './pages/student/ProposalsListPage'
-import ProposalFormPage from './pages/student/ProposalFormPage'
-import StudentActivitiesPage from './pages/student/StudentActivitiesPage'
-import TeacherProposalReviewPage from './pages/teacher/TeacherProposalReviewPage'
-import StudentActivityDetailPage from './pages/StudentActivityDetailPage'
+const StudentHowItWorksPage = React.lazy(() => import('./pages/student/StudentHowItWorksPage'));
+const StudentCalendarPage = React.lazy(() => import('./pages/student/StudentCalendarPage'));
+const SessionPage = React.lazy(() => import('./pages/SessionPage'));
+const StudentSettingsPage = React.lazy(() => import('./pages/StudentSettingsPage').then(m => ({ default: m.StudentSettingsPage })));
+const FieldNotesListPage = React.lazy(() => import('./pages/student/FieldNotesListPage'));
+const SelfProjectsListPage = React.lazy(() => import('./pages/student/SelfProjectsListPage'));
+const PeerProjectsListPage = React.lazy(() => import('./pages/student/PeerProjectsListPage'));
+const PeerProjectDetailPage = React.lazy(() => import('./pages/student/PeerProjectDetailPage'));
+const ProposalsListPage = React.lazy(() => import('./pages/student/ProposalsListPage'));
+const ProposalFormPage = React.lazy(() => import('./pages/student/ProposalFormPage'));
+const StudentActivitiesPage = React.lazy(() => import('./pages/student/StudentActivitiesPage'));
+const TeacherProposalReviewPage = React.lazy(() => import('./pages/teacher/TeacherProposalReviewPage'));
+const StudentActivityDetailPage = React.lazy(() => import('./pages/StudentActivityDetailPage'));
 
-import ParentFeaturesPage from './pages/parent/ParentFeaturesPage'
-import ParentCalendarPage from './pages/ParentCalendarPage'
-import ParentNotificationsPage from './pages/ParentNotificationsPage'
-import ParentReportsPage from './pages/ParentReportsPage'
-import LinkChildPage from './pages/LinkChildPage'
-import VerifyEmailPendingPage from './pages/auth/VerifyEmailPendingPage'
-import VerifyEmailPage from './pages/auth/VerifyEmailPage'
-import TeacherLayout from './layouts/TeacherLayout'
-import StudentLayout from './layouts/StudentLayout'
-import ParentLayout from './layouts/ParentLayout'
-import AdminLayout from './layouts/AdminLayout'
-import HomeschoolLayout from './layouts/HomeschoolLayout'
-import HomeschoolDashboard from './pages/homeschool/HomeschoolDashboard'
-import HomeschoolWelcomePage from './pages/homeschool/HomeschoolWelcomePage'
-import HomeschoolChildrenPage from './pages/homeschool/HomeschoolChildrenPage'
-import HomeschoolProgressPage from './pages/homeschool/HomeschoolProgressPage'
-import HomeschoolRequirementsPage from './pages/homeschool/HomeschoolRequirementsPage'
-import HomeschoolCoveragePage from './pages/homeschool/HomeschoolCoveragePage'
-import HomeschoolExportPage from './pages/homeschool/HomeschoolExportPage'
-import HomeschoolCalendarPage from './pages/homeschool/HomeschoolCalendarPage'
-import HomeschoolSettingsPage from './pages/homeschool/HomeschoolSettingsPage'
+const ParentFeaturesPage = React.lazy(() => import('./pages/parent/ParentFeaturesPage'));
+const ParentCalendarPage = React.lazy(() => import('./pages/ParentCalendarPage'));
+const ParentNotificationsPage = React.lazy(() => import('./pages/ParentNotificationsPage'));
+const ParentReportsPage = React.lazy(() => import('./pages/ParentReportsPage'));
+const LinkChildPage = React.lazy(() => import('./pages/LinkChildPage'));
+const VerifyEmailPendingPage = React.lazy(() => import('./pages/auth/VerifyEmailPendingPage'));
+const VerifyEmailPage = React.lazy(() => import('./pages/auth/VerifyEmailPage'));
+const TeacherLayout = React.lazy(() => import('./layouts/TeacherLayout'));
+const StudentLayout = React.lazy(() => import('./layouts/StudentLayout'));
+const ParentLayout = React.lazy(() => import('./layouts/ParentLayout'));
+const AdminLayout = React.lazy(() => import('./layouts/AdminLayout'));
+const HomeschoolLayout = React.lazy(() => import('./layouts/HomeschoolLayout'));
+const HomeschoolDashboard = React.lazy(() => import('./pages/homeschool/HomeschoolDashboard'));
+const HomeschoolWelcomePage = React.lazy(() => import('./pages/homeschool/HomeschoolWelcomePage'));
+const HomeschoolChildrenPage = React.lazy(() => import('./pages/homeschool/HomeschoolChildrenPage'));
+const HomeschoolProgressPage = React.lazy(() => import('./pages/homeschool/HomeschoolProgressPage'));
+const HomeschoolRequirementsPage = React.lazy(() => import('./pages/homeschool/HomeschoolRequirementsPage'));
+const HomeschoolCoveragePage = React.lazy(() => import('./pages/homeschool/HomeschoolCoveragePage'));
+const HomeschoolExportPage = React.lazy(() => import('./pages/homeschool/HomeschoolExportPage'));
+const HomeschoolCalendarPage = React.lazy(() => import('./pages/homeschool/HomeschoolCalendarPage'));
+const HomeschoolSettingsPage = React.lazy(() => import('./pages/homeschool/HomeschoolSettingsPage'));
 
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import ResetPasswordPage from './pages/auth/ResetPasswordPage'
-import ParentProgressPage from './pages/ParentProgressPage'
-import { ParentSettingsPage } from './pages/ParentSettingsPage'
+const ForgotPasswordPage = React.lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/auth/ResetPasswordPage'));
+const ParentProgressPage = React.lazy(() => import('./pages/ParentProgressPage'));
+const ParentSettingsPage = React.lazy(() => import('./pages/ParentSettingsPage').then(m => ({ default: m.ParentSettingsPage })));
 
-import { AdminSettingsPage } from './pages/AdminSettingsPage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
-import AdminClassesPage from './pages/admin/AdminClassesPage'
-import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage'
-import AdminSystemPage from './pages/admin/AdminSystemPage'
-import TeacherStudentsPage from './pages/teacher/TeacherStudentsPage'
-import RubricImportPage from './pages/teacher/RubricImportPage'
-import StandardsImportPage from './pages/teacher/StandardsImportPage'
-import TeacherStandardsPage from './pages/teacher/TeacherStandardsPage'
-import TeacherSessionMonitorPage from './pages/teacher/TeacherSessionMonitorPage'
-import CurriculumImportPage from './pages/admin/CurriculumImportPage'
-import AdminStandardsPage from './pages/admin/AdminStandardsPage'
-import AdminBlogPage from './pages/admin/AdminBlogPage'
-import AdminBlogEditorPage from './pages/admin/AdminBlogEditorPage'
-import AdminPagesPage from './pages/admin/AdminPagesPage'
-import AdminPageBlockEditorPage from './pages/admin/AdminPageBlockEditorPage'
-import ParentMessagesPage from './pages/ParentMessagesPage'
-import NotFoundPage from './pages/NotFoundPage'
-import MaintenancePage from './pages/MaintenancePage'
-import StudentJournalPage from './pages/student/StudentJournalPage'
+const AdminSettingsPage = React.lazy(() => import('./pages/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
+const AdminUsersPage = React.lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminClassesPage = React.lazy(() => import('./pages/admin/AdminClassesPage'));
+const AdminAnalyticsPage = React.lazy(() => import('./pages/admin/AdminAnalyticsPage'));
+const AdminSystemPage = React.lazy(() => import('./pages/admin/AdminSystemPage'));
+const TeacherStudentsPage = React.lazy(() => import('./pages/teacher/TeacherStudentsPage'));
+const RubricImportPage = React.lazy(() => import('./pages/teacher/RubricImportPage'));
+const StandardsImportPage = React.lazy(() => import('./pages/teacher/StandardsImportPage'));
+const TeacherStandardsPage = React.lazy(() => import('./pages/teacher/TeacherStandardsPage'));
+const TeacherSessionMonitorPage = React.lazy(() => import('./pages/teacher/TeacherSessionMonitorPage'));
+const CurriculumImportPage = React.lazy(() => import('./pages/admin/CurriculumImportPage'));
+const AdminStandardsPage = React.lazy(() => import('./pages/admin/AdminStandardsPage'));
+const AdminBlogPage = React.lazy(() => import('./pages/admin/AdminBlogPage'));
+const AdminBlogEditorPage = React.lazy(() => import('./pages/admin/AdminBlogEditorPage'));
+const AdminPagesPage = React.lazy(() => import('./pages/admin/AdminPagesPage'));
+const AdminPageBlockEditorPage = React.lazy(() => import('./pages/admin/AdminPageBlockEditorPage'));
+const ParentMessagesPage = React.lazy(() => import('./pages/ParentMessagesPage'));
+const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
+const MaintenancePage = React.lazy(() => import('./pages/MaintenancePage'));
+const StudentJournalPage = React.lazy(() => import('./pages/student/StudentJournalPage'));
 
 const API_BASE = '/api/v1'
 
@@ -338,6 +338,21 @@ const SelfProjectViewPage: React.FC = () => <_SelfProjectView />
 // classId defaults to undefined → component receives || undefined → shows all classes
 const FieldNoteReviewPage: React.FC = () => <_FieldNoteReview classId="" />
 
+// Shown briefly while a route's lazy-loaded chunk downloads (see the
+// React.lazy conversions above — every page/layout is now its own chunk
+// instead of one ~1.65MB bundle). Deliberately minimal: this should only
+// flash for a moment on a reasonable connection, so it avoids anything
+// that would itself cause layout shift or feel like a "real" loading state.
+const RouteLoadingFallback: React.FC = () => (
+  <div
+    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', color: 'var(--text-muted, #888)' }}
+    aria-live="polite"
+    aria-busy="true"
+  >
+    Loading…
+  </div>
+)
+
 const App: React.FC = () => {
   const { skin, setSkin } = useSkin()
   // Legacy alias so any remaining DIRECTION_COLORS refs still resolve
@@ -375,6 +390,7 @@ const App: React.FC = () => {
       <div className="min-h-screen" style={{ backgroundColor: DIRECTION_COLORS[direction].background }}>
         <CookieConsentBanner />
         <UpgradeModal />
+        <Suspense fallback={<RouteLoadingFallback />}>
         <Routes>
           {/* PUBLIC */}
           <Route path="/" element={<LandingPage />} />
@@ -519,6 +535,7 @@ const App: React.FC = () => {
 
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </Suspense>
       </div>
     </I18nextProvider>
   )

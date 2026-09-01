@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.dependencies import get_current_user
 from core.security import SecurityManager
+from core.cache import get_cache, set_cache
 from models.user import User
 from core.encryption import blind_index as _blind_index, encrypt as _encrypt, decrypt as _decrypt
 
@@ -67,6 +68,14 @@ async def homeschool_dashboard(
 ):
     _require_homeschool(current_user)
 
+    # Short-TTL cache — same rationale as routes/activities.py's
+    # teacher_dashboard: 4 queries on every load, dashboard-level staleness
+    # tolerance, no invalidation logic needed anywhere else.
+    cache_key = f"homeschool_dashboard:{current_user.id}"
+    cached = await get_cache(cache_key)
+    if cached is not None:
+        return cached
+
     # Children owned by this homeschool parent
     children_result = await db.execute(
         text("SELECT COUNT(*) FROM homeschool_children WHERE parent_id = :pid"),
@@ -99,12 +108,14 @@ async def homeschool_dashboard(
     )
     standards_count = standards_result.scalar() or 0
 
-    return {
+    result = {
         "child_count": child_count,
         "activity_count": activity_count,
         "session_count": session_count,
         "standards_count": standards_count,
     }
+    await set_cache(cache_key, result, ttl=30)
+    return result
 
 
 # ── Children ──────────────────────────────────────────────────────────────
