@@ -20,6 +20,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from core.config import settings
+from core.cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
@@ -396,8 +397,33 @@ class ActivityGenerationService:
         educational_value/success) so the rest of this method — and the
         "location" block in generate_activity_suggestions()'s return value —
         doesn't need to change.
+
+        Cached for 24h, keyed by rounded lat/lng + location name: measured
+        directly against prod logs (timestamps between this call starting
+        and the Claude call starting), this step alone cost 1.5-2.5s of
+        the 5-10s total "Suggest Activities" latency — and the exact same
+        location ("Dave Mackey Park") was looked up twice ~9 minutes apart
+        with no speedup the second time, confirming there was no caching
+        anywhere in this path despite the docstring above calling
+        multi_backend_location_service "fast, pooled" (pooled connections,
+        not cached results). Wikipedia/Wikidata content for a real-world
+        place doesn't change minute-to-minute, so a day-long TTL is safe —
+        this is exactly the kind of repeat lookup a "Regenerate" click or a
+        popular field-trip spot across different teachers produces.
         """
         from services.multi_backend_location_service import get_location_service
+
+        # 4 decimal places (~11m) matches the frontend's own lat/lng input
+        # step (ActivityManager.tsx uses step="0.0001") — finer precision
+        # would fragment the cache across noise smaller than what the UI
+        # itself lets a teacher enter.
+        cache_key = (
+            f"activity_location_context:{round(latitude, 4)}:{round(longitude, 4)}:"
+            f"{(location_name or '').strip().lower()}"
+        )
+        cached = await get_cache(cache_key)
+        if cached is not None:
+            return cached
 
         try:
             service = get_location_service()
@@ -415,7 +441,7 @@ class ActivityGenerationService:
                     target = match
 
             enriched = await service.enrich_location(target, subject=None)
-            return {
+            result = {
                 "wikipedia": {
                     "title": enriched.name,
                     "extract": enriched.description or "",
@@ -425,6 +451,8 @@ class ActivityGenerationService:
                 "educational_value": enriched.description,
                 "success": bool(enriched.description),
             }
+            await set_cache(cache_key, result, ttl=86400)
+            return result
         except Exception as e:
             logger.warning(f"Location context lookup failed for '{location_name}': {e}")
             return {}
