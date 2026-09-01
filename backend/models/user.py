@@ -32,8 +32,11 @@ class User(Base):
     age_group = Column(String(20), nullable=True)
     requires_parental_consent = Column(Boolean, default=False)
     consent_token = Column(String(128), nullable=True)
-    org_id = Column(UUID(as_uuid=True), nullable=True)
-    primary_org_id = Column(UUID(as_uuid=True), nullable=True)
+    # org_id/primary_org_id: the primary multi-tenant filter column, used
+    # throughout org-scoped queries (ai_router._budget_check,
+    # platform_ai_ledger.org_id, etc.) but never indexed.
+    org_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+    primary_org_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     signup_country_code = Column(String(10), nullable=True)
     state_code = Column(String(10), nullable=True)  # P1-5: homeschool state reporting
     is_platform_admin = Column(Boolean, default=False, nullable=False)

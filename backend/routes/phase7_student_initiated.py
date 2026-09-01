@@ -621,15 +621,22 @@ async def list_self_projects(
     )
     projects = result.scalars().all()
 
-    # Enrich with field note counts
+    # Enrich with field note counts — one GROUP BY query for every project's
+    # count instead of one COUNT(*) query per project (N+1: a student with
+    # 20 self-projects was issuing 21 queries for this single GET).
+    counts_by_project_id: dict = {}
+    if projects:
+        counts_result = await db.execute(
+            select(StudentFieldNote.self_project_id, func.count())
+            .where(StudentFieldNote.self_project_id.in_([p.id for p in projects]))
+            .group_by(StudentFieldNote.self_project_id)
+        )
+        counts_by_project_id = dict(counts_result.all())
+
     items = []
     for p in projects:
-        count_result = await db.execute(
-            select(func.count()).where(StudentFieldNote.self_project_id == p.id)
-        )
-        count = count_result.scalar() or 0
         d = _serialize_self_project(p)
-        d["field_note_count"] = count
+        d["field_note_count"] = counts_by_project_id.get(p.id, 0)
         items.append(d)
     return {"items": items}
 

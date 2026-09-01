@@ -220,13 +220,21 @@ async def list_projects(
     # Calculate total pages
     total_pages = (total + page_size - 1) // page_size
 
-    # Build response with activity counts
+    # Build response with activity counts — one GROUP BY query for the whole
+    # page instead of one COUNT(*) per project (N+1: a page of 20 projects
+    # was issuing 21 queries for this single GET).
+    activity_counts_by_project_id: dict = {}
+    if projects:
+        activity_counts_result = await db.execute(
+            select(ProjectActivity.project_id, func.count())
+            .where(ProjectActivity.project_id.in_([p.id for p in projects]))
+            .group_by(ProjectActivity.project_id)
+        )
+        activity_counts_by_project_id = dict(activity_counts_result.all())
+
     items = []
     for p in projects:
-        count_result = await db.execute(
-            select(func.count()).select_from(ProjectActivity).where(ProjectActivity.project_id == p.id)
-        )
-        activity_count = count_result.scalar() or 0
+        activity_count = activity_counts_by_project_id.get(p.id, 0)
         item_dict = {
             'id': p.id,
             'teacher_id': p.teacher_id,
@@ -475,18 +483,20 @@ async def reorder_activities(
             detail="You can only edit your own projects"
         )
 
-    # Update order for each activity
+    # Update order for each activity — one query for all of this project's
+    # activities instead of one SELECT per reordered item (N+1 on a write
+    # path: reordering 15 activities issued 15 extra queries).
     activities = reorder_request.get('activities', [])
 
-    for item in activities:
-        pa_result = await db.execute(
-            select(ProjectActivity).where(
-                ProjectActivity.project_id == project_id,
-                ProjectActivity.activity_id == UUID(str(item['id']))
-            )
-        )
-        project_activity = pa_result.scalar_one_or_none()
+    pa_result = await db.execute(
+        select(ProjectActivity).where(ProjectActivity.project_id == project_id)
+    )
+    project_activities_by_activity_id = {
+        pa.activity_id: pa for pa in pa_result.scalars().all()
+    }
 
+    for item in activities:
+        project_activity = project_activities_by_activity_id.get(UUID(str(item['id'])))
         if project_activity:
             project_activity.order = item['order']
 
