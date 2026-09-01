@@ -7,8 +7,13 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .errorBanner { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 0.75rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 1rem; }
 .suggestionsList { display: flex; flex-direction: column; gap: 0.75rem; }
-.suggestionsList.horizontal { flex-direction: row; overflow-x: auto; padding-bottom: 0.4rem; }
-.suggestionsList.horizontal .suggestionCard { flex: 0 0 260px; }
+/* flex-wrap: wrap (not a single scrolling row) so all 3 cards are visible
+   without needing to scroll — overflow-x: auto here only ever hid cards
+   past the visible width rather than revealing them, since a fixed
+   flex-basis row never grows the container. Kept overflow-x as a fallback
+   for a viewport too narrow to fit even one 260px card without it. */
+.suggestionsList.horizontal { flex-direction: row; flex-wrap: wrap; overflow-x: auto; padding-bottom: 0.4rem; }
+.suggestionsList.horizontal .suggestionCard { flex: 0 1 260px; }
 .suggestionCard {
   display: block;
   width: 100%;
