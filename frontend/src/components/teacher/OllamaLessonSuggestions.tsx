@@ -67,13 +67,6 @@ export const OllamaLessonSuggestions = ({
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [generated, setGenerated] = useState(false);
-  // Raw text as Peri generates it — shown in place of a static spinner for
-  // the whole round-trip. Not the final formatted cards (those still come
-  // from the same _parse_suggestions() the non-streaming endpoint uses,
-  // via the stream's terminal "done" event) — just a live sign that
-  // something is actually happening, the way a chat UI's typing text does.
-  const [streamingText, setStreamingText] = useState('');
-
   const canGenerate = subject.trim().length > 0 && !!gradeLevel;
 
   const mapSuggestions = (raw: any[]): Suggestion[] =>
@@ -94,7 +87,6 @@ export const OllamaLessonSuggestions = ({
     if (!canGenerate) return;
     setIsLoading(true);
     setError('');
-    setStreamingText('');
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch('/api/v1/activities/generate-suggestions/stream', {
@@ -110,7 +102,12 @@ export const OllamaLessonSuggestions = ({
           location_latitude: latitude,
           location_longitude: longitude,
           taxonomy_framework: taxonomyType,
-          activity_count: 4,
+          // 3, not 4: _parse_suggestions() on the backend hard-limits to
+          // suggestions[:3] regardless of how many come back — asking for
+          // a 4th that's always thrown away was pure wasted generation
+          // time on every single call, with zero visible effect (the 4th
+          // card was never shown).
+          activity_count: 3,
           additional_context: focus.trim() || undefined,
         }),
       });
@@ -147,7 +144,13 @@ export const OllamaLessonSuggestions = ({
           const payload = JSON.parse(line.slice('data: '.length));
 
           if (payload.type === 'delta') {
-            setStreamingText(prev => prev + payload.text);
+            // Deliberately not surfaced: the model's raw output for this
+            // prompt is bare JSON (no markdown, per the prompt's own
+            // instructions), so streaming it to the screen just showed a
+            // teacher unformatted JSON scrolling by. Still consumed here
+            // (not skipped) so the response stream is drained correctly;
+            // the actual UI update happens once on the terminal "done"
+            // event below, same as it always did.
           } else if (payload.type === 'error') {
             throw new Error(payload.error);
           } else if (payload.type === 'done') {
@@ -174,7 +177,6 @@ export const OllamaLessonSuggestions = ({
       setGenerated(true);
     } finally {
       setIsLoading(false);
-      setStreamingText('');
     }
   }, [canGenerate, subject, gradeLevel, locationName, latitude, longitude, taxonomyType, focus]);
 
@@ -242,28 +244,6 @@ export const OllamaLessonSuggestions = ({
         <div className={styles.loading}>
           <div className={styles.spinner}></div>
           <p>{t('components_teacher_ollamalessonsuggestions.peri_is_thinking', 'Peri is thinking…')}</p>
-          {streamingText && (
-            <pre
-              style={{
-                marginTop: '0.5rem',
-                maxHeight: '8rem',
-                overflowY: 'auto',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-                fontSize: '0.72rem',
-                lineHeight: 1.4,
-                color: 'var(--text-muted)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 6,
-                padding: '0.5rem 0.6rem',
-                textAlign: 'left',
-              }}
-              aria-live="polite"
-            >
-              {streamingText}
-            </pre>
-          )}
         </div>
       )}
 
