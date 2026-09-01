@@ -70,13 +70,30 @@ def _table_exists(conn, table: str) -> bool:
     ), {"t": table}).fetchone())
 
 
+def _column_exists(conn, table: str, column: str) -> bool:
+    return bool(conn.execute(sa.text(
+        "SELECT 1 FROM information_schema.columns WHERE table_name = :t AND column_name = :c"
+    ), {"t": table, "c": column}).fetchone())
+
+
 def upgrade() -> None:
     conn = op.get_bind()
     for index_name, table, column in _INDEXES:
-        # Guard on table existence too: some of these tables come from
-        # feature-specific migrations/startup.py patches that may not have
-        # run yet in every environment this migration could hit.
-        if _table_exists(conn, table) and not _index_exists(conn, index_name):
+        # Guard on table AND column existence: this codebase's own
+        # convention (per docker-compose.prod.yml's comments) is that most
+        # schema changes ship as startup.py's idempotent inline-SQL patches
+        # rather than Alembic migrations, and those patches run AFTER
+        # `alembic upgrade head` in the container's startup command — so a
+        # column that models/database.py's CURRENT definition declares is
+        # not guaranteed to exist yet when this migration runs. Confirmed
+        # the hard way: prod's `location_search_history` table exists but
+        # had no `teacher_id` column yet, and table-only guarding crashed
+        # the whole container instead of just skipping that one index.
+        if (
+            _table_exists(conn, table)
+            and _column_exists(conn, table, column)
+            and not _index_exists(conn, index_name)
+        ):
             op.create_index(index_name, table, [column])
 
 
