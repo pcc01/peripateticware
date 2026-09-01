@@ -37,7 +37,14 @@ class ActivityGenerationService:
         """Initialize with LLM provider (ollama or claude)"""
         self.llm_provider = llm_provider or settings.LLM_PROVIDER.lower()
         self.ollama_base_url = settings.OLLAMA_BASE_URL
-        self.claude_api_key = settings.CLAUDE_API_KEY
+        # CLAUDE_API_KEY is a "legacy alias" (core/config.py's own comment)
+        # — the real key lives in ANTHROPIC_API_KEY on any deployment set up
+        # since then. Found via a real 401 from a live prod test: this had
+        # no fallback, unlike agents/provider.py's call_claude(), which
+        # already does this same fallback correctly. Pre-existing bug, not
+        # introduced by the streaming work that happened to be the first
+        # real end-to-end exercise of this code path.
+        self.claude_api_key = settings.CLAUDE_API_KEY or settings.ANTHROPIC_API_KEY
     
     async def generate_activity_suggestions(
         self,
