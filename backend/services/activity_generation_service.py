@@ -37,7 +37,14 @@ class ActivityGenerationService:
         """Initialize with LLM provider (ollama or claude)"""
         self.llm_provider = llm_provider or settings.LLM_PROVIDER.lower()
         self.ollama_base_url = settings.OLLAMA_BASE_URL
-        self.claude_api_key = settings.CLAUDE_API_KEY
+        # CLAUDE_API_KEY is a "legacy alias" (core/config.py's own comment)
+        # — the real key lives in ANTHROPIC_API_KEY on any deployment set up
+        # since then. Found via a real 401 from a live prod test: this had
+        # no fallback, unlike agents/provider.py's call_claude(), which
+        # already does this same fallback correctly. Pre-existing bug, not
+        # introduced by the streaming work that happened to be the first
+        # real end-to-end exercise of this code path.
+        self.claude_api_key = settings.CLAUDE_API_KEY or settings.ANTHROPIC_API_KEY
     
     async def generate_activity_suggestions(
         self,
@@ -606,21 +613,35 @@ class ActivityGenerationService:
         Handles both JSON responses and text that needs parsing
         """
         activities = []
-        
+
         try:
             # Try to parse as JSON first
             # The LLM might wrap it in ```json markers
             json_str = raw_suggestions
-            
+
             # Extract JSON from markdown code blocks
             if "```json" in json_str:
                 json_str = json_str.split("```json")[1].split("```")[0]
             elif "```" in json_str:
                 json_str = json_str.split("```")[1].split("```")[0]
-            
+
             json_str = json_str.strip()
-            suggestions = json.loads(json_str)
-            
+            try:
+                suggestions = json.loads(json_str)
+            except json.JSONDecodeError:
+                # The prompt says "Return ONLY a valid JSON array. No
+                # markdown, no preamble" — but a model can (and, seen live
+                # against real Claude, does) add a conversational sentence
+                # before the array anyway while still omitting the markdown
+                # fence, e.g. "Here are three activities:\n\n[...]". Neither
+                # branch above strips that, so json_str above still has the
+                # sentence attached and fails to parse. Locate the JSON
+                # array by its brackets instead of assuming the whole
+                # (possibly fence-stripped) string is the JSON.
+                start = json_str.index("[")
+                end = json_str.rindex("]") + 1
+                suggestions = json.loads(json_str[start:end])
+
             # Validate and clean each suggestion
             for i, suggestion in enumerate(suggestions[:3]):  # Limit to 3
                 activity = {
@@ -650,8 +671,15 @@ class ActivityGenerationService:
                 
                 activities.append(activity)
         
-        except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse JSON response: {e}")
+        except (json.JSONDecodeError, ValueError) as e:
+            # ValueError alongside JSONDecodeError: str.index("[")/.rindex("]")
+            # above raise ValueError (not JSONDecodeError) when no bracket is
+            # found at all — a genuinely non-JSON response, not just a
+            # preamble-wrapped one.
+            logger.warning(
+                f"Failed to parse JSON response: {e}. Raw response "
+                f"(first 500 chars): {raw_suggestions[:500]!r}"
+            )
             # Return minimal activity if parsing fails
             activities = [{
                 "title": "Activity Suggestion",
