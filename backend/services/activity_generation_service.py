@@ -613,21 +613,35 @@ class ActivityGenerationService:
         Handles both JSON responses and text that needs parsing
         """
         activities = []
-        
+
         try:
             # Try to parse as JSON first
             # The LLM might wrap it in ```json markers
             json_str = raw_suggestions
-            
+
             # Extract JSON from markdown code blocks
             if "```json" in json_str:
                 json_str = json_str.split("```json")[1].split("```")[0]
             elif "```" in json_str:
                 json_str = json_str.split("```")[1].split("```")[0]
-            
+
             json_str = json_str.strip()
-            suggestions = json.loads(json_str)
-            
+            try:
+                suggestions = json.loads(json_str)
+            except json.JSONDecodeError:
+                # The prompt says "Return ONLY a valid JSON array. No
+                # markdown, no preamble" — but a model can (and, seen live
+                # against real Claude, does) add a conversational sentence
+                # before the array anyway while still omitting the markdown
+                # fence, e.g. "Here are three activities:\n\n[...]". Neither
+                # branch above strips that, so json_str above still has the
+                # sentence attached and fails to parse. Locate the JSON
+                # array by its brackets instead of assuming the whole
+                # (possibly fence-stripped) string is the JSON.
+                start = json_str.index("[")
+                end = json_str.rindex("]") + 1
+                suggestions = json.loads(json_str[start:end])
+
             # Validate and clean each suggestion
             for i, suggestion in enumerate(suggestions[:3]):  # Limit to 3
                 activity = {
@@ -657,8 +671,15 @@ class ActivityGenerationService:
                 
                 activities.append(activity)
         
-        except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse JSON response: {e}")
+        except (json.JSONDecodeError, ValueError) as e:
+            # ValueError alongside JSONDecodeError: str.index("[")/.rindex("]")
+            # above raise ValueError (not JSONDecodeError) when no bracket is
+            # found at all — a genuinely non-JSON response, not just a
+            # preamble-wrapped one.
+            logger.warning(
+                f"Failed to parse JSON response: {e}. Raw response "
+                f"(first 500 chars): {raw_suggestions[:500]!r}"
+            )
             # Return minimal activity if parsing fails
             activities = [{
                 "title": "Activity Suggestion",
