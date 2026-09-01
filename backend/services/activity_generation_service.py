@@ -20,7 +20,6 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from core.config import settings
-from core.cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +132,7 @@ class ActivityGenerationService:
             if latitude is not None and longitude is not None:
                 logger.info(f"Fetching location context for {location_name}")
                 location_context = await self._fetch_location_context(
-                    latitude, longitude, location_name
+                    latitude, longitude, location_name, db
                 )
 
             # Step 2: Build curriculum context string
@@ -266,7 +265,7 @@ class ActivityGenerationService:
             if latitude is not None and longitude is not None:
                 logger.info(f"Fetching location context for {location_name}")
                 location_context = await self._fetch_location_context(
-                    latitude, longitude, location_name
+                    latitude, longitude, location_name, db
                 )
 
             curriculum_context = self._build_curriculum_context(
@@ -386,6 +385,7 @@ class ActivityGenerationService:
         latitude: float,
         longitude: float,
         location_name: Optional[str],
+        db=None,
     ) -> Dict[str, Any]:
         """
         Location context for the generation prompt, sourced from the same
@@ -398,32 +398,45 @@ class ActivityGenerationService:
         "location" block in generate_activity_suggestions()'s return value —
         doesn't need to change.
 
-        Cached for 24h, keyed by rounded lat/lng + location name: measured
-        directly against prod logs (timestamps between this call starting
-        and the Claude call starting), this step alone cost 1.5-2.5s of
-        the 5-10s total "Suggest Activities" latency — and the exact same
-        location ("Dave Mackey Park") was looked up twice ~9 minutes apart
-        with no speedup the second time, confirming there was no caching
-        anywhere in this path despite the docstring above calling
-        multi_backend_location_service "fast, pooled" (pooled connections,
-        not cached results). Wikipedia/Wikidata content for a real-world
-        place doesn't change minute-to-minute, so a day-long TTL is safe —
-        this is exactly the kind of repeat lookup a "Regenerate" click or a
-        popular field-trip spot across different teachers produces.
+        Enrichment is delegated to routes/privacy_locations.py::enrich_location()
+        — the SAME DB-backed cache (CachedLocation/EnrichedLocation, 7-day
+        TTL, access-count tracking, pre-warming) the activity form's own
+        "Background & Context" panel already uses, called directly as a
+        plain function the way that file's own _prewarm_enrichment() already
+        does elsewhere (no HTTP round-trip needed for an in-process call).
+
+        This used to call multi_backend_location_service.enrich_location()
+        directly, bypassing that cache entirely — measured directly against
+        prod logs, that cost 1.5-2.5s of the 5-10s total "Suggest Activities"
+        latency, and the exact same location ("Dave Mackey Park") looked up
+        twice ~9 minutes apart showed no speedup the second time, confirming
+        the miss. An earlier fix here added a second, separate Redis cache
+        instead of routing through the cache that already existed — fixed
+        to reuse the real one rather than run two parallel, inconsistent
+        caching mechanisms for the same data.
         """
         from services.multi_backend_location_service import get_location_service
 
-        # 4 decimal places (~11m) matches the frontend's own lat/lng input
-        # step (ActivityManager.tsx uses step="0.0001") — finer precision
-        # would fragment the cache across noise smaller than what the UI
-        # itself lets a teacher enter.
-        cache_key = (
-            f"activity_location_context:{round(latitude, 4)}:{round(longitude, 4)}:"
-            f"{(location_name or '').strip().lower()}"
-        )
-        cached = await get_cache(cache_key)
-        if cached is not None:
-            return cached
+        if db is None:
+            # No DB session to cache through (shouldn't happen from either
+            # current caller, both of which always have one) — degrade to
+            # the direct, uncached service call rather than fail outright.
+            try:
+                service = get_location_service()
+                results = await service.search_nearby(latitude, longitude, radius_meters=500)
+                if not results:
+                    return {}
+                target = results[0]
+                enriched = await service.enrich_location(target, subject=None)
+                return {
+                    "wikipedia": {"title": enriched.name, "extract": enriched.description or "", "url": enriched.wikipedia_url},
+                    "geographic_features": {},
+                    "educational_value": enriched.description,
+                    "success": bool(enriched.description),
+                }
+            except Exception as e:
+                logger.warning(f"Location context lookup failed for '{location_name}' (no db session): {e}")
+                return {}
 
         try:
             service = get_location_service()
@@ -440,19 +453,24 @@ class ActivityGenerationService:
                 if match:
                     target = match
 
-            enriched = await service.enrich_location(target, subject=None)
-            result = {
+            from routes.privacy_locations import enrich_location as _enrich_location_cached
+            enriched = await _enrich_location_cached(place_id=target.place_id, subject=None, refresh=False, db=db)
+
+            return {
                 "wikipedia": {
-                    "title": enriched.name,
-                    "extract": enriched.description or "",
-                    "url": enriched.wikipedia_url,
+                    "title": enriched.get("name"),
+                    "extract": enriched.get("description") or "",
+                    # Not part of the shared cache function's return shape
+                    # (it's stored on EnrichedLocation.wikipedia_url for the
+                    # cache's own future reads, just not surfaced back to
+                    # the caller) — degrades to no link rather than
+                    # duplicating another DB read to fetch it separately.
+                    "url": None,
                 },
                 "geographic_features": {},
-                "educational_value": enriched.description,
-                "success": bool(enriched.description),
+                "educational_value": enriched.get("description"),
+                "success": bool(enriched.get("description")),
             }
-            await set_cache(cache_key, result, ttl=86400)
-            return result
         except Exception as e:
             logger.warning(f"Location context lookup failed for '{location_name}': {e}")
             return {}
