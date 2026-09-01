@@ -2099,6 +2099,20 @@ def check_config_warnings(settings) -> None:
             "to a random value: python -c \"import secrets; print(secrets.token_hex(32))\""
         )
 
+    # PADDLE_WEBHOOK_SECRET already fails closed at request time (see
+    # routes/paddle_webhook.py — a blank secret rejects every webhook outside
+    # ENVIRONMENT=development, so a forged subscription.created can't grant a
+    # free paid tier). Checked here too, as a boot-time warning rather than a
+    # second fatal gate, purely so a misconfigured deploy is visible in the
+    # startup log instead of only showing up the first time Paddle's webhook
+    # fires (or silently never firing at all, if Paddle isn't wired up yet).
+    if not getattr(settings, "PADDLE_WEBHOOK_SECRET", "") and is_prod:
+        logger.warning(
+            "⚠  SECURITY: PADDLE_WEBHOOK_SECRET is unset — billing webhooks will "
+            "be rejected (fail-closed, see routes/paddle_webhook.py), not forged. "
+            "Set it from your Paddle dashboard once billing is wired up."
+        )
+
     if fatal and is_prod:
         for msg in fatal:
             logger.error(f"❌ SECURITY (fatal in production): {msg}")

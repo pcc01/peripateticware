@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from sqlalchemy import text
 from core.database import get_session_factory
-from core.encryption import encrypt, blind_index, _encryption_enabled
+from core.encryption import encrypt, blind_index, is_encrypted, _encryption_enabled
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,26 +34,49 @@ logger = logging.getLogger(__name__)
 
 
 async def backfill_users(db) -> int:
-    """Encrypt email and full_name for all users; populate email_index."""
+    """Encrypt email and full_name for all users; populate email_index.
+
+    Idempotent per-field: a row already encrypted (e.g. from a prior run of
+    this script) is left untouched rather than re-encrypted, which would
+    double-wrap the ciphertext and make decrypt() return garbage instead of
+    the real value. blind_index() is always recomputed from the plaintext
+    email when email itself is being encrypted this pass; if email was
+    already encrypted on a prior run, email_index should already be correct
+    too and is left alone.
+    """
     rows = (await db.execute(text("SELECT id, email, full_name FROM users"))).fetchall()
     updated = 0
     skipped = 0
+    already_done = 0
     for row in rows:
         uid, email, full_name = row
         try:
-            enc_email = encrypt(email) if email else None
-            idx = blind_index(email) if email else None
-            enc_name = encrypt(full_name) if full_name else None
-            await db.execute(text("""
-                UPDATE users
-                SET email = :email, email_index = :idx, full_name = :name
-                WHERE id = :id
-            """), {"email": enc_email, "idx": idx, "name": enc_name, "id": str(uid)})
+            email_needs_encrypt = bool(email) and not is_encrypted(email)
+            name_needs_encrypt = bool(full_name) and not is_encrypted(full_name)
+            if not email_needs_encrypt and not name_needs_encrypt:
+                already_done += 1
+                continue
+
+            set_clauses = []
+            params = {"id": str(uid)}
+            if email_needs_encrypt:
+                set_clauses += ["email = :email", "email_index = :idx"]
+                params["email"] = encrypt(email)
+                params["idx"] = blind_index(email)
+            if name_needs_encrypt:
+                set_clauses.append("full_name = :name")
+                params["name"] = encrypt(full_name)
+            await db.execute(text(
+                f"UPDATE users SET {', '.join(set_clauses)} WHERE id = :id"
+            ), params)
             updated += 1
         except Exception as e:
             logger.error("Failed to encrypt user %s: %s", uid, e)
             skipped += 1
-    logger.info("Users: encrypted %d/%d rows (%d skipped)", updated, len(rows), skipped)
+    logger.info(
+        "Users: encrypted %d/%d rows (%d already encrypted, %d skipped)",
+        updated, len(rows), already_done, skipped,
+    )
     return updated
 
 
@@ -87,21 +110,24 @@ async def backfill_capture_file_paths(db) -> int:
     """
     RF-4: StudentCapture.file_path switched from plain VARCHAR(512) to
     EncryptedString(512) (models/database.py). Encrypt any existing plaintext
-    file_path values in place — same idempotency caveat as backfill_users:
-    running this twice would double-encrypt a row. If this script grows a
-    second run, guard with a "looks like a Fernet token already" check before
-    re-encrypting (not done here to match the existing backfill_users/
-    backfill_captures pattern in this file, which has the same caveat).
+    file_path values in place. Guarded with is_encrypted() so a second run
+    skips rows already encrypted instead of double-wrapping them (see
+    core/encryption.py::is_encrypted's docstring for the corruption this
+    previously risked).
     """
     rows = (await db.execute(text(
         "SELECT id, file_path FROM student_captures WHERE file_path IS NOT NULL"
     ))).fetchall()
     updated = 0
     skipped = 0
+    already_done = 0
     for row in rows:
         cid, file_path = row
+        if is_encrypted(file_path):
+            already_done += 1
+            continue
         try:
-            enc_path = encrypt(file_path) if file_path else None
+            enc_path = encrypt(file_path)
             await db.execute(text("""
                 UPDATE student_captures
                 SET file_path = :file_path
@@ -111,7 +137,10 @@ async def backfill_capture_file_paths(db) -> int:
         except Exception as e:
             logger.error("Failed to encrypt capture file_path %s: %s", cid, e)
             skipped += 1
-    logger.info("Capture file_paths: encrypted %d/%d rows (%d skipped)", updated, len(rows), skipped)
+    logger.info(
+        "Capture file_paths: encrypted %d/%d rows (%d already encrypted, %d skipped)",
+        updated, len(rows), already_done, skipped,
+    )
     return updated
 
 
@@ -119,17 +148,22 @@ async def backfill_consent_granted_by(db) -> int:
     """
     RF-4: ConsentRecord.granted_by switched from plain VARCHAR(256) to
     EncryptedString(256) (models/compliance.py). Encrypt any existing
-    plaintext granted_by values (email addresses) in place.
+    plaintext granted_by values (email addresses) in place. Guarded with
+    is_encrypted() — same double-encryption risk as backfill_users.
     """
     rows = (await db.execute(text(
         "SELECT id, granted_by FROM consent_records WHERE granted_by IS NOT NULL"
     ))).fetchall()
     updated = 0
     skipped = 0
+    already_done = 0
     for row in rows:
         rid, granted_by = row
+        if is_encrypted(granted_by):
+            already_done += 1
+            continue
         try:
-            enc_val = encrypt(granted_by) if granted_by else None
+            enc_val = encrypt(granted_by)
             await db.execute(text("""
                 UPDATE consent_records
                 SET granted_by = :granted_by
@@ -139,7 +173,10 @@ async def backfill_consent_granted_by(db) -> int:
         except Exception as e:
             logger.error("Failed to encrypt consent_records.granted_by %s: %s", rid, e)
             skipped += 1
-    logger.info("consent_records.granted_by: encrypted %d/%d rows (%d skipped)", updated, len(rows), skipped)
+    logger.info(
+        "consent_records.granted_by: encrypted %d/%d rows (%d already encrypted, %d skipped)",
+        updated, len(rows), already_done, skipped,
+    )
     return updated
 
 

@@ -26,7 +26,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from core.http_rate_limiter import limiter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select, and_
@@ -835,7 +836,9 @@ class ConsentRequest(BaseModel):
 
 
 @router.post("/consent", status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def record_consent(
+    request: Request,
     body: ConsentRequest,
     db:   AsyncSession = Depends(get_db),
 ):

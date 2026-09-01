@@ -25,40 +25,16 @@ import asyncio
 import logging
 import os
 
-# Rate limiting
-try:
-    from slowapi import Limiter, _rate_limit_exceeded_handler
-    from slowapi.util import get_remote_address
-    from slowapi.errors import RateLimitExceeded
-
-    def _client_ip(request):
-        """Rate-limit key that works behind Cloudflare Tunnel / reverse proxies.
-
-        Behind cloudflared every request reaches uvicorn from the tunnel's
-        local IP, so keying on get_remote_address alone puts ALL users in one
-        shared bucket (one noisy user rate-limits everyone) and makes
-        per-attacker throttling of /auth/login impossible.
-
-        Preference order:
-          1. CF-Connecting-IP — set by Cloudflare, not spoofable through CF
-          2. X-Forwarded-For (first hop) — for other reverse proxies
-          3. socket peer address — direct connections / dev
-        NOTE: only trust these headers when the app is actually behind the
-        proxy that sets them (it is, per the Cloudflare Tunnel deployment).
-        """
-        cf_ip = request.headers.get("CF-Connecting-IP")
-        if cf_ip:
-            return cf_ip.strip()
-        xff = request.headers.get("X-Forwarded-For")
-        if xff:
-            return xff.split(",")[0].strip()
-        return get_remote_address(request)
-
-    limiter = Limiter(key_func=_client_ip, default_limits=["200/minute"])
-    RATE_LIMIT_ENABLED = True
-except ImportError:
-    limiter = None
-    RATE_LIMIT_ENABLED = False
+# Rate limiting — Limiter instance lives in core.http_rate_limiter so route
+# modules (auth.py, reset.py, privacy.py) can import it for per-route limits
+# without a circular import back into this module.
+from core.http_rate_limiter import (
+    limiter,
+    RATE_LIMIT_ENABLED,
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler,
+    SlowAPIMiddleware,
+)
 
 # ============================================================================
 # IMPORTS - Core modules
@@ -330,10 +306,18 @@ if _LOCK_DOCS:
     logger.info("🔒 API docs locked behind HTTP Basic Auth (production)")
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
+# NOTE: app.state.limiter + the exception handler alone are NOT sufficient —
+# slowapi's `default_limits` (the global 200/min) only actually run once
+# SlowAPIMiddleware is attached. Without it (the previous state here), the
+# global limit was silently never enforced. Per-route `@limiter.limit(...)`
+# decorators (auth.py, reset.py, privacy.py) work once app.state.limiter is
+# set, independent of this middleware, but the middleware is still required
+# for the blanket default_limits to apply to every other route.
 if RATE_LIMIT_ENABLED:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    logger.info("✅ Rate limiting enabled (slowapi)")
+    app.add_middleware(SlowAPIMiddleware)
+    logger.info("✅ Rate limiting enabled (slowapi, middleware attached)")
 
 # ============================================================================
 # MIDDLEWARE

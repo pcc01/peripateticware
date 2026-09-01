@@ -59,11 +59,34 @@ services:
   redis:
     image: redis:7-alpine
     container_name: peripateticware-redis
-    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    # requirepass: previously unset — Redis held the JWT revocation denylist,
+    # rate-limit counters, and the privacy-rules cache with zero
+    # authentication, reachable by anything else on the `peripateticware`
+    # network (any other container, or anything that lands inside one via an
+    # unrelated compromise). REDIS_PASSWORD has no default here deliberately
+    # — set it in .env (see .env.example).
+    #
+    # The quotes around "${REDIS_PASSWORD:-}" are load-bearing, not style:
+    # an empty substitution in an UNQUOTED command string vanishes entirely
+    # during Compose's shell-style word-splitting, leaving a dangling
+    # `--requirepass` with no argument — Redis then refuses to start at all
+    # ("wrong number of arguments", confirmed by actually starting this
+    # config locally with REDIS_PASSWORD unset). Quoted, an empty value
+    # becomes `--requirepass ""`, which Redis treats the same as requirepass
+    # being unset (its documented way to disable the password) — so local
+    # dev with no REDIS_PASSWORD keeps working exactly as before.
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass "${REDIS_PASSWORD:-}"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # CMD-SHELL (not CMD's exec array) so `||` can fall back: whether or
+      # not REDIS_PASSWORD is set, exactly one of these two pings succeeds.
+      # An exec-array healthcheck with a bare `-a "${REDIS_PASSWORD:-}"` has
+      # the same problem as above in reverse — passing -a with an empty
+      # value still makes redis-cli attempt AUTH, which a passwordless
+      # server rejects, so the unauthenticated dev case would report
+      # unhealthy despite Redis being fine.
+      test: ["CMD-SHELL", "redis-cli -a \"${REDIS_PASSWORD:-}\" --no-auth-warning ping 2>/dev/null | grep -q PONG || redis-cli ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -101,7 +124,11 @@ services:
       PYTHONPYCACHEPREFIX: /tmp/pycache
       # ✅ FIXED: Use asyncpg driver (async-compatible)
       DATABASE_URL: postgresql+asyncpg://${DB_USER:-peripateticware_user}:${DB_PASSWORD:-peripateticware_secure_password_dev}@postgres:5432/${DB_NAME:-peripateticware}
-      REDIS_URL: redis://redis:6379/0
+      # Password (if any) embedded directly in the URL — every consumer in
+      # the codebase (core/cache.py, core/rate_limit.py, core/http_rate_limiter.py)
+      # already just does redis.from_url(settings.REDIS_URL) / passes it as
+      # slowapi's storage_uri, so this is the one place auth needs wiring in.
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379/0
       PYTHONUNBUFFERED: 1
 
       # ── LLM Provider ─────────────────────────────────────────────────────

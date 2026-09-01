@@ -60,30 +60,6 @@ async def get_user_from_token_str(token: str, db: AsyncSession) -> User:
     return user
 
 
-async def get_current_user_flexible(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    """Auth dependency that accepts token from Authorization header OR ?token= query param.
-    Use this for endpoints loaded directly by the browser (<img>, <video>, <audio> tags)
-    where setting an Authorization header is not possible.
-    """
-    # 1. Authorization: Bearer <token>
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header.split(" ", 1)[1]
-        return await get_user_from_token_str(token, db)
-    # 2. ?token=<jwt>
-    token = request.query_params.get("token")
-    if token:
-        return await get_user_from_token_str(token, db)
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not authenticated",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-
 async def get_current_user(
     credentials = Depends(security),
     db: AsyncSession = Depends(get_db)

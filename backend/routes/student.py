@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.database import get_db
-from core.dependencies import get_current_user, get_current_user_flexible
+from core.dependencies import get_current_user
 from models.database import (
     CaptureAnnotation,
     CaptureType,

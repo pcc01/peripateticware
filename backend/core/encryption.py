@@ -127,6 +127,28 @@ def generate_key() -> str:
     return Fernet.generate_key().decode()
 
 
+def is_encrypted(value: Optional[str]) -> bool:
+    """True if `value` is already a valid Fernet token under the current key.
+
+    One-time backfill scripts (backend/scripts/encrypt_existing_data.py) need
+    this to skip rows that are already encrypted — encrypt()/decrypt() alone
+    have no way to tell "already encrypted" apart from "plaintext that
+    happens to look odd," so a script that unconditionally re-encrypts every
+    row on every run will double-wrap already-encrypted values: decrypt()
+    then only unwraps the outer layer and returns ciphertext instead of the
+    real plaintext, a silent corruption discovered in prod (2026-09) where a
+    handful of rows created via a raw-SQL path had never been migrated
+    alongside the rest.
+    """
+    if not _encryption_enabled or _fernet is None or not value:
+        return False
+    try:
+        _fernet.decrypt(value.encode())
+        return True
+    except Exception:
+        return False
+
+
 class EncryptedString(TypeDecorator):
     """
     SQLAlchemy TypeDecorator that transparently encrypts on write and decrypts on read.
