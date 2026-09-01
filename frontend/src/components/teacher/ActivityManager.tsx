@@ -196,12 +196,13 @@ const ActivityManager = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Collapsible form chapters — Context starts open (it feeds Peri AI),
-  // the rest start closed to cut initial scroll length. A chapter is forced
-  // open regardless of this state whenever one of its own fields has a
-  // validation error, so a failed submit never hides the reason why.
+  // Collapsible form chapters — Basic Information and Context start open
+  // (Context feeds Peri AI), the rest start closed to cut initial scroll
+  // length. A chapter is forced open regardless of this state whenever one
+  // of its own fields has a validation error, so a failed submit never
+  // hides the reason why.
   const [openSections, setOpenSections] = useState({
-    context: true, basic: false, academic: false, assessments: false, materials: false, additional: false,
+    context: true, basic: true, academic: false, assessments: false, materials: false, additional: false,
   });
   const toggleSection = (key: keyof typeof openSections) => (e: React.SyntheticEvent<HTMLDetailsElement>) => {
     setOpenSections(s => ({ ...s, [key]: (e.target as HTMLDetailsElement).open }));
@@ -768,11 +769,54 @@ const ActivityManager = () => {
           </div>
         }
 
-        {/* Context Section — Subject · Location · Objectives (feeds Peri AI).
-            Leads the form: these are the inputs the AI sidebar reacts to,
-            and location can be the reason the activity exists at all (a
-            field trip to a specific place), so they come before title/
-            description rather than after. */}
+        {/* Basic Information Section */}
+        <details className={styles.chapter} open={openSections.basic || basicHasError} onToggle={toggleSection('basic')}>
+          <summary className={styles.chapterSummary}>
+            <span className={styles.chevron} aria-hidden="true">▸</span>
+            <h2 className={styles.chapterTitle}>{t("landing:basic_information", "Basic Information")}</h2>
+          </summary>
+          <div className={styles.chapterBody}>
+
+          {/* Title */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.title", "Title")}
+              <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="title"
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+              errors.title ? 'border-red-500' : 'border-[var(--border)]'}`
+              }
+              placeholder={t("landing:enter_activity_title", "Enter activity title")}
+              maxLength={200} />
+
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            <p className="text-[var(--text-muted)] text-xs mt-1">{formData.title?.length || 0}/200</p>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.description", "Description")}
+              <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
+              errors.description ? 'border-red-500' : 'border-[var(--border)]'}`
+              }
+              placeholder={t("landing:enter_activity_description", "Enter activity description")}
+              rows={4} />
+            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+            <p className="text-[var(--text-muted)] text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
+          </div>
+          </div>
+        </details>
+
+        {/* Context Section — Subject · Location · Objectives (feeds Peri AI). */}
         <details className={styles.chapter} open={openSections.context || contextHasError} onToggle={toggleSection('context')}>
           <summary className={styles.chapterSummary}>
             <span className={styles.chevron} aria-hidden="true">▸</span>
@@ -903,53 +947,6 @@ const ActivityManager = () => {
                 </div>
               ))}
             </div>
-          </div>
-          </div>
-        </details>
-
-        {/* Basic Information Section */}
-        <details className={styles.chapter} open={openSections.basic || basicHasError} onToggle={toggleSection('basic')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t("landing:basic_information", "Basic Information")}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
-
-          {/* Title */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.title", "Title")}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-              errors.title ? 'border-red-500' : 'border-[var(--border)]'}`
-              }
-              placeholder={t("landing:enter_activity_title", "Enter activity title")}
-              maxLength={200} />
-
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            <p className="text-[var(--text-muted)] text-xs mt-1">{formData.title?.length || 0}/200</p>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.description", "Description")}
-              <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-              errors.description ? 'border-red-500' : 'border-[var(--border)]'}`
-              }
-              placeholder={t("landing:enter_activity_description", "Enter activity description")}
-              rows={4} />
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-            <p className="text-[var(--text-muted)] text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
           </div>
           </div>
         </details>
