@@ -67,16 +67,37 @@ export const OllamaLessonSuggestions = ({
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [generated, setGenerated] = useState(false);
+  // Raw text as Peri generates it — shown in place of a static spinner for
+  // the whole round-trip. Not the final formatted cards (those still come
+  // from the same _parse_suggestions() the non-streaming endpoint uses,
+  // via the stream's terminal "done" event) — just a live sign that
+  // something is actually happening, the way a chat UI's typing text does.
+  const [streamingText, setStreamingText] = useState('');
 
   const canGenerate = subject.trim().length > 0 && !!gradeLevel;
+
+  const mapSuggestions = (raw: any[]): Suggestion[] =>
+    (raw || []).map((s: any) => ({
+      title: s.title,
+      description: s.description,
+      learningObjectives: s.learning_objectives || [],
+      estimatedDurationMinutes: s.estimated_duration_minutes,
+      bloomLevel: s.bloom_level,
+      marzanoLevel: s.marzano_level,
+      dokLevel: s.dok_level,
+      soloLevel: s.solo_level,
+      materialsNeeded: s.materials_needed || [],
+      locationContextSummary: s.location_context_summary,
+    }));
 
   const fetchSuggestions = useCallback(async () => {
     if (!canGenerate) return;
     setIsLoading(true);
     setError('');
+    setStreamingText('');
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/v1/activities/generate-suggestions', {
+      const response = await fetch('/api/v1/activities/generate-suggestions/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,27 +115,54 @@ export const OllamaLessonSuggestions = ({
         }),
       });
 
-      if (!response.ok) {
+      if (!response.ok || !response.body) {
         let detail = '';
         try { const e = await response.json(); detail = e.detail || JSON.stringify(e); } catch {}
         throw new Error(`${response.status}: ${detail || response.statusText}`);
       }
 
-      const data = await response.json();
-      const parsed: Suggestion[] = (data.suggestions || []).map((s: any) => ({
-        title: s.title,
-        description: s.description,
-        learningObjectives: s.learning_objectives || [],
-        estimatedDurationMinutes: s.estimated_duration_minutes,
-        bloomLevel: s.bloom_level,
-        marzanoLevel: s.marzano_level,
-        dokLevel: s.dok_level,
-        soloLevel: s.solo_level,
-        materialsNeeded: s.materials_needed || [],
-        locationContextSummary: s.location_context_summary,
-      }));
-      setSuggestions(parsed);
-      setGenerated(true);
+      // Manual SSE parsing (not EventSource — that's GET-only, and this is
+      // a POST with a JSON body). Frames are separated by a blank line;
+      // each complete frame's `data: ` line is one JSON event.
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let doneReceived = false;
+
+      let streamDone = false;
+      while (!streamDone) {
+        const { value, done } = await reader.read();
+        if (done) {
+          streamDone = true;
+          continue;
+        }
+        buffer += decoder.decode(value, { stream: true });
+
+        let sepIndex: number;
+        while ((sepIndex = buffer.indexOf('\n\n')) !== -1) {
+          const frame = buffer.slice(0, sepIndex);
+          buffer = buffer.slice(sepIndex + 2);
+          const line = frame.split('\n').find(l => l.startsWith('data: '));
+          if (!line) continue;
+          const payload = JSON.parse(line.slice('data: '.length));
+
+          if (payload.type === 'delta') {
+            setStreamingText(prev => prev + payload.text);
+          } else if (payload.type === 'error') {
+            throw new Error(payload.error);
+          } else if (payload.type === 'done') {
+            setSuggestions(mapSuggestions(payload.result?.suggestions));
+            setGenerated(true);
+            doneReceived = true;
+          }
+        }
+      }
+
+      if (!doneReceived) {
+        // Connection dropped mid-stream (network blip, server restart) —
+        // whatever text arrived was never parsed into real suggestions.
+        throw new Error('Connection closed before Peri finished generating suggestions.');
+      }
     } catch (err) {
       // No canned fallback content here — showing generic suggestions as if
       // they were AI output when generation actually failed would be its
@@ -126,6 +174,7 @@ export const OllamaLessonSuggestions = ({
       setGenerated(true);
     } finally {
       setIsLoading(false);
+      setStreamingText('');
     }
   }, [canGenerate, subject, gradeLevel, locationName, latitude, longitude, taxonomyType, focus]);
 
@@ -193,6 +242,28 @@ export const OllamaLessonSuggestions = ({
         <div className={styles.loading}>
           <div className={styles.spinner}></div>
           <p>{t('components_teacher_ollamalessonsuggestions.peri_is_thinking', 'Peri is thinking…')}</p>
+          {streamingText && (
+            <pre
+              style={{
+                marginTop: '0.5rem',
+                maxHeight: '8rem',
+                overflowY: 'auto',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                fontSize: '0.72rem',
+                lineHeight: 1.4,
+                color: 'var(--text-muted)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 6,
+                padding: '0.5rem 0.6rem',
+                textAlign: 'left',
+              }}
+              aria-live="polite"
+            >
+              {streamingText}
+            </pre>
+          )}
         </div>
       )}
 

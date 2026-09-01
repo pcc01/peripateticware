@@ -16,8 +16,25 @@ Privacy API — 10 endpoints
   DELETE /api/v1/privacy/my-data        → GDPR right-to-erasure anonymisation (any auth)
 """
 
-from __future__ import annotations
-
+# NOTE: deliberately NOT `from __future__ import annotations` (PEP 563).
+# This file's /consent route is decorated with slowapi's @limiter.limit(...),
+# which wraps the endpoint via functools.wraps. FastAPI resolves a route's
+# string-form type hints using the CALLABLE IT WAS GIVEN's __globals__
+# (fastapi/dependencies/utils.py's get_typed_signature) — but a
+# functools.wraps wrapper's __globals__ is the DECORATOR's module
+# (slowapi.extension), not this one, even though inspect.signature() still
+# correctly unwraps to the real parameter list via __wrapped__. With PEP 563
+# active, every annotation here is a plain string, and slowapi.extension's
+# globals don't have ConsentRequest/AsyncSession in them — so those types
+# failed to resolve, and FastAPI fell back to treating the ConsentRequest
+# body as an ordinary Query parameter. Silent at import time; broke
+# /openapi.json (and therefore /docs) for the WHOLE app the first time
+# anything tried to generate the OpenAPI schema, with a traceback that
+# doesn't mention this file, this decorator, or even PEP 563 anywhere in it.
+# Confirmed fixed by removing this import (this file has no forward
+# references that need PEP 563's deferred evaluation to work); if it's ever
+# reintroduced, re-check /openapi.json actually loads, not just that tests
+# pass — the existing test suite doesn't exercise OpenAPI generation at all.
 import csv
 import hashlib
 import io

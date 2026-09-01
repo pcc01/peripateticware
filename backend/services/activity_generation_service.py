@@ -151,33 +151,13 @@ class ActivityGenerationService:
             
             # Step 5: Parse and validate suggestions
             activities = self._parse_suggestions(suggestions, location_name)
-            
-            return {
-                "success": True,
-                "location": {
-                    "name": location_name,
-                    "latitude": latitude,
-                    "longitude": longitude,
-                    "wikipedia_title": location_context.get("wikipedia", {}).get("title"),
-                    "wikipedia_extract": location_context.get("wikipedia", {}).get("extract"),
-                    "wikipedia_url": location_context.get("wikipedia", {}).get("url"),
-                    "geographic_features": location_context.get("geographic_features"),
-                    "educational_value": location_context.get("educational_value")
-                },
-                "curriculum_context": {
-                    "subject": subject,
-                    "grade_level": grade_level,
-                    "standards": curriculum_titles or [],
-                    "taxonomies": self._build_taxonomy_dict(
-                        bloom_level, marzano_level, dok_level, solo_level
-                    )
-                },
-                "suggestions": activities,
-                "location_context_success": location_context.get("success", False),
-                "llm_model": self.llm_provider,
-                "generation_timestamp": datetime.utcnow().isoformat()
-            }
-        
+
+            return self._build_success_result(
+                activities, location_name, latitude, longitude, location_context,
+                subject, grade_level, curriculum_titles,
+                bloom_level, marzano_level, dok_level, solo_level,
+            )
+
         except Exception as e:
             logger.error(f"Error generating activities: {e}")
             return {
@@ -185,6 +165,139 @@ class ActivityGenerationService:
                 "error": str(e),
                 "llm_model": self.llm_provider
             }
+
+    def _build_success_result(
+        self,
+        activities: List[Dict[str, Any]],
+        location_name: Optional[str],
+        latitude: Optional[float],
+        longitude: Optional[float],
+        location_context: Dict[str, Any],
+        subject: str,
+        grade_level: int,
+        curriculum_titles: Optional[List[str]],
+        bloom_level: Optional[int],
+        marzano_level: Optional[int],
+        dok_level: Optional[int],
+        solo_level: Optional[int],
+    ) -> Dict[str, Any]:
+        """
+        The success-result shape shared by generate_activity_suggestions()
+        (non-streaming) and generate_activity_suggestions_stream()'s final
+        event — extracted so the two paths can't structurally diverge on
+        what counts as a valid result.
+        """
+        return {
+            "success": True,
+            "location": {
+                "name": location_name,
+                "latitude": latitude,
+                "longitude": longitude,
+                "wikipedia_title": location_context.get("wikipedia", {}).get("title"),
+                "wikipedia_extract": location_context.get("wikipedia", {}).get("extract"),
+                "wikipedia_url": location_context.get("wikipedia", {}).get("url"),
+                "geographic_features": location_context.get("geographic_features"),
+                "educational_value": location_context.get("educational_value")
+            },
+            "curriculum_context": {
+                "subject": subject,
+                "grade_level": grade_level,
+                "standards": curriculum_titles or [],
+                "taxonomies": self._build_taxonomy_dict(
+                    bloom_level, marzano_level, dok_level, solo_level
+                )
+            },
+            "suggestions": activities,
+            "location_context_success": location_context.get("success", False),
+            "llm_model": self.llm_provider,
+            "generation_timestamp": datetime.utcnow().isoformat()
+        }
+
+    async def generate_activity_suggestions_stream(
+        self,
+        subject: str,
+        grade_level: int,
+        location_name: Optional[str] = None,
+        latitude: Optional[float] = None,
+        longitude: Optional[float] = None,
+        bloom_level: Optional[int] = None,
+        marzano_level: Optional[int] = None,
+        dok_level: Optional[int] = None,
+        solo_level: Optional[int] = None,
+        curriculum_titles: Optional[List[str]] = None,
+        additional_context: Optional[str] = None,
+        db: Session = None,
+        num_suggestions: int = 3
+    ):
+        """
+        Streaming counterpart to generate_activity_suggestions(). Mirrors
+        every step of that method exactly — same location-context fetch,
+        same curriculum context, same prompt, same _parse_suggestions() and
+        _build_success_result() — except step 4 (the LLM call), which
+        streams raw text chunks to the caller as they arrive instead of
+        awaiting the full response before returning anything.
+
+        Why raw-text streaming rather than incrementally parsing structured
+        JSON: the model's response needs to be a complete, valid JSON/text
+        block before _parse_suggestions() can extract real activities from
+        it — streaming partial JSON and trying to parse it as it arrives is
+        real complexity for uncertain benefit. This instead streams the raw
+        text for perceived responsiveness (the teacher sees Peri "thinking"
+        instead of a static spinner for the full round-trip), then runs the
+        existing, unchanged parser once the full text has arrived and emits
+        the authoritative structured result as the final event.
+
+        Yields dicts of one of three shapes (the caller — routes/activities.py's
+        SSE endpoint — JSON-encodes each one as one `data:` line):
+          {"type": "delta", "text": "..."}   — a chunk of raw text as it streams in
+          {"type": "done", "result": {...}}  — same shape generate_activity_suggestions() returns
+          {"type": "error", "error": "..."}  — on any failure; no more events follow
+        """
+        try:
+            location_context: Dict[str, Any] = {}
+            if latitude is not None and longitude is not None:
+                logger.info(f"Fetching location context for {location_name}")
+                location_context = await self._fetch_location_context(
+                    latitude, longitude, location_name
+                )
+
+            curriculum_context = self._build_curriculum_context(
+                subject, grade_level, bloom_level, marzano_level,
+                dok_level, solo_level, curriculum_titles
+            )
+
+            prompt = self._build_generation_prompt(
+                location_name, location_context, subject, grade_level, num_suggestions,
+                bloom_level=bloom_level, dok_level=dok_level,
+                curriculum_titles=curriculum_titles,
+                additional_context=additional_context,
+            )
+
+            logger.info(f"Streaming {self.llm_provider} for activity generation")
+            stream_fn = (
+                self._generate_with_claude_stream if self.llm_provider == "claude"
+                else self._generate_with_ollama_stream
+            )
+
+            chunks: List[str] = []
+            async for text in stream_fn(prompt):
+                chunks.append(text)
+                yield {"type": "delta", "text": text}
+
+            full_text = "".join(chunks)
+            activities = self._parse_suggestions(full_text, location_name)
+
+            yield {
+                "type": "done",
+                "result": self._build_success_result(
+                    activities, location_name, latitude, longitude, location_context,
+                    subject, grade_level, curriculum_titles,
+                    bloom_level, marzano_level, dok_level, solo_level,
+                ),
+            }
+        except Exception as e:
+            logger.error(f"Error streaming activity generation: {e}")
+            yield {"type": "error", "error": str(e)}
     
     async def generate_location_synopsis(
         self,
@@ -396,6 +509,90 @@ class ActivityGenerationService:
                 return content
         except Exception as e:
             logger.error(f"Claude generation error: {e}")
+            raise
+
+    async def _generate_with_claude_stream(self, prompt: str):
+        """
+        Streaming counterpart to _generate_with_claude() — yields raw text
+        chunks as Claude's SSE stream produces them, instead of awaiting the
+        full response. Anthropic's stream is itself SSE (`data: {...}` lines);
+        only `content_block_delta` events with a `text_delta` carry generated
+        text — message_start/content_block_start/message_delta/message_stop
+        are structural and skipped.
+        """
+        import json as _json
+
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                async with client.stream(
+                    "POST",
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": self.claude_api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": settings.CLAUDE_MODEL,
+                        "max_tokens": 2000,
+                        "stream": True,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                ) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line or not line.startswith("data: "):
+                            continue
+                        try:
+                            event = _json.loads(line[len("data: "):])
+                        except ValueError:
+                            continue
+                        if event.get("type") != "content_block_delta":
+                            continue
+                        delta = event.get("delta", {})
+                        if delta.get("type") == "text_delta":
+                            text = delta.get("text", "")
+                            if text:
+                                yield text
+        except Exception as e:
+            logger.error(f"Claude streaming generation error: {e}")
+            raise
+
+    async def _generate_with_ollama_stream(self, prompt: str):
+        """
+        Streaming counterpart to _generate_with_ollama() — Ollama's
+        streaming format is newline-delimited JSON (not SSE): each line is
+        a complete JSON object like {"response": "chunk", "done": false},
+        with a final {"done": true, ...} line carrying no new text.
+        """
+        import json as _json
+
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                async with client.stream(
+                    "POST",
+                    f"{self.ollama_base_url}/api/generate",
+                    json={
+                        "model": settings.OLLAMA_MODEL_TEXT,
+                        "prompt": prompt,
+                        "stream": True,
+                        "temperature": 0.7,
+                        "num_predict": 2000,
+                    },
+                ) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line:
+                            continue
+                        try:
+                            chunk = _json.loads(line)
+                        except ValueError:
+                            continue
+                        text = chunk.get("response", "")
+                        if text:
+                            yield text
+        except Exception as e:
+            logger.error(f"Ollama streaming generation error: {e}")
             raise
     
     def _parse_suggestions(
