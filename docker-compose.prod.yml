@@ -51,8 +51,20 @@ services:
     # this to actually land on a real deploy. `alembic upgrade head` is a
     # no-op once applied (tracked in alembic_version), so this is safe to
     # leave in permanently rather than pull back out after this one deploy.
+    # mkdir before anything else: PROMETHEUS_MULTIPROC_DIR being set makes
+    # prometheus_client.Counter() require that directory to exist THE
+    # MOMENT it's instantiated, in ANY process that inherits the env var —
+    # not just inside a gunicorn worker. `alembic upgrade head` runs first
+    # in this chain and imports core/encryption.py transitively (via
+    # models.database -> models.user), which instantiates exactly such a
+    # Counter at module level — and gunicorn.conf.py's on_starting hook
+    # (which creates this directory) hasn't run yet at that point, because
+    # gunicorn itself hasn't started. Confirmed by an actual crash-loop on
+    # a real prod deploy: alembic died with `FileNotFoundError:
+    # /tmp/prometheus_multiproc_dir/counter_7.db`, taking the whole
+    # container down before gunicorn ever got a chance to run its own fix.
     command: >
-      sh -c "alembic upgrade head && gunicorn main:app
+      sh -c "mkdir -p /tmp/prometheus_multiproc_dir && alembic upgrade head && gunicorn main:app
       -c gunicorn.conf.py
       --workers 4
       --worker-class uvicorn.workers.UvicornWorker

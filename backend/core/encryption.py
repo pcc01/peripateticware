@@ -57,7 +57,26 @@ _encryption_enabled: bool = False
 decrypt_fallback_count: int = 0
 
 
-def _get_or_create_counter(name: str, description: str) -> Counter:
+class _NoOpCounter:
+    """Stand-in used when a real Counter can't be created for any reason.
+    Observability code must never be able to crash the app it's observing —
+    confirmed the hard way: PROMETHEUS_MULTIPROC_DIR being set makes
+    Counter() require that directory to exist THE MOMENT it's instantiated,
+    in any process that inherits the env var. `alembic upgrade head` (which
+    imports this module transitively via models.database -> models.user)
+    runs before gunicorn.conf.py's on_starting hook creates that directory,
+    and hit exactly this on a real prod deploy — FileNotFoundError took the
+    whole container down before gunicorn ever started. That specific race is
+    fixed at the compose level (docker-compose.prod.yml now mkdir's the
+    directory before alembic runs), but a metric silently degrading to a
+    no-op instead of a second latent way to crash the app is the correct
+    posture regardless of what causes some future Counter() call to fail."""
+
+    def inc(self, *_args, **_kwargs) -> None:
+        pass
+
+
+def _get_or_create_counter(name: str, description: str):
     """
     Counter(name, ...) raises ValueError("Duplicated timeseries...") if a
     collector with that name is already registered on the default global
@@ -71,8 +90,17 @@ def _get_or_create_counter(name: str, description: str) -> Counter:
     try:
         return Counter(name, description)
     except ValueError:
-        from prometheus_client import REGISTRY
-        return REGISTRY._names_to_collectors[name]  # type: ignore[return-value]
+        try:
+            from prometheus_client import REGISTRY
+            return REGISTRY._names_to_collectors[name]  # type: ignore[return-value]
+        except Exception as exc:
+            logger.error(f"Could not reuse existing '{name}' collector — metric disabled: {exc}")
+            return _NoOpCounter()
+    except Exception as exc:
+        # e.g. PROMETHEUS_MULTIPROC_DIR set but the directory doesn't exist
+        # yet (see _NoOpCounter's docstring) — degrade the metric, not the app.
+        logger.error(f"Could not create '{name}' metric — metric disabled: {exc}")
+        return _NoOpCounter()
 
 
 _decrypt_fallback_metric = _get_or_create_counter(

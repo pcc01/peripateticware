@@ -161,6 +161,34 @@ class TestIsEncryptedDisabled:
         assert self.enc.is_encrypted("anything@example.com") is False
 
 
+class TestCounterCreationNeverCrashes:
+    """
+    Regression test for a real prod incident: PROMETHEUS_MULTIPROC_DIR being
+    set makes prometheus_client.Counter() require that directory to exist
+    THE MOMENT it's instantiated, in any process that inherits the env var —
+    not just inside a gunicorn worker. `alembic upgrade head` imports this
+    module transitively (via models.database -> models.user) and runs
+    BEFORE gunicorn.conf.py's on_starting hook creates that directory,
+    which crashed the whole container on a real deploy with
+    `FileNotFoundError: .../counter_N.db`. Fixed at the compose level
+    (docker-compose.prod.yml now mkdir's the directory before alembic
+    runs), but _get_or_create_counter() must ALSO degrade to a no-op rather
+    than propagate any exception — a metric must never be a second way for
+    unrelated app code (importing this module at all) to crash.
+    """
+
+    def test_falls_back_to_noop_when_counter_creation_raises(self, monkeypatch):
+        import core.encryption as enc
+
+        def _boom(*_args, **_kwargs):
+            raise FileNotFoundError("simulated: multiproc dir doesn't exist yet")
+
+        monkeypatch.setattr(enc, "Counter", _boom)
+        counter = enc._get_or_create_counter("test_counter_never_crashes", "test")
+        assert isinstance(counter, enc._NoOpCounter)
+        counter.inc()  # must not raise either
+
+
 class TestEncryptedStringTypeDecorator:
     """Test the SQLAlchemy TypeDecorator process_bind_param / process_result_value."""
 
