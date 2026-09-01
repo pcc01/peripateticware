@@ -672,6 +672,38 @@ try:
 except Exception as e:
     print(f"Warning: could not register observability_router: {e}")
 
+# ── Prometheus /metrics ──────────────────────────────────────────────────────
+# prometheus-client has been a pinned dependency since before this app's
+# first commit but was never actually mounted anywhere — monitoring/
+# prometheus.yml's `fastapi` scrape job pointed at a target that returned
+# 404 on every scrape. This is also the only place core/encryption.py's
+# decrypt-fallback counter (a wrong/rotated FIELD_ENCRYPTION_KEY signal)
+# becomes observable outside of grepping container logs.
+#
+# Not behind auth: this app has no public ingress other than what
+# cloudflared explicitly tunnels (see docker-compose.prod.yml — backend
+# binds 127.0.0.1 only), so /metrics is reachable only from inside the
+# docker network (i.e. the prometheus container) or via an SSH tunnel,
+# same trust boundary Prometheus scraping normally assumes.
+try:
+    from prometheus_client import make_asgi_app
+
+    if os.environ.get("PROMETHEUS_MULTIPROC_DIR"):
+        # gunicorn (prod): aggregate all 4 worker processes' metric files —
+        # see gunicorn.conf.py's on_starting/child_exit hooks, which
+        # actually populate that directory correctly.
+        from prometheus_client import CollectorRegistry, multiprocess
+
+        _metrics_registry = CollectorRegistry()
+        multiprocess.MultiProcessCollector(_metrics_registry)
+        app.mount("/metrics", make_asgi_app(registry=_metrics_registry))
+    else:
+        # dev (plain `uvicorn --reload`, single process): default registry.
+        app.mount("/metrics", make_asgi_app())
+    logger.info("✅ /metrics mounted (prometheus_client)")
+except Exception as e:
+    print(f"Warning: could not mount /metrics: {e}")
+
 # ── Billing & Webhooks ────────────────────────────────────────────────────────
 try:
     from routes.billing import router as billing_router

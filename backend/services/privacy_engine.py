@@ -593,6 +593,73 @@ async def enforce_on_submission(
     )
 
 
+async def enforce_or_raise(
+    student_id: str,
+    data_type: str,
+    db: Optional[AsyncSession],
+    evidence_types: Optional[List[str]] = None,
+) -> Optional[EnforcementResult]:
+    """
+    Pre-write enforcement gate for a route handler, extracted from the
+    pattern originally used only by student_activities.py::add_evidence_capture
+    (the one write path this engine was actually wired into — see
+    docs/... 2026-09 audit). Runs enforce_on_submission() and raises
+    HTTPException(403) on BLOCKED; in "log"/"warn" mode this never raises.
+    Mirrors that route's behaviour on lookup failure: log and allow rather
+    than fail the whole request over a privacy-engine error.
+    """
+    from fastapi import HTTPException, status as _status
+
+    try:
+        result = await enforce_on_submission(
+            student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
+        )
+        if result.status == "BLOCKED":
+            raise HTTPException(
+                status_code=_status.HTTP_403_FORBIDDEN,
+                detail=result.blocking_reason or "Submission blocked by privacy policy",
+            )
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.warning(f"Pre-write enforcement check failed (allowing): {exc}")
+        return None
+
+
+async def audit_submission(
+    student_id: str,
+    actor_role: str,
+    action: str,
+    data_type: str,
+    db: AsyncSession,
+    evidence_types: Optional[List[str]] = None,
+    notes: Optional[str] = None,
+) -> None:
+    """
+    Post-write, log-only privacy audit — same non-blocking pattern as
+    enforce_or_raise's second (post-commit) call in add_evidence_capture.
+    Never raises; a failure here must not undo an already-committed write.
+    """
+    try:
+        result = await enforce_on_submission(
+            student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
+        )
+        await log_access(
+            actor_id=student_id,
+            actor_role=actor_role,
+            action=action,
+            data_type=data_type,
+            student_id=student_id,
+            rules_applied=result.rules_applied,
+            compliance_status=result.status,
+            db=db,
+            notes=notes,
+        )
+    except Exception as exc:
+        logger.warning(f"Privacy audit failed (non-blocking): {exc}")
+
+
 async def log_access(
     actor_id: str,
     actor_role: str,

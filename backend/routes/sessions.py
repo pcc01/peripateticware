@@ -15,6 +15,7 @@ from core.database import get_db
 from core.dependencies import get_current_user
 from models.database import LearningSession, User, TripleJoinRecord
 from services.polling import poll_interval_seconds
+from services.privacy_engine import enforce_or_raise
 import logging
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,18 @@ async def create_session(
         # user happened to be first in the table. Use the authenticated
         # caller instead.
         user = current_user
+
+        # Privacy enforcement gate — this route persists GPS coordinates
+        # (latitude/longitude below) but never went through
+        # enforce_on_submission() at all, unlike student_activities.py's
+        # add_evidence_capture.
+        if request.latitude is not None and request.longitude is not None:
+            await enforce_or_raise(
+                student_id=str(user.id),
+                data_type="learning_session",
+                db=db,
+                evidence_types=["gps"],
+            )
 
         # Create session
         session = LearningSession(

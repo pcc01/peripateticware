@@ -37,6 +37,7 @@ from models.database import (
     StudentCapture,
     Notification,
 )
+from services.privacy_engine import enforce_or_raise
 
 router = APIRouter()
 
@@ -276,6 +277,18 @@ async def create_field_note(
 ):
     if body.self_project_id:
         await _get_self_project_or_404(db, body.self_project_id, owner_id=current_user.id)
+
+    # Free-text + optional GPS student data — this whole file never went
+    # through enforce_on_submission() at all (confirmed: zero references to
+    # privacy_engine anywhere here), unlike the equivalent evidence-capture
+    # route in student_activities.py.
+    evidence_types = ["gps"] if (body.location_latitude is not None and body.location_longitude is not None) else None
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_field_note",
+        db=db,
+        evidence_types=evidence_types,
+    )
 
     note = StudentFieldNote(
         id=uuid4(),
@@ -695,6 +708,15 @@ async def create_peer_project(
     if not settings.students_can_create_peer_projects:
         raise HTTPException(status_code=403, detail="Peer project creation is disabled for this class")
 
+    # Free-text + optional GPS student data — see create_field_note's comment.
+    evidence_types = ["gps"] if (body.location_latitude is not None and body.location_longitude is not None) else None
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_peer_project",
+        db=db,
+        evidence_types=evidence_types,
+    )
+
     project = StudentPeerProject(
         id=uuid4(),
         author_student_id=current_user.id,
@@ -991,6 +1013,14 @@ async def add_capture_to_response(
             status_code=400,
             detail="Unsupported file type. Allowed: JPEG, PNG, WEBP, HEIC, GIF.",
         )
+
+    # Media evidence — see create_field_note's comment on this file's gap.
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_peer_project_capture",
+        db=db,
+        evidence_types=["photo"],
+    )
 
     upload_dir = f"{settings.UPLOAD_DIR}/peer_project_responses"
     os.makedirs(upload_dir, exist_ok=True)

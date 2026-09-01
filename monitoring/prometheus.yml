@@ -22,12 +22,23 @@ scrape_configs:
       - targets: ['localhost:9090']
     scrape_interval: 15s
 
+  # Target fixed 2026-09: 'fastapi:8000' never resolved (no such docker
+  # network alias — the actual service/container is 'backend'), and nothing
+  # mounted a /metrics endpoint anyway until main.py's prometheus_client
+  # wiring. This job is now real; the others below are not (see note).
   - job_name: 'fastapi'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['fastapi:8000']
+      - targets: ['backend:8000']
     scrape_interval: 10s
 
+  # NOTE (2026-09): postgres/redis/nginx/grafana below are aspirational —
+  # none of postgres-exporter, a redis metrics sidecar (Redis itself speaks
+  # RESP, not HTTP, so ':6379/metrics' can never work without one), an nginx
+  # exporter, or a grafana service exist in any docker-compose*.yml. Left
+  # as-is rather than removed, since they document the intended full stack,
+  # but standing them up is a separate task from the fastapi target fixed
+  # above — do not assume these are live.
   - job_name: 'postgres'
     metrics_path: '/metrics'
     static_configs:

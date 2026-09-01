@@ -33,6 +33,7 @@ from models.database import (
     StudentNotebook,
     User,
 )
+from services.privacy_engine import enforce_or_raise
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/student", tags=["student"])
@@ -165,6 +166,20 @@ async def upload_capture(
     content = await file.read()
     if len(content) > MAX_BYTES:
         raise HTTPException(status_code=413, detail="File exceeds 50 MB limit")
+
+    # Privacy enforcement gate — this route (and its /captures/{audio,photo,
+    # video} aliases, which delegate here) persists media + optional GPS but
+    # never went through enforce_on_submission() at all, unlike the
+    # equivalent evidence-capture route in student_activities.py.
+    evidence_types = [capture_type.value]
+    if latitude is not None and longitude is not None:
+        evidence_types.append("gps")
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_capture",
+        db=db,
+        evidence_types=evidence_types,
+    )
 
     captures_dir = _upload_dir() / "captures" / str(current_user.id)
     captures_dir.mkdir(parents=True, exist_ok=True)
@@ -379,6 +394,13 @@ async def create_notebook_entry(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # Free-text student data — never went through enforce_on_submission().
+    await enforce_or_raise(
+        student_id=str(current_user.id),
+        data_type="student_notebook",
+        db=db,
+    )
+
     notebook = StudentNotebook(
         student_id=current_user.id,
         activity_id=entry.activity_id,
