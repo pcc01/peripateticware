@@ -128,7 +128,7 @@ thorough local + prod verification before merge, same as the fixes above.
 A home-server security/responsiveness audit and its follow-through, kept close to the code the same way the GraphRAG log above is.
 
 **Security — fixed:**
-- **Rate limiting was silently non-functional.** `slowapi`'s middleware was never registered (`SlowAPIMiddleware` missing from `main.py`), so every `@limiter.limit()` decorator was a no-op regardless of config. Fixed, and made correct across gunicorn's multiple workers via a shared Redis `storage_uri` (`core/http_rate_limiter.py`) instead of in-process counters that don't see each other.
+- **Rate limiting was silently non-functional.** `slowapi`'s middleware was never registered (`SlowAPIMiddleware` missing from `main.py`), so every `@limiter.limit()` decorator was a no-op regardless of config. Fixed, and made correct across gunicorn's multiple workers via a shared Redis `storage_uri` (`core/http_rate_limiter.py`) instead of in-process counters that don't see each other. **Follow-up (Sep 2026 load test):** the per-route `@limiter.limit()` decorators now work (verified: `/auth/login` 429s on the 6th hit), but slowapi's *global* `default_limits` via `SlowAPIMiddleware` still silently don't enforce — 112k requests from one IP in a load test drew zero 429s. Replaced with a small pure-ASGI `GlobalRateLimitMiddleware` (Redis sliding window, `GLOBAL_HTTP_RATE_LIMIT` req/min per IP, `/health`+`/metrics` exempt, streaming-safe) that actually does.
 - **Redis had no authentication.** Added `requirepass`, gated by `REDIS_PASSWORD`.
 - **Privacy/consent enforcement was bypassed on 7 write paths.** Extended the one working call site's pattern (`services/privacy_engine.py::enforce_or_raise()`/`audit_submission()`) to all of them.
 - **The PII-encryption backfill script was non-idempotent** — re-running it would have double-encrypted already-correct rows. Added `is_encrypted()` detection to `core/encryption.py`.
@@ -150,6 +150,18 @@ A home-server security/responsiveness audit and its follow-through, kept close t
 **Accessibility — in progress:**
 - `eslint-plugin-jsx-a11y` now runs as part of lint — surfaced a **123-item backlog** (mostly `onClick` elements with no keyboard equivalent) beyond what manual review had found; tracked as warnings for ongoing triage, not bulk-fixed yet.
 - Fixed: the 3 modals that couldn't be dismissed via keyboard (new `useEscapeKey` hook), missing `aria-labelledby` on 2 of them, `loading="lazy"` on blog/content images.
+
+**Load test (Sep 2026) — `k6/` suite, `k6/RESULTS.md`, `k6/FINDINGS.md`:**
+Ran against production — primary run on the prod host against loopback `127.0.0.1:8000` to bypass the Cloudflare tunnel, plus a bounded run through `peripateticware.com` to measure the tunnel's cost.
+- **Capacity:** ~208 concurrent users, 15 min, 112k requests — **p95 10 ms, zero 5xx**, backend at ~78% of 4 cores, Postgres 43/100 connections. Nowhere near the ceiling at 200 concurrent; the real knee is far higher and wasn't reached.
+- **Where user latency goes:** the app answers in 5–12 ms; a real visitor to `peripateticware.com` sees +165 ms (warm connection) to +350–580 ms (cold). `cloudflared`→edge RTT is only 3–14 ms, so that overhead is Cloudflare's edge proxy + routing to the Seattle colo the tunnel is pinned to — not the app, not the tunnel hop. Mitigations (Argo Smart Routing, edge-caching the static frontend + public GETs, trimming CF features on `/api/*`) in `k6/RESULTS.md`.
+- **Six bugs found, fixed, deployed and verified on prod** (commits `c85e1d0`/`c24b9f0`):
+  - `POST /classrooms/{id}/invites` 500'd on every call — `_invite_expires()` returned a timezone-aware datetime for `classroom_invitations.expires_at`, which is `TIMESTAMP` (no tz); asyncpg rejects the bind. Classroom invites were fully broken in production.
+  - `GET /student/portfolio` + `/student/competencies` 500'd on every call — `student_competencies` and `student_notebooks` had drifted from their ORM models. `CREATE TABLE IF NOT EXISTS` in `startup.py` never reconciles an *existing* table, so columns added to the models later (`description`, `where_notes`, …) never landed on older databases. Added `ALTER TABLE … ADD COLUMN IF NOT EXISTS` reconcile blocks; `database/init.sql` updated to match.
+  - `POST /auth/signup` blocked for >120 s on a synchronous SMTP send (one bad send tied up a gunicorn worker for the full timeout) — moved the verification email to `BackgroundTasks`.
+  - Verification emails were never delivered — prod runs `smtp.resend.com:465` (implicit TLS / SMTPS) but `_send()` passed `start_tls=True` (STARTTLS), which hangs mid-handshake. Pick the TLS mode from the port + add a 15 s timeout (`services/email_service.py`, regression test in `tests/test_email_tls_mode.py`); prod `SMTP_PORT` also moved to `:587`.
+  - Global rate limiting still didn't enforce even with `SlowAPIMiddleware` registered — see the rate-limiting bullet above; added `GlobalRateLimitMiddleware`.
+  - `ENVIRONMENT=development` was set in the prod `.env` (the compose override forced `production` anyway, so cosmetic) — corrected on the host.
 
 ---
 
@@ -470,6 +482,8 @@ On **May 1, 2030**, the license automatically converts to **Apache 2.0** (fully 
 | `docs/diagrams/ARCHITECTURE.md` | System architecture diagrams |
 | `docs/accessibility/wcag-aa-audit.md` | WCAG 2.1 AA audit: violations found/fixed, aria-attribute coverage, axe-core CI setup |
 | `backend/docs/` | Phase build summaries and specs |
+| `LOAD_TEST_PLAN.md` | Original k6 load-test design |
+| `k6/` | Runnable k6 suite (`README.md`), results (`RESULTS.md`), and bug tracker (`FINDINGS.md`) from the Sep 2026 prod load test |
 | `FAQ.md` | Frequently asked questions |
 
 ---

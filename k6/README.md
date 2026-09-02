@@ -4,6 +4,12 @@ Runnable version of `../LOAD_TEST_PLAN.md`, adapted to the real prod topology
 (`peripateticware.com` → Cloudflare → `cloudflared` → loopback `127.0.0.1:8000`
 on `pcc@192.168.50.76`, gunicorn 8 workers).
 
+**First run: 2026-09-02.** Results in `RESULTS.md`, bugs found (all fixed +
+deployed) in `FINDINGS.md`. Headline: the app handles ~200 concurrent users at
+p95 10 ms with zero errors and large headroom; the rate limiter did not bite at
+any level (see `FINDINGS.md` #6); user-visible latency is dominated by the
+Cloudflare edge + tunnel, not the app.
+
 ## Layout
 
 | Path | What |
