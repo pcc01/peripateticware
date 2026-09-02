@@ -1217,7 +1217,6 @@ async def update_peer_project_teacher_settings(
 # =============================================================================
 
 @router.get("/teacher/classes/{class_id}/settings")
-@router.get("/teacher/classes/{class_id}/settings")
 async def get_class_settings(
     class_id: UUID,
     current_user: User = Depends(get_current_user),
