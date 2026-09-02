@@ -30,13 +30,13 @@ alembic==1.13.0
 # ============================================================================
 # AUTHENTICATION & SECURITY
 # ============================================================================
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 pydantic[email]>=2.9,<3.0
 pydantic-settings==2.1.0
 bcrypt==3.2.2
 passlib==1.7.4
 python-dotenv==1.0.0
-cryptography==41.0.7
+cryptography==50.0.1
 
 # ============================================================================
 # VALIDATION & SERIALIZATION
