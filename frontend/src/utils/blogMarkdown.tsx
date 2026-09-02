@@ -64,6 +64,7 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
           key={`${keyPrefix}-${i++}`}
           src={match[3]}
           alt={match[2] || ''}
+          loading="lazy"
           style={{ maxWidth: '100%', borderRadius: 8, display: 'block', margin: '0.5rem 0' }}
         />
       );
@@ -197,7 +198,7 @@ export function renderBlogContent(content: string): React.ReactNode {
         const { caption, attribution } = parseCaptionLine(nextLine);
         blocks.push(
           <figure key={`fig-${key++}`} style={{ margin: '1.75rem 0' }}>
-            <img src={url} alt={alt} style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
+            <img src={url} alt={alt} loading="lazy" style={{ maxWidth: '100%', borderRadius: 8, display: 'block' }} />
             {(caption || attribution) && (
               <figcaption style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.6rem', lineHeight: 1.5 }}>
                 {caption && <span>{caption}</span>}

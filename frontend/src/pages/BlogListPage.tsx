@@ -70,6 +70,7 @@ export default function BlogListPage() {
                 <img
                   src={post.cover_image_url}
                   alt=""
+                  loading="lazy"
                   style={
                     post.cover_image_width && post.cover_image_height
                       ? {

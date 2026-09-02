@@ -16,6 +16,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { getErrorMessage } from '@/utils/errorMessage';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 const API = '/api/v1';
 const getAuth = () => {
@@ -75,6 +76,7 @@ export const ParentMessagesPage: React.FC = () => {
 
   // Reply state
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  useEscapeKey(!!replyTo, () => setReplyTo(null));
   const [replyBody, setReplyBody] = useState('');
   const [sending, setSending] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
@@ -234,8 +236,8 @@ export const ParentMessagesPage: React.FC = () => {
           onClick={() => setReplyTo(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
         >
-          <div role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 520, maxWidth: '92vw' }}>
-            <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--font-head)' }}>{t('pages_parentmessagespage.reply', 'Reply')}</h2>
+          <div role="dialog" aria-modal="true" aria-labelledby="reply-dialog-title" onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 520, maxWidth: '92vw' }}>
+            <h2 id="reply-dialog-title" style={{ margin: '0 0 6px', fontFamily: 'var(--font-head)' }}>{t('pages_parentmessagespage.reply', 'Reply')}</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 0, marginBottom: 16 }}>
               {t('pages_parentmessagespage.to', 'To')}: {replyTo.from_teacher_name || 'Teacher'} · {replyTo.subject}
             </p>

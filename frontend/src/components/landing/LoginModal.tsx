@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -32,6 +33,8 @@ export function LoginModal({ isOpen, onClose, initialRole = 'student' }: LoginMo
 
   // Forgot password state
   const [forgotForm, setForgotForm] = useState({ email: '' });
+
+  useEscapeKey(isOpen, onClose);
 
   if (!isOpen) return null;
 

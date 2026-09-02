@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fmtDate } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface User { id: string; email: string; full_name: string; role: string; is_active: boolean; created_at: string; }
 
@@ -40,6 +41,7 @@ export const AdminUsersPage: React.FC = () => {
 
   // Assign-to-class modal state
   const [assignUser, setAssignUser] = useState<User | null>(null);
+  useEscapeKey(!!assignUser, () => setAssignUser(null));
   const [classOptions, setClassOptions] = useState<{ id: string; name: string }[]>([]);
   const [assignClass, setAssignClass] = useState('');
   const [assigning, setAssigning] = useState(false);
@@ -178,8 +180,8 @@ export const AdminUsersPage: React.FC = () => {
           onClick={() => setAssignUser(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
         >
-          <div role="dialog" aria-modal="true" onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 440, maxWidth: '92vw' }}>
-            <h2 style={{ margin: '0 0 6px', fontFamily: 'var(--font-head)' }}>{t('pages_admin_adminuserspage.add_to_class', 'Add to Class')}</h2>
+          <div role="dialog" aria-modal="true" aria-labelledby="assign-class-dialog-title" onClick={e => e.stopPropagation()} style={{ background: 'var(--surface, #fff)', borderRadius: 12, padding: 28, width: 440, maxWidth: '92vw' }}>
+            <h2 id="assign-class-dialog-title" style={{ margin: '0 0 6px', fontFamily: 'var(--font-head)' }}>{t('pages_admin_adminuserspage.add_to_class', 'Add to Class')}</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 0, marginBottom: 16 }}>{assignUser.full_name || assignUser.email}</p>
 
             {classOptions.length === 0 ? (
