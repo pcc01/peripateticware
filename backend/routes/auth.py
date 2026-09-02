@@ -40,6 +40,15 @@ logger = logging.getLogger(__name__)
 try:
     from core.database import get_db
     from core.security import SecurityManager, create_access_token, TOKEN_EXPIRED
+    # Aliased: this module defines its own /me route handler literally named
+    # get_current_user (below) — importing the real dependency under the
+    # same name would get silently shadowed by that later definition (both
+    # bind the module-level name; the last one wins), so any Depends(...)
+    # using the unaliased name would resolve to the /me route handler
+    # instead of the real auth dependency. Hit exactly this while adding
+    # the MFA endpoints below: current_user came back as a MeResponse
+    # instead of a User ORM instance.
+    from core.dependencies import get_current_user as _get_current_user_dep
     from models.user import User
     from core.encryption import blind_index as _blind_index
     logger.info("âœ… Auth routes: All imports successful")
@@ -136,7 +145,15 @@ class SignupRequest(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    """Successful authentication response"""
+    """Successful authentication response.
+
+    When mfa_required=True, access_token is NOT a usable bearer token --
+    it's a short-lived mfa_pending token (see core/dependencies.py's type
+    check) that must be exchanged via POST /auth/mfa/login along with a
+    TOTP/backup code before it's good for anything else. The frontend
+    checks this flag rather than assuming every /login response is a
+    completed login.
+    """
     access_token: str
     token_type: str = "bearer"
     user_id: str
@@ -145,6 +162,7 @@ class TokenResponse(BaseModel):
     org_id: Optional[str] = None
     expires_in: int
     is_active: Optional[bool] = None
+    mfa_required: bool = False
     
     class Config:
         json_schema_extra = {
@@ -177,6 +195,48 @@ class UserResponse(BaseModel):
 class LogoutResponse(BaseModel):
     """Logout response"""
     message: str
+
+
+# ============================================================================
+# MFA (TOTP) SCHEMAS
+# ============================================================================
+
+class MFAStatusResponse(BaseModel):
+    mfa_enabled: bool
+
+
+class MFASetupResponse(BaseModel):
+    """Returned by POST /mfa/setup. secret is shown once for manual entry
+    (in case the user can't scan a QR code); provisioning_uri is what the
+    frontend renders as a QR code for authenticator apps to scan."""
+    secret: str
+    provisioning_uri: str
+
+
+class MFAConfirmRequest(BaseModel):
+    code: str
+
+
+class MFAConfirmResponse(BaseModel):
+    """backup_codes is the ONLY time these plaintext codes are ever
+    available -- only bcrypt hashes are persisted. The frontend must show
+    these to the user with a clear "save these now" prompt."""
+    backup_codes: list[str]
+
+
+class MFADisableRequest(BaseModel):
+    password: str
+
+
+class MFARegenerateBackupCodesRequest(BaseModel):
+    code: str
+
+
+class MFALoginRequest(BaseModel):
+    """code accepts either a 6-digit TOTP code or one of the user's
+    remaining backup codes -- both are tried (see POST /mfa/login)."""
+    mfa_token: str
+    code: str
 
 
 # ============================================================================
@@ -299,13 +359,36 @@ async def login(
                 detail="User account is inactive",
             )
         
+        # MFA gate: password was correct, but a second factor is still
+        # required before a real access token is issued. Return a
+        # short-lived (5 min) mfa_pending token instead -- core.dependencies
+        # rejects it everywhere except POST /mfa/login (see its type-claim
+        # check), so it can't be used to reach any other endpoint even if
+        # intercepted.
+        if getattr(user, "mfa_enabled", False):
+            mfa_token = create_access_token(
+                data={"sub": str(user.id), "type": "mfa_pending"},
+                expires_delta=timedelta(minutes=5),
+            )
+            logger.info(f"ðŸ” MFA required to complete login: {user.email}")
+            return TokenResponse(
+                access_token=mfa_token,
+                token_type="mfa_pending",
+                user_id=str(user.id),
+                email=user.email,
+                role=user.role,
+                org_id=str(user.org_id) if user.org_id else None,
+                expires_in=300,
+                mfa_required=True,
+            )
+
         # Create JWT token - FIXED: use data= parameter
         token = create_access_token(
             data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False)), "is_content_admin": bool(getattr(user, "is_content_admin", False))}
         )
-        
+
         logger.info(f"âœ… Login successful: {user.email} ({user.role})")
-        
+
         return TokenResponse(
             access_token=token,
             token_type="bearer",
@@ -544,6 +627,18 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
 
     token = authorization.split(" ", 1)[1]
+
+    # SECURITY: this endpoint verifies the token independently of
+    # core.dependencies.get_current_user (pre-existing — it doesn't even
+    # check token revocation, a gap independent of MFA and not addressed
+    # here), so it needs its own copy of the mfa_pending rejection too —
+    # confirmed by testing that without this, a captured mfa_pending token
+    # could hit GET /me and get real user info before the second factor
+    # was ever verified.
+    payload = SecurityManager.verify_token(token)
+    if payload is None or payload is TOKEN_EXPIRED or payload.get("type", "access") != "access":
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
     user_id = extract_user_id_from_token(token)
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -622,6 +717,16 @@ async def refresh_token(
                 detail="Invalid or expired token"
             )
 
+        # SECURITY: an mfa_pending token (see /login's MFA branch and
+        # core/dependencies.py's matching check) must not be refreshable
+        # into a real, long-lived access token -- that would let a stolen
+        # pending token bypass the second factor entirely.
+        if payload.get("type", "access") != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token"
+            )
+
         # SECURITY: a revoked token (logout / already-rotated) must NOT be
         # exchangeable for a fresh one — otherwise logout is meaningless:
         # a stolen token could be "refreshed" back to life after the victim
@@ -684,6 +789,220 @@ async def refresh_token(
     except Exception as e:
         logger.error(f"Token refresh error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Token refresh failed")
+
+
+# =============================================================================
+# MFA (TOTP) -- opt-in two-factor authentication
+# =============================================================================
+# Available to any account; the settings UI specifically recommends it for
+# Teacher/Admin roles (student PII access) but nothing here enforces it.
+#
+# Flow:
+#   1. POST /mfa/setup    (authed)  -> secret + provisioning_uri (QR)
+#   2. POST /mfa/confirm  (authed)  -> verifies first code, flips
+#                                       mfa_enabled=True, returns backup
+#                                       codes (shown once)
+#   3. Login now returns mfa_required=True with a 5-min mfa_pending token
+#      instead of a real one (see /login above)
+#   4. POST /mfa/login    (public)  -> exchanges {mfa_token, code} for a
+#                                       real access token
+#   5. POST /mfa/disable  (authed, password-confirmed) -> turns it back off
+
+_BACKUP_CODE_COUNT = 10
+
+
+def _generate_backup_codes() -> list[str]:
+    """10 codes, 8 hex chars each (e.g. "a3f9c1e2") -- typeable, not
+    confusable like base32, plenty of entropy for a one-time-use code
+    that's also rate-limited."""
+    import secrets
+    return [secrets.token_hex(4) for _ in range(_BACKUP_CODE_COUNT)]
+
+
+def _hash_backup_codes(codes: list[str]) -> list[dict]:
+    from core.security import hash_password
+    return [{"hash": hash_password(c), "used": False} for c in codes]
+
+
+@router.get("/mfa/status", response_model=MFAStatusResponse)
+async def mfa_status(
+    current_user: User = Depends(_get_current_user_dep),
+):
+    return MFAStatusResponse(mfa_enabled=bool(getattr(current_user, "mfa_enabled", False)))
+
+
+@router.post("/mfa/setup", response_model=MFASetupResponse)
+@limiter.limit("10/minute")
+async def mfa_setup(
+    request: Request,
+    current_user: User = Depends(_get_current_user_dep),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generates a new TOTP secret and stores it (mfa_enabled stays False
+    until /mfa/confirm verifies the user actually has it in an
+    authenticator app). Calling this again before confirming just
+    overwrites the pending secret -- safe, since an unconfirmed secret
+    grants no access on its own."""
+    if getattr(current_user, "mfa_enabled", False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="MFA is already enabled. Disable it before setting up again.",
+        )
+
+    import pyotp
+    secret = pyotp.random_base32()
+    current_user.mfa_secret = secret
+    await db.commit()
+
+    provisioning_uri = pyotp.TOTP(secret).provisioning_uri(
+        name=current_user.email,
+        issuer_name="Peripateticware",
+    )
+    logger.info(f"ðŸ” MFA setup started: {current_user.email}")
+    return MFASetupResponse(secret=secret, provisioning_uri=provisioning_uri)
+
+
+@router.post("/mfa/confirm", response_model=MFAConfirmResponse)
+@limiter.limit("10/minute")
+async def mfa_confirm(
+    request: Request,
+    body: MFAConfirmRequest,
+    current_user: User = Depends(_get_current_user_dep),
+    db: AsyncSession = Depends(get_db),
+):
+    if not current_user.mfa_secret:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No MFA setup in progress. Call /mfa/setup first.",
+        )
+
+    import pyotp
+    totp = pyotp.TOTP(current_user.mfa_secret)
+    if not totp.verify(body.code, valid_window=1):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid code")
+
+    backup_codes = _generate_backup_codes()
+    current_user.mfa_enabled = True
+    current_user.mfa_backup_codes = _hash_backup_codes(backup_codes)
+    await db.commit()
+
+    logger.info(f"âœ… MFA enabled: {current_user.email}")
+    return MFAConfirmResponse(backup_codes=backup_codes)
+
+
+@router.post("/mfa/disable")
+@limiter.limit("10/minute")
+async def mfa_disable(
+    request: Request,
+    body: MFADisableRequest,
+    current_user: User = Depends(_get_current_user_dep),
+    db: AsyncSession = Depends(get_db),
+):
+    if not SecurityManager.verify_password(body.password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
+
+    current_user.mfa_enabled = False
+    current_user.mfa_secret = None
+    current_user.mfa_backup_codes = None
+    await db.commit()
+
+    logger.info(f"ðŸ”“ MFA disabled: {current_user.email}")
+    return {"message": "MFA disabled"}
+
+
+@router.post("/mfa/regenerate-backup-codes", response_model=MFAConfirmResponse)
+@limiter.limit("10/minute")
+async def mfa_regenerate_backup_codes(
+    request: Request,
+    body: MFARegenerateBackupCodesRequest,
+    current_user: User = Depends(_get_current_user_dep),
+    db: AsyncSession = Depends(get_db),
+):
+    if not current_user.mfa_enabled or not current_user.mfa_secret:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="MFA is not enabled")
+
+    import pyotp
+    totp = pyotp.TOTP(current_user.mfa_secret)
+    if not totp.verify(body.code, valid_window=1):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid code")
+
+    backup_codes = _generate_backup_codes()
+    current_user.mfa_backup_codes = _hash_backup_codes(backup_codes)
+    await db.commit()
+
+    logger.info(f"ðŸ” MFA backup codes regenerated: {current_user.email}")
+    return MFAConfirmResponse(backup_codes=backup_codes)
+
+
+@router.post("/mfa/login", response_model=TokenResponse)
+@limiter.limit("5/minute")
+async def mfa_login(
+    request: Request,
+    body: MFALoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Second step of a login for an MFA-enabled account -- exchanges the
+    short-lived mfa_pending token from /login plus a TOTP or backup code
+    for a real access token."""
+    payload = SecurityManager.verify_token(body.mfa_token)
+    if payload is None or payload is TOKEN_EXPIRED or payload.get("type") != "mfa_pending":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired MFA session")
+
+    user_id = payload.get("sub")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or not user.mfa_enabled or not user.mfa_secret:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired MFA session")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive")
+
+    import pyotp
+    totp = pyotp.TOTP(user.mfa_secret)
+    verified = totp.verify(body.code, valid_window=1)
+
+    if not verified and user.mfa_backup_codes:
+        # Build an entirely new list of new dicts rather than mutating the
+        # existing ones in place — a plain reassignment plus
+        # flag_modified() is the reliable way to get a JSON/JSONB column
+        # (not wrapped in sqlalchemy.ext.mutable) picked up by the unit of
+        # work; verified empirically that mutating dicts in place and
+        # reassigning list(...) of the SAME dict objects did NOT persist
+        # (the "used" flag silently stayed false in the DB, making every
+        # backup code infinitely reusable — confirmed via a direct query
+        # before this fix, not just theory).
+        new_codes = []
+        for entry in user.mfa_backup_codes:
+            if not verified and not entry.get("used") and SecurityManager.verify_password(body.code, entry["hash"]):
+                new_codes.append({"hash": entry["hash"], "used": True})
+                verified = True
+                logger.info(f"ðŸ”‘ MFA backup code used: {user.email}")
+            else:
+                new_codes.append(dict(entry))
+        if verified:
+            user.mfa_backup_codes = new_codes
+            from sqlalchemy.orm.attributes import flag_modified
+            flag_modified(user, "mfa_backup_codes")
+
+    if not verified:
+        logger.warning(f"âŒ MFA verification failed: {user.email}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid code")
+
+    await db.commit()
+
+    token = create_access_token(
+        data={"sub": str(user.id), "is_platform_admin": bool(getattr(user, "is_platform_admin", False)), "is_content_admin": bool(getattr(user, "is_content_admin", False))}
+    )
+    logger.info(f"âœ… MFA login successful: {user.email} ({user.role})")
+
+    return TokenResponse(
+        access_token=token,
+        token_type="bearer",
+        user_id=str(user.id),
+        email=user.email,
+        role=user.role,
+        org_id=str(user.org_id) if user.org_id else None,
+        expires_in=_EXPIRES_IN_SECONDS,
+    )
 
 
 # =============================================================================

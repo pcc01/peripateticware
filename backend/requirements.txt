@@ -31,6 +31,7 @@ alembic==1.13.0
 # AUTHENTICATION & SECURITY
 # ============================================================================
 python-jose[cryptography]==3.5.0
+pyotp==2.10.0   # TOTP secret generation/verification for account MFA
 pydantic[email]>=2.9,<3.0
 pydantic-settings==2.1.0
 bcrypt==3.2.2

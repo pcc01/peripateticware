@@ -38,6 +38,19 @@ async def get_user_from_token_str(token: str, db: AsyncSession) -> User:
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # Every token issued before MFA existed has no "type" claim at all, so
+    # default to "access" for backward compatibility — only a token
+    # deliberately minted with a different type (currently just
+    # "mfa_pending", the short-lived token issued between password and TOTP
+    # verification — see routes/mfa.py) is rejected here. Without this, that
+    # narrow, short-lived token would be indistinguishable from a real
+    # access token to every other endpoint, defeating MFA entirely.
+    if payload.get("type", "access") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if await is_token_revoked(payload.get("jti")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,6 +93,15 @@ async def get_current_user(
                 detail="Invalid authentication credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        # See the matching comment in get_user_from_token_str above — rejects
+        # the short-lived mfa_pending token from being used as a full access
+        # token anywhere except POST /auth/mfa/login.
+        if payload.get("type", "access") != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if await is_token_revoked(payload.get("jti")):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -93,7 +115,7 @@ async def get_current_user(
                 detail="Invalid authentication credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         # Fetch user from database
         query = select(User).where(User.id == user_id)
         result = await db.execute(query)
@@ -166,6 +188,8 @@ async def optional_user(
         # using optional_user.
         payload = SecurityManager.verify_token(token)
         if payload is None or payload is TOKEN_EXPIRED:
+            return None
+        if payload.get("type", "access") != "access":
             return None
         if await is_token_revoked(payload.get("jti")):
             return None

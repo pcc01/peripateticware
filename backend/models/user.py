@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Paul Christopher Cerda
 from sqlalchemy import Column, String, DateTime, Boolean
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -54,6 +54,16 @@ class User(Base):
     # migration's PROTECTED_USERNAMES for the full list.
     is_protected = Column(Boolean, default=False, nullable=False, server_default='false')
     invite_token_used = Column(String(128), nullable=True)
+    # ── MFA (TOTP, opt-in) ──────────────────────────────────────────────
+    # mfa_secret stays populated but mfa_enabled=False during an
+    # unconfirmed setup attempt (see routes/auth.py's /mfa/setup) — that's
+    # safe, since nothing grants access on secret presence alone, only on
+    # mfa_enabled. mfa_backup_codes holds bcrypt-hashed one-time codes,
+    # never the plaintext (shown to the user exactly once, at confirm
+    # time) — [{"hash": "$2b$...", "used": false}, ...].
+    mfa_enabled = Column(Boolean, default=False, nullable=False, server_default='false')
+    mfa_secret = Column(EncryptedString(600), nullable=True)
+    mfa_backup_codes = Column(JSONB, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
