@@ -18,7 +18,7 @@
     "i18n:repair:check": "python scripts/repair_locale_json.py --check",
     "i18n:repair": "python scripts/repair_locale_json.py",
     "i18n:validate": "node scripts/validate_locales.cjs",
-    "i18n:sync": "python scripts/translate_sync.py --non-interactive --provider OLLAMA",
+    "i18n:sync": "python -X utf8 scripts/translate_sync.py --non-interactive --provider OLLAMA",
     "i18n:sync:ci": "python scripts/translate_sync.py --non-interactive --provider MICROSOFT",
     "i18n:qa": "python scripts/localization_qa_crawler.py",
     "i18n:retranslate": "python scripts/retranslate_flagged.py",
