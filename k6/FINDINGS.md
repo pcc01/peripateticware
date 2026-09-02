@@ -5,16 +5,16 @@ production (`peripateticware.com`) and the loopback backend on the prod host.
 
 Status key: 🔴 open · 🟡 needs decision · ✅ fixed
 
-## Fix status (2026-09-02) — all changes verified on the local dev stack, pending prod deploy
+## Fix status — DEPLOYED to prod 2026-09-02 (commit c24b9f0)
 
-| # | Bug | Fix | Verified |
+| # | Bug | Fix | Prod verification |
 |---|---|---|---|
-| 1 | Classroom invite 500 (tz-aware datetime) | `_invite_expires()` → naive UTC (`backend/routes/classrooms.py`) | invite create → 201 |
-| 2 | Verification email undelivered / SMTP hang | port 465 → implicit TLS (`use_tls`) not STARTTLS, + 15s timeout (`backend/services/email_service.py`) | code + compile; needs a 465 server to exercise fully — also set prod `SMTP_PORT=587` for a config-only workaround |
-| 3 | `POST /auth/signup` blocks on SMTP | verification email moved to `BackgroundTasks` (`backend/routes/auth.py`) | signup → 201 in ~10ms, email fires in background |
-| 5 | `/student/portfolio` + `/student/competencies` 500 | startup.py reconcile: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for `student_competencies` **and** `student_notebooks` (both drifted from their ORM models); `database/init.sql` updated to match | both endpoints → 200 |
-| 6 | Global rate limit never enforces | new pure-ASGI `GlobalRateLimitMiddleware` (Redis sliding window, 600/min per IP, `GLOBAL_HTTP_RATE_LIMIT` env, health/metrics exempt) in `backend/core/http_rate_limiter.py` + wired in `main.py` | 650 rapid reqs → 429s at ~600; `/health/` stays 200 |
-| 4 | `ENVIRONMENT=development` in prod `.env` | **host `.env` edit** — set `ENVIRONMENT=production` (compose already overrides, so cosmetic) | n/a |
+| 1 | Classroom invite 500 (tz-aware datetime) | `_invite_expires()` → naive UTC (`backend/routes/classrooms.py`) | ✅ `POST /classrooms/{id}/invites` → **201** on prod |
+| 2 | Verification email undelivered / SMTP hang | port 465 → implicit TLS (`use_tls`) not STARTTLS, + 15s timeout (`backend/services/email_service.py`); test `backend/tests/test_email_tls_mode.py` (3/3). **Also set prod `SMTP_PORT=587`.** | ⏳ signup no longer hangs (see #3); confirm actual delivery via `docker logs peripateticware-backend --since 10m \| grep -i "email sent\|email send failed"` |
+| 3 | `POST /auth/signup` blocks on SMTP | verification email moved to `BackgroundTasks` (`backend/routes/auth.py`) | ✅ signup → **201 in 0.34s** on prod (was >120s) |
+| 4 | `ENVIRONMENT=development` in prod `.env` | set `ENVIRONMENT=production` in prod `.env` (compose already overrode it) | ✅ set + backend recreated |
+| 5 | `/student/portfolio` + `/student/competencies` 500 | startup.py reconcile: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for `student_competencies` **and** `student_notebooks` (both drifted from their ORM models); `database/init.sql` updated | ✅ both → **200** on prod (reconcile ran on the prod DB at boot) |
+| 6 | Global rate limit never enforces | new pure-ASGI `GlobalRateLimitMiddleware` (Redis sliding window, 600/min per IP, `GLOBAL_HTTP_RATE_LIMIT` env, health/metrics exempt) in `backend/core/http_rate_limiter.py` + wired in `main.py` | ✅ 660 rapid reqs → **67× 429** at ~600 on prod; `/health/` stays 200 |
 
 **New drift found while fixing #5:** `student_notebooks` had the same model-vs-DB
 mismatch (`where_notes/why_notes/how_notes/learning_insights/next_steps/rubric_scores/is_submitted/submitted_at`
