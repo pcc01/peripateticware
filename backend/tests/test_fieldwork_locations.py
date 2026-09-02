@@ -141,15 +141,17 @@ async def test_fieldwork_locations_403_when_not_owner(ctx):
 # around it.
 
 @pytest.mark.asyncio
-async def test_fieldwork_locations_success_currently_raises_due_to_text_null_label_bug(ctx):
-    """Regression/bug-documentation test: an authorized request that reaches
-    query construction currently raises NotImplementedError from
-    text("NULL").label("location_name") in the EvidenceCapture branch of the
-    union_all() query, rather than returning 200. This test will start
-    failing (in a good way) once routes/activities.py:1743 is fixed to use
-    literal_column("NULL") or literal(None) instead of text("NULL") — at
-    that point this test should be replaced with a real success-path
-    assertion (200 + correct location list)."""
+async def test_fieldwork_locations_success_returns_field_notes_and_captures(ctx):
+    """Real success-path assertion (200 + correct location list), replacing
+    the former bug-documentation test now that the underlying bug is fixed:
+    the EvidenceCapture branch of the union_all() query used to build its
+    location_name column via text("NULL").label(...), which raised
+    NotImplementedError at query-construction time (TextClause doesn't
+    support .label()) before the request ever reached db.execute(). It now
+    uses literal(None, type_=String).label("location_name") instead (see
+    routes/activities.py's fieldwork-locations query construction), so
+    construction succeeds and the mocked db.execute() results below flow
+    through to a normal 200 response."""
     client = ctx["client"]
     db = ctx["db"]
     teacher = ctx["teacher"]
@@ -179,12 +181,24 @@ async def test_fieldwork_locations_success_currently_raises_due_to_text_null_lab
 
     db.execute.side_effect = [activity_result, rows_result]
 
-    # httpx/ASGITransport propagates unhandled server exceptions as raised
-    # exceptions on the client call (there's no exception-handler middleware
-    # registered on this minimal test app), which is exactly what surfaces
-    # the bug clearly here.
-    with pytest.raises(NotImplementedError):
-        await client.get(f"/api/v1/activities/{activity_id}/fieldwork-locations")
+    response = await client.get(f"/api/v1/activities/{activity_id}/fieldwork-locations")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["activity_id"] == str(activity_id)
+    assert body["count"] == 1
+    assert body["locations"] == [
+        {
+            "student_id": str(student_id),
+            "student_name": "Jamie Rivera",
+            "latitude": 37.7749,
+            "longitude": -122.4194,
+            "location_name": "Golden Gate Park",
+            "submitted_at": now.isoformat(),
+            "title": "Tree bark texture",
+            "type": "field_note",
+        }
+    ]
 
 
 # ===========================================================================
@@ -206,10 +220,10 @@ def test_student_field_note_has_session_id_column():
 
 def test_student_field_note_session_join_query_builds_without_error():
     """Isolates just the StudentFieldNote -> LearningSession join (the
-    session_id half of the union_all() query) from the unrelated
-    text("NULL").label(...) bug in the EvidenceCapture half (see the
-    documented-bug test above). Confirms the join itself — the thing this
-    test file was specifically commissioned to cover — builds cleanly."""
+    session_id half of the union_all() query) from the EvidenceCapture half
+    (covered end-to-end by the success-path test above). Confirms the join
+    itself — the thing this test file was specifically commissioned to
+    cover — builds cleanly."""
     from sqlalchemy import select, literal, text as _t
     from models.database import StudentFieldNote, LearningSession as _LS, User as _User
 
