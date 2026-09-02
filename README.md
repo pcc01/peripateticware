@@ -50,6 +50,7 @@ This is a full-stack, production-grade application with a web frontend, REST API
 
 ### Backend — FastAPI + PostgreSQL
 - **Authentication:** JWT-based login/signup, email verification, password reset, role-based access
+- **Rate Limiting:** `slowapi`, Redis-backed so limits hold correctly across all of gunicorn's worker processes (not per-process counters that don't see each other) — auth, password reset, and AI endpoints throttled
 - **Roles:** Teacher, Student, Parent, Admin, Homeschool, Platform (super-admin)
 - **Activity Engine:** Full CRUD for location-based learning activities with Bloom's taxonomy levels
 - **Student Features:** Field notes, self-initiated projects, peer projects, reverse scavenger hunt proposals
@@ -118,6 +119,33 @@ run it as a second Stage-1 candidate channel alongside the existing pgvector sea
 ranked lists via Reciprocal Rank Fusion (RRF) rather than trying to normalize two incompatible score
 scales. Touches `routes/inference.py`'s seed query for every `rag-retrieve` call, so it ships behind
 thorough local + prod verification before merge, same as the fixes above.
+
+---
+
+## 🔒 Security, Performance & Accessibility Hardening (Aug–Sep 2026)
+
+A home-server security/responsiveness audit and its follow-through, kept close to the code the same way the GraphRAG log above is.
+
+**Security — fixed:**
+- **Rate limiting was silently non-functional.** `slowapi`'s middleware was never registered (`SlowAPIMiddleware` missing from `main.py`), so every `@limiter.limit()` decorator was a no-op regardless of config. Fixed, and made correct across gunicorn's multiple workers via a shared Redis `storage_uri` (`core/http_rate_limiter.py`) instead of in-process counters that don't see each other.
+- **Redis had no authentication.** Added `requirepass`, gated by `REDIS_PASSWORD`.
+- **Privacy/consent enforcement was bypassed on 7 write paths.** Extended the one working call site's pattern (`services/privacy_engine.py::enforce_or_raise()`/`audit_submission()`) to all of them.
+- **The PII-encryption backfill script was non-idempotent** — re-running it would have double-encrypted already-correct rows. Added `is_encrypted()` detection to `core/encryption.py`.
+- **Docker's entire data volume (Postgres, Redis, uploads) was unencrypted at rest.** Migrated it to LUKS in place — staged the ~16GB off, wiped and re-encrypted the drive, restored it — mirroring the existing backup-drive encryption pattern (keyfile + crypttab); folded the new header/keyfile into the existing Restic backup bundle; reboot-tested and restore-drill-tested afterward.
+- **Dependency CVE sweep** (`pip-audit` / `npm audit`, run against real installed versions inside Docker, not just `requirements.txt`/`package.json`): backend went from 146 known vulnerabilities to 2 — both deliberately deferred with documented reasoning (`pytest`, dev-only tooling never shipped; `ecdsa`, no published fix but unreachable since this app is HS256-only). Frontend cleared the one no-breaking-change fix (`form-data`); `react-router-dom`/`i18next-http-backend`/`vite` remain flagged pending a dedicated major-version migration (real breaking changes across 114+ routes / the whole build toolchain, not a quick patch).
+- Fixed a real duplicate-route registration bug (`routes/phase7_student_initiated.py`, surfaced by a newer FastAPI's stricter duplicate-operation-ID check) and a PEP 563 (`from __future__ import annotations`) + `slowapi` interaction that had silently broken `/openapi.json` for the whole app.
+
+**Responsiveness — fixed:**
+- Frontend main bundle: **1.65 MB → ~400 KB**, via `React.lazy`-based code-splitting across ~114 route imports.
+- Postgres tuned for the actual host (`shared_buffers`, `effective_cache_size`, `maintenance_work_mem`), plus indexes added on hot foreign keys that were missing them.
+- Teacher/homeschool dashboards cache their query results (30s TTL).
+- Anthropic prompt caching (`cache_control: ephemeral`) on repeated system prompts.
+- "Suggest Activities" now streams (SSE) instead of blocking for the full generation; its location-context lookup was found duplicating an *existing* DB-backed cache (`routes/privacy_locations.py::enrich_location()`) rather than reusing it — fixed to delegate instead of maintaining a second cache.
+- Scanned-PDF OCR pages now render/transcribe concurrently (`asyncio.gather` + a semaphore) instead of serially.
+
+**Accessibility — in progress:**
+- `eslint-plugin-jsx-a11y` now runs as part of lint — surfaced a **123-item backlog** (mostly `onClick` elements with no keyboard equivalent) beyond what manual review had found; tracked as warnings for ongoing triage, not bulk-fixed yet.
+- Fixed: the 3 modals that couldn't be dismissed via keyboard (new `useEscapeKey` hook), missing `aria-labelledby` on 2 of them, `loading="lazy"` on blog/content images.
 
 ---
 
@@ -288,7 +316,7 @@ peripateticware/
 | AI | Provider-agnostic: Ollama (local LLM + Whisper ASR + embeddings), Anthropic Claude API, or OpenAI/OpenAI-compatible — global or per-agent; embeddings also support Voyage AI |
 | Storage | Cloudflare R2 (boto3 S3-compatible); local `/app/uploads` fallback |
 | Payments | Paddle billing; tiered subscription enforcement via structured 402 responses |
-| Infrastructure | Docker Compose, Nginx, pgbouncer (config ready) |
+| Infrastructure | Docker Compose, Nginx, pgbouncer (config ready), LUKS full-disk encryption on the Docker data volume, Prometheus metrics (`/metrics`, multiprocess-aware under gunicorn) |
 
 ---
 
@@ -470,7 +498,7 @@ Peripateticware launches. Teachers create location-based activities. Students ex
 
 ---
 
-**Build Date:** June 2026 (GraphRAG migration: August 2026 — see `PRD-graphrag-migration-2026-08-16.md`)
+**Build Date:** June 2026 (GraphRAG migration: August 2026 — see `PRD-graphrag-migration-2026-08-16.md`; security/performance/accessibility hardening: Aug–Sep 2026 — see above)
 **Status:** Production-ready core — web app stable, mobile built and field-tested, GraphRAG pipeline live
 **License:** Business Source License 1.1 → Apache 2.0 (May 2030)
 
