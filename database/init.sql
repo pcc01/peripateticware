@@ -701,7 +701,17 @@ CREATE TABLE IF NOT EXISTS student_competencies (
     status          competency_status_enum NOT NULL DEFAULT 'not_started',
     assessed_at     TIMESTAMP              NOT NULL DEFAULT NOW(),
     assessed_by_id  UUID                   REFERENCES users(id) ON DELETE SET NULL,
-    notes           TEXT
+    notes           TEXT,
+    -- Columns the StudentCompetency ORM model (backend/models/database.py) selects.
+    -- Kept in sync with the reconcile block in backend/startup.py.
+    description       TEXT,
+    category          VARCHAR(100),
+    progress_percent  INTEGER   NOT NULL DEFAULT 0,
+    evidence_count    INTEGER   NOT NULL DEFAULT 0,
+    first_achieved_at TIMESTAMP,
+    last_achieved_at  TIMESTAMP,
+    created_at        TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMP NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_student_competencies_student ON student_competencies(student_id);
 

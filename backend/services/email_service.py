@@ -95,6 +95,14 @@ async def _send(to: str, subject: str, html: str, text: Optional[str] = None) ->
         msg.attach(MIMEText(text, "plain"))
     msg.attach(MIMEText(html, "html"))
 
+    # Port 465 is implicit TLS (SMTPS) — the socket must be TLS from the first
+    # byte. Ports 587/25 are cleartext-then-STARTTLS. Passing start_tls=True on
+    # 465 makes aiosmtplib send EHLO in cleartext into a server that's already
+    # mid-handshake, which hangs until timeout and then fails — the reason prod
+    # verification emails were never delivered AND signup requests blocked for
+    # >120s (SMTP_HOST=smtp.resend.com, SMTP_PORT=465). Pick the mode from the
+    # port; SMTP_USE_TLS still gates STARTTLS on the non-implicit ports.
+    implicit_tls = int(settings.SMTP_PORT) == 465
     try:
         await aiosmtplib.send(
             msg,
@@ -102,7 +110,9 @@ async def _send(to: str, subject: str, html: str, text: Optional[str] = None) ->
             port=settings.SMTP_PORT,
             username=settings.SMTP_USER or None,
             password=settings.SMTP_PASSWORD or None,
-            start_tls=settings.SMTP_USE_TLS,
+            use_tls=implicit_tls,
+            start_tls=(settings.SMTP_USE_TLS and not implicit_tls),
+            timeout=15,
         )
         logger.info("Email sent | To: %s | Subject: %s", to, subject)
         return True

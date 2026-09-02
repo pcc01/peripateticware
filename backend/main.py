@@ -34,6 +34,8 @@ from core.http_rate_limiter import (
     RateLimitExceeded,
     _rate_limit_exceeded_handler,
     SlowAPIMiddleware,
+    GlobalRateLimitMiddleware,
+    GLOBAL_HTTP_RATE_LIMIT,
 )
 
 # ============================================================================
@@ -318,6 +320,13 @@ if RATE_LIMIT_ENABLED:
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
     logger.info("✅ Rate limiting enabled (slowapi, middleware attached)")
+
+# Global per-IP ceiling — slowapi's default_limits via SlowAPIMiddleware do not
+# actually enforce in this app (load-test verified 2026-09-02); this deterministic
+# Redis-backed limiter does. Independent of RATE_LIMIT_ENABLED / slowapi.
+if GLOBAL_HTTP_RATE_LIMIT > 0:
+    app.add_middleware(GlobalRateLimitMiddleware)
+    logger.info("✅ Global HTTP rate limit: %s req/min per IP", GLOBAL_HTTP_RATE_LIMIT)
 
 # ============================================================================
 # MIDDLEWARE

@@ -970,6 +970,24 @@ async def apply_core_schema_migrations(engine) -> None:
                 updated_at TIMESTAMP DEFAULT NOW()
             )
         """, "create student_notebooks")
+        # Reconcile pre-existing tables to the StudentNotebook ORM model
+        # (backend/models/database.py). The CREATE above is an older/other shape
+        # (session_id/content/tags) and no-ops on databases that already have
+        # the table, so GET /student/portfolio 500s with
+        # "column student_notebooks.where_notes does not exist".
+        for _nb_col in [
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS where_notes TEXT",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS why_notes TEXT",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS how_notes TEXT",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS learning_insights TEXT",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS next_steps TEXT",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS rubric_scores JSONB",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS is_submitted BOOLEAN NOT NULL DEFAULT FALSE",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW()",
+            "ALTER TABLE student_notebooks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT NOW()",
+        ]:
+            await _exec_safepoint(conn, _nb_col)
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS student_field_notes (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1151,6 +1169,24 @@ async def apply_core_schema_migrations(engine) -> None:
                 updated_at TIMESTAMP NOT NULL DEFAULT NOW()
             )
         """, "create student_competencies")
+        # Reconcile pre-existing tables: databases bootstrapped from an older
+        # database/init.sql have student_competencies with a different shape
+        # (activity_id/bloom_level/score/assessed_at/notes) and NONE of the
+        # columns the StudentCompetency ORM model selects. CREATE TABLE IF NOT
+        # EXISTS above no-ops on those, so add the model's columns explicitly.
+        # Without this, GET /student/portfolio and /student/competencies 500 on
+        # every call ("column student_competencies.description does not exist").
+        for _sc_col in [
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS description TEXT",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS category VARCHAR(100)",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS progress_percent INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS evidence_count INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS first_achieved_at TIMESTAMP",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS last_achieved_at TIMESTAMP",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW()",
+            "ALTER TABLE student_competencies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT NOW()",
+        ]:
+            await _exec_safepoint(conn, _sc_col)
         await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_student_competencies_student ON student_competencies (student_id)")
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS student_profiles (

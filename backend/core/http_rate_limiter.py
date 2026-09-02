@@ -93,3 +93,84 @@ except ImportError:
     RateLimitExceeded = Exception  # never raised in this branch
     _rate_limit_exceeded_handler = None
     SlowAPIMiddleware = None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Global per-IP rate limit  (pure-ASGI, independent of slowapi)
+# ─────────────────────────────────────────────────────────────────────────────
+# slowapi's `default_limits` are supposed to be enforced globally once
+# SlowAPIMiddleware is attached — but in this app they silently are NOT
+# (verified 2026-09-02 with a load test: 112k requests from one IP, zero 429s,
+# while per-route `@limiter.limit("5/minute")` on /auth/login DID 429 on the
+# 6th hit). Rather than keep fighting slowapi's middleware, this is a small,
+# deterministic hard ceiling per client IP, backed by the same Redis (shared
+# across gunicorn workers), written as pure-ASGI so it never wraps `send` and
+# is therefore safe for the app's streaming (SSE) endpoints.
+import os as _os
+import time as _time
+
+# requests/minute per client IP. 0 disables. Default 600 (10 r/s) is generous
+# enough for a NAT'd classroom sharing one public IP but still stops a single
+# host from hammering the API.
+GLOBAL_HTTP_RATE_LIMIT = int(_os.getenv("GLOBAL_HTTP_RATE_LIMIT", "600"))
+_GLOBAL_WINDOW_S = 60
+_GLOBAL_EXEMPT_PREFIXES = ("/health", "/metrics", "/openapi.json", "/docs", "/redoc")
+
+
+def _ip_from_scope(scope) -> str:
+    headers = {k.decode("latin1").lower(): v.decode("latin1") for k, v in scope.get("headers", [])}
+    cf = headers.get("cf-connecting-ip")
+    if cf:
+        return cf.strip()
+    xff = headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    client = scope.get("client")
+    return client[0] if client else "unknown"
+
+
+async def _global_under_limit(ip: str) -> bool:
+    """Sliding-window check in Redis. Fails OPEN if Redis is unreachable."""
+    try:
+        from core.rate_limit import _get_redis  # reuse the AI limiter's pool
+        redis = await _get_redis()
+        if redis is None:
+            return True
+        key = f"ratelimit:http:{ip}"
+        now_ms = int(_time.time() * 1000)
+        window_ms = _GLOBAL_WINDOW_S * 1000
+        pipe = redis.pipeline()
+        pipe.zremrangebyscore(key, 0, now_ms - window_ms)
+        # unique member per call (perf_counter_ns) so two requests in the same
+        # millisecond both count instead of collapsing to one zadd update
+        pipe.zadd(key, {f"{now_ms}-{_time.perf_counter_ns()}": now_ms})
+        pipe.zcard(key)
+        pipe.expire(key, _GLOBAL_WINDOW_S + 2)
+        results = await pipe.execute()
+        return int(results[2]) <= GLOBAL_HTTP_RATE_LIMIT
+    except Exception as exc:  # noqa: BLE001 — never let the limiter break traffic
+        logger.warning("global rate limit check failed open: %s", exc)
+        return True
+
+
+class GlobalRateLimitMiddleware:
+    """Hard per-IP request ceiling. Add via `app.add_middleware(...)`."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or GLOBAL_HTTP_RATE_LIMIT <= 0:
+            return await self.app(scope, receive, send)
+        if scope.get("method") == "OPTIONS" or scope.get("path", "").startswith(_GLOBAL_EXEMPT_PREFIXES):
+            return await self.app(scope, receive, send)
+
+        if not await _global_under_limit(_ip_from_scope(scope)):
+            from starlette.responses import JSONResponse
+            resp = JSONResponse(
+                {"detail": f"Rate limit exceeded: {GLOBAL_HTTP_RATE_LIMIT} requests per {_GLOBAL_WINDOW_S}s. Please slow down."},
+                status_code=429,
+                headers={"Retry-After": str(_GLOBAL_WINDOW_S)},
+            )
+            return await resp(scope, receive, send)
+        return await self.app(scope, receive, send)

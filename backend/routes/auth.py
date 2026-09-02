@@ -10,7 +10,7 @@ Authentication routes - Login, signup, token management
 âœ… FIXED: Correct create_access_token calls
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status, Header
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel, EmailStr
@@ -417,6 +417,7 @@ async def login(
 async def signup(
     request: Request,
     body: SignupRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -571,15 +572,19 @@ async def signup(
         await db.commit()
         await db.refresh(new_user)
 
-        # Send verification email
+        # Queue the verification email as a background task rather than awaiting
+        # it inline. A slow/mis-configured SMTP server (prod has hit multi-minute
+        # SMTP hangs) must not hold the signup response — or the gunicorn worker
+        # — open. send_verification_email swallows its own errors and now has a
+        # 15s timeout (services/email_service._send), so this can't wedge boot.
         try:
             ver_token = SignedURL.generate(
                 purpose="email_verification",
                 payload={"user_id": str(new_user.id), "email": new_user.email},
             )
-            await send_verification_email(new_user.email, ver_token)
+            background_tasks.add_task(send_verification_email, new_user.email, ver_token)
         except Exception as _e:
-            logger.warning("Verification email failed (non-blocking): %s", _e)
+            logger.warning("Could not queue verification email (non-blocking): %s", _e)
 
         token = create_access_token(data={"sub": str(new_user.id), "is_platform_admin": False, "is_content_admin": False})
         

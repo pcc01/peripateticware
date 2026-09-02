@@ -62,7 +62,14 @@ def _now() -> datetime:
 
 
 def _invite_expires() -> datetime:
-    return _now() + timedelta(days=14)
+    # NOTE: naive UTC on purpose. classroom_invitations.expires_at is
+    # `TIMESTAMP WITHOUT TIME ZONE`, and asyncpg refuses to bind a
+    # timezone-aware datetime into that column ("can't subtract offset-naive
+    # and offset-aware datetimes") — which was 500ing every invite-create call.
+    # The read-side comparisons (preview_invite / accept_invite) already do
+    # `row.expires_at.replace(tzinfo=timezone.utc) < _now()`, so a naive value
+    # stored here round-trips correctly.
+    return datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=14)
 
 
 async def _student_org_eligible(db: AsyncSession, org_id: str, student_id: str) -> bool:

@@ -52,6 +52,10 @@ htmlcov/
 .env.*.local
 apply_license.py
 
+# k6 load-test local secrets + generated result files
+k6/.env.local
+k6/results/
+
 # Logs
 logs/
 *.log
