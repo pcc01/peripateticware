@@ -165,6 +165,24 @@ interface AuthResponse {
   role?: string
   email?: string
   user_id?: string
+  // mfa_required=true means access_token is NOT a real session token --
+  // it's a short-lived mfa_pending token (5 min) that must be exchanged
+  // via authService.mfaLogin() along with a TOTP/backup code before it's
+  // good for anything. Storing it as a real session here would be a
+  // second-factor bypass, so login() below deliberately skips its usual
+  // localStorage/axios-header side effects on this branch.
+  mfa_required?: boolean
+}
+
+function _persistSession(data: AuthResponse) {
+  const token = data.access_token || data.token
+  if (!token) return
+  localStorage.setItem('auth_token', token)
+  localStorage.setItem('auth_user', JSON.stringify({
+    id: data.user_id, email: data.email,
+    role: (data.role || 'student').toLowerCase()
+  }))
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
 
 class AuthService {
@@ -173,14 +191,14 @@ class AuthService {
     for (const endpoint of endpoints) {
       try {
         const response = await axios.post(endpoint, { email, password })
+        if (response.data?.mfa_required) {
+          // Second factor still needed -- do NOT persist this token as a
+          // session. Caller (LoginScreenWrapper) must prompt for a code
+          // and complete the login via mfaLogin() below.
+          return response.data
+        }
         if (response.data?.access_token || response.data?.token) {
-          const token = response.data.access_token || response.data.token
-          localStorage.setItem('auth_token', token)
-          localStorage.setItem('auth_user', JSON.stringify({
-            id: response.data.user_id, email: response.data.email,
-            role: (response.data.role || 'student').toLowerCase()
-          }))
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+          _persistSession(response.data)
           return response.data
         }
       } catch (err: any) {
@@ -189,6 +207,15 @@ class AuthService {
       }
     }
     throw new Error('No valid auth endpoint found')
+  }
+
+  /** Second step of a login for an MFA-enabled account -- exchanges the
+   * mfa_pending token (login()'s access_token when mfa_required was true)
+   * plus a TOTP or backup code for a real session. */
+  async mfaLogin(mfaToken: string, code: string): Promise<AuthResponse> {
+    const response = await axios.post(`${API_BASE}/auth/mfa/login`, { mfa_token: mfaToken, code })
+    _persistSession(response.data)
+    return response.data
   }
 
   async signup(data: { email: string; password: string; password_confirm?: string; first_name?: string; last_name?: string; name?: string; role?: string; age_confirmed?: boolean; [key: string]: any }): Promise<AuthResponse> {
@@ -234,24 +261,17 @@ const savedToken = authService.getToken()
 if (savedToken) axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
 
 const LoginScreenWrapper: React.FC = () => {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(''); setLoading(true)
-    try {
-      const response = await authService.login(email, password)
-      const role = (response.role || 'student').toLowerCase()
-      navigate(role === 'teacher' ? '/teacher/activities' : role === 'homeschool' ? '/homeschool' : role === 'parent' ? '/parent' : role === 'admin' ? '/admin' : '/student', { replace: true })
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Check credentials.')
-    } finally { setLoading(false) }
-  }
-
-  return <LoginScreen onLogin={handleLogin} error={error} loading={loading} email={email} password={password} onEmailChange={setEmail} onPasswordChange={setPassword} />
+  // LoginScreen manages its own form state, submission (via useAuthStore's
+  // login/mfaLogin/mfaRequired), and post-login navigation internally -- it
+  // accepts onLogin/email/password/etc. props but its actual <form> submit
+  // handler never calls them (uses react-hook-form + the store directly).
+  // This wrapper used to duplicate a whole login+MFA flow here passing
+  // those dead props; removed after confirming in a real browser that
+  // typing/submitting through this wrapper's fields had no effect on the
+  // rendered form at all. See useAuthStore.login()/mfaLogin() in
+  // stores/auth.ts and the mfaRequired branch in LoginScreen.tsx for the
+  // real implementation.
+  return <LoginScreen />
 }
 
 const SignUpScreenWrapper: React.FC = () => {

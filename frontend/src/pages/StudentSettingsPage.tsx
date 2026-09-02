@@ -4,6 +4,7 @@ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
+import { MfaSettings } from '@/components/account/MfaSettings';
 import styles from './SettingsPages.module.css';
 
 export const StudentSettingsPage = () => {
@@ -150,6 +151,10 @@ export const StudentSettingsPage = () => {
           <div className={styles.settingGroup}>
             <p>{t("landing:password_last_changed_30_days_ago", "Password last changed: 30 days ago")}</p>
             <button className={styles.secondaryBtn}>{t("landing:change_password", "Change Password")}</button>
+          </div>
+          <div className={styles.settingGroup}>
+            <p>{t('landing:two_factor_authentication', 'Two-Factor Authentication')}</p>
+            <MfaSettings />
           </div>
         </section>
 

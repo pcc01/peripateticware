@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import { useTranslation } from 'react-i18next';
+import { MfaSettings } from '@/components/account/MfaSettings';
 
 const card: React.CSSProperties = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -176,6 +177,12 @@ export const HomeschoolSettingsPage: React.FC = () => {
           style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontWeight: 500, fontSize: '0.88rem' }}>
           Reset Password
         </button>
+      </div>
+
+      {/* Two-Factor Authentication */}
+      <div style={card}>
+        <h2 style={h2s}>{t('pages_homeschool_homeschoolsettingspage.two_factor_authentication', 'Two-Factor Authentication')}</h2>
+        <MfaSettings />
       </div>
 
       {/* Sign Out removed — available in the sidebar (DashboardShell). */}

@@ -42,30 +42,97 @@ export default function LoginScreen({
   const errorParam = searchParams.get('error');
   const sessionReason = searchParams.get('reason');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error: authError } = useAuthStore();
+  const [mfaCode, setMfaCode] = useState('');
+  const { login, mfaLogin, mfaRequired, cancelMfa, isLoading, error: authError } = useAuthStore();
   const { t } = useTranslation('landing');
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
+  const navigateForRole = () => {
+    const authStore = useAuthStore.getState();
+    const userRole = (authStore.user?.role || '').toLowerCase().trim();
+    if (userRole === 'teacher')     navigate('/teacher',    { replace: true });
+    else if (userRole === 'admin')  navigate('/admin',      { replace: true });
+    else if (userRole === 'student') navigate('/student',   { replace: true });
+    else if (userRole === 'parent') navigate('/parent',     { replace: true });
+    else if (userRole === 'homeschool') navigate('/homeschool', { replace: true });
+    else navigate('/', { replace: true });
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login({ email: data.email, password: data.password });
-      setTimeout(() => {
-        const authStore = useAuthStore.getState();
-        const userRole = (authStore.user?.role || '').toLowerCase().trim();
-        if (userRole === 'teacher')     navigate('/teacher',    { replace: true });
-        else if (userRole === 'admin')  navigate('/admin',      { replace: true });
-        else if (userRole === 'student') navigate('/student',   { replace: true });
-        else if (userRole === 'parent') navigate('/parent',     { replace: true });
-        else if (userRole === 'homeschool') navigate('/homeschool', { replace: true });
-        else navigate('/', { replace: true });
-      }, 300);
+      // mfaRequired flips true inside the store when this account has a
+      // second factor -- don't navigate yet, the render below switches to
+      // the code-entry step instead (reading the store reactively rather
+      // than a returned value, since login()'s signature stays Promise<void>).
+      if (useAuthStore.getState().mfaRequired) return;
+      setTimeout(navigateForRole, 300);
     } catch (err) {
       console.error('[LoginScreen] Login error:', err);
     }
   };
+
+  const onMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await mfaLogin(mfaCode.trim());
+      setTimeout(navigateForRole, 300);
+    } catch (err) {
+      console.error('[LoginScreen] MFA verification error:', err);
+    }
+  };
+
+  if (mfaRequired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: 'linear-gradient(135deg, #4a7c59 0%, #6b9e7e 50%, #d4a574 100%)' }}>
+        <div className="relative z-10 w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <div className="text-center mb-6">
+              <div className="flex justify-center mb-4">
+                <div style={{ background: '#e8f0eb' }} className="rounded-full p-3">
+                  <Compass className="w-8 h-8" style={{ color: '#4a7c59' }} />
+                </div>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Two-factor authentication</h1>
+              <p className="text-gray-600 text-sm">
+                Enter the 6-digit code from your authenticator app, or one of your backup codes.
+              </p>
+            </div>
+
+            {authError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+                {authError}
+              </div>
+            )}
+
+            <form onSubmit={onMfaSubmit} className="space-y-4">
+              <input
+                type="text"
+                autoFocus
+                autoComplete="one-time-code"
+                placeholder="123456"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center tracking-widest text-lg"
+              />
+              <button type="submit" disabled={isLoading || !mfaCode.trim()}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                {isLoading ? 'Verifying…' : 'Verify'}
+              </button>
+              <button type="button" onClick={cancelMfa}
+                className="w-full text-gray-500 hover:text-gray-700 text-sm py-1">
+                ← Back to login
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const statusBanner = sessionReason === 'idle'
     ? <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">{t('components_auth_loginscreen.you_were_signed_out_due_to_inactivity_pl', 'You were signed out due to inactivity. Please sign in again.')}</div>

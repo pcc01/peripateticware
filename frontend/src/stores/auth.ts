@@ -32,6 +32,13 @@ export interface AuthStore {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  // MFA: set instead of user/token/isAuthenticated when login() gets
+  // mfa_required=true. mfaToken is a short-lived (5 min) mfa_pending JWT --
+  // NOT a real session token (the backend rejects it everywhere except
+  // POST /mfa/login), so it deliberately never gets persisted to
+  // localStorage the way a real token does.
+  mfaRequired: boolean
+  mfaToken: string | null
 
   // Setters
   setUser: (user: User | null) => void
@@ -47,6 +54,13 @@ export interface AuthStore {
     username?: string
     password: string
   }) => Promise<void>
+
+  /** Second step of a login for an MFA-enabled account -- exchanges the
+   * mfaToken above plus a TOTP or backup code for a real session. */
+  mfaLogin: (code: string) => Promise<void>
+
+  /** Abandon an in-progress MFA challenge and return to the plain login form. */
+  cancelMfa: () => void
 
   signup: (data: {
     email: string
@@ -88,6 +102,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
     isAuthenticated: !!(savedToken && savedUser),
     isLoading: false,
     error: null,
+    mfaRequired: false,
+    mfaToken: null,
 
     // ============================================================
     // SETTERS
@@ -189,6 +205,19 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
         const data = await response.json()
 
+        // MFA gate: this account has a second factor enabled. data.access_token
+        // here is NOT a real session token -- it's a short-lived mfa_pending JWT
+        // that only POST /mfa/login will accept (core/dependencies.py's backend
+        // rejects it everywhere else). Must NOT fall through to the normal
+        // success path below, which would otherwise persist it to localStorage
+        // and mark the user authenticated before the second factor is ever
+        // checked -- a real bypass caught by testing this in a real browser,
+        // not just backend unit tests.
+        if (data.mfa_required) {
+          set({ isLoading: false, mfaRequired: true, mfaToken: data.access_token || data.token, error: null })
+          return
+        }
+
         // âœ… FIXED: Backend returns user_id, email, role at top level (not nested in "user" object)
         const token = data.access_token || data.token
 
@@ -224,6 +253,68 @@ export const useAuthStore = create<AuthStore>((set, get) => {
       } finally {
         set({ isLoading: false })
       }
+    },
+
+    // ============================================================
+    // MFA LOGIN (second step, only when login() set mfaRequired)
+    // ============================================================
+
+    mfaLogin: async (code: string) => {
+      const mfaToken = get().mfaToken
+      if (!mfaToken) {
+        set({ error: 'No MFA session in progress. Please log in again.' })
+        throw new Error('No MFA session in progress')
+      }
+
+      set({ isLoading: true, error: null })
+
+      try {
+        const response = await fetch('/api/v1/auth/mfa/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mfa_token: mfaToken, code }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData?.detail || `Verification failed (${response.status})`)
+        }
+
+        const data = await response.json()
+        const token = data.access_token || data.token
+        if (!token) throw new Error('Invalid response: missing access_token')
+
+        const user: User = {
+          id: data.user_id,
+          email: data.email,
+          role: (data.role || 'STUDENT').toLowerCase(),
+          org_id: data.org_id ?? null,
+        }
+        if (!user.id || !user.email || !user.role) {
+          throw new Error('Invalid response: missing user fields')
+        }
+
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          mfaRequired: false,
+          mfaToken: null,
+          error: null,
+        })
+        localStorage.setItem(STORAGE_KEY_TOKEN, token)
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user))
+      } catch (err: any) {
+        const errorMsg = err.message || 'Verification failed'
+        set({ error: errorMsg, isLoading: false })
+        throw err
+      } finally {
+        set({ isLoading: false })
+      }
+    },
+
+    cancelMfa: () => {
+      set({ mfaRequired: false, mfaToken: null, error: null })
     },
 
     // ============================================================
