@@ -2665,7 +2665,7 @@
       },
       "homeschool": {
         "name": "Homeschool",
-        "price": "$9.99",
+        "price": "$11.99",
         "price_unit": "/mo",
         "price_note": "or $99.99/year · 30-day free trial · always free for 1 child",
         "cta": "Start free trial",
