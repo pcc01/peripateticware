@@ -31,6 +31,52 @@ class ActivityTypeEnum(str, Enum):
     DISCOVERY = "discovery"
 
 
+class WayfindingModeEnum(str, Enum):
+    """How a multi-step hunt's ordered waypoint set is navigated.
+    See WAYFINDING_CONSENT_LADDER.md §1."""
+    ORDERED     = "ordered"       # reach stops in sequence_index order
+    FREE_CHOICE = "free_choice"   # any order counts
+    GUIDED_PATH = "guided_path"   # ordered + the route line is the intended trail
+
+
+class WaypointBase(BaseModel):
+    """One stop in a scavenger hunt (GPX <wpt>). Teacher content, no PII."""
+    sequence_index: int = Field(0, ge=0, le=200)
+    name: str = Field(..., min_length=1, max_length=255)
+    clue_text: Optional[str] = Field(None, max_length=2000)
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
+    arrival_radius_meters: int = Field(25, ge=5, le=500)
+    symbol: Optional[str] = Field(None, max_length=50)
+    required: bool = True
+    capture_requirements: Optional[Dict[str, Any]] = Field(
+        None, description='Per-stop documentation ask, e.g. {"photo": true, "note": false}'
+    )
+    hint_unlock_rule: Optional[str] = Field(
+        "immediate", description="'immediate' | 'on_arrival' | 'after_minutes'"
+    )
+    hint_unlock_minutes: Optional[int] = Field(None, ge=1, le=240)
+
+    @field_validator('hint_unlock_rule', mode='before')
+    @classmethod
+    def _default_hint_rule(cls, v):
+        return v or "immediate"
+
+
+class WaypointCreate(WaypointBase):
+    """Waypoint in an activity create/update payload."""
+    pass
+
+
+class WaypointResponse(WaypointBase):
+    """Waypoint as returned in an activity payload."""
+    id: UUID
+    activity_id: UUID
+
+    class Config:
+        from_attributes = True
+
+
 # Coercion maps so clients sending text labels / legacy values don't 422.
 _BLOOM_LABELS = {
     "remember": 1, "understand": 2, "apply": 3,
@@ -181,6 +227,23 @@ class ActivityBase(BaseModel):
     discovery_location_gps_capture_enabled: bool = True
     discovery_location_sharing_rules: Optional[Dict[str, Any]] = Field(None, description='e.g. {"only_on_submission": true, "require_permission": true}')
 
+    # ── GPX wayfinding (multi-step scavenger hunts) ────────────────────────────
+    # See WAYFINDING_CONSENT_LADDER.md. discovery_wayfinding_enabled is the
+    # master toggle for rung B (on-device arrival detection — no coordinate
+    # leaves the phone). wayfinding_capability_ceiling is the teacher-set
+    # 'activity ceiling' input to the min() consent gate (§4); it defaults to
+    # 'B' server-side the moment wayfinding is enabled.
+    discovery_wayfinding_enabled: bool = False
+    wayfinding_mode: Optional[WayfindingModeEnum] = None
+    wayfinding_capability_ceiling: Optional[str] = Field(
+        None, pattern="^[A-E]$",
+        description="Highest capability rung this hunt allows (A=static … E=breadcrumb track)",
+    )
+    route_geometry: Optional[Dict[str, Any]] = Field(
+        None, description='GeoJSON LineString for the <rte>/<trk>: {"type":"LineString","coordinates":[[lng,lat],...]}'
+    )
+    waypoints: List[WaypointCreate] = Field(default_factory=list, max_length=200)
+
     @field_validator('learning_objectives', mode='before')
     @classmethod
     def validate_objectives(cls, v):
@@ -261,6 +324,16 @@ class ActivityUpdate(BaseModel):
     # toggle has nothing to toggle without this).
     discovery_location_gps_capture_enabled: Optional[bool] = None
 
+    # ── GPX wayfinding — editable after create ─────────────────────────────────
+    # waypoints, when present, REPLACE the activity's full waypoint set
+    # (delete-and-recreate) so the web builder's drag-reorder just sends the
+    # new ordered list. Omit the key entirely to leave waypoints untouched.
+    discovery_wayfinding_enabled: Optional[bool] = None
+    wayfinding_mode: Optional[WayfindingModeEnum] = None
+    wayfinding_capability_ceiling: Optional[str] = Field(None, pattern="^[A-E]$")
+    route_geometry: Optional[Dict[str, Any]] = None
+    waypoints: Optional[List[WaypointCreate]] = Field(None, max_length=200)
+
     @field_validator('learning_objectives', mode='before')
     @classmethod
     def validate_objectives(cls, v):
@@ -310,11 +383,20 @@ class ActivityResponse(ActivityBase):
     location_longitude: Optional[float] = None
     location_name: Optional[str] = None
     created_locale: Optional[str] = None
+    # Override ActivityBase.waypoints (List[WaypointCreate]) with the id-bearing
+    # response shape. SQLAlchemy's Activity.waypoints relationship is
+    # order_by=sequence_index, so these come back sorted.
+    waypoints: List[WaypointResponse] = []
 
     @field_validator('attachments', mode='before')
     @classmethod
     def _coerce_none_attachments(cls, v):
         """Same NULL-vs-[] gap as ActivityBase._coerce_none_list above."""
+        return [] if v is None else v
+
+    @field_validator('waypoints', mode='before')
+    @classmethod
+    def _coerce_none_waypoints(cls, v):
         return [] if v is None else v
 
     class Config:

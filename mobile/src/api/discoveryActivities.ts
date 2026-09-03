@@ -19,6 +19,16 @@ import { apiFetch } from './client';
 
 export type DiscoveryMode = 'location_based' | 'task_based';
 
+export interface DiscoveryWaypointInput {
+  sequence_index: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  arrival_radius_meters: number;
+  required: boolean;
+  clue_text?: string | null;
+}
+
 export interface CreateDiscoveryActivityInput {
   title: string;
   description: string;
@@ -37,6 +47,13 @@ export interface CreateDiscoveryActivityInput {
   discovery_time_limit_minutes?: number;
   discovery_success_criteria?: string;
   discovery_location_required: boolean;
+  // Multi-step wayfinding (WAYFINDING_CONSENT_LADDER.md). Present only when the
+  // teacher captured 2+ stops; the backend clamps the ceiling and stores the
+  // waypoints via ActivityCreate.
+  discovery_wayfinding_enabled?: boolean;
+  wayfinding_mode?: 'ordered' | 'free_choice' | 'guided_path';
+  wayfinding_capability_ceiling?: 'B' | 'C' | 'D' | 'E';
+  waypoints?: DiscoveryWaypointInput[];
 }
 
 export async function createDiscoveryActivity(input: CreateDiscoveryActivityInput): Promise<{ id: string }> {

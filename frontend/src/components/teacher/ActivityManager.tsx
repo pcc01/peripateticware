@@ -11,7 +11,16 @@ import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
 import { WikiLocationInfo } from './WikiLocationInfo';
 import CurriculumMapper from './CurriculumMapper';
+import WayfindingBuilder, { WayfindingValue } from './WayfindingBuilder';
 import styles from './ActivityManager.module.css';
+
+const EMPTY_WAYFINDING: WayfindingValue = {
+  discovery_wayfinding_enabled: false,
+  wayfinding_mode: 'ordered',
+  wayfinding_capability_ceiling: 'B',
+  route_geometry: null,
+  waypoints: [],
+};
 
 // ── Backend-payload normalization ─────────────────────────────────────────────
 // The backend expects bloom_level as an integer (1-6) and activity_type as one of
@@ -149,6 +158,7 @@ const ActivityManager = () => {
   // is recorded at save time rather than via the async per-student parent-consent
   // flow used for org/school accounts). See GPS_MAP_HANDOFF.md.
   const [showLocationTools, setShowLocationTools] = useState(false);
+  const [wayfinding, setWayfinding] = useState<WayfindingValue>(EMPTY_WAYFINDING);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
 
@@ -392,6 +402,32 @@ const ActivityManager = () => {
         // editing an activity that already had a rubric attached showed
         // "No rubric" instead of the real selection.
         setSelectedRubricId(activity.rubric_id ?? '');
+
+        // Hydrate the wayfinding builder from the loaded activity.
+        const a = activity as any;
+        if (a.discovery_wayfinding_enabled || (a.waypoints && a.waypoints.length)) {
+          setShowLocationTools(true);
+          setWayfinding({
+            discovery_wayfinding_enabled: !!a.discovery_wayfinding_enabled,
+            wayfinding_mode: a.wayfinding_mode ?? 'ordered',
+            wayfinding_capability_ceiling: a.wayfinding_capability_ceiling ?? 'B',
+            route_geometry: a.route_geometry ?? null,
+            waypoints: (a.waypoints ?? []).map((w: any, i: number) => ({
+              id: w.id,
+              sequence_index: w.sequence_index ?? i,
+              name: w.name ?? `Stop ${i + 1}`,
+              clue_text: w.clue_text ?? '',
+              latitude: w.latitude,
+              longitude: w.longitude,
+              arrival_radius_meters: w.arrival_radius_meters ?? 25,
+              symbol: w.symbol ?? null,
+              required: w.required ?? true,
+              capture_requirements: w.capture_requirements ?? null,
+              hint_unlock_rule: w.hint_unlock_rule ?? 'immediate',
+              hint_unlock_minutes: w.hint_unlock_minutes ?? null,
+            })),
+          });
+        }
       }).
       catch((err) => {
         setSubmitError('Failed to load activity: ' + err.message);
@@ -474,6 +510,18 @@ const ActivityManager = () => {
         // Include privacy confirmation flag when the teacher has confirmed review items
         ...(privacyConfirmed ? { privacy_confirmed: true } : {}),
         discovery_location_gps_capture_enabled: gpsEnabled,
+        // Multi-step wayfinding (WAYFINDING_CONSENT_LADDER.md). Sending
+        // waypoints always — an empty array with the feature off is a no-op
+        // server-side; it lets a teacher clear a hunt by removing all stops.
+        discovery_wayfinding_enabled: wayfinding.discovery_wayfinding_enabled,
+        wayfinding_mode: wayfinding.discovery_wayfinding_enabled ? wayfinding.wayfinding_mode : null,
+        wayfinding_capability_ceiling: wayfinding.discovery_wayfinding_enabled
+          ? wayfinding.wayfinding_capability_ceiling
+          : null,
+        route_geometry: wayfinding.route_geometry,
+        waypoints: wayfinding.discovery_wayfinding_enabled
+          ? wayfinding.waypoints.map((w, i) => ({ ...w, sequence_index: i }))
+          : [],
       } as any;
 
       let savedActivityId: string | undefined = isEditing ? id : undefined;
@@ -920,6 +968,12 @@ const ActivityManager = () => {
                   </label>
                 </div>
               )}
+
+              <WayfindingBuilder
+                activityId={isEditing ? id : undefined}
+                value={wayfinding}
+                onChange={setWayfinding}
+              />
             </div>
           )}
 

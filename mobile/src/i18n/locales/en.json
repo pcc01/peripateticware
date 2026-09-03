@@ -422,5 +422,30 @@
     "title": "Submissions",
     "loadError": "Could not load submissions.",
     "empty": "No submissions yet."
+  },
+  "wayfinding": {
+    "progress": "{{reached}} of {{total}} stops",
+    "nextStop": "NEXT STOP",
+    "allFound": "All stops found! 🎉",
+    "skip": "Skip this optional stop",
+    "noFix": "no GPS"
+  },
+  "wayfindingConsent": {
+    "eyebrow": "YOUR TEACHER TURNED THIS ON — YOUR CHOICE",
+    "kept": "Kept: {{copy}}",
+    "notNow": "Not now",
+    "allow": "Allow",
+    "C": {
+      "title": "Tag your photos with where they were taken",
+      "gets": "Your submitted photos and notes show on your teacher’s map at the spot you captured them."
+    },
+    "D": {
+      "title": "Show you on the teacher’s map during the trip",
+      "gets": "On a supervised outing your teacher can see where you are in real time while the session is running."
+    },
+    "E": {
+      "title": "Record the path you walk",
+      "gets": "The class can compare the routes everyone took after the hunt."
+    }
   }
 }

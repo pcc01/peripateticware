@@ -34,6 +34,7 @@ const DIFFICULTIES = [1, 2, 3, 4];
 const TIME_LIMITS = [null, 15, 30, 60];
 
 interface Coords { latitude: number; longitude: number }
+interface Stop extends Coords { name: string }
 
 export default function CreateScavengerHuntScreen() {
   const { theme } = useTheme();
@@ -45,6 +46,15 @@ export default function CreateScavengerHuntScreen() {
   const [coords, setCoords] = useState<Coords | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  // Multi-step hunt: capture a few stops on the spot, same as the single
+  // location above. 2+ stops => a wayfinding hunt (map + bearing arrow on the
+  // student side); 0 stops => a plain single-point discovery hunt, unchanged.
+  // Rung B only from here (on-device navigation, no consent prompt) — matches
+  // WAYFINDING_CONSENT_LADDER.md's recommended default; C/D/E stay web-only.
+  const [multiStep, setMultiStep] = useState(false);
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [capturingStop, setCapturingStop] = useState(false);
 
   const [grade, setGrade] = useState(6);
   const [subject, setSubject] = useState('General');
@@ -93,12 +103,52 @@ export default function CreateScavengerHuntScreen() {
     }
   };
 
+  const captureStop = async () => {
+    setCapturingStop(true);
+    setLocationError(null);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocationError(t('createScavengerHunt.locationDenied', 'Location permission is needed to capture where this challenge is.'));
+        return;
+      }
+      const pos = await Promise.race([
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('LOCATION_TIMEOUT')), LOCATION_TIMEOUT_MS)
+        ),
+      ]);
+      setStops((prev) => [
+        ...prev,
+        {
+          name: t('createScavengerHunt.stopNameDefault', 'Stop {{n}}', { n: prev.length + 1 }),
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        },
+      ]);
+    } catch (err) {
+      setLocationError(
+        err instanceof Error && err.message === 'LOCATION_TIMEOUT'
+          ? t('createScavengerHunt.locationTimeout', "Couldn't get a GPS fix within 15 seconds — try moving somewhere with a clearer view of the sky, then try again.")
+          : t('createScavengerHunt.locationError', "Couldn't get your location. Try again.")
+      );
+    } finally {
+      setCapturingStop(false);
+    }
+  };
+
+  const wayfinding = discoveryMode === 'location_based' && multiStep && stops.length >= 2;
+
   const valid =
     title.trim().length >= 3 &&
     taskDescription.trim().length >= 10 &&
     locationName.trim().length > 0 &&
     learningObjective.trim().length > 0 &&
-    (discoveryMode === 'task_based' || coords !== null);
+    (discoveryMode === 'task_based'
+      ? true
+      : multiStep
+        ? stops.length >= 2
+        : coords !== null);
 
   const handleCreate = async () => {
     if (!valid) return;
@@ -109,10 +159,10 @@ export default function CreateScavengerHuntScreen() {
         description: taskDescription.trim(),
         // task_based challenges don't require a specific spot — fall back
         // to (0,0) with radius 0 rather than blocking on GPS the student
-        // won't need anyway. location_based always has real coords by now
-        // (gated by `valid` above).
-        location_latitude: coords?.latitude ?? 0,
-        location_longitude: coords?.longitude ?? 0,
+        // won't need anyway. A multi-step hunt uses the first stop as the
+        // activity's base location; single-point uses `coords`.
+        location_latitude: (wayfinding ? stops[0].latitude : coords?.latitude) ?? 0,
+        location_longitude: (wayfinding ? stops[0].longitude : coords?.longitude) ?? 0,
         location_name: locationName.trim(),
         location_radius_meters: 100,
         grade_level: grade,
@@ -126,6 +176,23 @@ export default function CreateScavengerHuntScreen() {
         discovery_time_limit_minutes: timeLimit ?? undefined,
         discovery_success_criteria: successCriteria.trim() || undefined,
         discovery_location_required: discoveryMode === 'location_based',
+        // Multi-step => a rung-B wayfinding hunt. Backend clamps the ceiling
+        // and stores the waypoints (see ActivityCreate.waypoints).
+        ...(wayfinding
+          ? {
+              discovery_wayfinding_enabled: true,
+              wayfinding_mode: 'ordered' as const,
+              wayfinding_capability_ceiling: 'B' as const,
+              waypoints: stops.map((s, i) => ({
+                sequence_index: i,
+                name: s.name,
+                latitude: s.latitude,
+                longitude: s.longitude,
+                arrival_radius_meters: 30,
+                required: true,
+              })),
+            }
+          : {}),
       });
       await publishActivity(id);
       Alert.alert(
@@ -146,7 +213,7 @@ export default function CreateScavengerHuntScreen() {
   const inputStyle = [styles.input, { borderColor: theme.border, color: theme.text, backgroundColor: theme.surfaceAlt, fontFamily: theme.fontBody, borderRadius: theme.radiusSm }];
   const labelStyle = [styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }];
 
-  function ChipRow<T extends string | number | null>({ options, value, onChange, render }: { options: T[]; value: T; onChange: (v: T) => void; render: (v: T) => string }) {
+  function ChipRow<T extends string | number | boolean | null>({ options, value, onChange, render }: { options: T[]; value: T; onChange: (v: T) => void; render: (v: T) => string }) {
     return (
       <View style={styles.chipRow}>
         {options.map((opt) => (
@@ -228,22 +295,68 @@ export default function CreateScavengerHuntScreen() {
 
           {discoveryMode === 'location_based' && (
             <>
-              <TouchableOpacity
-                testID="scavenger-hunt-capture-location"
-                onPress={captureLocation}
-                disabled={locating}
-                style={[styles.locateBtn, { borderColor: coords ? theme.accent : theme.border, backgroundColor: coords ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusSm }]}
-              >
-                {locating ? (
-                  <ActivityIndicator color={theme.accent} />
-                ) : (
-                  <Text style={{ fontFamily: theme.fontBody, fontWeight: '600', color: coords ? theme.accent : theme.text }}>
-                    {coords
-                      ? t('createScavengerHunt.locationCaptured', '📍 Location captured ({{lat}}, {{lng}})', { lat: coords.latitude.toFixed(5), lng: coords.longitude.toFixed(5) })
-                      : t('createScavengerHunt.captureLocation', '📍 Use my current location')}
+              <Text style={labelStyle}>{t('createScavengerHunt.stepsLabel', 'HOW MANY STOPS?')}</Text>
+              <ChipRow
+                options={[false, true]}
+                value={multiStep}
+                onChange={setMultiStep}
+                render={(v) => (v ? t('createScavengerHunt.multiStep', 'Multi-step route') : t('createScavengerHunt.oneSpot', 'One spot'))}
+              />
+
+              {!multiStep && (
+                <TouchableOpacity
+                  testID="scavenger-hunt-capture-location"
+                  onPress={captureLocation}
+                  disabled={locating}
+                  style={[styles.locateBtn, { borderColor: coords ? theme.accent : theme.border, backgroundColor: coords ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusSm }]}
+                >
+                  {locating ? (
+                    <ActivityIndicator color={theme.accent} />
+                  ) : (
+                    <Text style={{ fontFamily: theme.fontBody, fontWeight: '600', color: coords ? theme.accent : theme.text }}>
+                      {coords
+                        ? t('createScavengerHunt.locationCaptured', '📍 Location captured ({{lat}}, {{lng}})', { lat: coords.latitude.toFixed(5), lng: coords.longitude.toFixed(5) })
+                        : t('createScavengerHunt.captureLocation', '📍 Use my current location')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+
+              {multiStep && (
+                <>
+                  {stops.map((s, i) => (
+                    <View key={i} style={styles.stopRow}>
+                      <Text style={{ flex: 1, fontFamily: theme.fontBody, color: theme.text }}>
+                        {i + 1}. {s.name}  ({s.latitude.toFixed(5)}, {s.longitude.toFixed(5)})
+                      </Text>
+                      <TouchableOpacity
+                        testID={`scavenger-hunt-remove-stop-${i}`}
+                        onPress={() => setStops((prev) => prev.filter((_, k) => k !== i))}
+                        hitSlop={10}
+                      >
+                        <Text style={{ color: '#dc2626', fontSize: 16, fontWeight: '700' }}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  <TouchableOpacity
+                    testID="scavenger-hunt-capture-stop"
+                    onPress={captureStop}
+                    disabled={capturingStop}
+                    style={[styles.locateBtn, { borderColor: theme.border, backgroundColor: theme.surfaceAlt, borderRadius: theme.radiusSm }]}
+                  >
+                    {capturingStop ? (
+                      <ActivityIndicator color={theme.accent} />
+                    ) : (
+                      <Text style={{ fontFamily: theme.fontBody, fontWeight: '600', color: theme.text }}>
+                        {t('createScavengerHunt.captureStop', '📍 Capture a stop here')}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                  <Text style={[styles.metaHint, { fontFamily: theme.fontBody, color: theme.textFaint }]}>
+                    {t('createScavengerHunt.stopsHint', 'Walk to each stop and capture it. Students get a map with a bearing arrow — nothing about their location leaves their phone.')}
                   </Text>
-                )}
-              </TouchableOpacity>
+                </>
+              )}
               {!!locationError && <Text style={styles.errorText}>{locationError}</Text>}
             </>
           )}
@@ -324,6 +437,8 @@ const styles = StyleSheet.create({
   chip:            { paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1 },
   locateBtn:       { minHeight: 48, borderWidth: 1, alignItems: 'center', justifyContent: 'center', padding: 10, marginTop: 4 },
   errorText:       { color: '#dc2626', fontSize: 12, marginTop: 4 },
+  stopRow:         { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 },
+  metaHint:        { fontSize: 12, lineHeight: 17, marginTop: 4 },
   footer:          { padding: 16, borderTopWidth: 1 },
   publishBtn:      { minHeight: 48, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   publishBtnText:  { color: '#fff', fontWeight: '700', fontSize: 15 },

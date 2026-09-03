@@ -320,7 +320,15 @@ jobs:
           # toggling around them (`adb shell svc wifi/data disable` before
           # 13.1, re-enable before 13.2 — Maestro YAML has no way to do
           # this itself), the same thing
-          # scripts/run-offline-capture-test.ps1 does for local runs. This
+          # scripts/run-offline-capture-test.ps1 does for local runs.
+          #
+          # offline/14.0-14.2 (multi-step scavenger hunt with no signal) are
+          # ALSO in this folder and ALSO excluded here. They need a harder
+          # network cut than `svc wifi/data disable` gives on this AVD — the
+          # backend actually has to be unreachable — so they're driven by
+          # scripts/run-wayfinding-offline-test.ps1 (stops the backend
+          # container around the offline leg) and verified there, not in CI.
+          # This
           # was previously just folded into the general sweep with no
           # network toggle at all, so the app was always online and the
           # OFFLINE-queue branch (the entire point of 13.1) could never
@@ -371,7 +379,7 @@ jobs:
             adb reverse tcp:8000 tcp:8000
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             nohup adb logcat > artifacts/logcat.txt 2>&1 &
-            bash scripts/run-maestro-flows.sh artifacts main activity auth capture discover geofence journal navigation onboarding perispeech progress settings starter; echo $? > /tmp/main_exit
+            bash scripts/run-maestro-flows.sh artifacts main activity auth capture discover geofence wayfinding journal navigation onboarding perispeech progress settings starter; echo $? > /tmp/main_exit
             adb shell svc wifi disable; adb shell svc data disable; sleep 3
             maestro test maestro/flows/offline/13.1-offline-capture-queued.yaml -e STUDENT_EMAIL="$STUDENT_EMAIL" -e STUDENT_PASSWORD="$STUDENT_PASSWORD" --format junit --output artifacts/junit-offline-1.xml; echo $? > /tmp/offline1_exit
             adb shell svc wifi enable; adb shell svc data enable; sleep 20
@@ -628,7 +636,7 @@ jobs:
           # dead connection.
           overall_exit=0
           i=0
-          for dir in activity auth capture discover geofence journal navigation onboarding perispeech progress settings starter; do
+          for dir in activity auth capture discover geofence wayfinding journal navigation onboarding perispeech progress settings starter; do
             for flow in maestro/flows/"$dir"/*.yaml; do
               # 12.3-photo-capture and 12.4-video-capture skipped on iOS only:
               # a real CI run's failure screenshot showed the in-app camera

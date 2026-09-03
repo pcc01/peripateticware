@@ -85,6 +85,34 @@ class ActivityDiscoveryDetail(BaseModel):
     location_required:           bool                     = False
 
 
+class WaypointDetail(BaseModel):
+    """One scavenger-hunt stop, sent to the student app so it can navigate
+    ON DEVICE (rung B — no coordinate leaves the phone). See
+    WAYFINDING_CONSENT_LADDER.md."""
+    id:                    str
+    sequence_index:        int
+    name:                  str
+    clue_text:             Optional[str]            = None
+    latitude:              float
+    longitude:             float
+    arrival_radius_meters: int                      = 25
+    symbol:                Optional[str]            = None
+    required:              bool                     = True
+    capture_requirements:  Optional[Dict[str, Any]] = None
+    hint_unlock_rule:      Optional[str]            = None
+    hint_unlock_minutes:   Optional[int]            = None
+
+
+class WayfindingDetail(BaseModel):
+    """Multi-step hunt navigation payload — ships in the activity detail so the
+    map + route render offline (same rationale as location_wiki_data)."""
+    enabled:            bool
+    mode:               Optional[str]            = None   # ordered | free_choice | guided_path
+    capability_ceiling: Optional[str]            = None   # 'A'..'E'
+    route_geometry:     Optional[Dict[str, Any]] = None   # GeoJSON LineString
+    waypoints:          List[WaypointDetail]     = []
+
+
 class ActivityTeacher(BaseModel):
     name: str
 
@@ -106,6 +134,7 @@ class StudentActivityDetail(StudentActivitySummary):
     teacher:           Optional[ActivityTeacher] = None
     phases:            Optional[ActivityPhases]  = None
     discovery:         Optional[ActivityDiscoveryDetail] = None
+    wayfinding:        Optional[WayfindingDetail] = None
     resources:         List[Dict]              = []
     suggested_lessons: Optional[List]          = []
     marzano_level:     Optional[int]           = None

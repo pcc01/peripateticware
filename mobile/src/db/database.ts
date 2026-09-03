@@ -82,5 +82,42 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
       retry_count  INTEGER DEFAULT 0,
       last_error   TEXT
     );
+
+    -- Wayfinding: local mirror of per-waypoint progress so a multi-step
+    -- scavenger hunt advances ("2 of 5 stops") with no connection. Synced
+    -- to the server by flushArrivals() when back online.
+    CREATE TABLE IF NOT EXISTS wp_progress (
+      activity_id     TEXT NOT NULL,
+      waypoint_id     TEXT NOT NULL,
+      waypoint_index  INTEGER,
+      arrived_at      INTEGER,           -- epoch seconds, NULL = not reached
+      in_sequence     INTEGER DEFAULT 1,
+      captured        INTEGER DEFAULT 0,
+      skipped         INTEGER DEFAULT 0,
+      synced          INTEGER DEFAULT 0, -- 1 once the server has this arrival
+      PRIMARY KEY (activity_id, waypoint_id)
+    );
+
+    -- Pending "I reached this stop" reports, replayed on reconnect.
+    CREATE TABLE IF NOT EXISTS wp_arrival_queue (
+      id            TEXT PRIMARY KEY,
+      activity_id   TEXT NOT NULL,
+      waypoint_id   TEXT NOT NULL,
+      in_sequence   INTEGER DEFAULT 1,
+      captured      INTEGER DEFAULT 0,
+      skipped       INTEGER DEFAULT 0,
+      created_at    INTEGER DEFAULT (strftime('%s','now')),
+      retry_count   INTEGER DEFAULT 0
+    );
   `);
+
+  // Idempotent column add for the full activity-detail payload (wayfinding
+  // waypoints, route, phases, discovery). Older installs have activity_cache
+  // without it. ALTER ... ADD COLUMN is a no-op-safe SQLite op wrapped here
+  // so a re-run doesn't throw "duplicate column".
+  try {
+    await db.execAsync('ALTER TABLE activity_cache ADD COLUMN detail_json TEXT');
+  } catch {
+    // column already exists — fine
+  }
 }

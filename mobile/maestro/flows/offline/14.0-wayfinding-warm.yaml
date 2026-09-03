@@ -1,0 +1,67 @@
+# 14.0 — WARM step for the offline-wayfinding test.
+#
+# Runs ONLINE. Opens the seeded "Campus Wayfinding Hunt" and reaches the
+# Inquiry phase so the app:
+#   • caches the full activity-detail payload (waypoints + route) via
+#     fetchActivity() -> cacheActivityDetail()  [Fix C]
+#   • pre-downloads the OSM basemap tiles for the route via
+#     prefetchTilesForRoute()                    [Fix B]
+#   • creates the learning session (startActivitySession)
+#
+# The wrapper script (scripts/run-wayfinding-offline-test.ps1) then cuts the
+# network and runs 14.1. Do not run this file standalone as a pass/fail
+# check — it only primes state.
+#
+# Stops: The Old Oak (37.8716,-122.2727), Stone Bridge (37.8726,-122.2717),
+# The Overlook (37.8736,-122.2707), each arrival_radius_meters=60.
+appId: com.peripateticware.app
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 37.8700
+    longitude: -122.2740
+- runFlow: ../login-student.yaml
+
+- extendedWaitUntil:
+    visible: "Campus Wayfinding Hunt"
+    timeout: 20000
+- tapOn: "Campus Wayfinding Hunt"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "wayfinding-panel"
+    timeout: 20000
+- assertVisible:
+    id: "wayfinding-map"
+- assertVisible: "NEXT STOP"
+
+# The wrapper sleeps a few seconds after this flow returns, before cutting
+# the network, so the background work (detail cache write + tile downloads +
+# session create) has time to finish.
+- assertVisible: "0 of 3 stops"
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible:
+    id: "wayfinding-map"

@@ -6,6 +6,7 @@ import 'react-native-get-random-values'; // needed for crypto.randomUUID polyfil
 import { getDb } from './database';
 import { uploadCapture } from '@/src/api/captures';
 import { apiFetch } from '@/src/api/client';
+import { flushArrivals } from './wayfindingStore';
 
 function uuid(): string {
   // Simple RFC-4122 v4 UUID without crypto dependency
@@ -127,6 +128,16 @@ export async function flushQueue(): Promise<{ uploaded: number; failed: number }
       );
       failed++;
     }
+  }
+
+  // Replay queued waypoint arrivals (multi-step scavenger hunts). Best-effort
+  // — a still-failing arrival stays queued and retries on the next flush.
+  try {
+    const wp = await flushArrivals();
+    uploaded += wp.synced;
+    failed += wp.failed;
+  } catch {
+    // never let a wayfinding sync error block capture/note upload
   }
 
   // Upload queued notes

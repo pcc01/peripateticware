@@ -124,6 +124,7 @@ geopy==2.3.0
 geoalchemy2==0.14.1
 shapely==2.0.2
 geoip2==4.8.0          # MaxMind GeoLite2 IP geolocation (country lookup for geo/hint)
+gpxpy==1.6.2           # GPX <wpt>/<rte>/<trk> parse + build for scavenger-hunt wayfinding
 
 # Rate limiting
 slowapi==0.1.9

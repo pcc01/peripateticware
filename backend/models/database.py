@@ -333,6 +333,31 @@ class Activity(Base):
     # e.g. {"only_on_submission": true, "require_permission": true}
 
     # =========================================================================
+    # GPX WAYFINDING (multi-step scavenger hunts — see WAYFINDING_CONSENT_LADDER.md)
+    # =========================================================================
+    # Master toggle for rung B (on-device arrival detection). When False the
+    # hunt still runs — students tap "I found it" manually (rung A). No
+    # coordinate ever leaves the phone on rung B; only a waypoint_arrival
+    # event (index + timestamp) is written.
+    discovery_wayfinding_enabled = Column(Boolean, default=False, nullable=False, server_default='false')
+    # How the ordered waypoint set is navigated:
+    #   'ordered'      — stops must be reached in sequence_index order
+    #   'free_choice'  — any order counts
+    #   'guided_path'  — 'ordered' + the route line is the intended trail
+    # NULL when discovery_wayfinding_enabled is False.
+    wayfinding_mode = Column(String(20), nullable=True)
+    # The teacher-set capability ceiling for this hunt — the "activity ceiling"
+    # input to the min() gate in WAYFINDING_CONSENT_LADDER.md §4. One of
+    # 'A'..'E'. A student's effective rung is min(this, consent, age floor).
+    # Defaults to 'B' the moment wayfinding is enabled.
+    wayfinding_capability_ceiling = Column(String(1), nullable=True)
+    # The connecting path (GPX <rte>/<trk>), stored as a GeoJSON LineString:
+    #   {"type": "LineString", "coordinates": [[lng, lat], ...]}
+    # Teacher content, no student PII — ships in the activity payload so the
+    # student app can draw it offline (same rationale as location_wiki_data).
+    route_geometry = Column(JSONB, nullable=True)
+
+    # =========================================================================
     # STUDENT MOBILE PHASE CONTENT (teacher-authored)
     # =========================================================================
     orient_phase = Column(Text, nullable=True)    # Shown before activity starts
@@ -376,6 +401,13 @@ class Activity(Base):
     compliance_checks = relationship("ComplianceCheck", back_populates="activity")
     consent_logs = relationship("ConsentLog", back_populates="activity")
     retention_policies = relationship("DataRetentionPolicy", back_populates="activity")
+    waypoints = relationship(
+        "ActivityWaypoint",
+        back_populates="activity",
+        cascade="all, delete-orphan",
+        order_by="ActivityWaypoint.sequence_index",
+        lazy="selectin",  # small sets; every ActivityResponse serializes them
+    )
 
     def __repr__(self):
         return f"<Activity(id={self.id}, title='{self.title}', subject='{self.subject}', grade_level={self.grade_level})>"
@@ -408,6 +440,206 @@ class Activity(Base):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'published_at': self.published_at.isoformat() if self.published_at else None,
         }
+
+
+class ActivityWaypoint(Base):
+    """One stop in a multi-step scavenger hunt (GPX <wpt>).
+
+    Waypoints are teacher content — a name, a clue, a coordinate and an
+    arrival radius. They carry no student PII. On rung B the student app
+    compares GPS to (latitude, longitude) locally and never transmits the
+    student's position; only which waypoint was reached is written, to
+    session_waypoint_progress. See WAYFINDING_CONSENT_LADDER.md.
+    """
+    __tablename__ = "activity_waypoints"
+
+    id          = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_id = Column(UUID(as_uuid=True), ForeignKey("activities.id", ondelete="CASCADE"), index=True, nullable=False)
+
+    # Visit order for wayfinding_mode='ordered'/'guided_path'. Also the
+    # denormalized index copied onto progress rows so "n of m" survives a
+    # later waypoint deletion.
+    sequence_index = Column(Integer, nullable=False, default=0)
+
+    name      = Column(String(255), nullable=False)
+    clue_text = Column(Text, nullable=True)
+
+    latitude              = Column(Float, nullable=False)
+    longitude             = Column(Float, nullable=False)
+    arrival_radius_meters = Column(Integer, nullable=False, default=25)
+
+    symbol   = Column(String(50), nullable=True)   # GPX <sym>, e.g. 'Flag, Green'
+    required = Column(Boolean, nullable=False, default=True, server_default='true')
+
+    # Per-stop documentation ask, e.g. {"photo": true, "note": false}.
+    # Wired into the existing CaptureSheet on arrival.
+    capture_requirements = Column(JSONB, nullable=True)
+
+    # When the clue becomes visible: 'immediate' | 'on_arrival' | 'after_minutes'
+    hint_unlock_rule    = Column(String(30), nullable=True, default='immediate')
+    hint_unlock_minutes = Column(Integer, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    activity = relationship("Activity", back_populates="waypoints")
+
+    __table_args__ = (
+        Index('idx_activity_waypoints_activity_seq', 'activity_id', 'sequence_index'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'activity_id': str(self.activity_id),
+            'sequence_index': self.sequence_index,
+            'name': self.name,
+            'clue_text': self.clue_text,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'arrival_radius_meters': self.arrival_radius_meters,
+            'symbol': self.symbol,
+            'required': self.required,
+            'capture_requirements': self.capture_requirements,
+            'hint_unlock_rule': self.hint_unlock_rule,
+            'hint_unlock_minutes': self.hint_unlock_minutes,
+        }
+
+
+class SessionWaypointProgress(Base):
+    """A student's per-waypoint progress in one hunt session (rung B).
+
+    Deliberately no FK on session_id / waypoint_id — mirrors session_events
+    and student_field_notes.session_id: a dangling reference must never block
+    deleting an old learning_session or letting a teacher re-edit a hunt.
+    waypoint_index is denormalized so completion counts survive a waypoint
+    being removed from the activity.
+
+    This table stores NO coordinate. It is the rung-B artefact: waypoint id,
+    index, whether arrival was in sequence, and timestamps. Retention:
+    90 days student-linked, then de-linked to activity aggregates (§3).
+    """
+    __tablename__ = "session_waypoint_progress"
+
+    id             = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id     = Column(UUID(as_uuid=True), nullable=False, index=True)
+    student_id     = Column(UUID(as_uuid=True), nullable=True, index=True)
+    activity_id    = Column(UUID(as_uuid=True), nullable=True, index=True)
+    waypoint_id    = Column(UUID(as_uuid=True), nullable=False, index=True)
+    waypoint_index = Column(Integer, nullable=True)
+
+    arrived_at              = Column(DateTime, nullable=True)
+    arrival_was_in_sequence = Column(Boolean, nullable=False, default=True, server_default='true')
+    captured                = Column(Boolean, nullable=False, default=False, server_default='false')
+    skipped                 = Column(Boolean, nullable=False, default=False, server_default='false')
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        # One progress row per (session, waypoint) — arrival upserts against this.
+        Index('uq_swp_session_waypoint', 'session_id', 'waypoint_id', unique=True),
+        Index('idx_swp_session', 'session_id'),
+        Index('idx_swp_student', 'student_id'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'session_id': str(self.session_id),
+            'waypoint_id': str(self.waypoint_id),
+            'waypoint_index': self.waypoint_index,
+            'arrived_at': self.arrived_at.isoformat() if self.arrived_at else None,
+            'arrival_was_in_sequence': self.arrival_was_in_sequence,
+            'captured': self.captured,
+            'skipped': self.skipped,
+        }
+
+
+# ── Analytics lane (Lane 2 — see WAYFINDING_CONSENT_LADDER.md §3) ─────────────
+# These two tables are, BY CONSTRUCTION, free of any identifier: no student_id,
+# no session_id, no activity_id, no teacher_id, no fine-grained org_id, no
+# precise timestamps, no free text. They hold enums, buckets and counts only,
+# and are therefore not personal data — retained indefinitely for product
+# analytics. Nothing here may ever gain a column that links back to a person.
+
+class AuthoringAnalytics(Base):
+    """One row per activity publish — "what kinds of hunts do teachers build".
+    Written fire-and-forget from publish_activity via
+    services/wayfinding_analytics.snapshot_authoring(); never on a timer."""
+    __tablename__ = "authoring_analytics"
+
+    id                    = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_type         = Column(String(50), nullable=True)
+    discovery_mode        = Column(String(50), nullable=True)
+    wayfinding_mode       = Column(String(20), nullable=True)
+    wayfinding_enabled    = Column(Boolean, nullable=False, default=False, server_default='false')
+    capability_ceiling    = Column(String(1), nullable=True)
+    waypoint_count_bucket = Column(String(10), nullable=True)   # '0' '1-3' '4-8' '9-15' '16+'
+    route_imported        = Column(Boolean, nullable=False, default=False, server_default='false')
+    grade_level           = Column(Integer, nullable=True)
+    subject               = Column(String(100), nullable=True)
+    bloom_level           = Column(Integer, nullable=True)
+    difficulty            = Column(Integer, nullable=True)
+    region_country        = Column(String(10), nullable=True)   # signup_country_code — country only
+    created_month         = Column(Date, nullable=True)         # first of month, not a timestamp
+    snapshot_at           = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_authoring_analytics_type_month', 'activity_type', 'created_month'),
+    )
+
+
+class HuntOutcomeAnalytics(Base):
+    """One row per (activity, roll-up run) written by the de-link retention
+    task once expired session_waypoint_progress rows for an activity clear the
+    k>=5 cohort floor. The activity's SHAPE is denormalised on; its id is not."""
+    __tablename__ = "hunt_outcome_analytics"
+
+    id                       = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    activity_type            = Column(String(50), nullable=True)
+    wayfinding_mode          = Column(String(20), nullable=True)
+    waypoints_total          = Column(Integer, nullable=True)
+    cohort_size              = Column(Integer, nullable=False)   # always >= 5
+    sessions_count           = Column(Integer, nullable=False, default=0)
+    median_reached           = Column(Float, nullable=True)
+    mean_reached             = Column(Float, nullable=True)
+    completion_rate          = Column(Float, nullable=True)      # 0..1
+    in_sequence_rate         = Column(Float, nullable=True)      # 0..1
+    p50_minutes_between_stops = Column(Float, nullable=True)
+    period_start             = Column(Date, nullable=True)
+    period_end               = Column(Date, nullable=True)
+    rolled_up_at             = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_hunt_outcome_type', 'activity_type', 'wayfinding_mode'),
+    )
+
+
+class SessionTrack(Base):
+    """Rung E — the student's recorded walked path for one hunt session, stored
+    as one growing row (a GPX <trk>). The single most sensitive artefact the
+    feature produces: retained 30 days, hard-deleted, no coarsened copy, and
+    deleted within 24 h if rung-E consent is withdrawn. No FK on session_id
+    (same rule as session_events). See WAYFINDING_CONSENT_LADDER.md §2/§3.
+    """
+    __tablename__ = "session_tracks"
+
+    id            = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    session_id    = Column(UUID(as_uuid=True), nullable=False, index=True)
+    student_id    = Column(UUID(as_uuid=True), nullable=True, index=True)
+    activity_id   = Column(UUID(as_uuid=True), nullable=True, index=True)
+    # [[lng, lat, epoch_ms], ...] appended in batches from the phone.
+    points        = Column(JSONB, nullable=False, default=list)
+    started_at    = Column(DateTime, default=datetime.utcnow)
+    last_point_at = Column(DateTime, nullable=True)
+    created_at    = Column(DateTime, default=datetime.utcnow)
+    updated_at    = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index('uq_session_tracks_session', 'session_id', unique=True),
+        Index('idx_session_tracks_student', 'student_id'),
+    )
 
 
 class ProjectStatus(str, enum.Enum):

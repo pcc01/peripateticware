@@ -53,6 +53,8 @@ from schemas.student_activities import (
     ActivityPhaseDetail,
     ActivityPhases,
     ActivityDiscoveryDetail,
+    WayfindingDetail,
+    WaypointDetail,
     ActivityTeacher,
     StudentPaginatedActivityResponse,
     StartSessionRequest,
@@ -287,6 +289,35 @@ async def get_student_activity(
             location_required=bool(getattr(activity, "discovery_location_required", False)),
         )
 
+    # Multi-step wayfinding — only when the teacher turned it on and there are
+    # stops. Waypoints are teacher content (no PII); shipping them here lets
+    # the map + route render with no network at the field location.
+    wayfinding = None
+    if getattr(activity, "discovery_wayfinding_enabled", False) and activity.waypoints:
+        wayfinding = WayfindingDetail(
+            enabled=True,
+            mode=getattr(activity, "wayfinding_mode", None),
+            capability_ceiling=getattr(activity, "wayfinding_capability_ceiling", None),
+            route_geometry=getattr(activity, "route_geometry", None),
+            waypoints=[
+                WaypointDetail(
+                    id=str(wp.id),
+                    sequence_index=wp.sequence_index,
+                    name=wp.name,
+                    clue_text=wp.clue_text,
+                    latitude=wp.latitude,
+                    longitude=wp.longitude,
+                    arrival_radius_meters=wp.arrival_radius_meters or 25,
+                    symbol=wp.symbol,
+                    required=bool(wp.required),
+                    capture_requirements=wp.capture_requirements,
+                    hint_unlock_rule=wp.hint_unlock_rule,
+                    hint_unlock_minutes=wp.hint_unlock_minutes,
+                )
+                for wp in activity.waypoints
+            ],
+        )
+
     return StudentActivityDetail(
         **summary,
         location=activity.location_name,
@@ -294,6 +325,7 @@ async def get_student_activity(
         teacher=ActivityTeacher(name=teacher_name),
         phases=phases,
         discovery=discovery,
+        wayfinding=wayfinding,
         location_info=activity.location_info,
         location_wiki_data=getattr(activity, "location_wiki_data", None),
         resources=activity.resources or [],
@@ -1345,11 +1377,41 @@ async def save_reflection(
     return {"status": "submitted", "require_approval": require_approval}
 
 
-# Student GPS self-consent (ages 13+)
+# ── Wayfinding capability + GPS self-consent (WAYFINDING_CONSENT_LADDER.md §4) ──
+
+@router.get("/activities/{activity_id}/my-capability")
+async def get_my_wayfinding_capability(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """What this student is allowed to do on this hunt right now —
+    min(activity ceiling, consent, age floor) — plus which rungs still need a
+    grant. Drives which consent card the app shows."""
+    _require_student(current_user)
+    act = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar()
+    if not act:
+        raise HTTPException(status_code=404, detail="Activity not found")
+
+    from services.wayfinding_consent import effective_capability_rung, RUNG_RETENTION_COPY
+    gate = await effective_capability_rung(
+        db, current_user.id,
+        activity_id=activity_id,
+        wayfinding_capability_ceiling=getattr(act, "wayfinding_capability_ceiling", None),
+        discovery_location_gps_capture_enabled=bool(
+            getattr(act, "discovery_location_gps_capture_enabled", False)
+        ),
+    )
+    gate["retention_copy"] = {r: RUNG_RETENTION_COPY[r] for r in gate["consent_needed_for"]}
+    return gate
+
 
 class _StudentGPSConsentRequest(_BaseModel):
     activity_id: str
     consent_given: bool = True
+    # 'C' = coordinate stamp on evidence (default, back-compat with the
+    # pre-wayfinding 'gps_tracking' flow), 'D' = live map, 'E' = breadcrumb track.
+    rung: str = "C"
 
 
 @router.post("/consent/gps", status_code=201)
@@ -1359,29 +1421,40 @@ async def student_record_gps_consent(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Student (13+) records their own GPS-tracking consent for an activity.
+    Student (13+) records their own location consent for one capability rung
+    of an activity. C / D / E are separate grants — granting C never implies D.
 
     consent_logs is an append-only audit table (real FK on student_id, no
     unique constraint by design -- see database/init.sql / models.database.ConsentLog).
     Granting inserts a new row; revoking soft-closes any currently-active
-    row(s) by setting withdrawn_at, rather than upserting a single "current
-    state" row.
+    row(s) of that consent_type by setting withdrawn_at.
     """
     if current_user.role not in (UserRole.STUDENT, UserRole.HOMESCHOOL):
         raise HTTPException(status_code=403, detail="Student access only")
 
+    from services.wayfinding_consent import (
+        normalize_rung, CONSENT_TYPE_FOR_RUNG, RUNG_DATA_CATEGORIES, STUDENT_EXPIRY_DAYS,
+    )
+    rung = normalize_rung(body.rung, default="C")
+    consent_type = CONSENT_TYPE_FOR_RUNG[rung]
+    categories = RUNG_DATA_CATEGORIES[rung]
+
     try:
         if body.consent_given:
             await db.execute(
-                _text("""
+                _text(f"""
                     INSERT INTO consent_logs
-                        (student_id, activity_id, consent_type, given_by_student,
-                         consent_given_at, expires_at)
+                        (student_id, activity_id, consent_type, data_categories,
+                         purpose, given_by_student, consent_given_at, expires_at)
                     VALUES
-                        (CAST(:sid AS uuid), CAST(:aid AS uuid), 'gps_tracking', TRUE,
-                         NOW(), NOW() + INTERVAL '1 year')
+                        (CAST(:sid AS uuid), CAST(:aid AS uuid), :ctype, :cats,
+                         'wayfinding capability rung {rung}', TRUE,
+                         NOW(), NOW() + make_interval(days => CAST(:days AS int)))
                 """),
-                {"sid": str(current_user.id), "aid": body.activity_id},
+                {
+                    "sid": str(current_user.id), "aid": body.activity_id,
+                    "ctype": consent_type, "cats": categories, "days": STUDENT_EXPIRY_DAYS,
+                },
             )
         else:
             await db.execute(
@@ -1390,17 +1463,25 @@ async def student_record_gps_consent(
                     SET withdrawn_at = NOW()
                     WHERE student_id   = CAST(:sid AS uuid)
                       AND activity_id  = CAST(:aid AS uuid)
-                      AND consent_type = 'gps_tracking'
+                      AND consent_type = :ctype
                       AND withdrawn_at IS NULL
                 """),
-                {"sid": str(current_user.id), "aid": body.activity_id},
+                {"sid": str(current_user.id), "aid": body.activity_id, "ctype": consent_type},
             )
+            # Promises from §4: revoking C blurs existing stamps immediately;
+            # revoking E deletes the recorded path immediately.
+            if rung == "C":
+                from services.wayfinding_consent import coarsen_captures_now
+                await coarsen_captures_now(db, current_user.id, body.activity_id)
+            elif rung == "E":
+                from services.wayfinding_consent import delete_tracks_now
+                await delete_tracks_now(db, current_user.id, body.activity_id)
         await db.commit()
     except Exception as e:
         logger.error(f"Student GPS consent error: {e}")
         raise HTTPException(status_code=500, detail="Failed to record consent")
 
-    return {"recorded": True, "consent_given": body.consent_given}
+    return {"recorded": True, "consent_given": body.consent_given, "rung": rung}
 
 
 # =============================================================================

@@ -273,13 +273,133 @@ CREATE TABLE IF NOT EXISTS activities (
     -- When TRUE and completion_mode = 'field_and_reflection', teacher must explicitly
     -- approve field work before student can begin reflection phase.
     -- Default FALSE: student can start reflection immediately after field work.
-    require_field_approval     BOOLEAN      NOT NULL DEFAULT FALSE
+    require_field_approval     BOOLEAN      NOT NULL DEFAULT FALSE,
+    -- GPX wayfinding for multi-step scavenger hunts (WAYFINDING_CONSENT_LADDER.md).
+    -- Most discovery_* columns live in startup.apply_core_schema_migrations();
+    -- these ship here too so a fresh install has them without waiting on startup.
+    discovery_wayfinding_enabled   BOOLEAN     NOT NULL DEFAULT FALSE,
+    wayfinding_mode                VARCHAR(20),
+    wayfinding_capability_ceiling  VARCHAR(1),
+    route_geometry                 JSONB
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_activities_status     ON activities(status);
 CREATE INDEX IF NOT EXISTS idx_activities_subject    ON activities(subject);
 CREATE INDEX IF NOT EXISTS idx_activities_created_at ON activities(created_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- activity_waypoints  (one stop per row in a multi-step scavenger hunt; GPX <wpt>)
+-- Teacher content — no student PII. See WAYFINDING_CONSENT_LADDER.md.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS activity_waypoints (
+    id                     UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    activity_id            UUID         NOT NULL REFERENCES activities(id) ON DELETE CASCADE,
+    sequence_index         INTEGER      NOT NULL DEFAULT 0,
+    name                   VARCHAR(255) NOT NULL,
+    clue_text              TEXT,
+    latitude               DOUBLE PRECISION NOT NULL,
+    longitude              DOUBLE PRECISION NOT NULL,
+    arrival_radius_meters  INTEGER      NOT NULL DEFAULT 25,
+    symbol                 VARCHAR(50),
+    required               BOOLEAN      NOT NULL DEFAULT TRUE,
+    capture_requirements   JSONB,
+    hint_unlock_rule       VARCHAR(30)  DEFAULT 'immediate',
+    hint_unlock_minutes    INTEGER,
+    created_at             TIMESTAMP    DEFAULT NOW(),
+    updated_at             TIMESTAMP    DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_activity_waypoints_activity_seq
+    ON activity_waypoints(activity_id, sequence_index);
+
+-- ---------------------------------------------------------------------------
+-- session_waypoint_progress  (rung-B artefact: which waypoint reached, when)
+-- NO coordinate stored. No FK on session_id/waypoint_id by design — a
+-- dangling ref must never block deleting a learning_session or re-editing a
+-- hunt (same rule as session_events, student_field_notes.session_id).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS session_waypoint_progress (
+    id                      UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id              UUID      NOT NULL,
+    student_id              UUID,
+    activity_id             UUID,
+    waypoint_id             UUID      NOT NULL,
+    waypoint_index          INTEGER,
+    arrived_at              TIMESTAMP,
+    arrival_was_in_sequence BOOLEAN   NOT NULL DEFAULT TRUE,
+    captured                BOOLEAN   NOT NULL DEFAULT FALSE,
+    skipped                 BOOLEAN   NOT NULL DEFAULT FALSE,
+    created_at              TIMESTAMP DEFAULT NOW(),
+    updated_at              TIMESTAMP DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_swp_session_waypoint
+    ON session_waypoint_progress(session_id, waypoint_id);
+CREATE INDEX IF NOT EXISTS idx_swp_session ON session_waypoint_progress(session_id);
+CREATE INDEX IF NOT EXISTS idx_swp_student ON session_waypoint_progress(student_id);
+
+-- ---------------------------------------------------------------------------
+-- Analytics lane (Lane 2 — WAYFINDING_CONSENT_LADDER.md §3).
+-- Identifier-free BY CONSTRUCTION: no student_id / session_id / activity_id /
+-- teacher_id / fine-grained org_id / precise timestamps / free text. Enums,
+-- buckets and counts only — not personal data, retained indefinitely.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS authoring_analytics (
+    id                    UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
+    activity_type         VARCHAR(50),
+    discovery_mode        VARCHAR(50),
+    wayfinding_mode       VARCHAR(20),
+    wayfinding_enabled    BOOLEAN   NOT NULL DEFAULT FALSE,
+    capability_ceiling    VARCHAR(1),
+    waypoint_count_bucket VARCHAR(10),   -- '0' '1-3' '4-8' '9-15' '16+'
+    route_imported        BOOLEAN   NOT NULL DEFAULT FALSE,
+    grade_level           INTEGER,
+    subject               VARCHAR(100),
+    bloom_level           INTEGER,
+    difficulty            INTEGER,
+    region_country        VARCHAR(10),   -- signup_country_code, country only
+    created_month         DATE,          -- first of month, not a timestamp
+    snapshot_at           TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_authoring_analytics_type_month
+    ON authoring_analytics(activity_type, created_month);
+
+CREATE TABLE IF NOT EXISTS hunt_outcome_analytics (
+    id                        UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
+    activity_type             VARCHAR(50),
+    wayfinding_mode           VARCHAR(20),
+    waypoints_total           INTEGER,
+    cohort_size               INTEGER   NOT NULL,   -- always >= 5
+    sessions_count            INTEGER   NOT NULL DEFAULT 0,
+    median_reached            DOUBLE PRECISION,
+    mean_reached              DOUBLE PRECISION,
+    completion_rate           DOUBLE PRECISION,
+    in_sequence_rate          DOUBLE PRECISION,
+    p50_minutes_between_stops DOUBLE PRECISION,
+    period_start              DATE,
+    period_end                DATE,
+    rolled_up_at              TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_hunt_outcome_type
+    ON hunt_outcome_analytics(activity_type, wayfinding_mode);
+
+-- ---------------------------------------------------------------------------
+-- session_tracks (rung E — the student's recorded walked path, one row per
+-- session). Most sensitive artefact: 30-day hard delete, no coarsened copy,
+-- deleted within 24 h on rung-E consent withdrawal. No FK on session_id.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS session_tracks (
+    id            UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id    UUID      NOT NULL,
+    student_id    UUID,
+    activity_id   UUID,
+    points        JSONB     NOT NULL DEFAULT '[]'::jsonb,  -- [[lng,lat,epoch_ms],...]
+    started_at    TIMESTAMP DEFAULT NOW(),
+    last_point_at TIMESTAMP,
+    created_at    TIMESTAMP DEFAULT NOW(),
+    updated_at    TIMESTAMP DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_session_tracks_session ON session_tracks(session_id);
+CREATE INDEX IF NOT EXISTS idx_session_tracks_student ON session_tracks(student_id);
 
 -- ---------------------------------------------------------------------------
 -- 5. learning_sessions

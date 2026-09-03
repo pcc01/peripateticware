@@ -13,7 +13,7 @@ from datetime import datetime
 import uuid
 from core.database import get_db
 from core.dependencies import get_current_user
-from models.database import LearningSession, User, TripleJoinRecord
+from models.database import LearningSession, User, TripleJoinRecord, Activity
 from services.polling import poll_interval_seconds
 from services.privacy_engine import enforce_or_raise
 import logging
@@ -528,6 +528,309 @@ async def get_session_events(
     except Exception as e:
         logger.error(f"Events fetch error: {e}")
         return {"events": [], "count": 0}
+
+
+# ── Wayfinding: waypoint arrival (rung B) ─────────────────────────────────
+# The student's app resolves "am I at this stop?" ON DEVICE and reports only
+# the waypoint id + whether arrival was in sequence. No coordinate is accepted
+# or stored here — that is the whole point of rung B. See
+# WAYFINDING_CONSENT_LADDER.md §2.
+
+class WaypointArrivalCreate(BaseModel):
+    in_sequence: bool = True
+    captured: bool = False
+    skipped: bool = False
+
+
+async def _load_session_activity(db: AsyncSession, session_id: str):
+    """(session, activity_id) or raise 404. Accepts a str session id."""
+    try:
+        sid = uuid.UUID(session_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=404, detail="Session not found")
+    row = await db.execute(select(LearningSession).where(LearningSession.id == sid))
+    sess = row.scalar_one_or_none()
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return sess, sess.activity_id
+
+
+@router.post("/{session_id}/waypoints/{waypoint_id}/arrive", status_code=201)
+async def record_waypoint_arrival(
+    session_id: str,
+    waypoint_id: str,
+    body: WaypointArrivalCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Mark a waypoint reached (or skipped) for the current student's session.
+
+    Rung B — no location data. Upserts session_waypoint_progress and drops a
+    `waypoint_arrival` row into session_events so the teacher's existing
+    progress poll picks it up. Idempotent per (session, waypoint).
+    """
+    sess, activity_id = await _load_session_activity(db, session_id)
+    if sess.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="This is not your session")
+
+    try:
+        wid = uuid.UUID(waypoint_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=404, detail="Waypoint not found")
+
+    wp_row = await db.execute(text(
+        "SELECT activity_id, sequence_index FROM activity_waypoints WHERE id = :wid"
+    ), {"wid": str(wid)})
+    wp = wp_row.fetchone()
+    if not wp:
+        raise HTTPException(status_code=404, detail="Waypoint not found")
+    if activity_id and str(wp[0]) != str(activity_id):
+        raise HTTPException(status_code=400, detail="Waypoint is not part of this session's activity")
+    waypoint_index = wp[1]
+
+    arrived = not body.skipped
+    await db.execute(text("""
+        INSERT INTO session_waypoint_progress
+            (session_id, student_id, activity_id, waypoint_id, waypoint_index,
+             arrived_at, arrival_was_in_sequence, captured, skipped)
+        VALUES
+            (:sid, :uid, :aid, :wid, :widx,
+             CASE WHEN :arrived THEN NOW() ELSE NULL END, :inseq, :captured, :skipped)
+        ON CONFLICT (session_id, waypoint_id) DO UPDATE SET
+            arrived_at = COALESCE(session_waypoint_progress.arrived_at, EXCLUDED.arrived_at),
+            arrival_was_in_sequence = EXCLUDED.arrival_was_in_sequence,
+            captured = session_waypoint_progress.captured OR EXCLUDED.captured,
+            skipped  = EXCLUDED.skipped,
+            updated_at = NOW()
+    """), {
+        "sid": session_id, "uid": str(current_user.id),
+        "aid": str(activity_id) if activity_id else None,
+        "wid": str(wid), "widx": waypoint_index,
+        "arrived": arrived, "inseq": body.in_sequence,
+        "captured": body.captured, "skipped": body.skipped,
+    })
+
+    # Mirror into session_events (no coordinate) for the live teacher poll.
+    await db.execute(text("""
+        INSERT INTO session_events (session_id, student_id, event_type, phase, metadata)
+        VALUES (:sid, :uid, 'waypoint_arrival', 'inquiry', CAST(:meta AS jsonb))
+    """), {
+        "sid": session_id, "uid": str(current_user.id),
+        "meta": __import__('json').dumps({
+            "waypoint_id": str(wid),
+            "waypoint_index": waypoint_index,
+            "in_sequence": body.in_sequence,
+            "skipped": body.skipped,
+        }),
+    })
+    await db.commit()
+    return await _waypoint_progress_payload(db, session_id, activity_id)
+
+
+async def _waypoint_progress_payload(db: AsyncSession, session_id: str, activity_id) -> dict:
+    prog_rows = await db.execute(text("""
+        SELECT waypoint_id, waypoint_index, arrived_at, arrival_was_in_sequence,
+               captured, skipped
+        FROM session_waypoint_progress
+        WHERE session_id = :sid
+        ORDER BY waypoint_index NULLS LAST
+    """), {"sid": session_id})
+    progress = [dict(r) for r in prog_rows.mappings().all()]
+
+    total = required_total = 0
+    required_ids: set[str] = set()
+    if activity_id:
+        wp_rows = await db.execute(text(
+            "SELECT id, required FROM activity_waypoints WHERE activity_id = :aid"
+        ), {"aid": str(activity_id)})
+        for r in wp_rows.fetchall():
+            total += 1
+            if r[1]:
+                required_total += 1
+                required_ids.add(str(r[0]))
+
+    reached_ids = {str(p["waypoint_id"]) for p in progress if p["arrived_at"] is not None}
+    required_reached = len(reached_ids & required_ids)
+
+    return {
+        "session_id": session_id,
+        "progress": progress,
+        "reached": len(reached_ids),
+        "total": total,
+        "required_reached": required_reached,
+        "required_total": required_total,
+        "complete": bool(required_total) and required_reached >= required_total,
+    }
+
+
+async def _require_effective_rung(db, student_id, activity_id, minimum: str, detail: str):
+    """403 unless the student's effective capability (min of activity ceiling,
+    consent, age floor) is at least `minimum`. See WAYFINDING_CONSENT_LADDER.md §4."""
+    from services.wayfinding_consent import effective_capability_rung, RUNG_ORDER
+    act = None
+    if activity_id:
+        act = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar()
+    gate = await effective_capability_rung(
+        db, student_id,
+        activity_id=activity_id,
+        wayfinding_capability_ceiling=getattr(act, "wayfinding_capability_ceiling", None),
+        discovery_location_gps_capture_enabled=bool(
+            getattr(act, "discovery_location_gps_capture_enabled", False)
+        ),
+    )
+    if RUNG_ORDER.get(gate["effective_rung"], 0) < RUNG_ORDER[minimum]:
+        raise HTTPException(status_code=403, detail=detail)
+    return gate
+
+
+class LivePositionCreate(BaseModel):
+    latitude: float
+    longitude: float
+    accuracy: Optional[float] = None
+
+
+@router.post("/{session_id}/live-position", status_code=201)
+async def post_live_position(
+    session_id: str,
+    body: LivePositionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Rung D — share the student's current position with the supervising
+    teacher for the length of the live session. Writes a `location_update`
+    session_event (the teacher monitor already polls those). Gated on
+    effective capability >= D; retained 7 days (see retention_cleanup)."""
+    sess, activity_id = await _load_session_activity(db, session_id)
+    if sess.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="This is not your session")
+    await _require_effective_rung(
+        db, current_user.id, activity_id, "D", "live_share_consent_required"
+    )
+    await db.execute(text("""
+        INSERT INTO session_events (session_id, student_id, event_type, phase, metadata)
+        VALUES (:sid, :uid, 'location_update', 'inquiry', CAST(:meta AS jsonb))
+    """), {
+        "sid": session_id, "uid": str(current_user.id),
+        "meta": __import__('json').dumps({
+            "latitude": body.latitude, "longitude": body.longitude,
+            "accuracy": body.accuracy, "source": "wayfinding_live",
+            "student_id": str(current_user.id),
+        }),
+    })
+    await db.commit()
+    return {"ok": True}
+
+
+class TrackAppend(BaseModel):
+    # [[lng, lat, epoch_ms], ...] — batched from the phone.
+    points: List[List[float]]
+
+
+@router.post("/{session_id}/track", status_code=201)
+async def append_session_track(
+    session_id: str,
+    body: TrackAppend,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Rung E — append breadcrumb points to this session's recorded path.
+    Gated on effective capability >= E. One growing row per session; hard
+    deleted after 30 days, or within 24 h of rung-E consent withdrawal."""
+    sess, activity_id = await _load_session_activity(db, session_id)
+    if sess.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="This is not your session")
+    await _require_effective_rung(
+        db, current_user.id, activity_id, "E", "track_recording_consent_required"
+    )
+
+    # Sanitise: keep only well-formed [lng, lat, t] triples in range, cap batch.
+    clean = []
+    for p in (body.points or [])[:2000]:
+        try:
+            lng, lat = float(p[0]), float(p[1])
+            t = float(p[2]) if len(p) > 2 else 0.0
+        except (TypeError, ValueError, IndexError):
+            continue
+        if -180 <= lng <= 180 and -90 <= lat <= 90:
+            clean.append([round(lng, 6), round(lat, 6), t])
+    if not clean:
+        return {"appended": 0}
+
+    await db.execute(text("""
+        INSERT INTO session_tracks
+            (session_id, student_id, activity_id, points, started_at, last_point_at)
+        VALUES
+            (:sid, :uid, :aid, CAST(:pts AS jsonb), NOW(), NOW())
+        ON CONFLICT (session_id) DO UPDATE SET
+            points = session_tracks.points || EXCLUDED.points,
+            last_point_at = NOW(),
+            updated_at = NOW()
+    """), {
+        "sid": session_id, "uid": str(current_user.id),
+        "aid": str(activity_id) if activity_id else None,
+        "pts": __import__('json').dumps(clean),
+    })
+    await db.commit()
+    return {"appended": len(clean)}
+
+
+@router.get("/{session_id}/track.gpx")
+async def export_session_track(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Download the recorded path as GPX. The student, or the teacher who owns
+    the session's activity."""
+    sess, activity_id = await _load_session_activity(db, session_id)
+    if sess.user_id != current_user.id:
+        owns = False
+        if activity_id:
+            a = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar()
+            owns = bool(a and a.teacher_id == current_user.id)
+        if current_user.role.upper() != "ADMIN" and not owns:
+            raise HTTPException(status_code=403, detail="You do not have access to this track")
+
+    row = (await db.execute(text(
+        "SELECT points FROM session_tracks WHERE session_id = :sid"
+    ), {"sid": session_id})).fetchone()
+    pts = (row[0] if row else None) or []
+    if len(pts) < 2:
+        raise HTTPException(status_code=404, detail="No recorded path for this session")
+
+    from services.gpx_wayfinding import build_gpx
+    from fastapi.responses import Response
+    xml = build_gpx(
+        activity_title=f"Session {session_id[:8]} track",
+        waypoints=[],
+        route_geometry={"type": "LineString", "coordinates": [[p[0], p[1]] for p in pts]},
+    )
+    return Response(
+        content=xml, media_type="application/gpx+xml",
+        headers={"Content-Disposition": f'attachment; filename="track-{session_id[:8]}.gpx"'},
+    )
+
+
+@router.get("/{session_id}/waypoints/progress")
+async def get_waypoint_progress(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """The student's own progress, or the owning teacher's read of it."""
+    sess, activity_id = await _load_session_activity(db, session_id)
+    if sess.user_id != current_user.id:
+        allowed = {"TEACHER", "ADMIN", "HOMESCHOOL", "PROFESSOR"}
+        owns_activity = False
+        if activity_id:
+            act = await db.execute(select(Activity).where(Activity.id == activity_id))
+            a = act.scalar_one_or_none()
+            owns_activity = bool(a and a.teacher_id == current_user.id)
+        if current_user.role.upper() not in allowed or (
+            current_user.role.upper() != "ADMIN" and not owns_activity
+        ):
+            raise HTTPException(status_code=403, detail="You do not have access to this session")
+    return await _waypoint_progress_payload(db, session_id, activity_id)
 
 
 # ── GPS Location-update helpers (used by student submission routes) ────────

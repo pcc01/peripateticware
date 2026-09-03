@@ -10,7 +10,11 @@ export type SessionEventType =
   | 'geofence_exit'
   | 'session_submitted'
   | 'reflection_saved'
-  | 'location_update';
+  | 'location_update'
+  // Rung B wayfinding — fired by the backend when POST .../waypoints/{id}/arrive
+  // succeeds. Metadata carries { waypoint_id, waypoint_index, in_sequence,
+  // skipped } and never a coordinate. See WAYFINDING_CONSENT_LADDER.md.
+  | 'waypoint_arrival';
 
 /** Convenience wrapper — fires a location_update event with GPS coordinates. Best-effort. */
 export async function logLocationEvent(

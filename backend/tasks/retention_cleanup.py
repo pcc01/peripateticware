@@ -205,6 +205,162 @@ async def hard_delete_soft_deleted_users(db: AsyncSession) -> int:
     return len(user_ids)
 
 
+# ── Wayfinding retention (WAYFINDING_CONSENT_LADDER.md §3) ────────────────────
+# Windows are constants here (matching the rest of this file); a global
+# data_retention_policies row for the category overrides the constant.
+
+_WAYFINDING_DEFAULT_DAYS = {
+    "evidence_coordinates": 30,
+    "waypoint_progress_events": 90,
+    "live_session_positions": 7,
+    "breadcrumb_track": 30,
+}
+
+
+async def _retention_days(db: AsyncSession, category: str) -> int:
+    default = _WAYFINDING_DEFAULT_DAYS.get(category, 365)
+    try:
+        row = await db.execute(text(
+            "SELECT retention_days FROM data_retention_policies "
+            "WHERE data_category = :c AND activity_id IS NULL "
+            "ORDER BY effective_date DESC LIMIT 1"
+        ), {"c": category})
+        v = row.scalar()
+        return int(v) if v else default
+    except Exception:
+        return default
+
+
+async def coarsen_expired_capture_coordinates(db: AsyncSession) -> int:
+    """Rung C: drop evidence-capture GPS precision to 3 dp (~110 m) once the
+    precise value is past its window. Idempotent — only touches rows still
+    carrying >3 dp."""
+    days = await _retention_days(db, "evidence_coordinates")
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    result = await db.execute(text("""
+        UPDATE evidence_captures
+        SET location_latitude  = ROUND(location_latitude::numeric,  3),
+            location_longitude = ROUND(location_longitude::numeric, 3)
+        WHERE created_at < :cutoff
+          AND location_latitude IS NOT NULL
+          AND location_longitude IS NOT NULL
+          AND (location_latitude  <> ROUND(location_latitude::numeric,  3)
+            OR location_longitude <> ROUND(location_longitude::numeric, 3))
+    """), {"cutoff": cutoff})
+    count = result.rowcount or 0
+    if count:
+        await _audit(db, "COARSEN_CAPTURE_COORDS", "evidence_coordinates", count)
+        logger.info(f"Retention: coarsened {count} expired capture coordinates to 3 dp")
+    return count
+
+
+async def purge_expired_session_positions(db: AsyncSession) -> int:
+    """Rung D: delete live-session location_update events past their window.
+    Uses created_at + N days (stricter than 'session end + N' — deletes
+    sooner for long sessions, which is the safe direction for a privacy
+    sweep). waypoint_arrival events carry no coordinate and are left alone."""
+    days = await _retention_days(db, "live_session_positions")
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    result = await db.execute(text("""
+        DELETE FROM session_events
+        WHERE event_type = 'location_update' AND created_at < :cutoff
+    """), {"cutoff": cutoff})
+    count = result.rowcount or 0
+    if count:
+        await _audit(db, "DELETE_SESSION_POSITIONS", "live_session_positions", count)
+        logger.info(f"Retention: deleted {count} expired live-session position events")
+    return count
+
+
+async def purge_expired_breadcrumb_tracks(db: AsyncSession) -> int:
+    """Rung E: hard-delete recorded paths past their window. No coarsened copy
+    is kept — a movement trace can't be meaningfully anonymised."""
+    days = await _retention_days(db, "breadcrumb_track")
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    result = await db.execute(text(
+        "DELETE FROM session_tracks WHERE created_at < :cutoff"
+    ), {"cutoff": cutoff})
+    count = result.rowcount or 0
+    if count:
+        await _audit(db, "DELETE_BREADCRUMB_TRACKS", "breadcrumb_track", count)
+        logger.info(f"Retention: hard-deleted {count} expired breadcrumb tracks")
+    return count
+
+
+async def delink_expired_waypoint_progress(db: AsyncSession) -> int:
+    """Rung B de-link: expired session_waypoint_progress rows are grouped by
+    activity_id, rolled up into hunt_outcome_analytics when the cohort clears
+    k>=5, then deleted. A group below k is deleted WITHOUT a roll-up. The
+    analytics row keeps the activity's shape, never its id."""
+    from services.wayfinding_analytics import compute_outcome_stats, insert_hunt_outcome
+
+    days = await _retention_days(db, "waypoint_progress_events")
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    grp = await db.execute(text("""
+        SELECT activity_id, COUNT(*) AS n
+        FROM session_waypoint_progress
+        WHERE created_at < :cutoff
+        GROUP BY activity_id
+    """), {"cutoff": cutoff})
+    groups = grp.fetchall()
+    if not groups:
+        return 0
+
+    removed = 0
+    for activity_id, _n in groups:
+        rows = (await db.execute(text("""
+            SELECT session_id, student_id, waypoint_id, arrived_at, arrival_was_in_sequence
+            FROM session_waypoint_progress
+            WHERE created_at < :cutoff
+              AND activity_id IS NOT DISTINCT FROM :aid
+        """), {"cutoff": cutoff, "aid": activity_id})).mappings().all()
+        rows = [dict(r) for r in rows]
+
+        activity_type = wayfinding_mode = None
+        waypoints_total = required_total = None
+        if activity_id is not None:
+            shape = (await db.execute(text(
+                "SELECT activity_type, wayfinding_mode FROM activities WHERE id = :aid"
+            ), {"aid": str(activity_id)})).fetchone()
+            if shape:
+                activity_type, wayfinding_mode = shape[0], shape[1]
+            wp = (await db.execute(text("""
+                SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE required) AS req
+                FROM activity_waypoints WHERE activity_id = :aid
+            """), {"aid": str(activity_id)})).fetchone()
+            if wp:
+                waypoints_total, required_total = wp[0], wp[1]
+
+        stats = compute_outcome_stats(
+            rows, waypoints_total=waypoints_total, required_total=required_total
+        )
+        if stats is not None:
+            arrived = [r["arrived_at"] for r in rows if r.get("arrived_at")]
+            period_start = min(arrived).date() if arrived else None
+            period_end = max(arrived).date() if arrived else None
+            await insert_hunt_outcome(
+                db,
+                activity_type=activity_type,
+                wayfinding_mode=wayfinding_mode,
+                period_start=period_start,
+                period_end=period_end,
+                stats=stats,
+            )
+
+        delete_res = await db.execute(text("""
+            DELETE FROM session_waypoint_progress
+            WHERE created_at < :cutoff
+              AND activity_id IS NOT DISTINCT FROM :aid
+        """), {"cutoff": cutoff, "aid": activity_id})
+        removed += delete_res.rowcount or 0
+
+    if removed:
+        await _audit(db, "DELINK_WAYPOINT_PROGRESS", "waypoint_progress_events", removed)
+        logger.info(f"Retention: de-linked {removed} expired waypoint-progress rows")
+    return removed
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 async def _safe_run(coro, name: str) -> int:
@@ -284,6 +440,11 @@ async def run_retention_cleanup():
         ("purge_expired_consent_records",  purge_expired_consent_records),
         ("hard_delete_soft_deleted_users", hard_delete_soft_deleted_users),  # P3-6
         ("check_overdue_dpa_notifications",  check_overdue_dpa_notifications),  # P4
+        # Wayfinding — WAYFINDING_CONSENT_LADDER.md §3
+        ("coarsen_expired_capture_coordinates", coarsen_expired_capture_coordinates),
+        ("delink_expired_waypoint_progress",    delink_expired_waypoint_progress),
+        ("purge_expired_session_positions",     purge_expired_session_positions),
+        ("purge_expired_breadcrumb_tracks",     purge_expired_breadcrumb_tracks),
     ]
     for name, fn in tasks:
         try:

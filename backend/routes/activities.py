@@ -6,7 +6,7 @@
 
 from pydantic import BaseModel as _BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, UploadFile, File, Form
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text, String
 from uuid import UUID
@@ -21,6 +21,7 @@ from core.dependencies import get_current_user, get_current_teacher
 from core.encryption import decrypt as _decrypt
 from core.cache import get_cache, set_cache
 from models import User, Activity, ActivityStatus, ActivityType, Project
+from models.database import ActivityWaypoint
 from models.assessment import TAXONOMY_DESCRIPTIONS
 from services.polling import poll_interval_seconds
 from schemas.activities import (
@@ -70,6 +71,50 @@ def _require_teacher(current_user: User, detail: str = "Only teachers can perfor
             status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
         )
+
+
+# ── GPX wayfinding (multi-step scavenger hunts) ──────────────────────────────
+# See WAYFINDING_CONSENT_LADDER.md. Waypoints are teacher content; the scalar
+# wayfinding_* columns are the "activity ceiling" the min() consent gate reads.
+
+def _enum_value(v):
+    """WayfindingModeEnum -> str, passthrough for plain strings / None."""
+    return getattr(v, "value", v)
+
+
+def _apply_waypoints(activity: Activity, payloads) -> None:
+    """Replace the activity's full waypoint set with `payloads` (list of
+    WaypointCreate). delete-orphan cascade on Activity.waypoints turns the
+    list reassignment into delete-old + insert-new, so the web builder's
+    drag-reorder can just POST the new ordered list. `sequence_index` is
+    re-derived from list position so callers don't have to keep it in sync."""
+    activity.waypoints = [
+        ActivityWaypoint(
+            sequence_index=idx,
+            name=wp.name,
+            clue_text=wp.clue_text,
+            latitude=wp.latitude,
+            longitude=wp.longitude,
+            arrival_radius_meters=wp.arrival_radius_meters,
+            symbol=wp.symbol,
+            required=wp.required,
+            capture_requirements=wp.capture_requirements,
+            hint_unlock_rule=wp.hint_unlock_rule or "immediate",
+            hint_unlock_minutes=wp.hint_unlock_minutes,
+        )
+        for idx, wp in enumerate(payloads or [])
+    ]
+
+
+def _default_ceiling(enabled: bool, ceiling) -> Optional[str]:
+    """A hunt with wayfinding on but no ceiling set defaults to 'B'
+    (on-device arrival detection — the recommended default rung). Any ceiling
+    of D/E is clamped to C while those rungs are held pending counsel review
+    (WAYFINDING_CONSENT_LADDER.md §7)."""
+    from services.wayfinding_consent import clamp_ceiling
+    if ceiling:
+        return clamp_ceiling(ceiling)
+    return "B" if enabled else ceiling
 
 
 # ============================================================================
@@ -147,16 +192,30 @@ async def create_activity(
         discovery_time_limit_minutes=getattr(activity, "discovery_time_limit_minutes", None),
         discovery_location_gps_capture_enabled=getattr(activity, "discovery_location_gps_capture_enabled", True),
         discovery_location_sharing_rules=getattr(activity, "discovery_location_sharing_rules", None),
+        # GPX wayfinding — see WAYFINDING_CONSENT_LADDER.md. Harmless for
+        # non-discovery types (columns default off / NULL).
+        discovery_wayfinding_enabled=getattr(activity, "discovery_wayfinding_enabled", False),
+        wayfinding_mode=_enum_value(getattr(activity, "wayfinding_mode", None)),
+        wayfinding_capability_ceiling=_default_ceiling(
+            getattr(activity, "discovery_wayfinding_enabled", False),
+            getattr(activity, "wayfinding_capability_ceiling", None),
+        ),
+        route_geometry=getattr(activity, "route_geometry", None),
         status=ActivityStatus.DRAFT,
     )
 
+    _apply_waypoints(db_activity, getattr(activity, "waypoints", None))
+
     db.add(db_activity)
     await db.commit()
-    await db.refresh(db_activity)
 
     logger.info(f"Created activity: {db_activity.id} by teacher {current_user.id}")
 
-    return db_activity
+    # Re-fetch so the response includes waypoints (Activity.waypoints is
+    # lazy="selectin", so a plain select eager-loads them — same pattern as
+    # get_activity).
+    result = await db.execute(select(Activity).where(Activity.id == db_activity.id))
+    return result.scalar_one()
 
 
 @router.get("", response_model=PaginatedActivityResponse)
@@ -332,6 +391,27 @@ async def update_activity(
     if "ai_interaction_mode" in update_data and update_data["ai_interaction_mode"]:
         update_data["ai_interaction_mode"] = update_data["ai_interaction_mode"].value
 
+    # ── GPX wayfinding fields — handled explicitly so the generic setattr
+    # loop below never tries to assign Pydantic models to the relationship
+    # or an enum object to a VARCHAR column. `waypoints` present (even []) =
+    # replace the whole set; absent = leave untouched.
+    if "wayfinding_mode" in update_data:
+        activity.wayfinding_mode = _enum_value(update_data.pop("wayfinding_mode"))
+    if "route_geometry" in update_data:
+        activity.route_geometry = update_data.pop("route_geometry")
+    if "discovery_wayfinding_enabled" in update_data:
+        activity.discovery_wayfinding_enabled = bool(update_data.pop("discovery_wayfinding_enabled"))
+    if "wayfinding_capability_ceiling" in update_data:
+        activity.wayfinding_capability_ceiling = update_data.pop("wayfinding_capability_ceiling")
+    # Backfill the ceiling default if wayfinding is (now) on and none is set.
+    activity.wayfinding_capability_ceiling = _default_ceiling(
+        bool(activity.discovery_wayfinding_enabled), activity.wayfinding_capability_ceiling
+    )
+    if "waypoints" in update_data:
+        update_data.pop("waypoints")
+        # Use the parsed WaypointCreate objects, not the .dict()'d version.
+        _apply_waypoints(activity, activity_update.waypoints)
+
     # Handle ActivityBuilder fields explicitly
     for field in ("assessment_type", "location_info", "suggested_lessons"):
         if field in update_data:
@@ -350,11 +430,107 @@ async def update_activity(
     activity.updated_at = datetime.utcnow()
 
     await db.commit()
-    await db.refresh(activity)
 
     logger.info(f"Updated activity: {activity_id}")
 
-    return activity
+    # Re-fetch so waypoints (lazy="selectin") are eager-loaded for the response.
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    return result.scalar_one()
+
+
+# ── GPX wayfinding import / export ───────────────────────────────────────────
+
+@router.post("/{activity_id}/gpx", response_model=ActivityResponse)
+async def import_activity_gpx(
+    activity_id: UUID,
+    file: UploadFile = File(...),
+    mode: Optional[str] = Form(None),  # override wayfinding_mode; default inferred
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Replace this hunt's waypoints + route from an uploaded .gpx file.
+
+    <wpt> become stops; the first <trk> (or <rte>) becomes the connecting
+    path. Turns wayfinding on and sets the capability ceiling to 'B' if it
+    wasn't already set. Only the owning teacher may import.
+    """
+    _require_teacher(current_user, "Only teachers can edit activities")
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only edit your own activities")
+
+    MAX_GPX_BYTES = 5 * 1024 * 1024
+    raw = await file.read()
+    if len(raw) > MAX_GPX_BYTES:
+        raise HTTPException(status_code=413, detail="GPX file too large (limit 5 MB)")
+
+    from services.gpx_wayfinding import parse_gpx, GPXParseError
+    try:
+        parsed = parse_gpx(raw)
+    except GPXParseError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    activity.waypoints = [
+        ActivityWaypoint(
+            sequence_index=wp["sequence_index"],
+            name=wp["name"],
+            clue_text=wp["clue_text"],
+            latitude=wp["latitude"],
+            longitude=wp["longitude"],
+            arrival_radius_meters=wp["arrival_radius_meters"],
+            symbol=wp["symbol"],
+            required=wp["required"],
+            capture_requirements=wp["capture_requirements"],
+            hint_unlock_rule=wp["hint_unlock_rule"],
+            hint_unlock_minutes=wp["hint_unlock_minutes"],
+        )
+        for wp in parsed["waypoints"]
+    ]
+    activity.route_geometry = parsed["route_geometry"]
+    activity.discovery_wayfinding_enabled = True
+    inferred = "guided_path" if parsed["route_geometry"] else "ordered"
+    activity.wayfinding_mode = mode if mode in ("ordered", "free_choice", "guided_path") else inferred
+    activity.wayfinding_capability_ceiling = _default_ceiling(True, activity.wayfinding_capability_ceiling)
+    activity.updated_at = datetime.utcnow()
+
+    await db.commit()
+    logger.info(f"Imported {len(parsed['waypoints'])} waypoints into activity {activity_id} from GPX")
+
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    return result.scalar_one()
+
+
+@router.get("/{activity_id}/gpx")
+async def export_activity_gpx(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download this hunt's waypoints + route as a .gpx file."""
+    result = await db.execute(select(Activity).where(Activity.id == activity_id))
+    activity = result.scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    if activity.teacher_id != current_user.id and activity.status != ActivityStatus.PUBLISHED:
+        raise HTTPException(status_code=403, detail="You don't have access to this activity")
+    if not activity.waypoints:
+        raise HTTPException(status_code=404, detail="This activity has no wayfinding route to export")
+
+    from services.gpx_wayfinding import build_gpx
+    xml = build_gpx(
+        activity_title=activity.title,
+        waypoints=[wp.to_dict() for wp in activity.waypoints],
+        route_geometry=activity.route_geometry,
+    )
+    safe = "".join(c if c.isalnum() or c in "-_ " else "_" for c in (activity.title or "hunt")).strip()[:60] or "hunt"
+    return Response(
+        content=xml,
+        media_type="application/gpx+xml",
+        headers={"Content-Disposition": f'attachment; filename="{safe}.gpx"'},
+    )
 
 
 @router.delete("/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -493,6 +669,31 @@ async def publish_activity(
     await db.refresh(activity)
 
     logger.info(f"Published activity: {activity_id}")
+
+    # Analytics lane (Lane 2) — one identifier-free row describing the SHAPE of
+    # what was published. Best-effort, must never affect the publish. Only
+    # scalars are passed; the activity row never leaves this call. See
+    # WAYFINDING_CONSENT_LADDER.md §3.
+    try:
+        from services.wayfinding_analytics import snapshot_authoring
+        await snapshot_authoring(
+            db,
+            activity_type=(activity.activity_type.value if hasattr(activity.activity_type, "value") else activity.activity_type),
+            discovery_mode=activity.discovery_mode,
+            wayfinding_mode=activity.wayfinding_mode,
+            wayfinding_enabled=bool(activity.discovery_wayfinding_enabled),
+            capability_ceiling=activity.wayfinding_capability_ceiling,
+            waypoint_count=len(activity.waypoints or []),
+            route_imported=bool(activity.route_geometry),
+            grade_level=activity.grade_level,
+            subject=activity.subject,
+            bloom_level=activity.bloom_level,
+            difficulty=activity.difficulty_level,
+            region_country=getattr(current_user, "signup_country_code", None),
+        )
+        await db.commit()
+    except Exception as _an_err:
+        logger.warning(f"Authoring analytics snapshot failed (non-blocking): {_an_err}")
 
     response = ActivityResponse.from_orm(activity)
     response_data = response.dict()

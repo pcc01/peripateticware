@@ -1,0 +1,97 @@
+# 14.1 — OFFLINE walk through "Campus Wayfinding Hunt".
+#
+# PRECONDITION: 14.0 already ran (state warmed) AND the wrapper script has
+# cut the network — wifi + mobile data disabled *and* the backend container
+# stopped, so every API call genuinely fails. Do not run standalone.
+#
+# Relaunches WITHOUT clearState (keeps the auth token + the SQLite caches
+# 14.0 populated) and never logs in — login needs the network. Verifies:
+#   • Discover still lists the hunt from cache            [Fix C]
+#   • the activity detail screen opens offline            [Fix C]
+#   • the map panel mounts with offlineMode and doesn't crash  [Fix B]
+#   • each arrival advances the hunt with no network      [Fix A]
+#     (handleArrive writes the local mirror first; no session needed)
+#
+# Stops: The Old Oak (37.8716,-122.2727), Stone Bridge (37.8726,-122.2717),
+# The Overlook (37.8736,-122.2707), each arrival_radius_meters=60.
+appId: com.peripateticware.app
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 37.8700
+    longitude: -122.2740
+
+# Opens straight to Discover — the persisted session token is read locally,
+# no network. fetchActivities() throws and falls back to getCachedActivities().
+- extendedWaitUntil:
+    visible:
+      id: "discover-screen"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "Campus Wayfinding Hunt"
+    timeout: 20000
+- tapOn: "Campus Wayfinding Hunt"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+# Fix B — the panel + MapView(offlineMode) render with no signal.
+- extendedWaitUntil:
+    visible:
+      id: "wayfinding-panel"
+    timeout: 20000
+- assertVisible:
+    id: "wayfinding-map"
+- assertVisible: "NEXT STOP"
+- assertVisible: "0 of 3 stops"
+
+# 14.1.1 — walk in to stop 1. Same stepping as 11-wayfinding.yaml: ~10 m
+# steps, all inside the 60 m radius, so watchPositionAsync emits distinct
+# in-radius fixes and useWayfinding confirms the arrival.
+- setLocation: { latitude: 37.87152, longitude: -122.27258 }
+- setLocation: { latitude: 37.87155, longitude: -122.27264 }
+- setLocation: { latitude: 37.87158, longitude: -122.27268 }
+- setLocation: { latitude: 37.87160, longitude: -122.27270 }
+- setLocation: { latitude: 37.87161, longitude: -122.27271 }
+- extendedWaitUntil:
+    visible: "1 of 3 stops"
+    timeout: 45000
+
+# 14.1.2 — walk to stop 2.
+- setLocation: { latitude: 37.87252, longitude: -122.27158 }
+- setLocation: { latitude: 37.87255, longitude: -122.27164 }
+- setLocation: { latitude: 37.87258, longitude: -122.27168 }
+- setLocation: { latitude: 37.87260, longitude: -122.27170 }
+- setLocation: { latitude: 37.87261, longitude: -122.27171 }
+- extendedWaitUntil:
+    visible: "2 of 3 stops"
+    timeout: 45000
+
+# 14.1.3 — walk to the final stop; the hunt completes entirely offline.
+- setLocation: { latitude: 37.87352, longitude: -122.27058 }
+- setLocation: { latitude: 37.87355, longitude: -122.27064 }
+- setLocation: { latitude: 37.87358, longitude: -122.27068 }
+- setLocation: { latitude: 37.87360, longitude: -122.27070 }
+- setLocation: { latitude: 37.87361, longitude: -122.27071 }
+- extendedWaitUntil:
+    visible: "All stops found! 🎉"
+    timeout: 45000
+- assertVisible:
+    id: "wayfinding-panel"

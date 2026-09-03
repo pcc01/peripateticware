@@ -1,0 +1,55 @@
+# 14.2 — VERIFY the offline arrivals survived and synced.
+#
+# PRECONDITION: 14.1 ran (3 arrivals recorded offline), then the wrapper
+# restored the network + backend and relaunched the app once so
+# initOfflineLayer() -> flushQueue() -> flushArrivals() replayed the queued
+# arrivals to the server. Do not run standalone.
+#
+# Verifies the merged (server + local) progress still shows the hunt
+# complete. The hard proof that the arrivals reached the server is the
+# Postgres row count the wrapper checks after this flow.
+appId: com.peripateticware.app
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 37.8736
+    longitude: -122.2707
+
+- extendedWaitUntil:
+    visible:
+      id: "discover-screen"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "Campus Wayfinding Hunt"
+    timeout: 20000
+- tapOn: "Campus Wayfinding Hunt"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "wayfinding-panel"
+    timeout: 20000
+# Progress is rebuilt from the server this time (fetchWaypointProgress) and
+# merged with the local mirror — either way the hunt is still complete.
+- extendedWaitUntil:
+    visible: "All stops found! 🎉"
+    timeout: 20000

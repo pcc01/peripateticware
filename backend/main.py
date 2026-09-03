@@ -99,8 +99,10 @@ async def lifespan(app: FastAPI):
         apply_core_schema_migrations,
         apply_billing_column_migrations,
         apply_student_phase7_migrations,
+        apply_wayfinding_migrations,
         apply_rag_documents_table,
         seed_sample_activities,
+        seed_wayfinding_demo,
         seed_demo_users,
         seed_demo_admin_account,
         seed_test_accounts,
@@ -161,6 +163,7 @@ async def lifespan(app: FastAPI):
         await apply_core_schema_migrations(engine)
         await apply_billing_column_migrations(engine)
         await apply_student_phase7_migrations(engine)
+        await apply_wayfinding_migrations(engine)
         await apply_rag_documents_table(engine)
 
         if not db_ready:
@@ -206,6 +209,7 @@ async def lifespan(app: FastAPI):
             # submission below, which explicitly depends on the "Creek
             # Habitat Study" activity existing.
             await seed_sample_activities(engine)
+            await seed_wayfinding_demo(engine)
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)
@@ -218,6 +222,7 @@ async def lifespan(app: FastAPI):
             # needs a teacher (from seed_demo_users) and must run before
             # seed_demo_fieldwork_submission below.
             await seed_sample_activities(engine)
+            await seed_wayfinding_demo(engine)
             await seed_homeschool_demo(engine)
             await seed_homeschool_example_children(engine)
             await seed_demo_classroom(engine)

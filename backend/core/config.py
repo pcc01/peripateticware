@@ -27,6 +27,14 @@ class Settings(BaseSettings):
     # you also want demo logins. Never seeds ADMIN-role accounts regardless of
     # this flag — see seed_demo_admin_account(), which stays dev-only.
     ENABLE_DEMO_SEED_ACCOUNTS: bool = os.getenv("ENABLE_DEMO_SEED_ACCOUNTS", "false").lower() == "true"
+
+    # Wayfinding capability rungs D (live position to teacher) and E (breadcrumb
+    # track recording) are held until the continuous-tracking consent copy has
+    # a counsel review — see WAYFINDING_CONSENT_LADDER.md §7. While this is
+    # false: the activity builder only offers ceilings B/C, create/update/GPX
+    # import clamp any higher ceiling down to C, and the min() gate treats a
+    # stored D/E ceiling as C. Flip to true (and re-review the copy) to launch.
+    WAYFINDING_DE_ENABLED: bool = os.getenv("WAYFINDING_DE_ENABLED", "false").lower() == "true"
     
     # Database
     DATABASE_URL: str = os.getenv(

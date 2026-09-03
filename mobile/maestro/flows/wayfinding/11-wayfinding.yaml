@@ -1,0 +1,103 @@
+# Mock-walk through the seeded "Campus Wayfinding Hunt" (three ordered stops,
+# rung B — no consent prompt). Backend seed: startup.seed_wayfinding_demo().
+#
+# Assumes a fresh backend (no prior session for this student+activity) — the
+# same assumption every other flow in this suite makes, and true in CI, which
+# stands up a fresh Postgres per run. Running twice against a persistent DB
+# will fail at "NEXT STOP" because the resumed session opens straight to the
+# "all stops found" state; reset session_waypoint_progress / learning_sessions
+# for the activity between local runs.
+# Stops: The Old Oak (37.8716,-122.2727), Stone Bridge (37.8726,-122.2717),
+# The Overlook (37.8736,-122.2707), each arrival_radius_meters=60.
+#
+# Same location-permission caveats as maestro/flows/geofence/10-geofence.yaml:
+# the grant must actually take for src/hooks/useWayfinding.ts's
+# requestForegroundPermissionsAsync() to succeed, and
+# Location.watchPositionAsync callback latency after setLocation varies by
+# device — hence the extendedWaitUntil timeouts below. Verify on-device
+# before trusting in CI.
+appId: com.peripateticware.app
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 37.8716
+    longitude: -122.2727
+- runFlow: ../login-student.yaml
+
+- extendedWaitUntil:
+    visible: "Campus Wayfinding Hunt"
+    timeout: 20000
+- tapOn: "Campus Wayfinding Hunt"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+# The wayfinding panel + map mount in the Inquiry phase.
+- extendedWaitUntil:
+    visible:
+      id: "wayfinding-panel"
+    timeout: 20000
+- assertVisible:
+    id: "wayfinding-map"
+# Starts at "0 of 3 stops" with stop 1 as the next target.
+- assertVisible: "NEXT STOP"
+
+# 11.1 — walk in to stop 1. useWayfinding needs ARRIVAL_CONFIRM_FIXES (2)
+# in-radius fixes; each setLocation steps ~10 m (0.0001°) so the emulator's
+# location provider emits a distinct update, and every point stays inside the
+# stop's 60 m radius. A run between fixes gives watchPositionAsync time to
+# deliver each callback.
+- setLocation: { latitude: 37.87152, longitude: -122.27258 }
+- setLocation: { latitude: 37.87155, longitude: -122.27264 }
+- setLocation: { latitude: 37.87158, longitude: -122.27268 }
+- setLocation: { latitude: 37.87160, longitude: -122.27270 }
+- setLocation: { latitude: 37.87161, longitude: -122.27271 }
+- extendedWaitUntil:
+    visible: "1 of 3 stops"
+    timeout: 45000
+
+# 11.2 — walk to stop 2.
+- setLocation: { latitude: 37.87252, longitude: -122.27158 }
+- setLocation: { latitude: 37.87255, longitude: -122.27164 }
+- setLocation: { latitude: 37.87258, longitude: -122.27168 }
+- setLocation: { latitude: 37.87260, longitude: -122.27170 }
+- setLocation: { latitude: 37.87261, longitude: -122.27171 }
+- extendedWaitUntil:
+    visible: "2 of 3 stops"
+    timeout: 45000
+
+# 11.3 — walk to the final stop; the hunt completes.
+- setLocation: { latitude: 37.87352, longitude: -122.27058 }
+- setLocation: { latitude: 37.87355, longitude: -122.27064 }
+- setLocation: { latitude: 37.87358, longitude: -122.27068 }
+- setLocation: { latitude: 37.87360, longitude: -122.27070 }
+- setLocation: { latitude: 37.87361, longitude: -122.27071 }
+- extendedWaitUntil:
+    visible: "All stops found! 🎉"
+    timeout: 45000
+# Progress went 0 -> 3 of 3 and the panel shows the completion state — the
+# rung-B arrival -> report -> aggregate -> complete path is verified. The
+# generic "Done capturing — reflect" CTA sits below the MapView (which eats
+# scroll gestures) and is exercised by activity/4-6-activity-flow.yaml, not
+# here.
+- assertVisible:
+    id: "wayfinding-panel"

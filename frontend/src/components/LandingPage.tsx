@@ -120,6 +120,14 @@ export const LandingPage: React.FC = () => {
         badge: t('phone_carousel.student.3.badge', 'Analyze'),
         location: 'City Park'
       },
+      {
+        title: t('phone_carousel.student.4.title', 'Scavenger Hunt — 2 of 5 stops'),
+        prompt: t('phone_carousel.student.4.prompt', "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."),
+        emoji: '🧭',
+        backgroundColor: '#e8f0fe',
+        badge: t('phone_carousel.student.4.badge', 'Multi-Stop'),
+        location: 'Riverside Park'
+      },
     ],
     teacher: [
       {
@@ -144,6 +152,14 @@ export const LandingPage: React.FC = () => {
         emoji: '✨',
         backgroundColor: '#faf5ff',
         badge: t('phone_carousel.teacher.3.badge', 'AI Assist'),
+        location: 'Activity Builder'
+      },
+      {
+        title: t('phone_carousel.teacher.4.title', 'Multi-Step Hunt — 6 stops'),
+        prompt: t('phone_carousel.teacher.4.prompt', "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."),
+        emoji: '🗺️',
+        backgroundColor: '#eef2ff',
+        badge: t('phone_carousel.teacher.4.badge', 'Route Builder'),
         location: 'Activity Builder'
       },
     ],
@@ -262,6 +278,21 @@ export const LandingPage: React.FC = () => {
         ],
         prompt: t('phone_carousel.homeschool.3.prompt', 'PDF portfolio is ready. Includes all required TX state reporting fields.'),
       },
+      {
+        emoji: '🧭',
+        backgroundColor: '#dceedd',
+        title: t('phone_carousel.homeschool.4.title', 'Greenbelt Trail Hunt'),
+        subtitle: t('phone_carousel.homeschool.4.subtitle', '5 stops · Emma & Lucas'),
+        badge: t('phone_carousel.homeschool.4.badge', '● On the trail'),
+        badgeColor: '#16a34a',
+        location: 'Barton Creek Greenbelt',
+        tasks: [
+          { text: t('phone_carousel.homeschool.4.task.1.text', 'The Old Oak — reached ✓'), done: true },
+          { text: t('phone_carousel.homeschool.4.task.2.text', 'Stone Bridge — reached ✓'), done: true },
+          { text: t('phone_carousel.homeschool.4.task.3.text', 'The Overlook — 120 m ahead'), done: false },
+          { text: t('phone_carousel.homeschool.4.task.4.text', 'Navigation on-device — no tracking'), done: true },
+        ],
+      },
     ],
 
   };
@@ -270,22 +301,30 @@ export const LandingPage: React.FC = () => {
     student: [
     { icon: '📸', title: t('student.feature_1_title'), desc: t('student.feature_1_desc') },
     { icon: '🎯', title: t('student.feature_2_title'), desc: t('student.feature_2_desc') },
-    { icon: '📊', title: t('student.feature_3_title'), desc: t('student.feature_3_desc') }],
+    { icon: '📊', title: t('student.feature_3_title'), desc: t('student.feature_3_desc') },
+    { icon: '🧭', title: t('student.feature_4_title', 'Follow the Map'), desc: t('student.feature_4_desc', "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.") },
+    { icon: '🔒', title: t('student.feature_5_title', 'Your Location Stays on Your Phone'), desc: t('student.feature_5_desc', "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way.") }],
 
     teacher: [
     { icon: '✏️', title: t('teacher.feature_1_title'), desc: t('teacher.feature_1_desc') },
     { icon: '👥', title: t('teacher.feature_2_title'), desc: t('teacher.feature_2_desc') },
-    { icon: '📈', title: t('teacher.feature_3_title'), desc: t('teacher.feature_3_desc') }],
+    { icon: '📈', title: t('teacher.feature_3_title'), desc: t('teacher.feature_3_desc') },
+    { icon: '🗺️', title: t('teacher.feature_4_title', 'Build a Route, Not Just a Pin'), desc: t('teacher.feature_4_desc', 'Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.') },
+    { icon: '🎚️', title: t('teacher.feature_5_title', 'Decide What Families Are Asked'), desc: t('teacher.feature_5_desc', 'Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts.') }],
 
     parent: [
     { icon: '👁️', title: t('parent.feature_1_title'), desc: t('parent.feature_1_desc') },
     { icon: '📧', title: t('parent.feature_2_title'), desc: t('parent.feature_2_desc') },
-    { icon: '🔔', title: t('parent.feature_3_title'), desc: t('parent.feature_3_desc') }],
+    { icon: '🔔', title: t('parent.feature_3_title'), desc: t('parent.feature_3_desc') },
+    { icon: '🔒', title: t('parent.feature_4_title', "You Choose What's Shared"), desc: t('parent.feature_4_desc', "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.") },
+    { icon: '🗓️', title: t('parent.feature_5_title', "Kept Only as Long as It's Useful"), desc: t('parent.feature_5_desc', "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask.") }],
 
     homeschool: [
     { icon: '🧭', title: t('homeschool.feature_1_title', 'Peri Guides Every Activity'), desc: t('homeschool.feature_1_desc', 'Peri is your child\'s AI learning companion — not a chatbot that answers for them, but a guide that asks the right question at the right moment. Inquiry, analysis, and evidence lead to real understanding.') },
     { icon: '📋', title: t('homeschool.feature_2_title', 'State Standards — Handled'), desc: t('homeschool.feature_2_desc', 'Peripateticware tracks coverage against your state\'s requirements as your children complete activities. Know exactly what\'s met, what\'s partial, and what\'s missing — without a single spreadsheet.') },
-    { icon: '📄', title: t('homeschool.feature_3_title', 'Portfolio Ready in One Click'), desc: t('homeschool.feature_3_desc', 'Generate a complete PDF portfolio with activity logs, evidence, and standards coverage for state filings or co-op reviews. No formatting, no manual assembly.') }]
+    { icon: '📄', title: t('homeschool.feature_3_title', 'Portfolio Ready in One Click'), desc: t('homeschool.feature_3_desc', 'Generate a complete PDF portfolio with activity logs, evidence, and standards coverage for state filings or co-op reviews. No formatting, no manual assembly.') },
+    { icon: '🗺️', title: t('homeschool.feature_4_title', 'Turn a Trail Into a Hunt'), desc: t('homeschool.feature_4_desc', 'Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.') },
+    { icon: '✅', title: t('homeschool.feature_5_title', 'You Hold the Consent'), desc: t('homeschool.feature_5_desc', "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option.") }]
 
   };
 
@@ -348,7 +387,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="landing-page">
       <Seo
-        title="Learning in Motion"
+        title={t('components_landingpage.title_learning_in_motion', 'Learning in Motion')}
         description="Peripateticware guides K-12 students through real-world, AI-assisted outdoor learning activities, with automatic state-standards tracking and one-click portfolios for homeschool families."
         path="/"
       />
@@ -736,7 +775,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Tier cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
-            {[
+            {([
               { name: t('pricing_tier.personal.name', 'Personal'), highlight: false,
                 features: [
                   t('pricing_tier.personal.feature.1', 'Individual classrooms'),
@@ -744,6 +783,7 @@ export const LandingPage: React.FC = () => {
                   t('pricing_tier.personal.feature.3', 'Peri AI'),
                   t('pricing_tier.personal.feature.4', 'Evidence capture'),
                   t('pricing_tier.personal.feature.5', 'Portfolio view'),
+                  t('pricing_tier.personal.feature.6', 'Multi-step map hunts'),
                 ] },
               { name: t('pricing_tier.school.name', 'School'), highlight: true,
                 features: [
@@ -760,13 +800,18 @@ export const LandingPage: React.FC = () => {
                   t('pricing_tier.district.feature.4', 'Priority + SLA support'),
                 ] },
               { name: t('pricing_tier.homeschool.name', 'Homeschool'), highlight: false,
+                price: t('pricing_tier.homeschool.price', '$9.99'),
+                priceUnit: t('pricing_tier.homeschool.price_unit', '/mo'),
+                priceNote: t('pricing_tier.homeschool.price_note', 'or $99.99/year · 30-day free trial · always free for 1 child'),
+                ctaLabel: t('pricing_tier.homeschool.cta', 'Start free trial'),
                 features: [
                   t('pricing_tier.homeschool.feature.1', 'Family accounts'),
                   t('pricing_tier.homeschool.feature.2', 'Portfolio PDF export'),
                   t('pricing_tier.homeschool.feature.3', 'State compliance reports'),
                   t('pricing_tier.homeschool.feature.4', 'Standards mapping'),
+                  t('pricing_tier.homeschool.feature.5', 'Trail hunts with GPX import & export'),
                 ] },
-            ].map(tier => (
+            ] as Array<{ name: string; highlight: boolean; features: string[]; price?: string; priceUnit?: string; priceNote?: string; ctaLabel?: string }>).map(tier => (
               <div key={tier.name} style={{
                 background: tier.highlight ? 'var(--primary)' : 'var(--surface)',
                 border: tier.highlight ? 'none' : '1px solid var(--border)',
@@ -777,11 +822,27 @@ export const LandingPage: React.FC = () => {
                 <div style={{ marginBottom: '0.25rem', fontWeight: 700, fontSize: '1rem', color: tier.highlight ? '#fff' : 'var(--text)' }}>
                   {tier.name}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
-                    {t('pricing_tier.contact_for_pricing', 'Contact us for pricing')}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem', marginBottom: tier.priceNote ? '0.35rem' : '1rem' }}>
+                  {tier.price ? (
+                    <>
+                      <span style={{ fontSize: '1.5rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
+                        {tier.price}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: tier.highlight ? '#d1fae5' : 'var(--text-muted)' }}>
+                        {tier.priceUnit}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: tier.highlight ? '#fff' : 'var(--text)' }}>
+                      {t('pricing_tier.contact_for_pricing', 'Contact us for pricing')}
+                    </span>
+                  )}
                 </div>
+                {tier.priceNote && (
+                  <div style={{ fontSize: '0.72rem', lineHeight: 1.4, color: tier.highlight ? '#d1fae5' : 'var(--text-muted)', marginBottom: '1rem' }}>
+                    {tier.priceNote}
+                  </div>
+                )}
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.25rem', flex: 1 }}>
                   {tier.features.map(f => (
                     <li key={f} style={{
@@ -794,18 +855,33 @@ export const LandingPage: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="mailto:hello@peripateticware.com"
-                  style={{
-                    display: 'inline-block', textAlign: 'center',
-                    padding: '0.55rem 1rem', borderRadius: '0.4rem', fontWeight: 600,
-                    fontSize: '0.85rem', cursor: 'pointer', border: 'none', textDecoration: 'none',
-                    background: tier.highlight ? '#fff' : 'var(--primary)',
-                    color: tier.highlight ? 'var(--primary)' : '#fff',
-                  }}
-                >
-                  {t('pricing_tier.contact_team', 'Contact Team')}
-                </a>
+                {tier.ctaLabel ? (
+                  <button
+                    onClick={() => navigate('/signup')}
+                    style={{
+                      display: 'inline-block', textAlign: 'center', width: '100%',
+                      padding: '0.55rem 1rem', borderRadius: '0.4rem', fontWeight: 600,
+                      fontSize: '0.85rem', cursor: 'pointer', border: 'none',
+                      background: tier.highlight ? '#fff' : 'var(--primary)',
+                      color: tier.highlight ? 'var(--primary)' : '#fff',
+                    }}
+                  >
+                    {tier.ctaLabel}
+                  </button>
+                ) : (
+                  <a
+                    href="mailto:hello@peripateticware.com"
+                    style={{
+                      display: 'inline-block', textAlign: 'center',
+                      padding: '0.55rem 1rem', borderRadius: '0.4rem', fontWeight: 600,
+                      fontSize: '0.85rem', cursor: 'pointer', border: 'none', textDecoration: 'none',
+                      background: tier.highlight ? '#fff' : 'var(--primary)',
+                      color: tier.highlight ? 'var(--primary)' : '#fff',
+                    }}
+                  >
+                    {t('pricing_tier.contact_team', 'Contact Team')}
+                  </a>
+                )}
               </div>
             ))}
           </div>

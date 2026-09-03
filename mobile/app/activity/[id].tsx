@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { fetchActivity, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
+import { fetchActivity, startActivitySession, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
@@ -20,6 +20,7 @@ import CapturePreviewModal from '@/src/components/CapturePreviewModal';
 import { Capture } from '@/src/api/captures';
 import Btn from '@/src/components/Btn';
 import { useGeofence } from '@/src/hooks/useGeofence';
+import WayfindingPanel from '@/src/components/WayfindingPanel';
 import { logSessionEvent } from '@/src/api/sessionEvents';
 import { flushQueue } from '@/src/db/offlineQueue';
 import {
@@ -106,6 +107,13 @@ export default function ActivityScreen() {
     fetchActivity(id)
       .then(async (a) => {
         setActivity(a);
+        // Start (or resume) a learning session so phase/capture events and
+        // wayfinding waypoint arrivals have a session to report against.
+        // Best-effort — the activity still renders if this fails, but on a
+        // wayfinding hunt the "n of m stops" progress won't advance without it.
+        startActivitySession(a.id)
+          .then((s) => setSessionId(s.session_id))
+          .catch(() => {});
         // M-4: apply city skin if location name suggests urban setting
         const loc = (a.location_name ?? '').toLowerCase();
         const cityTerms = ['city', 'urban', 'downtown', 'street', 'plaza', 'park'];
@@ -290,6 +298,7 @@ export default function ActivityScreen() {
             activity={activity}
             question={question}
             theme={theme}
+            sessionId={sessionId}
             onNext={advancePhase}
             onAskPeri={() => setShowChat(true)}
             onCapture={(mode: 'photo' | 'audio' | 'note' | 'video') => {
@@ -512,10 +521,13 @@ function OrientPhase({ activity, theme, onReady }: any) {
 // ── Inquiry phase ──────────────────────────────────────────────────────────
 const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️' };
 
-function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture, captures, onReviewCapture }: any) {
+function InquiryPhase({ activity, question, theme, sessionId, onNext, onAskPeri, onCapture, captures, onReviewCapture }: any) {
   const { t } = useTranslation();
   const periText = question?.question_text
     ?? t('activity.inquiry.defaultQuestion', 'Look closely. What evidence can you find? Capture what you observe.');
+
+  const wayfinding = activity.wayfinding;
+  const hasWayfinding = !!wayfinding?.enabled && (wayfinding.waypoints?.length ?? 0) > 0;
 
   return (
     <View style={{ gap: 20 }}>
@@ -524,6 +536,15 @@ function InquiryPhase({ activity, question, theme, onNext, onAskPeri, onCapture,
         <Text style={[styles.phaseTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('activity.inquiry.title', 'Observe & Capture')}</Text>
       </View>
       <PeriSpeech text={periText} theme={theme} size={36} />
+
+      {hasWayfinding && (
+        <WayfindingPanel
+          activityId={activity.id}
+          wayfinding={wayfinding}
+          sessionId={sessionId ?? null}
+          onCaptureRequested={(mode: 'photo' | 'note') => onCapture(mode)}
+        />
+      )}
 
       {question?.follow_up && (
         <View style={[styles.followUpCard, { backgroundColor: theme.accentMuted, borderRadius: theme.radiusSm }]}>

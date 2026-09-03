@@ -2,7 +2,14 @@
 // Provides auth state to the whole app; persists token via AsyncStorage
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getToken, clearToken } from '@/src/api/client';
+import {
+  getToken,
+  clearToken,
+  getStoredUser,
+  setStoredUser,
+  clearStoredUser,
+  ApiError,
+} from '@/src/api/client';
 import { login as apiLogin, logout as apiLogout, getCurrentUser, LoginResponse } from '@/src/api/auth';
 
 interface User {
@@ -42,14 +49,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const t = await getToken();
       if (!t) { setIsLoading(false); return; }
       setToken_(t);
+
+      // Optimistically restore from the cached profile so a cold start with
+      // no signal lands the user in the app (e.g. resuming a scavenger hunt
+      // in a dead zone) instead of on the login screen.
+      const cached = await getStoredUser<User>();
+      if (cached) setUser(cached);
+
       try {
         const me = await getCurrentUser();
-        setUser({ id: me.user_id, email: me.email, role: me.role.toUpperCase() });
-      } catch {
-        // Token expired/invalid/network down — clear it rather than trap the
-        // user in a half-authenticated state with a token that doesn't work.
-        await clearToken();
-        setToken_(null);
+        const fresh: User = { id: me.user_id, email: me.email, role: me.role.toUpperCase() };
+        setUser(fresh);
+        await setStoredUser(fresh);
+      } catch (err) {
+        // Only a definitive auth rejection means the token is bad — clear it.
+        // A network failure (offline) or a transient server error must NOT
+        // log the user out; keep the cached session and let a later
+        // /auth/me correct or clear it.
+        const isAuthRejection = err instanceof ApiError && (err.status === 401 || err.status === 403);
+        if (isAuthRejection || !cached) {
+          await clearToken();
+          await clearStoredUser();
+          setToken_(null);
+          setUser(null);
+        }
       }
       setIsLoading(false);
     })();
@@ -57,12 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const data: LoginResponse = await apiLogin(email, password);
+    const u: User = { id: data.user_id, email: data.email, role: data.role.toUpperCase() };
     setToken_(data.access_token);
-    setUser({ id: data.user_id, email: data.email, role: data.role.toUpperCase() });
+    setUser(u);
+    await setStoredUser(u);
   };
 
   const logout = async () => {
     await apiLogout();
+    await clearStoredUser();
     setToken_(null);
     setUser(null);
   };

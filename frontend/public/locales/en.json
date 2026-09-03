@@ -227,7 +227,11 @@
       "feature_2_title": "Guided by Peri",
       "feature_2_desc": "Peri the crow asks the right questions to help you think deeper — sparking ideas, never giving away answers.",
       "feature_3_title": "Track Your Growth",
-      "feature_3_desc": "Watch your competencies grow as you complete activities and build your outdoor learning portfolio."
+      "feature_3_desc": "Watch your competencies grow as you complete activities and build your outdoor learning portfolio.",
+      "feature_4_title": "Follow the Map",
+      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
+      "feature_5_title": "Your Location Stays on Your Phone",
+      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
     },
     "teacher": {
       "headline": "Design Activities That Move",
@@ -241,7 +245,11 @@
       "feature_2_title": "Live Progress View",
       "feature_2_desc": "See where each student is in real time — which phase they're on, what they've captured, and who needs support.",
       "feature_3_title": "Assessment Built In",
-      "feature_3_desc": "Competency tracking, portfolio review, and curriculum alignment — all without extra marking time."
+      "feature_3_desc": "Competency tracking, portfolio review, and curriculum alignment — all without extra marking time.",
+      "feature_4_title": "Build a Route, Not Just a Pin",
+      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
+      "feature_5_title": "Decide What Families Are Asked",
+      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
     },
     "parent": {
       "headline": "Stay Connected to Their Learning",
@@ -255,7 +263,11 @@
       "feature_2_title": "Weekly Digests",
       "feature_2_desc": "A clear summary of what they explored, what they captured, and how their competencies are growing.",
       "feature_3_title": "Stay in the Loop",
-      "feature_3_desc": "Receive updates when activities are completed and milestones are reached — without interrupting class."
+      "feature_3_desc": "Receive updates when activities are completed and milestones are reached — without interrupting class.",
+      "feature_4_title": "You Choose What's Shared",
+      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
+      "feature_5_title": "Kept Only as Long as It's Useful",
+      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
     },
     "team_1_name": "Paul Cerda",
     "team_1_role": "Founder & PM",
@@ -1554,7 +1566,11 @@
       "feature_2_desc": "Upload your state\\'s reporting requirements and automatically track coverage as your children complete activities. Know exactly what\\'s met, what\\'s partial, and what\\'s missing.",
       "feature_3_title": "Portfolio Reports",
       "feature_3_desc": "Generate PDF portfolio reports and activity log CSVs for state filings or your own records — no manual spreadsheets required.",
-      "features_title": "Everything a Homeschool Family Needs"
+      "features_title": "Everything a Homeschool Family Needs",
+      "feature_4_title": "Turn a Trail Into a Hunt",
+      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
+      "feature_5_title": "You Hold the Consent",
+      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
     },
     "homeschool_section_title": "Everything a Homeschool Family Needs",
     "homeschool_section_desc": "Peripateticware treats homeschool parents as both teacher and parent in one account. You own your children\\'s accounts directly — no link codes, no bureaucracy.",
@@ -2378,6 +2394,11 @@
           "title": "Evidence Captured",
           "prompt": "Great observation! Now — what do you think caused the leaves to change colour on this side of the tree?",
           "badge": "Analyze"
+        },
+        "4": {
+          "title": "Scavenger Hunt — 2 of 5 stops",
+          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone.",
+          "badge": "Multi-Stop"
         }
       },
       "teacher": {
@@ -2395,6 +2416,11 @@
           "title": "Peri AI Suggestions",
           "prompt": "Based on your subject and location, here are 4 Bloom's-aligned activity ideas…",
           "badge": "AI Assist"
+        },
+        "4": {
+          "title": "Multi-Step Hunt — 6 stops",
+          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt.",
+          "badge": "Route Builder"
         }
       },
       "parent": {
@@ -2554,6 +2580,25 @@
             }
           },
           "prompt": "PDF portfolio is ready. Includes all required TX state reporting fields."
+        },
+        "4": {
+          "title": "Greenbelt Trail Hunt",
+          "subtitle": "5 stops · Emma & Lucas",
+          "badge": "● On the trail",
+          "task": {
+            "1": {
+              "text": "The Old Oak — reached ✓"
+            },
+            "2": {
+              "text": "Stone Bridge — reached ✓"
+            },
+            "3": {
+              "text": "The Overlook — 120 m ahead"
+            },
+            "4": {
+              "text": "Navigation on-device — no tracking"
+            }
+          }
         }
       }
     },
@@ -2596,7 +2641,8 @@
           "2": "Core activity types",
           "3": "Peri AI",
           "4": "Evidence capture",
-          "5": "Portfolio view"
+          "5": "Portfolio view",
+          "6": "Multi-step map hunts"
         }
       },
       "school": {
@@ -2619,11 +2665,16 @@
       },
       "homeschool": {
         "name": "Homeschool",
+        "price": "$9.99",
+        "price_unit": "/mo",
+        "price_note": "or $99.99/year · 30-day free trial · always free for 1 child",
+        "cta": "Start free trial",
         "feature": {
           "1": "Family accounts",
           "2": "Portfolio PDF export",
           "3": "State compliance reports",
-          "4": "Standards mapping"
+          "4": "Standards mapping",
+          "5": "Trail hunts with GPX import & export"
         }
       },
       "contact_for_pricing": "Contact us for pricing",

@@ -158,6 +158,12 @@ services:
 
       # ── Application Configuration ────────────────────────────────────────
       ENVIRONMENT: ${ENVIRONMENT:-development}
+      # Wayfinding capability rungs D (live position to teacher) and E
+      # (breadcrumb track recording) are held until the continuous-tracking
+      # consent copy has a counsel review — WAYFINDING_CONSENT_LADDER.md §7.
+      # Leave false to launch A–C only; flip to true (and re-review the copy)
+      # to enable D/E in the builder and the min() gate.
+      WAYFINDING_DE_ENABLED: ${WAYFINDING_DE_ENABLED:-false}
       DEBUG: "True"
       LOG_LEVEL: INFO
       API_HOST: "0.0.0.0"

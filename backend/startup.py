@@ -1363,6 +1363,160 @@ async def apply_student_phase7_migrations(engine) -> None:
     logger.info("✅ Student phase-7 column migrations applied")
 
 
+async def apply_wayfinding_migrations(engine) -> None:
+    """Block 8: GPX wayfinding for multi-step scavenger hunts.
+
+    Adds the activities.* wayfinding columns, the activity_waypoints table
+    (teacher content — stops, clues, coordinates) and the
+    session_waypoint_progress table (rung-B artefact — waypoint id + index +
+    timestamps, never a coordinate). Mirrors models/database.py
+    (ActivityWaypoint, SessionWaypointProgress) and database/init.sql.
+
+    Deploy never runs `alembic upgrade` — this self-healing block is the
+    load-bearing path. See WAYFINDING_CONSENT_LADDER.md §7 and the
+    consent_logs cautionary tale in GPS_MAP_HANDOFF.md.
+    """
+    _stmts = [
+        "ALTER TABLE activities ADD COLUMN IF NOT EXISTS discovery_wayfinding_enabled BOOLEAN NOT NULL DEFAULT FALSE",
+        "ALTER TABLE activities ADD COLUMN IF NOT EXISTS wayfinding_mode VARCHAR(20)",
+        "ALTER TABLE activities ADD COLUMN IF NOT EXISTS wayfinding_capability_ceiling VARCHAR(1)",
+        "ALTER TABLE activities ADD COLUMN IF NOT EXISTS route_geometry JSONB",
+        (
+            "CREATE TABLE IF NOT EXISTS activity_waypoints ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+            "activity_id UUID NOT NULL REFERENCES activities(id) ON DELETE CASCADE, "
+            "sequence_index INTEGER NOT NULL DEFAULT 0, "
+            "name VARCHAR(255) NOT NULL, "
+            "clue_text TEXT, "
+            "latitude DOUBLE PRECISION NOT NULL, "
+            "longitude DOUBLE PRECISION NOT NULL, "
+            "arrival_radius_meters INTEGER NOT NULL DEFAULT 25, "
+            "symbol VARCHAR(50), "
+            "required BOOLEAN NOT NULL DEFAULT TRUE, "
+            "capture_requirements JSONB, "
+            "hint_unlock_rule VARCHAR(30) DEFAULT 'immediate', "
+            "hint_unlock_minutes INTEGER, "
+            "created_at TIMESTAMP DEFAULT NOW(), "
+            "updated_at TIMESTAMP DEFAULT NOW())"
+        ),
+        "CREATE INDEX IF NOT EXISTS idx_activity_waypoints_activity_seq ON activity_waypoints (activity_id, sequence_index)",
+        (
+            "CREATE TABLE IF NOT EXISTS session_waypoint_progress ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+            "session_id UUID NOT NULL, "
+            "student_id UUID, "
+            "activity_id UUID, "
+            "waypoint_id UUID NOT NULL, "
+            "waypoint_index INTEGER, "
+            "arrived_at TIMESTAMP, "
+            "arrival_was_in_sequence BOOLEAN NOT NULL DEFAULT TRUE, "
+            "captured BOOLEAN NOT NULL DEFAULT FALSE, "
+            "skipped BOOLEAN NOT NULL DEFAULT FALSE, "
+            "created_at TIMESTAMP DEFAULT NOW(), "
+            "updated_at TIMESTAMP DEFAULT NOW())"
+        ),
+        # Arrival writes upsert against this — one row per (session, waypoint).
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_swp_session_waypoint ON session_waypoint_progress (session_id, waypoint_id)",
+        "CREATE INDEX IF NOT EXISTS idx_swp_session ON session_waypoint_progress (session_id)",
+        "CREATE INDEX IF NOT EXISTS idx_swp_student ON session_waypoint_progress (student_id)",
+        # ── Analytics lane (Lane 2) — identifier-free by construction.
+        # No student_id / session_id / activity_id / teacher_id, ever.
+        (
+            "CREATE TABLE IF NOT EXISTS authoring_analytics ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+            "activity_type VARCHAR(50), "
+            "discovery_mode VARCHAR(50), "
+            "wayfinding_mode VARCHAR(20), "
+            "wayfinding_enabled BOOLEAN NOT NULL DEFAULT FALSE, "
+            "capability_ceiling VARCHAR(1), "
+            "waypoint_count_bucket VARCHAR(10), "
+            "route_imported BOOLEAN NOT NULL DEFAULT FALSE, "
+            "grade_level INTEGER, "
+            "subject VARCHAR(100), "
+            "bloom_level INTEGER, "
+            "difficulty INTEGER, "
+            "region_country VARCHAR(10), "
+            "created_month DATE, "
+            "snapshot_at TIMESTAMP DEFAULT NOW())"
+        ),
+        "CREATE INDEX IF NOT EXISTS idx_authoring_analytics_type_month ON authoring_analytics (activity_type, created_month)",
+        (
+            "CREATE TABLE IF NOT EXISTS hunt_outcome_analytics ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+            "activity_type VARCHAR(50), "
+            "wayfinding_mode VARCHAR(20), "
+            "waypoints_total INTEGER, "
+            "cohort_size INTEGER NOT NULL, "
+            "sessions_count INTEGER NOT NULL DEFAULT 0, "
+            "median_reached DOUBLE PRECISION, "
+            "mean_reached DOUBLE PRECISION, "
+            "completion_rate DOUBLE PRECISION, "
+            "in_sequence_rate DOUBLE PRECISION, "
+            "p50_minutes_between_stops DOUBLE PRECISION, "
+            "period_start DATE, "
+            "period_end DATE, "
+            "rolled_up_at TIMESTAMP DEFAULT NOW())"
+        ),
+        "CREATE INDEX IF NOT EXISTS idx_hunt_outcome_type ON hunt_outcome_analytics (activity_type, wayfinding_mode)",
+        # ── Rung E — breadcrumb track storage (one growing row per session).
+        (
+            "CREATE TABLE IF NOT EXISTS session_tracks ("
+            "id UUID PRIMARY KEY DEFAULT gen_random_uuid(), "
+            "session_id UUID NOT NULL, "
+            "student_id UUID, "
+            "activity_id UUID, "
+            "points JSONB NOT NULL DEFAULT '[]'::jsonb, "
+            "started_at TIMESTAMP DEFAULT NOW(), "
+            "last_point_at TIMESTAMP, "
+            "created_at TIMESTAMP DEFAULT NOW(), "
+            "updated_at TIMESTAMP DEFAULT NOW())"
+        ),
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_session_tracks_session ON session_tracks (session_id)",
+        "CREATE INDEX IF NOT EXISTS idx_session_tracks_student ON session_tracks (student_id)",
+    ]
+    for _s in _stmts:
+        try:
+            async with engine.begin() as _c:
+                await _c.execute(text(_s))
+        except Exception:
+            logger.debug(f"wayfinding migration skipped: {_s[:60]}…")
+    logger.info("✅ Wayfinding column/table migrations applied")
+
+    # data_retention_policies.deletion_method gains 'coarsen'/'delink' as
+    # valid values — the column is a plain VARCHAR(50) so no enum change is
+    # needed, but seed the three wayfinding policy rows if the table exists
+    # and they aren't there yet (global scope: activity_id NULL).
+    _seed = [
+        ("evidence_coordinates", 30, "coarsen"),
+        ("waypoint_progress_events", 90, "delink"),
+        ("live_session_positions", 7, "delete"),
+        ("breadcrumb_track", 30, "delete"),
+    ]
+    for _cat, _days, _method in _seed:
+        try:
+            async with engine.begin() as _c:
+                # CAST(:cat AS text) in BOTH occurrences — without it asyncpg
+                # deduces text in one spot and varchar in the other and raises
+                # AmbiguousParameterError (same gotcha as the classroom seeds).
+                # CAST(...) form, not `:cat::text`, because SQLAlchemy text()
+                # mis-parses the `::` as a bind param.
+                await _c.execute(text("""
+                    INSERT INTO data_retention_policies
+                        (id, activity_id, jurisdiction_id, data_category,
+                         retention_days, purpose, deletion_method, effective_date)
+                    SELECT gen_random_uuid(), NULL, 'GLOBAL',
+                           CAST(:cat AS text), CAST(:days AS int),
+                           'wayfinding — WAYFINDING_CONSENT_LADDER.md §3',
+                           CAST(:method AS text), NOW()
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM data_retention_policies
+                        WHERE data_category = CAST(:cat AS text) AND activity_id IS NULL
+                    )
+                """), {"cat": _cat, "days": _days, "method": _method})
+        except Exception:
+            logger.debug(f"wayfinding retention-policy seed skipped: {_cat}")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # SEED HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1414,6 +1568,70 @@ async def seed_sample_activities(engine) -> None:
         logger.info("✅ Seed activities ensured (3 sample activities)")
     except Exception as e:
         logger.warning(f"⊘ Sample activity seed skipped: {e}")
+
+
+async def seed_wayfinding_demo(engine) -> None:
+    """One published multi-step scavenger hunt ('Campus Wayfinding Hunt') with
+    three ordered stops, so the student wayfinding map/hook has real data to
+    render and the Maestro mock-walk flow has a target. Rung B only
+    (discovery_wayfinding_enabled, capability ceiling 'B') — no consent
+    prompt. Idempotent by title. See WAYFINDING_CONSENT_LADDER.md."""
+    _title = "Campus Wayfinding Hunt"
+    # Three stops a short walk apart, near the Creek Habitat Study coords the
+    # geofence Maestro flow already uses.
+    _stops = [
+        ("The Old Oak", "Start at the big oak by the north path.", 37.8716, -122.2727),
+        ("Stone Bridge", "Follow the trail east to the little stone bridge.", 37.8726, -122.2717),
+        ("The Overlook", "Climb to the overlook with the view of the water.", 37.8736, -122.2707),
+    ]
+    try:
+        async with engine.begin() as conn:
+            row = await conn.execute(text(
+                "SELECT id FROM activities WHERE title = :t AND status = 'published'"
+            ), {"t": _title})
+            act_id = row.scalar()
+            if not act_id:
+                act_id = (await conn.execute(text("""
+                    INSERT INTO activities (
+                        id, teacher_id, title, description, subject, grade_level,
+                        activity_type, difficulty_level, estimated_duration_minutes,
+                        bloom_level, assessment_type, status, is_active, location_name,
+                        location_latitude, location_longitude, location_radius_meters,
+                        discovery_mode, discovery_task_description,
+                        discovery_wayfinding_enabled, wayfinding_mode,
+                        wayfinding_capability_ceiling, created_at, updated_at
+                    ) VALUES (
+                        gen_random_uuid(),
+                        (SELECT id FROM users WHERE role = 'TEACHER' LIMIT 1),
+                        :t,
+                        'A three-stop walking hunt around campus. Follow the map to each stop and read the clue for the next one.',
+                        'Geography', 5, 'discovery', 2, 30, 3, 'observation',
+                        'published', TRUE, 'Campus grounds',
+                        37.8716, -122.2727, 500,
+                        'location_based', 'Find all three stops using the map.',
+                        TRUE, 'ordered', 'B', NOW(), NOW()
+                    )
+                    RETURNING id
+                """), {"t": _title})).scalar()
+            # Only seed waypoints if none exist for this activity yet.
+            has_wp = (await conn.execute(text(
+                "SELECT 1 FROM activity_waypoints WHERE activity_id = :a LIMIT 1"
+            ), {"a": str(act_id)})).scalar()
+            if not has_wp:
+                for i, (name, clue, lat, lon) in enumerate(_stops):
+                    await conn.execute(text("""
+                        INSERT INTO activity_waypoints
+                            (id, activity_id, sequence_index, name, clue_text,
+                             latitude, longitude, arrival_radius_meters, required,
+                             hint_unlock_rule, created_at, updated_at)
+                        VALUES
+                            (gen_random_uuid(), :a, :i, :name, :clue,
+                             :lat, :lon, 60, TRUE, 'immediate', NOW(), NOW())
+                    """), {"a": str(act_id), "i": i, "name": name, "clue": clue,
+                           "lat": lat, "lon": lon})
+        logger.info("✅ Seed wayfinding demo hunt ensured ('Campus Wayfinding Hunt')")
+    except Exception as e:
+        logger.warning(f"⊘ Wayfinding demo seed skipped: {e}")
 
 
 async def seed_demo_fieldwork_submission(engine) -> None:

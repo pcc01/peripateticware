@@ -1050,6 +1050,11 @@ class GPSConsentRequest(BaseModel):
     activity_id: str
     student_id: str
     consent_given: bool
+    # Capability rung this grant covers: 'C' = coordinate stamp on evidence
+    # (default, back-compat with the pre-wayfinding 'gps_tracking' flow),
+    # 'D' = live map during the session, 'E' = record the path walked.
+    # C / D / E are independent grants — granting C never implies D.
+    rung: str = "C"
 
 
 @router.post("/consent/gps", status_code=201)
@@ -1059,29 +1064,38 @@ async def record_gps_consent(
     current_user: User = Depends(_get_current_user),
 ):
     """
-    Parent records GPS-tracking consent for a specific student+activity.
-    Stores a row in consent_logs with consent_type='gps_tracking'.
-    Set consent_given=false to explicitly revoke.
+    Parent records location consent for one capability rung of an activity.
+    Set consent_given=false to explicitly revoke that rung.
 
     consent_logs is an append-only audit table (real FK on student_id, no
     unique constraint by design -- see database/init.sql / models.database.ConsentLog).
     Granting inserts a new row; revoking soft-closes any currently-active
-    row(s) by setting withdrawn_at, rather than upserting a single "current
-    state" row.
+    row(s) of that consent_type by setting withdrawn_at. Parent grants expire
+    in 30 days and are re-prompted.
     """
+    from services.wayfinding_consent import (
+        normalize_rung, CONSENT_TYPE_FOR_RUNG, RUNG_DATA_CATEGORIES, PARENT_EXPIRY_DAYS,
+    )
+    rung = normalize_rung(body.rung, default="C")
+    consent_type = CONSENT_TYPE_FOR_RUNG[rung]
+    categories = RUNG_DATA_CATEGORIES[rung]
     try:
         if body.consent_given:
-            await db.execute(text("""
+            await db.execute(text(f"""
                 INSERT INTO consent_logs
-                    (student_id, activity_id, consent_type, given_by_parent,
-                     parent_id, consent_given_at, expires_at)
+                    (student_id, activity_id, consent_type, data_categories,
+                     purpose, given_by_parent, parent_id, consent_given_at, expires_at)
                 VALUES
-                    (CAST(:sid AS uuid), CAST(:aid AS uuid), 'gps_tracking', TRUE,
-                     CAST(:pid AS uuid), NOW(), NOW() + INTERVAL '30 days')
+                    (CAST(:sid AS uuid), CAST(:aid AS uuid), :ctype, :cats,
+                     'wayfinding capability rung {rung}', TRUE,
+                     CAST(:pid AS uuid), NOW(), NOW() + make_interval(days => CAST(:days AS int)))
             """), {
                 "sid": body.student_id,
                 "aid": body.activity_id,
                 "pid": str(current_user.id),
+                "ctype": consent_type,
+                "cats": categories,
+                "days": PARENT_EXPIRY_DAYS,
             })
         else:
             await db.execute(text("""
@@ -1089,12 +1103,21 @@ async def record_gps_consent(
                 SET withdrawn_at = NOW()
                 WHERE student_id   = CAST(:sid AS uuid)
                   AND activity_id  = CAST(:aid AS uuid)
-                  AND consent_type = 'gps_tracking'
+                  AND consent_type = :ctype
                   AND withdrawn_at IS NULL
             """), {
                 "sid": body.student_id,
                 "aid": body.activity_id,
+                "ctype": consent_type,
             })
+            # Promises from §4: revoking C blurs existing stamps immediately;
+            # revoking E deletes the recorded path immediately.
+            if rung == "C":
+                from services.wayfinding_consent import coarsen_captures_now
+                await coarsen_captures_now(db, body.student_id, body.activity_id)
+            elif rung == "E":
+                from services.wayfinding_consent import delete_tracks_now
+                await delete_tracks_now(db, body.student_id, body.activity_id)
         await db.commit()
     except Exception as e:
         import logging

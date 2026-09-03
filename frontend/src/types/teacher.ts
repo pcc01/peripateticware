@@ -146,6 +146,21 @@ export interface ProjectListResponse {
 
 export type ProjectStatus = 'planning' | 'draft' | 'active' | 'completed' | 'archived'
 
+export interface WaypointInput {
+  id?: string
+  sequence_index: number
+  name: string
+  clue_text?: string | null
+  latitude: number
+  longitude: number
+  arrival_radius_meters: number
+  symbol?: string | null
+  required: boolean
+  capture_requirements?: Record<string, boolean> | null
+  hint_unlock_rule?: 'immediate' | 'on_arrival' | 'after_minutes' | null
+  hint_unlock_minutes?: number | null
+}
+
 export interface CreateActivityInput {
   title: string
   description: string
@@ -176,6 +191,12 @@ export interface CreateActivityInput {
   // GPS live-map feature: whether this activity prompts students for
   // location-sharing self-consent (13+) at session start.
   discovery_location_gps_capture_enabled?: boolean
+  // ── Multi-step scavenger-hunt wayfinding (WAYFINDING_CONSENT_LADDER.md) ──
+  discovery_wayfinding_enabled?: boolean
+  wayfinding_mode?: 'ordered' | 'free_choice' | 'guided_path' | null
+  wayfinding_capability_ceiling?: 'A' | 'B' | 'C' | 'D' | 'E' | null
+  route_geometry?: { type: 'LineString'; coordinates: [number, number][] } | null
+  waypoints?: WaypointInput[]
   // Structured Wikidata/Wikipedia place enrichment captured while setting the
   // location — saved with the activity so students can see it offline later.
   location_wiki_data?: Record<string, any> | null

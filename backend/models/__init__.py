@@ -17,6 +17,11 @@ from .database import (
     CurriculumUnit,
     # Activity Models
     Activity,
+    ActivityWaypoint,
+    SessionWaypointProgress,
+    SessionTrack,
+    AuthoringAnalytics,
+    HuntOutcomeAnalytics,
     Project,
     ProjectActivity,
     # Session Models
@@ -41,6 +46,11 @@ __all__ = [
     "CurriculumUnit",
     # Activity Models
     "Activity",
+    "ActivityWaypoint",
+    "SessionWaypointProgress",
+    "SessionTrack",
+    "AuthoringAnalytics",
+    "HuntOutcomeAnalytics",
     "Project",
     "ProjectActivity",
     # Session Models

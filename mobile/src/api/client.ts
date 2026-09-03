@@ -26,6 +26,7 @@ if (__DEV__) {
 }
 
 export const TOKEN_KEY = 'auth_token';
+export const USER_KEY = 'auth_user';
 
 export async function getToken(): Promise<string | null> {
   return AsyncStorage.getItem(TOKEN_KEY);
@@ -37,6 +38,39 @@ export async function setToken(token: string): Promise<void> {
 
 export async function clearToken(): Promise<void> {
   return AsyncStorage.removeItem(TOKEN_KEY);
+}
+
+/** Cached user profile (id/email/role) — persisted so a cold start with no
+ *  network can still restore an authenticated session instead of bouncing
+ *  to the login screen. Corrected/cleared by the next successful /auth/me. */
+export async function getStoredUser<T = unknown>(): Promise<T | null> {
+  const raw = await AsyncStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function setStoredUser(user: unknown): Promise<void> {
+  return AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+export async function clearStoredUser(): Promise<void> {
+  return AsyncStorage.removeItem(USER_KEY);
+}
+
+/** Thrown by apiFetch for a non-2xx response — carries the HTTP status so
+ *  callers can tell an auth rejection (401/403) from a server error, and
+ *  both of those from a network failure (a plain TypeError from fetch). */
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
 }
 
 export async function apiFetch<T>(
@@ -54,7 +88,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.detail ?? `HTTP ${res.status}`);
+    throw new ApiError(res.status, body?.detail ?? `HTTP ${res.status}`);
   }
   if (res.status === 204) return undefined as unknown as T;
   return res.json();
