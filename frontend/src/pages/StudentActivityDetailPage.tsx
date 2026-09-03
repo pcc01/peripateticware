@@ -57,6 +57,7 @@ const StudentActivityDetailPage: React.FC = () => {
     getActivityDetail,
     startSession,
     getSessionEvidence,
+    getSessionReflections,
     addEvidence,
     addReflection,
     submitActivity,
@@ -109,13 +110,39 @@ const StudentActivityDetailPage: React.FC = () => {
   const [reflection, setReflection]         = useState('');
   const [reflectionTitle, setReflectionTitle] = useState('');
 
-  // ── Load activity ──────────────────────────────────────────────────────────
+  // ── Load activity + resume an in-progress attempt ─────────────────────────
   useEffect(() => {
     if (!activityId) return;
     getActivityDetail(activityId)
-      .then(setActivity)
+      .then(async (act) => {
+        setActivity(act);
+        // The detail payload now carries the caller's latest session for this
+        // activity (my_session). If one is open, restore it so a reload lands
+        // the student back on their work instead of the "Before you begin"
+        // screen with everything apparently lost.
+        const ms = (act as any)?.my_session as
+          | { session_id: string; status: string; has_reflection?: boolean; evidence_count?: number }
+          | null | undefined;
+        if (ms?.session_id && (ms.status === 'in_progress' || ms.status === 'completed')) {
+          setSession({ session_id: ms.session_id, status: ms.status });
+          setPhase(ms.status === 'completed' ? 'done' : (ms.has_reflection ? 'reflect' : 'inquiry'));
+          loadEvidence(ms.session_id);
+          if (ms.has_reflection) {
+            try {
+              const refl = await getSessionReflections(ms.session_id);
+              const latest = refl?.entries?.[refl.entries.length - 1];
+              if (latest) {
+                setReflection(latest.content || '');
+                setReflectionTitle(latest.title || '');
+              }
+            } catch { /* non-fatal — textarea just starts empty */ }
+          }
+        }
+      })
       .catch(() => setPageError('Could not load activity.'))
       .finally(() => setPageLoading(false));
+  // loadEvidence / getSessionReflections are stable refs from useStudent()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityId]);
 
   // ── Start / resume session ─────────────────────────────────────────────────
@@ -222,9 +249,13 @@ const StudentActivityDetailPage: React.FC = () => {
   };
 
   // ── Submit completed activity ──────────────────────────────────────────────
-  const handleSubmit = async () => {
+  // Two-step so we don't use a native window.confirm() (unstyled, off-brand,
+  // and it blocks the main thread): the button flips showSubmitConfirm, an
+  // inline panel then calls doSubmit().
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const doSubmit = async () => {
     if (!activityId || !session) return;
-    if (!confirm('Submit this activity for review?')) return;
+    setShowSubmitConfirm(false);
     setSubmitLoading(true);
     setFeedback(null);
     try {
@@ -734,8 +765,8 @@ const StudentActivityDetailPage: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={handleSubmit}
-                  disabled={submitLoading}
+                  onClick={() => setShowSubmitConfirm(true)}
+                  disabled={submitLoading || showSubmitConfirm}
                   className="flex items-center gap-2 px-5 py-2.5 bg-green-700 text-white rounded-lg text-sm font-medium hover:bg-green-800 disabled:opacity-60 transition"
                 >
                   {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
@@ -749,6 +780,30 @@ const StudentActivityDetailPage: React.FC = () => {
                   ← Back to Inquiry
                 </button>
               </div>
+
+              {showSubmitConfirm && (
+                <div className="mt-3 rounded-lg border border-green-300 bg-green-50 p-4">
+                  <p className="text-sm text-gray-800 mb-3">
+                    {t('pages_studentactivitydetailpage.submit_confirm', 'Submit this activity for review? You won’t be able to add more evidence after this.')}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={doSubmit}
+                      disabled={submitLoading}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-700 text-white rounded-lg text-sm font-medium hover:bg-green-800 disabled:opacity-60 transition"
+                    >
+                      {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                      {t('pages_studentactivitydetailpage.yes_submit', 'Yes, submit')}
+                    </button>
+                    <button
+                      onClick={() => setShowSubmitConfirm(false)}
+                      className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition"
+                    >
+                      {t('pages_studentactivitydetailpage.cancel', 'Cancel')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useTranslation } from 'react-i18next';
 import { useSessionSecurity } from '@/hooks/useSessionSecurity';
 import { PRODUCT_NAME } from '../constants/brand';
+import TrialExpiryBanner from '../components/TrialExpiryBanner';
 
 export interface NavGroup {
   label: string;
@@ -168,6 +169,7 @@ const DashboardShell: React.FC<DashboardShellProps> = ({
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-auto" style={{ background: 'var(--bg, #f9f6f1)' }}>
         <div style={{ maxWidth: 'var(--max-width, 1200px)', margin: '0 auto', padding: '40px 21px', fontFamily: 'var(--font-body, sans-serif)' }}>
+          <TrialExpiryBanner />
           {children}
         </div>
       </main>

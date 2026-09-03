@@ -138,6 +138,13 @@ export default function SignupScreen({
         invite_token:     inviteToken,
       });
 
+      // Hand the homeschool onboarding wizard the state the parent just picked
+      // here, so its "Which state do you homeschool in?" step is pre-filled
+      // instead of starting blank. Wizard resolves this to its 2-letter code.
+      if (selectedRole === 'HOMESCHOOL' && effectiveCountryCode === 'US' && subdivisionCode) {
+        try { localStorage.setItem('hs_signup_subdivision', subdivisionCode); } catch { /* ignore */ }
+      }
+
       // Navigate based on whether the account is immediately active (EMAIL_DRY_RUN / dev)
       // or needs email verification (production).
       const signedUpUser = useAuthStore.getState().user;
@@ -266,7 +273,7 @@ export default function SignupScreen({
                   {...register('password')}
                   id="signup-password"
                   type="password"
-                  placeholder={t("landing:", "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022")}
+                  placeholder={t("components_auth_signupscreen.password_placeholder", "At least 8 characters")}
                   aria-describedby={errors.password ? "signup-password-error" : undefined}
                   aria-invalid={!!errors.password}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
@@ -287,7 +294,7 @@ export default function SignupScreen({
                   {...register('password_confirm')}
                   id="signup-password-confirm"
                   type="password"
-                  placeholder={t("landing:", "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022")}
+                  placeholder={t("components_auth_signupscreen.confirm_password_placeholder", "Re-enter your password")}
                   aria-describedby={errors.password_confirm ? "signup-password-confirm-error" : undefined}
                   aria-invalid={!!errors.password_confirm}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
@@ -370,7 +377,7 @@ export default function SignupScreen({
                     {COUNTRIES.map(c => (
                       <option key={c.code} value={c.code}>{c.label}</option>
                     ))}
-                    <option value="OTHER">{t('components_auth_signupscreen.other', '🌍 Other')}</option>
+                    <option value="OTHER">{t('components_auth_signupscreen.other', 'Other')}</option>
                   </select>
                 </div>
 

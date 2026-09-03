@@ -50,6 +50,7 @@ from routes.sessions import _fire_location_event
 from schemas.student_activities import (
     StudentActivitySummary,
     StudentActivityDetail,
+    StudentActivityMySession,
     ActivityPhaseDetail,
     ActivityPhases,
     ActivityDiscoveryDetail,
@@ -318,6 +319,33 @@ async def get_student_activity(
             ],
         )
 
+    # Resume support: the student's most recent attempt at this activity, if
+    # any. The detail page reads this on load so a reload mid-activity picks
+    # up where they left off instead of restarting from "Before you begin".
+    my_session = None
+    sess_row = (await db.execute(
+        select(LearningSession)
+        .where(and_(
+            LearningSession.user_id == current_user.id,
+            LearningSession.activity_id == activity_id,
+        ))
+        .order_by(LearningSession.created_at.desc())
+        .limit(1)
+    )).scalar_one_or_none()
+    if sess_row is not None:
+        refl_count = (await db.execute(
+            select(func.count(NotebookEntry.id)).where(NotebookEntry.session_id == sess_row.id)
+        )).scalar() or 0
+        ev_count = (await db.execute(
+            select(func.count(EvidenceCapture.id)).where(EvidenceCapture.session_id == sess_row.id)
+        )).scalar() or 0
+        my_session = StudentActivityMySession(
+            session_id=str(sess_row.id),
+            status=sess_row.status or "in_progress",
+            has_reflection=refl_count > 0,
+            evidence_count=int(ev_count),
+        )
+
     return StudentActivityDetail(
         **summary,
         location=activity.location_name,
@@ -338,6 +366,7 @@ async def get_student_activity(
         discovery_location_gps_capture_enabled=bool(
             getattr(activity, "discovery_location_gps_capture_enabled", False)
         ),
+        my_session=my_session,
     )
 
 

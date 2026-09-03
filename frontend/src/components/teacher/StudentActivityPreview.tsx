@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Paul Christopher Cerda
 // Block 13e — What the student sees on their phone
 import React from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTeacherStore } from '../../stores/teacher'
 
@@ -21,6 +21,11 @@ const StudentActivityPreview: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { t } = useTranslation('landing')
   const navigate = useNavigate()
+  // Same component is mounted under /teacher/... and /homeschool/... — send
+  // the back button wherever the user actually came from.
+  const activitiesBase = useLocation().pathname.startsWith('/homeschool')
+    ? '/homeschool/activities'
+    : '/teacher/activities'
   const { currentActivity, fetchActivity, activityLoading } = useTeacherStore()
 
   React.useEffect(() => {
@@ -35,7 +40,7 @@ const StudentActivityPreview: React.FC = () => {
       {/* Back button */}
       <div className="w-full max-w-sm mb-4">
         <button
-          onClick={() => navigate(id ? `/teacher/activities/${id}` : '/teacher/activities')}
+          onClick={() => navigate(id ? `${activitiesBase}/${id}` : activitiesBase)}
           className="text-sm flex items-center gap-1"
           style={{ color: 'var(--text-muted)' }}
         >

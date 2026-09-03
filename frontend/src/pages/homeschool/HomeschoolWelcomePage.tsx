@@ -49,6 +49,32 @@ interface Child {
   age_band:   string;
 }
 
+interface CreatedChildCredential {
+  name:     string;
+  email:    string;   // the child's login (a synthetic address, not a real inbox)
+  password: string;
+}
+
+// Readable, unique per-child password. Kid-typeable and satisfies the
+// backend's complexity rule (upper + lower + digit + special). NOT a shared
+// constant — every child gets their own, surfaced to the parent once.
+const NATURE_WORDS = [
+  'Oak', 'Fern', 'River', 'Maple', 'Cedar', 'Moss', 'Pine', 'Birch',
+  'Willow', 'Heron', 'Otter', 'Finch', 'Aspen', 'Clover', 'Hazel', 'Reed',
+];
+function generateChildPassword(): string {
+  const rand = (n: number) => {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      return crypto.getRandomValues(new Uint32Array(1))[0] % n;
+    }
+    return Math.floor(Math.random() * n);
+  };
+  const w1 = NATURE_WORDS[rand(NATURE_WORDS.length)];
+  const w2 = NATURE_WORDS[rand(NATURE_WORDS.length)].toLowerCase();
+  const digits = String(100 + rand(900)); // 3 digits
+  return `${w1}${w2}${digits}!`;
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 const HomeschoolWelcomePage: React.FC = () => {
   const { t } = useTranslation('landing');
@@ -61,10 +87,32 @@ const HomeschoolWelcomePage: React.FC = () => {
   const [children, setChildren] = useState<Child[]>([
     { name: '', grade: '1', age_band: 'k6' },
   ]);
+  // After children are created: their generated logins, shown to the parent
+  // once (they're never recoverable in plaintext later — parent resets from
+  // the Children page if lost).
+  const [createdCredentials, setCreatedCredentials] = useState<CreatedChildCredential[] | null>(null);
+  const [credsCopied, setCredsCopied] = useState(false);
 
   // Step 2 state — 2-letter state code (e.g. 'CA'), matching
   // HomeschoolRequirementsPage.tsx's stateCode / LS_STATE_KEY convention.
-  const [selectedState, setSelectedState] = useState('');
+  // Pre-fill from whatever the parent already picked: an existing
+  // hs_state_code, or the state chosen on the signup form's Teaching Context
+  // step (stored as hs_signup_subdivision — may be a code OR a full name).
+  const [selectedState, setSelectedState] = useState<string>(() => {
+    try {
+      const existing = localStorage.getItem(LS_STATE_KEY);
+      if (existing) return existing;
+      const fromSignup = (localStorage.getItem('hs_signup_subdivision') || '').trim();
+      if (fromSignup) {
+        const up = fromSignup.toUpperCase();
+        const match = US_STATES.find(
+          ([code, name]) => code === up || name.toLowerCase() === fromSignup.toLowerCase(),
+        );
+        if (match) return match[0];
+      }
+    } catch { /* ignore */ }
+    return '';
+  });
 
   const handleStateSelect = (code: string) => {
     setSelectedState(code);
@@ -91,29 +139,28 @@ const HomeschoolWelcomePage: React.FC = () => {
     setError(null);
     setSaving(true);
     let anyFailed = false;
+    const created: CreatedChildCredential[] = [];
     try {
       for (const child of valid) {
-        // The backend create_child requires email + password. The wizard only asks
-        // for name/grade, so generate placeholder credentials the parent can edit
-        // later on the Children page. (Previously the POST 422'd and was swallowed,
-        // so children never saved.)
+        // The wizard only asks for name/grade, but the backend needs a login.
+        // Generate a synthetic address (kids rarely have their own email) and
+        // a UNIQUE, random per-child password — surfaced to the parent below,
+        // never a shared constant.
         const slug = child.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'child';
-        // Not @homeschool.local — `.local` is an RFC 6762 special-use TLD
-        // that pydantic's EmailStr rejects outright ("special-use or
-        // reserved name"), confirmed live against this backend (every child
-        // created through this wizard was silently 422ing before this fix,
-        // caught by the existing anyFailed handling below but never
-        // surfaced as why). A subdomain of the real product domain passes
-        // validation and still can't collide with a real user's own email.
-        const payload = {
-          full_name:   child.name.trim(),
-          email:       `${slug}.${Math.random().toString(36).slice(2, 7)}@homeschool.peripateticware.com`,
-          password:    'Homeschool@1234',
-          grade_level: parseInt(child.grade) || 0,
-          age_band:    child.age_band,
-        };
+        // Not @homeschool.local — `.local` is an RFC 6762 special-use TLD that
+        // pydantic's EmailStr rejects. A subdomain of the real product domain
+        // passes validation and can't collide with a real user's own email.
+        const email = `${slug}.${Math.random().toString(36).slice(2, 7)}@homeschool.peripateticware.com`;
+        const password = generateChildPassword();
         try {
-          await apiClient.post(`/homeschool/children`, payload);
+          await apiClient.post(`/homeschool/children`, {
+            full_name:   child.name.trim(),
+            email,
+            password,
+            grade_level: parseInt(child.grade) || 0,
+            age_band:    child.age_band,
+          });
+          created.push({ name: child.name.trim(), email, password });
         } catch (err: any) {
           if (err?.statusCode === 402 || err?.response?.status === 402) {
             const body = err?.originalError?.response?.data ?? err?.response?.data ?? {};
@@ -124,14 +171,31 @@ const HomeschoolWelcomePage: React.FC = () => {
           anyFailed = true;
         }
       }
-      // Advance regardless — onboarding must never trap the user on this screen.
       if (anyFailed) {
         setError('Some children could not be saved automatically — you can add them later from the Children page.');
       }
-      setStep(1);
+      if (created.length) {
+        // Show the credentials panel before advancing — the parent must be
+        // able to copy/print these; they can't be shown again in plaintext.
+        setCreatedCredentials(created);
+      } else {
+        setStep(1);
+      }
     } finally {
       setSaving(false);
     }
+  };
+
+  const credentialsText = (creds: CreatedChildCredential[]) =>
+    creds.map(c => `${c.name}\n  Login:    ${c.email}\n  Password: ${c.password}`).join('\n\n');
+
+  const copyCredentials = async () => {
+    if (!createdCredentials) return;
+    try {
+      await navigator.clipboard.writeText(credentialsText(createdCredentials));
+      setCredsCopied(true);
+      setTimeout(() => setCredsCopied(false), 2500);
+    } catch { /* clipboard blocked — the parent can still select the text */ }
   };
 
   const dismiss = async () => {
@@ -208,8 +272,50 @@ const HomeschoolWelcomePage: React.FC = () => {
         {/* Step content */}
         <div style={{ padding: '1.75rem 2rem' }}>
 
+          {/* ── Step 0a: child logins created — show once ── */}
+          {step === 0 && createdCredentials && (
+            <div>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.4rem' }}>
+                {t('pages_homeschool_homeschoolwelcomepage.childrens_logins', 'Your children\'s logins')}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                {t('pages_homeschool_homeschoolwelcomepage.save_these_now', 'Save or print these now — for your child\'s privacy we can\'t show the password again. You can reset it any time from the Children page.')}
+              </p>
+              <div style={{
+                border: '1px solid var(--border)', borderRadius: '0.5rem',
+                background: 'var(--bg)', padding: '0.75rem 1rem', marginBottom: '0.75rem',
+                display: 'flex', flexDirection: 'column', gap: '0.75rem',
+              }}>
+                {createdCredentials.map((c, i) => (
+                  <div key={i} style={{ fontSize: '0.85rem', lineHeight: 1.5 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text)' }}>{c.name}</div>
+                    <div style={{ color: 'var(--text-muted)' }}>
+                      {t('pages_homeschool_homeschoolwelcomepage.login_label', 'Login')}: <code style={{ color: 'var(--text)' }}>{c.email}</code>
+                    </div>
+                    <div style={{ color: 'var(--text-muted)' }}>
+                      {t('pages_homeschool_homeschoolwelcomepage.password_label', 'Password')}: <code style={{ color: 'var(--text)' }}>{c.password}</code>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={copyCredentials}
+                style={{
+                  background: 'none', border: '1px solid var(--border)',
+                  color: 'var(--text)', borderRadius: '0.35rem',
+                  padding: '0.4rem 0.9rem', cursor: 'pointer', fontSize: '0.8rem',
+                }}
+              >
+                {credsCopied
+                  ? t('pages_homeschool_homeschoolwelcomepage.copied', 'Copied ✓')
+                  : t('pages_homeschool_homeschoolwelcomepage.copy_all', 'Copy all')}
+              </button>
+              {error && <p style={{ color: '#b45309', fontSize: '0.8rem', marginTop: '0.75rem' }}>{error}</p>}
+            </div>
+          )}
+
           {/* ── Step 0: Children ── */}
-          {step === 0 && (
+          {step === 0 && !createdCredentials && (
             <div>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.4rem' }}>{t('pages_homeschool_homeschoolwelcomepage.who_are_you_teaching', 'Who are you teaching?')}</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{t('pages_homeschool_homeschoolwelcomepage.add_each_childs_name_and_grade_you_can_a', 'Add each child\'s name and grade. You can add more children later from the Children page.')}</p>
@@ -325,7 +431,11 @@ const HomeschoolWelcomePage: React.FC = () => {
           }}>
             <button
               onClick={() => step > 0 ? setStep(s => s - 1) : goToDashboard()}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem' }}
+              disabled={step === 0 && !!createdCredentials}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted)',
+                cursor: (step === 0 && !!createdCredentials) ? 'default' : 'pointer',
+                visibility: (step === 0 && !!createdCredentials) ? 'hidden' : 'visible',
+                display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem' }}
             >
               <ChevronLeft size={16} />
               {step === 0 ? 'Skip setup' : 'Back'}
@@ -333,7 +443,8 @@ const HomeschoolWelcomePage: React.FC = () => {
 
             <button
               onClick={() => {
-                if (step === 0) saveChildren();
+                if (step === 0 && createdCredentials) { setCreatedCredentials(null); setStep(1); }
+                else if (step === 0) saveChildren();
                 else setStep(s => s + 1);
               }}
               disabled={saving}
@@ -345,7 +456,7 @@ const HomeschoolWelcomePage: React.FC = () => {
                 cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.7 : 1,
               }}
             >
-              {saving ? 'Saving…' : step === 1 ? 'Continue' : 'Continue'}
+              {saving ? 'Saving…' : (step === 0 && createdCredentials) ? 'I\'ve saved these' : 'Continue'}
               <ChevronRight size={16} />
             </button>
           </div>

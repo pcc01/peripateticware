@@ -67,7 +67,13 @@ export const HomeschoolDashboard: React.FC = () => {
       });
   }, []);
 
-  const firstName = user?.full_name?.split(' ')[0] || 'there';
+  // full_name / first_name now come through on the login + /me responses;
+  // fall back to the email local-part before the generic "there".
+  const firstName =
+    user?.first_name?.trim() ||
+    user?.full_name?.trim().split(' ')[0] ||
+    user?.email?.split('@')[0] ||
+    'there';
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>

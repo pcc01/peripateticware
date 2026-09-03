@@ -714,6 +714,12 @@ export function useStudent() {
     getSessionProgress: (sessionId: string) =>
       axiosInstance.get(`/student/sessions/${sessionId}/progress`).then((r) => r.data),
 
+    // List saved reflections for a session (used to resume an in-progress attempt)
+    getSessionReflections: (sessionId: string) =>
+      axiosInstance.get<{ entries: Array<{ id: string; title?: string | null; content: string }>; total: number }>(
+        `/student/sessions/${sessionId}/reflections`
+      ).then((r) => r.data),
+
     // Submit a completed activity (field_only mode)
     submitActivity: (activityId: string, sessionId: string) =>
       axiosInstance.post(`/student/activities/${activityId}/submit`, { session_id: sessionId }).then((r) => r.data),

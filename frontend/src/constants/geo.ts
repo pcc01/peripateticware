@@ -22,19 +22,23 @@ export interface CountryOption {
 // entry) for anything not listed — matches PrivacySetupWizard's existing
 // non-US flow. Not exhaustive; the backend's jurisdiction resolver and
 // privacy_source_registry cover far more countries than this UI curates.
+// No flag emoji in the labels: Windows (Chrome/Edge) ships no flag-emoji font,
+// so 🇺🇸 degrades to the bare regional-indicator letters and the <select>
+// renders "us United States", "gb United Kingdom", etc. Plain names read
+// correctly everywhere.
 export const COUNTRIES: CountryOption[] = [
-  { code: 'US', label: '🇺🇸 United States' },
-  { code: 'GB', label: '🇬🇧 United Kingdom' },
-  { code: 'CA', label: '🇨🇦 Canada' },
-  { code: 'AU', label: '🇦🇺 Australia' },
-  { code: 'DE', label: '🇩🇪 Germany' },
-  { code: 'FR', label: '🇫🇷 France' },
-  { code: 'NL', label: '🇳🇱 Netherlands' },
-  { code: 'BR', label: '🇧🇷 Brazil' },
-  { code: 'IN', label: '🇮🇳 India' },
-  { code: 'SG', label: '🇸🇬 Singapore' },
-  { code: 'MX', label: '🇲🇽 Mexico' },
-  { code: 'ZA', label: '🇿🇦 South Africa' },
+  { code: 'US', label: 'United States' },
+  { code: 'GB', label: 'United Kingdom' },
+  { code: 'CA', label: 'Canada' },
+  { code: 'AU', label: 'Australia' },
+  { code: 'DE', label: 'Germany' },
+  { code: 'FR', label: 'France' },
+  { code: 'NL', label: 'Netherlands' },
+  { code: 'BR', label: 'Brazil' },
+  { code: 'IN', label: 'India' },
+  { code: 'SG', label: 'Singapore' },
+  { code: 'MX', label: 'Mexico' },
+  { code: 'ZA', label: 'South Africa' },
 ];
 
 export const EU_COUNTRIES = [

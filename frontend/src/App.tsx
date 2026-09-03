@@ -493,6 +493,7 @@ const App: React.FC = () => {
           <Route path="/homeschool/progress" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolProgressPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityListPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities/new" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
+          <Route path="/homeschool/activities/:id/student-preview" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><StudentActivityPreview /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/activities/:id" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><ActivityManager /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/tracking-settings" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><TrackingSettingsPage /></HomeschoolLayout></ProtectedRoute>} />
           <Route path="/homeschool/requirements" element={<ProtectedRoute requiredRole="homeschool"><HomeschoolLayout><HomeschoolRequirementsPage /></HomeschoolLayout></ProtectedRoute>} />

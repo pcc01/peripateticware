@@ -149,6 +149,30 @@ const ActivityManager = () => {
   });
   const [taxonomyType, setTaxonomyType] = useState<string>('blooms');
   const [rubrics, setRubrics] = useState<{ id: string; title: string }[]>([]);
+
+  // Homeschool, creating a new activity: default the grade to the child's
+  // grade rather than a hard-coded 5. (Teacher mode keeps the neutral default
+  // — an org teacher builds for a whole class, not one grade.)
+  const isHomeschool = location.pathname.startsWith('/homeschool');
+  useEffect(() => {
+    if (!isHomeschool || isEditing) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/v1/homeschool/children', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('auth_token') || ''}` },
+        });
+        if (!res.ok) return;
+        const kids = await res.json();
+        const g = Array.isArray(kids) && kids.length ? Number(kids[0]?.grade_level) : NaN;
+        if (!cancelled && Number.isFinite(g) && g >= 3 && g <= 12) {
+          setFormData(f => ({ ...f, grade_level: g }));
+        }
+      } catch { /* keep the default */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isHomeschool, isEditing]);
+
   const [selectedRubricId, setSelectedRubricId] = useState('');
   // Filter-as-you-type for the rubric list — a plain <select> gets slow to
   // scan once a teacher has more than a handful of rubrics.
@@ -276,6 +300,10 @@ const ActivityManager = () => {
   const [taxonomySuggestion, setTaxonomySuggestion] = useState<{ value: string; label: string; rationale: string } | null>(null);
   const geoLatLngTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const geoNameTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // True once the user has typed their own location name — after that, a
+  // reverse-geocode from a lat/lng change must NOT overwrite it (it was
+  // replacing "Back yard, Austin TX" with the nearest street address).
+  const locationNameEdited = useRef(false);
 
   const handleAISuggestionSelected = (suggestion: AcceptedSuggestion) => {
     setFormData(f => {
@@ -318,19 +346,21 @@ const ActivityManager = () => {
     if (geoLatLngTimer.current) clearTimeout(geoLatLngTimer.current);
     geoLatLngTimer.current = setTimeout(async () => {
       if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+      // Don't clobber a name the user typed themselves — only auto-fill an
+      // empty (or previously auto-filled) location name from the coordinates.
+      if (locationNameEdited.current) { setGeoStatus(''); return; }
       setGeoStatus('Looking up location…');
       const name = await reverseGeocode(lat, lng);
-      if (name) {
+      if (name && !locationNameEdited.current) {
         setFormData(f => ({ ...f, location_name: name }));
-        setGeoStatus('');
-      } else {
-        setGeoStatus('');
       }
+      setGeoStatus('');
     }, 800);
   };
 
   // Forward geocode when location name changes (debounced 1000 ms)
   const handleLocationNameChange = (name: string) => {
+    locationNameEdited.current = name.trim().length > 0;
     setFormData(f => ({ ...f, location_name: name }));
     if (geoNameTimer.current) clearTimeout(geoNameTimer.current);
     if (name.length < 4) return;

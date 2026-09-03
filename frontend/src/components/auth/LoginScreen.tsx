@@ -166,7 +166,11 @@ export default function LoginScreen({
             <p className="text-gray-600">{t('auth.login_subtitle')}</p>
           </div>
 
-          {/* Demo accounts */}
+          {/* Demo accounts — dev/staging only. Never render on production:
+              it advertised a working one-click login (incl. Admin) plus the
+              shared password in plaintext. Opt a demo/staging deploy back in
+              with VITE_SHOW_DEMO_LOGINS=true at build time. */}
+          {(import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_LOGINS === 'true') && (
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.75rem', padding: '12px', marginBottom: '16px' }}>
             <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534', marginBottom: '8px', letterSpacing: '0.05em' }}>{t('components_auth_loginscreen.try_a_demo_account', 'TRY A DEMO ACCOUNT')}</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
@@ -189,6 +193,7 @@ export default function LoginScreen({
             </div>
             <p style={{ fontSize: '0.68rem', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>{t('components_auth_loginscreen.password_securepass123', 'Password: SecurePass123!')}</p>
           </div>
+          )}
 
           {statusBanner}
 

@@ -83,6 +83,19 @@ async def geo_hint(request: Request):
         subdivision_support=False,
     )
 
+    # Cloudflare (and the cloudflared tunnel in front of prod) stamps every
+    # proxied request with CF-IPCountry — a free, reliable 2-letter ISO code.
+    # Prefer it: behind the tunnel the backend only ever sees a loopback /
+    # private peer address, so the MaxMind path below always fell through to
+    # nulls in production and the signup form's country never pre-filled.
+    cf_country = (request.headers.get("CF-IPCountry") or "").strip().upper()
+    if cf_country and cf_country not in ("XX", "T1", "A1", "A2", ""):
+        return GeoHintResponse(
+            country_code=cf_country,
+            country_name=None,  # frontend only needs the code to pre-select
+            subdivision_support=(cf_country in SUBDIVISION_SUPPORT),
+        )
+
     ip = _client_ip(request)
     if not ip:
         return empty

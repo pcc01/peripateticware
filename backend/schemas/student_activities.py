@@ -117,6 +117,14 @@ class ActivityTeacher(BaseModel):
     name: str
 
 
+class StudentActivityMySession(BaseModel):
+    """The caller's current/most-recent attempt at an activity (for resume)."""
+    session_id:     str
+    status:         str            # in_progress | completed | submitted
+    has_reflection: bool = False
+    evidence_count: int  = 0
+
+
 class StudentActivityDetail(StudentActivitySummary):
     """
     Full activity detail shown on the activity brief / Phase 1 screen (03 / 04).
@@ -145,6 +153,10 @@ class StudentActivityDetail(StudentActivitySummary):
     # GPS live-map feature: tells the client whether to prompt the student
     # for location-sharing self-consent (13+) before/at session start.
     discovery_location_gps_capture_enabled: Optional[bool] = False
+    # The caller's most recent session for this activity, if any — lets the
+    # detail page resume an in-progress attempt on reload instead of showing
+    # the "Before you begin" screen from scratch. None = never started.
+    my_session: Optional[StudentActivityMySession] = None
 
 
 class StudentPaginatedActivityResponse(BaseModel):

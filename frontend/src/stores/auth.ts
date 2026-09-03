@@ -231,6 +231,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           email: data.email,
           role: (data.role || 'STUDENT').toLowerCase(),
           org_id: data.org_id ?? null,
+          first_name: data.first_name ?? undefined,
+          full_name: data.full_name ?? undefined,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -289,6 +291,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           email: data.email,
           role: (data.role || 'STUDENT').toLowerCase(),
           org_id: data.org_id ?? null,
+          first_name: data.first_name ?? undefined,
+          full_name: data.full_name ?? undefined,
         }
         if (!user.id || !user.email || !user.role) {
           throw new Error('Invalid response: missing user fields')
@@ -384,6 +388,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           role: (result.role || 'TEACHER').toLowerCase(),
           org_id: result.org_id ?? null,
           is_active: result.is_active ?? false,
+          first_name: result.first_name ?? undefined,
+          full_name: result.full_name ?? undefined,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -469,6 +475,8 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           email: data.email ?? get().user?.email ?? '',
           role: data.role ? data.role.toLowerCase() : (get().user?.role ?? ''),
           org_id: data.org_id !== undefined ? (data.org_id ?? null) : get().user?.org_id,
+          first_name: data.first_name ?? get().user?.first_name,
+          full_name: data.full_name ?? get().user?.full_name,
         }
         set({ user: freshUser, isAuthenticated: true })
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshUser))

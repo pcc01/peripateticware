@@ -163,6 +163,10 @@ class TokenResponse(BaseModel):
     expires_in: int
     is_active: Optional[bool] = None
     mfa_required: bool = False
+    # Included so the SPA can greet the user by name straight after login/
+    # signup without a second /auth/me round-trip.
+    first_name: Optional[str] = None
+    full_name: Optional[str] = None
     
     class Config:
         json_schema_extra = {
@@ -396,9 +400,11 @@ async def login(
             email=user.email,
             role=user.role,
             org_id=str(user.org_id) if user.org_id else None,
-            expires_in=_EXPIRES_IN_SECONDS
+            expires_in=_EXPIRES_IN_SECONDS,
+            first_name=getattr(user, "first_name", None),
+            full_name=getattr(user, "full_name", None),
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -599,6 +605,8 @@ async def signup(
             org_id=str(new_user.org_id) if new_user.org_id else None,
             expires_in=_EXPIRES_IN_SECONDS,
             is_active=new_user.is_active,
+            first_name=getattr(new_user, "first_name", None),
+            full_name=getattr(new_user, "full_name", None),
         )
         
     except HTTPException:
@@ -619,6 +627,8 @@ class MeResponse(BaseModel):
     email: str
     role: str
     org_id: Optional[str] = None
+    first_name: Optional[str] = None
+    full_name: Optional[str] = None
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
@@ -658,6 +668,8 @@ async def get_current_user(
         email=user.email,
         role=user.role,
         org_id=str(user.org_id) if user.org_id else None,
+        first_name=getattr(user, "first_name", None),
+        full_name=getattr(user, "full_name", None),
     )
 
 
@@ -1007,6 +1019,8 @@ async def mfa_login(
         role=user.role,
         org_id=str(user.org_id) if user.org_id else None,
         expires_in=_EXPIRES_IN_SECONDS,
+        first_name=getattr(user, "first_name", None),
+        full_name=getattr(user, "full_name", None),
     )
 
 
