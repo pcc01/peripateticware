@@ -802,7 +802,7 @@ export const LandingPage: React.FC = () => {
               { name: t('pricing_tier.homeschool.name', 'Homeschool'), highlight: false,
                 price: t('pricing_tier.homeschool.price', '$11.99'),
                 priceUnit: t('pricing_tier.homeschool.price_unit', '/mo'),
-                priceNote: t('pricing_tier.homeschool.price_note', 'or $99.99/year · 30-day free trial · always free for 1 child'),
+                priceNote: t('pricing_tier.homeschool.price_note', 'or $99.99/year — save 30% · 30-day free trial · always free for 1 child'),
                 ctaLabel: t('pricing_tier.homeschool.cta', 'Start free trial'),
                 features: [
                   t('pricing_tier.homeschool.feature.1', 'Family accounts'),
