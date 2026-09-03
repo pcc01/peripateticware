@@ -230,6 +230,11 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = os.getenv("EMAIL_FROM", "noreply@peripateticware.com")
     ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")  # platform admin alert recipient; falls back to EMAIL_FROM if empty
     EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "Peripateticware")
+    # Reply-To for the few emails whose copy invites a reply (welcome,
+    # beta-request confirmation). From stays EMAIL_FROM (noreply@) for
+    # deliverability; this points humans at a monitored mailbox. Blank = no
+    # Reply-To header (replies then go to EMAIL_FROM).
+    EMAIL_REPLY_TO: str = os.getenv("EMAIL_REPLY_TO", "hello@peripateticware.com")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
     # Set EMAIL_DRY_RUN=false in production to send real emails
     EMAIL_DRY_RUN: bool = os.getenv("EMAIL_DRY_RUN", "true").lower() == "true"

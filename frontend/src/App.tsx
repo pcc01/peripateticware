@@ -34,7 +34,6 @@ const BlogListPage = React.lazy(() => import('./pages/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./pages/BlogPostPage'));
 const LoginScreen = React.lazy(() => import('./components/auth/LoginScreen'));
 const SignUpScreen = React.lazy(() => import('./components/auth/SignUpScreen'));
-const RequestBetaPage = React.lazy(() => import('./components/auth/RequestBetaPage'));
 const LicensingPage = React.lazy(() => import('./pages/LicensingPage'));
 
 const StudentDashboard = React.lazy(() => import('./pages/StudentDashboard'));
@@ -295,28 +294,6 @@ const SignUpScreenWrapper: React.FC = () => {
   return <SignUpScreen onSignup={handleSignup} error={error} loading={loading} formData={formData} onFormChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))} />
 }
 
-// Gates the /signup route between the real signup form and the "Request Beta
-// Access" page, based on the backend's SIGNUP_MODE config. Open mode (default)
-// always shows the real form — zero behaviour change from before this existed.
-// Invite-only mode shows the Request Beta page unless a ?invite=CODE param is
-// present, in which case the real form is shown (and the code is validated by
-// the backend on submit).
-const SignupGateWrapper: React.FC = () => {
-  const [signupMode, setSignupMode] = useState<'open' | 'invite_only' | 'loading'>('loading')
-  const hasInviteParam = new URLSearchParams(window.location.search).has('invite')
-
-  useEffect(() => {
-    fetch('/api/v1/config/public')
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => setSignupMode(data?.signup_mode === 'invite_only' ? 'invite_only' : 'open'))
-      .catch(() => setSignupMode('open')) // fail open — never block signup on a config-fetch hiccup
-  }, [])
-
-  if (signupMode === 'loading') return null
-  if (signupMode === 'invite_only' && !hasInviteParam) return <RequestBetaPage />
-  return <SignUpScreenWrapper />
-}
-
 /** Decodes the `is_content_admin` claim out of a JWT without verifying its
  *  signature (browser-side only -- same technique layouts/PlatformShell.tsx's
  *  isPlatformAdminToken() uses). Deliberately independent of role='admin' --
@@ -424,8 +401,9 @@ const App: React.FC = () => {
           <Route path="/do-not-sell" element={<DoNotSellPage />} />
           <Route path="/parent-consent/:token" element={<ParentConsentPage />} />
           <Route path="/login" element={<LoginScreenWrapper />} />
-          <Route path="/signup" element={<SignupGateWrapper />} />
-          <Route path="/request-beta" element={<RequestBetaPage />} />
+          <Route path="/signup" element={<SignUpScreenWrapper />} />
+          {/* Beta funnel retired — signups are open. Redirect stale links. */}
+          <Route path="/request-beta" element={<Navigate to="/signup" replace />} />
           <Route path="/licensing" element={<LicensingPage />} />
           <Route path="/verify-email-pending" element={<VerifyEmailPendingPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

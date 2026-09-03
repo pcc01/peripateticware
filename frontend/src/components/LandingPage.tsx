@@ -759,10 +759,10 @@ export const LandingPage: React.FC = () => {
           </p>
           <button
             type="button"
-            onClick={() => navigate('/request-beta')}
+            onClick={() => navigate('/signup')}
             className="btn btn--primary">
 
-            {t('early_access_cta', 'Request Early Access')}
+            {t('early_access_cta', 'Create your free account')}
           </button>
         </div>
       </section>

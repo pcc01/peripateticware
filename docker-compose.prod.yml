@@ -86,6 +86,11 @@ services:
       ENVIRONMENT: production
       DEBUG: 'false'
       LOG_LEVEL: INFO
+      # Public self-signup is open in production (students still need a
+      # classroom invite — enforced in routes/auth.py). Set here rather than
+      # relying on .env so the prod policy lives in version control; this
+      # `environment:` entry also wins over any stale SIGNUP_MODE in .env.
+      SIGNUP_MODE: open
       # Required for core/encryption.py's decrypt-fallback Counter (and any
       # future prometheus_client metric) to aggregate correctly across all 8
       # gunicorn workers instead of each worker reporting its own fraction.

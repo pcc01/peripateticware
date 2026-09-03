@@ -73,10 +73,14 @@ def _wrap(header_title: str, header_sub: str, body_html: str) -> str:
 # Core send function
 # ---------------------------------------------------------------------------
 
-async def _send(to: str, subject: str, html: str, text: Optional[str] = None) -> bool:
+async def _send(to: str, subject: str, html: str, text: Optional[str] = None,
+                reply_to: Optional[str] = None) -> bool:
     """
     Send an email. Returns True on success.
     In dry-run mode logs the email instead of sending.
+
+    reply_to: set a Reply-To header (used for emails whose copy invites a
+    reply). From stays EMAIL_FROM regardless.
     """
     if settings.EMAIL_DRY_RUN or not settings.SMTP_HOST:
         logger.info(
@@ -90,6 +94,8 @@ async def _send(to: str, subject: str, html: str, text: Optional[str] = None) ->
     msg["From"] = f"{settings.EMAIL_FROM_NAME} <{settings.EMAIL_FROM}>"
     msg["To"] = to
     msg["Subject"] = subject
+    if reply_to:
+        msg["Reply-To"] = reply_to
 
     if text:
         msg.attach(MIMEText(text, "plain"))
@@ -175,7 +181,8 @@ async def send_welcome_email(to: str, name: str, role: str) -> bool:
         <p>If you have questions, reply to this email — we read everything.</p>
         """,
     )
-    return await _send(to, f"Welcome to Peripateticware, {name}!", html)
+    return await _send(to, f"Welcome to Peripateticware, {name}!", html,
+                       reply_to=settings.EMAIL_REPLY_TO or None)
 
 
 async def send_beta_request_confirmation(to: str, name: str) -> bool:
@@ -193,7 +200,8 @@ async def send_beta_request_confirmation(to: str, name: str) -> bool:
         <p>If you have questions in the meantime, just reply to this email.</p>
         """,
     )
-    return await _send(to, "We've received your Peripateticware beta request", html)
+    return await _send(to, "We've received your Peripateticware beta request", html,
+                       reply_to=settings.EMAIL_REPLY_TO or None)
 
 
 async def send_parent_consent_email(to: str, token: str, student_name: str) -> bool:
