@@ -25,7 +25,9 @@
 import React, { useEffect, useState } from 'react';
 
 const SHOW_WITHIN_DAYS = 7;
-const PRICING_URL = '/licensing';
+// The pricing section on the marketing page — /licensing is the software
+// (BSL) licence explainer, not the subscription plans.
+const PRICING_URL = '/#pricing';
 
 interface BillingStatus {
   license_tier?: string;

@@ -727,7 +727,14 @@ except Exception as e:
 
 try:
     from routes.paddle_webhook import router as paddle_webhook_router
-    app.include_router(paddle_webhook_router)
+    # Mounted under /api/v1 so the public URL is
+    #   https://peripateticware.com/api/v1/webhooks/paddle
+    # In production the Cloudflare tunnel + frontend nginx only path-route
+    # /api/* (and /health) to the backend — a bare /webhooks/paddle would be
+    # served the SPA's index.html and Paddle would see a "successful" 200 while
+    # the backend never processed the event. Configure this exact URL as the
+    # notification destination in the Paddle dashboard.
+    app.include_router(paddle_webhook_router, prefix="/api/v1")
 except Exception as e:
     print(f"Warning: could not register paddle_webhook_router: {e}")
 

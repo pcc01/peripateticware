@@ -25,6 +25,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Zap, ExternalLink, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../stores/auth';
 
 interface UpgradeCTAProps {
   featureName:   string;
@@ -49,7 +50,13 @@ declare global {
   interface Window {
     Paddle?: {
       Initialize: (opts: { token: string }) => void;
-      Checkout: { open: (opts: { items: { priceId: string; quantity: number }[] }) => void };
+      Checkout: {
+        open: (opts: {
+          items: { priceId: string; quantity: number }[];
+          customData?: Record<string, string>;
+          customer?: { email?: string };
+        }) => void;
+      };
       Environment: { set: (env: string) => void };
     };
   }
@@ -88,6 +95,11 @@ export default function UpgradeCTA({
   const { t } = useTranslation('landing');
   const paddleReady = usePaddle();
   const [opening, setOpening] = useState(false);
+  // The Paddle webhook resolves which org to upgrade from checkout custom_data
+  // (backend/routes/paddle_webhook.py::_handle_subscription_created). Without
+  // this, a completed checkout fires subscription.created with no org_id and
+  // the upgrade is silently dropped.
+  const user = useAuthStore((s) => s.user);
 
   const tierLabel = TIER_LABELS[requiredTier] ?? requiredTier;
 
@@ -97,6 +109,8 @@ export default function UpgradeCTA({
       try {
         window.Paddle.Checkout.open({
           items: [{ priceId: paddlePriceId, quantity: 1 }],
+          customData: user?.org_id ? { org_id: String(user.org_id) } : undefined,
+          customer: user?.email ? { email: user.email } : undefined,
         });
       } catch (e) {
         console.error('[UpgradeCTA] Paddle checkout error:', e);

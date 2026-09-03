@@ -18,6 +18,13 @@ services:
       target: production   # static build served by nginx — NOT the Vite dev server
       args:
         NODE_ENV: production
+        # Paddle client-side config, baked into the bundle at build time.
+        # Values come from the prod .env (all optional — unset ships without
+        # Paddle). Set VITE_PADDLE_ENVIRONMENT=sandbox for the Paddle sandbox.
+        VITE_PADDLE_ENVIRONMENT: ${VITE_PADDLE_ENVIRONMENT:-production}
+        VITE_PADDLE_CLIENT_TOKEN: ${VITE_PADDLE_CLIENT_TOKEN:-}
+        VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY: ${VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY:-}
+        VITE_PADDLE_PRICE_SCHOOL: ${VITE_PADDLE_PRICE_SCHOOL:-}
     restart: always
     environment:
       NODE_ENV: production

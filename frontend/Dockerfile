@@ -55,6 +55,22 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
 # ─────────────────────────────────────────────────────────────────────────────
 FROM dev AS build
 ENV NODE_ENV=production
+
+# ── Paddle (billing) client-side config ──────────────────────────────────────
+# Vite inlines import.meta.env.VITE_* from the environment during `vite build`,
+# so these must be present at IMAGE BUILD time (not container runtime). Passed
+# through docker-compose.prod.yml's build.args from the prod .env. Leave unset
+# to ship without Paddle — the checkout CTAs then fall back to a contact link.
+# Set VITE_PADDLE_ENVIRONMENT=sandbox to point Paddle.js at the sandbox.
+ARG VITE_PADDLE_ENVIRONMENT=production
+ARG VITE_PADDLE_CLIENT_TOKEN=
+ARG VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY=
+ARG VITE_PADDLE_PRICE_SCHOOL=
+ENV VITE_PADDLE_ENVIRONMENT=$VITE_PADDLE_ENVIRONMENT \
+    VITE_PADDLE_CLIENT_TOKEN=$VITE_PADDLE_CLIENT_TOKEN \
+    VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY=$VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY \
+    VITE_PADDLE_PRICE_SCHOOL=$VITE_PADDLE_PRICE_SCHOOL
+
 RUN npx vite build
 
 # Prerender public marketing/legal routes to static HTML for crawlers/bots
