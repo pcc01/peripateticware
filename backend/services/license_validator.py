@@ -76,6 +76,27 @@ BYOK_TIERS: frozenset[str] = frozenset([
 ])
 
 
+# Per-tier seat limits written to organizations.{max_teachers,max_classrooms,
+# max_students,max_students_per_classroom}. Single source of truth: the signup
+# path (services/signup_service.py), the beta-expiry downgrade
+# (tasks/beta_expiry.py) and the Paddle webhook (routes/paddle_webhook.py) all
+# read from here so an upgrade actually raises the org's caps (before this the
+# webhook set license_tier but never the seat columns, so a Teacher who paid
+# still had the free-tier 1-classroom cap). A tier absent from this map leaves
+# the org's existing limits untouched.
+TIER_LIMITS: dict[str, dict[str, int]] = {
+    "free": {
+        "max_teachers": 3, "max_classrooms": 1,
+        "max_students": 30, "max_students_per_classroom": 30,
+    },
+    # Paid individual-teacher plan ("Teacher" on the pricing page).
+    "starter": {
+        "max_teachers": 3, "max_classrooms": 5,
+        "max_students": 175, "max_students_per_classroom": 35,
+    },
+}
+
+
 def tier_rank(tier: Optional[str]) -> int:
     """Return numeric rank for comparison; unknown tiers rank as 0 (free)."""
     try:

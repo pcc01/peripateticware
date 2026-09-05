@@ -776,9 +776,13 @@ export const LandingPage: React.FC = () => {
           {/* Tier cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
             {([
-              { name: t('pricing_tier.personal.name', 'Personal'), highlight: false,
+              { name: t('pricing_tier.personal.name', 'Teacher'), highlight: false,
+                price: t('pricing_tier.personal.price', '$11.99'),
+                priceUnit: t('pricing_tier.personal.price_unit', '/mo'),
+                priceNote: t('pricing_tier.personal.price_note', '30-day free trial · no credit card required'),
+                ctaLabel: t('pricing_tier.personal.cta', 'Start free trial'),
                 features: [
-                  t('pricing_tier.personal.feature.1', 'Individual classrooms'),
+                  t('pricing_tier.personal.feature.1', 'Up to 5 classrooms'),
                   t('pricing_tier.personal.feature.2', 'Core activity types'),
                   t('pricing_tier.personal.feature.3', 'Peri AI'),
                   t('pricing_tier.personal.feature.4', 'Evidence capture'),

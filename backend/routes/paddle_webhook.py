@@ -38,6 +38,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
 from core.database import get_db
 from fastapi import Depends
+from services.license_validator import TIER_LIMITS
+
+
+async def _apply_tier_limits(db: AsyncSession, org_id: str, tier: str) -> None:
+    """Bump the org's seat caps to match `tier` (no-op for tiers not in the
+    map, e.g. custom enterprise deals whose limits are set by hand)."""
+    limits = TIER_LIMITS.get(tier)
+    if not limits or not org_id:
+        return
+    await db.execute(text("""
+        UPDATE organizations
+        SET    max_teachers                = :max_teachers,
+               max_classrooms              = :max_classrooms,
+               max_students                = :max_students,
+               max_students_per_classroom  = :max_students_per_classroom,
+               updated_at                  = NOW()
+        WHERE  id = :org_id
+    """), {**limits, "org_id": org_id})
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["webhooks"])
@@ -151,6 +169,8 @@ async def _handle_subscription_created(db: AsyncSession, data: dict):
     """), {"tier": tier, "cid": customer_id, "sid": sub_id,
            "price_id": price_id, "org_id": org_id})
 
+    await _apply_tier_limits(db, org_id, tier)
+
     await _audit(db, "subscription_created", org_id, {
         "subscription_id": sub_id, "tier": tier, "price_id": price_id,
         "paddle_status": status,
@@ -191,6 +211,8 @@ async def _handle_subscription_updated(db: AsyncSession, data: dict):
 
     row = result.fetchone()
     org_id = str(row[0]) if row else None
+    if org_id and internal_status == "active":
+        await _apply_tier_limits(db, org_id, tier)
     await _audit(db, "subscription_updated", org_id, {
         "subscription_id": sub_id, "tier": tier,
         "paddle_status": status, "internal_status": internal_status,

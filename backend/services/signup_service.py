@@ -144,7 +144,12 @@ async def create_user_and_org(
         else:
             tier, license_status = "free", "trial"
             valid_until = None
-            max_teachers, max_classrooms, max_students, max_per_classroom = 3, 1, 30, 30
+            from services.license_validator import TIER_LIMITS
+            _free = TIER_LIMITS["free"]
+            max_teachers        = _free["max_teachers"]
+            max_classrooms      = _free["max_classrooms"]
+            max_students        = _free["max_students"]
+            max_per_classroom   = _free["max_students_per_classroom"]
 
         await db.execute(text("""
             INSERT INTO organizations

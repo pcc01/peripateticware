@@ -2635,9 +2635,13 @@
     },
     "pricing_tier": {
       "personal": {
-        "name": "Personal",
+        "name": "Teacher",
+        "price": "$11.99",
+        "price_unit": "/mo",
+        "price_note": "30-day free trial · no credit card required",
+        "cta": "Start free trial",
         "feature": {
-          "1": "Individual classrooms",
+          "1": "Up to 5 classrooms",
           "2": "Core activity types",
           "3": "Peri AI",
           "4": "Evidence capture",
