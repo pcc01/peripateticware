@@ -122,16 +122,32 @@ def _verify_paddle_signature(raw_body: bytes, signature_header: str) -> bool:
 
 # ── Audit helper ──────────────────────────────────────────────────────────────
 
-async def _audit(db: AsyncSession, action: str, org_id: str | None, meta: dict):
-    await db.execute(text("""
-        INSERT INTO platform_audit_log (id, actor_user_id, action, target_org_id, metadata, created_at)
-        VALUES (:id, NULL, :action, :org_id, CAST(:meta AS jsonb), NOW())
-    """), {
-        "id":     str(uuid.uuid4()),
-        "action": action,
-        "org_id": org_id,
-        "meta":   json.dumps(meta),
-    })
+# Sentinel actor for rows written by the webhook rather than a human platform
+# admin — platform_audit_log.actor_id is NOT NULL. Same value beta_expiry.py /
+# trial_expiry.py use.
+_SYSTEM_ACTOR_ID = "00000000-0000-0000-0000-000000000000"
+
+
+async def _audit(db: AsyncSession, action: str, org_id: str | None, meta: dict) -> None:
+    """Best-effort audit-log row. Runs in a SAVEPOINT so a failure here (schema
+    drift, etc.) rolls back only this INSERT — never the org tier change the
+    caller already made in the same transaction."""
+    try:
+        async with db.begin_nested():
+            await db.execute(text("""
+                INSERT INTO platform_audit_log
+                    (id, actor_id, action, target_type, target_id, detail, created_at)
+                VALUES
+                    (:id, :actor, :action, 'org', :org_id, CAST(:meta AS jsonb), NOW())
+            """), {
+                "id":     str(uuid.uuid4()),
+                "actor":  _SYSTEM_ACTOR_ID,
+                "action": action,
+                "org_id": org_id,
+                "meta":   json.dumps(meta),
+            })
+    except Exception as exc:
+        logger.warning("[paddle] audit-log write failed (non-fatal): %s", exc)
 
 
 # ── Event handlers ────────────────────────────────────────────────────────────

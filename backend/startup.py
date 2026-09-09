@@ -700,6 +700,7 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS grace_period_started_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_customer_id VARCHAR(128)")
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_subscription_id VARCHAR(128)")
+        await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_price_id VARCHAR(128)")
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subscription_ends_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE")
@@ -1214,6 +1215,7 @@ async def apply_billing_column_migrations(engine) -> None:
         "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS trial_started_at TIMESTAMP",
         "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_customer_id VARCHAR(128)",
         "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_subscription_id VARCHAR(128)",
+        "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS paddle_price_id VARCHAR(128)",
     ]:
         try:
             async with engine.begin() as _c:
