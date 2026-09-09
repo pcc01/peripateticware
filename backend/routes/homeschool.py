@@ -44,6 +44,45 @@ def _require_homeschool(user: User) -> None:
         raise HTTPException(status_code=403, detail="Homeschool access required")
 
 
+# Domains whose accounts always see the paid features (demo / sample logins),
+# so a prospect can preview them as an upgrade incentive.
+_DEMO_DOMAINS = ("@example.com", "@test.local")
+
+
+async def _homeschool_features_unlocked(db: AsyncSession, user: User) -> tuple[bool, str]:
+    """
+    Whether the paid homeschool features (coverage report, standards compliance
+    report, portfolio export) are available to this user right now.
+
+    Unlocked when the org is on a paid tier OR still inside its 30-day free
+    trial (license_status='trial'). Demo accounts are always unlocked.
+    Returns (unlocked, current_tier) — the tier is echoed back in the 402.
+    """
+    if any(str(user.email or "").endswith(d) for d in _DEMO_DOMAINS):
+        return True, "demo"
+    if not user.org_id:
+        return False, "free"
+    row = (await db.execute(text(
+        "SELECT license_tier, license_status FROM organizations WHERE id = :oid"
+    ), {"oid": str(user.org_id)})).first()
+    tier   = (row[0] if row else None) or "free"
+    status = (row[1] if row else None) or "free"
+    unlocked = tier not in ("free", "homeschool_free") or status == "trial"
+    return unlocked, tier
+
+
+def _upgrade_402(feature: str, current_tier: str) -> HTTPException:
+    return HTTPException(
+        status_code=402,
+        detail={
+            "code":          "UPGRADE_REQUIRED",
+            "feature":       feature,
+            "required_tier": "homeschool_family",
+            "current_tier":  current_tier,
+        },
+    )
+
+
 # ── Schemas ───────────────────────────────────────────────────────────────
 
 class ChildCreate(BaseModel):
@@ -163,33 +202,9 @@ async def create_child(
 ):
     _require_homeschool(current_user)
 
-    # Free tier: 1 child (matches the "always free for 1 child" pricing copy).
-    # Adding a 2nd child requires the paid Homeschool plan.
-    from sqlalchemy import text as _t
-    tier_row = (await db.execute(
-        _t("SELECT license_tier FROM organizations WHERE id = :oid"),
-        {"oid": str(current_user.org_id)},
-    )).scalar() if current_user.org_id else "free"
-    tier = tier_row or "free"
-
-    _FREE_CHILD_LIMIT = 1
-    if tier in ("free", "homeschool_free", None):
-        child_count = (await db.execute(
-            _t("SELECT COUNT(*) FROM homeschool_children WHERE parent_id = :pid"),
-            {"pid": str(current_user.id)},
-        )).scalar() or 0
-        if child_count >= _FREE_CHILD_LIMIT:
-            raise HTTPException(
-                status_code=402,
-                detail={
-                    "code":          "UPGRADE_REQUIRED",
-                    "feature":       "homeschool_children",
-                    "required_tier": "homeschool_family",
-                    "current_tier":  tier,
-                    "limit":         _FREE_CHILD_LIMIT,
-                    "current":       child_count,
-                },
-            )
+    # No cap on the number of children — a homeschool family can add as many
+    # as they like on any plan. The only upgrade prompt is the 30-day trial
+    # ending (see TrialExpiryBanner + _homeschool_features_unlocked below).
 
     # Check email not already taken
     existing = (await db.execute(select(User).where(User.email_index == _blind_index(body.email)))).scalar_one_or_none()
@@ -360,33 +375,13 @@ async def coverage_summary(
     """
     _require_homeschool(current_user)
 
-    # State standards compliance reporting requires Homeschool Family plan —
-    # same gate as generate_report()/export_portfolio() below. Previously this
-    # view had no tier check at all (see docs/FEATURE_GATE_AUDIT.md item 3);
-    # demo/sample accounts still bypass it so prospective users can preview
-    # the feature as an upgrade incentive.
-    _DEMO_DOMAINS = ("@example.com", "@test.local")
-    _is_demo = any(str(current_user.email or "").endswith(d) for d in _DEMO_DOMAINS)
-
-    if not _is_demo:
-        if current_user.org_id:
-            tier = (await db.execute(
-                text("SELECT license_tier FROM organizations WHERE id = :oid"),
-                {"oid": str(current_user.org_id)},
-            )).scalar() or "free"
-        else:
-            tier = "free"
-
-        if tier in ("free", "homeschool_free"):
-            raise HTTPException(
-                status_code=402,
-                detail={
-                    "code":          "UPGRADE_REQUIRED",
-                    "feature":       "standards_compliance_report",
-                    "required_tier": "homeschool_family",
-                    "current_tier":  tier,
-                },
-            )
+    # State standards compliance reporting requires the paid Homeschool plan —
+    # OR an active 30-day free trial. Demo/sample accounts always pass so a
+    # prospect can preview the feature. Same gate as generate_report() /
+    # export_portfolio() below.
+    _unlocked, _tier = await _homeschool_features_unlocked(db, current_user)
+    if not _unlocked:
+        raise _upgrade_402("standards_compliance_report", _tier)
 
     # Get children IDs
     child_rows = (await db.execute(
@@ -859,32 +854,11 @@ async def generate_report(
     """
     _require_homeschool(current_user)
 
-    # Reports and portfolio exports require Homeschool Family plan.
-    # Demo/sample accounts (@example.com, @test.local) bypass this check so
-    # prospective users can see the feature as an upgrade incentive.
-    _DEMO_DOMAINS = ("@example.com", "@test.local")
-    _is_demo = any(str(current_user.email or "").endswith(d) for d in _DEMO_DOMAINS)
-
-    if not _is_demo:
-        from sqlalchemy import text as _t2
-        if current_user.org_id:
-            tier_r = (await db.execute(
-                _t2("SELECT license_tier FROM organizations WHERE id = :oid"),
-                {"oid": str(current_user.org_id)},
-            )).scalar() or "free"
-        else:
-            tier_r = "free"
-
-        if tier_r in ("free", "homeschool_free"):
-            raise HTTPException(
-                status_code=402,
-                detail={
-                    "code":          "UPGRADE_REQUIRED",
-                    "feature":       "portfolio_export",
-                    "required_tier": "homeschool_family",
-                    "current_tier":  tier_r,
-                },
-            )
+    # Reports and portfolio exports require the paid Homeschool plan — OR an
+    # active 30-day free trial. Demo/sample accounts always pass.
+    _unlocked, _tier = await _homeschool_features_unlocked(db, current_user)
+    if not _unlocked:
+        raise _upgrade_402("portfolio_export", _tier)
 
     try:
         d_from = _date.fromisoformat(date_from)

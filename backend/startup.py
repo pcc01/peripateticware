@@ -2527,6 +2527,26 @@ async def start_background_tasks(async_session, settings) -> None:
         except Exception as e:
             logger.warning(f"⊘ Beta expiry job not added: {e}")
 
+    # ── Free-trial expiry — daily at 03:15 UTC ────────────────────────────────
+    # Moves license_status='trial' orgs past their 30-day window to
+    # 'grace_period', which re-locks the paid homeschool features. See
+    # tasks/trial_expiry.py.
+    if _scheduler is not None:
+        try:
+            from tasks.trial_expiry import trial_expiry_check
+
+            _scheduler.add_job(
+                trial_expiry_check,
+                "cron",
+                hour=3,
+                minute=15,
+                id="trial_expiry_check",
+                replace_existing=True,
+            )
+            logger.info("✅ Trial expiry job scheduled (daily at 03:15 UTC)")
+        except Exception as e:
+            logger.warning(f"⊘ Trial expiry job not added: {e}")
+
     # ── Privacy legislation crawler ───────────────────────────────────────────
     # Previously IAPP_CRAWLER_SCHEDULE was defined in config but referenced
     # NOWHERE — the "scheduled crawl" the crawler docstrings promised never ran.
