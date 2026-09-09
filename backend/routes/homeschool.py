@@ -163,7 +163,8 @@ async def create_child(
 ):
     _require_homeschool(current_user)
 
-    # Free tier: max 2 children — upgrade to add more
+    # Free tier: 1 child (matches the "always free for 1 child" pricing copy).
+    # Adding a 2nd child requires the paid Homeschool plan.
     from sqlalchemy import text as _t
     tier_row = (await db.execute(
         _t("SELECT license_tier FROM organizations WHERE id = :oid"),
@@ -171,12 +172,13 @@ async def create_child(
     )).scalar() if current_user.org_id else "free"
     tier = tier_row or "free"
 
+    _FREE_CHILD_LIMIT = 1
     if tier in ("free", "homeschool_free", None):
         child_count = (await db.execute(
             _t("SELECT COUNT(*) FROM homeschool_children WHERE parent_id = :pid"),
             {"pid": str(current_user.id)},
         )).scalar() or 0
-        if child_count >= 2:
+        if child_count >= _FREE_CHILD_LIMIT:
             raise HTTPException(
                 status_code=402,
                 detail={
@@ -184,7 +186,7 @@ async def create_child(
                     "feature":       "homeschool_children",
                     "required_tier": "homeschool_family",
                     "current_tier":  tier,
-                    "limit":         2,
+                    "limit":         _FREE_CHILD_LIMIT,
                     "current":       child_count,
                 },
             )

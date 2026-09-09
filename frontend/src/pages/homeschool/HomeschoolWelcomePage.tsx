@@ -164,8 +164,10 @@ const HomeschoolWelcomePage: React.FC = () => {
         } catch (err: any) {
           if (err?.statusCode === 402 || err?.response?.status === 402) {
             const body = err?.originalError?.response?.data ?? err?.response?.data ?? {};
-            if (body?.code === 'UPGRADE_REQUIRED') {
-              window.dispatchEvent(new CustomEvent('upgrade-required', { detail: body }));
+            // FastAPI nests the structured payload under `detail`.
+            const detail = body?.detail ?? body;
+            if (detail?.code === 'UPGRADE_REQUIRED') {
+              window.dispatchEvent(new CustomEvent('upgrade-required', { detail }));
             }
           }
           anyFailed = true;

@@ -43,11 +43,16 @@ export const HomeschoolChildrenPage: React.FC = () => {
       const r = await fetch('/api/v1/homeschool/children', { method: 'POST', headers: authHeader(), body: JSON.stringify(form) });
       if (!r.ok) {
         const d = await r.json().catch(() => ({}));
-        if (r.status === 402 && d?.code === 'UPGRADE_REQUIRED') {
-          window.dispatchEvent(new CustomEvent('upgrade-required', { detail: d }));
+        // FastAPI wraps the payload as { detail: {...} } — the structured
+        // upgrade object is at d.detail, not d. Without this the 402 fell
+        // through and `new Error(d.detail)` stringified the object to
+        // "[object Object]".
+        const detail = d?.detail ?? d;
+        if (r.status === 402 && detail?.code === 'UPGRADE_REQUIRED') {
+          window.dispatchEvent(new CustomEvent('upgrade-required', { detail }));
           return;
         }
-        throw new Error(d.detail || 'Failed to create child');
+        throw new Error(typeof detail === 'string' ? detail : 'Failed to create child');
       }
       setShowAdd(false);
       setForm({ full_name: '', email: '', password: '', grade_level: 1, age_band: 'k6' });
@@ -68,7 +73,8 @@ export const HomeschoolChildrenPage: React.FC = () => {
       const r = await fetch(`/api/v1/homeschool/children/${child.id}`, { method: 'DELETE', headers: authHeader() });
       if (!r.ok) {
         const d = await r.json().catch(() => ({}));
-        throw new Error(d.detail || 'Failed to remove child');
+        const detail = d?.detail ?? d;
+        throw new Error(typeof detail === 'string' ? detail : 'Failed to remove child');
       }
       setChildren(prev => prev.filter(c => c.id !== child.id));
     } catch (e: any) { setError(e.message); }
