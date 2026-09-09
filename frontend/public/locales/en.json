@@ -2638,7 +2638,7 @@
         "name": "Teacher",
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "30-day free trial · no credit card required",
+        "price_note": "or $99.99/year — save 30% · 30-day free trial",
         "cta": "Start free trial",
         "feature": {
           "1": "Up to 5 classrooms",

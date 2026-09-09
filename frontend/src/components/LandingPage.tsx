@@ -779,7 +779,7 @@ export const LandingPage: React.FC = () => {
               { name: t('pricing_tier.personal.name', 'Teacher'), highlight: false,
                 price: t('pricing_tier.personal.price', '$11.99'),
                 priceUnit: t('pricing_tier.personal.price_unit', '/mo'),
-                priceNote: t('pricing_tier.personal.price_note', '30-day free trial · no credit card required'),
+                priceNote: t('pricing_tier.personal.price_note', 'or $99.99/year — save 30% · 30-day free trial'),
                 ctaLabel: t('pricing_tier.personal.cta', 'Start free trial'),
                 features: [
                   t('pricing_tier.personal.feature.1', 'Up to 5 classrooms'),
