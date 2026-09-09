@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { MfaSettings } from '@/components/account/MfaSettings';
+import PlanCard from '@/components/billing/PlanCard';
 import styles from './SettingsPages.module.css';
 
 export const TeacherSettingsPage = () => {
@@ -132,6 +133,9 @@ export const TeacherSettingsPage = () => {
       </header>
 
       <main className={styles.main}>
+
+        {/* Plan / Billing */}
+        <PlanCard tier="teacher" />
 
         {/* Appearance */}
         <section className={styles.section}>

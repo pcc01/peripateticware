@@ -84,6 +84,7 @@ const ROUTES = [
   '/privacy-engine',
   '/terms',
   '/cookies',
+  '/refunds',
   '/licensing',
   '/request-beta',
   '/login',

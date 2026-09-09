@@ -29,6 +29,7 @@ const LandingPage = React.lazy(() => import('./components/LandingPage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 const CookiePolicyPage = React.lazy(() => import('./pages/CookiePolicyPage'));
+const RefundPolicyPage = React.lazy(() => import('./pages/RefundPolicyPage'));
 const DoNotSellPage = React.lazy(() => import('./pages/DoNotSellPage'));
 const BlogListPage = React.lazy(() => import('./pages/BlogListPage'));
 const BlogPostPage = React.lazy(() => import('./pages/BlogPostPage'));
@@ -398,6 +399,7 @@ const App: React.FC = () => {
           <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/cookies" element={<CookiePolicyPage />} />
+          <Route path="/refunds" element={<RefundPolicyPage />} />
           <Route path="/do-not-sell" element={<DoNotSellPage />} />
           <Route path="/parent-consent/:token" element={<ParentConsentPage />} />
           <Route path="/login" element={<LoginScreenWrapper />} />

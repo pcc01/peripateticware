@@ -5,32 +5,23 @@ import { useEffect, useState } from 'react'
 import UpgradeCTA from './UpgradeCTA'
 import { useTranslation } from 'react-i18next';
 
+// Default self-serve price per feature gate. Homeschool features → the yearly
+// Homeschool price; teacher/classroom/school features → the yearly Teacher
+// price. (Monthly is only offered via the Plan card's toggle; a mid-flow
+// upgrade prompt just uses the headline yearly plan.) Unset env → UpgradeCTA
+// falls back to a contact link.
+const HS_YEARLY = (import.meta.env.VITE_PADDLE_PRICE_HS_YEARLY as string | undefined) ?? '';
+const TEACHER_YEARLY = (import.meta.env.VITE_PADDLE_PRICE_TEACHER_YEARLY as string | undefined) ?? '';
+
 // Map feature → human-readable name and Paddle price ID
 const FEATURE_CONFIG: Record<string, { name: string; paddlePriceId: string }> = {
-  standards_coverage: {
-    name: 'Standards Coverage Export',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
-  },
-  teacher_seats: {
-    name: 'Additional Teacher Seats',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_SCHOOL ?? '',
-  },
-  homeschool_children: {
-    name: 'Additional Children',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
-  },
-  portfolio_export: {
-    name: 'Portfolio & Report Exports',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY ?? '',
-  },
-  classroom_count: {
-    name: 'Additional Classrooms',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_SCHOOL ?? '',
-  },
-  student_seats: {
-    name: 'Additional Student Seats',
-    paddlePriceId: import.meta.env.VITE_PADDLE_PRICE_SCHOOL ?? '',
-  },
+  standards_coverage:          { name: 'Standards Coverage Export',       paddlePriceId: HS_YEARLY },
+  standards_compliance_report: { name: 'State Compliance Reports',        paddlePriceId: HS_YEARLY },
+  homeschool_children:         { name: 'Additional Children',             paddlePriceId: HS_YEARLY },
+  portfolio_export:            { name: 'Portfolio & Report Exports',      paddlePriceId: HS_YEARLY },
+  teacher_seats:               { name: 'Additional Teacher Seats',        paddlePriceId: TEACHER_YEARLY },
+  classroom_count:             { name: 'Additional Classrooms',           paddlePriceId: TEACHER_YEARLY },
+  student_seats:               { name: 'Additional Student Seats',        paddlePriceId: TEACHER_YEARLY },
 }
 
 interface UpgradePayload {

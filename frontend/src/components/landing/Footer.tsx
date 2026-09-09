@@ -82,6 +82,7 @@ export function Footer() {
             <li><Link to="/privacy">{t('footer.legal_privacy')}</Link></li>
             <li><Link to="/terms">{t('footer.legal_terms')}</Link></li>
             <li><Link to="/cookies">{t('footer.legal_cookies')}</Link></li>
+            <li><Link to="/refunds">{t('footer.legal_refunds', 'Refund Policy')}</Link></li>
             <li>
               <Link to="/do-not-sell" className="footer-link-ccpa">
                 {t('footer.legal_do_not_sell', 'Do Not Sell or Share My Info')}

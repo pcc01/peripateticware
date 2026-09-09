@@ -26,9 +26,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/auth';
 
 const SHOW_WITHIN_DAYS = 7;
-// Homeschool users get the in-app Plan card (with the Paddle checkout button);
-// everyone else falls back to the marketing pricing section.
-const HOMESCHOOL_PLAN_URL = '/homeschool/settings';
+// Homeschool + teacher users get their in-app Plan card (with the Paddle
+// checkout button); any other role falls back to the marketing pricing.
+const PLAN_URL: Record<string, string> = {
+  homeschool: '/homeschool/settings',
+  teacher: '/teacher/settings',
+};
 const PRICING_URL = '/#pricing';
 
 interface BillingStatus {
@@ -53,7 +56,7 @@ const todayKey = () => `trial_banner_dismissed_${new Date().toISOString().slice(
 
 const TrialExpiryBanner: React.FC = () => {
   const role = useAuthStore((s) => (s.user?.role || '').toLowerCase());
-  const plansUrl = role === 'homeschool' ? HOMESCHOOL_PLAN_URL : PRICING_URL;
+  const plansUrl = PLAN_URL[role] ?? PRICING_URL;
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(() => {
     try { return localStorage.getItem(todayKey()) === '1'; } catch { return false; }
