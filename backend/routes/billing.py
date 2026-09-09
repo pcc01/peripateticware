@@ -13,6 +13,11 @@ Routes (prefix /api/v1/billing, registered in main.py):
 import logging
 from datetime import datetime, timezone, timedelta
 
+# Length of the free trial, in days. Matches the "30-day free trial" pricing
+# copy on the marketing site. The upgrade prompt (TrialExpiryBanner) begins
+# nudging within its last week and the trial hits 0 exactly on day 30.
+TRIAL_DAYS = 30
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
@@ -71,7 +76,7 @@ async def billing_status(
         ts = row["trial_started_at"]
         if ts.tzinfo is None:
             ts = ts.replace(tzinfo=timezone.utc)
-        trial_days_left = max(0, 31 - (now - ts).days)
+        trial_days_left = max(0, TRIAL_DAYS - (now - ts).days)
 
     # Grace period state
     grace_period    = status == "grace_period"
