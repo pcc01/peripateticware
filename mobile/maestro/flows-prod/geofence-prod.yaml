@@ -1,0 +1,74 @@
+# PROD geofence (location-based guard) — runs against peripateticware.com.
+#
+# Prod-coordinate twin of maestro/flows/geofence/10-geofence.yaml. The guard is
+# centred on downtown LANGLEY, WA (First Street), radius 400 m — small enough
+# that a real device leaves it within a ~0.5 km drive out Cascade Ave / Langley
+# Rd, so the same activity can be field-tested by driving.
+#
+# Uses the same prod activity the discover / capture / activity / journal /
+# progress flows open — titled exactly "Creek Habitat Study" (the local seed
+# name) so those 8 shared flows need no edits — but authored on prod with a
+# Langley centre:
+#   Title   : Creek Habitat Study
+#   Type    : discovery, single location guard
+#   Centre  : 48.04210, -122.40560   (First Street, downtown Langley WA)
+#   Radius  : 400 m
+#
+# "Leave the radius" fix below is ~1.3 km SW of centre (48.0330,-122.4150),
+# well outside 400 m. Same watchPositionAsync-latency caveat as the local flow.
+appId: com.peripateticware.app
+env:
+  GEOFENCE_ACTIVITY: "Creek Habitat Study"
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 48.04210
+    longitude: -122.40560
+- runFlow: ../flows/login-student.yaml
+
+- extendedWaitUntil:
+    visible: "${GEOFENCE_ACTIVITY}"
+    timeout: 20000
+- tapOn: "${GEOFENCE_ACTIVITY}"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+- extendedWaitUntil:
+    visible: "Observe & Capture"
+    timeout: 20000
+
+# Inside the radius — no warning.
+- setLocation:
+    latitude: 48.04210
+    longitude: -122.40560
+- assertNotVisible:
+    id: "geofence-toast"
+
+# Leave the radius — non-blocking toast appears.
+- setLocation:
+    latitude: 48.03300
+    longitude: -122.41500
+- extendedWaitUntil:
+    visible:
+      id: "geofence-toast"
+    timeout: 35000
+- assertVisible: "Done capturing — reflect"

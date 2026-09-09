@@ -29,9 +29,12 @@ appId: com.peripateticware.app
 # maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
 # is a Maestro/XCTest accessibility-tree reliability gap after the
 # Discover tab mounts post-login, not slow data loading.
-- extendedWaitUntil:
-    visible: "Creek Habitat Study"
-    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"
@@ -64,14 +67,12 @@ appId: com.peripateticware.app
 - assertVisible: ".*Recording.*tap to stop.*"
 - tapOn:
     id: "capture-record-btn"
-# Captures always save to the device first (never a direct upload call —
-# see CaptureSheet.tsx's upload()), so this confirmation shows immediately;
-# the sheet then auto-closes ~900ms later.
-- assertVisible:
-    id: "capture-saved-confirmation"
+# The transient "saved" toast (~900ms, then the sheet auto-closes) is too
+# short to assert reliably — check the durable outcomes instead.
 - extendedWaitUntil:
     notVisible:
       id: "capture-sheet"
     timeout: 20000
 - assertVisible:
     id: "activity-screen"
+- assertVisible: "COLLECTED (1)"

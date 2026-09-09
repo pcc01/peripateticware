@@ -1,0 +1,105 @@
+# PROD wayfinding walk — three ordered stops, rung B (on-device arrival, no
+# coordinate stored, no consent prompt). Runs against peripateticware.com.
+#
+# This is the prod-coordinate twin of maestro/flows/wayfinding/11-wayfinding.yaml
+# (which stays pinned to the local backend seed). The stops below are laid out
+# on the loop trail at SOUTH WHIDBEY COMMUNITY PARK, 5495 Maxwelton Rd, Langley
+# WA — walkable in ~10 min so the same activity can also be field-tested on a
+# real device. Coordinates are approximate: verify each stop on a map against
+# the real trail, then regenerate the setLocation stepping with
+#   node scripts/gen-wayfinding-steps.mjs
+# and paste the output over the blocks below.
+#
+# PRECONDITION — fresh session for this student+activity. startActivitySession
+# is "start or resume": a second run (or a second device on the same account)
+# resumes the finished session and this flow fails at "NEXT STOP". Reset with
+# scripts/reset-wayfinding-prod.sql between runs; run-maestro-prod.ps1
+# -ResetBetweenDevices pauses for you to do it between devices.
+#
+# The activity to author on prod (assign/publish it to the QA student's class):
+#   Title              : QA Waypoints — South Whidbey Community Park
+#   Type               : discovery, wayfinding enabled, ceiling rung B
+#   Navigation         : ordered
+#   Stop 1  "Trailhead"      47.99790, -122.43850   arrival radius 60 m
+#   Stop 2  "Forest Loop"    47.99900, -122.43720   arrival radius 60 m
+#   Stop 3  "Picnic Shelter" 47.99680, -122.43680   arrival radius 60 m
+#
+# Same watchPositionAsync-latency caveat as the local flow — hence the long
+# extendedWaitUntil timeouts.
+appId: com.peripateticware.app
+env:
+  WAYFINDING_ACTIVITY: "QA Waypoints — South Whidbey Community Park"
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: allow
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          clearState: true
+          permissions:
+            location: inuse
+- setLocation:
+    latitude: 47.99780
+    longitude: -122.43870
+- runFlow: ../flows/login-student.yaml
+
+- extendedWaitUntil:
+    visible: "${WAYFINDING_ACTIVITY}"
+    timeout: 20000
+- tapOn: "${WAYFINDING_ACTIVITY}"
+- assertVisible:
+    id: "activity-screen"
+- tapOn: "I'm ready — let's go"
+- tapOn: "I'm oriented — begin inquiry"
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: "wayfinding-panel"
+    timeout: 20000
+- assertVisible:
+    id: "wayfinding-map"
+- assertVisible: "NEXT STOP"
+- assertVisible: "0 of 3 stops"
+
+# Stop 1 — five in-radius fixes spiralling into 47.99790,-122.43850.
+- setLocation: { latitude: 47.99818, longitude: -122.43816 }
+- setLocation: { latitude: 47.99808, longitude: -122.43828 }
+- setLocation: { latitude: 47.99800, longitude: -122.43838 }
+- setLocation: { latitude: 47.99794, longitude: -122.43845 }
+- setLocation: { latitude: 47.99790, longitude: -122.43850 }
+- extendedWaitUntil:
+    visible: "1 of 3 stops"
+    timeout: 45000
+
+# Stop 2 — into 47.99900,-122.43720.
+- setLocation: { latitude: 47.99928, longitude: -122.43686 }
+- setLocation: { latitude: 47.99918, longitude: -122.43698 }
+- setLocation: { latitude: 47.99910, longitude: -122.43708 }
+- setLocation: { latitude: 47.99904, longitude: -122.43715 }
+- setLocation: { latitude: 47.99900, longitude: -122.43720 }
+- extendedWaitUntil:
+    visible: "2 of 3 stops"
+    timeout: 45000
+
+# Stop 3 — into 47.99680,-122.43680; the hunt completes.
+- setLocation: { latitude: 47.99708, longitude: -122.43646 }
+- setLocation: { latitude: 47.99698, longitude: -122.43658 }
+- setLocation: { latitude: 47.99690, longitude: -122.43668 }
+- setLocation: { latitude: 47.99684, longitude: -122.43675 }
+- setLocation: { latitude: 47.99680, longitude: -122.43680 }
+- extendedWaitUntil:
+    visible: "All stops found! 🎉"
+    timeout: 45000
+- assertVisible:
+    id: "wayfinding-panel"

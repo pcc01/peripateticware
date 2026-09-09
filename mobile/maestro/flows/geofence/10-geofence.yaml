@@ -1,6 +1,9 @@
-# Mirrors e2e/geofence.test.js "Geofence (Location-Based Guard)". Uses
-# "Creek Habitat Study" (location_latitude=37.8716, location_longitude=
-# -122.2727, location_radius_meters=500 — backend/startup.py seed default).
+# Mirrors e2e/geofence.test.js "Geofence (Location-Based Guard)". Locally this
+# is the seeded "Creek Habitat Study" (location_latitude=37.8716,
+# location_longitude=-122.2727, location_radius_meters=500 — backend/startup.py
+# seed default). Against prod, pass -e GEOFENCE_ACTIVITY to point at a
+# hand-authored single-location discovery activity with the SAME center and
+# radius (see PROD_E2E_GUIDE.md for the spec).
 #
 # FIRST USE of Maestro's setLocation/permissions commands in this suite —
 # same caveat the Detox version flagged: the `permissions.location` grant
@@ -17,6 +20,8 @@
 # it), while the same substitution works fine there on Android. Hence two
 # literal blocks gated by `when: platform` instead.
 appId: com.peripateticware.app
+env:
+  GEOFENCE_ACTIVITY: "Creek Habitat Study"
 ---
 - runFlow:
     when:
@@ -43,9 +48,9 @@ appId: com.peripateticware.app
 # is a Maestro/XCTest accessibility-tree reliability gap after the
 # Discover tab mounts post-login, not slow data loading.
 - extendedWaitUntil:
-    visible: "Creek Habitat Study"
+    visible: "${GEOFENCE_ACTIVITY}"
     timeout: 20000
-- tapOn: "Creek Habitat Study"
+- tapOn: "${GEOFENCE_ACTIVITY}"
 - assertVisible:
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"

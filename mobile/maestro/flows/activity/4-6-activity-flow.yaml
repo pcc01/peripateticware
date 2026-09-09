@@ -23,9 +23,12 @@ appId: com.peripateticware.app
 # similarly-timed-out "visible but not found" failures elsewhere in this
 # suite (confirmed NOT an accessibilityLabel issue either — settings.tsx's
 # Sign Out button already has one and still failed the same way).
-- extendedWaitUntil:
-    visible: "Creek Habitat Study"
-    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"
@@ -109,7 +112,13 @@ appId: com.peripateticware.app
     id: "reflection-input"
 - inputText: "The creek water was clearer than I expected."
 - tapOn: "Submit field work"
-- assertVisible: "Submitted! 🎉"
+# native Alert (app/activity/[id].tsx: Alert.alert(t('...submittedTitle',
+# 'Submitted! 🎉'), ...)). Match the title without the trailing emoji —
+# Android's a11y tree renders it as "Submitted! ?" so an exact match never
+# succeeds there — and allow time for the submit round-trip to prod.
+- extendedWaitUntil:
+    visible: "Submitted!.*"
+    timeout: 25000
 - tapOn: "Done"
 - assertVisible:
     id: "discover-screen"

@@ -1,14 +1,19 @@
-# Mock-walk through the seeded "Campus Wayfinding Hunt" (three ordered stops,
-# rung B — no consent prompt). Backend seed: startup.seed_wayfinding_demo().
+# Mock-walk through a three-ordered-stop, rung-B (no consent prompt) wayfinding
+# hunt. Locally this is the seeded "Campus Wayfinding Hunt"
+# (startup.seed_wayfinding_demo()); against prod, pass -e WAYFINDING_ACTIVITY
+# to point at a hand-authored activity with the SAME stop geometry (the
+# setLocation stepping below is tuned to a 60 m arrival radius at these exact
+# coordinates — see PROD_E2E_GUIDE.md for the activity spec to create).
 #
-# Assumes a fresh backend (no prior session for this student+activity) — the
+# Assumes a fresh session (no prior progress for this student+activity) — the
 # same assumption every other flow in this suite makes, and true in CI, which
-# stands up a fresh Postgres per run. Running twice against a persistent DB
-# will fail at "NEXT STOP" because the resumed session opens straight to the
-# "all stops found" state; reset session_waypoint_progress / learning_sessions
-# for the activity between local runs.
-# Stops: The Old Oak (37.8716,-122.2727), Stone Bridge (37.8726,-122.2717),
-# The Overlook (37.8736,-122.2707), each arrival_radius_meters=60.
+# stands up a fresh Postgres per run. A resumed session opens straight to the
+# "all stops found" state and this flow fails at "NEXT STOP". Local: reset
+# session_waypoint_progress / learning_sessions between runs. Prod:
+# scripts/reset-wayfinding-prod.sql, run between device iterations (the prod
+# runner prints the command).
+# Stops: 37.8716,-122.2727 / 37.8726,-122.2717 / 37.8736,-122.2707, each
+# arrival_radius_meters=60.
 #
 # Same location-permission caveats as maestro/flows/geofence/10-geofence.yaml:
 # the grant must actually take for src/hooks/useWayfinding.ts's
@@ -17,6 +22,8 @@
 # device — hence the extendedWaitUntil timeouts below. Verify on-device
 # before trusting in CI.
 appId: com.peripateticware.app
+env:
+  WAYFINDING_ACTIVITY: "Campus Wayfinding Hunt"
 ---
 - runFlow:
     when:
@@ -40,9 +47,9 @@ appId: com.peripateticware.app
 - runFlow: ../login-student.yaml
 
 - extendedWaitUntil:
-    visible: "Campus Wayfinding Hunt"
+    visible: "${WAYFINDING_ACTIVITY}"
     timeout: 20000
-- tapOn: "Campus Wayfinding Hunt"
+- tapOn: "${WAYFINDING_ACTIVITY}"
 - assertVisible:
     id: "activity-screen"
 - tapOn: "I'm ready — let's go"
