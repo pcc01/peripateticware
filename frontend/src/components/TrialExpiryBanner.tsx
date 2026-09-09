@@ -23,10 +23,12 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { useAuthStore } from '@/stores/auth';
 
 const SHOW_WITHIN_DAYS = 7;
-// The pricing section on the marketing page — /licensing is the software
-// (BSL) licence explainer, not the subscription plans.
+// Homeschool users get the in-app Plan card (with the Paddle checkout button);
+// everyone else falls back to the marketing pricing section.
+const HOMESCHOOL_PLAN_URL = '/homeschool/settings';
 const PRICING_URL = '/#pricing';
 
 interface BillingStatus {
@@ -50,6 +52,8 @@ function authHeader(): Record<string, string> {
 const todayKey = () => `trial_banner_dismissed_${new Date().toISOString().slice(0, 10)}`;
 
 const TrialExpiryBanner: React.FC = () => {
+  const role = useAuthStore((s) => (s.user?.role || '').toLowerCase());
+  const plansUrl = role === 'homeschool' ? HOMESCHOOL_PLAN_URL : PRICING_URL;
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(() => {
     try { return localStorage.getItem(todayKey()) === '1'; } catch { return false; }
@@ -105,7 +109,7 @@ const TrialExpiryBanner: React.FC = () => {
     >
       <span style={{ flex: '1 1 260px', lineHeight: 1.45 }}>{message}</span>
       <a
-        href={PRICING_URL}
+        href={plansUrl}
         style={{
           flexShrink: 0, textDecoration: 'none', fontWeight: 700,
           background: inGrace ? '#b91c1c' : '#b45309', color: '#fff',

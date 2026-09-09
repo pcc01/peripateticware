@@ -6,6 +6,7 @@ import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { useSkin, SKIN_LABELS, type Skin } from '@/hooks/useSkin';
 import { useTranslation } from 'react-i18next';
 import { MfaSettings } from '@/components/account/MfaSettings';
+import UpgradeCTA from '@/components/UpgradeCTA';
 
 const card: React.CSSProperties = {
   background: 'var(--surface)', border: '1px solid var(--border)',
@@ -33,6 +34,39 @@ export const HomeschoolSettingsPage: React.FC = () => {
   const [orgGoverned, setOrgGoverned] = useState(false);
   const [privacySaving, setPrivacySaving] = useState(false);
   const [privacySaveStatus, setPrivacySaveStatus] = useState('');
+
+  // Billing / plan state
+  const [billing, setBilling] = useState<{
+    license_tier?: string; license_status?: string;
+    trial_active?: boolean; trial_days_left?: number | null;
+    grace_period?: boolean; grace_days_left?: number | null;
+    has_subscription?: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    fetch('/api/v1/billing/status', {
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d) setBilling(d); })
+      .catch(() => {});
+  }, []);
+
+  const onPaidPlan = !!billing && !['free', 'homeschool_free'].includes(billing.license_tier || 'free');
+  const planLabel = (() => {
+    if (!billing) return null;
+    if (onPaidPlan) return 'Homeschool (paid)';
+    if (billing.grace_period) {
+      const d = billing.grace_days_left;
+      return `Free trial ended${typeof d === 'number' ? ` — ${d} day${d === 1 ? '' : 's'} of grace access left` : ''}`;
+    }
+    if (billing.trial_active) {
+      const d = billing.trial_days_left;
+      return `Free trial${typeof d === 'number' ? ` — ${d} day${d === 1 ? '' : 's'} left` : ''}`;
+    }
+    return 'Free';
+  })();
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -114,6 +148,37 @@ export const HomeschoolSettingsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Plan / Billing */}
+      {billing && (
+        <div style={card}>
+          <h2 style={h2s}>{t('pages_homeschool_homeschoolsettingspage.plan', 'Plan')}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '0.9rem', borderBottom: onPaidPlan ? 'none' : '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--text-muted)' }}>{t('pages_homeschool_homeschoolsettingspage.current_plan', 'Current plan')}</span>
+            <span style={{ fontWeight: 600 }}>{planLabel}</span>
+          </div>
+
+          {onPaidPlan ? (
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 12 }}>
+              {t('pages_homeschool_homeschoolsettingspage.plan_active', 'Your Homeschool subscription is active. Manage payment or cancel any time via the link in your receipt emails.')}
+            </p>
+          ) : (
+            <div style={{ marginTop: 16 }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 14 }}>
+                {billing.grace_period
+                  ? t('pages_homeschool_homeschoolsettingspage.plan_grace_msg', 'Your free trial has ended. Subscribe to keep coverage reports, standards compliance, and portfolio exports.')
+                  : t('pages_homeschool_homeschoolsettingspage.plan_trial_msg', 'Subscribe any time — your card is not charged until the 30-day free trial ends.')}
+              </p>
+              <UpgradeCTA
+                featureName={t('pages_homeschool_homeschoolsettingspage.homeschool_plan', 'the Homeschool plan')}
+                requiredTier="homeschool_family"
+                currentTier={billing.license_tier || 'free'}
+                paddlePriceId={import.meta.env.VITE_PADDLE_PRICE_HOMESCHOOL_FAMILY as string | undefined}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Appearance */}
       <div style={card}>
