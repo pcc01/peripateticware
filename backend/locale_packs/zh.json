@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "详情",
-      "discoveryLabel": "🔎 寻宝",
+      "discoveryLabel": "🔍 寻宝",
       "discoveryObjectiveLabel": "目标",
-      "discoveryRequirementsLabel": "你需要记录",
-      "discoveryRequirementsSpeech": "你需要用{{items}}记录这个。",
-      "discoverySuccessLabel": "成功的标准",
+      "discoveryRequirementsLabel": "您需要记录",
+      "discoveryRequirementsSpeech": "您需要用{{items}}记录这件事。",
+      "discoverySuccessLabel": "成功",
       "periIntro": "今天你将要做的事情如下。请先逐一阅读，然后出发。",
       "startCta": "准备好了 — 让我们走"
     },
@@ -64,6 +64,9 @@
       "yourReflectionLabel": "你的反思"
     }
   },
+  "calendar": {
+    "empty": "没有在这个范围内的日程安排。"
+  },
   "camera": {
     "allowAccess": "允许访问",
     "closeCamera": "关闭摄像头",
@@ -101,10 +104,6 @@
       "video": "视频"
     },
     "notePlaceholder": "记录你所观察到的...",
-    "offline": {
-      "body": "该捕获在您的设备上保存，当重新连接时会自动上传。",
-      "title": "离线存档"
-    },
     "preview": {
       "pause": "暂停",
       "play": "玩家",
@@ -126,21 +125,70 @@
     "title": "添加证据",
     "uploadFailed": {
       "title": "上传失败"
-    },
-    "uploading": "上传中..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "无法加载日历。",
+    "title": "日历",
+    "titleWithName": "{{name}}的日历"
   },
   "common": {
     "activity": "活动",
     "activityPlural": "活动",
+    "add": "添加",
+    "approve": "审批",
     "back": "返回",
     "cancel": "取消",
     "captureLabel": "记录证据",
     "close": "关闭",
+    "continue": "继续",
+    "deny": "拒绝",
     "done": "完成",
     "error": "错误",
     "journalLabel": "字段记录",
     "ok": "好的",
+    "reject": "拒绝",
+    "remove": "删除",
     "tryAgain": "再试一次"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "学习等级",
+    "captureLocation": "使用我的当前位置",
+    "captureStop": "📍在此记录一个停靠点",
+    "difficultyLabel": "难度（1-4）",
+    "durationLabel": "预计时间（分钟）",
+    "gradeLabel": "学历",
+    "locationCaptured": "位置已获取（{{lat}}，{{lng}}）",
+    "locationDenied": "位置权限需要以记录挑战地点。",
+    "locationError": "不能获取您的位置。请重试。",
+    "locationNameLabel": "位置名称",
+    "locationNamePlaceholder": "Riverside Park, 北门",
+    "locationTimeout": "无法获取GPS定位，请移动到视野开阔的地方，然后重试。",
+    "minutesShort": "{{n}}米",
+    "modeLabel": "狩猎类型",
+    "modeLocation": "这个精确位置",
+    "modeTask": "任意地方他们可以找到它",
+    "multiStep": "多步路线",
+    "noLimit": "无限制",
+    "objectiveLabel": "什么应该学习？",
+    "objectivePlaceholder": "识别本地树种叶子形状",
+    "oneSpot": "一处",
+    "publish": "发布挑战",
+    "saveError": "无法创建此活动。",
+    "stepsLabel": "几站",
+    "stopNameDefault": "停止 {{n}}",
+    "stopsHint": "行走到每个停靠点并记录它。学生会收到一张地图，上面有指南针箭头 — 他们的位置信息不会离开他们的手机。",
+    "subjectLabel": "主题",
+    "successBody": "学生现在可以尝试这个挑战。",
+    "successLabel": "如何确定他们成功了？（可选）",
+    "successPlaceholder": "清晰照片加一句解释为何合适",
+    "successTitle": "已发布！",
+    "taskLabel": "学生应该做什么？",
+    "taskPlaceholder": "请描述您想找到、做或观察的内容…",
+    "timeLimitLabel": "时限一次开始（可选）",
+    "title": "新搜寻大冒险",
+    "titleLabel": "挑战标题",
+    "titlePlaceholder": "请输入您的 Oak Tree 密码"
   },
   "discover": {
     "empty": "尚未有活动 — 你的老师很快就会添加一些。",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "儿童",
+    "childrenTitle": "儿童",
     "empty": "尚未添加任何孩子。在网站应用程序中添加一个孩子以在这里查看他们的进展。",
     "gradeLabel": "成绩 {{grade}}",
     "loadError": "无法加载您的仪表板。",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "仪表板",
     "title": "家庭教育控制台"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "添加另一个孩子",
+    "allSet": "您已设置好！",
+    "allSetBody": "前往网络应用创建您的第一项户外活动 — Peri将根据您的位置和主题推荐亚里士多德式探究问题。",
+    "childNamePlaceholder": "儿{{n}}姓名",
+    "goToDashboard": "前往仪表板",
+    "noChildrenError": "请添加至少一个儿童。",
+    "selectState": "选择您的州",
+    "selectStateOptional": "选择您的州（可选）",
+    "skipSetup": "跳过设置",
+    "someFailedError": "一些儿童无法自动保存 — 您可以从网络应用程序中稍后添加它们。",
+    "stateFootnote": "35个美国州要求家庭教师记录学习记录 — 云游软件会自动从您的活动日志生成报告。",
+    "step1": "添加儿童",
+    "step2": "您的状态",
+    "step3": "第一活动",
+    "welcomeSubtitle": "请在3个简单步骤中帮您设置好。",
+    "welcomeTitle": "欢迎！🌿",
+    "whichState": "您在哪个州进行家庭教育？",
+    "whichStateBody": "此有助于显示正确的状态报告要求。您可以随时更改它。",
+    "whoTeaching": "您正在教谁？",
+    "whoTeachingBody": "添加每个孩子的名字和年级。您可以稍后从网络应用程序中添加更多孩子。"
   },
   "journal": {
     "draft": "草稿",
@@ -184,11 +255,15 @@
     "empty": "没有人开始了这个挑战。",
     "finished": "完成",
     "loadError": "无法加载这个排行榜。",
-    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "minutesSecondsFormat": "{{m}}分 {{s}}秒",
     "mySummaryFinished": "你的排名为{{rank}}。您在{{time}}完成了。",
     "mySummaryInProgress": "你的排名是{{rank}}。你目前拥有{{count}}个证据。",
+    "mySummaryInProgress_one": "您排名{{rank}}。您已有{{count}}条证据。",
+    "mySummaryInProgress_other": "您排名{{rank}}。您已有{{count}}件证据。",
     "secondsFormat": "z{{s}}s",
     "stepsSoFar": "已有{{count}}个证据",
+    "stepsSoFar_one": "{{count}} 条证据",
+    "stepsSoFar_other": "{{count}} 件证据",
     "you": "您"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "密码",
     "passwordReset": {
+      "backToLogin": "返回登录",
       "body": "联系教师重置密码",
+      "checkInbox": "检查您的收件箱",
+      "checkInboxBody": "如果您的{{email}}已存在帐号，您将在几分钟内收到密码重置链接。它将在60分钟内过期。",
+      "missingEmail": "请输入您的电子邮件。",
+      "requestFailed": "某些东西出错了。请重试。",
+      "sendLink": "发送重置链接",
       "title": "密码重置"
     },
     "showPassword": "显示密码",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "尚未链接任何孩子。在网站应用程序中链接一个孩子，以查看他们的进展。",
     "lastActive": "最后活跃时间：{{date}}",
+    "linkChild": {
+      "body": "输入您孩子的Peripateticware电子邮件地址。他们需要在自己的应用程序中批准请求，才能在这里看到他们的进度。",
+      "emailPlaceholder": "儿童的电子邮件地址",
+      "genericError": "无法链接该账号。请检查电子邮件并重试。",
+      "headerButton": "链接子账号",
+      "pendingBody": "{{name}} 需要在其自己的应用中批准此项，才能在您的仪表板上显示其进度。",
+      "pendingTitle": "请求已发送",
+      "submit": "链接子女",
+      "successBody": "您的仪表盘上现在显示{{name}}。",
+      "successTitle": "连接成功",
+      "title": "连接子女"
+    },
     "loadError": "无法加载您的仪表板。",
+    "messages": {
+      "empty": "没有来自老师的消息。",
+      "reply": "回复",
+      "replyError": "无法发送您的回复。",
+      "replyPlaceholder": "写您的回复…",
+      "replyTo": "回复给{{name}}",
+      "send": "发送",
+      "title": "消息"
+    },
+    "notifications": {
+      "empty": "您已全部跟上。",
+      "title": "通知"
+    },
+    "pendingBadge": "等待批准",
+    "pendingBody": "{{name}}需在其自己的应用中批准此项，才会在此处显示其进度。",
     "progressUnavailable": "无法加载这位孩子的进展。",
     "stats": {
       "activities": "活动",
@@ -262,7 +370,17 @@
       "hours": "小时数"
     },
     "tabLabel": "儿童",
-    "title": "我的孩子"
+    "title": "我的孩子",
+    "unlink": {
+      "action": "解绑",
+      "cancelRequest": "取消请求",
+      "confirmAction": "解绑",
+      "confirmBody": "您将不再看到{{name}}的进度。您可以稍后发送新请求。",
+      "confirmBodyPending": "取消待处理的请求",
+      "confirmTitle": "解绑{{name}}？",
+      "error": "无法现在解除链接。请重试。"
+    },
+    "viewCalendar": "📅 日期"
   },
   "perichat": {
     "closeChat": "关闭聊天",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "没有学生创建的挑战，提出一个开始排行榜。",
     "leaderboardsLabel": "排行榜",
     "participantCount": "{{count}} 参与中",
+    "participantCount_one": "{{count}} 参与",
+    "participantCount_other": "{{count}} 参与",
     "proposedBy": "由 {{name}}",
     "stats": {
       "activities": "活动",
@@ -330,6 +450,19 @@
       "downloadFailed": "下载此语言失败。请检查您的连接并重试。"
     },
     "languageLabel": "语言",
+    "parentRequests": {
+      "actionError": "请再试一次。",
+      "body": "{{email}} 想查看您的进展，作为您的 {{relationship}}",
+      "label": "父母请求"
+    },
+    "password": {
+      "button": "重置密码",
+      "desc": "我们将通过电子邮件发送链接以重置密码。",
+      "error": "请再试一次。",
+      "sentBody": "我们已发送密码重置链接到{{email}}。它将在60分钟内过期。",
+      "sentTitle": "检查您的收件箱"
+    },
+    "passwordLabel": "密码",
     "role": {
       "student": "学生"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "语音"
   },
+  "studentCalendar": {
+    "loadError": "无法加载您的日历。",
+    "title": "我的日历"
+  },
   "tabs": {
     "achievements": "成就",
     "discover": "发现",
-    "progress": "进度",
     "propose": "建议",
     "settings": "设置"
   },
+  "teacherActivities": {
+    "empty": "尚无发布的活动。",
+    "loadError": "无法加载活动。",
+    "title": "活动"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}}天前",
+    "descriptionLabel": "描述",
+    "gradeLabel": "{{grade}}",
+    "loadError": "无法加载此活动。",
+    "minutesLabel": "{{n}} 分钟",
+    "noSubmissions": "还没有学生开始这个活动。",
+    "objectivesLabel": "学习目标",
+    "submissionsLabel": "提交"
+  },
+  "teacherCalendar": {
+    "addTitle": "新日历事件",
+    "dateLabel": "日期（YYYY-MM-DD）",
+    "deleteError": "无法删除此事件。",
+    "deleteTitle": "删除 \"{{title}}\"？",
+    "descriptionLabel": "详细信息（可选）",
+    "descriptionPlaceholder": "任意其他细节…",
+    "loadError": "无法加载日历。",
+    "noClasses": "您还没有任何课程 — 在网络应用中首先设置一个。",
+    "saveError": "无法创建此事件。",
+    "title": "日历",
+    "titleLabel": "{{title}}",
+    "titlePlaceholder": "权限许可书到期",
+    "typeLabel": "输入类型"
+  },
+  "teacherClasses": {
+    "empty": "还没有课程 — 使用网络应用程序创建一个。",
+    "loadError": "无法加载类",
+    "title": "课程"
+  },
   "teacherDashboard": {
     "loadError": "无法加载您的仪表板。",
+    "newScavengerHunt": "搜寻者大冒险",
     "noActivities": "你还没有创建任何活动，请使用网页应用创建一个。",
     "recentLabel": "最近活动",
     "stats": {
       "active": "活动中",
+      "calendar": "日历",
       "classes": "课程",
+      "messages": "消息",
       "pending": "待处理",
+      "proposals": "提案",
       "students": "学生"
     },
     "tabLabel": "仪表板",
     "title": "教师控制台",
     "webHint": "关于教室、排班表和评分标准，请使用网页应用。"
+  },
+  "teacherMessages": {
+    "audienceAllParents": "所有父母",
+    "audienceAllStudents": "所有学生",
+    "audienceLabel": "发送给",
+    "bodyLabel": "消息",
+    "bodyPlaceholder": "输入您的消息…",
+    "classroomLabel": "课堂",
+    "composeTitle": "新消息",
+    "empty": "没有对话记录。",
+    "loadError": "无法加载消息。",
+    "orOneFamily": "一家人或",
+    "replyPlaceholder": "回复…",
+    "send": "发送",
+    "sendError": "无法发送此消息。",
+    "subjectLabel": "主题",
+    "subjectPlaceholder": "例如：实地考察许可单",
+    "title": "消息",
+    "willMessageParent": "发送给{{name}}的父母。"
+  },
+  "teacherProposals": {
+    "actionError": "请重试。",
+    "approveBody": "立即发布，让学生即刻尝试",
+    "approveTitle": "批准 \"{{title}}\" 吗？",
+    "byStudent": "由 {{name}} · {{subject}}",
+    "empty": "没有等待您的提案。",
+    "loadError": "无法加载建议。",
+    "noteLabel": "注意",
+    "rejectBody": "他们会看到并可以修改重新提交。",
+    "rejectPlaceholder": "太靠近另一个活动——请选择不同的地标",
+    "rejectTitle": "反馈给{{name}}",
+    "sendFeedback": "发送",
+    "title": "学生提案"
+  },
+  "teacherSubmissions": {
+    "empty": "暂无提交",
+    "loadError": "无法加载提交。",
+    "title": "提交"
+  },
+  "wayfinding": {
+    "allFound": "所有目的地已找到！🎉",
+    "nextStop": "下一站",
+    "noFix": "没有GPS",
+    "progress": "已到{{total}}个停靠点中的{{reached}}个",
+    "skip": "跳过此可选停靠点"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "您提交的照片和笔记将显示在您老师的地图上，位置为您拍摄时的位置。",
+      "title": "标记照片的位置"
+    },
+    "D": {
+      "gets": "在监督出行期间，您的老师可以实时查看您的位置。",
+      "title": "显示您的位置"
+    },
+    "E": {
+      "gets": "比较每个人的路线",
+      "title": "记录您走过的路径"
+    },
+    "allow": "允许",
+    "eyebrow": "您的老师已打开此功能 — 由您选择",
+    "kept": "保存：{{copy}}",
+    "notNow": "现在不了"
   }
 }

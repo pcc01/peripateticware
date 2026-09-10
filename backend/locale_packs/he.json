@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "תפריטים",
-      "discoveryLabel": "🔎 מציאת אוצר",
-      "discoveryObjectiveLabel": "מטרה",
-      "discoveryRequirementsLabel": "תצטרכו לתעד",
-      "discoveryRequirementsSpeech": "תצטרכו לתעד את זה עם {{items}}.",
-      "discoverySuccessLabel": "כך נראית הצלחה",
+      "discoveryLabel": "🔍 צַיִד מִשׁוּק",
+      "discoveryObjectiveLabel": "יעוד",
+      "discoveryRequirementsLabel": "דוקמנט",
+      "discoveryRequirementsSpeech": "דוקומנט את זה עם {{items}}",
+      "discoverySuccessLabel": "הצלחה נראית כמו",
       "periIntro": "כאן מה תעשית היום. קרא לחשב לפני שתצא.",
       "startCta": "אני הופעל — נסו נמצא"
     },
@@ -64,6 +64,9 @@
       "yourReflectionLabel": "הראיון שלך"
     }
   },
+  "calendar": {
+    "empty": "אין תאריכים פנויים בלוח השנה בטווח הזה."
+  },
   "camera": {
     "allowAccess": "סגור את הגישה",
     "closeCamera": "סגור כמראה",
@@ -101,10 +104,6 @@
       "video": "VIDEO"
     },
     "notePlaceholder": "כתוב מאודך שראית...",
-    "offline": {
-      "body": "זה נשמר במכשירך ויועלה כשתתחבר/י שוב.",
-      "title": "מושחקים שמורים בלא התחברות"
-    },
     "preview": {
       "pause": "שומר",
       "play": "צלחה",
@@ -126,21 +125,70 @@
     "title": "הוסף אביזית",
     "uploadFailed": {
       "title": "עליה נכשל"
-    },
-    "uploading": "עלייה..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "לא ניתן לטעון את לוח הימים",
+    "title": "לוח שנה",
+    "titleWithName": "{{name}} בלוח השנה"
   },
   "common": {
     "activity": "פעילות",
     "activityPlural": "פעילויות",
+    "add": "הוסף",
+    "approve": "אישור",
     "back": "אחורה",
     "cancel": "בטל",
     "captureLabel": "אחזק עלומות",
     "close": "סגור",
+    "continue": "המשך",
+    "deny": "דחייה",
     "done": "מכון",
     "error": "שגיאה",
     "journalLabel": "הערות שדה",
     "ok": "נאה",
+    "reject": "דחייה",
+    "remove": "הסרת",
     "tryAgain": "נסה שוב"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "לימוד",
+    "captureLocation": "📍 השתמש במיקומי כעת",
+    "captureStop": "📍 צילום עצירה כאן",
+    "difficultyLabel": "קושי (1-4)",
+    "durationLabel": "הערכת זמן (דקות)",
+    "gradeLabel": "רמת כיתה",
+    "locationCaptured": "📍 מיקום תועדו ({{lat}}, {{lng}})",
+    "locationDenied": "מיקום הרשאה נדרשת כדי לקapture את מיקום אתגר זה.",
+    "locationError": "לא ניתן לקבל את מיקומך. נסה שוב.",
+    "locationNameLabel": "שם המיקום",
+    "locationNamePlaceholder": "ריבר סייד פארק, כניסה צפונית",
+    "locationTimeout": "לא הצלחתי לקבל צפייה GPS במשך 15 שניות — נסה להזיז את עצמך למקום עם ראות טובה יותר לשמיים, ואז נסה שוב.",
+    "minutesShort": "{{n}}דקות",
+    "modeLabel": "סוג ציד",
+    "modeLocation": "זה המקום המדויק הזה",
+    "modeTask": "איפה שיהיה להם",
+    "multiStep": "מסלול רב-שלבי",
+    "noLimit": "ללא הגבלה",
+    "objectiveLabel": "מה הם צריכים ללמוד?",
+    "objectivePlaceholder": "זהה מינים של עצי טבע על ידי צורת העלה",
+    "oneSpot": "מקום אחד",
+    "publish": "פרסם אתגר",
+    "saveError": "לא ניתן ליצור פעילות זו",
+    "stepsLabel": "כמה עצירות?",
+    "stopNameDefault": "הפסק {{n}}",
+    "stopsHint": "הולך לכל תחנה וצילם. סטודנטים מקבלים מפה עם חץ bearing — לאום על מיקומם יוצא מהטלפון.",
+    "subjectLabel": "נושא",
+    "successBody": "סטודנטים יכולים לנסות את אתגר זה עכשיו.",
+    "successLabel": "כיצד יודע/י שהם הצליחו? (רשמי)",
+    "successPlaceholder": "למשל, תמונה ברורה של הפריט ועוד משפט אחד שמסביר למה הוא מתאים",
+    "successTitle": "פורסם!",
+    "taskLabel": "מה סטודנטים צריכים לעשות?",
+    "taskPlaceholder": "תיאור מה לחפש, לעשות או להבחין...",
+    "timeLimitLabel": "זמן מוגבל (אופציונלי)",
+    "title": "חיפוש אוצרות חדש",
+    "titleLabel": "החללה",
+    "titlePlaceholder": "למשל, תעלומת עץ האלון"
   },
   "discover": {
     "empty": "אף על פי כן אין עדיינות עדיין — המשורף שלך יסיים אותן בקרוב.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "ילדים",
+    "childrenTitle": "ילדים",
     "empty": "לא נוספו יתומים עדיין. הוסף יתום באפליקציית האינטרנט כדי לראות תקדם שלו איכות זה כאן.",
     "gradeLabel": "כיתה {{grade}}",
     "loadError": "לא יכול לטעון המשרד שלך.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "לוח מזעקה",
     "title": "מסך דשבורд להוכיחה בבית"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "הוסף ילד נוסף",
+    "allSet": "אתה מוכן!",
+    "allSetBody": "עבור לאפליקציה האינטרנטית כדי ליצור את פעילותו החיצונית הראשונה שלך — פרי יאמר שאלות של חקירה אריסטוטלית מותאמות לאזור ולנושא שלך",
+    "childNamePlaceholder": "ילד {{n}} שם",
+    "goToDashboard": "עבור לוח",
+    "noChildrenError": "אנא הוסף לפחות ילד אחד.",
+    "selectState": "בחר את מדינתך",
+    "selectStateOptional": "— בחר את מדינתך (אופציונלי) —",
+    "skipSetup": "דילוג על ההגדרה",
+    "someFailedError": "ילדים מסוימים לא יכלו להיות שמורים אוטומטית — ניתן להוסיף אותם מאוחר יותר מ-האפליקציה האינטרנטית",
+    "stateFootnote": "35 מדינות בארצות הברית דורשות הורים להוראה בבית להחזיק רשומות של לימוד — Peripateticware יוצר דוחות אוטומטית מlog הפעילות שלך.",
+    "step1": "הוסף ילדים",
+    "step2": "מדינתך",
+    "step3": "פעילות ראשונה",
+    "welcomeSubtitle": "התחילו אותך בתהליך ב-3 צעדים מהירים.",
+    "welcomeTitle": "ברוך הבא! 🌿",
+    "whichState": "איזה מדינה אתם לומדים בבית?",
+    "whichStateBody": "זוהי עוזרת להראות את הדרישות הנכונות של דיווחי מצב. אתה יכול לשנות את זה בכל עת.",
+    "whoTeaching": "מי אתה מלמד?",
+    "whoTeachingBody": "הוסף את שם כל ילד ומעלתו. אתה יכול להוסיף ילדים נוספים מאוחר יותר מהאפליקציה של האינטרנט"
   },
   "journal": {
     "draft": "דראפט",
@@ -187,8 +258,12 @@
     "minutesSecondsFormat": "מ_{{m}} m ס_{{s}} s",
     "mySummaryFinished": "אתה נרשם במקום {{rank}}. סיימת בזמן {{time}}.",
     "mySummaryInProgress": "אתה נרשם במקום {{rank}}. לדוגמה זו יש לך {{count}} אוצרות עלומות עד כďיום.",
-    "secondsFormat": "{{s}}s",
+    "mySummaryInProgress_one": "זו דירוגך {{rank}}. עד כה יש לך {{count}} טביעות אצבע.",
+    "mySummaryInProgress_other": "תכניתות {{rank}}. יש לך {{count}} ראיות עד כה.",
+    "secondsFormat": "{{s}}שניות",
     "stepsSoFar": "נערכו נמוך {{count}} אביזות עד כה",
+    "stepsSoFar_one": "{{count}} עדויות עד עכשיו",
+    "stepsSoFar_other": "{{count}} טעויות עד כה",
     "you": "Ani"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "סיסמא",
     "passwordReset": {
+      "backToLogin": "חזרה לכניסה",
       "body": "לאיפוס הסיסמה, פני/ה למורה שלך.",
+      "checkInbox": "בדק את תיבת הדואר",
+      "checkInboxBody": "אם קיים חשבון עבור {{email}}, תקבל בקרוב קישור לאיפוס הסיסמה. תוקפו יפוג לאחר 60 דקות.",
+      "missingEmail": "אנא הכנס את אימיילך",
+      "requestFailed": "משהו השתבש. בבקשה נסה שוב.",
+      "sendLink": "שלח קישור להחזרה",
       "title": "סיסמה נové"
     },
     "showPassword": "הצג סיסמא",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "לא נותנים ילדים עדיין. היכנס לאפליקציה האינטרנט והיכנס ילד כדי לראות משחקתו כאן.",
     "lastActive": "אחרון פעיל: {{date}}",
+    "linkChild": {
+      "body": "הכנס את כתובת המייל של Peripateticware של ילדך. הם צריכים לאשר את הבקשה באפליקצייתם לפני שההתקדמות תופיע כאן.",
+      "emailPlaceholder": "כתובת האימייל של הילד/ה",
+      "genericError": "לא ניתן לחבר את החשבון הזה. בדוק את האימייל ונסה שוב.",
+      "headerButton": "+ הקיש לילד",
+      "pendingBody": "{{name}} צריך לאשר את זה מהאפליקציה שלו לפני שההתקדמות שלו תופיע במרכז הבקרה שלך.",
+      "pendingTitle": "הבקשה נשלחה",
+      "submit": "קישור ילד",
+      "successBody": "{{name}} מופיע עכשיו בלוח הבקרה שלך.",
+      "successTitle": "חובר!",
+      "title": "קישור ילד"
+    },
     "loadError": "לא יכול לטעון לך הדשבורד.",
+    "messages": {
+      "empty": "אין מסרים מימורים עדיין.",
+      "reply": "להגיב",
+      "replyError": "לא ניתן לשלוח תגובתך.",
+      "replyPlaceholder": "כתוב את התשובה שלך…",
+      "replyTo": "השיב ל-{{name}}",
+      "send": "שלח",
+      "title": "הודעות"
+    },
+    "notifications": {
+      "empty": "הכל מעודכן.",
+      "title": "התראות"
+    },
+    "pendingBadge": "ממתין לאישור",
+    "pendingBody": "{{name}} צריך לאשר את זה מהאפליקציה שלו כדי שההתקדמות שלו תופיע כאן.",
     "progressUnavailable": "לא יכול לטעון תקדם הילד זה.",
     "stats": {
       "activities": "פעילויות",
@@ -262,7 +370,17 @@
       "hours": "שעות"
     },
     "tabLabel": "ילדים",
-    "title": "בנים שלי"
+    "title": "בנים שלי",
+    "unlink": {
+      "action": "ביטול הקישור",
+      "cancelRequest": "ביטול בקשה",
+      "confirmAction": "ביטול הקישור",
+      "confirmBody": "ראו את {{name}}",
+      "confirmBodyPending": "הזזת זה ביטל את הבקשה הפעילה",
+      "confirmTitle": "הסר {{name}}?",
+      "error": "לא ניתן להתנתק כרגע. נסה שוב."
+    },
+    "viewCalendar": "📅 לוח שנה"
   },
   "perichat": {
     "closeChat": "סגור שיחה",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "אין עדיKEN מסוגרים חלופיים עדיין — הצג אחת כדי להתחיל טבלת קידוד.",
     "leaderboardsLabel": "סיכום משחקים",
     "participantCount": "{{count}} משתתפים",
+    "participantCount_one": "{{count}} משתתף",
+    "participantCount_other": "{{count}} משתתפים",
     "proposedBy": "מאת {{name}}",
     "stats": {
       "activities": "אישורים",
@@ -330,6 +450,19 @@
       "downloadFailed": "לא הועתק שפה זו. בדיק את הכנסת החינם ונסה שנית."
     },
     "languageLabel": "עברית",
+    "parentRequests": {
+      "actionError": "נא נסה שוב.",
+      "body": "{{email}} רוצה לראות את התקדמותך כ{{relationship}}",
+      "label": "בקשות הורים"
+    },
+    "password": {
+      "button": "שחזר סיסמה",
+      "desc": "אנחנו נשלח לך קישורvia אימייל כדי ליצור סיסמה חדשה.",
+      "error": "נא נסה שוב.",
+      "sentBody": "שלחנו קישור לאיפוס סיסמה לכתובת {{email}}. תוקפו יפוג בעוד 60 דקות.",
+      "sentTitle": "בדוק את תיבת המיילים שלך"
+    },
+    "passwordLabel": "סיסמה",
     "role": {
       "student": "תלמיד"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "קול"
   },
+  "studentCalendar": {
+    "loadError": "לא ניתן לטעון את לוח הכרזות שלך.",
+    "title": "היומן שלי"
+  },
   "tabs": {
     "achievements": "ניהולים",
     "discover": "ציפור",
-    "progress": "פרוгреס",
     "propose": "פרסום",
     "settings": "אישורים"
   },
+  "teacherActivities": {
+    "empty": "עדיין אין פעילויות פורסמות.",
+    "loadError": "לא ניתן לטעון פעילויות.",
+    "title": "{{placeholder}} פעילויות פעילות"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}} לפני",
+    "descriptionLabel": "תיאור",
+    "gradeLabel": "{{grade}}",
+    "loadError": "לא ניתן לטעון את פעילות זו",
+    "minutesLabel": "{{n}} דקות",
+    "noSubmissions": "עדיין לא התחילו סטודנטים את פעילות זו.",
+    "objectivesLabel": "מַחְשׂוּבִים לִמּוּדָה",
+    "submissionsLabel": "הגשות"
+  },
+  "teacherCalendar": {
+    "addTitle": "אירוע חדש בלוח השנה",
+    "dateLabel": "תאריך (YYYY-MM-DD)",
+    "deleteError": "לא ניתן להסיר אירוע זה.",
+    "deleteTitle": "הסרת \"{{title}}\"?",
+    "descriptionLabel": "פרטים (אופציונלי)",
+    "descriptionPlaceholder": "כל פרט נוסף...",
+    "loadError": "לא ניתן לטעון את הקלנדר.",
+    "noClasses": "אין לך כיתות עדיין — הגדר אחת בעזרת האפליקציה",
+    "saveError": "לא ניתן ליצור אירוע זה.",
+    "title": "לוח שנה",
+    "titleLabel": "{{title}}",
+    "titlePlaceholder": "למשל, תאריכי הגשה של טופסי הרשאה",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "אין כיתות עדיין — השתמש באפליקציה האינטרנטית כדי ליצור אחת.",
+    "loadError": "לא ניתן לטעון כיתות",
+    "title": "שיעורים"
+  },
   "teacherDashboard": {
     "loadError": "לא יכול לטעון לך דשבורדך.",
+    "newScavengerHunt": "+ צייד אוצרות",
     "noActivities": "לא צורית עדכונים משהו עדיין - 利用 אפליקציית האינטרנט לבנאי אחת",
     "recentLabel": "איומי עתידים",
     "stats": {
       "active": "פעיתי",
+      "calendar": "לוח שנה",
       "classes": "קורסים",
+      "messages": "הודעות",
       "pending": "מתאחלים",
+      "proposals": "הצעות",
       "students": "תלמידים"
     },
     "tabLabel": "לוח המערכת",
     "title": "מצלמון מורה",
     "webHint": "ללוחמים בקריאות, רשימות הצעד, וטבלות, השתמשו באפליקציית האינטרנט."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "כל ההורים",
+    "audienceAllStudents": "הכל סטודנטים",
+    "audienceLabel": "שלח ל-",
+    "bodyLabel": "הודעה",
+    "bodyPlaceholder": "כתוב את ההודעה…",
+    "classroomLabel": "כיתת לימוד",
+    "composeTitle": "נשלוח הודעה חדשה",
+    "empty": "עדיין אין שיחות.",
+    "loadError": "לא ניתן לטעון הודעות.",
+    "orOneFamily": "או משפחה אחת:",
+    "replyPlaceholder": "כתוב תגובה…",
+    "send": "שלח",
+    "sendError": "לא ניתן לשלוח הודעה זו.",
+    "subjectLabel": "נושא",
+    "subjectPlaceholder": "למשל, אישור לטיול בשטח",
+    "title": "הודעות",
+    "willMessageParent": "שולח ל{{name}}'ס הורה/הורות"
+  },
+  "teacherProposals": {
+    "actionError": "נא נסה שוב.",
+    "approveBody": "הפרסום שלך יהיה פעילות אמיתית שסטודנטים יכולים לנסות מיד.",
+    "approveTitle": "אשר \"{{title}}\"?",
+    "byStudent": "על ידי {{name}} · {{subject}}",
+    "empty": "אין הצעות המתעכבות עליך.",
+    "loadError": "לא ניתן לטעון הצעות.",
+    "noteLabel": "הערה לך",
+    "rejectBody": "העדיפים יראו את זה ויכולים לשנות + לשלוח מחדש.",
+    "rejectPlaceholder": "הקרוב מדי לאירוע אחר — נסה נקודת ציון אחרת",
+    "rejectTitle": "תגובה עבור {{name}}",
+    "sendFeedback": "שלח",
+    "title": "הצעות סטודנטים"
+  },
+  "teacherSubmissions": {
+    "empty": "עדיין אין הגשות",
+    "loadError": "לא ניתן לטעון את ההגשות",
+    "title": "הגשות"
+  },
+  "wayfinding": {
+    "allFound": "!כל העצירות נמצאו",
+    "nextStop": "העצמה",
+    "noFix": "אין GPS",
+    "progress": "{{reached}} מתוך {{total}} עצירות",
+    "skip": "דילוג על עצירה אופציונלית זו"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "התמונות והערות שפשלת יראו על המפה של המורה שלך באותו המקום שבו תפסלת אותן.",
+      "title": "הטג את התמונות שלך לפי המקום שבו הן נלקחו"
+    },
+    "D": {
+      "gets": "על יציאה מלווה על ידי מורה, המורה יכול לראות את מיקומך בזמן אמת בזמן שהסשן נמשך.",
+      "title": "הצג לך על מפת המורה durinng הטיול"
+    },
+    "E": {
+      "gets": "החבורה יכולה להשוואה את המסלולים שגילו לאחר החיפוש.",
+      "title": "הקלט את המסלול שאתה הולך"
+    },
+    "allow": "העבר",
+    "eyebrow": "למורה שלך הפעיל את זה — בחירתו שלך",
+    "kept": "שמרתי: {{copy}}",
+    "notNow": "עכשיו לא"
   }
 }

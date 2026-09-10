@@ -2,9 +2,9 @@
   "lara": {
     "scope": "month",
     "limit": 10000,
-    "used": 0,
+    "used": 5417,
     "exhausted": false,
-    "month": "2026-07"
+    "month": "2026-09"
   },
   "deepl": {
     "scope": "lifetime",
@@ -15,8 +15,8 @@
   "microsoft": {
     "scope": "month",
     "limit": 2000000,
-    "used": 2826,
+    "used": 0,
     "exhausted": false,
-    "month": "2026-07"
+    "month": "2026-09"
   }
 }

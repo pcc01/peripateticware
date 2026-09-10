@@ -8,3 +8,4 @@ expo-env.d.ts
 scripts/i18n_meta/_extracted.*.json
 scripts/i18n_meta/*.tmp*
 i18n/xliff/*.tmp*
+scripts/i18n_meta/last_pipeline_config.json

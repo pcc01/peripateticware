@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "Détails",
-      "discoveryLabel": "🔎 CHASSE AU TRÉSOR",
-      "discoveryObjectiveLabel": "OBJECTIF",
-      "discoveryRequirementsLabel": "VOUS DEVREZ DOCUMENTER",
-      "discoveryRequirementsSpeech": "Vous devrez documenter cela avec {{items}}.",
-      "discoverySuccessLabel": "À QUOI RESSEMBLE LA RÉUSSITE",
+      "discoveryLabel": "Chasse au trésor",
+      "discoveryObjectiveLabel": "Objectif",
+      "discoveryRequirementsLabel": "Vous devez documenter",
+      "discoveryRequirementsSpeech": "Vous devez documenter ceci avec {{items}}.",
+      "discoverySuccessLabel": "SUCCÈS A L'AIR",
       "periIntro": "Faites une pause pour lire ce que vous allez faire aujourd'hui avant de sortir.",
       "startCta": "Prêt — allons-y"
     },
@@ -64,6 +64,9 @@
       "yourReflectionLabel": "VOTRE RÉFLEXION"
     }
   },
+  "calendar": {
+    "empty": "Rien sur le calendrier pour cette plage."
+  },
   "camera": {
     "allowAccess": "Accès autorisé",
     "closeCamera": "Ferme la caméra",
@@ -96,15 +99,11 @@
     },
     "mode": {
       "audio": "Voix",
-      "note": "Note",
+      "note": "{{placeholder}}",
       "photo": "Photo",
       "video": "Vidéo"
     },
     "notePlaceholder": "Observe ce que vous voyez...",
-    "offline": {
-      "body": "Enregistré sur votre appareil et téléchargé lors de la réconnexion.",
-      "title": "En ligne sauvegardé hors connexion"
-    },
     "preview": {
       "pause": "Pausse",
       "play": "Jouer",
@@ -126,21 +125,70 @@
     "title": "Ajouter preuve",
     "uploadFailed": {
       "title": "Échec de l'envoi"
-    },
-    "uploading": "Envoi en cours..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "Impossible de charger le calendrier.",
+    "title": "{{placeholder}}",
+    "titleWithName": "{{name}}'s Calendrier"
   },
   "common": {
     "activity": "Activité",
     "activityPlural": "Activités",
+    "add": "Ajouter",
+    "approve": "Approuver",
     "back": "Retour",
     "cancel": "Annuler",
     "captureLabel": "Enregistrement de preuves",
     "close": "Fermer",
+    "continue": "Continuer",
+    "deny": "{{placeholder}}",
     "done": "Fait",
     "error": "Erreur",
     "journalLabel": "Notes de champ",
     "ok": "Bien sûr",
+    "reject": "{{placeholder}}",
+    "remove": "Supprimer",
     "tryAgain": "Essaie encore"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "Apprentissage",
+    "captureLocation": "📍 Utiliser ma position actuelle",
+    "captureStop": "📍 Capture un arrêt ici",
+    "difficultyLabel": "DIFFICULTÉ (1-4)",
+    "durationLabel": "ESTIMÉE TEMPS (MINUTES)",
+    "gradeLabel": "Niveau de difficulté",
+    "locationCaptured": "📍 Emplacement capturé ({{lat}}, {{lng}})",
+    "locationDenied": "Autorisation d'emplacement nécessaire pour capturer où se trouve ce défi.",
+    "locationError": "N'a pas réussi à obtenir votre emplacement. Réessayez.",
+    "locationNameLabel": "Nom de l'emplacement",
+    "locationNamePlaceholder": "Rivière Park, entrée nord",
+    "locationTimeout": "N'a pas réussi à obtenir une fixation GPS en 15 secondes — essayez de vous déplacer dans un endroit avec une vue plus claire du ciel, puis réessayez.",
+    "minutesShort": "{{n}}m",
+    "modeLabel": "Chasser TYPE",
+    "modeLocation": "{{placeholder}}",
+    "modeTask": "N'importe où ils peuvent le trouver",
+    "multiStep": "Itinéraire en plusieurs étapes",
+    "noLimit": "Aucune limite",
+    "objectiveLabel": "{{placeholder}}QU'APPRENNENT-ILS ?",
+    "objectivePlaceholder": "Identifier les espèces d'arbres indigènes par la forme de la feuille",
+    "oneSpot": "Un seul endroit",
+    "publish": "Publier le défi",
+    "saveError": "Impossible de créer cette activité.",
+    "stepsLabel": "Combien d'arrêts ?",
+    "stopNameDefault": "Arrêter {{n}}",
+    "stopsHint": "Marchez jusqu'à chaque arrêt et capturez-le. Les étudiants reçoivent une carte avec une flèche d'orientation - rien concernant leur emplacement ne quitte leur téléphone.",
+    "subjectLabel": "{{placeholder}}",
+    "successBody": "Étudiants peuvent essayer ce défi maintenant.",
+    "successLabel": "Comment savez-vous qu'ils ont réussi ? (OPTIONNEL)",
+    "successPlaceholder": "Une photo claire de l'article plus une phrase expliquant pourquoi elle convient",
+    "successTitle": "Publié!",
+    "taskLabel": "QU'EST-CE QUE DOIVENT FAIRE LES ÉLÈVES ?",
+    "taskPlaceholder": "Décrivez ce que vous devez trouver, faire ou observer…",
+    "timeLimitLabel": "DÉLAI DE TEMPS À PARTIR DE MAINTENANT (OPTIONNEL)",
+    "title": "Nouvelle Chasse au Trésor",
+    "titleLabel": "Défi titre",
+    "titlePlaceholder": "The Oak Tree Mystery"
   },
   "discover": {
     "empty": "Aucune activité pour le moment - votre professeur les ajoutera bientôt.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "ENFANTS",
+    "childrenTitle": "Enfants",
     "empty": "Encore aucun enfant ajouté. Ajoutez un enfant dans l'application web pour voir leur progrès ici.",
     "gradeLabel": "NIVEAU {{grade}}",
     "loadError": "Impossible de charger votre tableau de bord.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "Tableau de bord",
     "title": "Tableau de bord d'éducation à domicile"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "Ajouter un autre enfant",
+    "allSet": "Vous êtes prêt !",
+    "allSetBody": "Aller sur l'application web pour créer votre première activité en plein air — Peri vous suggérera des questions d’enquête aristotélicienne adaptées à votre emplacement et sujet.",
+    "childNamePlaceholder": "Enfant {{n}} nom",
+    "goToDashboard": "Aller au tableau de bord",
+    "noChildrenError": "Veuillez ajouter au moins un enfant.",
+    "selectState": "Sélectionnez votre état",
+    "selectStateOptional": "Sélectionnez votre état (facultatif)",
+    "skipSetup": "{{placeholder}}",
+    "someFailedError": "Certains enfants n'ont pas pu être sauvés automatiquement — vous pouvez les ajouter plus tard depuis l'application web.",
+    "stateFootnote": "35 États américains exigent que les parents qui instruisent leurs enfants chez eux conservent des enregistrements d'apprentissage — Peripateticware génère automatiquement des rapports à partir de votre journal d'activité.",
+    "step1": "Ajouter des enfants",
+    "step2": "Votre État",
+    "step3": "Première activité",
+    "welcomeSubtitle": "Démarrer en 3 étapes simples.",
+    "welcomeTitle": "Bienvenue! 🌿",
+    "whichState": "Dans quel État faites-vous l'école à la maison ?",
+    "whichStateBody": "Cette aide à afficher les bons rapports d'état. Vous pouvez modifier ceci à tout moment.",
+    "whoTeaching": "{{placeholder}}",
+    "whoTeachingBody": "Ajouter le nom et la classe de chaque enfant. Vous pouvez ajouter plus d'enfants plus tard depuis l'application web."
   },
   "journal": {
     "draft": "Projet",
@@ -187,8 +258,12 @@
     "minutesSecondsFormat": "{{m}}m {{s}}s",
     "mySummaryFinished": "Tu es classé {{rank}}. Tu as terminé en {{time}}.",
     "mySummaryInProgress": "Rangé en {{rank}}. Vous avez {{count}} pièces d'évidence jusqu'ici.",
+    "mySummaryInProgress_one": "Votre rang est {{rank}}. Vous avez {{count}} pièces de preuve jusqu'à présent.",
+    "mySummaryInProgress_other": "Votre rang est {{rank}}. Vous avez {{count}} éléments de preuve jusqu'à présent.",
     "secondsFormat": "{{s}}s",
     "stepsSoFar": "pièces de preuve jusqu'ici ({{count}})",
+    "stepsSoFar_one": "{{count}} pièces de preuve jusqu'à présent",
+    "stepsSoFar_other": "{{count}} pièces de preuve jusqu'à présent",
     "you": "Tu"
   },
   "liveTracking": {
@@ -208,7 +283,7 @@
     "title": "Suivi en direct"
   },
   "login": {
-    "emailLabel": "EMAIL",
+    "emailLabel": "{{placeholder}}",
     "failed": {
       "body": "Vérifiez votre adresse e-mail et mot de passe.",
       "title": "Echec de connexion"
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "MOT DE PASSE",
     "passwordReset": {
+      "backToLogin": "Retour à la connexion",
       "body": "Renseignez-vous avec votre professeur pour réinitialiser votre mot de passe.",
+      "checkInbox": "Vérifiez votre boîte aux lettres",
+      "checkInboxBody": "Si un compte existe pour {{email}}, vous recevrez sous peu un lien de réinitialisation du mot de passe. Il expire dans 60 minutes.",
+      "missingEmail": "Veuillez saisir votre adresse e-mail.",
+      "requestFailed": "Quelque chose s'est mal passé. Veuillez réessayer.",
+      "sendLink": "Envoyer le lien de réinitialisation",
       "title": "Mot de passe réinitialisé"
     },
     "showPassword": "Mot de passe affiché",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "Encore aucun enfant lié. Liez un enfant sur l'application web pour voir leur progrès ici.",
     "lastActive": "Actif récemment : {{date}}",
+    "linkChild": {
+      "body": "Entrez l'adresse e-mail Peripateticware de votre enfant. Ils devront approuver la demande dans leur propre application avant que leur progression n'apparaisse ici.",
+      "emailPlaceholder": "{{placeholder}}Adresse e-mail de l'enfant",
+      "genericError": "Impossible de lier ce compte. Vérifiez l'adresse e-mail et réessayez.",
+      "headerButton": "+ Lier un enfant",
+      "pendingBody": "{{name}} doit approuver ceci depuis sa propre application avant que sa progression n'apparaisse sur votre tableau de bord.",
+      "pendingTitle": "Demande envoyée",
+      "submit": "Lien enfant",
+      "successBody": "{{name}} apparaît maintenant sur votre tableau de bord",
+      "successTitle": "{{placeholder}}",
+      "title": "Lier un enfant"
+    },
     "loadError": "Impossible de charger votre tableau de bord.",
+    "messages": {
+      "empty": "Aucun message de la part des enseignants pour l'instant.",
+      "reply": "Répondre",
+      "replyError": "Désolé, impossible d'envoyer votre réponse.",
+      "replyPlaceholder": "Écrivez votre réponse…",
+      "replyTo": "Répondre à {{name}}",
+      "send": "Envoyer",
+      "title": "Messages"
+    },
+    "notifications": {
+      "empty": "Vous êtes à jour.",
+      "title": "Notifications"
+    },
+    "pendingBadge": "En attente d'approbation",
+    "pendingBody": "{{name}} doit approuver ceci depuis sa propre application avant que sa progression n'apparaisse ici.",
     "progressUnavailable": "Pas possible de charger le progrès de cet enfant.",
     "stats": {
       "activities": "Activités",
@@ -262,7 +370,17 @@
       "hours": "Heures"
     },
     "tabLabel": "Enfants",
-    "title": "Mes Enfants"
+    "title": "Mes Enfants",
+    "unlink": {
+      "action": "{{placeholder}}",
+      "cancelRequest": "Annuler la demande",
+      "confirmAction": "{{placeholder}}",
+      "confirmBody": "Vous arrêterez de voir les progrès de {{name}}. Vous pouvez envoyer une nouvelle demande plus tard.",
+      "confirmBodyPending": "Annuler la demande en attente",
+      "confirmTitle": "Délier {{name}} ?",
+      "error": "Impossible de désactiver maintenant. Réessayez."
+    },
+    "viewCalendar": "📅 Calendrier"
   },
   "perichat": {
     "closeChat": "Fermez le chat",
@@ -283,10 +401,12 @@
     "leaderboardsEmpty": "Aucun défi créé par les étudiants encore — proposez-en un pour démarrer une classement.",
     "leaderboardsLabel": "CLASSIFICATIONS",
     "participantCount": "{{count}} prenant part",
+    "participantCount_one": "{{count}} prennent part",
+    "participantCount_other": "{{count}} prennent part",
     "proposedBy": "par {{name}}",
     "stats": {
       "activities": "Activités",
-      "captures": "Captures",
+      "captures": "{{placeholder}}",
       "dayStreak": "Enchaînement de jours"
     }
   },
@@ -330,6 +450,19 @@
       "downloadFailed": "Pas pu télécharger cette langue. Vérifiez votre connexion et réessayez."
     },
     "languageLabel": "FRANCAIS",
+    "parentRequests": {
+      "actionError": "S'il vous plaît réessayer.",
+      "body": "{{email}} souhaite voir vos progrès en tant que {{relationship}}",
+      "label": "Demandes de parents"
+    },
+    "password": {
+      "button": "{{placeholder}}",
+      "desc": "Nous vous enverrons un lien par e-mail pour réinitialiser votre mot de passe.",
+      "error": "S'il vous plaît réessayer.",
+      "sentBody": "Nous avons envoyé un lien de réinitialisation de mot de passe à {{email}}. Il expire dans 60 minutes.",
+      "sentTitle": "Vérifiez votre boîte aux lettres"
+    },
+    "passwordLabel": "Mot de passe",
     "role": {
       "student": "Eleve"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "VOIX"
   },
+  "studentCalendar": {
+    "loadError": "Impossible de charger votre calendrier.",
+    "title": "Mon Calendrier"
+  },
   "tabs": {
     "achievements": "Réussites",
     "discover": "Découvrez",
-    "progress": "Avancement",
     "propose": "Proposer",
     "settings": "Paramètres"
   },
+  "teacherActivities": {
+    "empty": "Aucune activité publiée pour l'instant.",
+    "loadError": "Impossible de charger les activités.",
+    "title": "Activités actives"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}} il y a",
+    "descriptionLabel": "{{placeholder}}",
+    "gradeLabel": "Note de {{grade}}",
+    "loadError": "Impossible de charger cette activité.",
+    "minutesLabel": "{{n}} min",
+    "noSubmissions": "Aucun étudiant n'a commencé cette activité pour l'instant.",
+    "objectivesLabel": "Objectifs d'apprentissage",
+    "submissionsLabel": "Soumissions"
+  },
+  "teacherCalendar": {
+    "addTitle": "Nouvel événement de calendrier",
+    "dateLabel": "DATE (AAAA-MM-JJ)",
+    "deleteError": "Impossible de supprimer cet événement.",
+    "deleteTitle": "Supprimer \"{{title}}\" ?",
+    "descriptionLabel": "DÉTAILS (OPTIONNEL)",
+    "descriptionPlaceholder": "Toute autre précision…",
+    "loadError": "Impossible de charger le calendrier.",
+    "noClasses": "Vous n'avez pas encore de classes — en créer une dans l'application web d'abord.",
+    "saveError": "Impossible de créer cet événement.",
+    "title": "{{placeholder}}",
+    "titleLabel": "Titre",
+    "titlePlaceholder": "{{placeholder}}",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "Aucune classe pour l'instant — utilisez l'application web pour en créer une.",
+    "loadError": "Impossible de charger les classes.",
+    "title": "{{placeholder}}"
+  },
   "teacherDashboard": {
     "loadError": "Impossible de charger votre tableau de bord.",
+    "newScavengerHunt": "Chasse au trésor",
     "noActivities": "Pas de activité créée encore - utilisez l'application web pour en créer une.",
     "recentLabel": "ACTIVITES RÉCENTES",
     "stats": {
       "active": "Actif",
+      "calendar": "{{placeholder}}",
       "classes": "Cours",
+      "messages": "Messages",
       "pending": "En attente",
+      "proposals": "Propositions",
       "students": "Eleves"
     },
     "tabLabel": "Tableau de bord",
     "title": "Tableau de bord enseignant",
     "webHint": "Utilisez l'application web pour les classes, les listes de présence et les rubriques."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "All parents",
+    "audienceAllStudents": "All {{placeholder}} étudiants",
+    "audienceLabel": "ENVOYER À",
+    "bodyLabel": "MESSAGE",
+    "bodyPlaceholder": "Écrivez votre message…",
+    "classroomLabel": "{{placeholder}}",
+    "composeTitle": "Nouveau message",
+    "empty": "Aucune conversation pour l'instant.",
+    "loadError": "Impossible de charger les messages.",
+    "orOneFamily": "or une famille :",
+    "replyPlaceholder": "Écrire une réponse…",
+    "send": "Envoyer",
+    "sendError": "Could not send this message.",
+    "subjectLabel": "Sujet",
+    "subjectPlaceholder": "{{placeholder}}",
+    "title": "Messages",
+    "willMessageParent": "Envoie à {{name}}'s parent(s)."
+  },
+  "teacherProposals": {
+    "actionError": "S'il vous plaît réessayer.",
+    "approveBody": "Cette le publie comme une activité réelle que les étudiants peuvent tenter dès maintenant.",
+    "approveTitle": "Approuver \"{{title}}\" ?",
+    "byStudent": "Par {{name}} · {{subject}}",
+    "empty": "Aucune proposition en attente.",
+    "loadError": "Impossible de charger les propositions.",
+    "noteLabel": "{{placeholder}}",
+    "rejectBody": "Ils verront ceci et pourront réviser + resoumettre.",
+    "rejectPlaceholder": "Trop proche d'une autre activité — essayez un autre lieu",
+    "rejectTitle": "Avis pour {{name}}",
+    "sendFeedback": "Envoyer",
+    "title": "Étudiants Propositions"
+  },
+  "teacherSubmissions": {
+    "empty": "Aucune soumission pour l'instant.",
+    "loadError": "Impossible de charger les soumissions.",
+    "title": "Soumissions"
+  },
+  "wayfinding": {
+    "allFound": "Toutes les étapes sont trouvées ! 🎉",
+    "nextStop": "SUIVANT",
+    "noFix": "Aucune GPS",
+    "progress": "{{reached}} arrêts sur {{total}}",
+    "skip": "{{placeholder}}"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "Vos photos et notes soumis s'affichent sur la carte de votre professeur à l'emplacement où vous les avez capturées.",
+      "title": "Étiqueter vos photos avec l'endroit où elles ont été prises"
+    },
+    "D": {
+      "gets": "Sous surveillance, votre professeur peut voir où vous êtes en temps réel pendant la session.",
+      "title": "Afficher sur la carte de l'enseignant pendant le voyage"
+    },
+    "E": {
+      "gets": "La classe peut comparer les itinéraires que chacun a pris après la chasse.",
+      "title": "Enregistrer le chemin que vous marchez"
+    },
+    "allow": "Autoriser",
+    "eyebrow": "VOTRE ENSEIGNANT A ACTIVÉ ÇA — VOTRE CHOIX",
+    "kept": "Conservé : {{copy}}",
+    "notNow": "Maintenant"
   }
 }

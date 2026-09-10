@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "AYNLARI",
-      "discoveryLabel": "🔎 HAZİNE AVI",
-      "discoveryObjectiveLabel": "HEDEF",
-      "discoveryRequirementsLabel": "BELGELEMEN GEREKENLER",
-      "discoveryRequirementsSpeech": "Bunu {{items}} ile belgelemen gerekecek.",
-      "discoverySuccessLabel": "BAŞARI NASIL GÖRÜNÜR",
+      "discoveryLabel": "🔍 AÇMAÇ BULMAÇ",
+      "discoveryObjectiveLabel": "OBJECTİVE",
+      "discoveryRequirementsLabel": "Belirteceksiniz",
+      "discoveryRequirementsSpeech": "You'll need to document this with {{items}}.",
+      "discoverySuccessLabel": "Başarı Görünüyor",
       "periIntro": "Günün ne yapacağınızı aşağıda gösteriyoruz. Çıkış yapmadan önce lütfen okuyunuz.",
       "startCta": "Hazır oldum — çalışmalarıza başlayalım"
     },
@@ -64,6 +64,9 @@
       "yourReflectionLabel": "SENİN YANSIMAN"
     }
   },
+  "calendar": {
+    "empty": "{{placeholder}} bu aralık için takvime hiçbir şey yok."
+  },
   "camera": {
     "allowAccess": "Erim izni ver",
     "closeCamera": "Kapat kamera",
@@ -98,13 +101,9 @@
       "audio": "Ses",
       "note": "Nota",
       "photo": "Resim",
-      "video": "Video"
+      "video": "{{placeholder}}"
     },
     "notePlaceholder": "Gözlem edilen yazınız...",
-    "offline": {
-      "body": "Kaydınızda kaydedilmiştir ve yeniden bağlanırsanız yüklenir.",
-      "title": "Kaydedilmiş Offline"
-    },
     "preview": {
       "pause": "Durakla",
       "play": "Oynat",
@@ -126,21 +125,70 @@
     "title": "Eklenen Tümleri Ekle",
     "uploadFailed": {
       "title": "Yükleme başarısız oldu"
-    },
-    "uploading": "Yükleme..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "{{placeholder}}",
+    "title": "{{placeholder}}",
+    "titleWithName": "{{name}}'in Takvimi"
   },
   "common": {
     "activity": "Faaliyet",
     "activityPlural": "Faaliyetler",
+    "add": "{{placeholder}}",
+    "approve": "Onayla",
     "back": "Geri",
     "cancel": "iptal",
     "captureLabel": "Kısıtla Doğrulama",
     "close": "Kapat",
+    "continue": "Devam",
+    "deny": "{{placeholder}}",
     "done": "Tamamlandı",
     "error": "Hata",
     "journalLabel": "Açıklama notları",
     "ok": "Tamam",
+    "reject": "{{placeholder}}",
+    "remove": "Sil",
     "tryAgain": "Yeniden Deneyin"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "Öğrenme Seviyesi",
+    "captureLocation": "📍 Kullanımın şu anki konumunu kullan",
+    "captureStop": "📍 Burada bir durak yakala",
+    "difficultyLabel": "DIFFİKÜLTE (1-4)",
+    "durationLabel": "Tahmini Süre (Dakika)",
+    "gradeLabel": "{{placeholder}}",
+    "locationCaptured": "📍 Konum Alındı ({{lat}}, {{lng}})",
+    "locationDenied": "Konum izni, bu meydanın konumunu almak için gereklidir.",
+    "locationError": "{{placeholder}}",
+    "locationNameLabel": "{{locationName}}",
+    "locationNamePlaceholder": "Riverside Park, kuzey girişi",
+    "locationTimeout": "GPS sabitlenemiyor — gökyüzünü daha iyi görebileceğiniz bir yere hareket edin ve tekrar deneyin.",
+    "minutesShort": "{{n}}",
+    "modeLabel": "{{placeholder}}",
+    "modeLocation": "{{placeholder}}",
+    "modeTask": "{{placeholder}}",
+    "multiStep": "{{placeholder}}",
+    "noLimit": "{{placeholder}}",
+    "objectiveLabel": "{{placeholder}} Ne Öğrenmelidir?",
+    "objectivePlaceholder": "{{placeholder}}",
+    "oneSpot": "{{placeholder}}",
+    "publish": "{{placeholder}}",
+    "saveError": "Oluşturulamıyor bu aktivite.",
+    "stepsLabel": "{{placeholder}}",
+    "stopNameDefault": "Dur {{n}}",
+    "stopsHint": "Yürüyerek her durakaya git ve onu yakala. Öğrenciler bir harita alırlar, haritada bir yön okunu — telefonlarıyla hiçbir yer bilgisini paylaşmazlar.",
+    "subjectLabel": "{{placeholder}} Konu",
+    "successBody": "Öğrenciler şimdi bu meydan okuma çabasını yapabilirler.",
+    "successLabel": "Nasıl biliyorsun ki başardılar? (SEÇMELİ)",
+    "successPlaceholder": "{{placeholder}}",
+    "successTitle": "Yayınlandı!",
+    "taskLabel": "ÖĞRENCİLER NEDİR YAPMALI?",
+    "taskPlaceholder": "Aranacak şey, yapacaklar veya gözlemlemek için açıklayın…",
+    "timeLimitLabel": "ZAMAN SINIRLAMASI (SEÇMELİ)",
+    "title": "Yeni Avcılık Macerası",
+    "titleLabel": "ÇALIŞMA BAŞLIĞI",
+    "titlePlaceholder": "The Oak Tree Mystery"
   },
   "discover": {
     "empty": "Yapılan aktivite yok — size daha kısa sürede öğretmeniniz aktivite ekleyecektir.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "ÇOCUKLAR",
+    "childrenTitle": "Çocuklar",
     "empty": "Yeterlenmeyen çocuk eklenmemiş. Web uygulamasında bir çocuk ekleerek ilerleme durumunu burada gözlemleyin.",
     "gradeLabel": "SİNEKLİ {{grade}}",
     "loadError": "Yardım edilemiyor dashboard.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "Ana Sayfa",
     "title": "Anaokulu Paneli"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "Ek Çocuk Ekle",
+    "allSet": "You're all set!",
+    "allSetBody": "Git web uygulamasını ziyaret edin ve ilk dış aktivitenizi oluşturun — Peri, konumunuz ve konuğunuz için Aristoteles'in soruşturma soruları önerir.",
+    "childNamePlaceholder": "Çocuk {{n}} adı",
+    "goToDashboard": "{{dashboard}}'a git",
+    "noChildrenError": "Lütfen en az bir çocuk ekleyin.",
+    "selectState": "{{placeholder}}",
+    "selectStateOptional": "— Seçiniz durumunuz (isteğe bağlı) —",
+    "skipSetup": "{{placeholder}}",
+    "someFailedError": "Bazı çocuklar otomatik olarak kurtarılamadı — Web uygulamasından sonra ekleyebilirsiniz.",
+    "stateFootnote": "Amerika Birleşik Devletleri'ndeki 35 eyalet, homeschool ebeveynlerinin öğrenme kayıtlarını tutmalarını zorunluluklar — Peripateticware, aktivite günlüğünüzden otomatik olarak raporlar oluşturur.",
+    "step1": "Çocuk Ekle",
+    "step2": "Your State",
+    "step3": "İlk Etkinlik",
+    "welcomeSubtitle": "Hadi 3 hızlı adımda hesabınızı oluşturalım.",
+    "welcomeTitle": "Hoşgeldiniz! 🌿",
+    "whichState": "Eşsiz hangi eyalette evde eğitim veriyorsunuz?",
+    "whichStateBody": "Bu, doğru durum bildirim gereksinimlerini göstermeye yardımcı olur. Bunu her zaman değiştirebilirsiniz.",
+    "whoTeaching": "{{placeholder}}",
+    "whoTeachingBody": "Her çocukun adını ve sınıfını ekleyin. Web uygulamasından daha fazla çocuk ekleyebilirsiniz."
   },
   "journal": {
     "draft": "Taslak",
@@ -184,11 +255,15 @@
     "empty": "Henüz herkese şu seansi başlamamıştır.",
     "finished": "Tamamlandı",
     "loadError": "Yüklenemedi bu sıralama tablosu.",
-    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "minutesSecondsFormat": "{{m}}dk {{s}}sn",
     "mySummaryFinished": "Sen sıralama {{rank}}. Zamanız {{time}}.",
     "mySummaryInProgress": "Sen sıralama {{rank}}. Zaten {{count}} tane kısaltma bulunmuştur.",
+    "mySummaryInProgress_one": "Sıralaması {{rank}}'dir. Şu ana kadar {{count}} adet kanıt elde ettiniz.",
+    "mySummaryInProgress_other": "Sıralamanız {{rank}}. Şu ana kadar {{count}} adet kanıt elde ettiniz.",
     "secondsFormat": "{{s}}s",
     "stepsSoFar": "İşte zamanlayıcı kadar {{count}} adet kararlı kısıt",
+    "stepsSoFar_one": "{{count}} şu anki kanıt sayısı",
+    "stepsSoFar_other": "{{count}} şu ana kadar kanıt",
     "you": "Sen"
   },
   "liveTracking": {
@@ -203,7 +278,7 @@
     "minutesAgo": "{{n}}m önce",
     "noEvents": "Yapılmamış bir aktivite yok.",
     "noLocationYet": "Yerleşim güncelleme alındı mi henüz?",
-    "secondsAgo": "{{n}}s ago",
+    "secondsAgo": "{{n}} önce",
     "tabLabel": "Takip Edilecek",
     "title": "Takip Edilecek"
   },
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "Şifre",
     "passwordReset": {
+      "backToLogin": "{{placeholder}}",
       "body": "Mesajla öğretmenine şifrenizi sıfırla'ma için iletişime geçin.",
+      "checkInbox": "{{placeholder}}",
+      "checkInboxBody": "{{email}} için bir hesap varsa kısa süre içinde bir parola sıfırlama bağlantısı alacaksınız. 60 dakika içinde süresi dolacak.",
+      "missingEmail": "Lütfen e-posta adresinizi girin.",
+      "requestFailed": "Birşeyler ters gitti. Lütfen tekrar deneyin.",
+      "sendLink": "Gönderme reset bağlantı",
       "title": "Şifre Sıfırla"
     },
     "showPassword": "Şifre Göster",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "Çocuk bağlantısı yapılmamıştır. Web uygulamasında bir çocuya bağlanarak ilerleme durumunu burada gözlemleyin.",
     "lastActive": "Son aktif: {{date}}",
+    "linkChild": {
+      "body": "Giriş yapmak için çocukunuzun Peripateticware e-posta adresini girin. Onlar kendi uygulamasından talep onaylamalıdır önce ilerlemeleri burada görüntülenir.",
+      "emailPlaceholder": "{{placeholder}} Çocuğun e-posta adresi",
+      "genericError": "{{placeholder}} hesabı bağlanamıyor. Lütfen e-posta adresini kontrol edin ve tekrar deneyin.",
+      "headerButton": "{{placeholder}} Çocuğunuzu Bağlayın",
+      "pendingBody": "{{name}}'nin kendi uygulamasından onaylaması gerekir özetinizin dashboard'a görüntülenmeden önce.",
+      "pendingTitle": "{{placeholder}} Gönderildi",
+      "submit": "{{placeholder}}",
+      "successBody": "{{name}} şimdi panonuzda görünüyor.",
+      "successTitle": "Bağlantı kuruldu!",
+      "title": "{{placeholder}} Çocuğunuzu Bağlayın"
+    },
     "loadError": "Yardım edilemiyor dashboard.",
+    "messages": {
+      "empty": "Henşinizden mesaj yok.",
+      "reply": "{{placeholder}}",
+      "replyError": "Göndermek için yetersiz yetki.",
+      "replyPlaceholder": "Yanıtını yazın…",
+      "replyTo": "{{name}}'ye Cevap Ver",
+      "send": "{{placeholder}} Gönder",
+      "title": "{{placeholder}}"
+    },
+    "notifications": {
+      "empty": "{{placeholder}}",
+      "title": "{{placeholder}} Bildirimler"
+    },
+    "pendingBadge": "Aşamada Onay Bekleniyor",
+    "pendingBody": "{{name}} onları kendi uygulamasından onaylaması gerekir önce ilerlemesini burada görüntülenir.",
     "progressUnavailable": "Ardışık zamanlarda bu çocukun ilerleme yüklenemedi.",
     "stats": {
       "activities": "Faaliyetler",
@@ -262,7 +370,17 @@
       "hours": "Saatler (plural) - Saati (singular)"
     },
     "tabLabel": "Çocuklar",
-    "title": "Annem ve Çocuklarım"
+    "title": "Annem ve Çocuklarım",
+    "unlink": {
+      "action": "{{placeholder}}",
+      "cancelRequest": "İptal isteği",
+      "confirmAction": "{{placeholder}}",
+      "confirmBody": "{{name}}'in ilerlemesini görmeye devam etmeyeceksiniz. Sonra yeni bir istekte bulunabilirsiniz.",
+      "confirmBodyPending": "Bu, bekleyen talebi iptal eder.",
+      "confirmTitle": "Çözümle {{name}}'yi Bağlantıyı Kır?",
+      "error": "{{placeholder}}"
+    },
+    "viewCalendar": "📅 Calendar"
   },
   "perichat": {
     "closeChat": "Kapat chat",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "Henüz öğrenciler tarafından oluşturulan bir zorluk yok — bir liderlik tablosu başlatmak için bir önerin.",
     "leaderboardsLabel": "TABLOLAR",
     "participantCount": "İlgi çekici {{count}} kişi katıldı",
+    "participantCount_one": "{{count}} katılımcı",
+    "participantCount_other": "{{count}} katılım",
     "proposedBy": "{{name}} tarafından",
     "stats": {
       "activities": "Faaliyetler",
@@ -330,6 +450,19 @@
       "downloadFailed": "Bu dil indirilemedi. Bağlantınızı kontrol edip tekrar deneyin."
     },
     "languageLabel": "TÜRKÇE",
+    "parentRequests": {
+      "actionError": "Lütfen tekrar deneyin.",
+      "body": "{{email}} sizi {{relationship}} olarak görmek istiyor",
+      "label": "{{placeholder}}"
+    },
+    "password": {
+      "button": "Şifrenizi sıfırlamak için",
+      "desc": "E-posta adresinize yeni şifre ayarlamak için bir bağlantı gönderilecektir.",
+      "error": "Lütfen tekrar deneyin.",
+      "sentBody": "{{email}} adresine bir parola sıfırlama bağlantısı gönderdik. 60 dakika içinde süresi dolacak.",
+      "sentTitle": "{{placeholder}}"
+    },
+    "passwordLabel": "ŞİFRE",
     "role": {
       "student": "Öğrenci"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "SES"
   },
+  "studentCalendar": {
+    "loadError": "{{placeholder}} tak yüklenemedi.",
+    "title": "{{placeholder}}"
+  },
   "tabs": {
     "achievements": "Başarılar",
     "discover": "Keşfedin",
-    "progress": "İlerleme",
     "propose": "Teklifi Sunat",
     "settings": "Ayarlar"
   },
+  "teacherActivities": {
+    "empty": "Henüz yayınlanmış aktivite yok.",
+    "loadError": "{{placeholder}} aktiviteleri yüklenemedi.",
+    "title": "Aktif Etkinlikler"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}} önce",
+    "descriptionLabel": "Açıklama",
+    "gradeLabel": "Sınıf {{grade}}",
+    "loadError": "Bu aktiviteyi yükleyemiyoruz.",
+    "minutesLabel": "{{n}} dakika",
+    "noSubmissions": "Hen kimse bu aktiviteyi başlatmadı.",
+    "objectivesLabel": "Öğrenme Amaçları",
+    "submissionsLabel": "GÖNDERİMLER"
+  },
+  "teacherCalendar": {
+    "addTitle": "Yeni takvim etkinliği",
+    "dateLabel": "TARİH (YYYY-MM-DD)",
+    "deleteError": "Bu etkinliği kaldıramadık.",
+    "deleteTitle": "{{title}}'i kaldır?",
+    "descriptionLabel": "Detaylar (İsteğe Bağlı)",
+    "descriptionPlaceholder": "Herhangi bir ek ayrıntı...",
+    "loadError": "{{placeholder}}",
+    "noClasses": "Henüz sınıfınız yok — Öncelikle web uygulamasından bir tane ayarlayın.",
+    "saveError": "Oluşturulamıyor bu etkinlik.",
+    "title": "{{placeholder}}",
+    "titleLabel": "{{title}}",
+    "titlePlaceholder": "{{permission}} izni",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "Henüz sınıf yok — Web uygulamasını kullanarak bir tane oluşturun.",
+    "loadError": "{{placeholder}}",
+    "title": "Sınıflar"
+  },
   "teacherDashboard": {
     "loadError": "Yardım edilemiyor dashboard.",
+    "newScavengerHunt": "Scavenger hunt",
     "noActivities": "Olmadığınız zaman hiçbir aktivite oluşturmadınız - internet tabanlı uygulamayı kullanarak birini oluşturun.",
     "recentLabel": "FAKAT SON AŞAMALAR",
     "stats": {
       "active": "Aktif",
+      "calendar": "{{placeholder}}",
       "classes": "Sınıflar",
+      "messages": "{{placeholder}}",
       "pending": "Bekleyen",
+      "proposals": "{{placeholder}}",
       "students": "Öğrenciler"
     },
     "tabLabel": "Ana Sayfa",
     "title": "Öğretmen Paneli",
     "webHint": "Sınif odaları, öğrenci listeleri ve rubrikler için web uygulamasını kullanın."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "{{placeholder}}",
+    "audienceAllStudents": "{{placeholder}}",
+    "audienceLabel": "{{placeholder}} Gönder",
+    "bodyLabel": "MESAJ",
+    "bodyPlaceholder": "Yazın mesajınızı…",
+    "classroomLabel": "{{placeholder}}",
+    "composeTitle": "Yeni mesaj",
+    "empty": "Henüz konuşma yok.",
+    "loadError": "{{placeholder}} mesajları yüklenemedi.",
+    "orOneFamily": "{{placeholder}}",
+    "replyPlaceholder": "Yanıt yazın…",
+    "send": "{{placeholder}} Gönder",
+    "sendError": "Gönderilemedi bu mesaj.",
+    "subjectLabel": "{{placeholder}} Konu",
+    "subjectPlaceholder": "{{placeholder}} Seyahat izni",
+    "title": "{{placeholder}}",
+    "willMessageParent": "Gönderir {{name}}'in ebeveyn(ler)ine."
+  },
+  "teacherProposals": {
+    "actionError": "Lütfen tekrar deneyin.",
+    "approveBody": "Bu, öğrencilere hemen denemeye başlayacak gerçek bir etkinlik olarak yayınlar.",
+    "approveTitle": "Onaylıyor musunuz \"{{title}}\"?",
+    "byStudent": "{{name}} tarafından · {{subject}}",
+    "empty": "Beklemedik öneriler yok.",
+    "loadError": "Yükleyemiyoruz öneriler",
+    "noteLabel": "NOTA",
+    "rejectBody": "Bu'yi görürler ve revize + yeniden göndermek için kullanabilirler.",
+    "rejectPlaceholder": "{{placeholder}}",
+    "rejectTitle": "Geri bildirim {{name}} için",
+    "sendFeedback": "Gönder",
+    "title": "Öğrenci Önerileri"
+  },
+  "teacherSubmissions": {
+    "empty": "Henüz hiçbir gönderim yok.",
+    "loadError": "{{placeholder}}",
+    "title": "Gönderimler"
+  },
+  "wayfinding": {
+    "allFound": "Tüm durakalar bulundu! 🎉",
+    "nextStop": "Son Durak",
+    "noFix": "{{placeholder}}",
+    "progress": "{{reached}} of {{total}} duraklar",
+    "skip": "{{placeholder}}"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "{{placeholder}} foto ve notlarınız öğretmeninizinin haritasında yakalandıkları noktada görüntülenecektir.",
+      "title": "{{placeholder}}"
+    },
+    "D": {
+      "gets": "Denetimli bir etkinlik sırasında öğretmenin sizinizin gerçek zamanlı konumunuzu görmesini sağlar.",
+      "title": "Öğretmenin haritasında seyahatte göster"
+    },
+    "E": {
+      "gets": "Sınıf, herkesin avdan sonra aldığı yolları karşılaştırabilir.",
+      "title": "Kısa yolunizi kaydet"
+    },
+    "allow": "İzin Ver",
+    "eyebrow": "ÖĞRENİĞİNİZ AÇTINIZ — SEÇİMİNİZ",
+    "kept": "Kopyalanan: {{copy}}",
+    "notNow": "Şimdi değil"
   }
 }

@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "세부 정보",
-      "discoveryLabel": "🔎 보물찾기",
+      "discoveryLabel": "🔍 스카ベン저 헌트",
       "discoveryObjectiveLabel": "목표",
-      "discoveryRequirementsLabel": "기록해야 할 것",
-      "discoveryRequirementsSpeech": "{{items}}(으)로 이것을 기록해야 합니다.",
-      "discoverySuccessLabel": "성공의 기준",
+      "discoveryRequirementsLabel": "문서화해야 합니다",
+      "discoveryRequirementsSpeech": "문서화에 {{items}} 필요",
+      "discoverySuccessLabel": "성공은 이런 모습입니다",
       "periIntro": "오늘은 이렇게 할 것입니다. 출발하기 전에 잠깐 읽어보세요.",
       "startCta": "준비되었습니다. 가자"
     },
@@ -39,7 +39,7 @@
     "orient": {
       "defaultTarget": "주위를 둘러보고 보이는 것을 기록하세요.",
       "periText": "도착했습니다. 주변을 조금 관찰하세요. 시작하기 전에.",
-      "phaseLabel": "단계 1 · 방향 정렬",
+      "phaseLabel": "1단계 · 방향 설정",
       "readyCta": "나는 방향을 가지고 있습니다. 조사를 시작합니다.",
       "targetsLabel": "오늘의 목표",
       "title": "도착하고 관측하기"
@@ -50,7 +50,7 @@
       "emptyTitle": "한 가지 더",
       "hint": "저장하면 나중에 더 추가할 수 있는 활동을 열어둡니다. 제출하면 교사로 보내고 종료합니다.",
       "periSpeech": "essentially_completed. 오늘에서 기억할 점 하나를 적어주세요.",
-      "phaseLabel": "단계 3 · 반성",
+      "phaseLabel": "3단계 · 성찰",
       "placeholder": "여기에 자신의 반성을 적어주세요...",
       "prompt": "이곳은 텍스북으로는 배울 수 없었던 것을 어떤 것인가요?",
       "saveCta": "저장하기 위해 나중에",
@@ -63,6 +63,9 @@
       "title": "의미 만들기",
       "yourReflectionLabel": "당신의 반성"
     }
+  },
+  "calendar": {
+    "empty": "이 기간에 대한 일정이 없습니다."
   },
   "camera": {
     "allowAccess": "허용된 액세스",
@@ -101,10 +104,6 @@
       "video": "동영상"
     },
     "notePlaceholder": "관찰하는 것을 적어주세요...",
-    "offline": {
-      "body": "이 캡처는 기기에 저장되었으며 다시 연결되면 업로드됩니다.",
-      "title": "캐시된 오프라인"
-    },
     "preview": {
       "pause": "일시정지",
       "play": "재생",
@@ -126,21 +125,70 @@
     "title": "추가 증거",
     "uploadFailed": {
       "title": "업로드 실패"
-    },
-    "uploading": "업로드 중..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "할 수 없습니다.",
+    "title": "캘린더",
+    "titleWithName": "{{name}}의 달력"
   },
   "common": {
     "activity": "활동",
     "activityPlural": "활동",
+    "add": "{{placeholder}}를 추가하세요",
+    "approve": "approve",
     "back": "뒤로",
     "cancel": "취소",
     "captureLabel": "증거 기록",
     "close": "닫기",
+    "continue": "계속",
+    "deny": "deny",
     "done": "완료",
     "error": "오류",
     "journalLabel": "필드 노트",
     "ok": "확인",
+    "reject": "거부",
+    "remove": "제거",
     "tryAgain": "다시 시도하세요"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "학습 단계",
+    "captureLocation": "📍 내 현재 위치를 사용",
+    "captureStop": "📍 이곳에서 정지점 찍기",
+    "difficultyLabel": "난이도(1~4)",
+    "durationLabel": "추정 시간 (분)",
+    "gradeLabel": "{{placeholder}} 학력",
+    "locationCaptured": "📍 위치가 기록되었습니다 ({{lat}}, {{lng}})",
+    "locationDenied": "위치 권한이 필요합니다.",
+    "locationError": "못했습니다. 다시 시도하세요.",
+    "locationNameLabel": "위치 이름",
+    "locationNamePlaceholder": "리버사이드 파크, 북쪽 입구",
+    "locationTimeout": "GPS 고정 실패 — 하늘을 더 잘 볼 수 있는 곳으로 이동한 후 다시 시도하세요.",
+    "minutesShort": "{{n}}",
+    "modeLabel": "헌트 유형",
+    "modeLocation": "이 정확한 위치",
+    "modeTask": "{{placeholder}} 어디든",
+    "multiStep": "다단계 경로",
+    "noLimit": "제한 없음",
+    "objectiveLabel": "학습자가 배워야 할 내용은 무엇인가요?",
+    "objectivePlaceholder": "식별 원생 나무 종",
+    "oneSpot": "한 곳",
+    "publish": "도전 게시",
+    "saveError": "활동을 생성할 수 없습니다.",
+    "stepsLabel": "경유지가 몇 곳인가요?",
+    "stopNameDefault": "중지 {{n}}",
+    "stopsHint": "걷어 각 정거장까지 가서 캡처하세요. 학생들은 방향 화살표가 있는 지도를 받습니다 — 그들의 위치에 대한 정보는 그들의 휴대폰에서 벗어나지 않습니다.",
+    "subjectLabel": "제목",
+    "successBody": "학생들은 지금 이 도전을 시도할 수 있습니다.",
+    "successLabel": "어떻게 그들이 성공했는지 아시나요? (선택 사항)",
+    "successPlaceholder": "예: 해당 항목의 선명한 사진과 해당 항목이 적합한 이유를 설명하는 한 문장",
+    "successTitle": "발표되었습니다!",
+    "taskLabel": "학생들은 무엇을 해야 하나요?",
+    "taskPlaceholder": "찾거나 관찰할 내용을 입력하세요",
+    "timeLimitLabel": "시간 제한 (선택 사항)",
+    "title": "새 보물 사냥",
+    "titleLabel": "도전 제목",
+    "titlePlaceholder": "예: 오크 트리 미스터리"
   },
   "discover": {
     "empty": "활동이 없어요 — 당신의 선생님이 곧 추가할 것입니다.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "아이",
+    "childrenTitle": "어린이",
     "empty": "아직 자녀가 추가되지 않았습니다. 웹 애플리케이션에서 자녀를 추가하여 그들의 진행을 여기서 확인하십시오.",
     "gradeLabel": "등급 {{grade}}",
     "loadError": "대시보드를 로드할 수 없습니다.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "대시보드",
     "title": "홈스쿨 대시보드"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "추가 아이",
+    "allSet": "모든 준비가 끝났습니다!",
+    "allSetBody": "이동 앱으로 이동하여 첫 번째 야외 활동을 생성하세요 — Peri는 위치 및 주제에 맞게 맞춤형 아리스토텔레스식 탐구 질문을 제안합니다.",
+    "childNamePlaceholder": "아이 {{n}} 이름",
+    "goToDashboard": "대시보드로 이동",
+    "noChildrenError": "자식 하나 이상 추가해주세요.",
+    "selectState": "선택하세요 {{state}}",
+    "selectStateOptional": "선택하세요.",
+    "skipSetup": "설정 건너뛰기",
+    "someFailedError": "자동으로 저장할 수 없는 일부 자식이 있습니다 — 웹 앱에서 나중에 추가할 수 있습니다.",
+    "stateFootnote": "미국의 35개 주는 홈스쿨링 부모님들이 학습 기록을 보관해야 합니다 — Peripateticware는 활동 로그에서 자동으로 보고서를 생성합니다.",
+    "step1": "추가하기",
+    "step2": "{{placeholder}}의 상태",
+    "step3": "첫 번째 활동",
+    "welcomeSubtitle": "가장 빠른 3단계로 설정해보세요.",
+    "welcomeTitle": "환영합니다! 🌿",
+    "whichState": "어느 주에서 홈스쿨을 진행하시나요?",
+    "whichStateBody": "이것은 올바른 상태 보고 요구 사항을 표시하는 데 도움이 됩니다. 언제든지 변경할 수 있습니다.",
+    "whoTeaching": "누구를 가르치고 있습니까?",
+    "whoTeachingBody": "추가할 아이의 이름과 학년을 입력하세요. 나중에 웹 앱에서 더 많은 아이를 추가할 수 있습니다."
   },
   "journal": {
     "draft": "수정중",
@@ -184,11 +255,15 @@
     "empty": "아직 이 챌린지를 시작하신 사람이 없습니다.",
     "finished": "완료",
     "loadError": "이 리더보드를 불러오는 데 실패했습니다.",
-    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "minutesSecondsFormat": "분 {{m}}분 {{s}}초",
     "mySummaryFinished": "당신의 랭크는 {{rank}}입니다. {{time}}에 완료하셨습니다.",
     "mySummaryInProgress": "당신의 랭크는 {{rank}}입니다. 현재 {{count}}개의 증거를 가지고 있습니다.",
+    "mySummaryInProgress_one": "당신은 {{rank}}등입니다. 당신은 지금까지 {{count}}개의 증거를 가지고 있습니다.",
+    "mySummaryInProgress_other": "당신은 {{rank}}등입니다. 당신은 지금까지 {{count}}개의 증거를 가지고 있습니다.",
     "secondsFormat": "스스로{{s}}",
     "stepsSoFar": "이미지에서 {{count}}개의 증거까지",
+    "stepsSoFar_one": "{{count}}개의 증거가 지금까지",
+    "stepsSoFar_other": "{{count}}개의 증거가 지금까지",
     "you": "당신"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "비밀번호",
     "passwordReset": {
+      "backToLogin": "로그인으로 돌아가기",
       "body": "교수님과 연락하여 비밀번호를 재설정하십시오.",
+      "checkInbox": "체크하세요 {{placeholder}}",
+      "checkInboxBody": "이메일 {{email}}에 해당하는 계정이 존재하면, 비밀번호 재설정 링크를 shortly에 받게 됩니다. 이 링크는 60분 동안 유효합니다.",
+      "missingEmail": "이메일을 입력하세요.",
+      "requestFailed": "뭔가 잘못되었습니다. 다시 시도해주세요.",
+      "sendLink": "보내기",
       "title": "비밀번호 재설정"
     },
     "showPassword": "비밀번호 보기",
@@ -235,7 +316,7 @@
       "periSpeech": "근처에 필드 활동이 있습니다."
     },
     "location": {
-      "badge": "3 근처의 활동",
+      "badge": "주변 활동 3개",
       "confirmCta": "위치 허용",
       "periSpeech": "주변에 활동이 있습니다. 위치를 활성화하여 시작하시겠습니까?",
       "reassurance": "근처의 활동을 보여주기 위해서만 사용됩니다.",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "아직 연결된 자녀가 없습니다. 웹 애플리케이션에서 자녀를 연결하여 그들의 진행을 여기서 확인할 수 있습니다.",
     "lastActive": "최근활동: {{date}}",
+    "linkChild": {
+      "body": "입력하세요 {{child's Peripateticware 이메일 주소}}. 그들은 자신의 앱에서 요청을 승인해야 합니다.",
+      "emailPlaceholder": "아이의 이메일 주소",
+      "genericError": "링크할 수 없습니다. 이메일을 확인하고 다시 시도하세요.",
+      "headerButton": "+ 자녀 연결",
+      "pendingBody": "{{name}}은(는) 자신의 앱에서 이 것을 승인해야 합니다.",
+      "pendingTitle": "{{placeholder}}을 보냈습니다",
+      "submit": "링크 자식을 연결",
+      "successBody": "{{name}}는 이제 대시보드에 표시됩니다.",
+      "successTitle": "연결됨!",
+      "title": "연결하기 {{child}}"
+    },
     "loadError": "대시보드를 로드할 수 없습니다.",
+    "messages": {
+      "empty": "아직 교사로부터 메시지가 없습니다.",
+      "reply": "답글",
+      "replyError": "회신을 보낼 수 없습니다.",
+      "replyPlaceholder": "작성한 답변…",
+      "replyTo": "답장하기 {{name}}",
+      "send": "전송",
+      "title": "메시지"
+    },
+    "notifications": {
+      "empty": "모든 것을 따라잡았습니다.",
+      "title": "알림"
+    },
+    "pendingBadge": "기대중",
+    "pendingBody": "{{name}}은(는) 자신의 앱에서 이 것을 승인해야 합니다.",
     "progressUnavailable": "이 아이의 진행 상황을 불러오는 데 실패했습니다.",
     "stats": {
       "activities": "활동",
@@ -262,7 +370,17 @@
       "hours": "시간"
     },
     "tabLabel": "아이",
-    "title": "내 아이들"
+    "title": "내 아이들",
+    "unlink": {
+      "action": "연결 해제",
+      "cancelRequest": "취소 요청",
+      "confirmAction": "연결 해제",
+      "confirmBody": "{{name}}의 진행을 더 이상 보지 않습니다. 나중에 새로운 요청을 보낼 수 있습니다.",
+      "confirmBodyPending": "이 취소는 보류된 요청을 취소합니다.",
+      "confirmTitle": "해제 {{name}}?",
+      "error": "지금 연결을 해제할 수 없습니다. 다시 시도하세요."
+    },
+    "viewCalendar": "📅 캘린더"
   },
   "perichat": {
     "closeChat": "채팅 닫기",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "학생이 만든 도전이 없습니다. — 한 가지를 제안하여 리더보드를 시작하세요.",
     "leaderboardsLabel": "리더보드",
     "participantCount": "참여자 {{count}}",
+    "participantCount_one": "{{count}} 참여중",
+    "participantCount_other": "{{count}} 참여중",
     "proposedBy": "의해 {{name}}",
     "stats": {
       "activities": "활동",
@@ -330,6 +450,19 @@
       "downloadFailed": "다운로드에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해주세요."
     },
     "languageLabel": "언어",
+    "parentRequests": {
+      "actionError": "다시 시도해 주세요.",
+      "body": "{{email}} 님이 회원님의 {{relationship}}로서의 진행 상황을 확인하고 싶어 합니다.",
+      "label": "부모 요청"
+    },
+    "password": {
+      "button": "비밀번호 재설정",
+      "desc": "이메일로 새 비밀번호 설정 링크를 보내드립니다.",
+      "error": "다시 시도해 주세요.",
+      "sentBody": "nousseonghasseo {{email}}. 60분 동안 유효합니다.",
+      "sentTitle": "체크하세요 {{placeholder}}"
+    },
+    "passwordLabel": "비밀번호",
     "role": {
       "student": "학생"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "음성"
   },
+  "studentCalendar": {
+    "loadError": "캘린더를 로드할 수 없습니다.",
+    "title": "내 캘린더"
+  },
   "tabs": {
     "achievements": "성就",
     "discover": "발견",
-    "progress": "진행",
     "propose": "제안",
     "settings": "설정"
   },
+  "teacherActivities": {
+    "empty": "아직 게시된 활동이 없습니다.",
+    "loadError": "활동을 로드할 수 없습니다.",
+    "title": "활동 중"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}}일 전",
+    "descriptionLabel": "설명",
+    "gradeLabel": "{{grade}} 학점",
+    "loadError": "이 활동을 로드할 수 없습니다.",
+    "minutesLabel": "{{n}}분",
+    "noSubmissions": "아직 아무도 이 활동을 시작하지 않았습니다.",
+    "objectivesLabel": "학습 목표",
+    "submissionsLabel": "제출"
+  },
+  "teacherCalendar": {
+    "addTitle": "새 일정 이벤트",
+    "dateLabel": "날짜 (YYYY-MM-DD)",
+    "deleteError": "이벤트를 제거할 수 없습니다.",
+    "deleteTitle": "제목 \"{{title}}\" 삭제",
+    "descriptionLabel": "세부 정보(선택 사항)",
+    "descriptionPlaceholder": "추가 정보가 있다면...",
+    "loadError": "할 수 없습니다. 달력을 로드합니다.",
+    "noClasses": "아직 클래스가 없습니다 — 웹 앱에서 먼저 설정하세요.",
+    "saveError": "이벤트를 만들 수 없습니다.",
+    "title": "캘린더",
+    "titleLabel": "{{title}}을(를) 입력하세요",
+    "titlePlaceholder": "{{permission}} 슬립스 만료",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "아직 클래스가 없습니다 — 웹 앱을 사용하여 하나를 만드세요.",
+    "loadError": "클래스를 로드할 수 없습니다.",
+    "title": "수업"
+  },
   "teacherDashboard": {
     "loadError": "대시보드를 로드할 수 없습니다.",
+    "newScavengerHunt": "+ 탐구 사냥",
     "noActivities": "아직 활동을 만들지 않았습니다. — 웹 애플리케이션을 사용하여 하나를 만듭니다.",
     "recentLabel": "최근 활동",
     "stats": {
       "active": "활동중",
+      "calendar": "캘린더",
       "classes": "수업",
+      "messages": "메시지",
       "pending": "대기중",
+      "proposals": "제안",
       "students": "학생"
     },
     "tabLabel": "대시보드",
     "title": "교수님 대시보드",
     "webHint": "교실, 학생 목록, 평가 기준을 위해 웹 앱을 사용하세요."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "{{placeholder}} 모든 부모",
+    "audienceAllStudents": "모든 학생들",
+    "audienceLabel": "보내기",
+    "bodyLabel": "메시지",
+    "bodyPlaceholder": "입력하세요…",
+    "classroomLabel": "교실",
+    "composeTitle": "새 메시지",
+    "empty": "아직 대화가 없습니다.",
+    "loadError": "메시지를 로드할 수 없습니다.",
+    "orOneFamily": "가족",
+    "replyPlaceholder": "작성하세요…",
+    "send": "보내기",
+    "sendError": "메시지를 보내지 못했습니다.",
+    "subjectLabel": "제목",
+    "subjectPlaceholder": "필드 트립 허가서",
+    "title": "메시지",
+    "willMessageParent": "보냅니다 {{name}}의 부모님에게"
+  },
+  "teacherProposals": {
+    "actionError": "다시 시도해 주세요.",
+    "approveBody": "이것을 실제 활동으로 게시합니다. 학생들은 즉시 시도할 수 있습니다.",
+    "approveTitle": "승인하시겠습니까? \"{{title}}",
+    "byStudent": "작성자: {{name}} · {{subject}}",
+    "empty": "대기 중인 제안이 없습니다.",
+    "loadError": "proposer을 로드할 수 없습니다.",
+    "noteLabel": "참고 사항",
+    "rejectBody": "그들은 이것을 볼 수 있으며 수정 + 다시 제출할 수 있습니다.",
+    "rejectPlaceholder": "예: 다른 액티비티와 너무 가깝습니다. 다른 랜드마크를 사용해보세요.",
+    "rejectTitle": "피드백을 {{name}}",
+    "sendFeedback": "보내기",
+    "title": "학생 제안"
+  },
+  "teacherSubmissions": {
+    "empty": "아직 제출된 것이 없습니다.",
+    "loadError": "제출물을 불러올 수 없습니다.",
+    "title": "제출"
+  },
+  "wayfinding": {
+    "allFound": "모든 정거장 찾음! 🎉",
+    "nextStop": "다음 정류장",
+    "noFix": "GPS 없음",
+    "progress": "{{total}}개 중 {{reached}}개 경유지",
+    "skip": "이 선택적 경유지 건너뛰기"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "사진과 메모를 제출하면, 선생님의 지도에 해당 지점에서 캡처한 위치에 표시됩니다.",
+      "title": "태그한 사진에 위치 추가"
+    },
+    "D": {
+      "gets": "감시된 외출 동안 선생님은 실시간으로 당신의 위치를 볼 수 있습니다.",
+      "title": "선생님의 지도에서 여행을 표시합니다"
+    },
+    "E": {
+      "gets": "클래스는 사냥 후 각자가 갔던 경로를 비교할 수 있습니다.",
+      "title": "기록할 길"
+    },
+    "allow": "허용",
+    "eyebrow": "선생님이 이 기능을 켰습니다 — 당신의 선택",
+    "kept": "보관: {{copy}}",
+    "notNow": "지금은 아니에요"
   }
 }

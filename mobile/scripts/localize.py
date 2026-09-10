@@ -199,13 +199,22 @@ def _save_pipeline_config(cfg: dict) -> None:
     atomic_write_json(PIPELINE_CONFIG, cfg)
 
 
+_NON_INTERACTIVE = False  # set from --non-interactive / CI / not-a-tty in main()
+
+
 def resolve_model(role: str, cli_value: str | None, default: str) -> str:
-    """cli flag > interactive chooser (TTY only) > cached last run > default."""
+    """cli flag > interactive chooser (real TTY only) > cached last run > default."""
     if cli_value:
         return cli_value
     cache = _load_pipeline_config()
     cached = cache.get(role)
-    if sys.stdin.isatty() and choose_model is not None:
+    interactive = (
+        not _NON_INTERACTIVE
+        and sys.stdin.isatty()
+        and sys.stdout.isatty()
+        and choose_model is not None
+    )
+    if interactive:
         try:
             picked = choose_model(role, "OLLAMA", default=cached or default)
             if picked:
@@ -357,9 +366,11 @@ def mode_translate(args) -> int:
     op = operator_actor(args.operator)
     translator = ai_actor(model, "translator", {"temperature": 0.2})
     mt = None
-    if args.use_mt and FallbackTranslator is not None:
+    want_mt = args.use_mt or args.use_lara or args.use_deepl   # --use-lara/-deepl imply the chain
+    if want_mt and FallbackTranslator is not None:
         mt = FallbackTranslator(ledger=UsageLedger(path=META_DIR / "mt_usage_state.json"),
                                 use_lara=args.use_lara, use_deepl=args.use_deepl)
+        print(f"  MT chain: enabled (lara={args.use_lara} deepl={args.use_deepl})")
 
     print(f"translate: model={model} operator={op.name} locales={','.join(locales)}")
     for code in locales:
@@ -374,7 +385,12 @@ def mode_translate(args) -> int:
 
         for key, en_val in en_flat.items():
             prev = strings.get(key)
-            unchanged = prev and (prev.get("source") or "") == en_val and cur_targets.get(key)
+            cur = cur_targets.get(key)
+            unchanged = (
+                prev and (prev.get("source") or "") == en_val
+                and cur and cur != en_val                       # has a real (non-fallback) target
+                and (prev.get("status") or "") not in ("needs_review",)
+            )
             if unchanged and not args.reset:
                 tgt_flat[key] = cur_targets[key]
                 meta_tracking[key] = {"version": prev.get("version", 1),
@@ -462,7 +478,7 @@ def mode_review(args) -> int:
         targets = _raw_targets(code)
         meta_tracking: dict = {}
         keys = [k for k, v in strings.items()
-                if (not args.flagged_only) or v.get("status") in ("needs_review", "new_translation")]
+                if (not args.flagged_only) or v.get("status") in ("needs_review", "new_translation", "redriven")]
         lang_name = DISPLAY_NAMES.get(code, code)
         marked = 0
         for key in keys:
@@ -516,6 +532,11 @@ def mode_redrive(args) -> int:
     redriver = ai_actor(model, "redriver", {"temperature": 0.1})
     en_flat = {k: v for k, v in flatten(load_json(EN_JSON_PATH)).items() if isinstance(v, str)}
     locales = [args.locale] if args.locale else get_supported_locales()
+    mt = None
+    if (args.use_mt or args.use_lara or args.use_deepl) and FallbackTranslator is not None:
+        mt = FallbackTranslator(ledger=UsageLedger(path=META_DIR / "mt_usage_state.json"),
+                                use_lara=args.use_lara, use_deepl=args.use_deepl)
+        print(f"  redrive MT chain: enabled (lara={args.use_lara} deepl={args.use_deepl})")
     n_total = 0
     for code in locales:
         xlf = read_xliff(code)
@@ -531,19 +552,31 @@ def mode_redrive(args) -> int:
             if not src:
                 continue
             ts = get_timestamp()
-            out = translate_via_ollama(src, DISPLAY_NAMES.get(code, code), model)
-            if not (out and valid_translation(out, src, code)):
+            out, actor_used, via = None, redriver, model
+            # Redrive PREFERS the classic MT chain when enabled — Ollama already
+            # produced the version QA rejected, so a stronger engine is the point.
+            if mt is not None:
+                r = mt.translate_one(src, code)
+                if r and valid_translation(r["translation"], src, code):
+                    out = r["translation"]
+                    actor_used = Actor.from_legacy_label(r["engine"], role="redriver")
+                    via = r["engine"]
+            if out is None:
+                cand = translate_via_ollama(src, DISPLAY_NAMES.get(code, code), model)
+                if cand and valid_translation(cand, src, code):
+                    out, actor_used, via = cand, redriver, model
+            if out is None:
                 print(f"  [{code}] {key}  redrive failed; leaving flagged")
                 continue
             version = strings[key].get("version", 1) + 1
             targets[key] = out
             meta_tracking[key] = {"version": version, "status": "redriven"}
             graph = build_prov_graph(key, src, out, version=version, ts=ts,
-                             translator=redriver, operators=[op], existing_graph=graph,
+                             translator=actor_used, operators=[op], existing_graph=graph,
                              activity_type="Redrive", source_event="redrive",
                              overwrite_reason=f"QA score < {REVIEW_THRESHOLD}")
             n_total += 1
-            print(f"  [{code}] {key} -> redriven via {model} (v{version})")
+            print(f"  [{code}] {key} -> redriven via {via} (v{version})")
         write_xliff(code, en_flat, targets, meta_tracking, graph)
     print(f"redrive: {n_total} key(s) re-translated")
     return 0
@@ -653,8 +686,17 @@ def main() -> int:
     p.add_argument("--use-deepl", action="store_true")
     p.add_argument("--warn-only", action="store_true", help="check: never exit non-zero on stale packs")
     p.add_argument("--skip-extract", action="store_true", help="check: skip the i18next-parser run")
+    p.add_argument("--non-interactive", action="store_true",
+                   help="never prompt for a model; use --*-model / cache / defaults")
     p.add_argument("--verbose", "-v", action="store_true")
     args = p.parse_args()
+
+    global _NON_INTERACTIVE
+    _NON_INTERACTIVE = (
+        args.non_interactive
+        or bool(os.environ.get("CI"))
+        or not sys.stdin.isatty()
+    )
 
     XLIFF_DIR.mkdir(parents=True, exist_ok=True)
     META_DIR.mkdir(parents=True, exist_ok=True)
