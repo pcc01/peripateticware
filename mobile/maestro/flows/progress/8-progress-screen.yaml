@@ -9,10 +9,17 @@ appId: com.peripateticware.app
 - assertVisible:
     id: "progress-screen"
 
-# 8.1 — shows the stats row (activities, captures, streak)
-- assertVisible: "ACTIVITIES"
-- assertVisible: "CAPTURES"
-- assertVisible: "DAY STREAK"
+# 8.1 — shows the stats row (activities, captures, streak).
+# By testID, not the label text: each tile is one <TouchableOpacity>, so on
+# iOS the inner <Text> labels ("ACTIVITIES" etc.) collapse into the tile's
+# single accessibility node and aren't separately queryable (same grouping
+# gap as maestro/flows/discover/3-discover-screen.yaml's ActivityCard note).
+- assertVisible:
+    id: "progress-stat-activities"
+- assertVisible:
+    id: "progress-stat-captures"
+- assertVisible:
+    id: "progress-stat-streak"
 
 # 8.2/8.3 — scrolling reveals the rest of the screen without crashing.
 # Maestro has no direct "scrollTo bottom of element by id" equivalent to

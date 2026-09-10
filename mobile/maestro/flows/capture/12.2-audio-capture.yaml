@@ -52,27 +52,55 @@ appId: com.peripateticware.app
     id: "capture-btn-audio"
 - assertVisible:
     id: "capture-sheet"
-- tapOn:
-    id: "capture-record-btn"
-# Optional dismiss for the OS microphone dialog — same unreliable-pre-grant
-# gap as the location dialog documented above and in
-# 12.1-note-capture.yaml's header: `permissions: microphone: allow` above
-# doesn't reliably suppress it either. A real CI screenshot caught it
-# still showing here, blocking "Recording... tap to stop" from ever
-# appearing. Allow, not dismiss — recording needs the permission actually
-# granted, not just the dialog gone.
-- tapOn:
-    text: "Allow"
-    optional: true
-- assertVisible: ".*Recording.*tap to stop.*"
-- tapOn:
-    id: "capture-record-btn"
-# The transient "saved" toast (~900ms, then the sheet auto-closes) is too
-# short to assert reliably — check the durable outcomes instead.
-- extendedWaitUntil:
-    notVisible:
-      id: "capture-sheet"
-    timeout: 20000
-- assertVisible:
-    id: "activity-screen"
-- assertVisible: "COLLECTED (1)"
+
+# Android: full record -> Recording... -> stop -> saved -> COLLECTED path.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "capture-record-btn"
+      # Optional dismiss for the OS microphone dialog — `permissions:
+      # microphone: allow` above doesn't reliably suppress it (a real CI
+      # screenshot caught it blocking the recording state). Allow, not
+      # dismiss — recording needs the grant, not just the dialog gone.
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "capture-record-status"
+          timeout: 15000
+      - tapOn:
+          id: "capture-record-btn"
+      # The transient "saved" toast (~900ms) is too short to assert — check
+      # the durable outcomes instead.
+      - extendedWaitUntil:
+          notVisible:
+            id: "capture-sheet"
+          timeout: 20000
+      - assertVisible:
+          id: "activity-screen"
+      - assertVisible: "COLLECTED (1)"
+
+# iOS: the Simulator has no audio input device, so expo-av never enters the
+# "Recording..." state — same class of limitation as 12.3/12.4's camera.
+# Verify the audio sheet mounts and dismisses cleanly; the recording itself
+# is covered by the on-device manual pass (mobile/docs/mobile-test-plan.md).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - assertVisible:
+          id: "capture-record-btn"
+      - tapOn:
+          id: "capture-close"
+      - extendedWaitUntil:
+          notVisible:
+            id: "capture-sheet"
+          timeout: 15000
+      - assertVisible:
+          id: "activity-screen"

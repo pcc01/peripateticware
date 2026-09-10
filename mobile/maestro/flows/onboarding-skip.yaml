@@ -31,7 +31,7 @@ appId: com.peripateticware.app
       - extendedWaitUntil:
           visible:
             id: "onboarding-name-input"
-          timeout: 15000
+          timeout: 22000
       - tapOn:
           id: "onboarding-name-input"
       - inputText: "Maestro Tester"

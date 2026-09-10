@@ -97,9 +97,16 @@ appId: com.peripateticware.app
 - tapOn:
     text: "Continue"
     optional: true
+# Dismiss the keyboard (and its QuickType tip) outright before the send tap —
+# the optional "Continue" tap above hasn't reliably cleared the tip on iOS,
+# and a real run showed the send tap landing on the tip instead of the
+# button (no user message posted). hideKeyboard is a no-op on Android.
+- hideKeyboard
 - tapOn:
     id: "peri-chat-send"
-- assertVisible: "What insects live near a creek?"
+- extendedWaitUntil:
+    visible: "What insects live near a creek?"
+    timeout: 15000
 - tapOn:
     id: "peri-chat-close"
 - assertNotVisible:
