@@ -26,7 +26,18 @@ limits + test plumbing + one unknown (`4-6` submit).
 | `12.3-photo` / `12.4-video` | Headless emulator's software GPU never mounts `in-app-camera` | Move to `-Flows` exclusion for the emulator matrix; keep for a real-device / windowed-emulator lane. Not a bug. | 10 min |
 | `4-6-activity-flow` | "Submit field work" → app leaves foreground; clean process exit, no Java crash; submit not persisted server-side; 3/3 repro on the emulator | **Blocked on the real-device check (§5).** If a real phone submits cleanly → close as emulator RAM. If it repros → open a real bug. | — |
 
-### iOS (6 red)
+### iOS (6 red) — FIXES COMMITTED `ce607fd`, iOS re-run pending the Mac
+
+All five below are fixed: `15.1` now waits on the leaf onboarding controls (not
+the iOS-invisible wrapper testIDs); `onboarding-name-input` wait 15→22s for the
+`9.5`/`0.1` flake; `12.2` platform-gates the recording portion (iOS has no
+Simulator audio input); `8-progress` got real testIDs on the stat tiles
+(`progress-stat-{key}`) since the `<TouchableOpacity>` collapses the inner text
+on iOS; `4-6` calls `hideKeyboard` before `peri-chat-send`. **Verified on
+Android:** `0.1-sanity` + `15.1-first-launch` pass. iOS needs the Mac back to
+confirm the rest — `git pull` the branch, rebuild (8-progress needs the app
+change), `bash scripts/run-maestro-ios-prod.sh`.
+
 | Flow | Cause | Action | Effort |
 |---|---|---|---|
 | `15.1-first-launch` | Asserts container testID `onboarding-name` directly (only the shared `onboarding-skip` was fixed) | Same 1-line change: wait on `onboarding-name-input` | 5 min |
