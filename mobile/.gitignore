@@ -4,3 +4,7 @@
 
 expo-env.d.ts
 # @end expo-cli
+# localization pipeline — regenerated, not source
+scripts/i18n_meta/_extracted.*.json
+scripts/i18n_meta/*.tmp*
+i18n/xliff/*.tmp*
