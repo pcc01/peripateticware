@@ -6,6 +6,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
   TouchableOpacity, TextInput, Alert, Animated,
+  KeyboardAvoidingView, Platform, InputAccessoryView, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -290,6 +291,23 @@ export default function ActivityScreen() {
         </TouchableOpacity>
       )}
 
+      {/*
+        The Reflect phase puts a Submit button directly below a multiline
+        TextInput with no other dismiss affordance (no returnKeyType,
+        no toolbar, no tap-outside handler) — without this, the keyboard
+        covers the button on both platforms once it's focused, for real
+        users too, not just Maestro (confirmed via a real iOS Simulator
+        run: the tap landed on the keyboard's "i" key instead of Submit).
+        `behavior="padding"` (iOS) resizes the KAV so its content — the
+        ScrollView — actually shrinks above the keyboard instead of being
+        pushed under it; Android's default resize (via windowSoftInputMode)
+        already handles this so `undefined` behavior is a no-op there.
+      */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {phase === 'brief' && <BriefPhase activity={activity} theme={theme} onStart={advancePhase} />}
         {phase === 'orient' && <OrientPhase activity={activity} theme={theme} onReady={advancePhase} />}
@@ -346,6 +364,7 @@ export default function ActivityScreen() {
           />
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -624,6 +643,19 @@ function InquiryPhase({ activity, question, theme, sessionId, onNext, onAskPeri,
 }
 
 // ── Reflect phase ──────────────────────────────────────────────────────────
+// This multiline field has no return key to blur on (returnKeyType doesn't
+// apply to multiline TextInputs) and the screen has no tap-outside handler,
+// so on iOS the keyboard has no dismiss affordance at all — Maestro's own
+// `hideKeyboard` command fails outright here ("doesn't expose a standard
+// dismiss action"), and a real run showed the Submit button (which sits
+// right below this field) getting tapped through the keyboard instead of
+// landing on it. Same gap for real users, not just the test: an
+// InputAccessoryView "Done" bar is the standard iOS pattern for this.
+// Android doesn't support InputAccessoryView, but doesn't need it either —
+// its keyboard resizes the window (windowSoftInputMode) rather than
+// overlaying content, so nothing here is rendered there.
+const REFLECTION_ACCESSORY_ID = 'reflection-input-accessory';
+
 function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSave, onSubmit, saving, submitting, submitted }: any) {
   const { t } = useTranslation();
   const prompt = t('activity.reflect.prompt', "What did this place teach you that a textbook couldn't?");
@@ -665,8 +697,31 @@ function ReflectPhase({ activity, reflection, onChangeReflection, theme, onSave,
           numberOfLines={5}
           textAlignVertical="top"
           editable={!submitted}
+          inputAccessoryViewID={Platform.OS === 'ios' ? REFLECTION_ACCESSORY_ID : undefined}
         />
       </View>
+      {Platform.OS === 'ios' && (
+        <InputAccessoryView nativeID={REFLECTION_ACCESSORY_ID}>
+          <View
+            style={[styles.reflectionAccessory, {
+              backgroundColor: theme.surface,
+              borderTopColor: theme.border,
+            }]}
+          >
+            <TouchableOpacity
+              testID="reflection-input-done"
+              onPress={() => Keyboard.dismiss()}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.done', 'Done')}
+              hitSlop={8}
+            >
+              <Text style={[styles.reflectionAccessoryText, { fontFamily: theme.fontBody, color: theme.accent }]}>
+                {t('common.done', 'Done')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </InputAccessoryView>
+      )}
       {submitted ? (
         <Btn
           label={t('activity.reflect.submitted', 'Submitted ✓')}
@@ -751,6 +806,8 @@ const styles = StyleSheet.create({
   evidenceChip:    { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   evidenceEmoji:   { fontSize: 20 },
   reflectionInput:  { minHeight: 120, padding: 12, borderWidth: 1, fontSize: 15, lineHeight: 22 },
+  reflectionAccessory: { flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: 8, paddingHorizontal: 16, borderTopWidth: StyleSheet.hairlineWidth },
+  reflectionAccessoryText: { fontSize: 16, fontWeight: '600' },
   geofenceToast:    { margin: 12, padding: 12, borderWidth: 1, borderRadius: 8 },
   geofenceToastText:{ fontSize: 13, lineHeight: 18 },
   captureMainBtn:  { padding: 14, alignItems: 'center' },

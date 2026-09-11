@@ -118,6 +118,37 @@ appId: com.peripateticware.app
 - tapOn:
     id: "reflection-input"
 - inputText: "The creek water was clearer than I expected."
+# The submit button sits right below the reflection box — exactly where the
+# keyboard covers it on iOS (Android's keyboard resizes the window instead
+# of overlaying it, so it's unaffected). A real iOS run showed the flow
+# "stuck" on Reflect with a stray "i" typed into the reflection field:
+# Maestro's tap landed on the button's coordinate, which the keyboard had by
+# then covered with its own "i" key. Two workarounds were tried and both
+# failed:
+#   - `hideKeyboard` errored outright ("doesn't expose a standard dismiss
+#     action") — this `multiline` TextInput has no return key to blur on.
+#   - `scrollUntilVisible` silently no-op'd: the button already registers as
+#     "visible" per the accessibility tree (bounds-wise, same coordinates
+#     with or without a real scroll) even while a real pixel sits under the
+#     keyboard, so Maestro never actually issued a scroll gesture.
+# Also a real UX gap, not just a test artifact — a student mid-reflection had
+# no way to see the button either — so fixed at the source in
+# app/activity/[id].tsx: the reflection TextInput now has an iOS
+# InputAccessoryView "Done" bar (the standard pattern for a multiline field
+# with no return key). Maestro's `hideKeyboard` command still doesn't
+# recognize a custom accessory view as a "standard dismiss action" (still
+# fails the same way even with the bar present), so tap the bar's own
+# testID directly instead — same effect (Keyboard.dismiss()), just not
+# routed through Maestro's built-in heuristic. Android has no
+# InputAccessoryView (unsupported there) and doesn't need one: its keyboard
+# resizes the window (android:windowSoftInputMode="adjustResize" in
+# AndroidManifest.xml) rather than overlaying content.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "reflection-input-done"
 - tapOn: "Submit field work"
 # native Alert (app/activity/[id].tsx: Alert.alert(t('...submittedTitle',
 # 'Submitted! 🎉'), ...)). Match the title without the trailing emoji —
