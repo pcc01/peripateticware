@@ -1182,6 +1182,64 @@ class PrivacyComplianceChecker:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Publish-time compliance check — per-org jurisdiction resolution
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def check_activity_compliance_for_org(
+    teacher_id: str,
+    activity_id: str,
+    activity_data: Dict[str, Any],
+    student_age_proxy: int,
+    checker: "PrivacyComplianceChecker",
+    db: AsyncSession,
+) -> Tuple[bool, List[str], List[str]]:
+    """Publish-time compliance check, correctly scoped to the ACTIVITY'S OWN
+    org (via its teacher) instead of the single process-wide
+    settings.ACTIVE_JURISDICTION every org was being checked against before
+    (PRIVACY_BUGFIX_PLAN.md Bug 1).
+
+    Resolves the applicable jurisdiction ids for `teacher_id` via
+    identify_jurisdiction() -- exactly like enforce_on_submission() does when
+    no explicit jurisdiction_id is supplied -- then checks EACH resolved
+    jurisdiction individually via checker.check_activity_compliance() and
+    unions the results (strictest wins: if ANY applicable jurisdiction
+    raises a genuine issue, the aggregate does too), per this module's own
+    "strictest-wins" design principle (see module docstring).
+
+    Deliberately does NOT go through merge_jurisdictions(): that produces a
+    single merged JurisdictionConfig carrying only scalar/boolean
+    strictest-wins fields (student_monitoring_allowed, etc.) and drops
+    metadata["_rule_definition"] entirely -- but
+    check_activity_compliance()'s whole data-driven decision logic reads
+    only from a single jurisdiction's own rule_definition
+    (config.metadata["_rule_definition"]). A merged config would have
+    nothing for it to read.
+
+    Unresolved/unseeded jurisdiction ids are skipped rather than passed to
+    check_activity_compliance() (which would just return its own
+    "Unknown jurisdiction: ..." sentinel for them) -- this fails open for an
+    org whose jurisdiction genuinely isn't seeded yet, matching this
+    endpoint's existing fail-open contract, instead of newly hard-blocking
+    every publish for jurisdictions nobody has authored rule data for.
+    """
+    jurisdiction_ids = await identify_jurisdiction(teacher_id, None, db)
+
+    all_issues: List[str] = []
+    all_warnings: List[str] = []
+    for jid in jurisdiction_ids:
+        resolved = resolve_jurisdiction_id(jid, checker.configurations)
+        if resolved is None:
+            continue  # unseeded jurisdiction -- fail open, not a genuine issue
+        _, issues, warnings = checker.check_activity_compliance(
+            activity_id, activity_data, student_age_proxy, resolved,
+        )
+        all_issues.extend(issues)
+        all_warnings.extend(warnings)
+
+    return len(all_issues) == 0, all_issues, all_warnings
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Module-level singletons
 # ─────────────────────────────────────────────────────────────────────────────
 

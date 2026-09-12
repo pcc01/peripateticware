@@ -600,7 +600,7 @@ async def publish_activity(
     # sensitive data collection flags that trigger stricter compliance rules).
     compliance_warnings: list = []
     try:
-        from services.privacy_engine import get_privacy_checker
+        from services.privacy_engine import get_privacy_checker, check_activity_compliance_for_org
         checker = get_privacy_checker()
         await checker.load_from_db(db)
         grade = activity.grade_level or 9
@@ -615,11 +615,20 @@ async def publish_activity(
         }
         # student_age proxy: grade + 5 years is a common approximation
         student_age_proxy = min(grade + 5, 18)
-        is_compliant, issues, warnings = checker.check_activity_compliance(
+        # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 1): this used to
+        # check settings.ACTIVE_JURISDICTION -- a single process-wide env
+        # var, not this activity's own org/teacher jurisdiction. Every org
+        # whose resolved jurisdiction differed from that global default was
+        # checked against the wrong ruleset. Now resolves and checks the
+        # teacher's own org jurisdiction(s), strictest-wins across all of
+        # them, exactly like every other enforcement call site.
+        is_compliant, issues, warnings = await check_activity_compliance_for_org(
+            str(activity.teacher_id),
             str(activity.id),
             activity_data,
             student_age_proxy,
-            settings.ACTIVE_JURISDICTION,
+            checker,
+            db,
         )
         # Sentinel issues mean the checker could not determine which
         # jurisdiction's rules to apply (no jurisdiction resolved, or the
@@ -1799,7 +1808,7 @@ async def check_activity_compliance_quick(
     Returns: { status: 'compliant'|'review'|'blocked', issues: [...] }
     """
     try:
-        from services.privacy_engine import get_privacy_checker
+        from services.privacy_engine import get_privacy_checker, check_activity_compliance_for_org
         checker = get_privacy_checker()
         await checker.load_from_db(db)
         activity_data = {
@@ -1807,8 +1816,16 @@ async def check_activity_compliance_quick(
             "third_parties": [],
             "purpose": "educational",
         }
-        is_compliant, issues, warnings = checker.check_activity_compliance(
-            "preview", activity_data, min(payload.grade_level + 5, 18), settings.ACTIVE_JURISDICTION
+        # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 1): same
+        # per-org-jurisdiction fix as publish_activity, applied to this
+        # advisory-only badge endpoint (it never blocks a publish itself).
+        is_compliant, issues, warnings = await check_activity_compliance_for_org(
+            str(current_user.id),
+            "preview",
+            activity_data,
+            min(payload.grade_level + 5, 18),
+            checker,
+            db,
         )
         # Sentinel issues ("No jurisdiction configured" / "Unknown jurisdiction: ...")
         # mean the checker couldn't resolve which rules apply — not a real

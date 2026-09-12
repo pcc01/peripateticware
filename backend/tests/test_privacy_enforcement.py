@@ -64,6 +64,9 @@ from services.privacy_engine import (
     enforce_or_raise,
     audit_submission,
     identify_jurisdiction,
+    check_activity_compliance_for_org,
+    PrivacyComplianceChecker,
+    _deserialise_jurisdiction,
 )
 
 
@@ -847,3 +850,107 @@ class TestEnforceOrRaiseForceBlock:
                 force_block_on_would_block=True,
             )
         assert result is allowed
+
+
+class TestCheckActivityComplianceForOrg:
+    """PRIVACY_BUGFIX_PLAN.md Bug 1 — publish_activity/check-compliance used
+    to check settings.ACTIVE_JURISDICTION (a single process-wide env var)
+    instead of the activity's own org/teacher jurisdiction, AND the DB-seeded
+    rule_definition never carried student_age_categories/
+    prohibited_data_collection/special_restrictions at all, so the gate was
+    structurally unable to produce a genuine issue for any org. These tests
+    exercise check_activity_compliance_for_org() (the extracted fix) with
+    identify_jurisdiction() mocked (it needs a real DB) and real
+    JurisdictionConfig/PrivacyComplianceChecker objects otherwise -- same
+    strategy as TestEnforceOnSubmissionDecisionMatrix."""
+
+    STRICT_RULE_DEF = {
+        "jurisdiction_id": "strict_jid",
+        "jurisdiction_name": "Strict Test Jurisdiction",
+        "country_code": "XX",
+        "framework": "gdpr",
+        "student_age_categories": {"minor": {"min_age": 0, "max_age": 17}},
+        "prohibited_data_collection": {"minor": ["location"]},
+    }
+    LENIENT_RULE_DEF = {
+        "jurisdiction_id": "lenient_jid",
+        "jurisdiction_name": "Lenient Test Jurisdiction",
+        "country_code": "XX",
+        "framework": "custom",
+        "student_age_categories": {"minor": {"min_age": 0, "max_age": 17}},
+        "prohibited_data_collection": {},
+    }
+
+    def _two_jurisdiction_checker(self) -> PrivacyComplianceChecker:
+        checker = PrivacyComplianceChecker()
+        checker.register_jurisdiction(_deserialise_jurisdiction("strict_jid", self.STRICT_RULE_DEF))
+        checker.register_jurisdiction(_deserialise_jurisdiction("lenient_jid", self.LENIENT_RULE_DEF))
+        return checker
+
+    @pytest.mark.asyncio
+    async def test_org_resolving_to_strict_jurisdiction_blocks(self):
+        """The org's own jurisdiction (strict_jid) bans 'location' for this
+        age band. The OLD code would have checked settings.ACTIVE_JURISDICTION
+        instead -- set here to the lenient jurisdiction -- and silently
+        passed. The fix must catch this."""
+        checker = self._two_jurisdiction_checker()
+        with patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(return_value=["strict_jid"])), \
+             patch("core.config.settings.ACTIVE_JURISDICTION", "lenient_jid"):
+            is_compliant, issues, warnings = await check_activity_compliance_for_org(
+                "teacher-1", "activity-1", {"data_collection": ["location"]}, 10, checker, db=AsyncMock(),
+            )
+        assert is_compliant is False
+        assert any("location" in i.lower() for i in issues)
+
+    @pytest.mark.asyncio
+    async def test_org_resolving_to_lenient_jurisdiction_allows(self):
+        """Mirror case: the org's own jurisdiction is the lenient one, while
+        settings.ACTIVE_JURISDICTION happens to be the strict one -- proves
+        the fix is genuinely per-org, not just 'always stricter now'."""
+        checker = self._two_jurisdiction_checker()
+        with patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(return_value=["lenient_jid"])), \
+             patch("core.config.settings.ACTIVE_JURISDICTION", "strict_jid"):
+            is_compliant, issues, warnings = await check_activity_compliance_for_org(
+                "teacher-2", "activity-2", {"data_collection": ["location"]}, 10, checker, db=AsyncMock(),
+            )
+        assert is_compliant is True
+        assert issues == []
+
+    @pytest.mark.asyncio
+    async def test_unresolved_jurisdiction_fails_open(self):
+        """A teacher/org whose jurisdiction id isn't seeded at all (no
+        compliance_rules row) must not newly hard-block publishing --
+        fail-open preserved, mirroring test_publish_activity's plain-publish
+        regression expectation from test_activities.py (no jurisdiction data
+        configured -> publish still succeeds)."""
+        checker = PrivacyComplianceChecker()  # nothing registered
+        with patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(return_value=["nonexistent_jid"])):
+            is_compliant, issues, warnings = await check_activity_compliance_for_org(
+                "teacher-3", "activity-3", {"data_collection": ["location"]}, 10, checker, db=AsyncMock(),
+            )
+        assert is_compliant is True
+        assert issues == []
+
+    @pytest.mark.asyncio
+    async def test_rule_data_gap_fix_prohibited_collection_now_detected(self):
+        """The compounding finding: before migration 003 populates
+        prohibited_data_collection in the real DB seed, this field was always
+        {} for every DB-backed jurisdiction, so check_activity_compliance()
+        could never return a genuine issue for any org regardless of which
+        jurisdiction was checked. This proves the read path works correctly
+        once the field is actually populated (as migration 003 does)."""
+        checker = PrivacyComplianceChecker()
+        checker.register_jurisdiction(_deserialise_jurisdiction("gdpr_like", {
+            "jurisdiction_id": "gdpr_like",
+            "jurisdiction_name": "GDPR-shaped Test Jurisdiction",
+            "country_code": "EU",
+            "framework": "gdpr",
+            "student_age_categories": {"child": {"min_age": 0, "max_age": 13}},
+            "prohibited_data_collection": {"child": ["behavioral"]},
+        }))
+        with patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(return_value=["gdpr_like"])):
+            is_compliant, issues, warnings = await check_activity_compliance_for_org(
+                "teacher-4", "activity-4", {"data_collection": ["behavioral"]}, 10, checker, db=AsyncMock(),
+            )
+        assert is_compliant is False
+        assert any("behavioral" in i.lower() for i in issues)
