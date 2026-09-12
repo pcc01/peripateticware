@@ -60,10 +60,15 @@ from services.privacy_engine import (
     EnforcementResult,
     JurisdictionConfig,
     PrivacyFramework,
+    ConsentRule,
+    DataCategory,
+    AgeGroup,
+    ConsentType,
     enforce_on_submission,
     enforce_or_raise,
     audit_submission,
     identify_jurisdiction,
+    merge_jurisdictions,
     check_activity_compliance_for_org,
     PrivacyComplianceChecker,
     _deserialise_jurisdiction,
@@ -802,6 +807,212 @@ class TestConsentAwareBypass:
                 student_id="s1", data_type="student_evidence", db=db, evidence_types=["photo"],
             )
         assert result.status == "BLOCKED"
+
+
+class TestDeserialiseJurisdictionConsentRules:
+    """PRIVACY_BUGFIX_PLAN.md Bug 2, step 1: _deserialise_jurisdiction() used
+    to build JurisdictionConfig(...) without ever passing consent_rules=,
+    silently dropping real DB-seeded teen-consent data (GDPR/CCPA's
+    age_groups + requires_parental_consent entries) on the floor at the
+    exact line that constructs the config the rest of the engine reads."""
+
+    GDPR_SHAPED_RULE_DEF = {
+        "jurisdiction_id": "gdpr_eu",
+        "jurisdiction_name": "European Union — GDPR",
+        "framework": "gdpr",
+        "country_code": "EU",
+        "consent_rules": [
+            {
+                "data_categories": ["identity", "contact", "location", "biometric", "health", "special"],
+                "age_groups": ["under_16", "adult"],
+                "consent_type": "explicit",
+                "requires_parental_consent": True,
+                "parental_age_threshold": 16,
+                "consent_withdrawal_allowed": True,
+                "transparency_required": True,
+            }
+        ],
+    }
+
+    def test_consent_rules_survive_canonical_schema_deserialisation(self):
+        config = _deserialise_jurisdiction("gdpr_eu", self.GDPR_SHAPED_RULE_DEF)
+        assert len(config.consent_rules) == 1
+        rule = config.consent_rules[0]
+        assert rule.requires_parental_consent is True
+        assert rule.parental_age_threshold == 16
+        assert "under_16" in [str(g) for g in rule.age_groups]
+        assert "location" in [str(c) for c in rule.data_categories]
+
+    def test_no_consent_rules_key_yields_empty_list_not_a_crash(self):
+        """A jurisdiction with no consent_rules at all (e.g. plain FERPA)
+        must not error -- it just has nothing for the age-based check to
+        match against."""
+        config = _deserialise_jurisdiction("ferpa_us", {
+            "jurisdiction_id": "ferpa_us",
+            "jurisdiction_name": "United States Federal — FERPA",
+            "framework": "ferpa",
+            "country_code": "US",
+        })
+        assert config.consent_rules == []
+
+    @pytest.mark.asyncio
+    async def test_merge_jurisdictions_also_preserves_consent_rules(self):
+        """merge_jurisdictions()'s own JurisdictionConfig(...) constructor
+        call had the SAME omission as _deserialise_jurisdiction() -- and
+        since no real caller of enforce_on_submission() passes an explicit
+        jurisdiction_id (all go through merge_jurisdictions()), fixing only
+        _deserialise_jurisdiction() would leave the age-based check
+        permanently dead in production. This proves the merged config
+        actually carries the union of consent_rules from every relevant
+        jurisdiction."""
+        gdpr_config = _deserialise_jurisdiction("gdpr_eu", self.GDPR_SHAPED_RULE_DEF)
+        ferpa_config = _deserialise_jurisdiction("ferpa_us", {
+            "jurisdiction_id": "ferpa_us", "jurisdiction_name": "FERPA",
+            "framework": "ferpa", "country_code": "US",
+        })
+        with patch(
+            "services.privacy_engine._get_cached_rules",
+            new=AsyncMock(return_value={"gdpr_eu": gdpr_config, "ferpa_us": ferpa_config}),
+        ):
+            merged = await merge_jurisdictions(["gdpr_eu", "ferpa_us"], db=AsyncMock())
+        assert len(merged.consent_rules) == 1
+        assert merged.consent_rules[0].requires_parental_consent is True
+
+
+class TestAgeDifferentiatedConsent:
+    """PRIVACY_BUGFIX_PLAN.md Bug 2: under_16/under_18 students used to get
+    identical enforcement treatment to adults everywhere, even though
+    GDPR/CCPA's own seeded consent_rules data specifies an additional
+    teen-consent requirement the engine never consulted. This new check must
+    be genuinely INDEPENDENT of the existing student_monitoring_allowed
+    check -- proven by using student_monitoring_allowed=True (org-level
+    check passes) and confirming the age-based rule alone still triggers
+    would_block=True."""
+
+    def _gdpr_like_config(self, **overrides) -> JurisdictionConfig:
+        defaults = dict(
+            jurisdiction_id="gdpr_like",
+            jurisdiction_name="GDPR-shaped Test Jurisdiction",
+            framework=PrivacyFramework.GDPR,
+            country_code="EU",
+            student_monitoring_allowed=True,  # org-level check passes
+            student_data_sharing_allowed=True,
+            consent_rules=[
+                ConsentRule(
+                    data_categories=[DataCategory.LOCATION],
+                    age_groups=[AgeGroup.UNDER_16, AgeGroup.ADULT],
+                    consent_type=ConsentType.EXPLICIT,
+                    requires_parental_consent=True,
+                    parental_age_threshold=16,
+                )
+            ],
+        )
+        defaults.update(overrides)
+        return JurisdictionConfig(**defaults)
+
+    def _mock_jurisdiction(self, config: JurisdictionConfig, age_group, has_consent: bool = False):
+        return patch.multiple(
+            "services.privacy_engine",
+            identify_jurisdiction=AsyncMock(return_value=[config.jurisdiction_id]),
+            merge_jurisdictions=AsyncMock(return_value=config),
+            _has_valid_consent=AsyncMock(return_value=has_consent),
+            _get_student_age_group=AsyncMock(return_value=age_group),
+        )
+
+    @pytest.mark.asyncio
+    async def test_under_16_no_consent_would_block_even_though_monitoring_allowed(self):
+        """THE core fix: student_monitoring_allowed=True means the
+        PRE-EXISTING check would never fire -- this proves the NEW
+        age-based check is independently triggerable."""
+        config = self._gdpr_like_config()
+        with self._mock_jurisdiction(config, age_group="under_16"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "log"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is True
+        assert result.consent_required is True
+        assert "age group" in result.blocking_reason.lower()
+        assert "under_16" in result.blocking_reason
+
+    @pytest.mark.asyncio
+    async def test_under_16_with_valid_consent_does_not_block(self):
+        config = self._gdpr_like_config()
+        with self._mock_jurisdiction(config, age_group="under_16", has_consent=True), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is False
+        assert result.status == "ALLOWED"
+
+    @pytest.mark.asyncio
+    async def test_adult_control_case_unaffected(self):
+        """Same org, same evidence, adult student -- the age-based rule's
+        age_groups is [under_16, adult]... wait: GDPR's real seed data
+        actually lists 'adult' in age_groups too (consent_type=explicit for
+        everyone), so use a config whose age-based rule targets under_16
+        ONLY, to prove an adult in the exact same org is genuinely
+        unaffected by this new check."""
+        config = self._gdpr_like_config(
+            consent_rules=[
+                ConsentRule(
+                    data_categories=[DataCategory.LOCATION],
+                    age_groups=[AgeGroup.UNDER_16],
+                    consent_type=ConsentType.EXPLICIT,
+                    requires_parental_consent=True,
+                    parental_age_threshold=16,
+                )
+            ],
+        )
+        with self._mock_jurisdiction(config, age_group="adult"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is False
+        assert result.status == "ALLOWED"
+
+    @pytest.mark.asyncio
+    async def test_under_16_in_jurisdiction_without_age_differentiated_rule_unaffected(self):
+        """A plain FERPA/COPPA-shaped jurisdiction with no age-differentiated
+        consent_rules entry at all -- proves the fix is genuinely
+        jurisdiction-scoped, not a blanket new under-16 gate everywhere."""
+        config = self._gdpr_like_config(consent_rules=[])
+        with self._mock_jurisdiction(config, age_group="under_16"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is False
+        assert result.status == "ALLOWED"
+
+    @pytest.mark.asyncio
+    async def test_no_age_group_on_file_does_not_crash_or_block(self):
+        """A student with no date_of_birth on file (age_group=None) must not
+        match an age-based rule -- None is never a member of any age_groups
+        list -- and must not error."""
+        config = self._gdpr_like_config()
+        with self._mock_jurisdiction(config, age_group=None), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    async def test_evidence_type_with_no_data_category_mapping_does_not_match(self):
+        """"audio"/"video"/"photo" are sensitive (trigger the existing
+        monitoring check) but have no DataCategory counterpart in the actual
+        seed data -- the age-based rule (scoped to 'location' here) must not
+        fire for them."""
+        config = self._gdpr_like_config()
+        with self._mock_jurisdiction(config, age_group="under_16"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["audio"],
+            )
+        assert result.would_block is False
 
 
 class TestEnforceOrRaiseForceBlock:

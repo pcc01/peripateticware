@@ -268,6 +268,41 @@ async def _load_rules_from_db(db: AsyncSession) -> Dict[str, JurisdictionConfig]
     return configs
 
 
+def _build_consent_rules(rule_def: Dict[str, Any]) -> List[ConsentRule]:
+    """Build ConsentRule dataclass instances from the raw `consent_rules`
+    list in a rule_definition dict (PRIVACY_BUGFIX_PLAN.md Bug 2).
+
+    `consent_rules` is NOT a declared field on the canonical PrivacyRule
+    schema (schemas/privacy_rule.py) -- it only round-trips through that
+    model's `extra="allow"` passthrough as an untyped list of raw dicts, not
+    validated/typed ConsentRule-shaped objects. Building directly from the
+    raw rule_def dict here (shared by both the canonical-schema and
+    raw-fallback branches of _deserialise_jurisdiction) is therefore more
+    reliable than trusting the pydantic model's extra-field passthrough, and
+    keeps both branches behaving identically for this field.
+
+    Never raises: a malformed entry is skipped (logged) rather than
+    aborting the whole jurisdiction's load over one bad consent-rule row.
+    """
+    out: List[ConsentRule] = []
+    for raw in rule_def.get("consent_rules", []) or []:
+        if not isinstance(raw, dict):
+            continue
+        try:
+            out.append(ConsentRule(
+                data_categories=list(raw.get("data_categories", []) or []),
+                age_groups=list(raw.get("age_groups", []) or []),
+                consent_type=raw.get("consent_type", ConsentType.NONE_REQUIRED.value),
+                requires_parental_consent=bool(raw.get("requires_parental_consent", False)),
+                parental_age_threshold=int(raw.get("parental_age_threshold", 16)),
+                consent_withdrawal_allowed=bool(raw.get("consent_withdrawal_allowed", True)),
+                transparency_required=bool(raw.get("transparency_required", True)),
+            ))
+        except Exception as exc:
+            logger.warning(f"Could not parse consent_rules entry {raw!r}: {exc}")
+    return out
+
+
 def _deserialise_jurisdiction(jurisdiction: str, rule_def: Dict[str, Any]) -> JurisdictionConfig:
     """Convert a rule_definition JSONB dict to a JurisdictionConfig dataclass.
 
@@ -304,6 +339,7 @@ def _deserialise_jurisdiction(jurisdiction: str, rule_def: Dict[str, Any]) -> Ju
             requires_privacy_impact_assessment=rule.requires_privacy_impact_assessment,
             requires_data_protection_officer=rule.requires_data_protection_officer,
             version=rule.version,
+            consent_rules=_build_consent_rules(rule_def),
             metadata={**rule.metadata, "_rule_definition": rule_def},
         )
     except Exception as exc:
@@ -329,6 +365,7 @@ def _deserialise_jurisdiction(jurisdiction: str, rule_def: Dict[str, Any]) -> Ju
             requires_privacy_impact_assessment=rule_def.get("requires_privacy_impact_assessment", False),
             requires_data_protection_officer=rule_def.get("requires_data_protection_officer", False),
             version=rule_def.get("version", "1.0"),
+            consent_rules=_build_consent_rules(rule_def),
             metadata=rule_def.get("metadata", {}),
         )
 
@@ -536,6 +573,20 @@ async def merge_jurisdictions(
         student_targeting_allowed=all(c.student_targeting_allowed for c in relevant),
         requires_privacy_impact_assessment=any(c.requires_privacy_impact_assessment for c in relevant),
         requires_data_protection_officer=any(c.requires_data_protection_officer for c in relevant),
+        # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 2): this constructor
+        # call used to omit consent_rules entirely, same gap as
+        # _deserialise_jurisdiction's own JurisdictionConfig(...) calls (now
+        # fixed there too) -- meaning even after wiring consent_rules through
+        # deserialization, every REAL call site (none passes an explicit
+        # jurisdiction_id to enforce_on_submission() today, so all of them go
+        # through this merge path) would still see an empty consent_rules
+        # list here and the age-differentiated check below would be
+        # permanently dead code. Union (not strictest-single-pick) is the
+        # correct strictest-wins semantics for a list of independently
+        # triggerable rules: enforce_on_submission() treats "any one matching
+        # rule requires consent" as sufficient, so any jurisdiction's rule
+        # applying is enough, exactly like the any()/all() scalars above.
+        consent_rules=[cr for c in relevant for cr in c.consent_rules],
     )
 
     return merged
@@ -589,6 +640,44 @@ async def _has_valid_consent(
     except Exception as exc:
         logger.warning(f"enforce_on_submission: consent lookup failed (failing closed): {exc}")
         return False
+
+
+# Loose evidence-type -> DataCategory mapping for the age-differentiated
+# consent check below (PRIVACY_BUGFIX_PLAN.md Bug 2). Deliberately
+# conservative: only evidence types with an unambiguous DataCategory
+# counterpart in the actual seeded consent_rules data are mapped ("gps"/
+# "location" -> location, "biometric" -> biometric). "audio"/"video"/"photo"
+# are part of the outer `sensitive` set (they still drive the existing
+# student_monitoring_allowed check above) but have no corresponding
+# DataCategory in the current seed data's consent_rules.data_categories
+# lists -- mapping them to one would be inventing rule semantics the seed
+# data doesn't actually specify, not implementing what's already there.
+_EVIDENCE_DATA_CATEGORY: Dict[str, str] = {
+    "gps": DataCategory.LOCATION.value,
+    "location": DataCategory.LOCATION.value,
+    "biometric": DataCategory.BIOMETRIC.value,
+}
+
+
+async def _get_student_age_group(student_id: str, db: Optional[AsyncSession]) -> Optional[str]:
+    """Look up the student's own age_group ('under_13'|'under_16'|'under_18'|
+    'adult'|None) directly.
+
+    A small, dedicated lookup rather than overloading identify_jurisdiction()'s
+    return contract -- that function returns List[str] of jurisdiction ids,
+    a shape already tested and consumed as exactly that everywhere else.
+    Fails closed (returns None) on any error; callers must treat None as
+    "cannot apply an age-differentiated rule", never as "adult".
+    """
+    if db is None:
+        return None
+    try:
+        from models.user import User
+        result = await db.execute(select(User.age_group).where(User.id == student_id))
+        return result.scalar_one_or_none()
+    except Exception as exc:
+        logger.warning(f"enforce_on_submission: age_group lookup failed: {exc}")
+        return None
 
 
 async def enforce_on_submission(
@@ -669,6 +758,62 @@ async def enforce_on_submission(
                         "consent under the applicable jurisdiction, and no active "
                         "consent record was found"
                     )
+
+            # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 2): every
+            # age_group consumer in this codebase used to treat age_group as
+            # a binary under_13-vs-everything-else split -- under_16/under_18
+            # students got identical treatment to adults everywhere,
+            # including here, even though GDPR/CCPA's own seeded
+            # consent_rules data specifies an additional teen-consent
+            # requirement (age_groups + requires_parental_consent) this
+            # engine never consulted. This check is INDEPENDENT of the
+            # student_monitoring_allowed branch above -- it can fire even
+            # when that org-level check passes (student_monitoring_allowed=
+            # True), so it adds a genuinely new, separately-triggerable
+            # reason rather than just duplicating the existing one. Only
+            # ever additive/tightening: an empty config.consent_rules (any
+            # jurisdiction without an age-differentiated rule, e.g. plain
+            # FERPA/COPPA) or a student with no age_group on file leaves
+            # this branch a no-op.
+            evidence_categories = {
+                _EVIDENCE_DATA_CATEGORY[e]
+                for e in (e.lower() for e in evidence_types)
+                if e in _EVIDENCE_DATA_CATEGORY
+            }
+            if config.consent_rules and evidence_categories:
+                student_age_group = await _get_student_age_group(student_id, db)
+                if student_age_group:
+                    matching_rule = next(
+                        (
+                            r for r in config.consent_rules
+                            if r.requires_parental_consent
+                            # AgeGroup/DataCategory are `str` Enum subclasses, so a
+                            # plain string (age_group column value, or a raw
+                            # unconverted entry from _build_consent_rules) compares
+                            # equal to the enum member by value -- deliberately NOT
+                            # str()-ing these first: str(AgeGroup.UNDER_16) returns
+                            # "AgeGroup.UNDER_16", not "under_16", which would make
+                            # every comparison here silently always miss.
+                            and student_age_group in r.age_groups
+                            and evidence_categories & set(r.data_categories)
+                        ),
+                        None,
+                    )
+                    if matching_rule is not None:
+                        consent_required = True
+                        has_age_consent = await _has_valid_consent(
+                            db=db,
+                            student_id=student_id,
+                            activity_id=activity_id,
+                            evidence_types=[e.lower() for e in evidence_types],
+                        )
+                        if not has_age_consent:
+                            blocking_reasons.append(
+                                f"Student's age group ('{student_age_group}') requires "
+                                "parental consent for this data category under the "
+                                "applicable jurisdiction's age-based consent rule, and no "
+                                "active consent record was found"
+                            )
 
     # Decide status by mode.
     if mode == "block" and blocking_reasons:
