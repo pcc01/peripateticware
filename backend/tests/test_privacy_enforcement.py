@@ -1053,14 +1053,89 @@ class TestEnforceOrRaiseForceBlock:
     @pytest.mark.asyncio
     async def test_force_true_still_allows_when_would_block_is_false(self):
         allowed = EnforcementResult(status="ALLOWED", would_block=False)
+        mock_log_access = AsyncMock()
         with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=allowed)), \
              patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
-             patch("services.privacy_engine.log_access", new=AsyncMock()):
+             patch("services.privacy_engine.log_access", new=mock_log_access):
             result = await enforce_or_raise(
                 student_id="s1", data_type="learning_session_event", db=AsyncMock(),
                 force_block_on_would_block=True,
             )
         assert result is allowed
+        # PRIVACY_BUGFIX_PLAN.md Bug 3 control case: nothing was actually
+        # force-blocked here (would_block=False), so no override should be
+        # applied -- compliance_status must match result.status unchanged.
+        _, kwargs = mock_log_access.await_args
+        assert kwargs["compliance_status"] == allowed.status == "ALLOWED"
+
+    @pytest.mark.asyncio
+    async def test_default_force_false_leaves_compliance_status_unaffected(self):
+        """Bug 3 control case: force_block_on_would_block defaults to False
+        (every pre-existing call site) -- compliance_status must be exactly
+        result.status, with no override path taken at all."""
+        blocked = EnforcementResult(status="BLOCKED", blocking_reason="nope", would_block=True)
+        mock_log_access = AsyncMock()
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=blocked)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=mock_log_access):
+            from fastapi import HTTPException
+            with pytest.raises(HTTPException):
+                await enforce_or_raise(student_id="s1", data_type="student_evidence", db=AsyncMock())
+        _, kwargs = mock_log_access.await_args
+        assert kwargs["compliance_status"] == "BLOCKED"
+
+    @pytest.mark.asyncio
+    async def test_force_true_in_log_mode_records_blocked_not_allowed(self):
+        """THE core fix. Mechanism: enforce_on_submission() computes
+        result.status purely from the global ENFORCEMENT_MODE ("log" here ->
+        status="ALLOWED" even though blocking_reasons were detected), with no
+        knowledge of force_block_on_would_block. should_block folds that flag
+        in AFTER result.status was computed, and used to fire the real 403
+        AFTER the audit row (recording result.status="ALLOWED" verbatim) had
+        already been written. This proves compliance_status now reflects
+        what actually happened (a real 403), not the mode-collapsed status."""
+        from fastapi import HTTPException
+
+        would_block_but_allowed = EnforcementResult(
+            status="ALLOWED", would_block=True, blocking_reason="region restricted",
+        )
+        mock_log_access = AsyncMock()
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=would_block_but_allowed)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=mock_log_access), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "log"):
+            with pytest.raises(HTTPException) as exc_info:
+                await enforce_or_raise(
+                    student_id="s1", data_type="learning_session_event", db=AsyncMock(),
+                    force_block_on_would_block=True,
+                )
+        assert exc_info.value.status_code == 403  # the real, actually-applied outcome
+        _, kwargs = mock_log_access.await_args
+        assert kwargs["compliance_status"] == "BLOCKED"  # not "ALLOWED" -- the pre-fix bug
+
+    @pytest.mark.asyncio
+    async def test_force_true_in_warn_mode_records_blocked_not_warning(self):
+        """Companion case: mode="warn" would make enforce_on_submission()
+        alone produce status="WARNING" -- confirm the override still reports
+        "BLOCKED" (what actually happened), not "WARNING" (what
+        enforce_on_submission's own mode-driven computation would have said)."""
+        from fastapi import HTTPException
+
+        would_block_but_warned = EnforcementResult(
+            status="WARNING", would_block=True, blocking_reason="region restricted",
+        )
+        mock_log_access = AsyncMock()
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=would_block_but_warned)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=mock_log_access), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "warn"):
+            with pytest.raises(HTTPException):
+                await enforce_or_raise(
+                    student_id="s1", data_type="learning_session_event", db=AsyncMock(),
+                    force_block_on_would_block=True,
+                )
+        _, kwargs = mock_log_access.await_args
+        assert kwargs["compliance_status"] == "BLOCKED"
 
 
 class TestCheckActivityComplianceForOrg:

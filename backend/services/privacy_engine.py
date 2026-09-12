@@ -845,6 +845,7 @@ async def _record_enforcement_audit(
     evidence_types: Optional[List[str]],
     notes: Optional[str],
     activity_id: Optional[str] = None,
+    override_status: Optional[str] = None,
 ) -> None:
     """
     Write one durable rule_audit_log row capturing what the engine actually
@@ -860,6 +861,18 @@ async def _record_enforcement_audit(
     warnings/blocking_reason text, so an admin can query "what would this
     request have done under block mode" without ever having flipped the
     switch — the whole point of running in log mode first.
+
+    override_status (PRIVACY_BUGFIX_PLAN.md Bug 3): when provided, used as
+    `compliance_status` INSTEAD OF `result.status`. `result.status` is
+    computed entirely inside enforce_on_submission() from the global
+    ENFORCEMENT_MODE, with no knowledge of a caller-specific
+    force_block_on_would_block decision. enforce_or_raise() is the only
+    caller that knows both `result.status` AND whether it's about to force-
+    block anyway — it passes the request's REAL, actually-applied outcome
+    here so `compliance_status` never disagrees with whether a 403 was
+    actually raised. audit_submission() (the other caller) has no
+    force-block concept at all and never passes this, so its behavior is
+    unchanged: `result.status` is used verbatim, exactly as before.
 
     Uses an ISOLATED session (its own short-lived connection via
     get_session_factory()), never the caller's request-scoped `db`.
@@ -894,7 +907,7 @@ async def _record_enforcement_audit(
                 data_type=data_type,
                 student_id=student_id,
                 rules_applied=result.rules_applied,
-                compliance_status=result.status,
+                compliance_status=override_status if override_status is not None else result.status,
                 db=audit_db,
                 enforcement_actions=enforcement_actions,
                 notes=notes,
@@ -949,6 +962,17 @@ async def enforce_or_raise(
             student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
             activity_id=activity_id,
         )
+        # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 3): compute the
+        # REAL, actually-applied outcome BEFORE writing the audit row, not
+        # after. result.status alone (mode="log"/"warn") can say "ALLOWED"/
+        # "WARNING" while should_block below is about to raise a real 403
+        # via force_block_on_would_block -- the audit write used to run
+        # first and record result.status verbatim, so compliance_status
+        # could read "ALLOWED" for a request that was, two lines later,
+        # genuinely blocked. effective_status is what actually happened to
+        # this request; pass it through so the two can never disagree.
+        should_block = result.status == "BLOCKED" or (force_block_on_would_block and result.would_block)
+        effective_status = "BLOCKED" if should_block else result.status
         if db is not None:
             await _record_enforcement_audit(
                 result=result,
@@ -959,8 +983,8 @@ async def enforce_or_raise(
                 evidence_types=evidence_types,
                 notes=notes,
                 activity_id=activity_id,
+                override_status=effective_status,
             )
-        should_block = result.status == "BLOCKED" or (force_block_on_would_block and result.would_block)
         if should_block:
             raise HTTPException(
                 status_code=_status.HTTP_403_FORBIDDEN,
