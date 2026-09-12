@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "詳細",
-      "discoveryLabel": "🔎 宝探し",
+      "discoveryLabel": "🔍 サカナハンティング",
       "discoveryObjectiveLabel": "目標",
-      "discoveryRequirementsLabel": "記録が必要なもの",
-      "discoveryRequirementsSpeech": "{{items}}でこれを記録する必要があります。",
-      "discoverySuccessLabel": "成功の基準",
+      "discoveryRequirementsLabel": "必要なドキュメントを用意してください",
+      "discoveryRequirementsSpeech": "必要なものは {{items}} で記録してください",
+      "discoverySuccessLabel": "成功のようです",
       "periIntro": "今日は以下の作業を行います。出発前に読み通してください。",
       "startCta": "準備完了 - 行く"
     },
@@ -64,6 +64,9 @@
       "yourReflectionLabel": "あなたの鏡面"
     }
   },
+  "calendar": {
+    "empty": "カレンダーに何もありません。"
+  },
   "camera": {
     "allowAccess": "アクセスを許可する",
     "closeCamera": "カメラを閉じる",
@@ -101,10 +104,6 @@
       "video": "ビデオ"
     },
     "notePlaceholder": "観察した内容を書きます...",
-    "offline": {
-      "body": "このキャプチャは、デバイスに保存されており、再接続時にアップロードされます。",
-      "title": "OFFLINE保存"
-    },
     "preview": {
       "pause": "一時停止",
       "play": "プレイ",
@@ -126,21 +125,70 @@
     "title": "添付証據",
     "uploadFailed": {
       "title": "アップロード失敗"
-    },
-    "uploading": "アップロード中..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "カレンダーを読み込めません。",
+    "title": "カレンダー",
+    "titleWithName": "{{name}}のカレンダー"
   },
   "common": {
     "activity": "活動",
     "activityPlural": "活動",
+    "add": "追加",
+    "approve": "承認",
     "back": "戻る",
     "cancel": "キャンセル",
     "captureLabel": "証拠を録音",
     "close": "閉じる",
+    "continue": "継続",
+    "deny": "拒否",
     "done": "完了",
     "error": "エラー",
     "journalLabel": "フィールドノート",
     "ok": "わかった",
+    "reject": "拒否",
+    "remove": "削除",
     "tryAgain": "もう一度試してください"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "学習レベル",
+    "captureLocation": "📍 現在地を使用する",
+    "captureStop": "📍 ここで停止を撮る",
+    "difficultyLabel": "難易度（1～4）",
+    "durationLabel": "推定時間（分）",
+    "gradeLabel": "{{placeholder}}レベル",
+    "locationCaptured": "位置をキャプチャしました（{{lat}}, {{lng}}）",
+    "locationDenied": "位置情報の許可が必要です",
+    "locationError": "「位置を取得できませんでした。再度お試しください。」",
+    "locationNameLabel": "場所名",
+    "locationNamePlaceholder": "リバーサイドパーク、北エントランス",
+    "locationTimeout": "GPSの固定が15秒以内に得られませんでした — 空の見晴らしのいいところに移動し、再度お試しください。",
+    "minutesShort": "{{n}}分",
+    "modeLabel": "狩りのタイプ",
+    "modeLocation": "この正確な位置",
+    "modeTask": "任意の場所で",
+    "multiStep": "複数ステップのルート",
+    "noLimit": "無制限",
+    "objectiveLabel": "何を学ぶべきですか？",
+    "objectivePlaceholder": "樹の形で固有の樹木を特定",
+    "oneSpot": "1か所",
+    "publish": "挑戦を公開する",
+    "saveError": "活動の作成に失敗しました。",
+    "stepsLabel": "何回の停車ですか？",
+    "stopNameDefault": "ストップ {{n}}",
+    "stopsHint": "徒歩で各停留所に行き、それを撮影してください。学生は方位矢印のある地図を受け取りますが、位置情報はスマホに残りません。",
+    "subjectLabel": "件名",
+    "successBody": "生徒は、今この挑戦を試してください。",
+    "successLabel": "知っている理由は何ですか？（任意）",
+    "successPlaceholder": "写真をクリアに撮り、それが合致する理由を一行で説明してください",
+    "successTitle": "公開されました！",
+    "taskLabel": "学生は何をすべきですか？",
+    "taskPlaceholder": "説明してください",
+    "timeLimitLabel": "時間制限（任意）",
+    "title": "新しい探索ゲーム",
+    "titleLabel": "挑戦タイトル",
+    "titlePlaceholder": "例：オークツリーの謎"
   },
   "discover": {
     "empty": "まだ活動はありません。先生が近いと思います。",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "子供",
+    "childrenTitle": "子供",
     "empty": "子供が追加されていません。ウェブアプリで子供を追加して、ここで進捗状況を見ることができます。",
     "gradeLabel": "レVel {{grade}}",
     "loadError": "ダッシュボードを読み込めません。",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "ダッシュボード",
     "title": "ホームスクールダッシュボード"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "子供を追加する",
+    "allSet": "設定完了！",
+    "allSetBody": "移動アプリからウェブアプリに移動して、最初の野外活動を作成しましょう — Periは、あなたの位置と対象に合わせてアリストテレス的な質問を提案します。",
+    "childNamePlaceholder": "子の{{n}}の名前",
+    "goToDashboard": "ダッシュボードに移動",
+    "noChildrenError": "子供を少なくとも1人追加してください。",
+    "selectState": "選択する州",
+    "selectStateOptional": "選択する州（任意）",
+    "skipSetup": "スキップ",
+    "someFailedError": "一部の子供たちを自動的に保存できませんでした — Web アプリから後で追加できます。",
+    "stateFootnote": "35アメリカ州でホームスクールの両親が学習記録を保存する必要があります — Peripateticwareが活動ログからレポートを自動的に生成します。",
+    "step1": "子供を追加する",
+    "step2": "{{placeholder}}の状態",
+    "step3": "はじめの活動",
+    "welcomeSubtitle": "3つの簡単なステップで設定しましょう。",
+    "welcomeTitle": "ようこそ！🌿",
+    "whichState": "どの州でホームスクールしていますか？",
+    "whichStateBody": "このヘルプは、正しい状態報告要件を表示するのに役立ちます。必要な場合は、いつでも変更できます。",
+    "whoTeaching": "誰を教えていますか？",
+    "whoTeachingBody": "各児童の名前と学年を追加してください。後でウェブアプリから追加することもできます。"
   },
   "journal": {
     "draft": "下書き",
@@ -184,11 +255,15 @@
     "empty": "誰もこのチャレンジを始めていません。",
     "finished": "完了",
     "loadError": "このライダーボードを読み込めません。",
-    "minutesSecondsFormat": "{{m}}m {{s}}s",
+    "minutesSecondsFormat": "分 {{m}}分 {{s}}秒",
     "mySummaryFinished": "君は{{rank}}だ。{{time}}で完走した。",
     "mySummaryInProgress": "ランク：{{rank}}。現在、あなたには{{count}}個の証拠があります。",
+    "mySummaryInProgress_one": "ランク {{rank}} です。今までに {{count}} 件の証拠を持っています。",
+    "mySummaryInProgress_other": "ランク {{rank}} です。今までに {{count}} 件の証拠を持っています。",
     "secondsFormat": "{{s}}s",
     "stepsSoFar": "{{count}}個の証拠まで",
+    "stepsSoFar_one": "{{count}}件の証拠が今のところ",
+    "stepsSoFar_other": "{{count}}件の証拠があります",
     "you": "あなた"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "パスワード",
     "passwordReset": {
+      "backToLogin": "戻る",
       "body": "教師に連絡してパスワードをリセットしてください。",
+      "checkInbox": "チェックするインボックス",
+      "checkInboxBody": "メールアドレス \"{{email}}\" のアカウントが存在する場合、パスワードリセットのリンクを短時間で受信します。有効期限は60分です。",
+      "missingEmail": "メールアドレスを入力してください。",
+      "requestFailed": "何かがうまくいかなかった。再度お試しください。",
+      "sendLink": "送信リセットリンク",
       "title": "パスワードのリセット"
     },
     "showPassword": "表示パスワード",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "子供にリンクされていません。ウェブアプリで子供をリンクして、ここで進捗状況を見ることができます。",
     "lastActive": "最後にアクティブ：{{date}}",
+    "linkChild": {
+      "body": "入力子供のPeripateticwareメールアドレス。彼らはリクエストを承認する必要があります。",
+      "emailPlaceholder": "子のメールアドレス",
+      "genericError": "リンクできませんでした。メールを確認して再度お試しください。",
+      "headerButton": "子供をリンク",
+      "pendingBody": "{{name}}は、自分のアプリでこの件を承認していただく必要があります。",
+      "pendingTitle": "送信リクエスト",
+      "submit": "リンク子",
+      "successBody": "{{name}}は、ダッシュボードに表示されます。",
+      "successTitle": "連結しました！",
+      "title": "リンクする子供"
+    },
     "loadError": "ダッシュボードを読み込めません。",
+    "messages": {
+      "empty": "まだ、先生からメッセージはありません。",
+      "reply": "返信",
+      "replyError": "送信できませんでした。",
+      "replyPlaceholder": "書き込み…",
+      "replyTo": "返信 {{name}}",
+      "send": "送信",
+      "title": "メッセージ"
+    },
+    "notifications": {
+      "empty": "全ての更新を受信しました。",
+      "title": "通知"
+    },
+    "pendingBadge": "待機中",
+    "pendingBody": "{{name}}は、自分のアプリでこのことを承認してから、その進捗がここに表示されます。",
     "progressUnavailable": "この子供の進捗を読み込めません。",
     "stats": {
       "activities": "活動",
@@ -262,7 +370,17 @@
       "hours": "時間"
     },
     "tabLabel": "子供",
-    "title": "私の子供たち"
+    "title": "私の子供たち",
+    "unlink": {
+      "action": "未リンク",
+      "cancelRequest": "キャンセルリクエスト",
+      "confirmAction": "未接続",
+      "confirmBody": "あなたは{{name}}の進捗を再度見なくなります。後で新しいリクエストを送信することができます。",
+      "confirmBodyPending": "このリクエストをキャンセルします。",
+      "confirmTitle": "解除する {{name}} ですか？",
+      "error": "右のリンクを解除できません。再度お試しください。"
+    },
+    "viewCalendar": "📅 カレンダー"
   },
   "perichat": {
     "closeChat": "チャットを閉じる",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "学生が作成したチャレンジはまだありません。チャレンジを提案してリーダーボードを開始しましょう。",
     "leaderboardsLabel": "ランキング",
     "participantCount": "{{count}}人参加中",
+    "participantCount_one": "{{count}}参加中",
+    "participantCount_other": "{{count}}参加中",
     "proposedBy": "より {{name}} による",
     "stats": {
       "activities": "活動",
@@ -330,6 +450,19 @@
       "downloadFailed": "ダウンロードできませんでした。接続を確認して再試行してください。"
     },
     "languageLabel": "言語",
+    "parentRequests": {
+      "actionError": "もう一度お試しください。",
+      "body": "{{email}}さんが、あなたの{{relationship}}としての進捗状況を確認したいと思っています。",
+      "label": "保護者のリクエスト"
+    },
+    "password": {
+      "button": "パスワードをリセット",
+      "desc": "新しいパスワードを設定するためのリンクをメールで送信します。",
+      "error": "もう一度お試しください。",
+      "sentBody": "パスワードリセットリンクを{{email}}に送信しました。有効期限は60分です。",
+      "sentTitle": "チェックするインボックス"
+    },
+    "passwordLabel": "パスワード",
     "role": {
       "student": "学生"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "音声"
   },
+  "studentCalendar": {
+    "loadError": "カレンダーを読み込めませんでした。",
+    "title": "マイカレンダー"
+  },
   "tabs": {
     "achievements": "成就",
     "discover": "発見",
-    "progress": "進捗",
     "propose": "提案する",
     "settings": "設定"
   },
+  "teacherActivities": {
+    "empty": "まだ公開された活動はありません。",
+    "loadError": "アクティビティを読み込めません。",
+    "title": "アクティブなアクティビティ"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}}日前",
+    "descriptionLabel": "説明",
+    "gradeLabel": "{{grade}} 学年",
+    "loadError": "このアクティビティを読み込めません。",
+    "minutesLabel": "{{n}}分",
+    "noSubmissions": "まだ、誰もこの活動を始めていません。",
+    "objectivesLabel": "学習目標",
+    "submissionsLabel": "提出"
+  },
+  "teacherCalendar": {
+    "addTitle": "新しいカレンダーイベント",
+    "dateLabel": "日付（YYYY-MM-DD）",
+    "deleteError": "このイベントを削除できません。",
+    "deleteTitle": "削除 \"{{title}}\" しますか？",
+    "descriptionLabel": "詳細は省略可能です",
+    "descriptionPlaceholder": "任意の追加の詳細…",
+    "loadError": "カレンダーを読み込めません。",
+    "noClasses": "まだクラスを持っていません — Web アプリで最初に設定してください。",
+    "saveError": "イベントを作成できませんでした。",
+    "title": "カレンダー",
+    "titleLabel": "{{title}}",
+    "titlePlaceholder": "権限証明書の期限",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "まだクラスがありません — Web アプリを使用して作成してください。",
+    "loadError": "_classesを読み込めません。",
+    "title": "クラス"
+  },
   "teacherDashboard": {
     "loadError": "ダッシュボードを読み込めません。",
+    "newScavengerHunt": "+ 宝探し",
     "noActivities": "まだアクティビティを作成していません。ウェブアプリを使用して、1つを作成してください。",
     "recentLabel": "最近の活動",
     "stats": {
       "active": "アクティブ",
+      "calendar": "カレンダー",
       "classes": "クラス",
+      "messages": "メッセージ",
       "pending": "待ち受け中",
+      "proposals": "提案",
       "students": "学生"
     },
     "tabLabel": "ダッシュボード",
     "title": "教師ダッシュボード",
     "webHint": "クラスルーム、ローター、およびルビックを使用するには、ウェブアプリを使用してください。"
+  },
+  "teacherMessages": {
+    "audienceAllParents": "すべての親",
+    "audienceAllStudents": "全ての生徒",
+    "audienceLabel": "送信先",
+    "bodyLabel": "メッセージ",
+    "bodyPlaceholder": "書き込み…",
+    "classroomLabel": "クラスルーム",
+    "composeTitle": "新しいメッセージ",
+    "empty": "まだ会話はありません。",
+    "loadError": "メッセージの読み込みに失敗しました。",
+    "orOneFamily": "{{family}}の",
+    "replyPlaceholder": "書き込み…",
+    "send": "送信",
+    "sendError": "送信できませんでした。",
+    "subjectLabel": "件名",
+    "subjectPlaceholder": "フィールド・トリップ許可証",
+    "title": "メッセージ",
+    "willMessageParent": "送信先：{{name}}の保護者"
+  },
+  "teacherProposals": {
+    "actionError": "再度お試しください。",
+    "approveBody": "この実践活動を即座に挑戦することができます。",
+    "approveTitle": "承認 \"{{title}}\" しますか？",
+    "byStudent": "「{{name}}より · {{subject}}」",
+    "empty": "無、お待ちしています。",
+    "loadError": "「提案を読み込めませんでした」",
+    "noteLabel": "ノート",
+    "rejectBody": "彼らはこれを見ることができ、修正して再提出する。",
+    "rejectPlaceholder": "近い活動に近すぎます — 別のランドマークを試してください",
+    "rejectTitle": "フィードバック {{name}}",
+    "sendFeedback": "送信",
+    "title": "学生提案"
+  },
+  "teacherSubmissions": {
+    "empty": "未提出",
+    "loadError": "「投稿を読み込めません」",
+    "title": "提出"
+  },
+  "wayfinding": {
+    "allFound": "全ての停止点が見つかりました！🎉",
+    "nextStop": "次回の目的地",
+    "noFix": "無い GPS",
+    "progress": "{{reached}} of {{total}} ストップ",
+    "skip": "スキップする"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "あなたの送信した写真とメモは、それを撮った位置で先生の地図に表示されます。",
+      "title": "写真にタグを付けてください"
+    },
+    "D": {
+      "gets": "指導の外出中に、教師はリアルタイムであなたの位置を確認できます。",
+      "title": "教師のマップで旅行中に表示する"
+    },
+    "E": {
+      "gets": "クラスは狩りの後、みんなが取ったルートを比較できます。",
+      "title": "記録する道"
+    },
+    "allow": "許可",
+    "eyebrow": "あなたの教師がこれを有効にしました — あなたの選択",
+    "kept": "保存: {{copy}}",
+    "notNow": "今後"
   }
 }

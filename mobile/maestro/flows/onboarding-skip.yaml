@@ -15,10 +15,23 @@ appId: com.peripateticware.app
       visible:
         id: "onboarding-splash"
     commands:
+      # Each step waits on the interactive control it's about to touch, not
+      # a wrapper-View testID. onboarding-name / onboarding-location /
+      # onboarding-first-activity are container testIDs that surface in the
+      # Android a11y tree but NOT on iOS (a testID on a plain <View> only
+      # becomes an accessibilityIdentifier on iOS when the node is a leaf or
+      # `accessible`), so asserting them made every iOS flow fail here. The
+      # leaf controls (-input, -skip, -open, -cta) are present on both.
+      - extendedWaitUntil:
+          visible:
+            id: "onboarding-splash-cta"
+          timeout: 10000
       - tapOn:
           id: "onboarding-splash-cta"
-      - assertVisible:
-          id: "onboarding-name"
+      - extendedWaitUntil:
+          visible:
+            id: "onboarding-name-input"
+          timeout: 22000
       - tapOn:
           id: "onboarding-name-input"
       - inputText: "Maestro Tester"
@@ -33,17 +46,23 @@ appId: com.peripateticware.app
       # selector that can't collide with this screen's own button text.
       - tapOn:
           id: "onboarding-name-cta"
-      - assertVisible:
-          id: "onboarding-location"
       # Skip rather than Allow — avoids a real OS location permission
       # dialog blocking the run (see maestro/flows/capture/12.1-note-capture.yaml's
       # comment on why that dialog is worth avoiding when it isn't the point
       # of the flow).
+      - extendedWaitUntil:
+          visible:
+            id: "onboarding-location-skip"
+          timeout: 15000
       - tapOn:
           id: "onboarding-location-skip"
-      - assertVisible:
-          id: "onboarding-first-activity"
+      - extendedWaitUntil:
+          visible:
+            id: "onboarding-first-activity-open"
+          timeout: 15000
       - tapOn:
           id: "onboarding-first-activity-open"
-      - assertVisible:
-          id: "login-screen"
+      - extendedWaitUntil:
+          visible:
+            id: "login-screen"
+          timeout: 15000

@@ -24,21 +24,55 @@ appId: com.peripateticware.app
     id: "settings-screen"
 - assertVisible:
     id: "theme-option-fieldGuide-en"
-# Wildcarded `.*Español.*`, not a bare exact match — see
-# maestro/flows/settings/9.1-account-pickers.yaml's matching comment:
-# language options carry accessibilityRole="radio" + a combined
-# accessibilityLabel ("Español language", not just "Español"), the only
-# text iOS's accessibility tree exposes at that node once the radio has
-# its own label. Maestro's plain-text tapOn does a full-string match, not
-# a substring search, so the bare label never matched. (Not a timing
-# issue — a real CI failure screenshot showed the text visible
-# immediately; kept extendedWaitUntil anyway as a harmless safety net.)
-- extendedWaitUntil:
-    visible: ".*Español.*"
+# The LANGUAGE control is src/components/LanguagePicker.tsx — a single
+# trigger row ("🇬🇧 English ▾") that opens a modal FlatList of
+# SUPPORTED_LOCALES, NOT an always-expanded inline radio list. So: scroll
+# the trigger into view (it sits below THEME on Settings), open it, pick
+# the Spanish row by its testID, then assert the THEME labels' renderLang
+# marker flipped en -> es (the actual regression this flow guards — the
+# THEMES useMemo recomputing on languageChanged).
+- scrollUntilVisible:
+    element:
+      id: "language-picker-trigger"
+    direction: DOWN
     timeout: 20000
-- tapOn: ".*Español.*"
-- assertVisible:
-    id: "theme-option-fieldGuide-es"
+    centerElement: true
+- tapOn:
+    id: "language-picker-trigger"
+- waitForAnimationToEnd:
+    timeout: 5000
+# Maestro's iOS accessibility snapshot doesn't reliably traverse into this
+# <Modal transparent> — confirmed on a real run: the hierarchy dump captured
+# at a failed `assertVisible: id: language-option-es` was ~7KB and contained
+# zero trace of the modal's FlatList (no "language", no "Español", nothing),
+# despite the screenshot from the same instant showing the list rendered
+# correctly on screen. A known class of issue with RN transparent Modals on
+# iOS + XCUITest-based tools — neither an id nor a text selector can see in.
+# Tap the Spanish row (2nd in SUPPORTED_LOCALES, right under English) by its
+# known on-screen position instead. Android is unaffected (id-based tap
+# below still runs there, where the modal IS queryable).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          point: "50%, 30%"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "language-option-es"
+          timeout: 20000
+      - tapOn:
+          id: "language-option-es"
+# modal dismisses on select; the locale download + i18n.changeLanguage()
+# can take a moment on a cold locale cache, hence the generous wait.
+- extendedWaitUntil:
+    visible:
+      id: "theme-option-fieldGuide-es"
+    timeout: 35000
 - assertNotVisible:
     id: "theme-option-fieldGuide-en"
 - assertVisible:

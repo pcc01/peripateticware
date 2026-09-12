@@ -23,9 +23,12 @@ appId: com.peripateticware.app
 # similarly-timed-out "visible but not found" failures elsewhere in this
 # suite (confirmed NOT an accessibilityLabel issue either — settings.tsx's
 # Sign Out button already has one and still failed the same way).
-- extendedWaitUntil:
-    visible: "Creek Habitat Study"
-    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"
@@ -94,9 +97,16 @@ appId: com.peripateticware.app
 - tapOn:
     text: "Continue"
     optional: true
+# Dismiss the keyboard (and its QuickType tip) outright before the send tap —
+# the optional "Continue" tap above hasn't reliably cleared the tip on iOS,
+# and a real run showed the send tap landing on the tip instead of the
+# button (no user message posted). hideKeyboard is a no-op on Android.
+- hideKeyboard
 - tapOn:
     id: "peri-chat-send"
-- assertVisible: "What insects live near a creek?"
+- extendedWaitUntil:
+    visible: "What insects live near a creek?"
+    timeout: 15000
 - tapOn:
     id: "peri-chat-close"
 - assertNotVisible:
@@ -108,8 +118,62 @@ appId: com.peripateticware.app
 - tapOn:
     id: "reflection-input"
 - inputText: "The creek water was clearer than I expected."
+# The submit button sits right below the reflection box — exactly where the
+# keyboard (or, on Android, the Gboard toolbar strip above the keys) covers
+# it on BOTH platforms. A real iOS run showed the flow "stuck" on Reflect
+# with a stray "i" typed into the reflection field: Maestro's tap landed on
+# the button's coordinate, which the keyboard had by then covered with its
+# own "i" key. A real Android run showed the equivalent: the tap landed on
+# a Gboard toolbar icon instead of the button, launching Gboard's own
+# Settings activity (its "Theme" picker, confirmed via logcat — a
+# com.google.android.inputmethod.latin component, NOT the OS Settings app,
+# despite looking like a system screen) — android:windowSoftInputMode=
+# "adjustResize" (AndroidManifest.xml) resizes the window so the button
+# isn't technically hidden, but doesn't guarantee it clears Gboard's own
+# toolbar row above the keys. Same root cause on both platforms: the button
+# is reachable per the accessibility tree without actually being clear of
+# on-screen keyboard chrome. Two workarounds were tried and both failed on
+# iOS (same reasoning applies to why they'd fail identically on Android):
+#   - `hideKeyboard` errored outright on iOS ("doesn't expose a standard
+#     dismiss action") — this `multiline` TextInput has no return key to
+#     blur on. Android's hideKeyboard command doesn't hit that specific
+#     error (Android can always request a keyboard hide at the OS level),
+#     so it's used here instead of a custom accessory view.
+#   - `scrollUntilVisible` silently no-op'd: the button already registers
+#     as "visible" per the accessibility tree (bounds-wise, same
+#     coordinates with or without a real scroll) even while a real pixel
+#     sits under the keyboard/toolbar, so Maestro never actually issued a
+#     scroll gesture.
+# Also a real UX gap, not just a test artifact — a student mid-reflection
+# had no way to see the button either — so fixed at the source in
+# app/activity/[id].tsx: the reflection TextInput now has an iOS
+# InputAccessoryView "Done" bar (the standard pattern for a multiline field
+# with no return key). Maestro's `hideKeyboard` command still doesn't
+# recognize a custom accessory view as a "standard dismiss action" on iOS
+# (still fails the same way even with the bar present), so iOS taps the
+# bar's own testID directly instead — same effect (Keyboard.dismiss()),
+# just not routed through Maestro's built-in heuristic. Android has no
+# InputAccessoryView (unsupported there) and doesn't need one — its
+# `hideKeyboard` actually dismisses Gboard outright.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: "reflection-input-done"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - hideKeyboard
 - tapOn: "Submit field work"
-- assertVisible: "Submitted! 🎉"
+# native Alert (app/activity/[id].tsx: Alert.alert(t('...submittedTitle',
+# 'Submitted! 🎉'), ...)). Match the title without the trailing emoji —
+# Android's a11y tree renders it as "Submitted! ?" so an exact match never
+# succeeds there — and allow time for the submit round-trip to prod.
+- extendedWaitUntil:
+    visible: "Submitted!.*"
+    timeout: 25000
 - tapOn: "Done"
 - assertVisible:
     id: "discover-screen"

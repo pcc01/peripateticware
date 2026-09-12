@@ -15,7 +15,14 @@
     "test:maestro:all-devices": "powershell -ExecutionPolicy Bypass -File scripts/run-maestro-all-devices.ps1",
     "test:ios:preflight": "bash scripts/test-preflight-ios.sh",
     "test:ios:all-devices": "bash scripts/run-tests-ios.sh",
-    "test:maestro:offline-capture": "powershell -ExecutionPolicy Bypass -File scripts/run-offline-capture-test.ps1"
+    "test:maestro:offline-capture": "powershell -ExecutionPolicy Bypass -File scripts/run-offline-capture-test.ps1",
+    "i18n:extract": "npx --yes i18next-parser --config i18next-parser.config.cjs",
+    "i18n:check": "python -X utf8 scripts/localize.py check --non-interactive",
+    "i18n:translate": "python -X utf8 scripts/localize.py translate --non-interactive",
+    "i18n:review": "python -X utf8 scripts/localize.py review --flagged-only --non-interactive",
+    "i18n:redrive": "python -X utf8 scripts/localize.py redrive --non-interactive --use-mt --use-lara --use-deepl",
+    "i18n:publish": "python -X utf8 scripts/localize.py publish --non-interactive",
+    "i18n:run-all": "python -X utf8 scripts/localize.py run-all --non-interactive"
   },
   "dependencies": {
     "@expo-google-fonts/dm-mono": "^0.2.3",

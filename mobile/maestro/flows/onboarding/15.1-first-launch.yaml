@@ -16,13 +16,21 @@ appId: com.peripateticware.app
 ---
 - launchApp:
     clearState: true
-- assertVisible:
-    id: "onboarding-splash"
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-splash-cta"
+    timeout: 15000
 - tapOn:
     id: "onboarding-splash-cta"
 
-- assertVisible:
-    id: "onboarding-name"
+# Wait on the leaf control, not the wrapper testID: onboarding-name /
+# onboarding-location / onboarding-first-activity are <View> testIDs that
+# don't surface in iOS's accessibility tree (see onboarding-skip.yaml's
+# matching comment — this was failing every iOS run here too).
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-name-input"
+    timeout: 20000
 - tapOn:
     id: "onboarding-name-input"
 - inputText: "Maestro Tester"
@@ -35,23 +43,29 @@ appId: com.peripateticware.app
 - tapOn:
     id: "onboarding-name-cta"
 
-- assertVisible:
-    id: "onboarding-location"
 # Skip rather than Allow — avoids a real OS location permission dialog
 # blocking the run (see maestro/flows/capture/12.1-note-capture.yaml's
 # comment on why that dialog is worth avoiding when it isn't the point of
 # this flow).
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-location-skip"
+    timeout: 15000
 - tapOn:
     id: "onboarding-location-skip"
 
-- assertVisible:
-    id: "onboarding-first-activity"
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-first-activity-open"
+    timeout: 15000
 - tapOn:
     id: "onboarding-first-activity-open"
 
 # Tour-then-login: lands on the real login screen, not /(tabs).
-- assertVisible:
-    id: "login-screen"
+- extendedWaitUntil:
+    visible:
+      id: "login-screen"
+    timeout: 15000
 
 # Relaunching (still no login) should NOT show onboarding again — the
 # `@ppw_has_onboarded` flag set at the end of the tour persists across

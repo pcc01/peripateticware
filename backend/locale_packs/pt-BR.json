@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "DETALHES",
-      "discoveryLabel": "🔎 CAÇA AO TESOURO",
-      "discoveryObjectiveLabel": "OBJETIVO",
-      "discoveryRequirementsLabel": "VOCÊ PRECISARÁ DOCUMENTAR",
+      "discoveryLabel": "🔍 CAÇA AO TESOURO",
+      "discoveryObjectiveLabel": "Objetivo",
+      "discoveryRequirementsLabel": "Você precisará documentar",
       "discoveryRequirementsSpeech": "Você precisará documentar isso com {{items}}.",
-      "discoverySuccessLabel": "COMO É O SUCESSO",
+      "discoverySuccessLabel": "Sucesso parece com",
       "periIntro": "Faça o seguinte hoje. Leia atentamente antes de sair.",
       "startCta": "Estou pronto - vamos lá"
     },
@@ -39,7 +39,7 @@
     "orient": {
       "defaultTarget": "Olhe ao redor e anote o que você vê",
       "periText": "Chegaste. Leve um momento para observar o seu ambiente antes de começar.",
-      "phaseLabel": "FASE 1 · ORIENTAÇÃO",
+      "phaseLabel": "FASE 1 · ORIENTAR",
       "readyCta": "Eu estou alinhado — comece a consulta",
       "targetsLabel": "META: Translation from English to Brazilian Portuguese",
       "title": "Chegar e Observar"
@@ -54,7 +54,7 @@
       "placeholder": "Escreva sua reflexão aqui...",
       "prompt": "O que aprendeu aqui que um livro de texto não pudesse ensinar?",
       "saveCta": "Salve para mais tarde",
-      "savedBody": "Seu progresso está salvo — volte sempre para adicionar mais antes de enviar.",
+      "savedBody": "Seu progresso foi salvo — volte quando quiser para adicionar mais antes de enviar.",
       "savedTitle": "Salvo",
       "submitCta": "Enviar trabalho de campo",
       "submitted": "Aprovado ✓",
@@ -63,6 +63,9 @@
       "title": "Faça Sentido",
       "yourReflectionLabel": "SUA REFLEXÃO"
     }
+  },
+  "calendar": {
+    "empty": "Nenhum evento no calendário para este período."
   },
   "camera": {
     "allowAccess": "Acesso permitido",
@@ -101,10 +104,6 @@
       "video": "Vídeo"
     },
     "notePlaceholder": "Observa o que você percebeu...",
-    "offline": {
-      "body": "Armazenado no seu dispositivo e será carregado quando você se conectar novamente.",
-      "title": "Salvo offline"
-    },
     "preview": {
       "pause": "Pausa",
       "play": "Jogar",
@@ -126,24 +125,73 @@
     "title": "Adicionar evidência",
     "uploadFailed": {
       "title": "Falha na upload"
-    },
-    "uploading": "Carregando..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "Não foi possível carregar o calendário.",
+    "title": "{{placeholder}}",
+    "titleWithName": "{{name}}'s Calendário"
   },
   "common": {
     "activity": "Atividade",
     "activityPlural": "Atividades",
+    "add": "Adicionar",
+    "approve": "Aprovar",
     "back": "Voltar",
     "cancel": "Cancelar",
     "captureLabel": "Evidência de registro",
     "close": "Fechar",
+    "continue": "Continuar",
+    "deny": "Negar",
     "done": "Concluído",
     "error": "Erro",
     "journalLabel": "Notas de campo",
     "ok": "Aceito",
+    "reject": "Recusar",
+    "remove": "Remover",
     "tryAgain": "Tente novamente"
   },
+  "createScavengerHunt": {
+    "bloomLabel": "Nível de Aprendizado",
+    "captureLocation": "Use minha localização atual",
+    "captureStop": "📍 Capture uma parada aqui",
+    "difficultyLabel": "Dificuldade (1-4)",
+    "durationLabel": "Tempo estimado (minutos)",
+    "gradeLabel": "Nível de dificuldade",
+    "locationCaptured": "Localização capturada ({{lat}}, {{lng}})",
+    "locationDenied": "Localização é necessária para capturar onde este desafio está.",
+    "locationError": "Não foi possível obter sua localização. Tente novamente.",
+    "locationNameLabel": "LOCATION NAME",
+    "locationNamePlaceholder": "Riverside Park, entrada norte",
+    "locationTimeout": "Não conseguiu obter um fixo do GPS dentro de 15 segundos — vá para um local com uma visão mais clara do céu e tente novamente.",
+    "minutesShort": "{{n}}m",
+    "modeLabel": "Caça tipo",
+    "modeLocation": "Este local exato",
+    "modeTask": "Qualquer lugar onde eles possam encontrá-lo",
+    "multiStep": "Rota de vários passos",
+    "noLimit": "Sem limite",
+    "objectiveLabel": "O que eles devem aprender?",
+    "objectivePlaceholder": "Identificar espécies de árvores nativas pela forma da folha",
+    "oneSpot": "Um lugar",
+    "publish": "Publicar desafio",
+    "saveError": "Não foi possível criar esta atividade.",
+    "stepsLabel": "Quantas paradas?",
+    "stopNameDefault": "Pare {{n}}",
+    "stopsHint": "Andar até cada parada e capturá-la. Os estudantes recebem um mapa com uma seta de direção — nada sobre sua localização sai do telefone deles.",
+    "subjectLabel": "Assunto",
+    "successBody": "Estudantes podem tentar esse desafio agora.",
+    "successLabel": "COMO VOCÊ SABE QUE ELES CONSEGUIRAM? (OPCIONAL)",
+    "successPlaceholder": "{{placeholder}}Foto clara do item mais uma frase explicando por que ela se encaixa",
+    "successTitle": "Publicado!",
+    "taskLabel": "O que os alunos devem fazer?",
+    "taskPlaceholder": "Descreva o que encontrar, fazer ou observar...",
+    "timeLimitLabel": "TEMPO LIMITE AO COMEÇAR (OPCIONAL)",
+    "title": "Nova Caçada",
+    "titleLabel": "Desafio",
+    "titlePlaceholder": "A mistério da Carvalho"
+  },
   "discover": {
-    "empty": "Atividades ainda não estão disponíveis - sua professor(a) adicionará algumas logo.",
+    "empty": "Ainda não há atividades — seu professor adicionará algumas em breve.",
     "loadError": "Não foi possível carregar atividades",
     "offlineBanner": "DESCONECTADO - mostrando atividades armazenadas",
     "periTextEmpty": "Procuramos algo para explorar perto de você.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "CRÈCERES",
+    "childrenTitle": "Crianças",
     "empty": "Nenhum filho adicionado ainda. Adicione um filho na aplicação web para ver o seu progresso aqui.",
     "gradeLabel": "NOTA {{grade}}",
     "loadError": "Não foi possível carregar seu painel.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "Painel",
     "title": "Painel de Aprendizagem em Casa"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "Adicionar outra criança",
+    "allSet": "Você está pronto!",
+    "allSetBody": "Vá para o aplicativo na web para criar sua primeira atividade ao ar livre — Peri sugerirá perguntas de inquisição aristotélica personalizadas para sua localização e assunto.",
+    "childNamePlaceholder": "Criança {{n}} nome",
+    "goToDashboard": "Ir para o painel",
+    "noChildrenError": "Adicione pelo menos uma criança.",
+    "selectState": "Selecione seu estado",
+    "selectStateOptional": "— Selecione seu estado (opcional) —",
+    "skipSetup": "Pular configuração",
+    "someFailedError": "Algumas crianças não puderam ser salvas automaticamente — você pode adicioná-las mais tarde pelo aplicativo da web.",
+    "stateFootnote": "35 estados dos EUA exigem que os pais que praticam a educação domiciliar mantenham registros de aprendizagem — o Peripateticware gera relatórios automaticamente a partir do seu registro de atividades.",
+    "step1": "Adicionar Crianças",
+    "step2": "Seu Estado",
+    "step3": "Primeira Atividade",
+    "welcomeSubtitle": "Vamos te configurar em 3 passos rápidos.",
+    "welcomeTitle": "Bem-vindo! 🌿",
+    "whichState": "Em qual estado você faz homeschooling?",
+    "whichStateBody": "Isso ajuda a mostrar os requisitos de relatório de estado corretos. Você pode alterar isso a qualquer momento.",
+    "whoTeaching": "Quem você está ensinando?",
+    "whoTeachingBody": "Adicione o nome e a série de cada criança. Você pode adicionar mais crianças depois pelo aplicativo da web."
   },
   "journal": {
     "draft": "Rascunho",
@@ -187,8 +258,12 @@
     "minutesSecondsFormat": "{{m}}m {{s}}s",
     "mySummaryFinished": "Você está classificado em {{rank}}. Terminou em {{time}}.",
     "mySummaryInProgress": "Você está classificado em {{rank}}. Até agora, possui {{count}} peças de evidência.",
+    "mySummaryInProgress_one": "Você está classificado {{rank}}. Você tem {{count}} peças de evidência até agora.",
+    "mySummaryInProgress_other": "Você está classificado {{rank}}. Você tem {{count}} peças de evidência até agora.",
     "secondsFormat": "{{s}}s",
     "stepsSoFar": "{{count}} peças de evidência até agora",
+    "stepsSoFar_one": "{{count}} peças de evidência até agora",
+    "stepsSoFar_other": "{{count}} peças de evidência até agora",
     "you": "Você"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "Senha",
     "passwordReset": {
+      "backToLogin": "Voltar para o login",
       "body": "Contate seu professor para redefinir sua senha.",
+      "checkInbox": "Verifique sua caixa de entrada",
+      "checkInboxBody": "Se houver uma conta para {{email}}, você receberá um link de redefinição de senha em breve. Ele expira em 60 minutos.",
+      "missingEmail": "Por favor, digite seu email.",
+      "requestFailed": "Algo deu errado. Por favor, tente novamente.",
+      "sendLink": "Enviar link de redefinição",
       "title": "Senha de recuperação"
     },
     "showPassword": "Mostrar senha",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "Sem filhos vinculados ainda. Vincule um filho na aplicação web para ver seu progresso aqui.",
     "lastActive": "Última atividade: {{date}}",
+    "linkChild": {
+      "body": "Digite o endereço de e-mail Peripateticware da sua criança. Eles precisarão aprovar o pedido em seu próprio aplicativo antes que o progresso apareça aqui.",
+      "emailPlaceholder": "{{placeholder}} Endereço de e-mail da criança",
+      "genericError": "Não foi possível vincular essa conta. Verifique o e-mail e tente novamente.",
+      "headerButton": "+ Vincular uma criança",
+      "pendingBody": "{{name}} precisa aprovar isso em seu próprio aplicativo antes que seu progresso apareça no seu painel.",
+      "pendingTitle": "{{placeholder}}",
+      "submit": "{{placeholder}}: Ligue a criança",
+      "successBody": "{{name}} agora aparece no seu painel.",
+      "successTitle": "Conectado!",
+      "title": "Vincular uma criança"
+    },
     "loadError": "Não foi possível carregar seu painel.",
+    "messages": {
+      "empty": "Ainda não há mensagens de professores.",
+      "reply": "Responder",
+      "replyError": "Não foi possível enviar sua resposta.",
+      "replyPlaceholder": "Escreva sua resposta…",
+      "replyTo": "Responder a {{name}}",
+      "send": "Enviar",
+      "title": "Mensagens"
+    },
+    "notifications": {
+      "empty": "Você está atualizado.",
+      "title": "Notificações"
+    },
+    "pendingBadge": "Aguardando aprovação",
+    "pendingBody": "{{name}} precisa aprovar isso em seu próprio aplicativo antes que seu progresso apareça aqui.",
     "progressUnavailable": "Não foi possível carregar o progresso deste filho.",
     "stats": {
       "activities": "Atividades",
@@ -262,7 +370,17 @@
       "hours": "Horas"
     },
     "tabLabel": "Crianças",
-    "title": "Meus Filhos"
+    "title": "Meus Filhos",
+    "unlink": {
+      "action": "Desvincular",
+      "cancelRequest": "Cancelar solicitação",
+      "confirmAction": "Desvincular",
+      "confirmBody": "Você deixará de ver o progresso de {{name}}. Você pode enviar um novo pedido mais tarde.",
+      "confirmBodyPending": "Esta cancela a solicitação pendente.",
+      "confirmTitle": "Desvincular {{name}}?",
+      "error": "Não foi possível desvincular agora. Tente novamente."
+    },
+    "viewCalendar": "📅 Calendar"
   },
   "perichat": {
     "closeChat": "Fechar chat",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "Desafios criados por estudantes ainda não existem - proponha um para iniciar uma tabela de liderança.",
     "leaderboardsLabel": "CLASSIFICAÇÕES",
     "participantCount": "{{count}} participando",
+    "participantCount_one": "{{count}} participando",
+    "participantCount_other": "{{count}} participando",
     "proposedBy": "por {{name}}",
     "stats": {
       "activities": "Atividades",
@@ -330,6 +450,19 @@
       "downloadFailed": "Não foi possível baixar esta língua. Verifique sua conexão e tente novamente."
     },
     "languageLabel": "PORTUGUÊS",
+    "parentRequests": {
+      "actionError": "Por favor, tente novamente.",
+      "body": "{{email}} deseja ver seu progresso como seu {{relationship}}",
+      "label": "Solicitações de pais"
+    },
+    "password": {
+      "button": "{{placeholder}}",
+      "desc": "Enviaremos um link por email para você redefinir sua senha.",
+      "error": "Por favor, tente novamente.",
+      "sentBody": "Enviamos um link de redefinição de senha para {{email}}. Ele expira em 60 minutos.",
+      "sentTitle": "Verifique sua caixa de entrada"
+    },
+    "passwordLabel": "Senha",
     "role": {
       "student": "Aluno"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "VOZ"
   },
+  "studentCalendar": {
+    "loadError": "Não foi possível carregar seu calendário.",
+    "title": "Meu Calendário"
+  },
   "tabs": {
     "achievements": "Conquistas",
     "discover": "Descubra",
-    "progress": "Avanço",
     "propose": "Proporça",
     "settings": "Configurações"
   },
+  "teacherActivities": {
+    "empty": "Ainda não há atividades publicadas.",
+    "loadError": "Não foi possível carregar as atividades.",
+    "title": "Atividades Ativas"
+  },
+  "teacherActivity": {
+    "daysAgo": "{{n}} atrás",
+    "descriptionLabel": "Descrição",
+    "gradeLabel": "{{grade}}",
+    "loadError": "Não foi possível carregar esta atividade.",
+    "minutesLabel": "{{n}} min",
+    "noSubmissions": "Nenhum estudante começou esta atividade ainda.",
+    "objectivesLabel": "Objetivos de Aprendizagem",
+    "submissionsLabel": "Envios"
+  },
+  "teacherCalendar": {
+    "addTitle": "Novo evento do calendário",
+    "dateLabel": "DATA (AAAA-MM-DD)",
+    "deleteError": "Não foi possível remover este evento.",
+    "deleteTitle": "Remover \"{{title}}\"?",
+    "descriptionLabel": "Detalhes (OPCIONAL)",
+    "descriptionPlaceholder": "Qualquer detalhe adicional…",
+    "loadError": "Não foi possível carregar o calendário.",
+    "noClasses": "Você ainda não possui nenhuma aula — configure uma no aplicativo da web primeiro.",
+    "saveError": "Não foi possível criar este evento.",
+    "title": "{{placeholder}}",
+    "titleLabel": "Título",
+    "titlePlaceholder": "{{placeholder}}",
+    "typeLabel": "Digite"
+  },
+  "teacherClasses": {
+    "empty": "Ainda não há classes — use o aplicativo web para criar uma.",
+    "loadError": "Não foi possível carregar as classes.",
+    "title": "Turmas"
+  },
   "teacherDashboard": {
     "loadError": "Não foi possível carregar sua tabela de bordo.",
+    "newScavengerHunt": "+ Caça ao tesouro",
     "noActivities": "Atividades não criadas ainda — crie uma usando a versão web.",
     "recentLabel": "ATividades Recentes",
     "stats": {
       "active": "Ativo",
+      "calendar": "{{placeholder}}",
       "classes": "Aulas",
+      "messages": "Mensagens",
       "pending": "Aguardando",
+      "proposals": "Propostas",
       "students": "Alunos"
     },
     "tabLabel": "Painel",
     "title": "Painel do Professor",
     "webHint": "Aulas, turmas e rubricaques utilizem a aplicação web."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "{{placeholder}}",
+    "audienceAllStudents": "Todos os alunos",
+    "audienceLabel": "ENVIAR PARA",
+    "bodyLabel": "Mensagem",
+    "bodyPlaceholder": "Escreva sua mensagem…",
+    "classroomLabel": "{{placeholder}}",
+    "composeTitle": "Nova mensagem",
+    "empty": "Ainda não há conversas.",
+    "loadError": "Não foi possível carregar mensagens.",
+    "orOneFamily": "Adicionar família:",
+    "replyPlaceholder": "Escreva uma resposta…",
+    "send": "Enviar",
+    "sendError": "Não foi possível enviar esta mensagem.",
+    "subjectLabel": "Assunto",
+    "subjectPlaceholder": "{{placeholder}}: Permissão para saída de campo",
+    "title": "Mensagens",
+    "willMessageParent": "Envia para os pais de {{name}}."
+  },
+  "teacherProposals": {
+    "actionError": "Por favor, tente novamente.",
+    "approveBody": "Esta publica isso como uma atividade real que os alunos podem tentar agora mesmo.",
+    "approveTitle": "Aprovar \"{{title}}\"?",
+    "byStudent": "Por {{name}} · {{subject}}",
+    "empty": "Não há propostas à sua espera.",
+    "loadError": "Não foi possível carregar propostas.",
+    "noteLabel": "Nota para você",
+    "rejectBody": "Eles verão isso e podem revisar + enviar novamente.",
+    "rejectPlaceholder": "Demasiado perto de outra atividade — tente um marco diferente",
+    "rejectTitle": "Feedback para {{name}}",
+    "sendFeedback": "Enviar",
+    "title": "Propostas de Alunos"
+  },
+  "teacherSubmissions": {
+    "empty": "Ainda não há envio.",
+    "loadError": "Não foi possível carregar as publicações.",
+    "title": "Envios"
+  },
+  "wayfinding": {
+    "allFound": "Todos os pontos encontrados! 🎉",
+    "nextStop": "Próxima parada",
+    "noFix": "Sem GPS",
+    "progress": "{{reached}} de {{total}} paradas",
+    "skip": "Pular esta parada opcional"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "Suas fotos e anotações enviadas aparecem no mapa do seu professor no local onde foram capturadas.",
+      "title": "Marcar suas fotos com onde foram tiradas"
+    },
+    "D": {
+      "gets": "Em uma saída supervisionada, seu professor pode ver onde você está em tempo real enquanto a sessão estiver em andamento.",
+      "title": "Mostrar você no mapa do professor durante a viagem"
+    },
+    "E": {
+      "gets": "A classe pode comparar as rotas que todos tomaram após a caçada.",
+      "title": "Gravar o caminho que você caminha"
+    },
+    "allow": "Permitir",
+    "eyebrow": "SEU PROFESSOR ATIVOU ISSO — SUA ESCOLHA",
+    "kept": "Manter: {{copy}}",
+    "notNow": "Agora não"
   }
 }

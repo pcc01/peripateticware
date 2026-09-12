@@ -55,7 +55,8 @@ export default function ProgressScreen() {
             ].map((stat) => (
               <TouchableOpacity
                 key={stat.key}
-                testID={stat.key === 'calendar' ? 'progress-calendar-open' : undefined}
+                testID={stat.key === 'calendar' ? 'progress-calendar-open' : `progress-stat-${stat.key}`}
+                accessibilityLabel={`${stat.value} ${stat.label}`}
                 onPress={stat.onPress}
                 disabled={!stat.onPress}
                 activeOpacity={stat.onPress ? 0.7 : 1}

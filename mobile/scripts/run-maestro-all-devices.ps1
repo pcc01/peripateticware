@@ -27,6 +27,18 @@
 #                      under maestro/flows/)
 #   -StudentEmail     Overrides STUDENT_EMAIL (default: student@test.local)
 #   -StudentPassword  Overrides STUDENT_PASSWORD (default: Test1234!)
+#   -WayfindingActivity / -GeofenceActivity
+#                     Activity titles the GPS flows open (default: the local
+#                     backend seed titles). Set to the prod-authored titles
+#                     when testing against peripateticware.com.
+#   -FlowsExtra       Extra flow files/folders (relative to mobile/) appended
+#                     to -Flows, e.g. the maestro/flows-prod/ GPS flows.
+#   -ResetBetweenDevices
+#                     Pause after each device and print the server-state reset
+#                     command (prod multi-device runs — see PROD_E2E_GUIDE.md).
+#
+# For a prod run against peripateticware.com, use scripts\run-maestro-prod.ps1,
+# which wraps this script with the right flags.
 #
 # Known issues:
 #   - 2-tab-navigation.yaml has historically caught a real app bug (an
@@ -55,7 +67,24 @@ param(
     [string]$Devices = "",
     [string]$Flows = "",
     [string]$StudentEmail = "student@test.local",
-    [string]$StudentPassword = "Test1234!"
+    [string]$StudentPassword = "Test1234!",
+    # Activity titles the wayfinding/geofence flows open. Defaults match the
+    # local backend seeds (startup.seed_wayfinding_demo / seed default). Pass
+    # the prod-authored titles when running against peripateticware.com — see
+    # PROD_E2E_GUIDE.md. Threaded to `maestro test` as -e vars; the flows
+    # declare the same names under `env:` so local/CI runs are unaffected.
+    [string]$WayfindingActivity = "Campus Wayfinding Hunt",
+    [string]$GeofenceActivity   = "Creek Habitat Study",
+    # Extra flow files/folders (comma-separated, relative to mobile/) appended
+    # to the -Flows selection. See the -FlowsExtra handling below.
+    [string]$FlowsExtra = "",
+    # Prod only: the wayfinding/geofence flows need a resumed-session reset
+    # between devices sharing one student account (startActivitySession is
+    # "start or resume" — device 2 would open straight to "all stops found").
+    # When set, the per-device loop pauses after each device and prints the
+    # reset command for you to run, then waits for ENTER. No-op against a
+    # fresh-per-run CI backend.
+    [switch]$ResetBetweenDevices
 )
 
 Set-StrictMode -Version Latest
@@ -144,6 +173,17 @@ if ($Flows) {
     # loose .yaml files directly in a given folder, not the helper sitting
     # at maestro/flows/ root.
     $flowFolders = Get-ChildItem $flowsRoot -Directory | ForEach-Object { $_.FullName }
+}
+# -FlowsExtra: additional flow files or folders, resolved relative to the
+# mobile/ root (Get-Location), appended to whatever -Flows / the default
+# selected. Used by run-maestro-prod.ps1 to swap in the prod-coordinate
+# wayfinding/geofence flows under maestro/flows-prod/ while still running the
+# standard read-only folders from maestro/flows/.
+if ($FlowsExtra) {
+    $flowFolders += ($FlowsExtra -split ",") | ForEach-Object {
+        $p = $_.Trim()
+        if ([System.IO.Path]::IsPathRooted($p)) { $p } else { Join-Path (Get-Location) $p }
+    }
 }
 Write-Host "Flow folders:" -ForegroundColor DarkGray
 $flowFolders | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
@@ -404,6 +444,8 @@ foreach ($row in $matrix) {
             & maestro test @flowFolders `
                 -e STUDENT_EMAIL=$StudentEmail `
                 -e STUDENT_PASSWORD=$StudentPassword `
+                -e WAYFINDING_ACTIVITY=$WayfindingActivity `
+                -e GEOFENCE_ACTIVITY=$GeofenceActivity `
                 --format junit --output $junitPath `
                 2>&1 | Tee-Object -FilePath (Join-Path $reportDir "console.log")
             if ($LASTEXITCODE -eq 0) { $testOk = $true }
@@ -441,6 +483,27 @@ foreach ($row in $matrix) {
     Write-Host "  -> $label  (${elapsed}s)" -ForegroundColor $color
 
     $results[$row.AvdName] = @{ Pass = $testOk; Seconds = $elapsed; Api = $row.ApiLevel }
+
+    # Prod: the wayfinding/geofence flows just consumed this student's
+    # session for $WayfindingActivity. startActivitySession is "start or
+    # resume", so the next device would open straight to "all stops found"
+    # and fail every intermediate assertion. Pause here for the tester to
+    # reset server state (scripts/reset-wayfinding-prod.sql) before the next
+    # device boots. Skipped after the last device.
+    if ($ResetBetweenDevices -and $row -ne $matrix[-1]) {
+        # Uses $env:PROD_SSH / $env:DB_USER / $env:DB_NAME (set them per
+        # PROD_E2E_GUIDE.md §0) so no host or account detail lives in the repo.
+        $sshTarget = if ($env:PROD_SSH) { $env:PROD_SSH } else { '<user>@<prod-host>' }
+        $dbUser    = if ($env:DB_USER)  { $env:DB_USER }  else { '<db-user>' }
+        $dbName    = if ($env:DB_NAME)  { $env:DB_NAME }  else { '<db-name>' }
+        Write-Host ""
+        Write-Host "  -- RESET REQUIRED before the next device --------------------" -ForegroundColor Yellow
+        Write-Host "  Run this against the prod DB, then press ENTER to continue:" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "    Get-Content scripts\reset-wayfinding-prod.sql | ssh $sshTarget `"docker exec -i peripateticware-postgres psql -U $dbUser -d $dbName -v activity='$WayfindingActivity'`"" -ForegroundColor Gray
+        Write-Host ""
+        Read-Host "  [ENTER] when the reset has run"
+    }
 }
 
 # ── Summary ───────────────────────────────────────────────────────────────────

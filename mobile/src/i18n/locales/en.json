@@ -137,7 +137,11 @@
     "done": "Done",
     "error": "Error",
     "remove": "Remove",
-    "continue": "Continue"
+    "continue": "Continue",
+    "add": "Add",
+    "approve": "Approve",
+    "deny": "Deny",
+    "reject": "Reject"
   },
   "discover": {
     "periText_one": "{{count}} activity waiting for you. Where will you explore today?",
@@ -183,7 +187,10 @@
     "stateFootnote": "35 US states require homeschool parents to keep learning records — Peripateticware generates reports automatically from your activity log.",
     "allSetBody": "Head to the web app to create your first outdoor activity — Peri will suggest Aristotelian inquiry questions tailored to your location and subject.",
     "goToDashboard": "Go to dashboard",
-    "selectState": "Select your state"
+    "selectState": "Select your state",
+    "allSet": "You're all set!",
+    "welcomeSubtitle": "Let's get you set up in 3 quick steps.",
+    "whoTeachingBody": "Add each child's name and grade. You can add more children later from the web app."
   },
   "journal": {
     "title": "My Journal Entries",
@@ -206,7 +213,11 @@
     "secondsFormat": "{{s}}s",
     "minutesSecondsFormat": "{{m}}m {{s}}s",
     "mySummaryFinished": "You're ranked {{rank}}. You finished in {{time}}.",
-    "mySummaryInProgress": "You're ranked {{rank}}. You have {{count}} pieces of evidence so far."
+    "mySummaryInProgress": "You're ranked {{rank}}. You have {{count}} pieces of evidence so far.",
+    "mySummaryInProgress_one": "You're ranked {{rank}}. You have {{count}} pieces of evidence so far.",
+    "mySummaryInProgress_other": "You're ranked {{rank}}. You have {{count}} pieces of evidence so far.",
+    "stepsSoFar_one": "{{count}} pieces of evidence so far",
+    "stepsSoFar_other": "{{count}} pieces of evidence so far"
   },
   "liveTracking": {
     "tabLabel": "Live Tracking",
@@ -239,7 +250,13 @@
     },
     "passwordReset": {
       "title": "Password reset",
-      "body": "Contact your teacher to reset your password."
+      "body": "Contact your teacher to reset your password.",
+      "backToLogin": "Back to login",
+      "checkInbox": "Check your inbox",
+      "checkInboxBody": "If an account exists for {{email}}, you'll receive a password reset link shortly. It expires in 60 minutes.",
+      "missingEmail": "Please enter your email.",
+      "requestFailed": "Something went wrong. Please try again.",
+      "sendLink": "Send reset link"
     },
     "forgotPassword": "Forgot password?",
     "showPassword": "Show password",
@@ -279,7 +296,44 @@
       "activities": "Activities",
       "hours": "Hours",
       "engagement": "Engagement"
-    }
+    },
+    "linkChild": {
+      "body": "Enter your child's Peripateticware email address. They'll need to approve the request in their own app before their progress appears here.",
+      "emailPlaceholder": "Child's email address",
+      "genericError": "Could not link that account. Check the email and try again.",
+      "headerButton": "+ Link a child",
+      "pendingBody": "{{name}} needs to approve this from their own app before their progress appears on your dashboard.",
+      "pendingTitle": "Request sent",
+      "submit": "Link child",
+      "successBody": "{{name}} now appears on your dashboard.",
+      "successTitle": "Linked!",
+      "title": "Link a child"
+    },
+    "messages": {
+      "empty": "No messages from teachers yet.",
+      "reply": "Reply",
+      "replyError": "Could not send your reply.",
+      "replyPlaceholder": "Write your reply…",
+      "replyTo": "Reply to {{name}}",
+      "send": "Send",
+      "title": "Messages"
+    },
+    "notifications": {
+      "empty": "You're all caught up.",
+      "title": "Notifications"
+    },
+    "pendingBadge": "AWAITING APPROVAL",
+    "pendingBody": "{{name}} needs to approve this from their own app before their progress shows up here.",
+    "unlink": {
+      "action": "Unlink",
+      "cancelRequest": "Cancel request",
+      "confirmAction": "Unlink",
+      "confirmBody": "You'll stop seeing {{name}}'s progress. You can send a new request later.",
+      "confirmBodyPending": "This cancels the pending request.",
+      "confirmTitle": "Unlink {{name}}?",
+      "error": "Could not unlink right now. Try again."
+    },
+    "viewCalendar": "📅 Calendar"
   },
   "perichat": {
     "greeting": "I'm Peri. Ask me anything about the activity or what you're observing.",
@@ -305,7 +359,9 @@
     "leaderboardsLabel": "LEADERBOARDS",
     "leaderboardsEmpty": "No student-created challenges yet — propose one to start a leaderboard.",
     "participantCount": "{{count}} taking part",
-    "proposedBy": "by {{name}}"
+    "proposedBy": "by {{name}}",
+    "participantCount_one": "{{count}} taking part",
+    "participantCount_other": "{{count}} taking part"
   },
   "propose": {
     "periText": "Found something worth a challenge? Write it up for other students to discover.",
@@ -376,7 +432,20 @@
     "signOut": {
       "title": "Sign out",
       "confirm": "Are you sure?"
-    }
+    },
+    "parentRequests": {
+      "actionError": "Please try again.",
+      "body": "{{email}} wants to see your progress as your {{relationship}}.",
+      "label": "PARENT REQUESTS"
+    },
+    "password": {
+      "button": "Reset password",
+      "desc": "We'll email you a link to set a new password.",
+      "error": "Please try again.",
+      "sentBody": "We've sent a password reset link to {{email}}. It expires in 60 minutes.",
+      "sentTitle": "Check your inbox"
+    },
+    "passwordLabel": "PASSWORD"
   },
   "tabs": {
     "discover": "Discover",
@@ -415,8 +484,12 @@
       "students": "Students",
       "classes": "Classes",
       "active": "Active",
-      "pending": "Pending"
-    }
+      "pending": "Pending",
+      "calendar": "Calendar",
+      "messages": "Messages",
+      "proposals": "Proposals"
+    },
+    "newScavengerHunt": "+ Scavenger hunt"
   },
   "teacherSubmissions": {
     "title": "Submissions",
@@ -447,5 +520,104 @@
       "title": "Record the path you walk",
       "gets": "The class can compare the routes everyone took after the hunt."
     }
+  },
+  "calendar": {
+    "empty": "Nothing on the calendar for this range."
+  },
+  "childCalendar": {
+    "loadError": "Could not load the calendar.",
+    "title": "Calendar",
+    "titleWithName": "{{name}}'s Calendar"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "LEARNING LEVEL",
+    "captureLocation": "📍 Use my current location",
+    "captureStop": "📍 Capture a stop here",
+    "difficultyLabel": "DIFFICULTY (1-4)",
+    "durationLabel": "ESTIMATED TIME (MINUTES)",
+    "gradeLabel": "GRADE LEVEL",
+    "locationCaptured": "📍 Location captured ({{lat}}, {{lng}})",
+    "locationDenied": "Location permission is needed to capture where this challenge is.",
+    "locationError": "Couldn't get your location. Try again.",
+    "locationNameLabel": "LOCATION NAME",
+    "locationNamePlaceholder": "e.g. Riverside Park, north entrance",
+    "locationTimeout": "Couldn't get a GPS fix within 15 seconds — try moving somewhere with a clearer view of the sky, then try again.",
+    "minutesShort": "{{n}}m",
+    "modeLabel": "HUNT TYPE",
+    "modeLocation": "This exact spot",
+    "modeTask": "Anywhere they can find it",
+    "multiStep": "Multi-step route",
+    "noLimit": "No limit",
+    "objectiveLabel": "WHAT SHOULD THEY LEARN?",
+    "objectivePlaceholder": "e.g. Identify native tree species by leaf shape",
+    "oneSpot": "One spot",
+    "publish": "Publish challenge",
+    "saveError": "Could not create this activity.",
+    "stepsLabel": "HOW MANY STOPS?",
+    "stopNameDefault": "Stop {{n}}",
+    "stopsHint": "Walk to each stop and capture it. Students get a map with a bearing arrow — nothing about their location leaves their phone.",
+    "subjectLabel": "SUBJECT",
+    "successBody": "Students can attempt this challenge now.",
+    "successLabel": "HOW DO YOU KNOW THEY SUCCEEDED? (OPTIONAL)",
+    "successPlaceholder": "e.g. A clear photo of the item plus one sentence explaining why it fits",
+    "successTitle": "Published!",
+    "taskLabel": "WHAT SHOULD STUDENTS DO?",
+    "taskPlaceholder": "Describe what to find, do, or observe…",
+    "timeLimitLabel": "TIME LIMIT ONCE STARTED (OPTIONAL)",
+    "title": "New Scavenger Hunt",
+    "titleLabel": "CHALLENGE TITLE",
+    "titlePlaceholder": "e.g. The Oak Tree Mystery"
+  },
+  "studentCalendar": {
+    "loadError": "Could not load your calendar.",
+    "title": "My Calendar"
+  },
+  "teacherCalendar": {
+    "addTitle": "New calendar event",
+    "dateLabel": "DATE (YYYY-MM-DD)",
+    "deleteError": "Could not remove this event.",
+    "deleteTitle": "Remove \"{{title}}\"?",
+    "descriptionLabel": "DETAILS (OPTIONAL)",
+    "descriptionPlaceholder": "Any extra detail…",
+    "loadError": "Could not load the calendar.",
+    "noClasses": "You don't have any classes yet — set one up in the web app first.",
+    "saveError": "Could not create this event.",
+    "title": "Calendar",
+    "titleLabel": "TITLE",
+    "titlePlaceholder": "e.g. Permission slips due",
+    "typeLabel": "TYPE"
+  },
+  "teacherMessages": {
+    "audienceAllParents": "All parents",
+    "audienceAllStudents": "All students",
+    "audienceLabel": "SEND TO",
+    "bodyLabel": "MESSAGE",
+    "bodyPlaceholder": "Write your message…",
+    "classroomLabel": "CLASSROOM",
+    "composeTitle": "New message",
+    "empty": "No conversations yet.",
+    "loadError": "Could not load messages.",
+    "orOneFamily": "or one family:",
+    "replyPlaceholder": "Write a reply…",
+    "send": "Send",
+    "sendError": "Could not send this message.",
+    "subjectLabel": "SUBJECT",
+    "subjectPlaceholder": "e.g. Field trip permission slip",
+    "title": "Messages",
+    "willMessageParent": "Sends to {{name}}'s parent(s)."
+  },
+  "teacherProposals": {
+    "actionError": "Please try again.",
+    "approveBody": "This publishes it as a real activity students can attempt right away.",
+    "approveTitle": "Approve \"{{title}}\"?",
+    "byStudent": "By {{name}} · {{subject}}",
+    "empty": "No proposals waiting on you.",
+    "loadError": "Could not load proposals.",
+    "noteLabel": "NOTE TO YOU",
+    "rejectBody": "They'll see this and can revise + resubmit.",
+    "rejectPlaceholder": "e.g. Too close to another activity — try a different landmark",
+    "rejectTitle": "Feedback for {{name}}",
+    "sendFeedback": "Send",
+    "title": "Student Proposals"
   }
 }

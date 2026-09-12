@@ -37,9 +37,12 @@ appId: com.peripateticware.app
 # maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
 # is a Maestro/XCTest accessibility-tree reliability gap after the
 # Discover tab mounts post-login, not slow data loading.
-- extendedWaitUntil:
-    visible: "Creek Habitat Study"
-    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 - tapOn: "Creek Habitat Study"
 - assertVisible:
     id: "activity-screen"

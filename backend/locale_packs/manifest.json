@@ -1,50 +1,50 @@
 {
   "ar": {
-    "updatedAt": "2026-08-20T16:48:34.073Z",
-    "version": "e47287b620e7"
+    "updatedAt": "2026-09-10T08:05:52.831118+00:00",
+    "version": "97f2f18e4e81"
   },
   "de": {
-    "updatedAt": "2026-08-20T16:48:34.077Z",
-    "version": "656231844949"
+    "updatedAt": "2026-09-10T08:05:52.831253+00:00",
+    "version": "f129c4e6f164"
   },
   "es": {
-    "updatedAt": "2026-08-20T16:48:34.069Z",
-    "version": "9b4adcd0e343"
+    "updatedAt": "2026-09-10T08:05:52.831357+00:00",
+    "version": "24228c579efd"
   },
   "fr": {
-    "updatedAt": "2026-08-20T16:48:34.071Z",
-    "version": "bc5dd3d5f48c"
+    "updatedAt": "2026-09-10T08:05:52.831567+00:00",
+    "version": "d7a7033155a1"
   },
   "fr-CA": {
-    "updatedAt": "2026-08-20T16:48:34.072Z",
-    "version": "1aedf69e8daa"
+    "updatedAt": "2026-09-10T08:05:52.831468+00:00",
+    "version": "9cf86f4afe9a"
   },
   "he": {
-    "updatedAt": "2026-08-20T16:48:34.076Z",
-    "version": "7d458135cab6"
+    "updatedAt": "2026-09-10T08:05:52.831679+00:00",
+    "version": "5f95587557bc"
   },
   "it": {
-    "updatedAt": "2026-08-20T16:48:34.077Z",
-    "version": "b4d3fdbd1306"
+    "updatedAt": "2026-09-10T08:05:52.831773+00:00",
+    "version": "f0276323d0c5"
   },
   "ja": {
-    "updatedAt": "2026-08-20T16:48:34.073Z",
-    "version": "38540740969c"
+    "updatedAt": "2026-09-10T08:05:52.831873+00:00",
+    "version": "0ba5c45b6bec"
   },
   "ko": {
-    "updatedAt": "2026-08-20T16:48:34.075Z",
-    "version": "959839c11a01"
+    "updatedAt": "2026-09-10T08:05:52.831973+00:00",
+    "version": "fcfa0684f6eb"
   },
   "pt-BR": {
-    "updatedAt": "2026-08-20T16:48:34.075Z",
-    "version": "13152c91fbb4"
+    "updatedAt": "2026-09-10T08:05:52.832080+00:00",
+    "version": "4f9453edb05d"
   },
   "tr": {
-    "updatedAt": "2026-08-20T16:48:34.078Z",
-    "version": "0f3b48f5a26c"
+    "updatedAt": "2026-09-10T08:05:52.832183+00:00",
+    "version": "e7ff4ab9a425"
   },
   "zh": {
-    "updatedAt": "2026-08-20T16:48:34.079Z",
-    "version": "8a1c477c5945"
+    "updatedAt": "2026-09-10T08:05:52.832287+00:00",
+    "version": "66a87092fbea"
   }
 }

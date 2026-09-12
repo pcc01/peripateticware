@@ -38,13 +38,17 @@ appId: com.peripateticware.app
 
 # 3.4 — activity cards show title, subject/duration, and location
 #
-# extendedWaitUntil, not plain assertVisible — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
-# is a Maestro/XCTest accessibility-tree reliability gap after the
-# Discover tab mounts post-login, not slow data loading.
-- extendedWaitUntil:
-    visible: "Creek Habitat Study"
-    timeout: 20000
+# scrollUntilVisible, not a bare wait — Discover lists every published
+# activity (~a dozen on prod), so the target card starts below the fold.
+# This also absorbs the post-login accessibility-tree lag the old
+# extendedWaitUntil covered, and is a no-op when the card is already on
+# screen (the small local seed).
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 # id, not text — see this file's header comment.
 - assertVisible:
     id: "activity-location"
@@ -54,7 +58,13 @@ appId: com.peripateticware.app
     from:
       id: "discover-list"
     direction: DOWN
-- assertVisible: "Creek Habitat Study"
+# refresh returns the list to the top — bring the card back into view
+- scrollUntilVisible:
+    element:
+      text: "Creek Habitat Study"
+    direction: DOWN
+    timeout: 25000
+    centerElement: true
 
 # 3.5 — tapping an activity card opens the Brief phase
 - tapOn: "Creek Habitat Study"

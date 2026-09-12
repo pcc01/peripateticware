@@ -2,11 +2,11 @@
   "activity": {
     "brief": {
       "detailsLabel": "تفاصيل",
-      "discoveryLabel": "🔎 البحث عن الكنز",
-      "discoveryObjectiveLabel": "الهدف",
-      "discoveryRequirementsLabel": "ستحتاج إلى توثيق",
-      "discoveryRequirementsSpeech": "ستحتاج إلى توثيق هذا باستخدام {{items}}.",
-      "discoverySuccessLabel": "هكذا يبدو النجاح",
+      "discoveryLabel": "🔍 بحث التنقيب",
+      "discoveryObjectiveLabel": "هدف",
+      "discoveryRequirementsLabel": "أنت ستحتاج إلى وثائق",
+      "discoveryRequirementsSpeech": "أنت ستحتاج إلى وثيقته مع {{items}}",
+      "discoverySuccessLabel": "نجاح",
       "periIntro": "هناك ما ستفعله أورد اليوم. قراءة محتوى بعضه قبل الخروج.",
       "startCta": "جاهز — للذهب"
     },
@@ -46,7 +46,7 @@
     },
     "reflect": {
       "emptySaveBody": "اكتب مرفق سريع للحفظ من قبل.",
-      "emptySubmitBody": "اكتب مرفق سريع للإطلاع قبل الارسال",
+      "emptySubmitBody": "أكتب تعليقًا سريعًا قبل الإرسال",
       "emptyTitle": "شيء أخر",
       "hint": "حفظ متاخدم هذه النشاط المفتوحة للإضافة الأخرى في المستقبل. إرسال من التقديم إلى علماءك وإغلاقه.",
       "periSpeech": "قريب من الانتهاء. كتابة شيئًا ستذكره من اليوم.",
@@ -63,6 +63,9 @@
       "title": "تصنيف العناية",
       "yourReflectionLabel": "تحليلك الجزئي"
     }
+  },
+  "calendar": {
+    "empty": "لا شيء على التقويم لهذا المدى"
   },
   "camera": {
     "allowAccess": "سمح للوصول",
@@ -101,10 +104,6 @@
       "video": "فيديو"
     },
     "notePlaceholder": "كتاب أنظر إلى...",
-    "offline": {
-      "body": "تم حفظ هذا على جهازك وسيتم رفعه عند الاتصال مرة أخرى.",
-      "title": "محفوظ بغير الاتصال"
-    },
     "preview": {
       "pause": "إيقاف",
       "play": "اعداد",
@@ -126,21 +125,70 @@
     "title": "إضافة الأمواjen",
     "uploadFailed": {
       "title": "رفض التحميل"
-    },
-    "uploading": "تحميل..."
+    }
+  },
+  "childCalendar": {
+    "loadError": "لم يتم تحميل التقويم.",
+    "title": "التقويم",
+    "titleWithName": "{{name}}‏'s‏ التقويم"
   },
   "common": {
     "activity": "مهام",
     "activityPlural": "ممارسات",
+    "add": "إضف",
+    "approve": "تأكيد",
     "back": "رجوع",
     "cancel": "إلغاء",
     "captureLabel": "سجل الأمواтен",
     "close": "إغلاق",
+    "continue": "استمر",
+    "deny": "رفض",
     "done": "مكتمل",
     "error": "خطأ",
     "journalLabel": "ملاحظات المنطقة",
     "ok": "نعم",
+    "reject": "رفض",
+    "remove": "حذف",
     "tryAgain": "عودة المحاولة"
+  },
+  "createScavengerHunt": {
+    "bloomLabel": "تعلم مستوى",
+    "captureLocation": "📍 استخدام موقعتي الحالي",
+    "captureStop": "📍 التقاط نقطة هنا",
+    "difficultyLabel": "مستوى الصعوبة (1-4)",
+    "durationLabel": "مدة المقدرة (دقيقة)",
+    "gradeLabel": "المرحلة الدراسية",
+    "locationCaptured": "موقعك ({{lat}}, {{lng}})",
+    "locationDenied": "مسموحية الموقع مطلوبة لالتقاط مكان هذا التحدي.",
+    "locationError": "لم تتمكن من الحصول على موقعك. حاول مرة أخرى.",
+    "locationNameLabel": "اسم الموقع",
+    "locationNamePlaceholder": "رصيف النهر, مدخل الشمال",
+    "locationTimeout": "لم يتم الحصول على تثبيت GPS في 15 ثانية — حاول التحرك إلى مكان يوفر رؤية أفضل للسماء، ثم حاول مرة أخرى.",
+    "minutesShort": "{{n}}دقيقة",
+    "modeLabel": "نوع الصيد",
+    "modeLocation": "هذا المكان الدقيق",
+    "modeTask": "في أي مكان يمكنهم العثور عليه",
+    "multiStep": "مرحلة متعدد الخطوات",
+    "noLimit": "لا حدود",
+    "objectiveLabel": "ماذا يجب أن يتعلموا؟",
+    "objectivePlaceholder": "على سبيل المثال، تحديد أنواع الأشجار المحلية من خلال شكل الأوراق",
+    "oneSpot": "مكان واحد",
+    "publish": "نشر التحدي",
+    "saveError": "لم يتم إنشاء هذه النشاط.",
+    "stepsLabel": "كم عدد المحطات؟",
+    "stopNameDefault": "توقف {{n}}",
+    "stopsHint": "سير إلى كل محطة و التقاطها. يتحصل الطلاب على خريطة مع سهم اتجاه - لا شيء عن موقعهم يغادر هاتفهم.",
+    "subjectLabel": "سUBJECT",
+    "successBody": "طلاب يمكنهم محاولة هذا التحدي الآن.",
+    "successLabel": "كيف تعرف أنهم نجحوا؟",
+    "successPlaceholder": "على سبيل المثال، صورة واضحة للعنصر بالإضافة إلى جملة واحدة تشرح سبب ملاءمته",
+    "successTitle": "مُشَارَكَاتِهِ",
+    "taskLabel": "ما يجب على الطلاب فعله؟",
+    "taskPlaceholder": "وصف ما يجب العثور عليه، القيام به أو ملاحظة...",
+    "timeLimitLabel": "وقت الحد الأقصى عند بدء (اختياري)",
+    "title": "جديد بحث التنقيب",
+    "titleLabel": "إختبار",
+    "titlePlaceholder": "على سبيل المثال، لغز شجرة البلوط"
   },
   "discover": {
     "empty": "لا تعمليات مضافة حتى الآن — سوف تضيفها أشخاص الدراسة بسرعة.",
@@ -152,6 +200,7 @@
   },
   "homeschoolDashboard": {
     "childrenLabel": "أطفال",
+    "childrenTitle": "أطفال",
     "empty": "لم يتم إضافة أطفال حتى الآن. اضف طفل في الويب اب للرؤية معركز التقدم هنا.",
     "gradeLabel": "نقطة {{grade}}",
     "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
@@ -167,6 +216,28 @@
     },
     "tabLabel": "لوحة القيادة",
     "title": "لوحة التعليم البيتي"
+  },
+  "homeschoolWelcome": {
+    "addAnotherChild": "أضف طفل آخر",
+    "allSet": "أنت جاهز!",
+    "allSetBody": "اذهب إلى تطبيق الويب لإنشاء نشاطك الأول في الهواء الطلق — سيقترح بيري أسئلة من نوع سقراطية ملائمة لموقعك و موضوعك.",
+    "childNamePlaceholder": "أسم الطفل {{n}}",
+    "goToDashboard": "الذهاب إلى لوحة القيادة",
+    "noChildrenError": "الرجاء إضافة طفل واحد على الأقل",
+    "selectState": "{{state}}",
+    "selectStateOptional": "— اختر ولاية (اختياري) —",
+    "skipSetup": "تخطي الإعداد",
+    "someFailedError": "بعض الأطفال لم يتم إنقاذها تلقائيًا — يمكنك إضافتهم لاحقًا من التطبيق على الويب",
+    "stateFootnote": "35 ولاية أمريكية تطلب من أولياء الأمور الذين يعتمدون التعليم المنزلي الاحتفاظ بسجلات التعلم — ينشئ Peripateticware التقارير تلقائيًا من سجل نشاطك.",
+    "step1": "أضف الأطفال",
+    "step2": "استاتك",
+    "step3": "النشاط الأول",
+    "welcomeSubtitle": "هيا نبدأ في 3 خطوات سريعة.",
+    "welcomeTitle": "مرحبا! 🌿",
+    "whichState": "ما هو الولاية التي تدرّس فيها؟",
+    "whichStateBody": "هذا يساعد على عرض متطلبات التقرير الصحيحة. يمكنك تغييره في أي وقت.",
+    "whoTeaching": "من هو whom أنت تدرّس؟",
+    "whoTeachingBody": "أضف اسم كل طفل ودرجه. يمكنك إضافة المزيد من الأطفال لاحقًا من التطبيق على الويب."
   },
   "journal": {
     "draft": "رافز",
@@ -187,8 +258,12 @@
     "minutesSecondsFormat": "{{m}} دقيقة {{s}} ثانية",
     "mySummaryFinished": "تمتع إنت برангك {{rank}}. أنت وقفت في {{time}}.",
     "mySummaryInProgress": "تمركزت على مرحلة {{rank}}. لديك {{count}} قطعة من الأبواب الآن.",
+    "mySummaryInProgress_one": "أنت مرتبة {{rank}}. لديك {{count}} قطع من الأدلة حتى الآن.",
+    "mySummaryInProgress_other": "أنت مرتبة {{rank}}. لديك {{count}} قطع من الأدلة حتى الآن.",
     "secondsFormat": "السِّيَّرَاتُ {{s}}s",
     "stepsSoFar": "{{count}} قطعة دليل حتى الآن",
+    "stepsSoFar_one": "{{count}} قطع من الأدلة حتى الآن",
+    "stepsSoFar_other": "{{count}} قطع من الأدلة حتى الآن",
     "you": "أنت"
   },
   "liveTracking": {
@@ -221,7 +296,13 @@
     },
     "passwordLabel": "كلمة السر",
     "passwordReset": {
+      "backToLogin": "العودة إلى تسجيل الدخول",
       "body": "اتصل بعلماءك لإعادة ضبط رقم السجل الخاص بك.",
+      "checkInbox": "تحقق من صندوق الوارد",
+      "checkInboxBody": "إذا كان هناك حساب لـ {{email}}، فستتلقى رابطًا لإعادة تعيين كلمة المرور قريبًا. تنتهي صلاحيته خلال 60 دقيقة.",
+      "missingEmail": "الرجاء إدخال بريدك الإلكتروني.",
+      "requestFailed": "حدث خطأ ما. يُرجى المحاولة مرة أخرى.",
+      "sendLink": "إرسال رابط إعادة تعيين",
       "title": "إعادة تعيين الرقم السري"
     },
     "showPassword": "إظهار كلمة السر",
@@ -235,7 +316,7 @@
       "periSpeech": "يوجد نشاط مكاني قريبًا منك."
     },
     "location": {
-      "badge": "3 أنشطة قريبة",
+      "badge": "٣ أنشطة قريبة",
       "confirmCta": "سمح بالموقع",
       "periSpeech": "هناك أنشطة قريبة منك. تمكّن من الموقع لبدء الإنجاز؟",
       "reassurance": "استخدامه الفقط لإعلن الأنشطة القريبة",
@@ -254,7 +335,34 @@
   "parentDashboard": {
     "empty": "لم يتم ربط أي أطفال حتى الآن. ربط واحد من الأطفال في الويب عاءلة لرؤية تقدمهم هنا.",
     "lastActive": "آخر التحديث: {{date}}",
+    "linkChild": {
+      "body": "أدخل بريد إلكتروني Peripateticware لطفلك. يجب عليهم الموافقة على الطلب في التطبيق الخاص بهم قبل ظهور تقدمهم هنا.",
+      "emailPlaceholder": "{{placeholder}} بريد الطفل",
+      "genericError": "لم تتمكن من ربط هذا الحساب. تحقق من البريد الإلكتروني وحاول مرة أخرى.",
+      "headerButton": "+ ربط طفل",
+      "pendingBody": "{{name}} يجب أن يوافق على هذا من التطبيق الخاص به قبل ظهور تقدمه على لوحة معلوماتك.",
+      "pendingTitle": "تم إرسال الطلب",
+      "submit": "ربط الطفل",
+      "successBody": "{{name}} الآن يظهر على لوحة القيادة",
+      "successTitle": "متصلة",
+      "title": "ربط طفل"
+    },
     "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
+    "messages": {
+      "empty": "لا رسائل من المعلمين حتى الآن.",
+      "reply": "{{reply}}",
+      "replyError": "لم يتم إرسال ردك.",
+      "replyPlaceholder": "أكتب ردك…",
+      "replyTo": "أجب على {{name}}",
+      "send": "إرسَل",
+      "title": "الرسائل"
+    },
+    "notifications": {
+      "empty": "جميعكم على الموضة",
+      "title": "الإشعارات"
+    },
+    "pendingBadge": "انتظار الموافقة",
+    "pendingBody": "{{name}} يجب على الموافقة على هذا من التطبيق الخاص بهم قبل ظهور تقدمهم هنا.",
     "progressUnavailable": "غلقت التحميل تقدير الطفل",
     "stats": {
       "activities": "أنشطة",
@@ -262,7 +370,17 @@
       "hours": "ساعات"
     },
     "tabLabel": "أطفال",
-    "title": "Awlādī"
+    "title": "Awlādī",
+    "unlink": {
+      "action": "إلغاء الربط",
+      "cancelRequest": "إلغاء الطلب",
+      "confirmAction": "إلغاء الربط",
+      "confirmBody": "ستتوقف عن رؤية تقدم {{name}}. يمكنك إرسال طلب جديد لاحقًا.",
+      "confirmBodyPending": "هذا يلغي الطلب المعلق",
+      "confirmTitle": "هل تريد إلغاء ارتباط {{name}}؟",
+      "error": "تعذّر إلغاء الربط الآن. حاول مرة أخرى."
+    },
+    "viewCalendar": "📅 التقويم"
   },
   "perichat": {
     "closeChat": "إغلاق الدردشة",
@@ -283,6 +401,8 @@
     "leaderboardsEmpty": "لا تحدثات مخصوصة للطالبين حتى الآن — قم بإرسال مدخل لبدء قائمة الرANKING.",
     "leaderboardsLabel": "قائمة الرؤية",
     "participantCount": "من {{count}} يمكنهم التعاون",
+    "participantCount_one": "{{count}} يشارك",
+    "participantCount_other": "{{count}} يشارك",
     "proposedBy": "بواسطة {{name}}",
     "stats": {
       "activities": "مهام",
@@ -330,6 +450,19 @@
       "downloadFailed": "لم يتم تحميل هذا اللغة. قم بتأكد من الاتصال وحاول مرة أخرى."
     },
     "languageLabel": "لغة",
+    "parentRequests": {
+      "actionError": "الرجاء المحاولة مرة أخرى.",
+      "body": "يريد {{email}} رؤية تقدمك بصفتك {{relationship}}.",
+      "label": "طلبات أولياء الأمور"
+    },
+    "password": {
+      "button": "إعادة تعيين كلمة المرور",
+      "desc": "سنرسل لك رابطًا عبر البريد الإلكتروني لتسجيل كلمة المرور الجديدة.",
+      "error": "الرجاء المحاولة مرة أخرى.",
+      "sentBody": "أرسلنا رابط إعادة تعيين كلمة المرور إلى {{email}}. ينقضي بعد 60 دقيقة.",
+      "sentTitle": "تحقق من صندوق الوارد"
+    },
+    "passwordLabel": "كلمة المرور",
     "role": {
       "student": "طالب"
     },
@@ -361,25 +494,130 @@
     },
     "voiceLabel": "الصوت"
   },
+  "studentCalendar": {
+    "loadError": "لم يتم تحميل تقويمك.",
+    "title": "تقويمي"
+  },
   "tabs": {
     "achievements": "نجاحات",
     "discover": "اكتشف",
-    "progress": "تقدم",
     "propose": "اقرأ",
     "settings": "Ajustes"
   },
+  "teacherActivities": {
+    "empty": "لا أنشطة منشورة حتى الآن.",
+    "loadError": "لم يتم تحميل الأنشطة.",
+    "title": "أعمال نشطة"
+  },
+  "teacherActivity": {
+    "daysAgo": "منذ {{n}} يوم",
+    "descriptionLabel": "وصف",
+    "gradeLabel": "الدرجه {{grade}}",
+    "loadError": "لم يتم تحميل هذه النشاط",
+    "minutesLabel": "{{n}} دقيقة",
+    "noSubmissions": "لا يوجد طلاب بدأوا هذه النشاط حتى الآن.",
+    "objectivesLabel": "أهداف التعلم",
+    "submissionsLabel": "إرسالات"
+  },
+  "teacherCalendar": {
+    "addTitle": "جديد حدث التقويم",
+    "dateLabel": "تاريخ (YYYY-MM-DD)",
+    "deleteError": "تعذّر إزالة هذا الحدث.",
+    "deleteTitle": "حذف \"{{title}}\"؟",
+    "descriptionLabel": "تفاصيل (اختياري)",
+    "descriptionPlaceholder": "أي تفاصيل إضافية...",
+    "loadError": "لم يتم تحميل التقويم.",
+    "noClasses": "أنت لا تمتلك أي دروس بعد — قم بتثبيتها في التطبيق الإلكتروني أولًا.",
+    "saveError": "لم يتم إنشاء هذا الحدث.",
+    "title": "التقويم",
+    "titleLabel": "{{title}}",
+    "titlePlaceholder": "على سبيل المثال، قسائم الإذن المستحقة",
+    "typeLabel": "TYPE"
+  },
+  "teacherClasses": {
+    "empty": "لا يوجد أي دروس بعد — استخدم التطبيق على الويب لإنشاء واحد.",
+    "loadError": "لم يتم تحميل الفئات",
+    "title": "الفئات"
+  },
   "teacherDashboard": {
     "loadError": "غلقت تحميل لوحة القيادة الخاصة بك.",
+    "newScavengerHunt": "+ لعبة البحث عن الكنز",
     "noActivities": "لم تقوم بإنشاء أي مهام حتى الآن — استخدم التطبيق الإنترنت لإنشاء واحدة.",
     "recentLabel": "أحدث النشاطات",
     "stats": {
       "active": "نشط",
+      "calendar": "التقويم",
       "classes": "أقسام",
+      "messages": "الرسائل",
       "pending": "معلق",
+      "proposals": "المقترحات",
       "students": "طلاب"
     },
     "tabLabel": "لوحة القيادة",
     "title": "لوحة المعلم",
     "webHint": "للسلونات، القائمة الفردية والمعايير الاستثنائية، استخدم الويب اب اب."
+  },
+  "teacherMessages": {
+    "audienceAllParents": "جميع الآباء",
+    "audienceAllStudents": "جميع الطلاب",
+    "audienceLabel": "إرسَل إلَى",
+    "bodyLabel": "الرسالة",
+    "bodyPlaceholder": "أكتب رسالتك…",
+    "classroomLabel": "الصف",
+    "composeTitle": "جديد رسالة",
+    "empty": "لا يوجد محادثات حتى الآن.",
+    "loadError": "لم يتم تحميل الرسائل.",
+    "orOneFamily": "أحد أو عائلة:",
+    "replyPlaceholder": "أكتب رد…",
+    "send": "إرسَل",
+    "sendError": "لم يتم إرسال هذه الرسالة.",
+    "subjectLabel": "سUBJECT",
+    "subjectPlaceholder": "{{field_trip}} مَذْمُونِهِ",
+    "title": "الرسائل",
+    "willMessageParent": "أرسل إلى {{name}} وليه."
+  },
+  "teacherProposals": {
+    "actionError": "الرجاء المحاولة مرة أخرى.",
+    "approveBody": "هذا ينشره كمحاولة حقيقية يمكن للطلاب محاولتها فورًا.",
+    "approveTitle": "تأكيد \"{{title}}\"؟",
+    "byStudent": "بِـ {{name}} · {{subject}}",
+    "empty": "لا يوجد عروض تنتظر عليك.",
+    "loadError": "لم يتم تحميل المقترحات.",
+    "noteLabel": "ملاحظة لك",
+    "rejectBody": "سيشاهدونها وسيستطيعون تعديلها وإعادة الإرسال",
+    "rejectPlaceholder": "قريب جدا من نشاط آخر — حاول معلم مختلف",
+    "rejectTitle": "ملاحظات لـ {{name}}",
+    "sendFeedback": "إرسَل",
+    "title": "الاقتراحات الطلابية"
+  },
+  "teacherSubmissions": {
+    "empty": "لا يوجد إرسالات حتى الآن.",
+    "loadError": "لم يتم تحميل التقديمات",
+    "title": "الطلبات"
+  },
+  "wayfinding": {
+    "allFound": "جميع المحطات وجدت! 🎉",
+    "nextStop": "التالي",
+    "noFix": "لا GPS",
+    "progress": "{{reached}} من {{total}} من نقاط التوقف",
+    "skip": "تخطي نقطة التوقف الاختيارية هذه"
+  },
+  "wayfindingConsent": {
+    "C": {
+      "gets": "صورتك المرفوعة صورًا و ملاحظات تظهر على خريطة مدرسك في المكان الذي التقطته",
+      "title": "تحديد صورك بمكانها"
+    },
+    "D": {
+      "gets": "في رحلة مراقَبة، يمكن لدرِّسك أن يرى أين أنت في الوقت الحقيقي بينما تجري الجلسة.",
+      "title": "أظهر لك على خريطة المعلم أثناء الرحلة"
+    },
+    "E": {
+      "gets": "الكلاس يمكنه مقارنة الدروب التي اتخذها الجميع بعد الحفلة",
+      "title": "سجل مسار سيرك"
+    },
+    "allow": "{{allow}}",
+    "eyebrow": "أستاذك تم تفعيله",
+    "kept": "محفوظ: {{copy}}",
+    "notNow": "ليس الآن"
   }
 }
