@@ -69,6 +69,7 @@ async def ingest(
     checksum = hashlib.sha256(file_bytes).hexdigest()
 
     from core.database import get_session_factory
+    from core.encryption import blind_index
     from models.database import StandardsSet
     from models.user import User
     from sqlalchemy import select
@@ -132,8 +133,15 @@ async def ingest(
         return all_criteria
 
     async with factory() as db:
+        # BUG FIX: `email` is an EncryptedString column (models/user.py),
+        # and Fernet encryption is non-deterministic (random IV per call), so
+        # `User.email == owner_email` re-encrypts the RHS to a DIFFERENT
+        # ciphertext than what's stored and never matches — this always
+        # raised "No user found" for a real account. Same bug/fix as
+        # routes/classrooms.py's accept_invite(): look up by the
+        # email_index blind index instead.
         owner = (await db.execute(
-            select(User).where(User.email == owner_email)
+            select(User).where(User.email_index == blind_index(owner_email))
         )).scalar_one_or_none()
         if not owner:
             raise SystemExit(f"No user found with email {owner_email!r} — pass an existing account's email.")

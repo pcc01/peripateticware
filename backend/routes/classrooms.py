@@ -709,33 +709,54 @@ async def accept_invite(
         raise HTTPException(status_code=403, detail="This invite was sent to a different email address")
 
     # Check email not already registered
+    #
+    # BUG FIX: same root cause as the account-creation bug below — `email` is
+    # an EncryptedString column, so comparing it to a plaintext bind param
+    # never matches (ciphertext != plaintext). This check was silently
+    # inert: two invite-signups with the same email would both succeed and
+    # collide on the `email` column's unique constraint at INSERT time
+    # instead (a raw 500 for the caller, not this clean 400).
     existing = (await db.execute(text(
-        "SELECT id FROM users WHERE email = :email"
-    ), {"email": body.email.lower()})).first()
+        "SELECT id FROM users WHERE email_index = :idx"
+    ), {"idx": _blind_index(body.email.lower())})).first()
     if existing:
         raise HTTPException(status_code=400, detail="An account with this email already exists. Please log in.")
 
     # Create student account
-    user_id = str(uuid4())
-    hashed  = SecurityManager.hash_password(body.password)
-    await db.execute(text("""
-        INSERT INTO users
-            (id, email, username, first_name, last_name, full_name,
-             hashed_password, role, is_active, org_id, invite_token_used, created_at, updated_at)
-        VALUES
-            (:id, :email, :username, :first, :last, :full,
-             :pw, 'STUDENT', TRUE, :org_id, :token, NOW(), NOW())
-    """), {
-        "id":       user_id,
-        "email":    body.email.lower(),
-        "username": body.email.lower().split("@")[0],
-        "first":    body.first_name,
-        "last":     body.last_name,
-        "full":     f"{body.first_name} {body.last_name}",
-        "pw":       hashed,
-        "org_id":   str(inv[5]),
-        "token":    token,
-    })
+    #
+    # BUG FIX: this used to be a raw SQL INSERT, which bypasses the ORM
+    # entirely -- and email/full_name are EncryptedString columns
+    # (models/user.py) that only get encrypted via the ORM's own bind-param
+    # processing. The raw INSERT wrote the plaintext email/name straight into
+    # those columns, and never set email_index at all (left NULL).
+    # routes/auth.py's login ALWAYS looks up by
+    # `User.email_index == blind_index(email)`, never the plain `email`
+    # column, so every student who ever joined via a classroom invite -- the
+    # ONLY path to a student account, since self-signup rejects role=STUDENT
+    # -- got an account that could never log in, with its email stored
+    # unencrypted. Same bug class already found and fixed once in
+    # startup.py's seed_demo_users() (see the comment there); this was the
+    # live path that never got the same fix. scripts/seed_sample_data.py has
+    # the identical bug and should get the same treatment if it's ever run
+    # against a real database again.
+    hashed = SecurityManager.hash_password(body.password)
+    new_student = User(
+        id=uuid4(),
+        email=body.email.lower(),
+        email_index=_blind_index(body.email.lower()),
+        username=body.email.lower().split("@")[0],
+        first_name=body.first_name,
+        last_name=body.last_name,
+        full_name=f"{body.first_name} {body.last_name}",
+        hashed_password=hashed,
+        role="STUDENT",
+        is_active=True,
+        org_id=inv[5],
+        invite_token_used=token,
+    )
+    db.add(new_student)
+    await db.flush()
+    user_id = str(new_student.id)
 
     # Age gate (COPPA compliance)
     if body.date_of_birth:

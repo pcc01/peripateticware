@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, '/app')
 
 from sqlalchemy import create_engine, text
+from core.encryption import encrypt, blind_index
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -25,22 +26,31 @@ skipped = []
 
 
 def upsert_user(conn, email, username, first_name, last_name, role):
+    # BUG FIX: email/full_name are EncryptedString columns (models/user.py)
+    # that only get encrypted via the ORM's own bind-param processing — this
+    # script uses a raw sync engine, so it must encrypt() explicitly instead.
+    # The existence check must also look up by the email_index blind index,
+    # never the plaintext `email` column (ciphertext never equals plaintext),
+    # or this "idempotent" upsert would insert a duplicate on every run.
+    # Same bug, same fix as routes/classrooms.py's accept_invite() — see the
+    # comment there.
+    idx = blind_index(email)
     exists = conn.execute(
-        text("SELECT id FROM users WHERE email = :e"), {"e": email}
+        text("SELECT id FROM users WHERE email_index = :idx"), {"idx": idx}
     ).fetchone()
     if exists:
         skipped.append(f"user:{email}")
         return str(exists[0])
     row = conn.execute(
         text("""
-            INSERT INTO users (email, username, first_name, last_name, full_name,
+            INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                hashed_password, role, is_active)
-            VALUES (:email, :uname, :fn, :ln, :full, :pw, :role, TRUE)
+            VALUES (:email, :idx, :uname, :fn, :ln, :full, :pw, :role, TRUE)
             RETURNING id
         """),
         {
-            "email": email, "uname": username, "fn": first_name,
-            "ln": last_name, "full": f"{first_name} {last_name}",
+            "email": encrypt(email), "idx": idx, "uname": username, "fn": first_name,
+            "ln": last_name, "full": encrypt(f"{first_name} {last_name}"),
             "pw": PW_HASH, "role": role,
         }
     ).fetchone()
