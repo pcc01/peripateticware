@@ -50,6 +50,11 @@ export interface PrivacyStatusResult {
   jurisdictions:     string[]
   last_updated:      string | null
   frameworks_enforced: string[]
+  // Whether ENFORCEMENT_MODE is actually acting on violations right now
+  // ("block") vs. only logging/warning about them. Public copy should key
+  // off this, not off frameworks_enforced alone (that only means "loaded").
+  enforcement_mode?:   string
+  enforcement_active?: boolean
 }
 
 export interface AuditLogEntry {

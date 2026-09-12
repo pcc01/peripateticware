@@ -47,7 +47,10 @@ export const PrivacyPage: React.FC = () => {
           <span className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-green-600" />
             <strong className="text-green-900">
-              {privacyStatus.active_rules_count} {t('privacypage.jurisdictions_enforced', 'jurisdictions enforced')}
+              {privacyStatus.active_rules_count}{' '}
+              {privacyStatus.enforcement_active
+                ? t('privacypage.jurisdictions_enforced', 'jurisdictions enforced')
+                : t('privacypage.jurisdictions_monitored', 'jurisdictions monitored (violations logged, not yet blocked)')}
             </strong>
           </span>
           {privacyStatus.frameworks_enforced.length > 0 && (

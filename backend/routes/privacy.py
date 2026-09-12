@@ -51,6 +51,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import BackgroundTasks
+from core.config import settings
 from core.database import get_db
 from core.dependencies import get_current_user
 from models.user import User
@@ -354,6 +355,13 @@ async def get_privacy_status(
                     education_ai_classification = cls
                     break
 
+        # The literal "enforced" claim is only true when ENFORCEMENT_MODE is
+        # actually acting on violations, not merely logging/warning about
+        # them — derive it from the live setting rather than hardcoding a
+        # claim, so this stays accurate as ENFORCEMENT_MODE changes.
+        enforcement_mode   = str(getattr(settings, "ENFORCEMENT_MODE", "log")).lower()
+        enforcement_active = enforcement_mode == "block"
+
         return {
             "status":                     "active",
             "active_rules_count":         len(active_rules),
@@ -361,11 +369,20 @@ async def get_privacy_status(
             "ai_rules_count":             len(ai_rules),
             "jurisdictions":              sorted({r.jurisdiction for r in active_rules}),
             "last_updated":               latest_update.isoformat() if latest_update else None,
+            # NOTE: "frameworks_enforced" means "has an active rule set loaded
+            # for this framework" (kept as-is — also consumed by the admin
+            # config page to drive framework toggle checkboxes). Whether
+            # those loaded rules are actually BLOCKING violations right now
+            # is a separate question, answered by enforcement_mode/
+            # enforcement_active below — that's what public-facing copy
+            # (e.g. the /privacy page banner) should key off of.
             "frameworks_enforced":        sorted({
                 r.rule_definition.get("framework", "unknown")
                 for r in active_rules
                 if isinstance(r.rule_definition, dict)
             }),
+            "enforcement_mode":           enforcement_mode,
+            "enforcement_active":         enforcement_active,
             # AI permission flags — consumed by frontend to gate AI features
             "ai_student_permitted":       ai_student_permitted,
             "ai_teacher_permitted":       ai_teacher_permitted,

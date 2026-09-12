@@ -166,11 +166,15 @@ class Settings(BaseSettings):
     ACTIVE_JURISDICTION: str = os.getenv("ACTIVE_JURISDICTION", "gdpr_eu")
     ENABLE_PRIVACY_CHECKS: bool = os.getenv("ENABLE_PRIVACY_CHECKS", "true").lower() == "true"
     # Enforcement mode for enforce_on_submission():
-    #   "log"   — record signals, always ALLOW (default, safe rollout)
+    #   "log"   — record signals, always ALLOW
     #   "warn"  — return WARNING status with reasons, but still ALLOW the write
-    #   "block" — return BLOCKED and callers must refuse the write
-    # Start in "log", move to "warn" once dashboards look right, then "block".
-    ENFORCEMENT_MODE: str = os.getenv("ENFORCEMENT_MODE", "log").lower()
+    #   "block" — return BLOCKED and callers must refuse the write (decided
+    #             posture as of 2026-09-12, see PRIVACY_ENFORCEMENT_HANDOFF.md)
+    # The live value always comes from prod's .env; this default only covers
+    # an environment where ENFORCEMENT_MODE isn't set at all, so it's kept in
+    # sync with the decided posture for defense-in-depth rather than quietly
+    # falling back to non-enforcing.
+    ENFORCEMENT_MODE: str = os.getenv("ENFORCEMENT_MODE", "block").lower()
     PRIVACY_NOTIFICATION_ENABLED: bool = os.getenv("PRIVACY_NOTIFICATION_ENABLED", "true").lower() == "true"
 
     # ── Phase 5: IAPP Crawler ─────────────────────────────────────────────────
