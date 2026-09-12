@@ -209,13 +209,19 @@ class JurisdictionConfig:
 
 @dataclass
 class EnforcementResult:
-    status:           str            # "ALLOWED" | "BLOCKED" | "WARNING"
+    status:           str            # "ALLOWED" | "BLOCKED" | "WARNING" — the mode-dependent outcome actually applied to this request
     encryption_algo:  str            = "AES-256"
     retention_days:   int            = 365
     consent_required: bool           = False
     blocking_reason:  Optional[str]  = None
     rules_applied:    List[Dict[str, str]] = field(default_factory=list)
     warnings:         List[str]      = field(default_factory=list)
+    # would_block is computed independent of ENFORCEMENT_MODE — True whenever
+    # a real blocking condition was detected, even in "log" mode where
+    # `status` is forced to ALLOWED. This is what makes ENFORCEMENT_MODE=log
+    # actually useful for a rollout decision: every request's audit row
+    # records what WOULD have happened under "block" mode, not just what did.
+    would_block:      bool           = False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -590,7 +596,77 @@ async def enforce_on_submission(
         blocking_reason="; ".join(blocking_reasons) if blocking_reasons else None,
         rules_applied=rules_applied,
         warnings=warnings + blocking_reasons,
+        would_block=bool(blocking_reasons),
     )
+
+
+async def _record_enforcement_audit(
+    *,
+    result: EnforcementResult,
+    student_id: str,
+    actor_role: str,
+    action: str,
+    data_type: str,
+    evidence_types: Optional[List[str]],
+    notes: Optional[str],
+) -> None:
+    """
+    Write one durable rule_audit_log row capturing what the engine actually
+    detected — not just the mode-collapsed `status`. This is the fix for a
+    2026-09 gap: ENFORCEMENT_MODE=log was evaluating real rule violations
+    (populating `warnings`/`blocking_reason`) and then discarding that detail
+    entirely, because every caller (a) never captured enforce_or_raise's
+    return value and (b) only 2 of 9 write paths even called audit_submission
+    afterward. The audit row's `compliance_status` column stays mode-aware
+    (ALLOWED/WARNING/BLOCKED, matching what actually happened to the
+    request — unchanged contract), but `enforcement_actions` now always
+    records `would_block` (computed independent of mode) plus the actual
+    warnings/blocking_reason text, so an admin can query "what would this
+    request have done under block mode" without ever having flipped the
+    switch — the whole point of running in log mode first.
+
+    Uses an ISOLATED session (its own short-lived connection via
+    get_session_factory()), never the caller's request-scoped `db`.
+    enforce_or_raise() is called from ~9 places mid-request, always BEFORE
+    the caller's own db.add() for the actual write (verified across every
+    call site) — sharing that session here and having this commit/rollback
+    it would either commit the caller's not-yet-validated write early, or
+    wipe out unrelated pending state on an audit-write failure. An isolated
+    session makes the audit write genuinely non-blocking: it can fail (DB
+    hiccup, whatever) without touching the caller's transaction at all,
+    matching the "must never affect the main request" contract this engine
+    has always documented but only partly delivered.
+    """
+    try:
+        from core.database import get_session_factory
+
+        enforcement_actions = {
+            "mode": str(getattr(settings, "ENFORCEMENT_MODE", "log")).lower(),
+            "would_block": result.would_block,
+            "warnings": result.warnings,
+            "blocking_reason": result.blocking_reason,
+            "consent_required": result.consent_required,
+            "evidence_types": evidence_types or [],
+        }
+        session_factory = get_session_factory()
+        async with session_factory() as audit_db:
+            await log_access(
+                actor_id=student_id,
+                actor_role=actor_role,
+                action=action,
+                data_type=data_type,
+                student_id=student_id,
+                rules_applied=result.rules_applied,
+                compliance_status=result.status,
+                db=audit_db,
+                enforcement_actions=enforcement_actions,
+                notes=notes,
+            )
+    except Exception as exc:
+        # Audit-trail failure must never surface to the caller — same
+        # guarantee as before, just now impossible to violate the caller's
+        # own transaction along the way (see docstring above).
+        logger.warning(f"privacy_engine: audit write failed (non-blocking): {exc}")
 
 
 async def enforce_or_raise(
@@ -598,6 +674,9 @@ async def enforce_or_raise(
     data_type: str,
     db: Optional[AsyncSession],
     evidence_types: Optional[List[str]] = None,
+    actor_role: str = "student",
+    action: Optional[str] = None,
+    notes: Optional[str] = None,
 ) -> Optional[EnforcementResult]:
     """
     Pre-write enforcement gate for a route handler, extracted from the
@@ -607,6 +686,12 @@ async def enforce_or_raise(
     HTTPException(403) on BLOCKED; in "log"/"warn" mode this never raises.
     Mirrors that route's behaviour on lookup failure: log and allow rather
     than fail the whole request over a privacy-engine error.
+
+    As of the 2026-09 audit-trail fix, this ALSO writes a durable audit row
+    (via an isolated session — see _record_enforcement_audit) every time it
+    runs, regardless of mode or outcome — previously the result was computed
+    and silently discarded unless the caller separately called
+    audit_submission() (only 2 of 9 call sites did).
     """
     from fastapi import HTTPException, status as _status
 
@@ -614,6 +699,16 @@ async def enforce_or_raise(
         result = await enforce_on_submission(
             student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
         )
+        if db is not None:
+            await _record_enforcement_audit(
+                result=result,
+                student_id=student_id,
+                actor_role=actor_role,
+                action=action or f"ENFORCE_{data_type.upper()}",
+                data_type=data_type,
+                evidence_types=evidence_types,
+                notes=notes,
+            )
         if result.status == "BLOCKED":
             raise HTTPException(
                 status_code=_status.HTTP_403_FORBIDDEN,
@@ -638,22 +733,23 @@ async def audit_submission(
 ) -> None:
     """
     Post-write, log-only privacy audit — same non-blocking pattern as
-    enforce_or_raise's second (post-commit) call in add_evidence_capture.
-    Never raises; a failure here must not undo an already-committed write.
+    enforce_or_raise's pre-write call in add_evidence_capture. Never raises;
+    a failure here must not undo an already-committed write. Deliberately
+    re-evaluates enforce_on_submission() rather than reusing whatever
+    enforce_or_raise() saw pre-write, in case anything relevant (consent
+    granted, jurisdiction changed) changed between the gate and the commit.
     """
     try:
         result = await enforce_on_submission(
             student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
         )
-        await log_access(
-            actor_id=student_id,
+        await _record_enforcement_audit(
+            result=result,
+            student_id=student_id,
             actor_role=actor_role,
             action=action,
             data_type=data_type,
-            student_id=student_id,
-            rules_applied=result.rules_applied,
-            compliance_status=result.status,
-            db=db,
+            evidence_types=evidence_types,
             notes=notes,
         )
     except Exception as exc:
