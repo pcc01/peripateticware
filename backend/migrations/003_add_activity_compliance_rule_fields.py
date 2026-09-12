@@ -88,7 +88,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy import text
-from core.database import engine
+from core.database import get_engine
 
 # Copied verbatim from the corresponding backend/config/jurisdictions/*.json
 # files (student_age_categories / prohibited_data_collection /
@@ -224,7 +224,7 @@ def compute_hash(rule_definition: dict) -> str:
 
 
 async def run() -> None:
-    async with engine.begin() as conn:
+    async with get_engine().begin() as conn:
         for jurisdiction, new_fields in RULE_FIELD_UPDATES.items():
             row = (await conn.execute(
                 text(
