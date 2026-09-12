@@ -8,25 +8,25 @@ Last full run: 2026-09-11, against **prod** (`peripateticware.com`), account
 
 | Suite | Result | Notes |
 |---|---|---|
-| Android non-waypoint (Pixel 6 API 35 emu) | **16 / 19** | fixes committed on `mobile/prod-e2e-lane` |
+| Android non-waypoint (Pixel 6 API 35 emu) | **17 / 17*** | `4-6` root-caused and fixed — see §5 |
 | iOS non-waypoint (iPhone 17 Sim, macOS 26) | **17 / 17*** | all flow fixes committed (`17c5361`) — see note below |
 | Wayfinding + geofence | **not run** | the actual "waypoints" review — see §3 |
 | Manual on-device | **not started** | field builds: Android on Pixel 10a ✅, iOS pending signing |
 
-\* The 2026-09-11 full-suite run itself shows 16/17 — the sole failure
-(`4-6-activity-flow`) is a **test-state artifact, not a regression**: an
-isolated confirmation run right before the full suite already submitted
-`Creek Habitat Study` for `loadtest.student`, and `activity_submissions`
-is server-side "once submitted, stays submitted," so ReflectPhase loads
-straight into "Submitted ✓" and there's no "Submit field work" button left
-to tap. The isolated run that hit this fresh (clean session) passed
-end-to-end, confirming the fix. Run `scripts/reset-activity-submission-prod.sql`
-(below) before the next full-suite run to get back to a clean 17/17.
+\* Both platforms' recorded full-suite runs show 16/17, with `4-6-activity-flow`
+as the sole failure — in both cases a **test-state artifact, not a
+regression**, from an isolated confirmation run immediately before the full
+suite already submitting the QA activity (`activity_submissions`/
+`student_notebooks` is server-side "once submitted, stays submitted," so
+ReflectPhase loads straight into "Submitted ✓" and there's no "Submit field
+work" button left to tap). Each isolated run that hit a genuinely clean
+session passed end-to-end. Run `scripts/reset-activity-submission-prod.sql`
+(below) before the next full-suite run on either platform to get back to a
+clean 17/17.
 
-Nothing failing so far is a *confirmed* app bug. The remaining item is
-Android's `4-6` unknown (§5) — a different failure mode than iOS's (the app
-leaves the foreground instead of a keyboard/tap issue) — pending the
-real-device check.
+Nothing failing so far is a *confirmed* app bug. `4-6`'s two failure modes
+(iOS keyboard occlusion, Android Gboard-toolbar occlusion — see §5) are both
+root-caused, fixed, and verified.
 
 ---
 
@@ -174,17 +174,30 @@ a clean end-to-end pass (Submitted! alert → Done → Discover). This was never
 the same issue as the Android one below — no app leaves-foreground / process
 exit was ever observed on iOS.
 
-**Android: still open.** Reproduces on the headless emulator only so far. To
-resolve:
-1. **Real-device check** (§4) — fastest signal.
-2. If it repros on device: `adb logcat -b crash,main,system -v time` from
-   before the "Submit field work" tap; `dumpsys activity activities | grep
-   mResumedActivity` at the moment it leaves; check the prod backend for a
-   5xx on `POST /api/v1/student/sessions/.../…submit…`. `submitNotebookEntry`
-   in `app/activity/[id].tsx:216` is the network call in the `try`.
-3. Confirm it isn't state-specific: the prod session for the test account may
-   already be `in_progress` from earlier runs — reset it and retry clean
-   (see below).
+**Android: CLOSED** — root-caused via a full logcat capture (`adb logcat`)
+spanning the actual tap. The app never crashed and never left the
+foreground to the OS Settings app, despite looking exactly like that in a
+screenshot: the resumed activity at the moment of failure was
+`com.google.android.inputmethod.latin/…preference.SettingsActivity` —
+**Gboard's own settings screen** (its keyboard-theme picker, which visually
+resembles a system Settings page: "My themes" → Dynamic Color / System
+Auto / Default / Default Dark). Same root cause as the iOS bug, different
+collision: the Submit button sits directly below the reflection
+`TextInput`, and `android:windowSoftInputMode="adjustResize"`
+(`AndroidManifest.xml`) resizes the window when the keyboard opens but
+doesn't guarantee the button clears Gboard's own toolbar row above the
+keys — so the tap meant for "Submit field work" landed on a Gboard toolbar
+icon instead, launching Gboard's settings. Same underlying gap as iOS's
+`scrollUntilVisible` failure: the button registers as "visible" per the
+accessibility tree without actually being clear of on-screen keyboard
+chrome.
+
+**Fix**: unlike iOS, Android's `hideKeyboard` Maestro command doesn't hit
+the "no standard dismiss action" error (Android can always request a
+keyboard hide at the OS level), so `maestro/flows/activity/4-6-activity-flow.yaml`
+now calls it (platform-gated) before tapping Submit — no app-code change
+needed for Android. **Verified**: a clean isolated run passed end-to-end
+(Submitted! → Done → Discover), diagnosed and confirmed via logcat.
 
 ### Resetting the QA account's submission state
 
@@ -205,6 +218,14 @@ ssh "$PROD_SSH" "docker exec -i peripateticware-postgres \
   -v student_email='loadtest.student@thewordinbits.com'" \
   < mobile/scripts/reset-activity-submission-prod.sql
 ```
+
+**Aside, found while provisioning a throwaway QA student for the Android
+repro (unrelated to this bug, but will bite the next person)**: any student
+account created via a classroom invite link right now can't log in at all
+— see branch `fix/classroom-invite-email-index` for the root cause and
+fix (unmerged as of this writing). Until that's deployed, a freshly
+invite-created student needs `scripts/encrypt_existing_data.py` run once
+against prod (idempotent, safe to re-run) before it can log in.
 
 ---
 
