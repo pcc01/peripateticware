@@ -16,6 +16,7 @@ from core.dependencies import get_current_user
 from models.database import LearningSession, User, TripleJoinRecord, Activity
 from services.polling import poll_interval_seconds
 from services.privacy_engine import enforce_or_raise
+from services.gps_consent import check_gps_consent as _check_gps_consent
 import logging
 
 logger = logging.getLogger(__name__)
@@ -448,6 +449,33 @@ async def log_session_event(
                                 status_code=403,
                                 detail="gps_consent_required",
                             )
+
+                    # ── Gate 2: region/jurisdiction gate (2026-09) ──────────
+                    # Runs regardless of age_group/needs_consent above --
+                    # closes the gap where a 13+ (or unknown-age) student in
+                    # a monitoring-restricted jurisdiction (e.g. an org whose
+                    # rules resolve to GDPR-style student_monitoring_allowed=
+                    # False) could stream live GPS location updates with zero
+                    # jurisdiction check at all: only COPPA-style child-age
+                    # consent was ever checked on this endpoint. Hard-blocks
+                    # immediately (force_block_on_would_block=True) rather
+                    # than waiting on ENFORCEMENT_MODE=block, matching the
+                    # age-based gate directly above, which is *already*
+                    # unconditional -- treating region-based and age-based
+                    # protection asymmetrically on the same endpoint would
+                    # itself undermine the region's rule. Every other
+                    # enforce_or_raise() call site is unaffected: this flag
+                    # defaults to False everywhere else.
+                    await enforce_or_raise(
+                        student_id=str(current_user.id),
+                        data_type="learning_session_event",
+                        db=db,
+                        evidence_types=["gps"],
+                        activity_id=str(sess.activity_id),
+                        actor_role="student",
+                        action="ENFORCE_LOCATION_UPDATE",
+                        force_block_on_would_block=True,
+                    )
         except HTTPException:
             raise
         except Exception as _ge:
@@ -680,6 +708,28 @@ async def _require_effective_rung(db, student_id, activity_id, minimum: str, det
     )
     if RUNG_ORDER.get(gate["effective_rung"], 0) < RUNG_ORDER[minimum]:
         raise HTTPException(status_code=403, detail=detail)
+
+    # ── Region/jurisdiction gate (2026-09) ──────────────────────────────────
+    # The rung system above (activity ceiling / consent rung / age floor) has
+    # no concept of jurisdiction at all -- a 13+ (or unknown-age) student in
+    # a monitoring-restricted org (GDPR etc.) could hit full effective
+    # capability and stream live position/track data with zero region check.
+    # Single insertion point: this helper backs both /live-position and
+    # /track, so both are covered. Hard-blocks immediately
+    # (force_block_on_would_block=True), matching the rung check directly
+    # above (already unconditional, ignores ENFORCEMENT_MODE) -- same
+    # reasoning as routes/sessions.py::log_session_event's Gate 2. Every
+    # other enforce_or_raise() call site is unaffected.
+    await enforce_or_raise(
+        student_id=str(student_id),
+        data_type="wayfinding_live_location",
+        db=db,
+        evidence_types=["gps"],
+        activity_id=str(activity_id) if activity_id else None,
+        actor_role="student",
+        action="ENFORCE_WAYFINDING_LOCATION",
+        force_block_on_would_block=True,
+    )
     return gate
 
 
@@ -868,38 +918,7 @@ async def _fire_location_event(
         logger.warning(f"_fire_location_event non-fatal error: {exc}")
 
 
-async def _check_gps_consent(
-    db: AsyncSession,
-    student_id,
-    activity_id,
-) -> bool:
-    """Return True if active GPS-tracking consent exists for this student+activity.
-
-    consent_logs is a real, pre-existing append-only audit table (student_id
-    is a genuine FK to users.id, not a hash -- see database/init.sql /
-    models.database.ConsentLog). "Active consent" = the most recent
-    gps_tracking row for this student+activity that hasn't been withdrawn
-    or expired and was actually granted (by the student or a parent).
-    """
-    if not activity_id:
-        return False
-    try:
-        result = await db.execute(
-            text("""
-                SELECT id FROM consent_logs
-                WHERE student_id   = CAST(:sid AS uuid)
-                  AND consent_type = 'gps_tracking'
-                  AND activity_id  = CAST(:aid AS uuid)
-                  AND (given_by_student = TRUE OR given_by_parent = TRUE)
-                  AND withdrawn_at IS NULL
-                  AND (expires_at IS NULL OR expires_at > NOW())
-                ORDER BY consent_given_at DESC
-                LIMIT 1
-            """),
-            {"sid": str(student_id), "aid": str(activity_id)},
-        )
-        row = result.fetchone()
-        return row is not None
-    except Exception as exc:
-        logger.warning(f"_check_gps_consent non-fatal error: {exc}")
-        return False
+# _check_gps_consent moved to services/gps_consent.py (2026-09) so
+# services/privacy_engine.py could share it too -- re-exported above under
+# this name so routes/projects.py's `from routes.sessions import
+# _check_gps_consent` and the test suite need no changes.

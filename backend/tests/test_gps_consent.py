@@ -124,6 +124,18 @@ class TestCheckGpsConsent:
 
         assert result is False
 
+    def test_is_the_shared_services_layer_function(self):
+        """Regression guard for the 2026-09 move: _check_gps_consent used to
+        be defined locally in routes/sessions.py; it now lives in
+        services/gps_consent.py (services/privacy_engine.py needs it too,
+        and routes only ever import FROM services, never the reverse) and
+        is re-exported here under its old name. Pin that it's genuinely the
+        SAME function, not a duplicate copy that could drift."""
+        import routes.sessions
+        import services.gps_consent
+
+        assert routes.sessions._check_gps_consent is services.gps_consent.check_gps_consent
+
 
 # ===========================================================================
 # 2. POST /sessions/{id}/events — location_update consent gate (endpoint)
@@ -166,10 +178,15 @@ class TestLocationUpdateConsentGate:
 
         db.execute.side_effect = [sess_result, act_result, user_result, consent_result]
 
-        resp = await client.post(
-            f"/api/v1/sessions/{session_id}/events",
-            json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
-        )
+        # Gate 2 (region check, 2026-09) is a separate, independent gate
+        # added after this one -- neutralised here so this test stays
+        # focused on Gate 1 (age-based); Gate 2 gets its own coverage in
+        # TestLocationUpdateRegionGate below.
+        with patch("routes.sessions.enforce_or_raise", new=AsyncMock(return_value=None)):
+            resp = await client.post(
+                f"/api/v1/sessions/{session_id}/events",
+                json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
+            )
 
         assert resp.status_code == 403
         assert resp.json()["detail"] == "gps_consent_required"
@@ -214,10 +231,13 @@ class TestLocationUpdateConsentGate:
         db.execute.side_effect = [sess_result, act_result, user_result, consent_result, insert_result]
         db.commit = AsyncMock()
 
-        resp = await client.post(
-            f"/api/v1/sessions/{session_id}/events",
-            json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
-        )
+        # Gate 2 (region check) neutralised -- see comment in the blocked
+        # test above; covered separately in TestLocationUpdateRegionGate.
+        with patch("routes.sessions.enforce_or_raise", new=AsyncMock(return_value=None)):
+            resp = await client.post(
+                f"/api/v1/sessions/{session_id}/events",
+                json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
+            )
 
         assert resp.status_code == 201
         body = resp.json()
@@ -246,6 +266,93 @@ class TestLocationUpdateConsentGate:
         assert resp.status_code == 201
         # Only the single INSERT call — no session/activity/user/consent lookups.
         assert db.execute.call_count == 1
+
+
+# ===========================================================================
+# 2b. Gate 2 (2026-09) — region/jurisdiction check on location_update,
+#     independent of Gate 1's age-based check above. Mocks enforce_or_raise
+#     itself (matching test_privacy_enforcement.py's own boundary for that
+#     function) rather than exercising the real jurisdiction engine through
+#     this file's generic session/activity/user mocks.
+# ===========================================================================
+
+class TestLocationUpdateRegionGate:
+    def _base_mocks(self, activity_id):
+        """A student who CLEARS Gate 1 (13+, no parental-consent flag) --
+        isolates Gate 2's own behavior."""
+        sess_row = MagicMock()
+        sess_row.activity_id = activity_id
+
+        act_row = MagicMock()
+        act_row.discovery_location_gps_capture_enabled = True
+
+        user_row = MagicMock()
+        user_row.age_group = "adult"
+        user_row.requires_parental_consent = False
+
+        sess_result = MagicMock()
+        sess_result.scalar_one_or_none.return_value = sess_row
+        act_result = MagicMock()
+        act_result.scalar_one_or_none.return_value = act_row
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = user_row
+
+        return sess_result, act_result, user_result
+
+    @pytest.mark.asyncio
+    async def test_region_gate_invoked_with_correct_args_when_age_gate_clears(self, ctx):
+        """A 13+/no-flag student never triggers Gate 1's own consent check
+        (needs_consent=False) -- confirm Gate 2 still runs unconditionally
+        and is called with the right evidence/activity/force-block args."""
+        client, db, user = ctx["client"], ctx["db"], ctx["user"]
+        session_id, activity_id = uuid4(), uuid4()
+        sess_result, act_result, user_result = self._base_mocks(activity_id)
+        insert_result = MagicMock()
+        insert_result.fetchone.return_value = (uuid4(), datetime(2026, 1, 15, 10, 0, 0))
+        db.execute.side_effect = [sess_result, act_result, user_result, insert_result]
+
+        mock_enforce = AsyncMock(return_value=None)
+        with patch("routes.sessions.enforce_or_raise", new=mock_enforce):
+            resp = await client.post(
+                f"/api/v1/sessions/{session_id}/events",
+                json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
+            )
+
+        assert resp.status_code == 201
+        mock_enforce.assert_awaited_once_with(
+            student_id=str(user.id),
+            data_type="learning_session_event",
+            db=db,
+            evidence_types=["gps"],
+            activity_id=str(activity_id),
+            actor_role="student",
+            action="ENFORCE_LOCATION_UPDATE",
+            force_block_on_would_block=True,
+        )
+
+    @pytest.mark.asyncio
+    async def test_region_gate_blocks_even_when_age_gate_clears(self, ctx):
+        """THE gap this gate closes: a 13+ (or unknown-age) student in a
+        region-restricted jurisdiction (e.g. GDPR) used to sail through with
+        zero jurisdiction check -- only COPPA-style age consent was ever
+        checked on this endpoint. Now a region-triggered block surfaces as a
+        403 even though Gate 1 alone would have allowed the request."""
+        from fastapi import HTTPException
+
+        client, db, user = ctx["client"], ctx["db"], ctx["user"]
+        session_id, activity_id = uuid4(), uuid4()
+        sess_result, act_result, user_result = self._base_mocks(activity_id)
+        db.execute.side_effect = [sess_result, act_result, user_result]
+
+        blocked = AsyncMock(side_effect=HTTPException(status_code=403, detail="region_gps_restricted"))
+        with patch("routes.sessions.enforce_or_raise", new=blocked):
+            resp = await client.post(
+                f"/api/v1/sessions/{session_id}/events",
+                json={"event_type": "location_update", "metadata": {"lat": 1.0, "lng": 2.0}},
+            )
+
+        assert resp.status_code == 403
+        assert resp.json()["detail"] == "region_gps_restricted"
 
 
 # ===========================================================================

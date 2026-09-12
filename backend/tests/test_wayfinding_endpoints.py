@@ -82,8 +82,18 @@ async def ctx():
     app.dependency_overrides[get_current_user] = lambda: user
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield {"client": client, "db": db, "user": user, "session": sess, "activity": act}
+    # Gate 2 (2026-09, in _require_effective_rung) calls the REAL
+    # enforce_or_raise -> enforce_on_submission -> identify_jurisdiction /
+    # merge_jurisdictions, none of which this file mocks. Left unpatched,
+    # the generic `res` MagicMock above (standing in for a session/activity
+    # row) would get fed to those as if it were a User/rule row, producing
+    # unpredictable results unrelated to what these tests actually check
+    # (the rung ladder). Neutralised here, same boundary this file already
+    # draws around effective_capability_rung -- Gate 2 gets its own
+    # dedicated coverage in test_gps_consent.py instead.
+    with patch("routes.sessions.enforce_or_raise", new=AsyncMock(return_value=None)):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield {"client": client, "db": db, "user": user, "session": sess, "activity": act}
 
 
 def _gate(rung: str) -> dict:

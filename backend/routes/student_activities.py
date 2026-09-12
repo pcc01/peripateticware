@@ -491,6 +491,7 @@ async def start_activity_session(
             data_type="learning_session",
             db=db,
             evidence_types=["gps"],
+            activity_id=str(activity_id),
         )
 
     # Create new session
@@ -629,6 +630,7 @@ async def add_evidence_capture(
         data_type="student_evidence",
         db=db,
         evidence_types=[capture_type],
+        activity_id=str(session.activity_id) if session.activity_id else None,
     )
 
     # Handle file upload

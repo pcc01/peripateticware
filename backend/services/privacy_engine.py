@@ -463,11 +463,32 @@ async def identify_jurisdiction(
         applicable = ["US_FEDERAL"]  # conservative FERPA baseline
 
     try:
-        if user is not None and getattr(user, "age", None) is not None and user.age < 13:
-            if not any(j in ("coppa_us", "US_FEDERAL_COPPA", "US-COPPA") for j in applicable):
-                applicable.append("coppa_us")
+        # BUG FIX (2026-09): this used to check `user.age`, an attribute that
+        # does not exist anywhere on the User model (only `age_group` --
+        # 'under_13'|'under_16'|'under_18'|'adult'|None -- and
+        # `requires_parental_consent`, both set by
+        # routes/classrooms.py::accept_invite from an optional date_of_birth).
+        # getattr(user, "age", None) was always None, so this branch never
+        # fired -- confirmed live: a FERPA-only or unmapped-jurisdiction org
+        # got zero blocking on sensitive evidence for a real under-13 student,
+        # because the ONLY jurisdiction signal was the org's self-reported
+        # has_under_13 flag from teacher signup, never re-checked per student.
+        # Fixed to use the real fields, matching the same "who counts as a
+        # minor" predicate routes/sessions.py's location gate and
+        # wayfinding_consent.py::age_floor_rung already use, so this override
+        # never disagrees with those existing gates. Appending coppa_us here
+        # can only tighten merge_jurisdictions()'s strictest-wins result
+        # (all()/any()/min() across jurisdictions), never loosen it -- a
+        # lenient org can never undermine a genuinely under-13 student's
+        # protection.
+        if user is not None:
+            age_group = getattr(user, "age_group", None)
+            requires_consent = bool(getattr(user, "requires_parental_consent", False))
+            if age_group == "under_13" or requires_consent:
+                if not any(j in ("coppa_us", "US_FEDERAL_COPPA", "US-COPPA") for j in applicable):
+                    applicable.append("coppa_us")
     except Exception as exc:
-        logger.warning(f"identify_jurisdiction: could not evaluate user age: {exc}")
+        logger.warning(f"identify_jurisdiction: could not evaluate user age_group: {exc}")
 
     return applicable
 
@@ -520,12 +541,63 @@ async def merge_jurisdictions(
     return merged
 
 
+async def _has_valid_consent(
+    *,
+    db: Optional[AsyncSession],
+    student_id: str,
+    activity_id: Optional[str],
+    evidence_types: List[str],
+) -> bool:
+    """Return True if real, already-granted consent covers this submission.
+
+    Unifies the two consent records this engine previously never looked at:
+      - gps/location evidence tied to a known activity: activity-scoped
+        consent in consent_logs (consent_type='gps_tracking'), via the same
+        services.gps_consent.check_gps_consent() routes/sessions.py uses for
+        its own GPS gate -- one shared source of truth, not two.
+      - everything else (including gps/location with no activity_id): the
+        blanket ConsentRecord(consent_type='parental', is_active=True) row
+        that routes/privacy.py::record_consent already writes when a parent
+        uses the emailed consent link -- previously a one-way "reactivate
+        the account" side effect that nothing else ever read.
+
+    This only ever turns a "must block" into "allowed because consent
+    genuinely exists" -- it never suppresses the jurisdiction-driven
+    requirement itself (callers still see consent_required=True either way).
+
+    Fails CLOSED (returns False) on any lookup error or missing db -- an
+    enforcement gate must never treat an error as "consent granted".
+    """
+    if db is None:
+        return False
+    try:
+        gps_like = {"gps", "location"}
+        if activity_id and any(e in gps_like for e in evidence_types):
+            from services.gps_consent import check_gps_consent
+            if await check_gps_consent(db, student_id, activity_id):
+                return True
+
+        from models.compliance import ConsentRecord
+        result = await db.execute(
+            select(ConsentRecord.id).where(
+                ConsentRecord.student_id_hash == hash_student_id(str(student_id)),
+                ConsentRecord.consent_type == "parental",
+                ConsentRecord.is_active == True,
+            ).limit(1)
+        )
+        return result.scalar_one_or_none() is not None
+    except Exception as exc:
+        logger.warning(f"enforce_on_submission: consent lookup failed (failing closed): {exc}")
+        return False
+
+
 async def enforce_on_submission(
     student_id: str,
     data_type: str,
     jurisdiction_id: Optional[str] = None,
     evidence_types: Optional[List[str]] = None,
     db: Optional[AsyncSession] = None,
+    activity_id: Optional[str] = None,
 ) -> EnforcementResult:
     """
     Main enforcement gate called before student evidence is written.
@@ -575,10 +647,28 @@ async def enforce_on_submission(
         if evidence_types and any(e.lower() in sensitive for e in evidence_types):
             if not config.student_monitoring_allowed:
                 consent_required = True
-                blocking_reasons.append(
-                    "Sensitive evidence (location/audio/video/biometric) requires "
-                    "consent under the applicable jurisdiction"
+                # BUG FIX (2026-09): this used to block unconditionally --
+                # consent_required was set but never actually checked against
+                # anything, so even a family that had genuinely already
+                # consented (via routes/privacy.py::record_consent, or a
+                # prior GPS-specific consent_logs grant) would show
+                # would_block=True forever, with no way to ever satisfy the
+                # requirement. Now checks the real consent state before
+                # blocking; consent_required stays True either way so the
+                # audit trail keeps recording that this write relied on
+                # consent (satisfied or not).
+                has_consent = await _has_valid_consent(
+                    db=db,
+                    student_id=student_id,
+                    activity_id=activity_id,
+                    evidence_types=[e.lower() for e in evidence_types],
                 )
+                if not has_consent:
+                    blocking_reasons.append(
+                        "Sensitive evidence (location/audio/video/biometric) requires "
+                        "consent under the applicable jurisdiction, and no active "
+                        "consent record was found"
+                    )
 
     # Decide status by mode.
     if mode == "block" and blocking_reasons:
@@ -609,6 +699,7 @@ async def _record_enforcement_audit(
     data_type: str,
     evidence_types: Optional[List[str]],
     notes: Optional[str],
+    activity_id: Optional[str] = None,
 ) -> None:
     """
     Write one durable rule_audit_log row capturing what the engine actually
@@ -647,6 +738,7 @@ async def _record_enforcement_audit(
             "blocking_reason": result.blocking_reason,
             "consent_required": result.consent_required,
             "evidence_types": evidence_types or [],
+            "activity_id": activity_id,
         }
         session_factory = get_session_factory()
         async with session_factory() as audit_db:
@@ -677,6 +769,8 @@ async def enforce_or_raise(
     actor_role: str = "student",
     action: Optional[str] = None,
     notes: Optional[str] = None,
+    activity_id: Optional[str] = None,
+    force_block_on_would_block: bool = False,
 ) -> Optional[EnforcementResult]:
     """
     Pre-write enforcement gate for a route handler, extracted from the
@@ -692,12 +786,23 @@ async def enforce_or_raise(
     runs, regardless of mode or outcome — previously the result was computed
     and silently discarded unless the caller separately called
     audit_submission() (only 2 of 9 call sites did).
+
+    force_block_on_would_block: defaults to False, so every pre-existing call
+    site is byte-for-byte unaffected (the block decision reduces to exactly
+    `result.status == "BLOCKED"`, same as always). Pass True only for a write
+    that's irreversible the instant it happens (live GPS position/track
+    streaming) where waiting on the global ENFORCEMENT_MODE=block rollout
+    would mean the region-based check is silently inert while an existing,
+    unconditional age-based check on the same endpoint is not — an asymmetry
+    that would itself undermine the region's rule. See
+    routes/sessions.py::log_session_event / _require_effective_rung.
     """
     from fastapi import HTTPException, status as _status
 
     try:
         result = await enforce_on_submission(
             student_id=student_id, data_type=data_type, evidence_types=evidence_types, db=db,
+            activity_id=activity_id,
         )
         if db is not None:
             await _record_enforcement_audit(
@@ -708,8 +813,10 @@ async def enforce_or_raise(
                 data_type=data_type,
                 evidence_types=evidence_types,
                 notes=notes,
+                activity_id=activity_id,
             )
-        if result.status == "BLOCKED":
+        should_block = result.status == "BLOCKED" or (force_block_on_would_block and result.would_block)
+        if should_block:
             raise HTTPException(
                 status_code=_status.HTTP_403_FORBIDDEN,
                 detail=result.blocking_reason or "Submission blocked by privacy policy",

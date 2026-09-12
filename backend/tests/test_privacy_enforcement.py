@@ -54,7 +54,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, ANY, patch
 
 from services.privacy_engine import (
     EnforcementResult,
@@ -63,6 +63,7 @@ from services.privacy_engine import (
     enforce_on_submission,
     enforce_or_raise,
     audit_submission,
+    identify_jurisdiction,
 )
 
 
@@ -141,6 +142,7 @@ class TestEnforceOrRaise:
             )
         mock_enforce.assert_awaited_once_with(
             student_id="s1", data_type="student_peer_project_capture", evidence_types=["photo"], db=fake_db,
+            activity_id=None,
         )
 
 
@@ -342,11 +344,20 @@ class TestEnforceOnSubmissionDecisionMatrix:
     inside enforce_on_submission() itself runs for real.
     """
 
-    def _mock_jurisdiction(self, config: JurisdictionConfig):
+    def _mock_jurisdiction(self, config: JurisdictionConfig, has_consent: bool = False):
+        # has_consent defaults False: a bare AsyncMock() db (what every test
+        # here passes) would otherwise make the REAL _has_valid_consent()
+        # query a Mock whose auto-generated .scalar_one_or_none() is a
+        # truthy MagicMock by default -- silently "finding" a fake consent
+        # record and breaking every blocking-behavior assertion below.
+        # Consent-satisfied behavior gets its own dedicated coverage in
+        # TestConsentAwareBypass instead of leaking into this class's
+        # jurisdiction/mode decision matrix.
         return patch.multiple(
             "services.privacy_engine",
             identify_jurisdiction=AsyncMock(return_value=[config.jurisdiction_id]),
             merge_jurisdictions=AsyncMock(return_value=config),
+            _has_valid_consent=AsyncMock(return_value=has_consent),
         )
 
     @pytest.mark.asyncio
@@ -508,11 +519,20 @@ class TestEnforceOnSubmissionDecisionMatrix:
 class TestEdgeCases:
     """Boundary conditions that a real rollout decision needs confidence on."""
 
-    def _mock_jurisdiction(self, config: JurisdictionConfig):
+    def _mock_jurisdiction(self, config: JurisdictionConfig, has_consent: bool = False):
+        # has_consent defaults False: a bare AsyncMock() db (what every test
+        # here passes) would otherwise make the REAL _has_valid_consent()
+        # query a Mock whose auto-generated .scalar_one_or_none() is a
+        # truthy MagicMock by default -- silently "finding" a fake consent
+        # record and breaking every blocking-behavior assertion below.
+        # Consent-satisfied behavior gets its own dedicated coverage in
+        # TestConsentAwareBypass instead of leaking into this class's
+        # jurisdiction/mode decision matrix.
         return patch.multiple(
             "services.privacy_engine",
             identify_jurisdiction=AsyncMock(return_value=[config.jurisdiction_id]),
             merge_jurisdictions=AsyncMock(return_value=config),
+            _has_valid_consent=AsyncMock(return_value=has_consent),
         )
 
     @pytest.mark.asyncio
@@ -599,6 +619,7 @@ class TestEdgeCases:
         )
         with patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(return_value=["lenient_state", "strict_state"])), \
              patch("services.privacy_engine.merge_jurisdictions", new=AsyncMock(return_value=merged)), \
+             patch("services.privacy_engine._has_valid_consent", new=AsyncMock(return_value=False)), \
              patch("core.config.settings.ENFORCEMENT_MODE", "block"):
             result = await enforce_on_submission(
                 student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["photo"],
@@ -615,9 +636,214 @@ class TestEdgeCases:
         with patch("services.privacy_engine._get_cached_rules", new=AsyncMock(return_value={"explicit_jid": config})), \
              patch("services.privacy_engine.identify_jurisdiction", new=AsyncMock(side_effect=AssertionError("should not be called"))), \
              patch("services.privacy_engine.resolve_jurisdiction_id", new=lambda jid, configs: "explicit_jid"), \
+             patch("services.privacy_engine._has_valid_consent", new=AsyncMock(return_value=False)), \
              patch("core.config.settings.ENFORCEMENT_MODE", "block"):
             result = await enforce_on_submission(
                 student_id="s1", data_type="student_evidence", db=AsyncMock(),
                 jurisdiction_id="explicit_jid", evidence_types=["audio"],
             )
         assert result.status == "BLOCKED"
+
+
+class _FakeUser:
+    def __init__(self, org_id=None, age_group=None, requires_parental_consent=False):
+        self.org_id = org_id
+        self.age_group = age_group
+        self.requires_parental_consent = requires_parental_consent
+
+
+def _db_returning(*values):
+    """An AsyncMock db whose .execute() yields each MagicMock result in
+    order, mirroring how SQLAlchemy 2.0 async results are consumed
+    synchronously (.scalar_one_or_none() etc. on the awaited Result)."""
+    db = AsyncMock()
+    db.execute = AsyncMock(side_effect=list(values))
+    return db
+
+
+class TestIdentifyJurisdictionAgeOverride:
+    """The dead-code fix (2026-09): identify_jurisdiction() used to check a
+    `user.age` attribute that doesn't exist anywhere on the User model
+    (only age_group/requires_parental_consent) -- getattr always returned
+    None, so this branch never fired. Confirmed live: a FERPA-only or
+    unmapped-jurisdiction org got zero blocking on sensitive evidence for a
+    real under-13 student. These exercise identify_jurisdiction() directly
+    (not mocked), with only its `db` dependency stubbed."""
+
+    @pytest.mark.asyncio
+    async def test_under_13_age_group_appends_coppa_us(self):
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = _FakeUser(age_group="under_13")
+        result = await identify_jurisdiction("s1", None, _db_returning(user_result))
+        assert "coppa_us" in result
+
+    @pytest.mark.asyncio
+    async def test_requires_parental_consent_flag_alone_appends_coppa_us(self):
+        """requires_parental_consent can be True while age_group is still
+        None (both are set together by accept_invite in the real flow, but
+        this is defense-in-depth: either signal alone is sufficient)."""
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = _FakeUser(
+            age_group=None, requires_parental_consent=True,
+        )
+        result = await identify_jurisdiction("s1", None, _db_returning(user_result))
+        assert "coppa_us" in result
+
+    @pytest.mark.asyncio
+    async def test_adult_does_not_append_coppa_us(self):
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = _FakeUser(
+            age_group="adult", requires_parental_consent=False,
+        )
+        result = await identify_jurisdiction("s1", None, _db_returning(user_result))
+        assert "coppa_us" not in result
+
+    @pytest.mark.asyncio
+    async def test_does_not_duplicate_coppa_us_already_present_from_org(self):
+        """An org that ALSO already resolved to coppa_us on its own (e.g.
+        has_under_13=True at signup) must not end up with a duplicate
+        entry when the per-student override fires too."""
+        user_result = MagicMock()
+        user_result.scalar_one_or_none.return_value = _FakeUser(
+            org_id="org-1", age_group="under_13",
+        )
+        org_result = MagicMock()
+        org_result.scalar_one_or_none.return_value = ["coppa_us"]  # JSONB column, already a list
+        result = await identify_jurisdiction("s1", None, _db_returning(user_result, org_result))
+        assert result.count("coppa_us") == 1
+
+
+class TestConsentAwareBypass:
+    """enforce_on_submission() (2026-09 fix) used to block sensitive
+    evidence unconditionally whenever monitoring was disallowed --
+    consent_required was set but never actually checked against anything,
+    so even a family that had genuinely already consented would show
+    would_block=True forever. Now it looks for real consent first. Mirrors
+    TestEnforceOnSubmissionDecisionMatrix's approach (identify_jurisdiction/
+    merge_jurisdictions mocked, everything else real) -- only the DB-level
+    consent lookup inside _has_valid_consent is controlled per test here."""
+
+    def _mock_jurisdiction(self, config: JurisdictionConfig):
+        return patch.multiple(
+            "services.privacy_engine",
+            identify_jurisdiction=AsyncMock(return_value=[config.jurisdiction_id]),
+            merge_jurisdictions=AsyncMock(return_value=config),
+        )
+
+    @pytest.mark.asyncio
+    async def test_blocks_when_no_consent_record_exists(self):
+        config = _config(student_monitoring_allowed=False)
+        no_row = MagicMock()
+        no_row.scalar_one_or_none.return_value = None
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=no_row)
+        with self._mock_jurisdiction(config), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=db, evidence_types=["audio"],
+            )
+        assert result.status == "BLOCKED"
+        assert result.consent_required is True
+
+    @pytest.mark.asyncio
+    async def test_allows_when_active_parental_consent_record_exists(self):
+        """The blanket ConsentRecord(consent_type='parental') row that
+        routes/privacy.py::record_consent already writes when a parent uses
+        the emailed consent link -- previously a one-way "reactivate the
+        account" side effect that nothing else ever read."""
+        config = _config(student_monitoring_allowed=False)
+        found_row = MagicMock()
+        found_row.scalar_one_or_none.return_value = "consent-row-id"
+        db = AsyncMock()
+        db.execute = AsyncMock(return_value=found_row)
+        with self._mock_jurisdiction(config), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=db, evidence_types=["audio"],
+            )
+        assert result.status == "ALLOWED"
+        assert result.would_block is False
+        assert result.blocking_reason is None
+        # Still surfaced for audit-trail transparency even though satisfied.
+        assert result.consent_required is True
+
+    @pytest.mark.asyncio
+    async def test_activity_scoped_gps_consent_uses_shared_helper(self):
+        """gps/location evidence with a known activity_id delegates to
+        services.gps_consent.check_gps_consent -- the SAME function
+        routes/sessions.py's own GPS gate uses, not a separate query
+        against a different table."""
+        config = _config(student_monitoring_allowed=False)
+        mock_check = AsyncMock(return_value=True)
+        with self._mock_jurisdiction(config), \
+             patch("services.gps_consent.check_gps_consent", new=mock_check), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="learning_session", db=AsyncMock(),
+                evidence_types=["gps"], activity_id="act-1",
+            )
+        mock_check.assert_awaited_once_with(ANY, "s1", "act-1")
+        assert result.status == "ALLOWED"
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    async def test_consent_lookup_failure_fails_closed(self):
+        """A DB hiccup during the consent lookup must still block -- an
+        enforcement gate must never treat an error as "consent granted"."""
+        config = _config(student_monitoring_allowed=False)
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=RuntimeError("db exploded"))
+        with self._mock_jurisdiction(config), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=db, evidence_types=["photo"],
+            )
+        assert result.status == "BLOCKED"
+
+
+class TestEnforceOrRaiseForceBlock:
+    """force_block_on_would_block (2026-09): defaults to False so every
+    pre-existing call site is byte-for-byte unaffected -- the block decision
+    reduces to exactly `result.status == "BLOCKED"`, same as always. Only
+    the 3 new real-time GPS-streaming call sites (location_update,
+    live-position, track) pass True, to hard-block immediately rather than
+    wait on the global ENFORCEMENT_MODE rollout."""
+
+    @pytest.mark.asyncio
+    async def test_default_false_does_not_raise_on_would_block(self):
+        would_block_but_allowed = EnforcementResult(status="ALLOWED", would_block=True, blocking_reason="x")
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=would_block_but_allowed)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=AsyncMock()):
+            result = await enforce_or_raise(student_id="s1", data_type="student_notebook", db=AsyncMock())
+        assert result is would_block_but_allowed  # not raised -- every existing call site unaffected
+
+    @pytest.mark.asyncio
+    async def test_force_true_raises_even_in_log_mode_when_would_block(self):
+        from fastapi import HTTPException
+
+        would_block_but_allowed = EnforcementResult(
+            status="ALLOWED", would_block=True, blocking_reason="region restricted",
+        )
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=would_block_but_allowed)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=AsyncMock()):
+            with pytest.raises(HTTPException) as exc_info:
+                await enforce_or_raise(
+                    student_id="s1", data_type="learning_session_event", db=AsyncMock(),
+                    force_block_on_would_block=True,
+                )
+        assert exc_info.value.status_code == 403
+        assert exc_info.value.detail == "region restricted"
+
+    @pytest.mark.asyncio
+    async def test_force_true_still_allows_when_would_block_is_false(self):
+        allowed = EnforcementResult(status="ALLOWED", would_block=False)
+        with patch("services.privacy_engine.enforce_on_submission", new=AsyncMock(return_value=allowed)), \
+             patch("core.database.get_session_factory", new=lambda: FakeSessionFactory()), \
+             patch("services.privacy_engine.log_access", new=AsyncMock()):
+            result = await enforce_or_raise(
+                student_id="s1", data_type="learning_session_event", db=AsyncMock(),
+                force_block_on_would_block=True,
+            )
+        assert result is allowed
