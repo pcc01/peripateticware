@@ -1,18 +1,33 @@
 -- reset-activity-submission-prod.sql
 --
--- Clears the learning-session, notebook entries, and submission record for
--- ONE activity + ONE student, so maestro/flows/activity/4-6-activity-flow.yaml
+-- Clears the learning-session and notebook/submission state for ONE
+-- activity + ONE student, so maestro/flows/activity/4-6-activity-flow.yaml
 -- (and any other flow that submits field work) can be re-run from scratch.
 -- Scoped by activity title + student email — only ever touches the
 -- dedicated QA student's data, never real student data. Safe to run
 -- repeatedly.
 --
--- startActivitySession is "start or resume" server-side, and a submitted
--- activity_submissions row makes ReflectPhase render "Submitted ✓" instead
--- of "Submit field work" on load — so without this, re-running 4-6 (or the
--- full non-waypoint suite, which includes it) against the same QA account
--- fails at "Tap on Submit field work: element not found" the second time,
--- same class of gotcha as reset-wayfinding-prod.sql.
+-- WHAT ACTUALLY GATES "Submitted ✓" (found the hard way — the first
+-- version of this script reset the wrong tables and silently did nothing):
+-- app/activity/[id].tsx loads GET /api/v1/student/notebook?activity_id=...
+-- (routes/student.py list_notebook_entries) on activity mount and sets
+-- submitted = existing.is_submitted from the most recent row. That endpoint
+-- queries the StudentNotebook model — table student_notebooks — NOT the
+-- similarly-named notebook_entries table in database/student_schema.sql,
+-- which is a separate, unrelated (dead-in-this-flow) schema that doesn't
+-- even have an is_submitted column. activity_submissions is also unrelated
+-- to this flow (nothing in the submit path writes to it). The first
+-- version of this script deleted from activity_submissions and
+-- notebook_entries and joined learning_sessions on a student_id column
+-- that doesn't exist there (it's user_id) — so on a real run it would
+-- either error out (ON_ERROR_STOP) or, if that CTE just matched zero rows,
+-- commit having changed nothing, while looking like it succeeded.
+--
+-- startActivitySession is also "start or resume" server-side (only resumes
+-- a session with status='in_progress' though — see
+-- routes/student_activities.py start_activity_session), so this also
+-- clears learning_sessions for a fully clean re-run of phase/capture state,
+-- not just the submit flag.
 --
 -- Pass the title/email with -v (defaults to the Creek Habitat Study QA
 -- activity + the standard loadtest student). Host / db user / db name come
@@ -48,17 +63,26 @@ stu AS (
 sess AS (
     SELECT ls.id
     FROM learning_sessions ls, act, stu
-    WHERE ls.activity_id = act.id AND ls.student_id = stu.id
+    WHERE ls.activity_id = act.id AND ls.user_id = stu.id
 ),
-_submissions AS (
-    DELETE FROM activity_submissions
-    WHERE activity_id IN (SELECT id FROM act)
-      AND student_id  IN (SELECT id FROM stu)
+nb AS (
+    SELECT sn.id
+    FROM student_notebooks sn, act, stu
+    WHERE sn.activity_id = act.id AND sn.student_id = stu.id
+),
+_feedback AS (
+    DELETE FROM notebook_feedback
+    WHERE notebook_id IN (SELECT id FROM nb)
     RETURNING 1
 ),
-_entries AS (
-    DELETE FROM notebook_entries
-    WHERE session_id IN (SELECT id FROM sess)
+_capture_links AS (
+    DELETE FROM notebook_capture_links
+    WHERE notebook_id IN (SELECT id FROM nb)
+    RETURNING 1
+),
+_notebooks AS (
+    DELETE FROM student_notebooks
+    WHERE id IN (SELECT id FROM nb)
     RETURNING 1
 )
 DELETE FROM learning_sessions
@@ -70,9 +94,9 @@ COMMIT;
 SELECT
     (SELECT count(*) FROM learning_sessions ls
        JOIN activities a ON ls.activity_id = a.id
-       JOIN users u ON ls.student_id = u.id
-      WHERE a.title = :'activity' AND u.email = :'student_email')  AS sessions_left,
-    (SELECT count(*) FROM activity_submissions asub
-       JOIN activities a ON asub.activity_id = a.id
-       JOIN users u ON asub.student_id = u.id
-      WHERE a.title = :'activity' AND u.email = :'student_email')  AS submissions_left;
+       JOIN users u ON ls.user_id = u.id
+      WHERE a.title = :'activity' AND u.email = :'student_email')     AS sessions_left,
+    (SELECT count(*) FROM student_notebooks sn
+       JOIN activities a ON sn.activity_id = a.id
+       JOIN users u ON sn.student_id = u.id
+      WHERE a.title = :'activity' AND u.email = :'student_email')     AS notebooks_left;
