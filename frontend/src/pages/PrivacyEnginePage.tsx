@@ -87,12 +87,12 @@ const HOW_IT_WORKS = [
   {
     icon: Settings,
     title: 'Admin Configuration',
-    body: "Institution admins can tune parameters within their jurisdiction's bounds: adjust retention days, restrict or expand sharing with parents, enable/disable specific monitoring features. No rule can be configured below the legal minimum.",
+    body: "Institution admins can tune parameters within their jurisdiction's bounds: adjust retention days, restrict or expand sharing with parents, enable/disable specific monitoring features.",
   },
   {
     icon: Lock,
     title: 'Immutable Audit Trail',
-    body: 'Every rule change and every data access is recorded with a cryptographic hash. The audit log is append-only and tamper-evident — giving your legal and compliance teams a full verifiable history.',
+    body: 'Every rule change is recorded with a cryptographic hash of its content, and every data access is written to an append-only log that is never edited or deleted — giving your legal and compliance teams a full verifiable history.',
   },
   {
     icon: Eye,
@@ -102,7 +102,7 @@ const HOW_IT_WORKS = [
   {
     icon: Shield,
     title: 'Continuous Compliance',
-    body: 'When regulations change, Peripateticware ships an updated rule version. Admins review a diff, approve the upgrade, and the engine enforces the new rules immediately — no re-coding required.',
+    body: "When regulations change, Peripateticware publishes an updated rule set for the affected jurisdiction. Because rules are stored as data rather than hard-coded logic, the enforcement engine itself doesn't need to change — once the new rule set is live, it takes effect on the next request without an app update.",
   },
 ];
 
@@ -216,12 +216,12 @@ export default function PrivacyEnginePage() {
         <div className="grid md:grid-cols-2 gap-4">
           {[
             ['Data retention window', 'Set how long student records are stored before automatic deletion (within legal maximums).'],
-            ['Encryption algorithm', 'Choose AES-256 (default) or ChaCha20-Poly1305 for data at rest.'],
+            ['Encryption algorithm', 'Sensitive fields are encrypted at rest by default; the algorithm itself is fixed and not admin-configurable.'],
             ['Parent data access', 'Enable or restrict parent visibility into specific activity categories.'],
             ['Monitoring features', 'Toggle session monitoring and field-note visibility per jurisdiction requirements.'],
-            ['Profiling & targeting', 'Behavioural profiling is off by default; the engine enforces this cannot be enabled for under-18 accounts.'],
+            ['Profiling & targeting', "Behavioural profiling is off by default across every jurisdiction's current rule set, and there is no feature in the product that turns it on."],
             ['Consent flows', 'Configure whether consent is collected once per school year or per data-collection event.'],
-            ['Sharing with third parties', 'Whitelist approved third-party tools; all others are blocked by default.'],
+            ['Sharing with third parties', 'Configure whether student data may be shared with third parties per jurisdiction; when sharing is restricted, an out-of-policy share is flagged as a warning in the compliance audit log rather than blocked outright.'],
             ['Audit log retention', 'Extend the default 12-month audit log to meet state-level requirements.'],
           ].map(([title, desc]) => (
             <div key={title} className="flex gap-3 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
