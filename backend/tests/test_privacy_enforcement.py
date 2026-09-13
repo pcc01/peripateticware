@@ -880,6 +880,171 @@ class TestDeserialiseJurisdictionConsentRules:
         assert merged.consent_rules[0].requires_parental_consent is True
 
 
+class TestDeserialiseRemainingJurisdictionsConsentRules:
+    """Coverage for backend/migrations/005_seed_remaining_jurisdictions.py --
+    mirrors TestDeserialiseJurisdictionConsentRules's pattern (a representative
+    rule_def literal per jurisdiction, fed through the real
+    _deserialise_jurisdiction()) for the 5 jurisdictions that had an authored
+    config JSON but no compliance_rules row at all before 005:
+    pdpa_singapore, privacy_act_au, popia_za, lpdc_mx, aepd_ar.
+
+    Each rule_def below reproduces exactly the consent_rules shape 005 writes
+    (see that file's own module docstring for the full per-jurisdiction
+    reasoning) -- these are not copies of the source JSON's other sections,
+    just enough identity fields plus the consent_rules this test is actually
+    about, same minimalism as the existing GDPR_SHAPED_RULE_DEF fixture.
+    """
+
+    def test_pdpa_singapore_consent_rules_cover_all_three_minor_bands(self):
+        """pdpa_singapore's consent_requirements has parental_consent_required
+        = true for BOTH young_child (0-12) and teen (13-17, which spans
+        under_16 and under_18 exactly) -- all three minor bands should be
+        present, adult excluded."""
+        config = _deserialise_jurisdiction("pdpa_singapore", {
+            "jurisdiction_id": "pdpa_singapore",
+            "jurisdiction_name": "Singapore - Personal Data Protection Act (PDPA)",
+            "framework": "pdpa",
+            "country_code": "SG",
+            "consent_rules": [
+                {
+                    "data_categories": ["location", "biometric"],
+                    "age_groups": ["under_13", "under_16", "under_18"],
+                    "consent_type": "explicit",
+                    "requires_parental_consent": True,
+                    "parental_age_threshold": 18,
+                }
+            ],
+        })
+        assert len(config.consent_rules) == 1
+        rule = config.consent_rules[0]
+        assert rule.requires_parental_consent is True
+        assert set(rule.age_groups) == {"under_13", "under_16", "under_18"}
+        assert "adult" not in rule.age_groups
+        assert set(rule.data_categories) == {"location", "biometric"}
+
+    def test_privacy_act_au_consent_rules_cover_only_under_13(self):
+        """privacy_act_au's own child (0-14) / young_adult (15-17, EXPLICITLY
+        no parental consent) split does not align with the engine's under_16
+        bucket (13-15) -- 005 deliberately includes only the unambiguous
+        under_13 band, not under_16, to avoid guessing which way to round
+        the 13-14 vs. 15 mismatch."""
+        config = _deserialise_jurisdiction("privacy_act_au", {
+            "jurisdiction_id": "privacy_act_au",
+            "jurisdiction_name": "Australia - Privacy Act 1988 / Australian Privacy Principles (APPs)",
+            "framework": "privacy_act_au",
+            "country_code": "AU",
+            "consent_rules": [
+                {
+                    "data_categories": ["location", "biometric"],
+                    "age_groups": ["under_13"],
+                    "consent_type": "explicit",
+                    "requires_parental_consent": True,
+                    "parental_age_threshold": 15,
+                }
+            ],
+        })
+        assert len(config.consent_rules) == 1
+        rule = config.consent_rules[0]
+        assert rule.age_groups == ["under_13"]
+        assert "under_16" not in rule.age_groups
+        assert "under_18" not in rule.age_groups
+
+    def test_popia_za_and_lpdc_mx_consent_rules_cover_all_three_minor_bands(self):
+        """Both popia_za and lpdc_mx have a single uniform 'child' age
+        category (0-17) driven by one explicit child_age_threshold: 18 --
+        0-17 exactly equals under_13 union under_16 union under_18, so all
+        three engine buckets should be covered by one consent_rules entry."""
+        for jid, name in (
+            ("popia_za", "POPIA (South Africa)"),
+            ("lpdc_mx", "LPDC (Mexico)"),
+        ):
+            config = _deserialise_jurisdiction(jid, {
+                "jurisdiction_id": jid,
+                "jurisdiction_name": name,
+                "framework": "popia" if jid == "popia_za" else "lfpdppp",
+                "country_code": "ZA" if jid == "popia_za" else "MX",
+                "consent_rules": [
+                    {
+                        "data_categories": ["location", "biometric"],
+                        "age_groups": ["under_13", "under_16", "under_18"],
+                        "consent_type": "explicit",
+                        "requires_parental_consent": True,
+                        "parental_age_threshold": 18,
+                    }
+                ],
+            })
+            assert len(config.consent_rules) == 1, jid
+            rule = config.consent_rules[0]
+            assert rule.requires_parental_consent is True, jid
+            assert set(rule.age_groups) == {"under_13", "under_16", "under_18"}, jid
+
+    def test_aepd_ar_has_two_consent_rules_and_excludes_under_18(self):
+        """aepd_ar has the richest signal of the 5: two distinct thresholds
+        (child_age_threshold=13 for ALL processing, secondary_age_threshold=16
+        for non-essential processing only) that map exactly onto under_13 and
+        under_16 respectively -- and teen (16-17) is EXPLICITLY
+        parental_consent_required=false ('may consent independently'), so
+        under_18 must not appear in either entry."""
+        config = _deserialise_jurisdiction("aepd_ar", {
+            "jurisdiction_id": "aepd_ar",
+            "jurisdiction_name": "PDPA (Argentina)",
+            "framework": "pdpa",
+            "country_code": "AR",
+            "consent_rules": [
+                {
+                    "data_categories": ["location", "biometric"],
+                    "age_groups": ["under_13"],
+                    "consent_type": "explicit",
+                    "requires_parental_consent": True,
+                    "parental_age_threshold": 13,
+                },
+                {
+                    "data_categories": ["location", "biometric"],
+                    "age_groups": ["under_16"],
+                    "consent_type": "explicit",
+                    "requires_parental_consent": True,
+                    "parental_age_threshold": 16,
+                },
+            ],
+        })
+        assert len(config.consent_rules) == 2
+        all_age_groups = {g for rule in config.consent_rules for g in rule.age_groups}
+        assert all_age_groups == {"under_13", "under_16"}
+        assert "under_18" not in all_age_groups
+        assert all(r.requires_parental_consent for r in config.consent_rules)
+
+    @pytest.mark.asyncio
+    async def test_merge_jurisdictions_unions_consent_rules_across_new_and_old(self):
+        """Sanity check that a new jurisdiction's consent_rules merges
+        correctly alongside an existing Stage-1 jurisdiction (aepd_ar +
+        ferpa_us), exactly like TestDeserialiseJurisdictionConsentRules's own
+        merge test does for gdpr_eu + ferpa_us."""
+        aepd_config = _deserialise_jurisdiction("aepd_ar", {
+            "jurisdiction_id": "aepd_ar", "jurisdiction_name": "PDPA (Argentina)",
+            "framework": "pdpa", "country_code": "AR",
+            "consent_rules": [
+                {
+                    "data_categories": ["location", "biometric"],
+                    "age_groups": ["under_13"],
+                    "consent_type": "explicit",
+                    "requires_parental_consent": True,
+                },
+            ],
+        })
+        ferpa_config = _deserialise_jurisdiction("ferpa_us", {
+            "jurisdiction_id": "ferpa_us", "jurisdiction_name": "FERPA",
+            "framework": "ferpa", "country_code": "US",
+        })
+        with patch(
+            "services.privacy_engine._get_cached_rules",
+            new=AsyncMock(return_value={"aepd_ar": aepd_config, "ferpa_us": ferpa_config}),
+        ):
+            merged = await merge_jurisdictions(["aepd_ar", "ferpa_us"], db=AsyncMock())
+        assert len(merged.consent_rules) == 1
+        assert merged.consent_rules[0].requires_parental_consent is True
+        assert "under_13" in merged.consent_rules[0].age_groups
+
+
 class TestRulesCacheRoundTripPreservesConsentRules:
     """Caught live 2026-09-13 during the staged log-mode rollout of Bug 2's
     fix: every existing test above mocks _get_cached_rules() itself, which
