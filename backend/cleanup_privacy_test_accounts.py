@@ -499,7 +499,7 @@ FK_INVENTORY_SQL = """
     JOIN pg_attribute att
         ON att.attrelid = con.conrelid AND att.attnum = ck.attnum
     WHERE con.contype = 'f'
-      AND con.confrelid::regclass::text = ANY(:parents)
+      AND con.confrelid::regclass::text IN :parents
     ORDER BY parent_table, child_table, child_column;
 """
 
