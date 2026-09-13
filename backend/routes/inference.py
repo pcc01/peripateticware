@@ -251,7 +251,20 @@ async def process_inquiry(
         # `text` only — that path never reached an instructive prompt before; build
         # one now via build_peri_prompt() so Peri's questions are actually guided.
         if request.input_text and request.input_text.strip():
+            # Teacher-authored prompt (activity-builder "Generate Suggestions"
+            # panel) -- not student data, so the third-party-sharing age gate
+            # below does not apply to this branch. See
+            # _is_third_party_ai_sharing_permitted()'s docstring.
             response = await _call_llm_inference(inquiry, explicit_prompt=normalized_text, model=request.model)
+        elif not _is_third_party_ai_sharing_permitted(current_user):
+            # Real student observation text (InquiryInterface.tsx), but this
+            # student is under the age floor -- skip the third-party LLM call
+            # entirely and fall back gracefully, same as chat_with_peri.
+            response = {
+                "question": _CURATED_FALLBACK_CHAT_REPLY,
+                "resources": [],
+                "confidence": 0.5,
+            }
         else:
             from services.prompt_library import build_peri_prompt, SYSTEM_PERI
             peri_prompt = build_peri_prompt(
@@ -276,15 +289,20 @@ async def process_inquiry(
             )
 
         # ── Write result to cache ─────────────────────────────────────────────
-        try:
-            await _write_inference_cache(
-                db, location_name, subject, grade_level, bloom_level,
-                question=response.get("question", ""),
-                resources=response.get("resources", []),
-                confidence=response.get("confidence", 0.8),
-            )
-        except Exception as cache_err:
-            logger.warning(f"Cache write failed (non-fatal): {cache_err}")
+        # Skip caching the age-gated curated fallback: the cache key is
+        # location/subject/grade/bloom-scoped, shared across every student --
+        # caching this student's fallback would wrongly serve it to a later
+        # 13+ student who IS permitted a real LLM-generated question.
+        if response.get("question") != _CURATED_FALLBACK_CHAT_REPLY:
+            try:
+                await _write_inference_cache(
+                    db, location_name, subject, grade_level, bloom_level,
+                    question=response.get("question", ""),
+                    resources=response.get("resources", []),
+                    confidence=response.get("confidence", 0.8),
+                )
+            except Exception as cache_err:
+                logger.warning(f"Cache write failed (non-fatal): {cache_err}")
 
         return InferenceResponse(
             session_id=request.session_id,
@@ -310,6 +328,47 @@ async def process_inquiry(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to process inquiry"
         )
+
+
+# ── Third-party AI sharing: hard age floor ─────────────────────────────────────
+# chat_with_peri() and process_inquiry()'s real-student-observation branch both
+# send a student's own free-text content to a real third-party LLM provider
+# (Anthropic Claude in this deployment's real config, via _call_llm_inference ->
+# _call_claude_inference -> agents/provider.py's call_claude()) with no
+# jurisdiction/age/consent check today beyond the unrelated
+# ai_interaction_mode=='curated_only' authoring toggle. Under-13 (or otherwise
+# consent-flagged) students get a hard floor here: no live LLM call, ever, for
+# their own message content -- there is no consent path that unlocks this for
+# today's scope; a real parental-consent-to-unlock-AI-chat flow is future work.
+# Everyone else (13+, unknown age, adult) is unaffected.
+#
+# Mirrors the exact "who counts as a minor" predicate already used by
+# routes/classrooms.py::accept_invite (the writer of these two columns),
+# routes/sessions.py's GPS-consent gate, and
+# services/wayfinding_consent.py::age_floor_rung -- restated here rather than
+# imported since none of those live in a shared standalone helper today.
+def _is_third_party_ai_sharing_permitted(current_user: User) -> bool:
+    """False for an under-13 (or parental-consent-flagged) student -- callers
+    must skip the real LLM call entirely and fall back to the curated
+    question bank rather than send that student's message to a third-party
+    provider. True for everyone else (13+, unknown/null age_group, adults)."""
+    age_group = getattr(current_user, "age_group", None)
+    requires_parental_consent = bool(getattr(current_user, "requires_parental_consent", False))
+    is_minor_under_13 = (age_group == "under_13") or requires_parental_consent
+    return not is_minor_under_13
+
+
+# Shared graceful fallback text for both real-student-text call sites below --
+# same tone as chat_with_peri's existing empty-reply fallback ("I'm not sure
+# how to respond to that...") and the curated_only detail message, just
+# delivered as a normal 200 response rather than an error, per the "happy
+# medium" design: the chat/inquiry UI keeps working, it just never reaches
+# the third-party provider for this student.
+_CURATED_FALLBACK_CHAT_REPLY = (
+    "I can only use the curated question bank with you right now — take a "
+    "look at the guided questions for this activity, or ask your teacher if "
+    "you'd like to explore this further."
+)
 
 
 # ── Free-form Peri chat ("Ask Peri") ───────────────────────────────────────────
@@ -373,6 +432,13 @@ async def chat_with_peri(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="AI chat is turned off for this activity — its author chose the curated question bank only.",
             )
+
+    # Age floor: an under-13 (or consent-flagged) student's message never
+    # reaches the third-party LLM -- graceful curated-bank fallback instead
+    # of a hard error, so the chat UI keeps working. See
+    # _is_third_party_ai_sharing_permitted()'s docstring above.
+    if not _is_third_party_ai_sharing_permitted(current_user):
+        return ChatResponse(response=_CURATED_FALLBACK_CHAT_REPLY, confidence=None)
 
     from services.prompt_library import SYSTEM_PERI
 
