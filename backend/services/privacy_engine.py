@@ -311,7 +311,30 @@ def _deserialise_jurisdiction(jurisdiction: str, rule_def: Dict[str, Any]) -> Ju
     (case-insensitive framework, retention derived from data_retention when
     present, defaults filled). Falls back to raw .get() if the schema import
     isn't available for any reason — never crash a rule load.
+
+    BUG FIX (2026-09-13, caught live during large-scale publish-gate
+    verification): `rule_def` arrives in one of two shapes -- fresh DB
+    content (the raw rule_definition JSONB, with student_age_categories/
+    prohibited_data_collection/special_restrictions at its own top level),
+    or a cache-hit re-deserialisation of _get_cached_rules()'s own
+    serialised wrapper (a flat set of scalar fields plus "metadata" and
+    "consent_rules", whose metadata["_rule_definition"] already holds the
+    TRUE raw content one level deeper -- from the PREVIOUS call that wrote
+    this cache entry). Blindly using the incoming `rule_def` as the new
+    metadata["_rule_definition"] below re-wraps an already-wrapped object on
+    every cache hit, burying student_age_categories/prohibited_data_collection/
+    special_restrictions two levels deeper than check_activity_compliance()
+    ever looks -- confirmed live: gdpr_eu published a should-block grade<=8
+    activity immediately after an unrelated cache-warming call, while the
+    cold-load case in the same request sequence (coppa_us) correctly
+    blocked. Detect and unwrap: a genuine cache-wrapper is the only shape
+    whose "metadata" already contains "_rule_definition" -- raw DB content
+    never has that key, since this module is the only writer of it.
     """
+    cached_metadata = rule_def.get("metadata")
+    if isinstance(cached_metadata, dict) and "_rule_definition" in cached_metadata:
+        rule_def = cached_metadata["_rule_definition"]
+
     try:
         from schemas.privacy_rule import PrivacyRule
         rd = dict(rule_def)

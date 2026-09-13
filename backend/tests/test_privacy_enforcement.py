@@ -1499,6 +1499,127 @@ def _load_002_ferpa_us_rule_definition() -> dict:
     return ferpa_entry["rule_definition"]
 
 
+class TestDeserialiseJurisdictionCacheRewrap:
+    """Found live 2026-09-13 during large-scale publish-gate (D1)
+    verification: gdpr_eu published a should-block grade<=8 activity
+    immediately after an unrelated cache-warming request, while the
+    cold-load case in the same request sequence (coppa_us) correctly
+    blocked. Root cause: _deserialise_jurisdiction() unconditionally set
+    metadata["_rule_definition"] = rule_def -- correct on a cold DB load
+    (rule_def is the raw JSONB), but on a cache-hit re-deserialisation
+    rule_def is _get_cached_rules()'s OWN serialised wrapper (whose
+    metadata["_rule_definition"] already holds the true raw content one
+    level deeper), so re-wrapping buried student_age_categories/
+    prohibited_data_collection/special_restrictions two levels deeper than
+    check_activity_compliance() ever looks -- functionally identical bug
+    class to the consent_rules cache-drop found earlier the same day, but
+    in the deserialise step rather than the serialise step, and only
+    visible via metadata._rule_definition, not a top-level field, so the
+    earlier fix's own test (TestRulesCacheRoundTripPreservesConsentRules)
+    did not catch it.
+
+    This test simulates exactly the cold-then-warm sequence live traffic
+    produces: deserialise raw DB content once (cold), round-trip the
+    result through the real cache serialisation shape from
+    _get_cached_rules(), then deserialise THAT (warm) -- both must carry
+    the same real student_age_categories, not just the first."""
+
+    RAW_RULE_DEF = {
+        "jurisdiction_id": "gdpr_eu",
+        "jurisdiction_name": "European Union — GDPR",
+        "framework": "gdpr",
+        "country_code": "EU",
+        "student_age_categories": {"child": {"min_age": 8, "max_age": 13}},
+        "prohibited_data_collection": {"child": ["location_tracking_continuous"]},
+        "special_restrictions": {},
+    }
+
+    def test_cold_load_has_real_age_categories(self):
+        cold = _deserialise_jurisdiction("gdpr_eu", self.RAW_RULE_DEF)
+        rule_def = cold.metadata["_rule_definition"]
+        assert rule_def["student_age_categories"] == {"child": {"min_age": 8, "max_age": 13}}
+
+    def test_cache_round_trip_still_has_real_age_categories_not_the_wrapper(self):
+        cold = _deserialise_jurisdiction("gdpr_eu", self.RAW_RULE_DEF)
+
+        # Exactly _get_cached_rules()'s own serialisation shape (see
+        # services/privacy_engine.py) -- a flat scalar dict plus "metadata"
+        # (which nests the raw _rule_definition) and "consent_rules".
+        cached_wrapper = {
+            "framework": cold.framework.value,
+            "jurisdiction_name": cold.jurisdiction_name,
+            "country_code": cold.country_code,
+            "subdivision_code": cold.subdivision_code,
+            "max_retention_days": cold.max_retention_days,
+            "encryption_required": cold.encryption_required,
+            "encryption_algorithm": cold.encryption_algorithm,
+            "student_data_sharing_allowed": cold.student_data_sharing_allowed,
+            "student_monitoring_allowed": cold.student_monitoring_allowed,
+            "student_profiling_allowed": cold.student_profiling_allowed,
+            "student_targeting_allowed": cold.student_targeting_allowed,
+            "requires_privacy_impact_assessment": cold.requires_privacy_impact_assessment,
+            "requires_data_protection_officer": cold.requires_data_protection_officer,
+            "version": cold.version,
+            "metadata": cold.metadata,
+            "consent_rules": [],
+        }
+
+        warm = _deserialise_jurisdiction("gdpr_eu", cached_wrapper)
+        rule_def = warm.metadata["_rule_definition"]
+        assert "student_age_categories" in rule_def, (
+            "student_age_categories missing from the top level of the "
+            "post-cache-hit _rule_definition -- it got buried inside a "
+            "re-wrapped copy of the cache entry instead"
+        )
+        assert rule_def["student_age_categories"] == {"child": {"min_age": 8, "max_age": 13}}
+
+    @pytest.mark.asyncio
+    async def test_check_activity_compliance_blocks_identically_cold_and_warm(self):
+        """The end-to-end proof: the actual gate function, called twice in
+        the exact cold-then-warm sequence that produced the live mismatch,
+        must produce the same should-block verdict both times."""
+        checker = PrivacyComplianceChecker()
+        cold_config = _deserialise_jurisdiction("gdpr_eu", self.RAW_RULE_DEF)
+        checker.register_jurisdiction(cold_config)
+
+        activity_data = {"data_collection": ["location", "audio", "photo", "behavioral"]}
+        is_compliant_cold, issues_cold, _ = checker.check_activity_compliance(
+            "act-1", activity_data, 8, "gdpr_eu",
+        )
+        assert is_compliant_cold is False
+        assert issues_cold, "cold load must produce a genuine issue for age 8 + location"
+
+        cached_wrapper = {
+            "framework": cold_config.framework.value,
+            "jurisdiction_name": cold_config.jurisdiction_name,
+            "country_code": cold_config.country_code,
+            "subdivision_code": cold_config.subdivision_code,
+            "max_retention_days": cold_config.max_retention_days,
+            "encryption_required": cold_config.encryption_required,
+            "encryption_algorithm": cold_config.encryption_algorithm,
+            "student_data_sharing_allowed": cold_config.student_data_sharing_allowed,
+            "student_monitoring_allowed": cold_config.student_monitoring_allowed,
+            "student_profiling_allowed": cold_config.student_profiling_allowed,
+            "student_targeting_allowed": cold_config.student_targeting_allowed,
+            "requires_privacy_impact_assessment": cold_config.requires_privacy_impact_assessment,
+            "requires_data_protection_officer": cold_config.requires_data_protection_officer,
+            "version": cold_config.version,
+            "metadata": cold_config.metadata,
+            "consent_rules": [],
+        }
+        warm_config = _deserialise_jurisdiction("gdpr_eu", cached_wrapper)
+        checker.register_jurisdiction(warm_config)
+
+        is_compliant_warm, issues_warm, _ = checker.check_activity_compliance(
+            "act-2", activity_data, 8, "gdpr_eu",
+        )
+        assert is_compliant_warm is False, (
+            "warm (post-cache-hit) load silently allowed a should-block "
+            "activity that the cold load correctly blocked"
+        )
+        assert issues_warm, "warm load must produce the same kind of genuine issue as cold"
+
+
 class TestFerpaMonitoringAllowedRegression:
     """PRIVACY_LARGE_SCALE_TEST_FINDINGS.md Finding 1 (found 2026-09-13 by
     the Stage 3 large-scale local sweep, Table 2c-i S1 against the
