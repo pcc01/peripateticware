@@ -766,8 +766,26 @@ async def enforce_on_submission(
     if config:
         encryption_algo = config.encryption_algorithm
         retention_days = config.max_retention_days
+        # NOTE (2026-09-13): this check fires at ordinary evidence/session
+        # STORAGE time, not at any point where data actually leaves the
+        # platform -- it has no connection to a real third-party sharing
+        # event. Real third-party sharing (a student's free-text message
+        # sent to the Anthropic Claude API via "Ask Peri" / the inquiry
+        # chat) is gated separately and unconditionally by
+        # routes/inference.py::_is_third_party_ai_sharing_permitted(), which
+        # actually blocks for under-13 students rather than just warning.
+        # Kept here (warning-only, as it always was) purely as an
+        # informational audit signal: it flags that this student's evidence/
+        # session data was stored under a jurisdiction whose rules broadly
+        # disallow student data sharing, in case that's useful context for a
+        # future real sharing feature or an admin reviewing the audit trail
+        # -- it is NOT itself gating any sharing, and its wording should
+        # never again be read as if it were.
         if not config.student_data_sharing_allowed and data_type in ("student_evidence", "learning_session"):
-            warnings.append(f"Jurisdiction restricts student data sharing for {data_type}")
+            warnings.append(
+                f"Jurisdiction disallows student data sharing generally "
+                f"(informational only, not enforced at this {data_type} storage step)"
+            )
         # Under strict frameworks, location/biometric evidence needs consent.
         sensitive = {"gps", "location", "audio", "video", "photo", "biometric"}
         if evidence_types and any(e.lower() in sensitive for e in evidence_types):
