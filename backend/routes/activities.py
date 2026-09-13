@@ -20,6 +20,7 @@ from core.config import settings
 from core.dependencies import get_current_user, get_current_teacher
 from core.encryption import decrypt as _decrypt
 from core.cache import get_cache, set_cache
+from core.rate_limit import ai_rate_limit
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.database import ActivityWaypoint
 from models.assessment import TAXONOMY_DESCRIPTIONS
@@ -1857,6 +1858,18 @@ async def check_activity_compliance_quick(
 # the taxonomy dropdown.
 
 
+_TAXONOMY_FRAMEWORKS = ("blooms", "dok", "solo", "marzano")
+# Valid numeric level range per framework — anything outside this is treated
+# as a hallucinated/malformed field and dropped rather than passed through.
+_TAXONOMY_LEVEL_RANGE: Dict[str, tuple] = {
+    "blooms": (1, 6),
+    "dok": (1, 4),
+    "solo": (1, 5),
+    "marzano": (1, 4),
+}
+_TAXONOMY_CLASSIFY_MAX_CHARS = 4000  # guardrail: cap prompt-injected text length
+
+
 class TaxonomyClassifyRequest(_BaseModel):
     text: str
     classify_for: Optional[List[str]] = None
@@ -1867,11 +1880,44 @@ class TaxonomyClassifyResponse(_BaseModel):
     error: Optional[str] = None
 
 
+def _sanitize_taxonomy_result(parsed: Any, requested: List[str]) -> Optional[Dict[str, Any]]:
+    """Whitelist the LLM's classification output down to a known-good shape.
+
+    Never trust a JSON-parsed LLM response as-is: drop any framework key
+    that wasn't requested (a hallucinated fifth taxonomy), drop any entry
+    missing level/label/rationale or with the wrong types, and clamp level
+    to that framework's valid numeric range. Returns None if nothing
+    survives sanitization (treated as a classification failure upstream).
+    """
+    if not isinstance(parsed, dict):
+        return None
+    clean: Dict[str, Any] = {}
+    for fw in requested:
+        entry = parsed.get(fw)
+        if not isinstance(entry, dict):
+            continue
+        level = entry.get("level")
+        label = entry.get("label")
+        rationale = entry.get("rationale")
+        if not isinstance(level, int) or not isinstance(label, str) or not isinstance(rationale, str):
+            continue
+        lo, hi = _TAXONOMY_LEVEL_RANGE.get(fw, (1, 6))
+        if level < lo or level > hi:
+            continue
+        clean[fw] = {
+            "level": level,
+            "label": label[:60],
+            "rationale": rationale[:400],
+        }
+    return clean or None
+
+
 @router.post("/classify-taxonomy", response_model=TaxonomyClassifyResponse)
 async def classify_taxonomy(
     payload: TaxonomyClassifyRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),  # per-org RPM cap; this is a real, metered LLM call
 ):
     """
     Suggest Bloom's / DOK / SOLO / Marzano taxonomy levels for a learning
@@ -1881,16 +1927,15 @@ async def classify_taxonomy(
     AI/parsing failure this returns {result: None, error: "..."} so the
     teacher's existing taxonomy selection and text are never lost.
 
-    AI-call mechanism note: AIRouter.complete() (services/ai_router.py) only
-    accepts (task_type, prompt, db, entity_id, entity_type, system, org_id) —
-    it has no per-call temperature/max_tokens knob, and its own internal
-    Ollama call (_call_ollama) doesn't pass an `options` dict at all.
-    build_taxonomy_classification_prompt()'s docstring calls for a fixed,
-    low temperature (0.10) for deterministic structured output, so this
-    endpoint uses the standards_parser.py::extract_criteria() fallback
-    pattern instead: a direct ollama.chat() call with
-    options={"temperature": 0.10}. See CHANGE_SUMMARY_20260718_
-    PROMPT_LIBRARY_REMAINING.md for the full deviation note.
+    Routes through agents/provider.py's dispatch() (Ollama/Claude/OpenAI,
+    resolved via AGENT_TAXONOMY_CLASSIFICATION_PROVIDER -> LLM_PROVIDER ->
+    "ollama") instead of a direct ollama.Client() call — the previous
+    version hardcoded Ollama and was silently non-functional on any
+    deployment without a local Ollama server (prod runs Claude only).
+    Guardrails: input text is capped before it reaches the prompt, and the
+    parsed response is whitelisted field-by-field (_sanitize_taxonomy_result)
+    rather than passed through — a malformed or hallucinated framework entry
+    is dropped, not surfaced to the teacher as a suggestion.
     """
     _require_teacher(current_user, "Only teachers can use AI taxonomy classification")
 
@@ -1899,43 +1944,44 @@ async def classify_taxonomy(
     # and shadowing it with a local variable of the same name in this
     # function would be confusing/risky for future edits even though this
     # function itself never calls the SQL text() helper.
-    input_text = (payload.text or "").strip()
+    input_text = (payload.text or "").strip()[:_TAXONOMY_CLASSIFY_MAX_CHARS]
     if not input_text:
         return TaxonomyClassifyResponse(result=None, error="No text provided to classify.")
 
+    requested = [f for f in (payload.classify_for or list(_TAXONOMY_FRAMEWORKS)) if f in _TAXONOMY_FRAMEWORKS]
+    if not requested:
+        return TaxonomyClassifyResponse(result=None, error="No recognized taxonomy framework requested.")
+
     from services.prompt_library import build_taxonomy_classification_prompt
-    prompt = build_taxonomy_classification_prompt(text=input_text, classify_for=payload.classify_for)
+    prompt = build_taxonomy_classification_prompt(text=input_text, classify_for=requested)
 
     import json
     import re
+    from agents import provider as _provider
+
+    prov = _provider.resolve_provider("AGENT_TAXONOMY_CLASSIFICATION_PROVIDER", "ollama")
+    model = _provider.resolve_model(prov) or _provider.default_model(prov)
+    try:
+        raw = await _provider.dispatch(
+            prov,
+            messages=[{"role": "user", "content": prompt}],
+            model=model,
+            max_tokens=400,   # matches build_taxonomy_classification_prompt()'s documented budget
+            timeout=60,
+            temperature=0.10,  # low temp for deterministic structured output
+        )
+    except Exception as e:
+        logger.error(
+            "%s call failed during taxonomy classification (model=%s): %s",
+            prov, model, e, exc_info=True,
+        )
+        return TaxonomyClassifyResponse(
+            result=None,
+            error=f"AI classification service unavailable ({type(e).__name__}: {e}). Set the taxonomy manually.",
+        )
 
     try:
-        from core.config import settings
-        import ollama as _ollama
-
-        model = settings.OLLAMA_MODEL_TEXT or "mistral"
-        try:
-            # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
-            # settings.OLLAMA_BASE_URL — nothing listens there inside this
-            # app's Docker container (Ollama runs on the host, reached via
-            # host.docker.internal).
-            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
-            response = client.chat(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                options={"temperature": 0.10},  # Low temp for structured output
-            )
-        except Exception as e:
-            logger.error(
-                "Ollama call failed during taxonomy classification (model=%s): %s",
-                model, e, exc_info=True,
-            )
-            return TaxonomyClassifyResponse(
-                result=None,
-                error=f"AI classification service unavailable ({type(e).__name__}: {e}). Set the taxonomy manually.",
-            )
-
-        raw = response["message"]["content"].strip()
+        raw = raw.strip()
 
         # Strip markdown code fences if present
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
@@ -1960,8 +2006,19 @@ async def classify_taxonomy(
                 error="The AI didn't return the expected classification format. Set the taxonomy manually.",
             )
 
-        logger.info("Taxonomy classification succeeded for user %s", current_user.id)
-        return TaxonomyClassifyResponse(result=parsed, error=None)
+        sanitized = _sanitize_taxonomy_result(parsed, requested)
+        if sanitized is None:
+            logger.error(
+                "Taxonomy classification: no requested framework survived sanitization | raw: %s",
+                raw[:200],
+            )
+            return TaxonomyClassifyResponse(
+                result=None,
+                error="The AI's classification didn't match the expected format. Set the taxonomy manually.",
+            )
+
+        logger.info("Taxonomy classification succeeded for user %s (provider=%s)", current_user.id, prov)
+        return TaxonomyClassifyResponse(result=sanitized, error=None)
 
     except Exception as e:
         logger.error("Taxonomy classification failed unexpectedly: %s", e, exc_info=True)

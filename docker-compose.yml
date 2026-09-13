@@ -146,7 +146,7 @@ services:
 
       # Claude API (Anthropic) - for fallback/testing
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-sonnet-4-20250514}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-haiku-4-5-20251001}
       CLAUDE_MAX_TOKENS: 2048
 
       # ── Security & CORS ──────────────────────────────────────────────────

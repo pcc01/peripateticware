@@ -337,6 +337,16 @@ class Settings(BaseSettings):
     AGENT_RUBRIC_SCORING_PROVIDER: str = os.getenv("AGENT_RUBRIC_SCORING_PROVIDER", "")
     AGENT_ACTIVITY_REVIEW_PROVIDER: str = os.getenv("AGENT_ACTIVITY_REVIEW_PROVIDER", "")
     AGENT_COMPLIANCE_PROVIDER: str = os.getenv("AGENT_COMPLIANCE_PROVIDER", "claude")
+    # routes/activities.py::classify_taxonomy() and routes/rubrics.py::
+    # generate_rubric_criteria() previously called ollama.Client(...) directly
+    # (the standards_parser.py "fallback pattern" from before agents/provider.py
+    # gained a temperature knob). Neither is a BaseAgent subclass, so — same
+    # reasoning as AGENT_STANDARDS_EXTRACTION_PROVIDER above — each gets its own
+    # override rather than sharing one. Blank = inherit LLM_PROVIDER, which is
+    # what makes both work in prod (Anthropic-only, no local Ollama) without
+    # any env change beyond what's already set there.
+    AGENT_TAXONOMY_CLASSIFICATION_PROVIDER: str = os.getenv("AGENT_TAXONOMY_CLASSIFICATION_PROVIDER", "")
+    AGENT_RUBRIC_GENERATION_PROVIDER: str = os.getenv("AGENT_RUBRIC_GENERATION_PROVIDER", "")
 
     # Per-agent model overrides (blank = use provider default)
     AGENT_OLLAMA_MODEL: str = os.getenv("AGENT_OLLAMA_MODEL", "")
