@@ -221,7 +221,7 @@ export default function PrivacyEnginePage() {
             ['Monitoring features', 'Toggle session monitoring and field-note visibility per jurisdiction requirements.'],
             ['Profiling & targeting', "Behavioural profiling is off by default across every jurisdiction's current rule set, and there is no feature in the product that turns it on."],
             ['Consent flows', 'Configure whether consent is collected once per school year or per data-collection event.'],
-            ['Sharing with third parties', 'Configure whether student data may be shared with third parties per jurisdiction; when sharing is restricted, an out-of-policy share is flagged as a warning in the compliance audit log rather than blocked outright.'],
+            ['Sharing with third parties', "The only point where student data actually leaves the platform to a third party is AI chat/discussion features (\"Ask Peri\"), which sends a student's typed message to a language-model provider. That's age-gated, not admin-configurable: it's blocked outright for students under 13, and allowed for everyone else. Everywhere else a jurisdiction's sharing rules apply, an out-of-policy event is flagged as a warning in the compliance audit log rather than blocked."],
             ['Audit log retention', 'Extend the default 12-month audit log to meet state-level requirements.'],
           ].map(([title, desc]) => (
             <div key={title} className="flex gap-3 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">

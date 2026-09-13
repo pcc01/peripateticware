@@ -88,7 +88,7 @@ export const PrivacyPage: React.FC = () => {
         <p>{t('privacypage.1c_body', 'Photos, video, audio recordings, and written notebook/journal entries that a student captures as part of an activity are stored so the student, their teacher, and (where linked) their parent can review them and so the student’s portfolio persists across sessions.')}</p>
 
         <h3>{t('privacypage.1d_title', 'Conversations with Peri')}</h3>
-        <p>{t('privacypage.1d_body', 'The optional &ldquo;Ask Peri&rdquo; assistant sends a student’s typed question, and enough recent conversation for context, to a language-model provider (which may be a model we run ourselves or a third-party API such as Anthropic’s Claude) in order to generate a reply. Teachers can disable free-form AI chat for a specific activity.')}</p>
+        <p>{t('privacypage.1d_body', 'The optional &ldquo;Ask Peri&rdquo; assistant sends a student’s typed question, and enough recent conversation for context, to a language-model provider (which may be a model we run ourselves or a third-party API such as Anthropic’s Claude) in order to generate a reply. Teachers can disable free-form AI chat for a specific activity, and it is automatically unavailable — regardless of that setting — for students under 13: their messages are answered from the curated, on-device question bank only and never leave the platform.')}</p>
 
         <h3>{t('privacypage.1e_title', 'Billing information')}</h3>
         <p>{t('privacypage.1e_body', 'Paid subscriptions (available to teacher, parent, and homeschool accounts, never required for students) are processed by Paddle.com, our Merchant of Record. Paddle collects and processes your payment details directly — we never see or store full card numbers.')}</p>

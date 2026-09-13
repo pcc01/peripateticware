@@ -1419,6 +1419,12 @@ const ActivityManager = () => {
                 "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that."
               )}
             </p>
+            <p className="text-xs text-[var(--text-muted)] mt-1 italic">
+              {t(
+                'components_teacher_activitymanager.ai_interaction_privacy_note',
+                "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
+              )}
+            </p>
           </div>
 
           {/* Shareable toggle */}
