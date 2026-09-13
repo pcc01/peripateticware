@@ -52,6 +52,7 @@ Two test strategies, deliberately kept separate:
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, ANY, patch
@@ -877,6 +878,77 @@ class TestDeserialiseJurisdictionConsentRules:
             merged = await merge_jurisdictions(["gdpr_eu", "ferpa_us"], db=AsyncMock())
         assert len(merged.consent_rules) == 1
         assert merged.consent_rules[0].requires_parental_consent is True
+
+
+class TestRulesCacheRoundTripPreservesConsentRules:
+    """Caught live 2026-09-13 during the staged log-mode rollout of Bug 2's
+    fix: every existing test above mocks _get_cached_rules() itself, which
+    bypasses the actual Redis serialise/deserialise round trip entirely --
+    exactly why this slipped through. _get_cached_rules()'s own
+    `serialisable` dict never included consent_rules, so a genuinely
+    under-16 GDPR student got zero age-differentiated warning the moment a
+    *different* request had already populated the cache (i.e. on every
+    request except the very first cold load in up to an hour). This test
+    exercises _get_cached_rules() itself end-to-end, mocking only the
+    Redis layer (core.cache.get_cache/set_cache), not the function under
+    test."""
+
+    GDPR_RULE_DEF = {
+        "jurisdiction_id": "gdpr_eu",
+        "jurisdiction_name": "European Union — GDPR",
+        "framework": "gdpr",
+        "country_code": "EU",
+        "consent_rules": [
+            {
+                "data_categories": ["identity", "contact", "location", "biometric", "health", "special"],
+                "age_groups": ["under_16"],
+                "consent_type": "explicit",
+                "requires_parental_consent": True,
+                "parental_age_threshold": 16,
+                "consent_withdrawal_allowed": True,
+                "transparency_required": True,
+            }
+        ],
+    }
+
+    @pytest.mark.asyncio
+    async def test_consent_rules_survive_a_real_cache_round_trip(self):
+        from services import privacy_engine as pe
+
+        fake_row = MagicMock(jurisdiction="gdpr_eu", rule_definition=self.GDPR_RULE_DEF)
+        fake_result = MagicMock()
+        fake_result.scalars.return_value.all.return_value = [fake_row]
+        fake_db = AsyncMock()
+        fake_db.execute = AsyncMock(return_value=fake_result)
+
+        # In-memory stand-in for Redis: set_cache writes here, get_cache
+        # reads from here -- a real round trip through JSON-shaped data,
+        # not a mock that just remembers a Python object by reference.
+        store: dict = {}
+
+        async def fake_get_cache(key):
+            return json.loads(store[key]) if key in store else None
+
+        async def fake_set_cache(key, value, ttl=3600):
+            store[key] = json.dumps(value)
+            return True
+
+        with patch.object(pe.redis_cache, "get_cache", side_effect=fake_get_cache), \
+             patch.object(pe.redis_cache, "set_cache", side_effect=fake_set_cache):
+            # Cold load: cache empty, must hit the DB and then populate it.
+            cold = await pe._get_cached_rules(fake_db)
+            assert len(cold["gdpr_eu"].consent_rules) == 1
+            assert "under_16" in cold["gdpr_eu"].consent_rules[0].age_groups
+
+            # Cache hit: must NOT touch the DB again, and must still have
+            # consent_rules -- this is the exact call that silently
+            # returned an empty list before this fix.
+            fake_db.execute.reset_mock()
+            warm = await pe._get_cached_rules(fake_db)
+            fake_db.execute.assert_not_called()
+            assert len(warm["gdpr_eu"].consent_rules) == 1
+            assert warm["gdpr_eu"].consent_rules[0].requires_parental_consent is True
+            assert "under_16" in warm["gdpr_eu"].consent_rules[0].age_groups
 
 
 class TestAgeDifferentiatedConsent:

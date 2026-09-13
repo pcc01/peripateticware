@@ -22,7 +22,7 @@ import json
 import logging
 import uuid
 from abc import ABC
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -407,6 +407,20 @@ async def _get_cached_rules(db: AsyncSession) -> Dict[str, JurisdictionConfig]:
                 "requires_data_protection_officer": cfg.requires_data_protection_officer,
                 "version": cfg.version,
                 "metadata": cfg.metadata,
+                # BUG FIX (2026-09-13, caught live during the staged log-mode
+                # rollout): this serialisation dict never included
+                # consent_rules, so the age-differentiated consent check
+                # (PRIVACY_BUGFIX_PLAN.md Bug 2) worked on the very first
+                # cold-load (straight from _load_rules_from_db, whose
+                # rule_def is the raw DB row with a real consent_rules key)
+                # but went silently dark on every subsequent request for up
+                # to an hour, the moment this dict got round-tripped through
+                # Redis -- _deserialise_jurisdiction's _build_consent_rules()
+                # reads consent_rules off the dict it's handed, and this cache
+                # dict simply never had one. asdict() is safe here: every
+                # ConsentRule field is a flat str/bool/int, not a nested
+                # dataclass, so no further recursion surprises.
+                "consent_rules": [asdict(cr) for cr in cfg.consent_rules],
             }
             for jid, cfg in configs.items()
         }
