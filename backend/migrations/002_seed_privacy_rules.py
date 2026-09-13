@@ -90,7 +90,28 @@ SEED_RULES = [
                 {"right_name": "deletion", "must_comply_within_days": 30, "can_charge": False, "exemptions": ["audit_records"]}
             ],
             "student_data_sharing_allowed": False,
-            "student_monitoring_allowed": False,
+            # BUG FIX (2026-09-13, found by the Stage 3 large-scale sweep,
+            # PRIVACY_LARGE_SCALE_TEST_FINDINGS.md Finding 1): this was
+            # authored as False, contradicting this SAME row's own
+            # consent_rules entry above (explicitly "consent_type":
+            # "none_required", "requires_parental_consent": False, "FERPA
+            # uses rights transfer, not consent-based model") and the legacy
+            # `US` row's value (True) that this row was meant to supersede.
+            # enforce_on_submission() reads this flag independently of
+            # consent_rules -- when False, ANY sensitive evidence (gps/
+            # photo/audio/video/biometric) is blocked pending consent that
+            # FERPA itself does not require, for EVERY org whose only
+            # jurisdiction is ferpa_us (no COPPA to also justify blocking).
+            # This silently flipped the "lenient" test org from permissive
+            # to blocking the moment migration 002 ran, with no code change
+            # and no accompanying test coverage to catch it -- exactly the
+            # class of regression PRIVACY_JURISDICTION_DATA_BACKFILL_PLAN.md
+            # (Summary item 5) flagged as worth double-checking, now
+            # empirically confirmed. FERPA governs confidentiality of
+            # education records, not an on-the-ground monitoring/observation
+            # ban -- True is the historically- and legally-accurate value,
+            # matching the legacy `US` row.
+            "student_monitoring_allowed": True,
             "student_profiling_allowed": False,
             "student_targeting_allowed": False,
             "requires_breach_notification": True,

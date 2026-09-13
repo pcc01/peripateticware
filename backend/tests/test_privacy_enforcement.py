@@ -53,6 +53,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock, ANY, patch
@@ -1477,3 +1478,88 @@ class TestCheckActivityComplianceForOrg:
             )
         assert is_compliant is False
         assert any("behavioral" in i.lower() for i in issues)
+
+
+def _load_002_ferpa_us_rule_definition() -> dict:
+    """Load the REAL ferpa_us rule_definition dict straight out of
+    migrations/002_seed_privacy_rules.py's SEED_RULES literal — not a
+    hand-rolled test fixture — so this test fails the moment someone
+    reintroduces the exact authoring mistake at the source, not just a
+    stand-in shaped like it. migrations/ has no __init__.py (it's a
+    one-off-script directory, not a package), so load by file path."""
+    import importlib.util
+
+    migrations_dir = os.path.join(os.path.dirname(__file__), "..", "migrations")
+    spec = importlib.util.spec_from_file_location(
+        "seed_privacy_rules_002", os.path.join(migrations_dir, "002_seed_privacy_rules.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    ferpa_entry = next(r for r in module.SEED_RULES if r["jurisdiction"] == "ferpa_us")
+    return ferpa_entry["rule_definition"]
+
+
+class TestFerpaMonitoringAllowedRegression:
+    """PRIVACY_LARGE_SCALE_TEST_FINDINGS.md Finding 1 (found 2026-09-13 by
+    the Stage 3 large-scale local sweep, Table 2c-i S1 against the
+    'lenient' org): migration 002 authored ferpa_us's
+    rule_definition.student_monitoring_allowed as False, contradicting that
+    SAME row's own consent_rules entry ("consent_type": "none_required",
+    "requires_parental_consent": False — "FERPA uses rights transfer, not
+    consent-based model") and the legacy `US` row's True value it was meant
+    to supersede. enforce_on_submission() reads student_monitoring_allowed
+    on a code path independent of consent_rules, so this silently turned
+    any org whose ONLY jurisdiction is ferpa_us (no COPPA/other jurisdiction
+    to separately justify blocking) from permissive into blocking for any
+    plain adult/unknown-age student submitting ordinary GPS-tagged
+    evidence, with no consent ever obtainable to satisfy it (FERPA itself
+    doesn't require any). Fixed in 002 (source, for a fresh seed) and in
+    migrations/006_fix_ferpa_monitoring_allowed_bug.py (already-seeded
+    rows). This test guards the source-data literal directly, per the
+    project's own "mock only the actual boundary" lesson from the earlier
+    Redis cache-round-trip bug — no function under test is mocked here,
+    only the DB lookups enforce_on_submission() would otherwise need.
+    """
+
+    def test_002_seed_data_ferpa_us_allows_monitoring(self):
+        """Guards the exact regression at the source: re-authoring
+        ferpa_us's student_monitoring_allowed back to False must fail this
+        test immediately, without needing a live DB or an HTTP call."""
+        rule_def = _load_002_ferpa_us_rule_definition()
+        assert rule_def["student_monitoring_allowed"] is True, (
+            "ferpa_us.student_monitoring_allowed regressed to a value that "
+            "contradicts this row's own consent_rules entry (which already "
+            "declares FERPA requires no consent for under_18/adult) -- see "
+            "PRIVACY_LARGE_SCALE_TEST_FINDINGS.md Finding 1."
+        )
+
+    @pytest.mark.asyncio
+    async def test_ferpa_only_org_does_not_block_plain_gps_evidence(self):
+        """End-to-end (data + engine) proof of the actual production bug:
+        deserialise the REAL ferpa_us rule_definition the same way
+        merge_jurisdictions() does, feed it through enforce_on_submission()
+        for real (only identify_jurisdiction/merge_jurisdictions/
+        _has_valid_consent are mocked -- the DB-lookup collaborators, not
+        the decision logic), and confirm a plain adult/unknown-age
+        student's GPS-tagged field note is NOT flagged as would_block just
+        because ferpa_us is the org's only jurisdiction and no consent
+        record exists (FERPA requires none)."""
+        rule_def = _load_002_ferpa_us_rule_definition()
+        config = _deserialise_jurisdiction("ferpa_us", rule_def)
+        assert config.student_monitoring_allowed is True  # sanity: the fixture itself is right
+
+        with patch.multiple(
+            "services.privacy_engine",
+            identify_jurisdiction=AsyncMock(return_value=["ferpa_us"]),
+            merge_jurisdictions=AsyncMock(return_value=config),
+            _has_valid_consent=AsyncMock(return_value=False),
+        ):
+            result = await enforce_on_submission(
+                student_id="s-lenient-adult",
+                data_type="student_field_note",
+                evidence_types=["gps"],
+                db=AsyncMock(),
+            )
+
+        assert result.would_block is False
+        assert result.blocking_reason is None
