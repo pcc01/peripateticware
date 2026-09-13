@@ -186,7 +186,7 @@ SEED_RULES = [
             "consent_rules": [
                 {
                     "data_categories": ["identity", "contact", "location", "biometric", "health", "special"],
-                    "age_groups": ["under_16", "adult"],
+                    "age_groups": ["under_16"],
                     "consent_type": "explicit",
                     "requires_parental_consent": True,
                     "parental_age_threshold": 16,
@@ -264,7 +264,7 @@ SEED_RULES = [
             "consent_rules": [
                 {
                     "data_categories": ["identity", "contact", "location", "behavioral", "biometric"],
-                    "age_groups": ["under_16", "adult"],
+                    "age_groups": ["under_16"],
                     "consent_type": "explicit",
                     "requires_parental_consent": True,
                     "parental_age_threshold": 13,
@@ -329,7 +329,7 @@ SEED_RULES = [
             "consent_rules": [
                 {
                     "data_categories": ["identity", "contact", "location", "behavioral", "biometric", "health"],
-                    "age_groups": ["under_18", "adult"],
+                    "age_groups": ["under_18"],
                     "consent_type": "explicit",
                     "requires_parental_consent": True,
                     "parental_age_threshold": 18,
@@ -391,7 +391,7 @@ SEED_RULES = [
             "consent_rules": [
                 {
                     "data_categories": ["identity", "contact", "location", "behavioral", "educational"],
-                    "age_groups": ["under_18", "adult"],
+                    "age_groups": ["under_18"],
                     "consent_type": "explicit",
                     "requires_parental_consent": True,
                     "parental_age_threshold": 18,
