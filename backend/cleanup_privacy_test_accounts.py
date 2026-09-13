@@ -610,6 +610,19 @@ async def main() -> int:
 
         # ── Read-only gathering ──────────────────────────────────────────
         session_ids = await fetch_ids(db, "learning_sessions", "user_id", all_ids)
+        # BUG FIX (found live 2026-09-13, small-batch cleanup with zero
+        # sessions): SQLAlchemy's expanding bindparam, given an EMPTY list,
+        # compiles "col IN :sids" to an always-false subquery typed as
+        # INTEGER by default (no column-type info to infer from) -- which
+        # asyncpg rejects outright when the real column is uuid ("operator
+        # does not exist: uuid = integer"). A non-empty ids list never hit
+        # this (today's full 30-user cleanup had 6 real sessions and worked
+        # fine), so this stayed latent until a batch with truly zero
+        # sessions. Same placeholder-UUID pattern already used for `all_ids`
+        # in the safety-check loops above -- a real UUID that can never
+        # match a real session_id, so this is a true no-op when empty rather
+        # than a workaround that could accidentally match something.
+        session_ids = session_ids or ["00000000-0000-0000-0000-000000000000"]
         candidate_activity_ids = await fetch_ids(db, "activities", "teacher_id", teacher_ids)
         classroom_ids = sorted(set(
             await fetch_ids(db, "classrooms", "org_id", org_ids_candidate)
