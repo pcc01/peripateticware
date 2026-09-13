@@ -721,6 +721,14 @@ async def main() -> int:
         print()
 
         # ── Explicit (non-cascading) tables ───────────────────────────────
+        # Same empty-expanding-bindparam guard as session_ids above, applied
+        # here only for the :aids query parameter -- deliberately NOT
+        # reassigning `activity_ids` itself, since that list is also used
+        # below for the real "DELETE FROM activities" step (already
+        # correctly guarded by `if activity_ids:`) and the summary count
+        # print; mutating it here would make an empty activity set silently
+        # report "1 row" instead of 0.
+        activity_ids_for_query = activity_ids or ["00000000-0000-0000-0000-000000000000"]
         explicit_plan: list[tuple[str, str, list[str], dict]] = [
             ("rule_audit_log",
              "DELETE FROM rule_audit_log WHERE student_id_hash IN :hashes OR actor_id IN :actors",
@@ -745,10 +753,10 @@ async def main() -> int:
              ["ids"], {"ids": all_ids}),
             ("compliance_checks",
              "DELETE FROM compliance_checks WHERE activity_id IN :aids OR checked_by_user_id IN :ids",
-             ["aids", "ids"], {"aids": activity_ids, "ids": all_ids}),
+             ["aids", "ids"], {"aids": activity_ids_for_query, "ids": all_ids}),
             ("data_retention_policies",
              "DELETE FROM data_retention_policies WHERE activity_id IN :aids",
-             ["aids"], {"aids": activity_ids}),
+             ["aids"], {"aids": activity_ids_for_query}),
             ("standards_sets",
              "DELETE FROM standards_sets WHERE owner_id IN :ids",
              ["ids"], {"ids": all_ids}),
