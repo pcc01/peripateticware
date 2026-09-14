@@ -34,12 +34,26 @@ class MainApplication : Application(), ReactApplication {
     }
   )
 
-  // Return null so React Native uses the bridge path (reactNativeHost above) rather
-  // than ReactHostImpl (bridgeless). Detox v20 calls reactNativeHost.reactInstanceManager
-  // which crashes when ReactHostImpl is active.  Returning null here is safe because
-  // DefaultNewArchitectureEntryPoint.load(bridgelessEnabled=false) below disables the
-  // bridgeless feature flags, keeping TurboModules and Fabric on the bridge.
-  override val reactHost: ReactHost? = null
+  // EXPERIMENT (2026-09-13, see git history / MOBILE_CAPTURE_TOOLS_HANDOFF.md before
+  // reverting): this used to unconditionally return null, forcing legacy bridge mode,
+  // specifically to keep Detox v20 working (Detox calls
+  // reactNativeHost.reactInstanceManager, which crashes when the real bridgeless
+  // ReactHostImpl is active). That null reactHost is confirmed to have directly caused
+  // a real crash (Reanimated's DevMenuUtils.addDevMenuOption() dereferences
+  // getReactHost() unconditionally and NPEs on null -- patched separately via
+  // patches/react-native-reanimated+*.patch, but that patch only silences Reanimated's
+  // own crash, not the underlying null). Restoring the real ReactHost here to test
+  // whether it also explains a second bug: expo-av's Audio.requestPermissionsAsync()
+  // hanging indefinitely (never resolves, no dialog, no error) for a user who has
+  // never granted mic permission before -- getPermissionsAsync() (no Activity
+  // round-trip needed) always worked fine, only the Activity-callback-dependent
+  // request path hung, and reactHost=null is the one confirmed Activity/ReactHost
+  // wiring gap in this app so far.
+  // If this breaks Detox v20 again: that's the real tradeoff to weigh (revert this,
+  // and either accept the permission bug for genuinely new users, or find a
+  // Detox-compatible fix that doesn't require nulling reactHost entirely).
+  override val reactHost: ReactHost
+    get() = ReactNativeHostWrapper.createReactHost(applicationContext, reactNativeHost)
 
   override fun onCreate() {
     super.onCreate()
@@ -54,11 +68,10 @@ class MainApplication : Application(), ReactApplication {
     } catch (e: IllegalArgumentException) {
       ReleaseLevel.STABLE
     }
-    // bridgelessEnabled=false: disable the ReactHostImpl bridgeless runtime while
-    // keeping TurboModules and Fabric enabled over the bridge. This is required for
-    // Detox v20 compatibility with RN 0.81 — the @Deprecated overload is intentional.
-    @Suppress("DEPRECATION")
-    DefaultNewArchitectureEntryPoint.load(bridgelessEnabled = false)
+    // EXPERIMENT (2026-09-13): was load(bridgelessEnabled = false) for Detox v20
+    // compatibility — reverted to the default (bridgeless enabled) alongside the
+    // reactHost change above. See that comment for why.
+    DefaultNewArchitectureEntryPoint.load()
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
   }
 

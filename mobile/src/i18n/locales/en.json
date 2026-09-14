@@ -30,6 +30,7 @@
       "photo": "Add photo",
       "audio": "Add voice recording",
       "note": "Add note",
+      "sketch": "Add drawing",
       "video": "Add video"
     },
     "inquiry": {
@@ -42,7 +43,18 @@
       "captureLabel": "CAPTURE EVIDENCE",
       "captureHint": "Use your camera, voice, or notes to record what you find.",
       "evidenceCollectedLabel": "COLLECTED ({{count}})",
-      "reviewEvidence": "Review this evidence"
+      "reviewEvidence": "Review this evidence",
+      "saveProgress": "Save to server",
+      "savingProgress": "Saving…",
+      "progressSavedTitle": "Saved to server",
+      "progressSavedBody": "Your captures are backed up to the server — they aren't visible to your teacher until you submit.",
+      "progressSavedWithBlockedBody": "Your other captures are backed up. {{count}} item(s) are saved on your device but need a parent's OK before they can be shared with your teacher.",
+      "consentBlockedNote": "{{count}} item(s) are saved on your device but need a parent's OK before they can be shared with your teacher.",
+      "requestConsent": "Ask a parent for permission",
+      "requestingConsent": "Sending…",
+      "consentRequestSentTitle": "Request sent",
+      "consentRequestSentBody": "Check back after your parent responds, then tap Save to Server again.",
+      "noGuardianEmail": "No guardian email is on file for your account. Ask a teacher to add one."
     },
     "reflect": {
       "phaseLabel": "PHASE 3 · REFLECT",
@@ -60,8 +72,10 @@
       "emptySubmitBody": "Write a quick reflection before submitting.",
       "savedTitle": "Saved",
       "savedBody": "Your progress is saved — come back anytime to add more before submitting.",
+      "savedWithBlockedBody": "Your progress is saved. {{count}} item(s) are on your device but need a parent's OK before they can be shared with your teacher.",
       "submittedTitle": "Submitted! 🎉",
-      "submittedBody": "Your field work has been sent to your teacher."
+      "submittedBody": "Your field work has been sent to your teacher.",
+      "submittedWithBlockedBody": "Your field work has been sent to your teacher. {{count}} item(s) are still waiting on parental consent and weren't included yet — they'll be added once consent is granted."
     }
   },
   "camera": {
@@ -92,6 +106,7 @@
       "photo": "Photo",
       "audio": "Voice",
       "note": "Note",
+      "sketch": "Draw",
       "video": "Video"
     },
     "uploadFailed": {
@@ -115,9 +130,14 @@
     "requestingMic": "Requesting microphone access…",
     "recordingStatus": "Recording {{seconds}}s — tap to stop",
     "tapToStart": "Tap to start recording",
+    "audioPrivacyNote": "Your recording is transcribed on our own servers — it's never sent to a third-party AI provider unless you're actively chatting with Peri.",
     "fieldNote": "FIELD NOTE",
     "notePlaceholder": "Write what you observe…",
     "saveNote": "Save note",
+    "sketchLabel": "DRAWING",
+    "sketchUndo": "Undo",
+    "sketchClear": "Clear",
+    "saveSketch": "Save drawing",
     "preview": {
       "title": "Your evidence",
       "play": "Play",
@@ -136,6 +156,7 @@
     "ok": "OK",
     "done": "Done",
     "error": "Error",
+    "clear": "Clear",
     "remove": "Remove",
     "continue": "Continue",
     "add": "Add",
@@ -199,10 +220,12 @@
     "fallbackTitle": "Field Note",
     "submitted": "Submitted",
     "draft": "Draft",
+    "openActivity": "Open {{title}}",
     "showCaptures": "Show captures",
     "hideCaptures": "Hide captures",
     "noCaptures": "No captures yet.",
-    "transcriptPending": "Transcript pending…"
+    "transcriptPending": "Transcript pending…",
+    "transcriptUnavailable": "Transcript unavailable"
   },
   "leaderboard": {
     "loadError": "Could not load this leaderboard.",
@@ -414,6 +437,29 @@
       "automatic": "Automatic",
       "previewText": "This is what this voice sounds like.",
       "none": "No installed voices found for this language."
+    },
+    "offlineTranscription": {
+      "label": "OFFLINE TRANSCRIPTION",
+      "desc": "Lets voice recordings be transcribed on this device, in {{language}} — nothing is sent to a server for this. Best done now, on wifi, before you need it in the field.",
+      "enable": "Enable offline transcription for {{language}}",
+      "downloading": "Downloading…",
+      "ready": "Ready for {{language}}",
+      "notSupported": "This device doesn't support offline transcription.",
+      "failed": "Couldn't download. Check your connection and try again."
+    },
+    "asrDiagnostics": {
+      "label": "ASR DIAGNOSTICS (TESTING)",
+      "desc": "One row per voice recording, to check whether on-device transcription costs anything — battery, recording quality, or speed. Never leaves this device except when you export it below.",
+      "recordings": "Recordings logged",
+      "attempted": "Recognition attempted",
+      "avgLatency": "Avg. start latency",
+      "avgBatteryDrop": "Avg. battery drop",
+      "mediaReset": "Recording interrupted (iOS)",
+      "truncated": "Possibly truncated",
+      "share": "Share diagnostics (JSON)",
+      "shareError": "Could not export diagnostics.",
+      "clearTitle": "Clear diagnostics?",
+      "clearBody": "This deletes all recorded diagnostics rows from this device. Export first if you need them."
     },
     "theme": {
       "fieldGuide": {

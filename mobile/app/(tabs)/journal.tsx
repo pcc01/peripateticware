@@ -4,12 +4,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import type { Theme } from '@/src/theme/tokens';
 import { fetchJournal, JournalEntry } from '@/src/api/journal';
 import { fetchCaptures, Capture } from '@/src/api/captures';
 import { getCachedActivity } from '@/src/db/activityCache';
 import { useTranslation } from 'react-i18next';
+import { transcriptDisplayText } from '@/src/lib/transcriptDisplay';
+import CapturePreviewModal from '@/src/components/CapturePreviewModal';
 
 // Same capture_type → emoji mapping CaptureSheet.tsx uses for its mode picker
 // (photo/audio/note[text]/video). Falls back to a generic icon for any other
@@ -19,6 +22,7 @@ const CAPTURE_TYPE_EMOJI: Record<string, string> = {
   audio: '🎤',
   text: '✏️',
   note: '✏️',
+  sketch: '🎨',
   video: '🎥',
 };
 const CAPTURE_TYPE_EMOJI_FALLBACK = '📎';
@@ -44,6 +48,7 @@ function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [captures, setCaptures] = useState<Capture[]>([]);
+  const [openCapture, setOpenCapture] = useState<Capture | null>(null);
 
   const toggle = useCallback(async () => {
     const next = !expanded;
@@ -90,9 +95,12 @@ function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme
         ) : (
           <View style={{ gap: 8 }}>
             {captures.map((c) => (
-              <View
+              <TouchableOpacity
                 key={c.id}
+                testID={`journal-capture-${c.id}`}
+                onPress={() => setOpenCapture(c)}
                 style={[styles.captureRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}
+                accessibilityRole="button"
               >
                 <View style={styles.captureRowHeader}>
                   <Text style={styles.captureEmoji}>
@@ -104,14 +112,26 @@ function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme
                 </View>
                 {TRANSCRIBABLE_TYPES.has(c.capture_type) && (
                   <Text style={[styles.captureTranscript, { fontFamily: theme.fontBody, color: c.transcript ? theme.textMuted : theme.textFaint }]}>
-                    {c.transcript ?? t('journal.transcriptPending', 'Transcript pending…')}
+                    {transcriptDisplayText(c, t)}
                   </Text>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )
       )}
+
+      {/* Opens with the same play-audio-and-read-transcript modal
+          CaptureSheet.tsx shows right after capturing — here it streams the
+          file from the server (no local_uri for an already-uploaded older
+          capture) via CapturePreviewModal's own fallback. See
+          src/api/captures.ts::getMediaStreamUrl. */}
+      <CapturePreviewModal
+        visible={!!openCapture}
+        onClose={() => setOpenCapture(null)}
+        capture={openCapture}
+        theme={theme}
+      />
     </View>
   );
 }
@@ -183,7 +203,20 @@ export default function JournalScreen() {
             const title = (item.activity_id && activityTitles[item.activity_id])
               ?? t('journal.fallbackTitle', 'Field Note');
             return (
-              <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}>
+              <TouchableOpacity
+                testID={`journal-entry-${item.id}`}
+                activeOpacity={item.activity_id ? 0.7 : 1}
+                disabled={!item.activity_id}
+                // BUG FIX (2026-09-14): this card had no way to reopen the
+                // activity at all — reported as "can't open the draft from
+                // my entries page". Nested TouchableOpacity children below
+                // (the captures-toggle, capture rows) claim the touch
+                // responder themselves, so this doesn't fight with them.
+                onPress={() => item.activity_id && router.push(`/activity/${item.activity_id}`)}
+                accessibilityRole={item.activity_id ? 'button' : undefined}
+                accessibilityLabel={item.activity_id ? t('journal.openActivity', 'Open {{title}}', { title }) : undefined}
+                style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
+              >
                 <View style={styles.cardHeaderRow}>
                   <Text style={[styles.entryTitle, { fontFamily: theme.fontHead, color: theme.text, flex: 1 }]} numberOfLines={2}>
                     {title}
@@ -205,7 +238,7 @@ export default function JournalScreen() {
                 {!!item.activity_id && (
                   <EntryCaptures activityId={item.activity_id} theme={theme} />
                 )}
-              </View>
+              </TouchableOpacity>
             );
           }}
         />

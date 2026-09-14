@@ -115,6 +115,11 @@ class TestEnforceOrRaise:
 
     @pytest.mark.asyncio
     async def test_blocked_raises_403_with_reason(self):
+        """UPDATED 2026-09-14: `detail` is now a structured
+        {"error_code": "consent_required", "message": ...} dict, not a bare
+        string -- the mobile client needs `error_code` to tell a permanent
+        consent-block apart from a transient failure without string-matching
+        English prose. See offlineQueue.ts's flushQueue()."""
         from fastapi import HTTPException
 
         blocked = EnforcementResult(
@@ -127,7 +132,8 @@ class TestEnforceOrRaise:
                     student_id="s1", data_type="student_field_note", db=object(), evidence_types=["gps"],
                 )
         assert exc_info.value.status_code == 403
-        assert "consent" in exc_info.value.detail
+        assert exc_info.value.detail["error_code"] == "consent_required"
+        assert "consent" in exc_info.value.detail["message"]
 
     @pytest.mark.asyncio
     async def test_lookup_failure_fails_open_not_closed(self):
@@ -1227,10 +1233,34 @@ class TestAgeDifferentiatedConsent:
 
     @pytest.mark.asyncio
     async def test_no_age_group_on_file_does_not_crash_or_block(self):
-        """A student with no date_of_birth on file (age_group=None) must not
-        match an age-based rule -- None is never a member of any age_groups
-        list -- and must not error."""
+        """UPDATED 2026-09-14 (deliberate product decision, not a
+        regression): a student with no age_group on file now fails CLOSED
+        when the jurisdiction has ANY applicable requires_parental_consent
+        rule for this evidence category, rather than silently skipping the
+        check as before. Renamed in spirit (still "does not crash") but the
+        blocking assertion is now the opposite of its original name --
+        avoiding the exact under-13-with-no-age_group hole this engine was
+        built to close was judged more important than the false-positive
+        cost to real-but-unbackfilled adult accounts. See the age-scoped-
+        consent plan doc's "Unknown age_group handling" section."""
         config = self._gdpr_like_config()
+        with self._mock_jurisdiction(config, age_group=None), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["location"],
+            )
+        assert result.would_block is True
+        assert result.status == "BLOCKED"
+        assert "not on file" in result.blocking_reason.lower()
+
+    @pytest.mark.asyncio
+    async def test_no_age_group_on_file_with_no_applicable_rule_does_not_block(self):
+        """The other half of the fail-closed story: an unknown-age student
+        in a jurisdiction with NO applicable requires_parental_consent rule
+        for this evidence category at all must not be blocked just because
+        their age is unknown -- fail-closed only fires when there's actually
+        a rule it could be closing against."""
+        config = self._gdpr_like_config(consent_rules=[])
         with self._mock_jurisdiction(config, age_group=None), \
              patch("core.config.settings.ENFORCEMENT_MODE", "block"):
             result = await enforce_on_submission(
@@ -1240,10 +1270,13 @@ class TestAgeDifferentiatedConsent:
 
     @pytest.mark.asyncio
     async def test_evidence_type_with_no_data_category_mapping_does_not_match(self):
-        """"audio"/"video"/"photo" are sensitive (trigger the existing
-        monitoring check) but have no DataCategory counterpart in the actual
-        seed data -- the age-based rule (scoped to 'location' here) must not
-        fire for them."""
+        """UPDATED 2026-09-14: "audio"/"video"/"photo" now map to
+        DataCategory.MEDIA (age-scoped-consent redesign), not "no mapping at
+        all" as before -- but this fixture's rule is scoped to LOCATION
+        only, so "audio" (-> MEDIA) still correctly doesn't intersect it.
+        Kept as a category-mismatch regression test rather than deleted, so
+        a future broadening of this rule's data_categories to include MEDIA
+        would be caught here, not silently assumed safe."""
         config = self._gdpr_like_config()
         with self._mock_jurisdiction(config, age_group="under_16"), \
              patch("core.config.settings.ENFORCEMENT_MODE", "block"):
@@ -1251,6 +1284,156 @@ class TestAgeDifferentiatedConsent:
                 student_id="s1", data_type="student_evidence", db=AsyncMock(), evidence_types=["audio"],
             )
         assert result.would_block is False
+
+
+class TestAgeScopedMediaConsent:
+    """Age-scoped-consent redesign (2026-09-14): photo/audio/video capture
+    used to block based purely on the age-blind `student_monitoring_allowed`
+    flag -- an adult in a COPPA-jurisdiction org was blocked identically to
+    an 8-year-old. Confirmed live in prod: this produced a ~100% block rate
+    on ordinary capture uploads once ENFORCEMENT_MODE=block was flipped. Now
+    gated by the same age+category `consent_rules` mechanism as location/
+    biometric evidence (PRIVACY_BUGFIX_PLAN.md Bug 2), extended to cover
+    photo/audio/video via the new DataCategory.MEDIA. This class proves the
+    fix end-to-end against COPPA-shaped (under_13) and GDPR-shaped
+    (under_16) fixtures, mirroring their real seeded age thresholds."""
+
+    def _coppa_like_config(self, **overrides) -> JurisdictionConfig:
+        defaults = dict(
+            jurisdiction_id="coppa_like",
+            jurisdiction_name="COPPA-shaped Test Jurisdiction",
+            framework=PrivacyFramework.COPPA,
+            country_code="US",
+            student_monitoring_allowed=False,  # matches real coppa_us
+            consent_rules=[
+                ConsentRule(
+                    data_categories=[DataCategory.MEDIA, DataCategory.LOCATION, DataCategory.BIOMETRIC],
+                    age_groups=[AgeGroup.UNDER_13],
+                    consent_type=ConsentType.EXPLICIT,
+                    requires_parental_consent=True,
+                    parental_age_threshold=13,
+                )
+            ],
+        )
+        defaults.update(overrides)
+        return JurisdictionConfig(**defaults)
+
+    def _gdpr_media_config(self, **overrides) -> JurisdictionConfig:
+        defaults = dict(
+            jurisdiction_id="gdpr_media_like",
+            jurisdiction_name="GDPR-shaped Test Jurisdiction",
+            framework=PrivacyFramework.GDPR,
+            country_code="EU",
+            student_monitoring_allowed=False,  # matches real gdpr_eu
+            consent_rules=[
+                ConsentRule(
+                    data_categories=[DataCategory.MEDIA, DataCategory.LOCATION, DataCategory.BIOMETRIC],
+                    age_groups=[AgeGroup.UNDER_16],
+                    consent_type=ConsentType.EXPLICIT,
+                    requires_parental_consent=True,
+                    parental_age_threshold=16,
+                )
+            ],
+        )
+        defaults.update(overrides)
+        return JurisdictionConfig(**defaults)
+
+    def _mock_jurisdiction(self, config: JurisdictionConfig, age_group, has_consent: bool = False):
+        return patch.multiple(
+            "services.privacy_engine",
+            identify_jurisdiction=AsyncMock(return_value=[config.jurisdiction_id]),
+            merge_jurisdictions=AsyncMock(return_value=config),
+            _has_valid_consent=AsyncMock(return_value=has_consent),
+            _get_student_age_group=AsyncMock(return_value=age_group),
+        )
+
+    @pytest.mark.asyncio
+    async def test_coppa_under_13_no_consent_blocks(self):
+        config = self._coppa_like_config()
+        with self._mock_jurisdiction(config, age_group="under_13"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["photo"],
+            )
+        assert result.status == "BLOCKED"
+        assert result.would_block is True
+
+    @pytest.mark.asyncio
+    async def test_coppa_under_13_with_valid_consent_allows(self):
+        """THE actual bug this plan fixes, reversed: a genuinely-consented
+        under-13 family must succeed, not be blocked forever."""
+        config = self._coppa_like_config()
+        with self._mock_jurisdiction(config, age_group="under_13", has_consent=True), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["photo"],
+            )
+        assert result.status == "ALLOWED"
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    async def test_coppa_adult_never_blocked_regardless_of_consent(self):
+        """THE core regression this fix closes: under the OLD code, an adult
+        in a COPPA-jurisdiction org was blocked identically to an 8-year-old
+        because the gate never looked at age at all."""
+        config = self._coppa_like_config()
+        with self._mock_jurisdiction(config, age_group="adult", has_consent=False), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["photo"],
+            )
+        assert result.status == "ALLOWED"
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("age_group", ["under_16", "under_18"])
+    async def test_coppa_older_teens_not_covered_by_under_13_rule(self, age_group):
+        """COPPA's own age_groups=["under_13"] correctly excludes older
+        teens -- confirms the fix doesn't over-correct into "no jurisdiction
+        ever blocks anyone"."""
+        config = self._coppa_like_config()
+        with self._mock_jurisdiction(config, age_group=age_group), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["photo"],
+            )
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    async def test_gdpr_under_16_no_consent_blocks(self):
+        """Confirms the threshold is genuinely jurisdiction-specific (16,
+        not hardcoded to COPPA's 13)."""
+        config = self._gdpr_media_config()
+        with self._mock_jurisdiction(config, age_group="under_16"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["audio"],
+            )
+        assert result.would_block is True
+
+    @pytest.mark.asyncio
+    async def test_gdpr_adult_never_blocked(self):
+        config = self._gdpr_media_config()
+        with self._mock_jurisdiction(config, age_group="adult"), \
+             patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+            result = await enforce_on_submission(
+                student_id="s1", data_type="student_capture", db=AsyncMock(), evidence_types=["video"],
+            )
+        assert result.would_block is False
+
+    @pytest.mark.asyncio
+    async def test_video_and_audio_and_photo_all_map_to_media(self):
+        """All three media evidence types must hit the same MEDIA-scoped
+        rule -- not just "photo"."""
+        config = self._coppa_like_config()
+        for evidence_type in ("photo", "audio", "video"):
+            with self._mock_jurisdiction(config, age_group="under_13"), \
+                 patch("core.config.settings.ENFORCEMENT_MODE", "block"):
+                result = await enforce_on_submission(
+                    student_id="s1", data_type="student_capture", db=AsyncMock(),
+                    evidence_types=[evidence_type],
+                )
+            assert result.would_block is True, f"{evidence_type} did not block"
 
 
 class TestEnforceOrRaiseForceBlock:
@@ -1286,7 +1469,9 @@ class TestEnforceOrRaiseForceBlock:
                     force_block_on_would_block=True,
                 )
         assert exc_info.value.status_code == 403
-        assert exc_info.value.detail == "region restricted"
+        # UPDATED 2026-09-14: structured detail dict, see
+        # test_blocked_raises_403_with_reason's comment above.
+        assert exc_info.value.detail["message"] == "region restricted"
 
     @pytest.mark.asyncio
     async def test_force_true_still_allows_when_would_block_is_false(self):

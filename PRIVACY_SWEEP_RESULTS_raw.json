@@ -1,0 +1,1098 @@
+{
+  "cases": [
+    {
+      "table": "2c-i",
+      "jurisdiction": "strict",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "coppa_us,ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "strict",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "coppa_us,ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "strict",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "coppa_us,ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "strict",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "coppa_us,ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "strict",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "coppa_us,ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lenient",
+      "scenario": "S1",
+      "expected_would_block": false,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ferpa_us"
+        }
+      ],
+      "pass": false,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lenient",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lenient",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ferpa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lenient",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ferpa_us,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lenient",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ferpa_us,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "ccpa",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ccpa_california"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "ccpa",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ccpa_california"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "ccpa",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ccpa_california"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "ccpa",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ccpa_california,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "ccpa",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "ccpa_california,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "gdpr",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "gdpr_eu"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "gdpr",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "gdpr_eu"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "gdpr",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "gdpr_eu"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "gdpr",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "gdpr_eu,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "gdpr",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "gdpr_eu,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pipeda",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pipeda_canada"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pipeda",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pipeda_canada"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pipeda",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pipeda_canada"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pipeda",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pipeda_canada,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pipeda",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pipeda_canada,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lgpd",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lgpd_brazil"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lgpd",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lgpd_brazil"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lgpd",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lgpd_brazil"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lgpd",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lgpd_brazil,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lgpd",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lgpd_brazil,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "auprivacy",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "privacy_act_au"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "auprivacy",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "privacy_act_au"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "auprivacy",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "privacy_act_au"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "auprivacy",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "privacy_act_au,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "auprivacy",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "privacy_act_au,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pdpa",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pdpa_singapore"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pdpa",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pdpa_singapore"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pdpa",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pdpa_singapore"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pdpa",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pdpa_singapore,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "pdpa",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "pdpa_singapore,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "popia",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "popia_za"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "popia",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "popia_za"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "popia",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "popia_za"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "popia",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "popia_za,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "popia",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "popia_za,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lpdc",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lpdc_mx"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lpdc",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lpdc_mx"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lpdc",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lpdc_mx"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lpdc",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lpdc_mx,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "lpdc",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "lpdc_mx,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "aepd",
+      "scenario": "S1",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "aepd_ar"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "aepd",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "aepd_ar"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "aepd",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "aepd_ar"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "aepd",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "aepd_ar,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "aepd",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "aepd_ar,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "baseline",
+      "scenario": "S1",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "US_FEDERAL"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "baseline",
+      "scenario": "S2",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "US_FEDERAL"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "baseline",
+      "scenario": "S3",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "US_FEDERAL"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "baseline",
+      "scenario": "S4",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "US_FEDERAL,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": "expect coppa_us in rules_applied"
+    },
+    {
+      "table": "2c-i",
+      "jurisdiction": "baseline",
+      "scenario": "S5",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "rules_applied": [
+        {
+          "version": "1.0",
+          "jurisdiction": "US_FEDERAL,coppa_us"
+        }
+      ],
+      "pass": true,
+      "note": ""
+    }
+  ],
+  "provisioning": [
+    "created org 'local-sweep-strict' (id=280bf8ca-566d-4df2-9218-322b02076a59) jurisdiction_ids=['coppa_us', 'ferpa_us']",
+    "created user 'local-sweep-strict-teacher@thewordinbits.com' (id=c9d6a019-0ca8-49fa-9354-4d04e293198a, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-strict-student@thewordinbits.com' (id=51d266f1-f4c7-4acf-9414-1ffb44946e00, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-strict-u13@thewordinbits.com' (id=7f7cfff7-4384-4752-badc-33cfc20647ff, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-lenient' (id=38eb65b9-774e-406c-8952-920833ce039d) jurisdiction_ids=['ferpa_us']",
+    "created user 'local-sweep-lenient-teacher@thewordinbits.com' (id=67dafdbc-9c14-48cd-83c5-e2fcced354f3, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-lenient-student@thewordinbits.com' (id=1ab2189b-0d38-4a74-bd48-2c264e22cfc3, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-lenient-u13@thewordinbits.com' (id=a431ba9f-ea06-4db3-92aa-e44cd47f9b88, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-ccpa' (id=51a8b4ff-3a9e-4f8f-b10a-e6cb5c5ef682) jurisdiction_ids=['ccpa_california']",
+    "created user 'local-sweep-ccpa-teacher@thewordinbits.com' (id=a9c716fd-1761-4ee1-a78c-54ef07a7478e, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-ccpa-student@thewordinbits.com' (id=1f26a7b4-2df1-414d-ac69-eb20b4ade026, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-ccpa-u13@thewordinbits.com' (id=016c8a2e-a135-4a2a-82d2-7dedce77c48a, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-gdpr' (id=c582cc48-3440-4ee6-95f7-60bffd36bf1b) jurisdiction_ids=['gdpr_eu']",
+    "created user 'local-sweep-gdpr-teacher@thewordinbits.com' (id=9dd88712-c16a-4c04-a662-e521b06db14c, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-gdpr-student@thewordinbits.com' (id=64030b3b-2b80-49f8-8427-332208bd7545, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-gdpr-u13@thewordinbits.com' (id=df9341c3-1471-48fb-a3ba-0b88e44d3cd9, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-pipeda' (id=63b581e9-9569-498a-b424-087c78735d3a) jurisdiction_ids=['pipeda_canada']",
+    "created user 'local-sweep-pipeda-teacher@thewordinbits.com' (id=243ce96f-d6a0-4da0-9c75-4fdbd023c677, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-pipeda-student@thewordinbits.com' (id=29fca394-e15b-4faa-af58-2fef1bf7cf51, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-pipeda-u13@thewordinbits.com' (id=6b11fb59-9a3f-45b4-ad1b-b3ba60ffaf07, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-lgpd' (id=1dcff3ba-3922-4270-94fe-39475d2b5984) jurisdiction_ids=['lgpd_brazil']",
+    "created user 'local-sweep-lgpd-teacher@thewordinbits.com' (id=da60c896-f06b-414e-9516-9a2df3385e69, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-lgpd-student@thewordinbits.com' (id=a0b27ee3-8091-45b8-bcb1-6c5df8fba8a8, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-lgpd-u13@thewordinbits.com' (id=edefdb64-7857-4989-94a7-0d8b49fddd43, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-auprivacy' (id=a872140a-f02e-4d1e-97f7-fc1e95d5bc65) jurisdiction_ids=['privacy_act_au']",
+    "created user 'local-sweep-auprivacy-teacher@thewordinbits.com' (id=c60b958b-36b9-40b5-89bf-3ccd79b8a9a5, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-auprivacy-student@thewordinbits.com' (id=d84809a5-477c-4bdc-a56b-1e5e2b1c1bfa, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-auprivacy-u13@thewordinbits.com' (id=34bfbd0b-7194-4b57-9153-ffb421443f6b, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-pdpa' (id=80c4299e-4d67-4c1c-ab06-0aba8038b3a5) jurisdiction_ids=['pdpa_singapore']",
+    "created user 'local-sweep-pdpa-teacher@thewordinbits.com' (id=1a928bf2-e1ff-457c-adfa-9355954c2f4f, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-pdpa-student@thewordinbits.com' (id=d297c81d-b5c8-4c84-a815-b433888214b4, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-pdpa-u13@thewordinbits.com' (id=245cc442-a161-48ec-91d5-e8ffc1f834b3, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-popia' (id=e7cb8119-3307-4b3b-b71d-a2752fdb2314) jurisdiction_ids=['popia_za']",
+    "created user 'local-sweep-popia-teacher@thewordinbits.com' (id=46477312-4239-4059-a72a-f2717005840c, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-popia-student@thewordinbits.com' (id=9a5a7176-7db5-4a3b-84f5-40749751178a, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-popia-u13@thewordinbits.com' (id=fd865472-8ab0-431a-8ac7-a76d82e8894b, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-lpdc' (id=2cb94056-26e4-4f82-918b-2e61cede4c57) jurisdiction_ids=['lpdc_mx']",
+    "created user 'local-sweep-lpdc-teacher@thewordinbits.com' (id=e3796f7e-3ae9-41c6-8efe-b40d41dbf699, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-lpdc-student@thewordinbits.com' (id=6eaa6b07-ddb6-4419-9bd5-3a5ea47b3f49, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-lpdc-u13@thewordinbits.com' (id=11f43943-8ae8-4258-a717-e2ebe51e3079, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-aepd' (id=cb6bccb1-3a40-439a-8849-5717e2a34051) jurisdiction_ids=['aepd_ar']",
+    "created user 'local-sweep-aepd-teacher@thewordinbits.com' (id=520222e3-b62a-4049-bc5f-ba9414500761, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-aepd-student@thewordinbits.com' (id=75698e1e-02c1-41a3-a915-cf4ca876228b, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-aepd-u13@thewordinbits.com' (id=7b22b330-e594-4897-ad12-af5b81ec120b, role=STUDENT, age_group=under_13)",
+    "created org 'local-sweep-baseline' (id=bbcee5b4-78bc-4b78-b264-f41d18cd7b71) jurisdiction_ids=[]",
+    "created user 'local-sweep-baseline-teacher@thewordinbits.com' (id=1effbb18-2d79-4db2-b76c-c0beabf5352b, role=TEACHER, age_group=None)",
+    "created user 'local-sweep-baseline-student@thewordinbits.com' (id=cc75da11-afac-4d0a-9676-6224b7bec37d, role=STUDENT, age_group=None)",
+    "created user 'local-sweep-baseline-u13@thewordinbits.com' (id=59d5ff0a-7746-46c1-993f-22ac63f6d95f, role=STUDENT, age_group=under_13)",
+    "granted blanket parental consent for student 51d266f1-f4c7-4acf-9414-1ffb44946e00",
+    "granted blanket parental consent for student 7f7cfff7-4384-4752-badc-33cfc20647ff",
+    "granted blanket parental consent for student 1ab2189b-0d38-4a74-bd48-2c264e22cfc3",
+    "granted blanket parental consent for student a431ba9f-ea06-4db3-92aa-e44cd47f9b88",
+    "granted blanket parental consent for student 1f26a7b4-2df1-414d-ac69-eb20b4ade026",
+    "granted blanket parental consent for student 016c8a2e-a135-4a2a-82d2-7dedce77c48a",
+    "granted blanket parental consent for student 64030b3b-2b80-49f8-8427-332208bd7545",
+    "granted blanket parental consent for student df9341c3-1471-48fb-a3ba-0b88e44d3cd9",
+    "granted blanket parental consent for student 29fca394-e15b-4faa-af58-2fef1bf7cf51",
+    "granted blanket parental consent for student 6b11fb59-9a3f-45b4-ad1b-b3ba60ffaf07",
+    "granted blanket parental consent for student a0b27ee3-8091-45b8-bcb1-6c5df8fba8a8",
+    "granted blanket parental consent for student edefdb64-7857-4989-94a7-0d8b49fddd43",
+    "granted blanket parental consent for student d84809a5-477c-4bdc-a56b-1e5e2b1c1bfa",
+    "granted blanket parental consent for student 34bfbd0b-7194-4b57-9153-ffb421443f6b",
+    "granted blanket parental consent for student d297c81d-b5c8-4c84-a815-b433888214b4",
+    "granted blanket parental consent for student 245cc442-a161-48ec-91d5-e8ffc1f834b3",
+    "granted blanket parental consent for student 9a5a7176-7db5-4a3b-84f5-40749751178a",
+    "granted blanket parental consent for student fd865472-8ab0-431a-8ac7-a76d82e8894b",
+    "granted blanket parental consent for student 6eaa6b07-ddb6-4419-9bd5-3a5ea47b3f49",
+    "granted blanket parental consent for student 11f43943-8ae8-4258-a717-e2ebe51e3079",
+    "granted blanket parental consent for student 75698e1e-02c1-41a3-a915-cf4ca876228b",
+    "granted blanket parental consent for student 7b22b330-e594-4897-ad12-af5b81ec120b",
+    "granted blanket parental consent for student cc75da11-afac-4d0a-9676-6224b7bec37d",
+    "granted blanket parental consent for student 59d5ff0a-7746-46c1-993f-22ac63f6d95f"
+  ]
+}

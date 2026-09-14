@@ -1,9 +1,18 @@
 // src/hooks/useConnectivity.ts
-// Polls network state; triggers queue flush when coming back online
+// Polls network state — reports isOnline only, does NOT auto-sync.
+//
+// DESIGN (2026-09-14): this used to call flushQueue() itself whenever the
+// device came back online. Removed: nothing should leave the device except
+// at an explicit "Save to Server"/Submit action (see
+// app/activity/[id].tsx's handleSaveProgress/handleSaveDraft/handleSubmit,
+// which call flushQueue() directly) — a silent background sync undermined
+// that guarantee, most concretely for a capture stuck on
+// blocked_reason='consent_required' (src/db/offlineQueue.ts), which should
+// only ever be retried when the student deliberately asks. This hook now
+// exists purely to drive `isOnline`-dependent UI (e.g. an offline banner).
 
 import { useEffect, useRef, useState } from 'react';
 import * as Network from 'expo-network';
-import { flushQueue } from '@/src/db/offlineQueue';
 
 export function useConnectivity() {
   const [isOnline, setIsOnline] = useState(true);
@@ -34,12 +43,7 @@ export function useConnectivity() {
         if (cancelled) return;
 
         if (online && wasOffline.current) {
-          // Just came back online — flush the queue
-          console.log('📶 Back online — flushing offline queue');
-          flushQueue().then(({ uploaded, failed }) => {
-            if (uploaded > 0) console.log(`✅ Synced ${uploaded} items`);
-            if (failed > 0)   console.warn(`⚠ ${failed} items failed to sync`);
-          });
+          console.log('📶 Back online');
         }
 
         wasOffline.current = !online;

@@ -931,6 +931,12 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_longitude FLOAT",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_confidence FLOAT",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_language VARCHAR(10)",
+            # transcript_status: added 2026-09-13 alongside the ASR
+            # third-party-fallback removal. The fallback CREATE TABLE above
+            # already assumes this column (line ~903, DEFAULT 'pending'), but
+            # a real DB bootstrapped via database/init.sql before today never
+            # had it — backfill it here the same way as the columns above.
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS transcript_status VARCHAR(20)",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS duration_seconds INTEGER",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS dimensions VARCHAR(20)",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS description TEXT",
@@ -945,6 +951,18 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lon_enc VARCHAR(200)",
         ]:
             await _exec_safepoint(conn, _col)
+        # Backfill transcript_status for rows that predate the column: a
+        # non-null transcript means a prior run completed (however dubious
+        # the old Ollama-tier content might have been — that server-side ASR
+        # pipeline, services/asr_service.py, was removed 2026-09-13 in favor
+        # of on-device transcription); a null transcript on an old row is
+        # left NULL rather than guessed at.
+        await _exec_safepoint(
+            conn,
+            "UPDATE student_captures SET transcript_status = 'completed' "
+            "WHERE transcript IS NOT NULL AND transcript_status IS NULL",
+            "backfill student_captures.transcript_status",
+        )
         # RF-4: StudentCapture.file_path switched from a plain VARCHAR(512) to
         # EncryptedString(512) — Fernet ciphertext runs roughly 2.3x the
         # plaintext length (see core/encryption.py's EncryptedString docstring:
@@ -2075,7 +2093,7 @@ async def seed_demo_classroom(engine) -> None:
         async with engine.begin() as conn:
             await conn.execute(text("""
                 INSERT INTO student_captures (student_id, capture_type, transcript, transcript_status, location_name)
-                SELECT s.id, v.ctype, v.note, 'complete', 'Schoolyard'
+                SELECT s.id, v.ctype, v.note, 'completed', 'Schoolyard'
                 FROM users s,
                      (VALUES ('photo','Maple leaf — early autumn color change'),
                              ('note','Observed three bird species near the pond')) AS v(ctype, note)

@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File, Form
 from pydantic import BaseModel
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,6 +31,7 @@ from models.database import (
     StudentCapture,
     StudentCompetency,
     StudentNotebook,
+    TranscriptStatus,
     User,
 )
 from services.privacy_engine import enforce_or_raise
@@ -58,6 +59,7 @@ class CaptureResponse(BaseModel):
     transcript: Optional[str] = None
     transcript_confidence: Optional[float] = None
     transcript_language: Optional[str] = None
+    transcript_status: Optional[str] = None
     duration_seconds: Optional[int] = None
     description: Optional[str] = None
 
@@ -143,13 +145,32 @@ def _unique_filename(original: str) -> str:
     return f"{uuid_lib.uuid4().hex}{suffix}"
 
 
+def _audio_transcript_fields(
+    is_audio: bool, transcript: Optional[str]
+) -> tuple[Optional[str], Optional[TranscriptStatus]]:
+    """What to store for transcript/transcript_status given a capture's type
+    and whatever transcript text (if any) the client submitted alongside the
+    upload.
+
+    Non-audio captures never get a transcript at all (None, None). For AUDIO
+    captures there is no server-side transcription step to fall back to —
+    transcription happens entirely on-device (see upload_capture's
+    docstring) — so a missing transcript means UNAVAILABLE, never a pending
+    or in-progress state.
+    """
+    if not is_audio:
+        return None, None
+    if transcript:
+        return transcript, TranscriptStatus.COMPLETED
+    return None, TranscriptStatus.UNAVAILABLE
+
+
 # ==============================================================================
 # CAPTURE ENDPOINTS
 # ==============================================================================
 
 @router.post("/captures/upload", response_model=CaptureResponse, status_code=201)
 async def upload_capture(
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     capture_type: CaptureType = Form(...),
     activity_id: Optional[UUID] = Form(None),
@@ -158,10 +179,22 @@ async def upload_capture(
     longitude: Optional[float] = Form(None),
     location_name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    transcript: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Upload evidence capture. Poll GET /captures/{id} for transcript after audio upload."""
+    """Upload evidence capture.
+
+    For AUDIO captures, `transcript` (optional) is produced entirely
+    on-device by the mobile client (expo-speech-recognition with
+    requiresOnDeviceRecognition=true — see CaptureSheet.tsx) and trusted
+    as-is here; there is no server-side transcription step of any kind
+    (removed 2026-09-13 along with services/asr_service.py — the Ollama tier
+    could never actually transcribe real audio, and the OpenAI/Claude cloud
+    tiers sent student audio to a third party on fallback). A capture
+    without a transcript simply has none — never falls back to any
+    cloud/self-hosted ASR. See AUDIO_TRANSCRIPTION_ON_DEVICE_HANDOFF.md.
+    """
     MAX_BYTES = 50 * 1024 * 1024
     content = await file.read()
     if len(content) > MAX_BYTES:
@@ -187,6 +220,9 @@ async def upload_capture(
     file_path = captures_dir / safe_name
     file_path.write_bytes(content)
 
+    transcript_value, transcript_status_value = _audio_transcript_fields(
+        capture_type == CaptureType.AUDIO, transcript
+    )
     capture = StudentCapture(
         student_id=current_user.id,
         activity_id=activity_id,
@@ -198,13 +234,12 @@ async def upload_capture(
         location_latitude=latitude,
         location_longitude=longitude,
         description=description,
+        transcript=transcript_value,
+        transcript_status=transcript_status_value,
     )
     db.add(capture)
     await db.commit()
     await db.refresh(capture)
-
-    if capture_type == CaptureType.AUDIO:
-        background_tasks.add_task(_transcribe_audio_background, capture.id, str(file_path))
 
     logger.info(f"Capture uploaded: {capture.id} by {current_user.id}")
     return capture
@@ -215,7 +250,6 @@ async def upload_capture(
 @router.post("/captures/photo",  response_model=CaptureResponse, status_code=201, include_in_schema=False)
 @router.post("/captures/video",  response_model=CaptureResponse, status_code=201, include_in_schema=False)
 async def upload_capture_alias(
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     capture_type: CaptureType = Form(...),
     activity_id: Optional[UUID] = Form(None),
@@ -224,15 +258,17 @@ async def upload_capture_alias(
     longitude: Optional[float] = Form(None),
     location_name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    transcript: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Alias for /captures/upload — same handler."""
     return await upload_capture(
-        background_tasks=background_tasks, file=file, capture_type=capture_type,
+        file=file, capture_type=capture_type,
         activity_id=activity_id, session_id=session_id,
         latitude=latitude, longitude=longitude, location_name=location_name,
-        description=description, current_user=current_user, db=db,
+        description=description, transcript=transcript,
+        current_user=current_user, db=db,
     )
 
 
@@ -539,6 +575,77 @@ async def link_capture_to_notebook(
 
 
 # ==============================================================================
+# STUDENT-TRIGGERED CONSENT REQUEST
+# ==============================================================================
+# A capture blocked with error_code="consent_required" (privacy_engine.py's
+# enforce_or_raise) stays safely on the student's device (nothing gates local
+# capture — see the age-scoped-consent plan doc) but can't be uploaded/
+# submitted until a guardian grants consent. This lets the student re-trigger
+# that request themselves rather than passively waiting on whatever happened
+# at signup — reuses the exact same real flow accept_invite's initial send
+# uses (SignedURL token + send_parent_consent_email), not a second mechanism.
+
+_CONSENT_REQUEST_COOLDOWN_HOURS = 72  # matches the token's own TTL
+
+
+@router.post("/consent/request-guardian", status_code=200)
+async def request_guardian_consent(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not current_user.parent_email:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "no_guardian_email_on_file",
+                "message": "No guardian email is on file for this account. Ask a "
+                           "teacher to add one before requesting consent.",
+            },
+        )
+
+    if current_user.last_consent_request_at:
+        elapsed = datetime.utcnow() - current_user.last_consent_request_at
+        if elapsed.total_seconds() < _CONSENT_REQUEST_COOLDOWN_HOURS * 3600:
+            hours_left = _CONSENT_REQUEST_COOLDOWN_HOURS - int(elapsed.total_seconds() // 3600)
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error_code": "consent_request_cooldown",
+                    "message": f"A request was already sent recently. Try again in "
+                               f"about {hours_left} hour(s).",
+                },
+            )
+
+    from services.signed_url import SignedURL
+    from services.email_service import send_parent_consent_email
+
+    consent_token = SignedURL.generate(
+        purpose="parent_consent",
+        payload={"student_id": str(current_user.id)},
+    )
+    student_name = (
+        f"{current_user.first_name} {current_user.last_name}".strip()
+        or current_user.username
+    )
+    try:
+        await send_parent_consent_email(
+            to=current_user.parent_email,
+            token=consent_token,
+            student_name=student_name,
+        )
+    except Exception as exc:
+        logger.warning(
+            f"Guardian consent re-request email failed for student {current_user.id}: {exc}"
+        )
+        raise HTTPException(status_code=502, detail="Could not send the request email — try again later.")
+
+    current_user.last_consent_request_at = datetime.utcnow()
+    await db.commit()
+    logger.info(f"Guardian consent re-requested by student {current_user.id}")
+    return {"status": "sent"}
+
+
+# ==============================================================================
 # PORTFOLIO ENDPOINT
 # ==============================================================================
 
@@ -750,35 +857,8 @@ async def deny_parent_request(
     return await _resolve_parent_request(parent_id, "denied", current_user, db)
 
 
-# ==============================================================================
-# BACKGROUND: ASR TRANSCRIPTION
-# ==============================================================================
-
-async def _transcribe_audio_background(capture_id: UUID, file_path: str):
-    """Transcribe audio via ASR service and write result back to DB."""
-    from core.config import settings
-    if not settings.ASR_ENABLED:
-        logger.debug(f"ASR disabled (ASR_ENABLED=false) — skipping transcription of {capture_id}")
-        return
-    try:
-        from core.database import async_session_factory
-        from services.asr_service import asr_service
-
-        result = await asr_service.transcribe_audio(file_path)
-
-        async with async_session_factory() as db:
-            res = await db.execute(
-                select(StudentCapture).where(StudentCapture.id == capture_id)
-            )
-            capture = res.scalar_one_or_none()
-            if capture:
-                if result.get("status") == "completed":
-                    capture.transcript = result.get("text")
-                    capture.transcript_confidence = result.get("confidence")
-                    capture.transcript_language = result.get("language")
-                else:
-                    capture.transcript = None
-                await db.commit()
-                logger.info(f"ASR complete for capture {capture_id}")
-    except Exception as e:
-        logger.error(f"Background ASR error for {capture_id}: {e}")
+# Note: there used to be a "BACKGROUND: ASR TRANSCRIPTION" section here
+# (_transcribe_audio_background, _set_transcript_status), calling into
+# services/asr_service.py. Removed 2026-09-13 — transcription moved
+# on-device (see upload_capture's docstring above and
+# AUDIO_TRANSCRIPTION_ON_DEVICE_HANDOFF.md); asr_service.py is deleted.

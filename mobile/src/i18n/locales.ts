@@ -59,6 +59,33 @@ export function getSpeechLocale(code: string): string {
   return SPEECH_LOCALE_MAP[code] ?? code;
 }
 
+// On-device speech RECOGNITION (expo-speech-recognition, wrapping iOS
+// SFSpeechRecognizer / Android SpeechRecognizer) is stricter than TTS about
+// this: both platforms' recognizers expect a fully region-qualified BCP-47
+// locale identifier to select the right offline model, and reject or
+// silently mis-resolve a bare tag more often than the TTS engines above
+// tolerate — so every one of the 13 supported codes gets an explicit entry
+// here rather than only the ones that need it.
+const STT_LOCALE_MAP: Record<string, string> = {
+  en: 'en-US',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  ar: 'ar-SA',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  'pt-BR': 'pt-BR',
+  'fr-CA': 'fr-CA',
+  he: 'he-IL',
+  de: 'de-DE',
+  it: 'it-IT',
+  tr: 'tr-TR',
+  zh: 'zh-CN',
+};
+
+export function getSttLocale(code: string): string {
+  return STT_LOCALE_MAP[code] ?? 'en-US';
+}
+
 export const DEFAULT_LOCALE = 'en';
 
 // Matches the prior removed picker's AsyncStorage key (work_tracking.md) so
