@@ -44,6 +44,7 @@
       "captureHint": "Use your camera, voice, or notes to record what you find.",
       "evidenceCollectedLabel": "COLLECTED ({{count}})",
       "reviewEvidence": "Review this evidence",
+      "reviewEvidenceBlocked": "This item needs a parent's OK before it can be shared with your teacher",
       "saveProgress": "Save to server",
       "savingProgress": "Saving…",
       "progressSavedTitle": "Saved to server",
@@ -130,18 +131,29 @@
     "requestingMic": "Requesting microphone access…",
     "recordingStatus": "Recording {{seconds}}s — tap to stop",
     "tapToStart": "Tap to start recording",
-    "audioPrivacyNote": "Your recording is transcribed on our own servers — it's never sent to a third-party AI provider unless you're actively chatting with Peri.",
+    "audioPrivacyNote": "Your recording is transcribed on this device — audio is never sent anywhere for transcription, and never to a third-party AI provider unless you're actively chatting with Peri.",
+    "sttModelMissing": "This recording will save, but won't have a transcript — on-device transcription for your language needs a one-time setup. Enable it in Settings → Offline Transcription (best done on wifi).",
     "fieldNote": "FIELD NOTE",
     "notePlaceholder": "Write what you observe…",
     "saveNote": "Save note",
     "sketchLabel": "DRAWING",
     "sketchUndo": "Undo",
     "sketchClear": "Clear",
+    "sketchColor": "Drawing color",
+    "sketchThickness": "Line thickness: {{size}}",
+    "sketchTool": {
+      "pen": "Pen",
+      "line": "Line",
+      "rect": "Rectangle",
+      "ellipse": "Circle"
+    },
     "saveSketch": "Save drawing",
     "preview": {
       "title": "Your evidence",
       "play": "Play",
-      "pause": "Pause"
+      "pause": "Pause",
+      "consentBlocked": "Saved on your device — needs a parent's OK before it can be shared with your teacher.",
+      "textUnavailable": "Couldn't load this text."
     }
   },
   "common": {
@@ -364,7 +376,9 @@
     "title": "Ask Peri",
     "closeChat": "Close chat",
     "inputPlaceholder": "Ask a question…",
-    "sendMessage": "Send message"
+    "sendMessage": "Send message",
+    "transcriptStudentLabel": "Student",
+    "transcriptPeriLabel": "Peri"
   },
   "perispeech": {
     "stopReading": "Stop reading aloud",

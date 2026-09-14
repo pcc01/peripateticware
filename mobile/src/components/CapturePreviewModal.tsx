@@ -37,10 +37,26 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
   const [resolvedUri, setResolvedUri] = useState<string | null>(null);
   const [resolvingUri, setResolvingUri] = useState(false);
 
+  const isTextType = capture?.capture_type === 'note' || capture?.capture_type === 'text' || capture?.capture_type === 'peri_chat';
+
+  // BUG FIX (2026-09-14): a text-shaped capture (note/text/peri_chat)
+  // opened from anywhere OTHER than the moment it was captured (e.g. the
+  // journal/portfolio list, or an older item in this same activity's
+  // evidence strip after a remount) had no `local_text` and rendered
+  // completely blank — this branch used to bail out of the streaming
+  // fetch entirely for these types ("nothing to stream"), which was true
+  // for media but wrong for text: there IS something to fetch, it's just
+  // text instead of a media file. Needed to make a saved Peri conversation
+  // (see PeriChatSheet.tsx) actually reviewable later, not just in the
+  // same session it was captured — the same gap already existed for plain
+  // notes, fixed here too rather than left as a known-bad case.
+  const [resolvedText, setResolvedText] = useState<string | null>(null);
+  const [resolvingText, setResolvingText] = useState(false);
+
   useEffect(() => {
     if (!capture) { setResolvedUri(null); return; }
     if (capture.local_uri) { setResolvedUri(capture.local_uri); return; }
-    if (capture.capture_type === 'note' || capture.capture_type === 'text') return; // nothing to stream
+    if (isTextType) return; // handled by the text-resolution effect below
     let cancelled = false;
     setResolvingUri(true);
     setResolvedUri(null);
@@ -55,7 +71,33 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
     // parent's list state) would otherwise re-fetch a stream URL we already
     // resolved.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [capture?.id, capture?.local_uri]);
+  }, [capture?.id, capture?.local_uri, isTextType]);
+
+  useEffect(() => {
+    if (!capture || !isTextType) { setResolvedText(null); return; }
+    if (capture.local_text) { setResolvedText(capture.local_text); return; }
+    // Still-queued-locally case: the actual text is already on-device,
+    // baked into the data: URI queueCapture() stored (see
+    // CaptureSheet.tsx's submitNote / PeriChatSheet.tsx's saveTranscript) —
+    // decode it directly rather than round-tripping to the server for
+    // content that's sitting right here.
+    const dataUriMatch = capture.local_uri?.match(/^data:text\/plain;base64,(.*)$/s);
+    if (dataUriMatch) { setResolvedText(atob(dataUriMatch[1])); return; }
+    // Already-synced case: no local copy at all — stream it from the
+    // server the same way media does, then read the response as plain text
+    // instead of just handing back a playable URL.
+    let cancelled = false;
+    setResolvingText(true);
+    setResolvedText(null);
+    getMediaStreamUrl(capture.id)
+      .then((url) => fetch(url))
+      .then((res) => res.text())
+      .then((text) => { if (!cancelled) setResolvedText(text); })
+      .catch(() => { if (!cancelled) setResolvedText(null); })
+      .finally(() => { if (!cancelled) setResolvingText(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capture?.id, capture?.local_text, capture?.local_uri, isTextType]);
 
   // Stop/unload audio playback whenever the sheet closes or a different
   // capture is opened — otherwise a recording could keep playing silently
@@ -110,6 +152,18 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
             </TouchableOpacity>
           </View>
 
+          {/* Points at exactly why THIS item hasn't reached the teacher yet
+              — the work is safe on-device, this is a status, not an error.
+              See app/activity/[id].tsx's evidence-strip lock badge, which
+              is what a student taps to land here. */}
+          {capture.blocked_reason === 'consent_required' && (
+            <View style={[styles.blockedBanner, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]}>
+              <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+                🔒 {t('capture.preview.consentBlocked', "Saved on your device — needs a parent's OK before it can be shared with your teacher.")}
+              </Text>
+            </View>
+          )}
+
           {resolvingUri && (
             <View style={[styles.media, styles.mediaLoading]}>
               <ActivityIndicator color={theme.accent} />
@@ -157,12 +211,18 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
             </View>
           )}
 
-          {(capture.capture_type === 'note' || capture.capture_type === 'text') && (
-            <ScrollView style={styles.noteScroll}>
-              <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text }]}>
-                {capture.local_text}
-              </Text>
-            </ScrollView>
+          {isTextType && (
+            resolvingText ? (
+              <View style={[styles.media, styles.mediaLoading, { aspectRatio: undefined, height: 80, backgroundColor: 'transparent' }]}>
+                <ActivityIndicator color={theme.accent} />
+              </View>
+            ) : (
+              <ScrollView style={styles.noteScroll}>
+                <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.text }]}>
+                  {resolvedText ?? t('capture.preview.textUnavailable', "Couldn't load this text.")}
+                </Text>
+              </ScrollView>
+            )
           )}
         </View>
       </View>
@@ -189,4 +249,5 @@ const styles = StyleSheet.create({
   playIcon:  { fontSize: 18, color: 'white' },
   bodyText:  { fontSize: 15, lineHeight: 22, flex: 1 },
   noteScroll: { maxHeight: 300 },
+  blockedBanner: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 10 },
 });

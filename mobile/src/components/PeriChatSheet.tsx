@@ -10,6 +10,8 @@ import {
 import { Theme } from '@/src/theme/tokens';
 import CrowAvatar from '@/src/components/CrowAvatar';
 import { chatWithPeri, ChatMessage } from '@/src/api/inference';
+import { Capture } from '@/src/api/captures';
+import { queueCapture, updateQueuedCaptureUri } from '@/src/db/offlineQueue';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -23,6 +25,14 @@ interface Props {
   activityTitle?: string;
   activitySubject?: string;
   currentPrompt?: string;
+  sessionId?: string | null;
+  // Fires when the transcript is (re-)saved to the local capture queue —
+  // same contract as CaptureSheet.tsx's onCaptured, so the activity screen
+  // can track/link it alongside every other evidence type. Called with the
+  // SAME capture id across repeated saves within one still-unsynced
+  // session (see saveTranscript below) — the parent should upsert by id,
+  // not blindly append.
+  onCaptured?: (c: Capture) => void;
 }
 
 interface DisplayMessage {
@@ -33,7 +43,8 @@ interface DisplayMessage {
 
 export default function PeriChatSheet({
   visible, onClose, theme,
-  activityId, activityTitle, activitySubject, currentPrompt,
+  activityId, activityTitle, activitySubject, currentPrompt, sessionId,
+  onCaptured,
 }: Props) {
   const { t } = useTranslation();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -47,6 +58,77 @@ export default function PeriChatSheet({
       setMessages([{ id: 'greeting', role: 'assistant', content: greeting }]);
     }
   }, [visible]);
+
+  // Persisting the conversation (2026-09-14): this used to be pure
+  // ephemeral React state -- discarded the moment the activity screen
+  // unmounted, with no way for the student to revisit it or the teacher to
+  // see it, and no documented privacy/compliance reason for that, just an
+  // oversight given how much of the rest of a Peri chat IS part of the
+  // learning. Saved the same way a text note is (plain-text file, this
+  // capture type), reusing the existing local-first queue/sync/link
+  // machinery rather than inventing a new storage path.
+  //
+  // `queuedCaptureIdRef` tracks the local queue row across repeated saves
+  // *within one still-unsynced session* so re-opening "Ask Peri" during the
+  // same activity visit amends the SAME capture (via
+  // updateQueuedCaptureUri) instead of creating a new one each time --
+  // functionally "one evolving conversation," the way a git branch gets
+  // amended rather than piling up near-duplicate commits. If that row was
+  // already uploaded and removed from the local queue since the last save
+  // (updateQueuedCaptureUri returns false), every OTHER capture type in
+  // this app treats an uploaded capture as immutable evidence too -- no
+  // endpoint anywhere mutates one after the fact -- so this becomes a
+  // fresh checkpoint capture instead, not a patch to the synced one.
+  const queuedCaptureIdRef = useRef<string | null>(null);
+
+  const saveTranscript = async () => {
+    const realMessages = messages.filter((m) => m.id !== 'greeting');
+    if (realMessages.length === 0) return; // nothing exchanged -- don't save a greeting-only "conversation"
+
+    const transcript = realMessages
+      .map((m) => `${m.role === 'user' ? t('perichat.transcriptStudentLabel', 'Student') : t('perichat.transcriptPeriLabel', 'Peri')}: ${m.content}`)
+      .join('\n\n');
+    const uri = `data:text/plain;base64,${btoa(transcript)}`;
+
+    if (queuedCaptureIdRef.current) {
+      const amended = await updateQueuedCaptureUri(queuedCaptureIdRef.current, uri);
+      if (amended) {
+        onCaptured?.({
+          id: queuedCaptureIdRef.current,
+          capture_type: 'peri_chat',
+          created_at: new Date().toISOString(),
+          local_text: transcript,
+        });
+        return;
+      }
+      // Already synced and removed from the local queue since the last
+      // save -- fall through to queue a fresh checkpoint below.
+    }
+
+    const queueId = await queueCapture({
+      local_uri: uri,
+      capture_type: 'peri_chat',
+      session_id: sessionId ?? undefined,
+      activity_id: activityId,
+    });
+    queuedCaptureIdRef.current = queueId;
+    onCaptured?.({
+      id: queueId,
+      capture_type: 'peri_chat',
+      created_at: new Date().toISOString(),
+      local_text: transcript,
+    });
+  };
+
+  const handleClose = () => {
+    saveTranscript().catch(() => {
+      // Best-effort, same spirit as every other capture path in this app —
+      // the conversation itself isn't lost (it's still on-screen if the
+      // student reopens the sheet before navigating away), just not yet
+      // checkpointed to the queue this one time.
+    });
+    onClose();
+  };
 
   const send = async () => {
     const text = input.trim();
@@ -90,21 +172,33 @@ export default function PeriChatSheet({
 
   // formSheet, not pageSheet — a real CI run's hierarchy dump showed
   // peri-chat-input/peri-chat-send sitting at y=578-618 out of ~852pt
-  // screen height with the keyboard up: behind the keyboard, not above it,
-  // despite the KeyboardAvoidingView below. CaptureSheet.tsx has the same
-  // Modal + KeyboardAvoidingView + TextInput shape and its equivalent fix
-  // (see that file's own comment) DID work there — the one structural
-  // difference is presentationStyle. iOS's keyboard-frame notifications
-  // that KeyboardAvoidingView listens for are documented to behave
-  // differently depending on a Modal's presentation style; matching
-  // CaptureSheet's (confirmed working) formSheet is the targeted fix, not
-  // a guess at a new mechanism.
+  // screen height with the keyboard up: behind the keyboard, not above it.
+  // That fix addressed iOS (presentationStyle is an iOS-only Modal concept
+  // — Android ignores it entirely); Android had a SEPARATE, since-confirmed
+  // bug of its own (2026-09-14, real device report: "the keyboard covers
+  // what you're typing"), root-caused by reading React Native's own Android
+  // source rather than guessing: RN's <Modal> renders to its own Android
+  // Dialog, and ReactModalHostView.kt UNCONDITIONALLY calls
+  // `window.setSoftInputMode(SOFT_INPUT_ADJUST_RESIZE)` on that dialog's
+  // window — i.e. the native window already resizes itself for the
+  // keyboard, regardless of the host Activity's own manifest
+  // windowSoftInputMode. Layering behavior="height" KeyboardAvoidingView on
+  // top of that made this view ALSO manually shrink by the keyboard's
+  // height, double-compensating and pushing the input row down behind the
+  // now-doubly-shrunk visible area instead of just above the keyboard.
+  // Fix: no KeyboardAvoidingView adjustment at all on Android inside a
+  // Modal — the native resize already does the job alone. Matches
+  // ReflectPhase's existing comment in app/activity/[id].tsx making the
+  // identical point for a non-Modal screen (there, the same native resize
+  // comes from MainActivity's manifest windowSoftInputMode="adjustResize"
+  // directly rather than RN's Modal code, but the conclusion — Android
+  // needs no JS-side keyboard-avoiding behavior here — is the same).
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         testID="peri-chat-sheet"
         style={[styles.root, { backgroundColor: theme.bg }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
         <View style={[styles.header, { borderBottomColor: theme.border }]}>
@@ -112,7 +206,7 @@ export default function PeriChatSheet({
           <Text style={[styles.headerTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('perichat.title', 'Ask Peri')}</Text>
           <TouchableOpacity
             testID="peri-chat-close"
-            onPress={onClose}
+            onPress={handleClose}
             hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('perichat.closeChat', 'Close chat')}

@@ -743,6 +743,21 @@ class CaptureType(str, enum.Enum):
     TEXT        = "text"
     SKETCH      = "sketch"
     MEASUREMENT = "measurement"
+    # Added 2026-09-14: a saved "Ask Peri" conversation transcript. Peri
+    # chat (routes/inference.py::chat_with_peri) was entirely stateless
+    # before this -- the mobile app held the conversation only in local
+    # React state, discarded the moment the activity screen unmounted, with
+    # no way for a student to revisit it or a teacher to see it, and no
+    # documented privacy/compliance reason for that -- just an oversight.
+    # Uploaded the same way a text note is (plain-text file, this capture
+    # type), not a new storage mechanism. See PeriChatSheet.tsx's
+    # save-on-close logic and src/db/offlineQueue.ts's
+    # updateQueuedCaptureUri (amends the same not-yet-synced local queue
+    # row across multiple Peri sessions in one activity visit, rather than
+    # creating a new local row each time -- see that function's own
+    # comment for why an already-synced capture becomes a fresh checkpoint
+    # instead of a mutated one).
+    PERI_CHAT   = "peri_chat"
 
 
 class TranscriptStatus(str, enum.Enum):

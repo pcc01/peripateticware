@@ -15,7 +15,7 @@ import { Theme } from '@/src/theme/tokens';
 import { Capture } from '@/src/api/captures';
 import { queueCapture } from '@/src/db/offlineQueue';
 import InAppCamera, { CapturedFile } from '@/src/components/InAppCamera';
-import SketchCanvas, { SketchCanvasHandle } from '@/src/components/SketchCanvas';
+import SketchCanvas, { SketchCanvasHandle, SketchTool } from '@/src/components/SketchCanvas';
 import { t } from '@/src/i18n/t';
 import i18n from '@/src/i18n/index';
 import { getSttLocale } from '@/src/i18n/locales';
@@ -59,6 +59,27 @@ const MODES = [
   { mode: 'video'  as CaptureMode, emoji: '🎥', label: t('capture.mode.video', 'Video')  },
 ];
 
+// Draw mode's color/thickness/shape palette (2026-09-14). A fixed, small
+// set rather than a full color picker or a slider — this is a field
+// activity sketch tool on a phone screen, not an illustration app; a
+// handful of clearly-distinct colors and three thickness steps cover what
+// a student actually needs (labeling a diagram, circling a detail,
+// sketching a shape) without a control that's fiddly to hit accurately
+// mid-activity. Matches this app's existing emoji-icon convention for
+// buttons rather than introducing a new slider/picker component.
+const SKETCH_COLORS = ['#1a1a1a', '#e53935', '#1e88e5', '#43a047', '#fb8c00', '#8e24aa'];
+const SKETCH_WIDTHS: { value: number; label: string }[] = [
+  { value: 2, label: 'S' },
+  { value: 4, label: 'M' },
+  { value: 8, label: 'L' },
+];
+const SKETCH_TOOLS: { tool: SketchTool; emoji: string; labelKey: string; fallback: string }[] = [
+  { tool: 'pen',     emoji: '✏️', labelKey: 'capture.sketchTool.pen',     fallback: 'Pen' },
+  { tool: 'line',    emoji: '📏', labelKey: 'capture.sketchTool.line',    fallback: 'Line' },
+  { tool: 'rect',    emoji: '⬜', labelKey: 'capture.sketchTool.rect',    fallback: 'Rectangle' },
+  { tool: 'ellipse', emoji: '⚪', labelKey: 'capture.sketchTool.ellipse', fallback: 'Circle' },
+];
+
 export default function CaptureSheet({
   visible, onClose, onCaptured, theme,
   sessionId, activityId, latitude, longitude, initialMode = null,
@@ -96,6 +117,11 @@ export default function CaptureSheet({
   const transcriptPartsRef = useRef<string[]>([]);
   const recognitionActiveRef = useRef(false);
   const recognitionEndResolverRef = useRef<(() => void) | null>(null);
+  // Surfaced in the recording screen (Android only) when the on-device
+  // speech model for the current language isn't downloaded yet — see
+  // startOnDeviceRecognition's own comment for why this needed to become a
+  // distinguishable, actionable state instead of a silent "unavailable".
+  const [sttModelMissing, setSttModelMissing] = useState(false);
 
   // Diagnostics only (src/lib/asrDiagnostics.ts) — answers "did on-device
   // ASR cost anything?" concretely instead of by feel. None of this affects
@@ -128,12 +154,49 @@ export default function CaptureSheet({
     recognitionErrorCodeRef.current = event.error;
   });
 
-  const startOnDeviceRecognition = () => {
+  // Shared by the proactive mode-entry check below and startOnDeviceRecognition
+  // itself — Android only; iOS has no public API to inspect on-device model
+  // status (SFSpeechRecognizer downloads transparently). Returns null (not
+  // false) when the check itself couldn't be completed (timeout/API
+  // hiccup), so callers can tell "confirmed missing" apart from "unknown"
+  // rather than treating a check failure as if the model were absent.
+  const isSttModelInstalled = async (): Promise<boolean | null> => {
+    if (Platform.OS !== 'android') return true;
+    try {
+      const sttLocale = getSttLocale(i18n.language);
+      const { installedLocales } = await withTimeout(
+        ExpoSpeechRecognitionModule.getSupportedLocales({}),
+        4000,
+        'getSupportedLocales timed out'
+      );
+      return installedLocales.includes(sttLocale);
+    } catch {
+      return null;
+    }
+  };
+
+  // Proactive check (2026-09-14): as soon as the student opens the audio
+  // recorder — before they've tapped record at all — so they can go set up
+  // offline transcription first instead of only discovering the gap after
+  // already recording something. startOnDeviceRecognition's own check
+  // (right before actually starting recognition) stays as the authoritative
+  // gate; this is purely for earlier, better-timed messaging.
+  React.useEffect(() => {
+    if (mode !== 'audio') return;
+    let cancelled = false;
+    isSttModelInstalled().then((installed) => {
+      if (!cancelled && installed === false) setSttModelMissing(true);
+    });
+    return () => { cancelled = true; };
+  }, [mode]);
+
+  const startOnDeviceRecognition = async () => {
     transcriptPartsRef.current = [];
     recognitionActiveRef.current = false;
     recognitionErrorCodeRef.current = null;
     recognitionStartLatencyMsRef.current = null;
     recognitionStartedAtRef.current = null;
+    setSttModelMissing(false);
     try {
       // isRecognitionAvailable() covers both "no speech recognizer on this
       // device at all" and "not available for the current OS version" —
@@ -143,6 +206,37 @@ export default function CaptureSheet({
       const available = ExpoSpeechRecognitionModule.isRecognitionAvailable();
       recognitionAvailableRef.current = available;
       if (!available) return;
+
+      // BUG FIX (2026-09-14, real report: "transcript unavailable on every
+      // field recording"): isRecognitionAvailable() only answers "does this
+      // device have a speech recognizer service at all" — it says nothing
+      // about whether the ON-DEVICE model for this specific locale is
+      // actually downloaded, which is a SEPARATE, Android-specific
+      // requirement (see OfflineTranscriptionSettings.tsx's own docstring:
+      // the offline model is opt-in, downloaded once via Settings, never
+      // automatically). requiresOnDeviceRecognition:true is non-negotiable
+      // here (privacy requirement, see below), so starting recognition
+      // without that model installed doesn't fail loudly — it just
+      // produces zero results, landing on transcript_status='unavailable'
+      // with no indication anywhere of why. Checking here means: (a) skip
+      // the doomed attempt entirely rather than pay its latency/battery
+      // cost, and (b) know it's specifically a missing-model case so the
+      // recording screen can say something the student can act on instead
+      // of a bare "unavailable". iOS has no equivalent check (SFSpeechRecognizer
+      // downloads transparently, no public API to inspect it) — this only
+      // runs on Android.
+      const modelInstalled = await isSttModelInstalled();
+      if (modelInstalled === false) {
+        recognitionErrorCodeRef.current = 'offline_model_not_installed';
+        setSttModelMissing(true);
+        return;
+      }
+      // modelInstalled === null: couldn't determine (timeout/API hiccup) —
+      // fall through and attempt recognition anyway rather than assume
+      // failure; the 'error' event handler still catches a genuine
+      // missing-model failure downstream, just without this earlier, more
+      // specific signal.
+
       recognitionStartedAtRef.current = Date.now();
       ExpoSpeechRecognitionModule.start({
         lang: getSttLocale(i18n.language),
@@ -474,6 +568,15 @@ export default function CaptureSheet({
   // same way it is for submitNote()'s ASCII text case.
   const sketchRef = useRef<SketchCanvasHandle>(null);
   const [sketchStrokeCount, setSketchStrokeCount] = useState(0);
+  // Color/thickness/shape-tool controls (2026-09-14). Lifted here rather
+  // than into SketchCanvas itself: these are UI selections that drive what
+  // the NEXT stroke looks like, and the toolbar rendering them lives in
+  // this component, not the canvas. SketchCanvas bakes the current value
+  // of each into every element as it's committed — changing color/
+  // thickness afterward never repaints already-drawn strokes.
+  const [sketchTool, setSketchTool] = useState<SketchTool>('pen');
+  const [sketchColor, setSketchColor] = useState(SKETCH_COLORS[0]);
+  const [sketchStrokeWidth, setSketchStrokeWidth] = useState(SKETCH_WIDTHS[1].value);
 
   // Reset the lifted stroke-count whenever leaving Draw mode by any path
   // (Back, Save, or closing the whole sheet) — SketchCanvas itself resets
@@ -501,7 +604,14 @@ export default function CaptureSheet({
           actually receive touches inside this sheet. */}
       <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        // BUG FIX (2026-09-14): see PeriChatSheet.tsx's matching comment —
+        // same root cause, found via RN's own Android source
+        // (ReactModalHostView.kt unconditionally sets
+        // SOFT_INPUT_ADJUST_RESIZE on every Modal's own Dialog window, so
+        // this Note mode's TextInput was getting double-shrunk: once by the
+        // native window resize, again by this behavior="height". No JS-side
+        // adjustment needed on Android inside a Modal.
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
       <View testID="capture-sheet" style={[styles.root, { backgroundColor: theme.bg }]}>
@@ -579,8 +689,22 @@ export default function CaptureSheet({
                 : t('capture.tapToStart', 'Tap to start recording')}
             </Text>
             <Text style={[styles.privacyNote, { fontFamily: theme.fontBody, color: theme.textFaint }]}>
-              {t('capture.audioPrivacyNote', "Your recording is transcribed on our own servers — it's never sent to a third-party AI provider unless you're actively chatting with Peri.")}
+              {/* BUG FIX (2026-09-14): this text was stale from before the
+                  on-device transcription switch — it said "on our own
+                  servers", which stopped being true the day
+                  services/asr_service.py was removed. Transcription now
+                  happens entirely on the device, during recording; the
+                  server never runs any transcription of its own. */}
+              {t('capture.audioPrivacyNote', "Your recording is transcribed on this device — audio is never sent anywhere for transcription, and never to a third-party AI provider unless you're actively chatting with Peri.")}
             </Text>
+            {sttModelMissing && (
+              <Text testID="capture-stt-model-missing" style={[styles.privacyNote, { fontFamily: theme.fontBody, color: theme.warn }]}>
+                {t(
+                  'capture.sttModelMissing',
+                  "This recording will save, but won't have a transcript — on-device transcription for your language needs a one-time setup. Enable it in Settings → Offline Transcription (best done on wifi)."
+                )}
+              </Text>
+            )}
             {!recording && (
               <TouchableOpacity
                 testID="capture-audio-back"
@@ -650,7 +774,79 @@ export default function CaptureSheet({
             <Text style={[styles.noteLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
               {t('capture.sketchLabel', 'DRAWING')}
             </Text>
-            <SketchCanvas ref={sketchRef} onStrokeCountChange={setSketchStrokeCount} />
+            <SketchCanvas
+              ref={sketchRef}
+              tool={sketchTool}
+              color={sketchColor}
+              strokeWidth={sketchStrokeWidth}
+              onStrokeCountChange={setSketchStrokeCount}
+            />
+
+            {/* Shape palette — pen (freehand) plus line/rectangle/circle,
+                drag-to-size. Already-drawn elements keep whatever tool they
+                were made with; this only picks what the NEXT one is. */}
+            <View style={styles.sketchToolbar}>
+              {SKETCH_TOOLS.map(({ tool: toolOption, emoji, labelKey, fallback }) => (
+                <TouchableOpacity
+                  key={toolOption}
+                  testID={`capture-sketch-tool-${toolOption}`}
+                  onPress={() => setSketchTool(toolOption)}
+                  style={[
+                    styles.sketchToolBtn,
+                    {
+                      borderColor: sketchTool === toolOption ? theme.accent : theme.border,
+                      backgroundColor: sketchTool === toolOption ? theme.surfaceAlt : 'transparent',
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t(labelKey, fallback)}
+                  accessibilityState={{ selected: sketchTool === toolOption }}
+                >
+                  <Text style={styles.sketchToolEmoji}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Color + thickness — a fixed small palette (see SKETCH_COLORS/
+                SKETCH_WIDTHS comment above), not a full picker/slider. */}
+            <View style={styles.sketchPaletteRow}>
+              <View style={styles.sketchColorRow}>
+                {SKETCH_COLORS.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    testID={`capture-sketch-color-${c}`}
+                    onPress={() => setSketchColor(c)}
+                    style={[
+                      styles.sketchColorSwatch,
+                      { backgroundColor: c },
+                      sketchColor === c && [styles.sketchColorSwatchSelected, { borderColor: theme.accent }],
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('capture.sketchColor', 'Drawing color')}
+                    accessibilityState={{ selected: sketchColor === c }}
+                  />
+                ))}
+              </View>
+              <View style={styles.sketchWidthRow}>
+                {SKETCH_WIDTHS.map(({ value, label }) => (
+                  <TouchableOpacity
+                    key={value}
+                    testID={`capture-sketch-width-${value}`}
+                    onPress={() => setSketchStrokeWidth(value)}
+                    style={[
+                      styles.sketchWidthBtn,
+                      { borderColor: sketchStrokeWidth === value ? theme.accent : theme.border },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('capture.sketchThickness', 'Line thickness: {{size}}').replace('{{size}}', label)}
+                    accessibilityState={{ selected: sketchStrokeWidth === value }}
+                  >
+                    <View style={[styles.sketchWidthDot, { width: value + 4, height: value + 4, borderRadius: (value + 4) / 2, backgroundColor: theme.text }]} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
             <View style={styles.sketchToolbar}>
               <TouchableOpacity
                 testID="capture-sketch-undo"
@@ -744,6 +940,14 @@ const styles = StyleSheet.create({
   sketchToolbar:   { flexDirection: 'row', gap: 10 },
   sketchToolBtn:   { flex: 1, borderWidth: 1, padding: 10, alignItems: 'center', borderRadius: 8 },
   sketchToolLabel: { fontSize: 13, fontWeight: '600' },
+  sketchToolEmoji: { fontSize: 18 },
+  sketchPaletteRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 },
+  sketchColorRow:     { flexDirection: 'row', gap: 8 },
+  sketchColorSwatch:  { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'transparent' },
+  sketchColorSwatchSelected: { borderWidth: 3 },
+  sketchWidthRow:     { flexDirection: 'row', gap: 8 },
+  sketchWidthBtn:     { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  sketchWidthDot:     {},
   submitBtn:     { padding: 14, alignItems: 'center' },
   submitLabel:   { fontSize: 15, fontWeight: '600' },
   uploadingText: { fontSize: 14, textAlign: 'center' },

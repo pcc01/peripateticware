@@ -16,6 +16,7 @@ import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
+import CrowAvatar from '@/src/components/CrowAvatar';
 import CaptureSheet from '@/src/components/CaptureSheet';
 import CapturePreviewModal from '@/src/components/CapturePreviewModal';
 import { Capture, fetchCaptures, requestGuardianConsent } from '@/src/api/captures';
@@ -92,6 +93,20 @@ export default function ActivityScreen() {
   const [showCapture, setShowCapture] = useState(false);
   const [captureMode, setCaptureMode] = useState<'photo' | 'audio' | 'note' | 'video' | 'sketch' | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
+  // Shared by CaptureSheet's onCaptured (always a new id) and
+  // PeriChatSheet's onCaptured (the SAME id across repeated saves while a
+  // conversation's capture is still amended in place, see that component's
+  // own comment) — upsert-by-id so a re-saved Peri transcript updates its
+  // existing evidence-strip entry instead of appending a duplicate.
+  const upsertCapture = useCallback((c: Capture) => {
+    setCaptures((prev) => {
+      const idx = prev.findIndex((p) => p.id === c.id);
+      if (idx === -1) return [...prev, c];
+      const next = [...prev];
+      next[idx] = c;
+      return next;
+    });
+  }, []);
   const [previewCapture, setPreviewCapture] = useState<Capture | null>(null);
   const [geofenceToast, setGeofenceToast] = useState(false);
   const [savingProgress, setSavingProgress] = useState(false);
@@ -227,6 +242,23 @@ export default function ActivityScreen() {
       // shouldn't block this action; it stays queued for the next attempt.
     }
     setConsentBlockedCount(blocked);
+    // Point at the SPECIFIC blocked capture(s) in the evidence strip, not
+    // just an aggregate count — a student with 4 captures and 1 blocked
+    // needs to know which one. Cross-reference by id: a not-yet-uploaded
+    // capture in `captures` state carries the local queue id it was given
+    // at capture time (see CaptureSheet.tsx's upload()), same id
+    // getConsentBlockedCaptures() reports on.
+    if (blocked > 0) {
+      try {
+        const blockedRows = await getConsentBlockedCaptures();
+        const blockedIds = new Set(blockedRows.map((r) => r.id));
+        setCaptures((prev) => prev.map((c) => (
+          blockedIds.has(c.id) ? { ...c, blocked_reason: 'consent_required' } : c
+        )));
+      } catch {
+        // best-effort — the aggregate count above still communicates something
+      }
+    }
     // BUG FIX (2026-09-14): `captures` holds the local offline-queue ids
     // CaptureSheet hands back at capture time (see CaptureSheet.tsx's
     // upload() — `id: queueId`), not the real server-side capture ids.
@@ -457,11 +489,13 @@ export default function ActivityScreen() {
           activityTitle={activity.title}
           activitySubject={activity.subject}
           currentPrompt={question?.question_text}
+          sessionId={sessionId}
+          onCaptured={upsertCapture}
         />
         <CaptureSheet
           visible={showCapture}
           onClose={() => setShowCapture(false)}
-          onCaptured={(c) => setCaptures((prev) => [...prev, c])}
+          onCaptured={upsertCapture}
           theme={theme}
           activityId={activity.id}
           initialMode={captureMode}
@@ -660,7 +694,7 @@ function OrientPhase({ activity, theme, onReady }: any) {
 }
 
 // ── Inquiry phase ──────────────────────────────────────────────────────────
-const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️', sketch: '🎨' };
+const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️', sketch: '🎨', peri_chat: '💬' };
 
 function InquiryPhase({
   activity, question, theme, sessionId, onNext, onAskPeri, onCapture, captures, onReviewCapture,
@@ -734,18 +768,43 @@ function InquiryPhase({
               {t('activity.inquiry.evidenceCollectedLabel', 'COLLECTED ({{count}})').replace('{{count}}', String(captures.length))}
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.evidenceStrip}>
-              {captures.map((c: Capture) => (
-                <TouchableOpacity
-                  key={c.id}
-                  testID={`evidence-chip-${c.id}`}
-                  onPress={() => onReviewCapture(c)}
-                  style={[styles.evidenceChip, { borderColor: theme.border, backgroundColor: theme.surfaceAlt, borderRadius: theme.radiusSm }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('activity.inquiry.reviewEvidence', 'Review this evidence')}
-                >
-                  <Text style={styles.evidenceEmoji}>{CAPTURE_TYPE_EMOJI[c.capture_type] ?? '📎'}</Text>
-                </TouchableOpacity>
-              ))}
+              {captures.map((c: Capture) => {
+                const isBlocked = c.blocked_reason === 'consent_required';
+                return (
+                  <TouchableOpacity
+                    key={c.id}
+                    testID={`evidence-chip-${c.id}`}
+                    onPress={() => onReviewCapture(c)}
+                    style={[
+                      styles.evidenceChip,
+                      { borderColor: isBlocked ? theme.accent : theme.border, backgroundColor: theme.surfaceAlt, borderRadius: theme.radiusSm },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={isBlocked
+                      ? t('activity.inquiry.reviewEvidenceBlocked', 'This item needs a parent\'s OK before it can be shared with your teacher')
+                      : t('activity.inquiry.reviewEvidence', 'Review this evidence')}
+                  >
+                    {c.capture_type === 'peri_chat' ? (
+                      // Peri's own crow avatar, not a generic 💬 — a saved
+                      // conversation should visibly read as "this was Ask
+                      // Peri," not just "some kind of chat," to eliminate
+                      // any confusion with an unrelated capture type.
+                      <CrowAvatar theme={theme} size={22} />
+                    ) : (
+                      <Text style={styles.evidenceEmoji}>{CAPTURE_TYPE_EMOJI[c.capture_type] ?? '📎'}</Text>
+                    )}
+                    {/* Points at the SPECIFIC blocked capture, not just an
+                        aggregate count below (see linkPendingCaptures'
+                        blocked_reason merge) — a lock badge, not a generic
+                        error state, since the work is safe on-device. */}
+                    {isBlocked && (
+                      <View style={[styles.evidenceBlockedBadge, { backgroundColor: theme.accent }]}>
+                        <Text style={styles.evidenceBlockedBadgeText}>🔒</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </>
         )}
@@ -977,8 +1036,10 @@ const styles = StyleSheet.create({
   captureBtn:      { width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   captureIcon:     { fontSize: 24 },
   evidenceStrip:   { flexDirection: 'row', gap: 8, paddingTop: 8 },
-  evidenceChip:    { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  evidenceChip:    { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, position: 'relative' },
   evidenceEmoji:   { fontSize: 20 },
+  evidenceBlockedBadge: { position: 'absolute', bottom: -4, right: -4, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  evidenceBlockedBadgeText: { fontSize: 10 },
   reflectionInput:  { minHeight: 120, padding: 12, borderWidth: 1, fontSize: 15, lineHeight: 22 },
   reflectionAccessory: { flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: 8, paddingHorizontal: 16, borderTopWidth: StyleSheet.hairlineWidth },
   reflectionAccessoryText: { fontSize: 16, fontWeight: '600' },
