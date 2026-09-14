@@ -693,6 +693,27 @@ async def get_coverage(
     s      = await _get_set(set_id, current_user, db)
     target = UUID(student_id) if student_id else current_user.id
 
+    return await compute_standards_coverage(db, s, target)
+
+
+async def compute_standards_coverage(db: AsyncSession, s: StandardsSet, target: UUID) -> dict:
+    """The actual coverage computation for one standards set + one student —
+    unions ActivityStandardsMap (legacy) with content_alignments (the
+    graph-shaped write path), dedupes the same (activity, criterion) pair
+    reached via both, and lets a teacher's explicit per-submission
+    standards_evaluation verdict override the completion-based heuristic
+    when one exists.
+
+    Extracted from get_coverage() (2026-09-13) so routes/export.py's
+    standards_coverage PDF/CSV export could call the real thing instead of
+    its own separate, drifted reimplementation — that copy had no
+    content_alignments union and no standards_evaluation precedence at
+    all, so an export could show a criterion "met" that the live coverage
+    API (and a teacher's explicit "not_met" judgment) said it wasn't. Do
+    not reintroduce a second copy of this logic; both callers must use
+    this function.
+    """
+    set_id = s.id
     maps = (await db.execute(
         select(ActivityStandardsMap).where(ActivityStandardsMap.standards_set_id == set_id)
     )).scalars().all()
@@ -741,6 +762,30 @@ async def get_coverage(
     # map_activity_to_criterion above.
     _ALIGNMENT_TYPE_TO_LEVEL = {"extends": "exceeds", "assesses": "full", "requires": "full", "teaches": "partial"}
 
+    # A teacher's actual per-submission verdict (activity_submissions.
+    # standards_evaluation — see routes/activities.py::score_submission_rubric
+    # and migration 20260913b_submission_standards_evaluation) outranks the
+    # plain "did the student complete the activity at all" heuristic below:
+    # completing an activity means it was *attempted*, not that the work
+    # *met* the standard. Build {criterion_id: [coverage_level, ...]} across
+    # every graded submission this student has for an activity mapped in
+    # this set, so a criterion with an explicit evaluation uses it instead
+    # of (or in addition to) the completion-based fallback.
+    evaluated_levels: dict = {}
+    mapped_activity_ids = {str(m.activity_id) for m in maps}
+    if mapped_activity_ids:
+        from models.student_models import ActivitySubmission
+        eval_rows = (await db.execute(
+            select(ActivitySubmission.activity_id, ActivitySubmission.standards_evaluation).where(
+                ActivitySubmission.student_id == target,
+                ActivitySubmission.activity_id.in_(mapped_activity_ids),
+                ActivitySubmission.standards_evaluation.is_not(None),
+            )
+        )).all()
+        for activity_id, evaluation in eval_rows:
+            for cid, level in (evaluation or {}).items():
+                evaluated_levels.setdefault(cid, []).append(level)
+
     coverage = {}
     for c in criteria:
         cid = c.get("id") or c.get("code", "")
@@ -762,12 +807,24 @@ async def get_coverage(
         ]
         times_addressed = len(map_hits) + len(alignment_hits)
 
-        coverage[cid] = {
-            "criterion":       c,
-            "times_addressed": times_addressed,
-            "best_level":      _best_level_from_levels(levels),
-            "met":             times_addressed > 0,
-        }
+        this_criterion_evals = evaluated_levels.get(cid, [])
+        if this_criterion_evals:
+            best_eval = _best_level_from_levels(this_criterion_evals)
+            coverage[cid] = {
+                "criterion":       c,
+                "times_addressed": times_addressed,
+                "best_level":      best_eval,
+                "met":             best_eval != "not_met",
+                "evaluated":       True,  # a teacher explicitly judged this, not just inferred from completion
+            }
+        else:
+            coverage[cid] = {
+                "criterion":       c,
+                "times_addressed": times_addressed,
+                "best_level":      _best_level_from_levels(levels),
+                "met":             times_addressed > 0,
+                "evaluated":       False,
+            }
 
     total = len(criteria)
     met   = sum(1 for v in coverage.values() if v["met"])
@@ -804,7 +861,7 @@ async def _get_set(set_id: UUID, user: User, db: AsyncSession) -> StandardsSet:
     return s
 
 
-_LEVEL_ORDER = {"partial": 1, "full": 2, "exceeds": 3}
+_LEVEL_ORDER = {"not_met": 0, "partial": 1, "full": 2, "exceeds": 3}
 
 def _best_level_from_levels(levels: list) -> Optional[str]:
     if not levels:

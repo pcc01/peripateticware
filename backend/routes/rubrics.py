@@ -15,6 +15,7 @@ from pydantic import BaseModel
 
 from core.database import get_db
 from core.dependencies import get_current_user, get_current_teacher
+from core.rate_limit import ai_rate_limit
 from models.user import User
 from models.assessment import AssessmentRubric
 from models.database import Activity
@@ -96,6 +97,19 @@ async def list_rubrics(
 
 _LEVEL_LABELS: Dict[int, str] = {4: "Exceeds", 3: "Meets", 2: "Approaching", 1: "Beginning"}
 
+# Guardrails on the AI-generation request: cap free-text length and list size
+# before any of it reaches the prompt, so one oversized paste can't blow up
+# the prompt's cost/latency or (for the objectives/existing-criteria lists)
+# distort the "one criterion per objective, don't duplicate these" structure
+# the prompt relies on. Truncated rather than rejected — matches
+# services/standards_parser.py::extract_criteria()'s max_chars convention.
+_TITLE_MAX_CHARS = 200
+_DESCRIPTION_MAX_CHARS = 2000
+_OBJECTIVE_MAX_CHARS = 300
+_MAX_OBJECTIVES = 10
+_MAX_EXISTING_CRITERIA = 20
+_MAX_GENERATED_CRITERIA = 20  # safety cap on what a malformed/verbose response can return
+
 
 class RubricGenerateRequest(BaseModel):
     activity_title: str
@@ -131,6 +145,7 @@ async def generate_rubric_criteria(
     payload: RubricGenerateRequest,
     current_user: User = Depends(get_current_teacher),
     db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),  # per-org RPM cap; this is a real, metered LLM call
 ):
     """
     AI-generate draft rubric criteria (4-level descriptors) from an activity's
@@ -143,67 +158,68 @@ async def generate_rubric_criteria(
     any AI/parsing failure this returns {criteria: [], error: "..."} so the
     teacher can fall back to manual entry.
 
-    AI-call mechanism note: same as classify_taxonomy() in routes/activities.py
-    — AIRouter.complete() has no per-call temperature knob, and
-    build_rubric_alignment_prompt()'s docstring calls for temperature 0.30 /
-    max_tokens 1500. This endpoint uses a direct ollama.chat() call (the
-    standards_parser.py fallback pattern) instead of AIRouter, matching the
-    work plan's explicit fallback instruction. See
-    CHANGE_SUMMARY_20260718_PROMPT_LIBRARY_REMAINING.md for the deviation
-    note.
+    Routes through agents/provider.py's dispatch() (Ollama/Claude/OpenAI,
+    resolved via AGENT_RUBRIC_GENERATION_PROVIDER -> LLM_PROVIDER ->
+    "ollama") instead of a direct ollama.chat() call — the previous version
+    hardcoded Ollama and was silently non-functional on any deployment
+    without a local Ollama server (prod runs Claude only). Guardrails:
+    free-text inputs and list sizes are capped before they reach the prompt
+    (_TITLE_MAX_CHARS etc.), and the returned criteria list is capped at
+    _MAX_GENERATED_CRITERIA regardless of what the model returns.
     """
-    if not payload.activity_title.strip() and not payload.activity_description.strip():
+    title = payload.activity_title.strip()[:_TITLE_MAX_CHARS]
+    description = payload.activity_description.strip()[:_DESCRIPTION_MAX_CHARS]
+    if not title and not description:
         return RubricGenerateResponse(
             criteria=[],
             error="Provide at least an activity title or description to generate a rubric.",
         )
+    objectives = [o[:_OBJECTIVE_MAX_CHARS] for o in (payload.learning_objectives or [])][:_MAX_OBJECTIVES]
+    existing_criteria = (payload.existing_rubric_criteria or [])[:_MAX_EXISTING_CRITERIA]
 
     from services.prompt_library import build_rubric_alignment_prompt, SYSTEM_STANDARDS_ANALYST
     prompt = build_rubric_alignment_prompt(
-        activity_title=payload.activity_title,
-        activity_description=payload.activity_description,
-        learning_objectives=payload.learning_objectives or [],
+        activity_title=title,
+        activity_description=description,
+        learning_objectives=objectives,
         subject=payload.subject,
         grade_level=payload.grade_level,
         taxonomy_type=payload.taxonomy_type,
         taxonomy_level=payload.taxonomy_level,
-        existing_rubric_criteria=payload.existing_rubric_criteria,
+        existing_rubric_criteria=existing_criteria,
     )
 
     import json
     import re
     import uuid as _uuid
+    from agents import provider as _provider
+
+    prov = _provider.resolve_provider("AGENT_RUBRIC_GENERATION_PROVIDER", "ollama")
+    model = _provider.resolve_model(prov) or _provider.default_model(prov)
+    try:
+        raw = await _provider.dispatch(
+            prov,
+            messages=[
+                {"role": "system", "content": SYSTEM_STANDARDS_ANALYST},
+                {"role": "user", "content": prompt},
+            ],
+            model=model,
+            max_tokens=1500,  # matches build_rubric_alignment_prompt()'s documented budget
+            timeout=90,
+            temperature=0.30,
+        )
+    except Exception as e:
+        logger.error(
+            "%s call failed during rubric generation (model=%s): %s",
+            prov, model, e, exc_info=True,
+        )
+        return RubricGenerateResponse(
+            criteria=[],
+            error=f"AI rubric generation service unavailable ({type(e).__name__}: {e}). Add criteria manually.",
+        )
 
     try:
-        from core.config import settings
-        import ollama as _ollama
-
-        model = settings.OLLAMA_MODEL_TEXT or "mistral"
-        try:
-            # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
-            # settings.OLLAMA_BASE_URL — nothing listens there inside this
-            # app's Docker container (Ollama runs on the host, reached via
-            # host.docker.internal).
-            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
-            response = client.chat(
-                model=model,
-                messages=[
-                    {"role": "system", "content": SYSTEM_STANDARDS_ANALYST},
-                    {"role": "user", "content": prompt},
-                ],
-                options={"temperature": 0.30},
-            )
-        except Exception as e:
-            logger.error(
-                "Ollama call failed during rubric generation (model=%s): %s",
-                model, e, exc_info=True,
-            )
-            return RubricGenerateResponse(
-                criteria=[],
-                error=f"AI rubric generation service unavailable ({type(e).__name__}: {e}). Add criteria manually.",
-            )
-
-        raw = response["message"]["content"].strip()
+        raw = raw.strip()
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
         raw = re.sub(r"\s*```$", "", raw, flags=re.MULTILINE)
 
@@ -227,7 +243,7 @@ async def generate_rubric_criteria(
             )
 
         cleaned: List[GeneratedCriterion] = []
-        for item in parsed:
+        for item in parsed[:_MAX_GENERATED_CRITERIA]:
             if not isinstance(item, dict):
                 continue
             levels_raw = item.get("levels") or {}
@@ -237,14 +253,14 @@ async def generate_rubric_criteria(
                 GeneratedLevel(
                     score=score,
                     label=_LEVEL_LABELS[score],
-                    description=str(levels_raw.get(str(score), "")),
+                    description=str(levels_raw.get(str(score), ""))[:500],
                 )
                 for score in (4, 3, 2, 1)
             ]
             cleaned.append(GeneratedCriterion(
                 id=str(_uuid.uuid4()),
                 name=str(item.get("name") or "Untitled Criterion")[:100],
-                description=str(item.get("description") or ""),
+                description=str(item.get("description") or "")[:500],
                 levels=levels,
             ))
 
@@ -255,7 +271,7 @@ async def generate_rubric_criteria(
                 error="The AI processed the activity but didn't generate any criteria. Add criteria manually.",
             )
 
-        logger.info("Rubric generation succeeded for user %s: %d criteria", current_user.id, len(cleaned))
+        logger.info("Rubric generation succeeded for user %s (provider=%s): %d criteria", current_user.id, prov, len(cleaned))
         return RubricGenerateResponse(criteria=cleaned, error=None)
 
     except Exception as e:

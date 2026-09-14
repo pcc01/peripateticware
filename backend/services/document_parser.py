@@ -10,12 +10,15 @@ Used by the standards/rubrics upload pipeline and export service.
 
 PDF strategy:
   1. Try pypdf text extraction (fast, works on digital PDFs).
-  2. If text yield is too low (<50 chars/page average), fall back to OCR:
-     render pages as images with Pillow, send to Ollama vision model.
+  2. If text yield is too low (<80 chars/page average), fall back to OCR:
+     render pages as images with PyMuPDF, send to whichever vision-capable
+     LLM provider is configured (see agents/provider.py's provider-agnostic
+     dispatch() and AGENT_DOCUMENT_OCR_PROVIDER) -- Ollama, Claude, or
+     OpenAI, not hardcoded to any one of them.
 
 CSV/Excel strategy:
   - CSV: stdlib csv + chardet for encoding detection.
-  - Excel: openpyxl if available, else inform caller to use CSV.
+  - Excel: openpyxl (requirements.txt).
 
 Public API
 ----------
@@ -84,7 +87,13 @@ async def _extract_pdf_ocr(file_bytes: bytes) -> ParsedDocument:
     from PIL import Image as PILImage
 
     try:
-        import fitz  # PyMuPDF — optional, better page rendering
+        # `import fitz` is PyMuPDF's legacy module name — still works, but
+        # emits "The `fitz` API is deprecated... use `import pymupdf`
+        # instead" (confirmed 2026-09-14, first time this branch actually
+        # ran against a real install). `fitz` itself isn't being removed,
+        # just aliased going forward, so `import pymupdf as fitz` keeps
+        # every `fitz.*` call below unchanged while resolving the warning.
+        import pymupdf as fitz  # PyMuPDF — optional, better page rendering
         has_fitz = True
     except ImportError:
         has_fitz = False
@@ -175,7 +184,8 @@ async def parse_pdf(file_bytes: bytes) -> ParsedDocument:
         if not result.text.strip():
             result.warnings.append(
                 "OCR produced no text. The file may be an image-only PDF with an "
-                "unsupported language, or the Ollama vision model is not running."
+                "unsupported language, or the configured vision model/provider "
+                "(see AGENT_DOCUMENT_OCR_PROVIDER) is unavailable."
             )
 
     return result
@@ -223,6 +233,23 @@ def parse_csv(file_bytes: bytes, filename: str = "file.csv") -> ParsedDocument:
         except ImportError:
             warnings.append("openpyxl not installed — cannot parse Excel. Convert to CSV or add openpyxl to requirements.txt.")
             return ParsedDocument(text="", rows=[], method="excel", warnings=warnings)
+        except Exception as e:
+            # A real corrupt/truncated/mislabeled file (a renamed .csv, a
+            # legacy .xls binary format saved with an .xlsx extension, a
+            # partial download) raises inside openpyxl itself -- e.g.
+            # zipfile.BadZipFile, not ImportError. This only had the
+            # ImportError branch above until 2026-09-14 (when openpyxl was
+            # actually installed for the first time and this path got
+            # exercised for real): parse_document()'s outer try/except
+            # still caught it, so no caller ever saw a raw exception, but
+            # the message it got was the generic "Spreadsheet parse error:
+            # {e}" rather than something a teacher can act on. Match the
+            # ImportError branch's clarity instead of relying on the
+            # outer catch-all.
+            logger.warning("Excel parse failed for %r: %s", filename, e)
+            return ParsedDocument(text="", rows=[], method="excel",
+                                  warnings=[f"Couldn't read this as an Excel file ({type(e).__name__}: {e}). "
+                                            f"Confirm it's a valid .xlsx/.xlsm/.xls, or convert to CSV."])
 
     # ── CSV ──
     encoding = _detect_encoding(file_bytes)

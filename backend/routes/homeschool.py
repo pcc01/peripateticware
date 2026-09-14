@@ -357,6 +357,41 @@ async def child_progress(
 
 # ── Coverage ──────────────────────────────────────────────────────────────
 
+_EVAL_LEVEL_RANK = {"not_met": 0, "partial": 1, "full": 2, "exceeds": 3}
+
+
+def _criterion_status(activities: list, evaluations: list) -> tuple:
+    """Decide one criterion's coverage status.
+
+    A teacher's explicit per-submission verdict (`evaluations`, from
+    activity_submissions.standards_evaluation) outranks the plain
+    "an activity is mapped at full/partial level" status derived from
+    `activities` (activity_standards_map / content_alignments entries) --
+    a mapping is a design-time claim ("this activity targets this
+    standard"), not evidence any child's work actually demonstrated it.
+
+    Returns (status, evaluated) where status is 'met'|'partial'|'not_met'
+    and evaluated is True iff an explicit verdict decided it. Pure function
+    (no DB access) so it's directly unit-testable without mocking a query
+    sequence -- see tests/test_standards_coverage_evaluation.py.
+    """
+    if evaluations:
+        best_eval = max(evaluations, key=lambda l: _EVAL_LEVEL_RANK.get(l, 0))
+        if best_eval in ("full", "exceeds"):
+            return "met", True
+        if best_eval == "partial":
+            return "partial", True
+        return "not_met", True
+
+    has_full    = any(a["coverage_level"] == "full"    for a in activities)
+    has_partial = any(a["coverage_level"] == "partial" for a in activities)
+    if has_full:
+        return "met", False
+    if has_partial:
+        return "partial", False
+    return "not_met", False
+
+
 @router.get("/coverage")
 async def coverage_summary(
     current_user: User = Depends(get_current_user),
@@ -498,6 +533,32 @@ async def coverage_summary(
                     "notes":          ca.rationale or "",
                 })
 
+        # A teacher/parent's actual per-submission verdict
+        # (activity_submissions.standards_evaluation — see
+        # routes/activities.py::score_submission_rubric and migration
+        # 20260913b_submission_standards_evaluation) outranks the plain
+        # "an activity is mapped at full/partial level" status below: a
+        # mapping is a design-time claim ("this activity targets this
+        # standard"), not evidence any child's work actually demonstrated
+        # it — and unlike routes/standards.py::get_coverage, this endpoint's
+        # existing logic doesn't even require the activity to have been
+        # completed, which makes an explicit evaluation matter even more here.
+        evaluated_levels: dict = {}
+        mapped_activity_ids = {a["activity_id"] for acts in by_criterion.values() for a in acts}
+        if child_ids and mapped_activity_ids:
+            from models.student_models import ActivitySubmission
+            from sqlalchemy import select as _select2
+            eval_rows2 = (await db.execute(
+                _select2(ActivitySubmission.activity_id, ActivitySubmission.standards_evaluation).where(
+                    ActivitySubmission.student_id.in_(child_ids),
+                    ActivitySubmission.activity_id.in_(mapped_activity_ids),
+                    ActivitySubmission.standards_evaluation.is_not(None),
+                )
+            )).all()
+            for activity_id, evaluation in eval_rows2:
+                for cid, level in (evaluation or {}).items():
+                    evaluated_levels.setdefault(cid, []).append(level)
+
         # Build per-criterion summary
         criteria_summary = []
         met_count = 0
@@ -505,17 +566,14 @@ async def coverage_summary(
         for c in criteria:
             cid = c.get("id") or c.get("code", "")
             activities = by_criterion.get(cid, [])
-            has_full    = any(a["coverage_level"] == "full"    for a in activities)
-            has_partial = any(a["coverage_level"] == "partial" for a in activities)
+            this_criterion_evals = evaluated_levels.get(cid, [])
 
-            if has_full:
-                status = "met"
+            status, evaluated = _criterion_status(activities, this_criterion_evals)
+
+            if status == "met":
                 met_count += 1
-            elif has_partial:
-                status = "partial"
+            elif status == "partial":
                 partial_count += 1
-            else:
-                status = "not_met"
 
             criteria_summary.append({
                 "id":          cid,
@@ -523,6 +581,7 @@ async def coverage_summary(
                 "subject":     c.get("subject", ""),
                 "description": c.get("description", ""),
                 "status":      status,
+                "evaluated":   evaluated,  # True = a teacher's graded verdict, not just a design-time mapping
                 "activities":  activities,
             })
 

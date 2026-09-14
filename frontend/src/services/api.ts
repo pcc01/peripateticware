@@ -679,6 +679,13 @@ export function useTeacher() {
       axiosInstance.get<Types.SubmissionDetail>(`/activities/teacher/submissions/${sessionId}/detail`).then((r) => r.data),
     reviewFieldPhase: (sessionId: string, data: { feedback: string; approve?: boolean; reject?: boolean }) =>
       axiosInstance.post(`/activities/teacher/submissions/${sessionId}/review-field`, data).then((r) => r.data),
+    // Score a submission against its attached rubric and/or its mapped
+    // standards. Both fields are optional and independent — an activity
+    // with no rubric can still be evaluated against its mapped standards.
+    // Partial: scoring only some rubric criteria saves progress without
+    // marking the submission graded until every criterion has a score.
+    scoreRubric: (sessionId: string, data: Types.ScoreSubmissionRequest) =>
+      axiosInstance.post<Types.ScoreSubmissionResponse>(`/activities/teacher/submissions/${sessionId}/score-rubric`, data).then((r) => r.data),
   }
 }
 

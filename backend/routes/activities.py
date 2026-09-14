@@ -20,9 +20,10 @@ from core.config import settings
 from core.dependencies import get_current_user, get_current_teacher
 from core.encryption import decrypt as _decrypt
 from core.cache import get_cache, set_cache
+from core.rate_limit import ai_rate_limit
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.database import ActivityWaypoint
-from models.assessment import TAXONOMY_DESCRIPTIONS
+from models.assessment import TAXONOMY_DESCRIPTIONS, AssessmentRubric
 from services.polling import poll_interval_seconds
 from schemas.activities import (
     ActivityCreate,
@@ -1720,13 +1721,125 @@ async def review_field_phase(
     return {"status": new_field_status, "submission_id": sub["id"]}
 
 
+async def _mapped_standards_for_activity(db: AsyncSession, activity_id) -> List[Dict[str, Any]]:
+    """Every state/curriculum standard this activity is mapped to
+    (activity_standards_map — the "authoritative write" per
+    map_activity_to_criterion's dual-write comment), each carrying the
+    criterion's display name and category resolved from its StandardsSet.
+    Shared by submission_detail() (surfacing what a teacher can evaluate a
+    submission against) and score_submission_rubric() (validation + the
+    competency-accrual name/category lookup)."""
+    from models.database import ActivityStandardsMap, StandardsSet
+
+    std_maps = (await db.execute(
+        select(ActivityStandardsMap).where(ActivityStandardsMap.activity_id == activity_id)
+    )).scalars().all()
+    if not std_maps:
+        return []
+
+    sets_by_id = {
+        s.id: s for s in (await db.execute(
+            select(StandardsSet).where(StandardsSet.id.in_({m.standards_set_id for m in std_maps}))
+        )).scalars().all()
+    }
+    out: List[Dict[str, Any]] = []
+    for m in std_maps:
+        s = sets_by_id.get(m.standards_set_id)
+        criterion_text = None
+        category = None
+        for c in (s.criteria if s and s.criteria else []):
+            if str(c.get("id") or c.get("code") or "") == m.criterion_id:
+                criterion_text = c.get("name") or c.get("description")
+                category = c.get("category")
+                break
+        out.append({
+            "criterion_id":          m.criterion_id,
+            "standards_set_id":      str(m.standards_set_id),
+            "standards_set_name":    s.name if s else None,
+            "criterion_name":        criterion_text or m.criterion_id,
+            "category":              category,
+            "design_coverage_level": m.coverage_level,  # the activity-level mapping, not this student's evaluation
+        })
+    return out
+
+
+# coverage_level -> (CompetencyStatus, progress_percent). "not_met" still
+# counts as evidence of an attempt (IN_PROGRESS, not NOT_STARTED) -- a
+# graded, unsuccessful submission is exactly the kind of evidence a
+# competency record should reflect, not silently drop.
+_COVERAGE_TO_COMPETENCY_PROGRESS = {
+    "not_met": 25,
+    "partial": 50,
+    "full":    100,
+    "exceeds": 100,
+}
+
+
+async def _accrue_competency(
+    db: AsyncSession, student_id: str, competency_name: str,
+    category: Optional[str], coverage_level: str,
+) -> None:
+    """Roll one standards-evaluation verdict into the student's competency
+    record for it (creating one on first evidence). Status only ever moves
+    forward -- best-ever-achieved semantics, the same principle
+    routes/standards.py::_best_level_from_levels already applies to
+    coverage reporting, so a single off day doesn't erase a previously
+    demonstrated competency. evidence_count increments on every verdict
+    regardless of direction; last_achieved_at always advances;
+    first_achieved_at is set once, the first time status reaches
+    ACHIEVED/MASTERED.
+    """
+    from models.database import StudentCompetency, CompetencyStatus as _CS
+    import uuid as _uuid
+
+    status_map = {
+        "not_met": _CS.IN_PROGRESS,
+        "partial": _CS.IN_PROGRESS,
+        "full":    _CS.ACHIEVED,
+        "exceeds": _CS.MASTERED,
+    }
+    rank = {_CS.NOT_STARTED: 0, _CS.IN_PROGRESS: 1, _CS.ACHIEVED: 2, _CS.MASTERED: 3}
+    new_status = status_map.get(coverage_level, _CS.IN_PROGRESS)
+    new_progress = _COVERAGE_TO_COMPETENCY_PROGRESS.get(coverage_level, 0)
+    now = datetime.utcnow()
+
+    existing = (await db.execute(
+        select(StudentCompetency).where(
+            StudentCompetency.student_id == _uuid.UUID(str(student_id)),
+            StudentCompetency.competency_name == competency_name,
+        )
+    )).scalar_one_or_none()
+
+    if existing is None:
+        db.add(StudentCompetency(
+            student_id=_uuid.UUID(str(student_id)),
+            competency_name=competency_name,
+            category=category,
+            status=new_status,
+            progress_percent=new_progress,
+            evidence_count=1,
+            first_achieved_at=now if new_status in (_CS.ACHIEVED, _CS.MASTERED) else None,
+            last_achieved_at=now,
+        ))
+    else:
+        existing.evidence_count = (existing.evidence_count or 0) + 1
+        if rank.get(new_status, 0) > rank.get(existing.status, 0):
+            existing.status = new_status
+            existing.progress_percent = new_progress
+            if new_status in (_CS.ACHIEVED, _CS.MASTERED) and existing.first_achieved_at is None:
+                existing.first_achieved_at = now
+        existing.last_achieved_at = now
+        existing.updated_at = now
+
+
 @router.get("/teacher/submissions/{session_id}/detail")
 async def submission_detail(
     session_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Full submission detail including field phase and reflection status."""
+    """Full submission detail including field phase, reflection status, and
+    (if the activity has one attached) the rubric to score it against."""
     row = (await db.execute(
         text("""
             SELECT
@@ -1740,6 +1853,7 @@ async def submission_detail(
                 a.title           AS activity_title,
                 a.completion_mode,
                 a.require_field_approval,
+                a.rubric_id,
                 u.first_name, u.last_name,
                 sub.id                    AS sub_id,
                 sub.submission_status,
@@ -1751,7 +1865,9 @@ async def submission_detail(
                 sub.reflection_content,
                 sub.linked_field_note_id,
                 sub.teacher_feedback,
-                sub.grade
+                sub.grade,
+                sub.rubric_scores,
+                sub.standards_evaluation
             FROM learning_sessions ls
             JOIN activities a  ON a.id  = ls.activity_id
             JOIN users u       ON u.id  = ls.user_id
@@ -1763,10 +1879,33 @@ async def submission_detail(
     if not row:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    rubric_id = row[10]
+    rubric_payload = None
+    if rubric_id:
+        rubric = (await db.execute(
+            select(AssessmentRubric).where(AssessmentRubric.id == rubric_id)
+        )).scalar_one_or_none()
+        if rubric:
+            rubric_payload = {
+                "id": str(rubric.id),
+                "title": rubric.title,
+                "description": rubric.description,
+                "criteria": rubric.criteria,
+                "total_points": rubric.total_points,
+            }
+
+    # What state/curriculum standards this activity is mapped to (design-time,
+    # activity_standards_map — the "authoritative write" per
+    # map_activity_to_criterion's dual-write comment) — so the teacher can
+    # evaluate THIS submission against them, not just the rubric. Coverage
+    # reporting previously had no way to reflect that judgment at all; see
+    # migration 20260913b_submission_standards_evaluation.
+    standards_targets = await _mapped_standards_for_activity(db, row[6])
+
     return {
         "session_id":             str(row[0]),
         "student_id":             str(row[1]),
-        "student_name":           f"{row[10]} {row[11]}",
+        "student_name":           f"{row[11]} {row[12]}",
         "session_status":         row[2],
         "started_at":             row[3].isoformat() if row[3] else None,
         "completed_at":           row[4].isoformat() if row[4] else None,
@@ -1775,18 +1914,235 @@ async def submission_detail(
         "activity_title":         row[7],
         "completion_mode":        row[8],
         "require_field_approval": row[9],
-        "submission_id":          str(row[12]) if row[12] else None,
-        "submission_status":      row[13],
-        "completion_phase":       row[14],
-        "field_phase_status":     row[15],
-        "field_phase_feedback":   row[16],
-        "field_phase_reviewed_at":row[17].isoformat() if row[17] else None,
-        "reflection_status":      row[18],
-        "reflection_content":     row[19],
-        "linked_field_note_id":   str(row[20]) if row[20] else None,
-        "teacher_feedback":       row[21],
-        "grade":                  row[22],
+        "rubric_id":              str(rubric_id) if rubric_id else None,
+        "rubric":                 rubric_payload,
+        "rubric_scores":          row[24] or {},
+        "standards_targets":      standards_targets,
+        "standards_evaluation":   row[25] or {},
+        "submission_id":          str(row[13]) if row[13] else None,
+        "submission_status":      row[14],
+        "completion_phase":       row[15],
+        "field_phase_status":     row[16],
+        "field_phase_feedback":   row[17],
+        "field_phase_reviewed_at":row[18].isoformat() if row[18] else None,
+        "reflection_status":      row[19],
+        "reflection_content":     row[20],
+        "linked_field_note_id":   str(row[21]) if row[21] else None,
+        "teacher_feedback":       row[22],
+        "grade":                  row[23],
     }
+
+
+# ── Score a submission against its rubric and/or its mapped standards ────────
+#
+# Fills the gap found 2026-09-13: neither the frontend nor the backend had a
+# working path for a teacher to actually score a submission against a
+# rubric — frontend/src/services/api.ts::scoreAssignment() posted to
+# POST /assessment/score, which didn't exist anywhere, and was itself never
+# called from any component. agents/rubric_scoring_agent.py (AI-assisted)
+# never wrote to the DB either. This is the real, persisted path both of
+# those were meant to lead to.
+#
+# Also fills a second, related gap: activity_standards_map/content_alignments
+# only ever recorded that an activity *targets* a standard, never whether any
+# given student's work *met* it — routes/standards.py::get_coverage's `met`
+# flag was `times_addressed > 0` against a completed learning_sessions row,
+# independent of quality. `standards_evaluation` below is a *teacher's*
+# per-submission verdict, and is accepted even when the activity has no
+# rubric attached at all — a submission can be evaluated against its mapped
+# standards on its own, they aren't gated behind rubric scoring existing.
+
+_VALID_COVERAGE_LEVELS = {"not_met", "partial", "full", "exceeds"}
+
+
+class RubricCriterionScoreIn(_BaseModel):
+    criterion_id: str
+    score: int
+
+
+class StandardsEvaluationIn(_BaseModel):
+    criterion_id: str
+    coverage_level: str  # one of _VALID_COVERAGE_LEVELS
+
+
+class SubmissionScoreRequest(_BaseModel):
+    scores: List[RubricCriterionScoreIn] = []
+    standards_evaluation: List[StandardsEvaluationIn] = []
+    feedback: Optional[str] = None
+
+
+def _rubric_criteria_maps(rubric: AssessmentRubric) -> Dict[str, Dict[str, Any]]:
+    """criterion_id -> {valid_scores: {int}, max_score: int} from a rubric's
+    stored criteria JSON ({id, name, description, levels:[{score,label,..}]})."""
+    out: Dict[str, Dict[str, Any]] = {}
+    for c in (rubric.criteria or []):
+        cid = str(c.get("id") or "")
+        if not cid:
+            continue
+        level_scores = {int(l["score"]) for l in (c.get("levels") or []) if "score" in l}
+        out[cid] = {"valid_scores": level_scores, "max_score": max(level_scores) if level_scores else 0}
+    return out
+
+
+@router.post("/teacher/submissions/{session_id}/score-rubric")
+async def score_submission_rubric(
+    session_id: str,
+    body: SubmissionScoreRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save (partial or complete) rubric scores and/or a standards evaluation
+    for one student's submission. Both `scores` and `standards_evaluation`
+    are optional and independent — an activity with no rubric can still be
+    evaluated against its mapped standards, and vice versa — but at least
+    one must be non-empty.
+
+    Rubric scores merge into activity_submissions.rubric_scores (a partial
+    call only touches the criteria it names — safe to score one criterion at
+    a time and come back). Once every criterion on the attached rubric has a
+    score, submission_status flips to 'graded' and `grade` is set to the
+    percentage of total points earned; until then the submission stays in
+    its current status with partial progress saved.
+
+    standards_evaluation merges the same way into
+    activity_submissions.standards_evaluation, independently of whether the
+    rubric is complete.
+    """
+    if not body.scores and not body.standards_evaluation:
+        raise HTTPException(status_code=422, detail="Provide at least one of scores or standards_evaluation.")
+
+    row = (await db.execute(
+        text("""
+            SELECT ls.user_id, ls.activity_id, a.rubric_id
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    student_id, activity_id, rubric_id = str(row[0]), str(row[1]), row[2]
+
+    sub = await _upsert_submission(db, session_id, student_id, activity_id)
+
+    result: Dict[str, Any] = {"submission_id": sub["id"]}
+
+    # ── Rubric scores ────────────────────────────────────────────────────────
+    if body.scores:
+        if not rubric_id:
+            raise HTTPException(status_code=400, detail="This activity has no rubric attached.")
+        rubric = (await db.execute(
+            select(AssessmentRubric).where(AssessmentRubric.id == rubric_id)
+        )).scalar_one_or_none()
+        if not rubric:
+            raise HTTPException(status_code=404, detail="Attached rubric no longer exists.")
+
+        criteria_map = _rubric_criteria_maps(rubric)
+        new_scores: Dict[str, int] = {}
+        for s in body.scores:
+            crit = criteria_map.get(s.criterion_id)
+            if not crit:
+                raise HTTPException(status_code=422, detail=f"Unknown rubric criterion: {s.criterion_id}")
+            if s.score not in crit["valid_scores"]:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Score {s.score} is not a valid level for criterion {s.criterion_id} "
+                           f"(valid: {sorted(crit['valid_scores'])})",
+                )
+            new_scores[s.criterion_id] = s.score
+
+        merged_row = (await db.execute(
+            text("""
+                UPDATE activity_submissions
+                SET    rubric_scores = COALESCE(rubric_scores, '{}'::jsonb) || CAST(:new_scores AS jsonb),
+                       updated_at    = NOW()
+                WHERE  id = :sub_id
+                RETURNING rubric_scores
+            """),
+            {"new_scores": json.dumps(new_scores), "sub_id": sub["id"]},
+        )).first()
+        merged_scores: Dict[str, Any] = merged_row[0] or {}
+
+        total_points = sum(int(v) for k, v in merged_scores.items() if k in criteria_map)
+        max_points = sum(c["max_score"] for c in criteria_map.values())
+        is_complete = set(criteria_map.keys()) <= set(merged_scores.keys())
+
+        if is_complete:
+            grade_pct = round(total_points / max_points * 100) if max_points else 0
+            await db.execute(
+                text("""
+                    UPDATE activity_submissions
+                    SET    submission_status = 'graded', grade = :grade,
+                           graded_at = NOW(), updated_at = NOW()
+                    WHERE  id = :sub_id
+                """),
+                {"grade": grade_pct, "sub_id": sub["id"]},
+            )
+            result["grade"] = grade_pct
+
+        result.update({
+            "rubric_scores": merged_scores,
+            "total_points": total_points,
+            "max_points": max_points,
+            "rubric_complete": is_complete,
+        })
+
+    # ── Standards evaluation — independent of rubric scoring ────────────────
+    if body.standards_evaluation:
+        mapped = await _mapped_standards_for_activity(db, activity_id)
+        mapped_by_id = {m["criterion_id"]: m for m in mapped}
+        new_eval: Dict[str, str] = {}
+        for e in body.standards_evaluation:
+            if e.criterion_id not in mapped_by_id:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Criterion {e.criterion_id} is not mapped to this activity — "
+                           "map it first via POST /standards/{set_id}/map.",
+                )
+            if e.coverage_level not in _VALID_COVERAGE_LEVELS:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"coverage_level must be one of {sorted(_VALID_COVERAGE_LEVELS)}, got {e.coverage_level!r}",
+                )
+            new_eval[e.criterion_id] = e.coverage_level
+
+        eval_row = (await db.execute(
+            text("""
+                UPDATE activity_submissions
+                SET    standards_evaluation = COALESCE(standards_evaluation, '{}'::jsonb) || CAST(:new_eval AS jsonb),
+                       updated_at = NOW()
+                WHERE  id = :sub_id
+                RETURNING standards_evaluation
+            """),
+            {"new_eval": json.dumps(new_eval), "sub_id": sub["id"]},
+        )).first()
+        result["standards_evaluation"] = eval_row[0] or {}
+
+        # ── Accrue into student_competencies (source brief step 5,
+        # "Accruing") — previously nothing anywhere ever wrote this table
+        # (StudentCompetency was read in 2 places, constructed in 0). Each
+        # mapped standard this submission was just evaluated against rolls
+        # up into (or creates) that student's competency record for it.
+        for criterion_id, coverage_level in new_eval.items():
+            target = mapped_by_id[criterion_id]
+            await _accrue_competency(
+                db, student_id=student_id,
+                competency_name=target["criterion_name"],
+                category=target["category"] or target["standards_set_name"],
+                coverage_level=coverage_level,
+            )
+
+    if body.feedback is not None:
+        await db.execute(
+            text("UPDATE activity_submissions SET teacher_feedback = :fb, updated_at = NOW() WHERE id = :sub_id"),
+            {"fb": body.feedback, "sub_id": sub["id"]},
+        )
+        result["teacher_feedback"] = body.feedback
+
+    await db.commit()
+    return result
 
 
 # ── Privacy compliance check for ActivityManager badge ────────────────────────
@@ -1857,6 +2213,18 @@ async def check_activity_compliance_quick(
 # the taxonomy dropdown.
 
 
+_TAXONOMY_FRAMEWORKS = ("blooms", "dok", "solo", "marzano")
+# Valid numeric level range per framework — anything outside this is treated
+# as a hallucinated/malformed field and dropped rather than passed through.
+_TAXONOMY_LEVEL_RANGE: Dict[str, tuple] = {
+    "blooms": (1, 6),
+    "dok": (1, 4),
+    "solo": (1, 5),
+    "marzano": (1, 4),
+}
+_TAXONOMY_CLASSIFY_MAX_CHARS = 4000  # guardrail: cap prompt-injected text length
+
+
 class TaxonomyClassifyRequest(_BaseModel):
     text: str
     classify_for: Optional[List[str]] = None
@@ -1867,11 +2235,44 @@ class TaxonomyClassifyResponse(_BaseModel):
     error: Optional[str] = None
 
 
+def _sanitize_taxonomy_result(parsed: Any, requested: List[str]) -> Optional[Dict[str, Any]]:
+    """Whitelist the LLM's classification output down to a known-good shape.
+
+    Never trust a JSON-parsed LLM response as-is: drop any framework key
+    that wasn't requested (a hallucinated fifth taxonomy), drop any entry
+    missing level/label/rationale or with the wrong types, and clamp level
+    to that framework's valid numeric range. Returns None if nothing
+    survives sanitization (treated as a classification failure upstream).
+    """
+    if not isinstance(parsed, dict):
+        return None
+    clean: Dict[str, Any] = {}
+    for fw in requested:
+        entry = parsed.get(fw)
+        if not isinstance(entry, dict):
+            continue
+        level = entry.get("level")
+        label = entry.get("label")
+        rationale = entry.get("rationale")
+        if not isinstance(level, int) or not isinstance(label, str) or not isinstance(rationale, str):
+            continue
+        lo, hi = _TAXONOMY_LEVEL_RANGE.get(fw, (1, 6))
+        if level < lo or level > hi:
+            continue
+        clean[fw] = {
+            "level": level,
+            "label": label[:60],
+            "rationale": rationale[:400],
+        }
+    return clean or None
+
+
 @router.post("/classify-taxonomy", response_model=TaxonomyClassifyResponse)
 async def classify_taxonomy(
     payload: TaxonomyClassifyRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),  # per-org RPM cap; this is a real, metered LLM call
 ):
     """
     Suggest Bloom's / DOK / SOLO / Marzano taxonomy levels for a learning
@@ -1881,16 +2282,15 @@ async def classify_taxonomy(
     AI/parsing failure this returns {result: None, error: "..."} so the
     teacher's existing taxonomy selection and text are never lost.
 
-    AI-call mechanism note: AIRouter.complete() (services/ai_router.py) only
-    accepts (task_type, prompt, db, entity_id, entity_type, system, org_id) —
-    it has no per-call temperature/max_tokens knob, and its own internal
-    Ollama call (_call_ollama) doesn't pass an `options` dict at all.
-    build_taxonomy_classification_prompt()'s docstring calls for a fixed,
-    low temperature (0.10) for deterministic structured output, so this
-    endpoint uses the standards_parser.py::extract_criteria() fallback
-    pattern instead: a direct ollama.chat() call with
-    options={"temperature": 0.10}. See CHANGE_SUMMARY_20260718_
-    PROMPT_LIBRARY_REMAINING.md for the full deviation note.
+    Routes through agents/provider.py's dispatch() (Ollama/Claude/OpenAI,
+    resolved via AGENT_TAXONOMY_CLASSIFICATION_PROVIDER -> LLM_PROVIDER ->
+    "ollama") instead of a direct ollama.Client() call — the previous
+    version hardcoded Ollama and was silently non-functional on any
+    deployment without a local Ollama server (prod runs Claude only).
+    Guardrails: input text is capped before it reaches the prompt, and the
+    parsed response is whitelisted field-by-field (_sanitize_taxonomy_result)
+    rather than passed through — a malformed or hallucinated framework entry
+    is dropped, not surfaced to the teacher as a suggestion.
     """
     _require_teacher(current_user, "Only teachers can use AI taxonomy classification")
 
@@ -1899,43 +2299,44 @@ async def classify_taxonomy(
     # and shadowing it with a local variable of the same name in this
     # function would be confusing/risky for future edits even though this
     # function itself never calls the SQL text() helper.
-    input_text = (payload.text or "").strip()
+    input_text = (payload.text or "").strip()[:_TAXONOMY_CLASSIFY_MAX_CHARS]
     if not input_text:
         return TaxonomyClassifyResponse(result=None, error="No text provided to classify.")
 
+    requested = [f for f in (payload.classify_for or list(_TAXONOMY_FRAMEWORKS)) if f in _TAXONOMY_FRAMEWORKS]
+    if not requested:
+        return TaxonomyClassifyResponse(result=None, error="No recognized taxonomy framework requested.")
+
     from services.prompt_library import build_taxonomy_classification_prompt
-    prompt = build_taxonomy_classification_prompt(text=input_text, classify_for=payload.classify_for)
+    prompt = build_taxonomy_classification_prompt(text=input_text, classify_for=requested)
 
     import json
     import re
+    from agents import provider as _provider
+
+    prov = _provider.resolve_provider("AGENT_TAXONOMY_CLASSIFICATION_PROVIDER", "ollama")
+    model = _provider.resolve_model(prov) or _provider.default_model(prov)
+    try:
+        raw = await _provider.dispatch(
+            prov,
+            messages=[{"role": "user", "content": prompt}],
+            model=model,
+            max_tokens=400,   # matches build_taxonomy_classification_prompt()'s documented budget
+            timeout=60,
+            temperature=0.10,  # low temp for deterministic structured output
+        )
+    except Exception as e:
+        logger.error(
+            "%s call failed during taxonomy classification (model=%s): %s",
+            prov, model, e, exc_info=True,
+        )
+        return TaxonomyClassifyResponse(
+            result=None,
+            error=f"AI classification service unavailable ({type(e).__name__}: {e}). Set the taxonomy manually.",
+        )
 
     try:
-        from core.config import settings
-        import ollama as _ollama
-
-        model = settings.OLLAMA_MODEL_TEXT or "mistral"
-        try:
-            # Bare ollama.chat() defaults to 127.0.0.1:11434, ignoring
-            # settings.OLLAMA_BASE_URL — nothing listens there inside this
-            # app's Docker container (Ollama runs on the host, reached via
-            # host.docker.internal).
-            client = _ollama.Client(host=settings.OLLAMA_BASE_URL)
-            response = client.chat(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                options={"temperature": 0.10},  # Low temp for structured output
-            )
-        except Exception as e:
-            logger.error(
-                "Ollama call failed during taxonomy classification (model=%s): %s",
-                model, e, exc_info=True,
-            )
-            return TaxonomyClassifyResponse(
-                result=None,
-                error=f"AI classification service unavailable ({type(e).__name__}: {e}). Set the taxonomy manually.",
-            )
-
-        raw = response["message"]["content"].strip()
+        raw = raw.strip()
 
         # Strip markdown code fences if present
         raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
@@ -1960,8 +2361,19 @@ async def classify_taxonomy(
                 error="The AI didn't return the expected classification format. Set the taxonomy manually.",
             )
 
-        logger.info("Taxonomy classification succeeded for user %s", current_user.id)
-        return TaxonomyClassifyResponse(result=parsed, error=None)
+        sanitized = _sanitize_taxonomy_result(parsed, requested)
+        if sanitized is None:
+            logger.error(
+                "Taxonomy classification: no requested framework survived sanitization | raw: %s",
+                raw[:200],
+            )
+            return TaxonomyClassifyResponse(
+                result=None,
+                error="The AI's classification didn't match the expected format. Set the taxonomy manually.",
+            )
+
+        logger.info("Taxonomy classification succeeded for user %s (provider=%s)", current_user.id, prov)
+        return TaxonomyClassifyResponse(result=sanitized, error=None)
 
     except Exception as e:
         logger.error("Taxonomy classification failed unexpectedly: %s", e, exc_info=True)
