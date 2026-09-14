@@ -75,6 +75,26 @@ export async function removeCaptureFromQueue(id: string): Promise<void> {
   await db.runAsync('DELETE FROM capture_queue WHERE id = ?', [id]);
 }
 
+/**
+ * Amend a still-queued (not-yet-synced) capture's content in place, rather
+ * than creating a new queue row — used by PeriChatSheet.tsx so re-opening
+ * "Ask Peri" during the same activity visit grows ONE evolving transcript
+ * capture instead of a new one per close. Returns false (a no-op, not an
+ * error) if `id` no longer exists in the local queue — the row was already
+ * uploaded and removed by flushQueue() since the last save, so there's
+ * nothing left here to amend. The caller's job in that case is to queue a
+ * fresh capture instead (see PeriChatSheet.tsx): once a capture has synced,
+ * every other capture type in this app treats it as immutable evidence, and
+ * a mutate-after-upload endpoint doesn't exist for any of them — a
+ * re-opened chat becomes a new checkpoint capture instead, not a patch to
+ * the uploaded one.
+ */
+export async function updateQueuedCaptureUri(id: string, local_uri: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.runAsync('UPDATE capture_queue SET local_uri = ? WHERE id = ?', [local_uri, id]);
+  return result.changes > 0;
+}
+
 // ── Note queue ─────────────────────────────────────────────────────────────
 
 export interface QueuedNote {

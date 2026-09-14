@@ -24,6 +24,12 @@ export interface Capture {
    * authenticated round-trip to fetch the uploaded file back. */
   local_uri?: string;
   local_text?: string;
+  /** Client-only, set locally after a sync attempt (never sent by the
+   * backend): 'consent_required' when this specific capture is stuck in
+   * the offline queue behind a permanent privacy-enforcement consent block
+   * (src/db/offlineQueue.ts). Lets the UI point at the SPECIFIC blocked
+   * item instead of only reporting an aggregate count. */
+  blocked_reason?: string | null;
 }
 
 export async function fetchCaptures(activityId?: string): Promise<Capture[]> {

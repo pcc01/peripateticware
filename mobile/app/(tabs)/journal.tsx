@@ -13,6 +13,7 @@ import { getCachedActivity } from '@/src/db/activityCache';
 import { useTranslation } from 'react-i18next';
 import { transcriptDisplayText } from '@/src/lib/transcriptDisplay';
 import CapturePreviewModal from '@/src/components/CapturePreviewModal';
+import CrowAvatar from '@/src/components/CrowAvatar';
 
 // Same capture_type → emoji mapping CaptureSheet.tsx uses for its mode picker
 // (photo/audio/note[text]/video). Falls back to a generic icon for any other
@@ -24,6 +25,7 @@ const CAPTURE_TYPE_EMOJI: Record<string, string> = {
   note: '✏️',
   sketch: '🎨',
   video: '🎥',
+  peri_chat: '💬',
 };
 const CAPTURE_TYPE_EMOJI_FALLBACK = '📎';
 
@@ -103,9 +105,16 @@ function EntryCaptures({ activityId, theme }: { activityId: string; theme: Theme
                 accessibilityRole="button"
               >
                 <View style={styles.captureRowHeader}>
-                  <Text style={styles.captureEmoji}>
-                    {CAPTURE_TYPE_EMOJI[c.capture_type] ?? CAPTURE_TYPE_EMOJI_FALLBACK}
-                  </Text>
+                  {c.capture_type === 'peri_chat' ? (
+                    // Peri's own crow avatar, not a generic 💬 — makes a
+                    // saved conversation visibly read as "this was Ask
+                    // Peri" rather than an ambiguous chat icon.
+                    <CrowAvatar theme={theme} size={20} />
+                  ) : (
+                    <Text style={styles.captureEmoji}>
+                      {CAPTURE_TYPE_EMOJI[c.capture_type] ?? CAPTURE_TYPE_EMOJI_FALLBACK}
+                    </Text>
+                  )}
                   <Text style={[styles.captureTimestamp, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
                     {new Date(c.created_at).toLocaleDateString()}
                   </Text>
