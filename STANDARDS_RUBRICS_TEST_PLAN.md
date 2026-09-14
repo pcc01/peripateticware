@@ -7,22 +7,22 @@
 
 ---
 
-## 0. Read this first — a blocking gap, not a test gap
+## 0. Update 2026-09-13 — the blocking gap is closed
 
-**There is currently no working path — frontend or backend — for a teacher to score a submission against a rubric.**
+**Built:** `POST /activities/teacher/submissions/{session_id}/score-rubric`. A teacher can now save (partial or complete) per-criterion rubric scores, which merge into `activity_submissions.rubric_scores` and auto-flip `submission_status` to `'graded'` with a computed `grade` once every criterion has a score. `GET .../detail` (the frontend's real submission-detail call) now returns the attached rubric definition and current scores in one round trip; `TeacherSubmissionsPage.tsx` renders a scoring panel wired to it.
 
-- The frontend's `scoreAssignment()` (`frontend/src/services/api.ts:382`) posts to `POST /assessment/score`. **No such route exists anywhere in the backend** (`grep` across every `routes/*.py` for an `/assessment` router or a `rubric_scores =` write finds nothing). It would 404 today.
-- `scoreAssignment()` itself is never called from any component — confirmed by searching the whole frontend. So this isn't a live 404 a real teacher hits; it's dead code on both ends.
-- The one thing that *does* apply a rubric to a submission — `agents/rubric_scoring_agent.py`, reachable at `POST /agents/rubric/score` — is real, unit-tested, and correctly guaranteed (total points = sum of scores, every level validated). But it never writes to the database (no `db.add`/`commit` in `routes/agents.py::score_rubric`) and has zero frontend callers either.
-- This is why `activity_submissions.rubric_scores` is `NULL` on all rows in the dev database: not "untested," but **unbuilt**.
+**Also built, requested directly:** the same endpoint independently accepts a `standards_evaluation` list — a teacher's verdict (`not_met`/`partial`/`full`/`exceeds`) on whether *this specific submission* met each state/curriculum standard the activity is mapped to. This is new: `activity_standards_map` had no student dimension before, and `get_coverage`'s `met` flag used to be `times_addressed > 0` — true for any completed activity regardless of quality, with no way to express "this student did not meet this standard" at all. `routes/standards.py::get_coverage` and `routes/homeschool.py::coverage_summary` now both prefer this explicit verdict over the old completion-based heuristic when one exists (each coverage item flagged `evaluated: true/false`). Verified live: scoring a rubric to 88% and separately marking its mapped standard `not_met` correctly dropped that criterion out of `criteria_met` — previously inexpressible.
 
-**Before §5 (rubric scoring) of this plan can be executed, someone has to decide and build one of:**
-1. A real `POST /assessment/score` (or similar) endpoint that writes `activity_submissions.rubric_scores`, wired to a teacher-facing UI, **or**
-2. Wire the existing `RubricScoringAgent` up as the "AI suggests a score, teacher confirms and saves" step (matching the propose/dispose pattern already used for AI-drafted rubric criteria and taxonomy auto-classify), with an explicit save endpoint at the end of that flow.
+**Found and fixed along the way, not a rubric-scoring bug but blocking it entirely:** `AssessmentRubric.framework` was declared as a native Postgres enum with no matching DB type ever created — every `POST /rubrics` call had always 500'd. `assessment_rubrics` had zero rows in the dev DB because rubric *creation* was broken, not because scoring was untested. Fixed (`native_enum=False`).
 
-§5 below is written as the test plan for *whichever* of those ships — it tests behavior, not a specific implementation — but nothing in it is executable until one exists. Flag this to product/eng before scheduling QA time against it.
+§3.4 and §5 below are updated to test the real, built behavior. The rest of this document (§1–2, §3.1–3.3, §4, §6) still applies as originally written.
 
-Everything else in this document (§1–4, §6–8) tests real, working code today.
+<details>
+<summary>Original 2026-09-13 note (kept for record — the gap this closed)</summary>
+
+There was no working path — frontend or backend — for a teacher to score a submission against a rubric. The frontend's `scoreAssignment()` (`frontend/src/services/api.ts:382`) posted to `POST /assessment/score`, which existed nowhere in the backend and was itself never called from any component — dead code on both ends. The one thing that did apply a rubric to a submission, `agents/rubric_scoring_agent.py` (`POST /agents/rubric/score`), never wrote to the database and had no frontend caller either. This is why `activity_submissions.rubric_scores` was `NULL` on every row in the dev database: unbuilt, not untested.
+
+</details>
 
 ---
 
@@ -141,16 +141,19 @@ This is the route fixed in `fix/ai-route-provider-agnostic`. Automated coverage 
 | R13 | Attach someone else's rubric, or to someone else's activity | 404 (both lookups filter by `teacher_id == current_user.id`) — confirm this isn't a silent no-op that returns 200 |
 | R14 | Re-attach a different rubric to an activity that already has one | Overwrites `rubric_id` — confirm this is intended (no "are you sure" / no versioning of the old attachment) |
 
-### 3.4 Scoring — **blocked, see §0**
+### 3.4 Scoring (`POST /teacher/submissions/{session_id}/score-rubric`) — built 2026-09-13
 
-Once a scoring path exists, this plan should cover at minimum:
+Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14 cases, all mocked-DB). What's still worth a live/manual pass:
 
-| # | Case | Expected |
-|---|---|---|
-| R15 | Score every criterion on a submission | `activity_submissions.rubric_scores` populated; `total_points` = sum of per-criterion scores (the same invariant `RubricScoringAgent` already guarantees for its own output — hold the manual path to the same bar) |
-| R16 | Score with a level that doesn't exist on the criterion (client bug or tampered request) | Rejected with a clear error, not silently stored |
-| R17 | AI-suggested score (if the propose/dispose option from §0 is chosen) is edited by the teacher before saving | The teacher's edited value persists, not the AI's original suggestion — same pattern as R8 |
-| R18 | A scored submission rolls up into `student_competencies` | This is step 5 ("Accruing") of the source brief's chain — currently untestable because step 4 has nothing to roll up; re-test once R15 exists |
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| R15 | Score every criterion on a submission | `rubric_scores` populated; `submission_status → 'graded'`; `grade` = round(total/max × 100) | ✅ `test_complete_rubric_scoring_flips_status_to_graded` |
+| R16 | Score with a level that doesn't exist on the criterion | 422, rejected before any write | ✅ `test_422_score_not_a_valid_level` |
+| R17 | Score one criterion, come back later and score the rest | First call persists partial progress without grading; submission only grades once the last criterion lands | ✅ `test_partial_rubric_scoring_does_not_grade_yet` |
+| R18 | Evaluate a mapped standard as `not_met` for a submission whose activity was otherwise completed | `GET /standards/{set_id}/coverage` for that student drops the criterion out of `criteria_met`, `evaluated: true` — verified live this session, not just mocked | ✅ `test_not_met_is_a_legal_verdict` (endpoint) — **coverage-side effect only verified live; add a real DB-backed integration test for `get_coverage`/`coverage_summary`'s evaluated-precedence branch** (the current mocked unit tests don't reach that far) |
+| R19 | Two teachers on the same org score different students' submissions concurrently | No cross-contamination — each write is scoped by `sub_id` from that session's own row |
+| R20 | A scored submission rolls up into `student_competencies` | Still not built — this is step 5 ("Accruing") of the source brief's chain; scoring now produces something to roll up (R15), but nothing reads `rubric_scores`/`standards_evaluation` into `student_competencies` yet. New backlog item, not blocked on anything above. |
+| R21 | Manual/live: run the full flow once against a real teacher account | Create rubric → attach → map a standard → score both → confirm `GET .../detail` and `GET /standards/{id}/coverage` agree — this session's own verification (Creek Habitat Study / eco-1) is the template; keep it or re-run with fresh data before a release |
 
 ---
 
@@ -173,8 +176,8 @@ Once a scoring path exists, this plan should cover at minimum:
 3. Create a rubric (manually, then again via `/generate` against Claude) and attach it to the activity.
 4. Map the activity to 2–3 criteria from the saved standards set.
 5. As `student@example.com`: complete the activity.
-6. **[blocked per §0]** Score the submission against the rubric.
-7. As `teacher@example.com` or `homeschool@example.com`: pull `GET /standards/{set_id}/coverage` and `GET /homeschool/coverage`, confirm they agree.
+6. Score the submission against the rubric **and** evaluate each mapped standard, via `POST /teacher/submissions/{session_id}/score-rubric` — this session did exactly this once already (Creek Habitat Study / a synthetic Washington ecosystems standard), including confirming a `not_met` verdict correctly drops a criterion out of coverage. Redo it with the fresh fixtures from steps 1–5 so the seed reflects real content, not the throwaway test data this session used.
+7. As `teacher@example.com` or `homeschool@example.com`: pull `GET /standards/{set_id}/coverage` and `GET /homeschool/coverage`, confirm they agree **and** that `evaluated: true` shows on the criteria scored in step 6.
 8. Export the homeschool portfolio PDF and the standards-coverage CSV; confirm the numbers match step 7.
 9. **Keep this data.** It's the fixture the unit tests in §2–3 are currently missing, and the next person who touches this area shouldn't have to build it from scratch again.
 
@@ -182,8 +185,10 @@ Once a scoring path exists, this plan should cover at minimum:
 
 ## 6. Exit criteria
 
-- [ ] §0's decision made (build a real scoring path, or explicitly defer rubric scoring — either is fine, silence isn't)
+- [x] §0's decision made — built, not deferred: a real scoring path plus per-submission standards evaluation
 - [ ] All of §2 and §3.1–3.3 executed at least once against a real Anthropic call, not only mocked
-- [ ] §5's end-to-end pass completed and its fixtures committed as a reusable seed
+- [ ] §5's end-to-end pass re-run with fresh fixtures (not this session's throwaway test data) and committed as a reusable seed
 - [ ] X1–X2 green in CI
+- [ ] R18's coverage-side effect gets a real DB-backed integration test (currently verified live only, not automated)
+- [ ] R20 (rolling scored evidence into `student_competencies`) scoped as a follow-up — scoring now produces something to roll up, but nothing reads it yet
 - [ ] S28 (regulatory review) scheduled with someone outside engineering
