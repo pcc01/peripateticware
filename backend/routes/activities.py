@@ -1721,6 +1721,117 @@ async def review_field_phase(
     return {"status": new_field_status, "submission_id": sub["id"]}
 
 
+async def _mapped_standards_for_activity(db: AsyncSession, activity_id) -> List[Dict[str, Any]]:
+    """Every state/curriculum standard this activity is mapped to
+    (activity_standards_map — the "authoritative write" per
+    map_activity_to_criterion's dual-write comment), each carrying the
+    criterion's display name and category resolved from its StandardsSet.
+    Shared by submission_detail() (surfacing what a teacher can evaluate a
+    submission against) and score_submission_rubric() (validation + the
+    competency-accrual name/category lookup)."""
+    from models.database import ActivityStandardsMap, StandardsSet
+
+    std_maps = (await db.execute(
+        select(ActivityStandardsMap).where(ActivityStandardsMap.activity_id == activity_id)
+    )).scalars().all()
+    if not std_maps:
+        return []
+
+    sets_by_id = {
+        s.id: s for s in (await db.execute(
+            select(StandardsSet).where(StandardsSet.id.in_({m.standards_set_id for m in std_maps}))
+        )).scalars().all()
+    }
+    out: List[Dict[str, Any]] = []
+    for m in std_maps:
+        s = sets_by_id.get(m.standards_set_id)
+        criterion_text = None
+        category = None
+        for c in (s.criteria if s and s.criteria else []):
+            if str(c.get("id") or c.get("code") or "") == m.criterion_id:
+                criterion_text = c.get("name") or c.get("description")
+                category = c.get("category")
+                break
+        out.append({
+            "criterion_id":          m.criterion_id,
+            "standards_set_id":      str(m.standards_set_id),
+            "standards_set_name":    s.name if s else None,
+            "criterion_name":        criterion_text or m.criterion_id,
+            "category":              category,
+            "design_coverage_level": m.coverage_level,  # the activity-level mapping, not this student's evaluation
+        })
+    return out
+
+
+# coverage_level -> (CompetencyStatus, progress_percent). "not_met" still
+# counts as evidence of an attempt (IN_PROGRESS, not NOT_STARTED) -- a
+# graded, unsuccessful submission is exactly the kind of evidence a
+# competency record should reflect, not silently drop.
+_COVERAGE_TO_COMPETENCY_PROGRESS = {
+    "not_met": 25,
+    "partial": 50,
+    "full":    100,
+    "exceeds": 100,
+}
+
+
+async def _accrue_competency(
+    db: AsyncSession, student_id: str, competency_name: str,
+    category: Optional[str], coverage_level: str,
+) -> None:
+    """Roll one standards-evaluation verdict into the student's competency
+    record for it (creating one on first evidence). Status only ever moves
+    forward -- best-ever-achieved semantics, the same principle
+    routes/standards.py::_best_level_from_levels already applies to
+    coverage reporting, so a single off day doesn't erase a previously
+    demonstrated competency. evidence_count increments on every verdict
+    regardless of direction; last_achieved_at always advances;
+    first_achieved_at is set once, the first time status reaches
+    ACHIEVED/MASTERED.
+    """
+    from models.database import StudentCompetency, CompetencyStatus as _CS
+    import uuid as _uuid
+
+    status_map = {
+        "not_met": _CS.IN_PROGRESS,
+        "partial": _CS.IN_PROGRESS,
+        "full":    _CS.ACHIEVED,
+        "exceeds": _CS.MASTERED,
+    }
+    rank = {_CS.NOT_STARTED: 0, _CS.IN_PROGRESS: 1, _CS.ACHIEVED: 2, _CS.MASTERED: 3}
+    new_status = status_map.get(coverage_level, _CS.IN_PROGRESS)
+    new_progress = _COVERAGE_TO_COMPETENCY_PROGRESS.get(coverage_level, 0)
+    now = datetime.utcnow()
+
+    existing = (await db.execute(
+        select(StudentCompetency).where(
+            StudentCompetency.student_id == _uuid.UUID(str(student_id)),
+            StudentCompetency.competency_name == competency_name,
+        )
+    )).scalar_one_or_none()
+
+    if existing is None:
+        db.add(StudentCompetency(
+            student_id=_uuid.UUID(str(student_id)),
+            competency_name=competency_name,
+            category=category,
+            status=new_status,
+            progress_percent=new_progress,
+            evidence_count=1,
+            first_achieved_at=now if new_status in (_CS.ACHIEVED, _CS.MASTERED) else None,
+            last_achieved_at=now,
+        ))
+    else:
+        existing.evidence_count = (existing.evidence_count or 0) + 1
+        if rank.get(new_status, 0) > rank.get(existing.status, 0):
+            existing.status = new_status
+            existing.progress_percent = new_progress
+            if new_status in (_CS.ACHIEVED, _CS.MASTERED) and existing.first_achieved_at is None:
+                existing.first_achieved_at = now
+        existing.last_achieved_at = now
+        existing.updated_at = now
+
+
 @router.get("/teacher/submissions/{session_id}/detail")
 async def submission_detail(
     session_id: str,
@@ -1789,32 +1900,7 @@ async def submission_detail(
     # evaluate THIS submission against them, not just the rubric. Coverage
     # reporting previously had no way to reflect that judgment at all; see
     # migration 20260913b_submission_standards_evaluation.
-    from models.database import ActivityStandardsMap, StandardsSet
-
-    std_maps = (await db.execute(
-        select(ActivityStandardsMap).where(ActivityStandardsMap.activity_id == row[6])
-    )).scalars().all()
-    standards_targets = []
-    if std_maps:
-        sets_by_id = {
-            s.id: s for s in (await db.execute(
-                select(StandardsSet).where(StandardsSet.id.in_({m.standards_set_id for m in std_maps}))
-            )).scalars().all()
-        }
-        for m in std_maps:
-            s = sets_by_id.get(m.standards_set_id)
-            criterion_text = None
-            for c in (s.criteria if s and s.criteria else []):
-                if str(c.get("id") or c.get("code") or "") == m.criterion_id:
-                    criterion_text = c.get("name") or c.get("description")
-                    break
-            standards_targets.append({
-                "criterion_id":        m.criterion_id,
-                "standards_set_id":    str(m.standards_set_id),
-                "standards_set_name":  s.name if s else None,
-                "criterion_name":      criterion_text or m.criterion_id,
-                "design_coverage_level": m.coverage_level,  # the activity-level mapping, not this student's evaluation
-            })
+    standards_targets = await _mapped_standards_for_activity(db, row[6])
 
     return {
         "session_id":             str(row[0]),
@@ -2005,15 +2091,11 @@ async def score_submission_rubric(
 
     # ── Standards evaluation — independent of rubric scoring ────────────────
     if body.standards_evaluation:
-        mapped_ids = {
-            m.criterion_id for m in (await db.execute(
-                text("SELECT criterion_id FROM activity_standards_map WHERE activity_id = :aid"),
-                {"aid": activity_id},
-            )).fetchall()
-        }
+        mapped = await _mapped_standards_for_activity(db, activity_id)
+        mapped_by_id = {m["criterion_id"]: m for m in mapped}
         new_eval: Dict[str, str] = {}
         for e in body.standards_evaluation:
-            if e.criterion_id not in mapped_ids:
+            if e.criterion_id not in mapped_by_id:
                 raise HTTPException(
                     status_code=422,
                     detail=f"Criterion {e.criterion_id} is not mapped to this activity — "
@@ -2037,6 +2119,20 @@ async def score_submission_rubric(
             {"new_eval": json.dumps(new_eval), "sub_id": sub["id"]},
         )).first()
         result["standards_evaluation"] = eval_row[0] or {}
+
+        # ── Accrue into student_competencies (source brief step 5,
+        # "Accruing") — previously nothing anywhere ever wrote this table
+        # (StudentCompetency was read in 2 places, constructed in 0). Each
+        # mapped standard this submission was just evaluated against rolls
+        # up into (or creates) that student's competency record for it.
+        for criterion_id, coverage_level in new_eval.items():
+            target = mapped_by_id[criterion_id]
+            await _accrue_competency(
+                db, student_id=student_id,
+                competency_name=target["criterion_name"],
+                category=target["category"] or target["standards_set_name"],
+                coverage_level=coverage_level,
+            )
 
     if body.feedback is not None:
         await db.execute(

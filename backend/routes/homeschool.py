@@ -357,6 +357,41 @@ async def child_progress(
 
 # ── Coverage ──────────────────────────────────────────────────────────────
 
+_EVAL_LEVEL_RANK = {"not_met": 0, "partial": 1, "full": 2, "exceeds": 3}
+
+
+def _criterion_status(activities: list, evaluations: list) -> tuple:
+    """Decide one criterion's coverage status.
+
+    A teacher's explicit per-submission verdict (`evaluations`, from
+    activity_submissions.standards_evaluation) outranks the plain
+    "an activity is mapped at full/partial level" status derived from
+    `activities` (activity_standards_map / content_alignments entries) --
+    a mapping is a design-time claim ("this activity targets this
+    standard"), not evidence any child's work actually demonstrated it.
+
+    Returns (status, evaluated) where status is 'met'|'partial'|'not_met'
+    and evaluated is True iff an explicit verdict decided it. Pure function
+    (no DB access) so it's directly unit-testable without mocking a query
+    sequence -- see tests/test_standards_coverage_evaluation.py.
+    """
+    if evaluations:
+        best_eval = max(evaluations, key=lambda l: _EVAL_LEVEL_RANK.get(l, 0))
+        if best_eval in ("full", "exceeds"):
+            return "met", True
+        if best_eval == "partial":
+            return "partial", True
+        return "not_met", True
+
+    has_full    = any(a["coverage_level"] == "full"    for a in activities)
+    has_partial = any(a["coverage_level"] == "partial" for a in activities)
+    if has_full:
+        return "met", False
+    if has_partial:
+        return "partial", False
+    return "not_met", False
+
+
 @router.get("/coverage")
 async def coverage_summary(
     current_user: User = Depends(get_current_user),
@@ -533,15 +568,7 @@ async def coverage_summary(
             activities = by_criterion.get(cid, [])
             this_criterion_evals = evaluated_levels.get(cid, [])
 
-            if this_criterion_evals:
-                best_eval = max(this_criterion_evals, key=lambda l: {"not_met": 0, "partial": 1, "full": 2, "exceeds": 3}.get(l, 0))
-                status = "met" if best_eval in ("full", "exceeds") else ("partial" if best_eval == "partial" else "not_met")
-                evaluated = True
-            else:
-                has_full    = any(a["coverage_level"] == "full"    for a in activities)
-                has_partial = any(a["coverage_level"] == "partial" for a in activities)
-                status = "met" if has_full else ("partial" if has_partial else "not_met")
-                evaluated = False
+            status, evaluated = _criterion_status(activities, this_criterion_evals)
 
             if status == "met":
                 met_count += 1

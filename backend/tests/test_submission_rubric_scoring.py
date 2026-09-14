@@ -63,22 +63,29 @@ def _fake_teacher(uid: UUID | None = None) -> MagicMock:
     return user
 
 
-def _criterion_row(criterion_id: str):
-    """A real SQLAlchemy Row from `text("SELECT criterion_id FROM ...")`
-    supports attribute access (row.criterion_id), not just indexing -- a
-    plain tuple mock doesn't, so score_submission_rubric's `m.criterion_id`
-    needs this rather than a bare tuple."""
+def _fake_std_map(criterion_id: str, standards_set_id: UUID, coverage_level: str = "partial"):
+    """A MagicMock standing in for an ActivityStandardsMap ORM row."""
     m = MagicMock()
     m.criterion_id = criterion_id
-    m.__getitem__ = lambda self, i: (criterion_id,)[i]
+    m.standards_set_id = standards_set_id
+    m.coverage_level = coverage_level
     return m
 
 
-def _mock_result(*, first=None, fetchall=None, scalar_one_or_none=None):
+def _fake_standards_set(set_id: UUID, name: str, criteria: list):
+    s = MagicMock()
+    s.id = set_id
+    s.name = name
+    s.criteria = criteria
+    return s
+
+
+def _mock_result(*, first=None, fetchall=None, scalar_one_or_none=None, scalars_all=None):
     result = MagicMock()
     result.first.return_value = first
     result.fetchall.return_value = fetchall if fetchall is not None else []
     result.scalar_one_or_none.return_value = scalar_one_or_none
+    result.scalars.return_value.all.return_value = scalars_all if scalars_all is not None else []
     return result
 
 
@@ -90,6 +97,7 @@ async def _client_for(user: MagicMock, execute_side_effect: list):
     db = AsyncMock()
     db.execute = AsyncMock(side_effect=execute_side_effect)
     db.commit = AsyncMock()
+    db.add = MagicMock()  # db.add() is sync in real SQLAlchemy, unlike db.execute()
 
     app.dependency_overrides[get_db] = lambda: db
     app.dependency_overrides[get_current_user] = lambda: user
@@ -113,6 +121,20 @@ def _fake_rubric(rubric_id: UUID):
         ]},
     ]
     return r
+
+
+def _mapped_eco1_results(coverage_level: str = "partial"):
+    """The two db.execute() results _mapped_standards_for_activity() needs
+    to resolve one mapped criterion ("eco-1", category "Life Science") --
+    an ActivityStandardsMap select then a StandardsSet select, in that order."""
+    set_id = uuid4()
+    return [
+        _mock_result(scalars_all=[_fake_std_map("eco-1", set_id, coverage_level)]),
+        _mock_result(scalars_all=[_fake_standards_set(
+            set_id, "Test Science Standards",
+            [{"id": "eco-1", "name": "Ecosystem interactions", "category": "Life Science"}],
+        )]),
+    ]
 
 
 SESSION_ID = str(uuid4())
@@ -216,7 +238,7 @@ async def test_422_standards_criterion_not_mapped_to_activity():
     execute_side_effect = [
         _mock_result(first=(student_id, activity_id, None)),
         _mock_result(first=(sub_id,)),
-        _mock_result(fetchall=[]),  # activity_standards_map: nothing mapped
+        _mock_result(scalars_all=[]),  # activity_standards_map: nothing mapped -> _mapped_standards_for_activity() returns [] after this one query
     ]
     client, db = await _client_for(teacher, execute_side_effect)
     async with client:
@@ -236,7 +258,7 @@ async def test_422_invalid_coverage_level():
     execute_side_effect = [
         _mock_result(first=(student_id, activity_id, None)),
         _mock_result(first=(sub_id,)),
-        _mock_result(fetchall=[_criterion_row("eco-1")]),  # eco-1 IS mapped
+        *_mapped_eco1_results(),  # eco-1 IS mapped
     ]
     client, db = await _client_for(teacher, execute_side_effect)
     async with client:
@@ -319,8 +341,9 @@ async def test_standards_evaluation_independent_of_rubric():
     execute_side_effect = [
         _mock_result(first=(student_id, activity_id, None)),  # no rubric_id
         _mock_result(first=(sub_id,)),
-        _mock_result(fetchall=[_criterion_row("eco-1")]),                  # mapped
+        *_mapped_eco1_results(),                               # mapped
         _mock_result(first=({"eco-1": "exceeds"},)),          # UPDATE ... RETURNING standards_evaluation
+        _mock_result(scalar_one_or_none=None),                # _accrue_competency: no existing record -> creates one
     ]
     client, db = await _client_for(teacher, execute_side_effect)
     async with client:
@@ -330,20 +353,29 @@ async def test_standards_evaluation_independent_of_rubric():
         )
     assert resp.status_code == 200
     assert resp.json()["standards_evaluation"] == {"eco-1": "exceeds"}
+    # A new StudentCompetency was added to the session (accrual — see
+    # test_accrue_competency_* below for the behavior in isolation).
+    db.add.assert_called_once()
+    added = db.add.call_args.args[0]
+    assert added.competency_name == "Ecosystem interactions"
+    assert added.category == "Life Science"
+    assert added.evidence_count == 1
 
 
 @pytest.mark.asyncio
 async def test_not_met_is_a_legal_verdict():
     """Confirms 'not_met' — previously inexpressible anywhere in this system
-    (a completed activity always silently counted as 'met') — round-trips."""
+    (a completed activity always silently counted as 'met') — round-trips,
+    and still accrues as evidence of an attempt (IN_PROGRESS), not silence."""
     teacher = _fake_teacher()
     student_id, activity_id = uuid4(), uuid4()
     sub_id = uuid4()
     execute_side_effect = [
         _mock_result(first=(student_id, activity_id, None)),
         _mock_result(first=(sub_id,)),
-        _mock_result(fetchall=[_criterion_row("eco-1")]),
+        *_mapped_eco1_results(),
         _mock_result(first=({"eco-1": "not_met"},)),
+        _mock_result(scalar_one_or_none=None),
     ]
     client, db = await _client_for(teacher, execute_side_effect)
     async with client:
@@ -353,6 +385,10 @@ async def test_not_met_is_a_legal_verdict():
         )
     assert resp.status_code == 200
     assert resp.json()["standards_evaluation"]["eco-1"] == "not_met"
+    added = db.add.call_args.args[0]
+    from models.database import CompetencyStatus
+    assert added.status == CompetencyStatus.IN_PROGRESS
+    assert added.first_achieved_at is None  # not_met never sets first_achieved_at
 
 
 # ===========================================================================
@@ -375,6 +411,110 @@ def test_rubric_criteria_maps_handles_criterion_with_no_levels():
     out = _rubric_criteria_maps(rubric)
     assert out["empty"]["valid_scores"] == set()
     assert out["empty"]["max_score"] == 0
+
+
+# ===========================================================================
+# _accrue_competency — the source brief's step 5 ("Accruing"), previously
+# unbuilt: StudentCompetency had readers in 2 routes and zero writers
+# anywhere in the codebase.
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_accrue_competency_creates_new_record_on_first_evidence():
+    from routes.activities import _accrue_competency
+    from models.database import CompetencyStatus
+
+    db = AsyncMock()
+    db.add = MagicMock()
+    db.execute = AsyncMock(return_value=_mock_result(scalar_one_or_none=None))
+    student_id = uuid4()
+
+    await _accrue_competency(db, student_id=str(student_id), competency_name="Ecosystem interactions",
+                              category="Life Science", coverage_level="full")
+
+    db.add.assert_called_once()
+    comp = db.add.call_args.args[0]
+    assert comp.student_id == student_id
+    assert comp.competency_name == "Ecosystem interactions"
+    assert comp.category == "Life Science"
+    assert comp.status == CompetencyStatus.ACHIEVED
+    assert comp.evidence_count == 1
+    assert comp.progress_percent == 100
+    assert comp.first_achieved_at is not None  # 'full' reaches ACHIEVED immediately
+
+
+@pytest.mark.asyncio
+async def test_accrue_competency_status_never_regresses():
+    """A student who once scored 'exceeds' (MASTERED) on a competency and
+    later scores 'partial' on it again should keep MASTERED, not drop to
+    IN_PROGRESS -- best-ever-achieved semantics, matching
+    routes/standards.py::_best_level_from_levels."""
+    from routes.activities import _accrue_competency
+    from models.database import CompetencyStatus
+
+    existing = MagicMock()
+    existing.status = CompetencyStatus.MASTERED
+    existing.evidence_count = 3
+    existing.first_achieved_at = datetime(2026, 8, 1)
+    existing.progress_percent = 100
+
+    db = AsyncMock()
+    db.add = MagicMock()
+    db.execute = AsyncMock(return_value=_mock_result(scalar_one_or_none=existing))
+
+    await _accrue_competency(db, student_id=str(uuid4()), competency_name="Ecosystem interactions",
+                              category="Life Science", coverage_level="partial")
+
+    db.add.assert_not_called()  # updates the existing row, doesn't insert a new one
+    assert existing.status == CompetencyStatus.MASTERED  # unchanged, not regressed to IN_PROGRESS
+    assert existing.evidence_count == 4  # still counts as new evidence
+    assert existing.first_achieved_at == datetime(2026, 8, 1)  # unchanged
+
+
+@pytest.mark.asyncio
+async def test_accrue_competency_advances_status_forward():
+    """The reverse of the above: IN_PROGRESS -> ACHIEVED on new stronger evidence."""
+    from routes.activities import _accrue_competency
+    from models.database import CompetencyStatus
+
+    existing = MagicMock()
+    existing.status = CompetencyStatus.IN_PROGRESS
+    existing.evidence_count = 1
+    existing.first_achieved_at = None
+    existing.progress_percent = 50
+
+    db = AsyncMock()
+    db.add = MagicMock()
+    db.execute = AsyncMock(return_value=_mock_result(scalar_one_or_none=existing))
+
+    await _accrue_competency(db, student_id=str(uuid4()), competency_name="Ecosystem interactions",
+                              category="Life Science", coverage_level="full")
+
+    assert existing.status == CompetencyStatus.ACHIEVED
+    assert existing.progress_percent == 100
+    assert existing.evidence_count == 2
+    assert existing.first_achieved_at is not None  # set now, the first time it reached ACHIEVED
+
+
+@pytest.mark.asyncio
+async def test_accrue_competency_not_met_creates_in_progress_not_silence():
+    """A 'not_met' verdict is still real evidence -- the competency record
+    should exist and be IN_PROGRESS, not be skipped entirely."""
+    from routes.activities import _accrue_competency
+    from models.database import CompetencyStatus
+
+    db = AsyncMock()
+    db.add = MagicMock()
+    db.execute = AsyncMock(return_value=_mock_result(scalar_one_or_none=None))
+
+    await _accrue_competency(db, student_id=str(uuid4()), competency_name="Ecosystem interactions",
+                              category="Life Science", coverage_level="not_met")
+
+    db.add.assert_called_once()
+    comp = db.add.call_args.args[0]
+    assert comp.status == CompetencyStatus.IN_PROGRESS
+    assert comp.evidence_count == 1
+    assert comp.first_achieved_at is None
 
 
 # ===========================================================================
