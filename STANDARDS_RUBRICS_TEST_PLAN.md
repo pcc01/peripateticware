@@ -45,17 +45,21 @@ There was no working path — frontend or backend — for a teacher to score a s
 
 ### 2.1 Upload & LLM extraction (`POST /standards/upload`)
 
-| # | Case | Expected |
-|---|---|---|
-| S1 | Upload a real state standards PDF, `set_type=state_standards` | 200; response is a **preview** (criteria list), nothing persisted yet — confirm no `standards_sets` row exists until the follow-up save call |
-| S2 | Upload a CSV instead of PDF | Same extraction path via `document_parser.py`; criteria list returned |
-| S3 | Upload with no local Ollama reachable, `LLM_PROVIDER=ollama` | Graceful `{criteria: [], error: "..."}", not a 500 — matches `extract_criteria`'s never-raises contract |
-| S4 | Upload with `LLM_PROVIDER=claude` (or per-feature `AGENT_STANDARDS_EXTRACTION_PROVIDER=claude`) | Extraction succeeds against the real Anthropic API — **run this one live**, the same way the taxonomy/rubric fix was verified this session, not just mocked |
-| S5 | Upload a scanned/image-only PDF | Falls through to `document_parser.py::_extract_pdf_ocr` (vision call) — confirm it also resolves through `dispatch()`/`AGENT_DOCUMENT_OCR_PROVIDER`, not a hardcoded provider (this path wasn't touched by this session's fix — verify it wasn't already broken the same way) |
-| S6 | Upload text that yields zero usable criteria (e.g. a blank page) | `{criteria: [], error: "...didn't identify any criteria..."}`, not an empty-list-with-no-explanation |
-| S7 | Text over `max_chars` (12,000) | Truncated silently, extraction still runs on the truncated text — confirm via a document that's ~2x the limit |
+**Automated 2026-09-13** (`backend/tests/test_standards_parser.py`, 15 cases, `services/standards_parser.py::extract_criteria` directly): success-path sanitization/defaults/truncation, every never-raises failure path (S3/S6 below), provider resolution, oversized-document truncation before the prompt (S7), deterministic low temperature. S4 was run live against real Claude with a sample document (not just mocked) — see the test file's header. What's below marks which rows that closes vs. what's still HTTP-endpoint-level and untested.
+
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| S1 | Upload a real state standards PDF, `set_type=state_standards` | 200; response is a **preview** (criteria list), nothing persisted yet — confirm no `standards_sets` row exists until the follow-up save call | ❌ HTTP-level only, not yet tested — `extract_criteria` itself is, but not `POST /standards/upload`'s handling of a real multipart PDF upload |
+| S2 | Upload a CSV instead of PDF | Same extraction path via `document_parser.py`; criteria list returned | ❌ same as S1 |
+| S3 | Upload with no local Ollama reachable, `LLM_PROVIDER=ollama` | Graceful `{criteria: [], error: "..."}", not a 500 — matches `extract_criteria`'s never-raises contract | ✅ `test_provider_unreachable_is_graceful_not_raised` |
+| S4 | Upload with `LLM_PROVIDER=claude` (or per-feature `AGENT_STANDARDS_EXTRACTION_PROVIDER=claude`) | Extraction succeeds against the real Anthropic API | ✅ verified live this session with a real sample science-standards excerpt; `test_routes_through_the_provider_abstraction_not_a_hardcoded_client` covers the provider-resolution logic (mocked) |
+| S5 | Upload a scanned/image-only PDF | Falls through to `document_parser.py::_extract_pdf_ocr` (vision call) — confirm it also resolves through `dispatch()`/`AGENT_DOCUMENT_OCR_PROVIDER`, not a hardcoded provider (this path wasn't touched by this session's fix — verify it wasn't already broken the same way) | ❌ still open — `document_parser.py` has no test file yet |
+| S6 | Upload text that yields zero usable criteria (e.g. a blank page) | `{criteria: [], error: "...didn't identify any criteria..."}`, not an empty-list-with-no-explanation | ✅ `test_zero_criteria_found_has_a_distinct_message_from_a_dead_provider` (also confirms this message differs from S3's) |
+| S7 | Text over `max_chars` (12,000) | Truncated silently, extraction still runs on the truncated text | ✅ `test_oversized_document_text_is_truncated_before_reaching_the_prompt` |
 
 ### 2.2 Save / CRUD (`POST /standards`, `GET /standards`, `GET|PUT|DELETE /standards/{id}`)
+
+**Automated 2026-09-13** (`backend/tests/test_standards_routes.py`): S8–S10 below are covered (normalized-type persistence including the BUG-14 regression by name, checksum cache-hit dedup, the global-set 403 gate). S11–S14 are not yet.
 
 | # | Case | Expected |
 |---|---|---|
@@ -68,6 +72,8 @@ There was no working path — frontend or backend — for a teacher to score a s
 | S14 | List sets as a teacher who doesn't own any (`GET /standards`) | Empty list, not another teacher's sets — authz check |
 
 ### 2.3 Mapping an activity to a criterion (`POST /{set_id}/map`)
+
+**Automated 2026-09-13** (`backend/tests/test_standards_routes.py`): S15 and S18 are covered (primary write, dual-write failure isolation, re-map-updates-not-duplicates). S16 is covered by the re-map test. S17 (the race with materialization) is not.
 
 | # | Case | Expected |
 |---|---|---|
@@ -150,10 +156,10 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 | R15 | Score every criterion on a submission | `rubric_scores` populated; `submission_status → 'graded'`; `grade` = round(total/max × 100) | ✅ `test_complete_rubric_scoring_flips_status_to_graded` |
 | R16 | Score with a level that doesn't exist on the criterion | 422, rejected before any write | ✅ `test_422_score_not_a_valid_level` |
 | R17 | Score one criterion, come back later and score the rest | First call persists partial progress without grading; submission only grades once the last criterion lands | ✅ `test_partial_rubric_scoring_does_not_grade_yet` |
-| R18 | Evaluate a mapped standard as `not_met` for a submission whose activity was otherwise completed | `GET /standards/{set_id}/coverage` for that student drops the criterion out of `criteria_met`, `evaluated: true` — verified live this session, not just mocked | ✅ `test_not_met_is_a_legal_verdict` (endpoint) — **coverage-side effect only verified live; add a real DB-backed integration test for `get_coverage`/`coverage_summary`'s evaluated-precedence branch** (the current mocked unit tests don't reach that far) |
+| R18 | Evaluate a mapped standard as `not_met` for a submission whose activity was otherwise completed | `GET /standards/{set_id}/coverage` for that student drops the criterion out of `criteria_met`, `evaluated: true` | ✅ Closed 2026-09-13 — `tests/test_standards_coverage_evaluation.py` drives `get_coverage` through its real mocked query sequence (3 cases: explicit override, no-evaluation fallback, evaluation-without-completion) plus 5 pure-function cases for `homeschool.py::_criterion_status` (extracted specifically so its precedence logic didn't need the whole `coverage_summary` query chain mocked). Still verified live too. |
 | R19 | Two teachers on the same org score different students' submissions concurrently | No cross-contamination — each write is scoped by `sub_id` from that session's own row |
-| R20 | A scored submission rolls up into `student_competencies` | Still not built — this is step 5 ("Accruing") of the source brief's chain; scoring now produces something to roll up (R15), but nothing reads `rubric_scores`/`standards_evaluation` into `student_competencies` yet. New backlog item, not blocked on anything above. |
-| R21 | Manual/live: run the full flow once against a real teacher account | Create rubric → attach → map a standard → score both → confirm `GET .../detail` and `GET /standards/{id}/coverage` agree — this session's own verification (Creek Habitat Study / eco-1) is the template; keep it or re-run with fresh data before a release |
+| R20 | A scored submission rolls up into `student_competencies` | ✅ Built 2026-09-13 — `routes/activities.py::_accrue_competency()`, called from `score_submission_rubric` for every `standards_evaluation` verdict. Best-ever-achieved semantics (status never regresses); `evidence_count` increments every verdict; `first_achieved_at` set once. 4 unit tests + verified live (a real `student_competencies` row was created against the dev DB). `StudentCompetency` previously had readers in 2 routes and zero writers anywhere — confirmed by grep before building this. |
+| R21 | Manual/live: run the full flow once against a real teacher account | Create rubric → attach → map a standard → score both → confirm `GET .../detail` and `GET /standards/{id}/coverage` agree, **and** a `student_competencies` row now appears for the evaluated standard — this session's own verification (Creek Habitat Study / eco-1) is the template; keep it or re-run with fresh data before a release |
 
 ---
 
@@ -186,9 +192,11 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 ## 6. Exit criteria
 
 - [x] §0's decision made — built, not deferred: a real scoring path plus per-submission standards evaluation
-- [ ] All of §2 and §3.1–3.3 executed at least once against a real Anthropic call, not only mocked
+- [x] R18's coverage-side effect has a real automated test (`test_standards_coverage_evaluation.py`) — closed 2026-09-13
+- [x] R20 (rolling scored evidence into `student_competencies`) — built and tested 2026-09-13, not just scoped
+- [x] `extract_criteria` (parsing) and `create_standards_set`/`map_activity_to_criterion` (applying) have real automated coverage — closed 2026-09-13, was the other 0%-coverage gap from the original audit
+- [ ] S1/S2/S5 (the actual `POST /standards/upload` HTTP endpoint, multipart PDF/CSV/scanned-image handling) still untested — `extract_criteria` itself is covered, the upload route wrapping it isn't
+- [ ] All of §3.2 (rubric generation) executed at least once against a real Anthropic call in CI, not only this session's manual check
 - [ ] §5's end-to-end pass re-run with fresh fixtures (not this session's throwaway test data) and committed as a reusable seed
 - [ ] X1–X2 green in CI
-- [ ] R18's coverage-side effect gets a real DB-backed integration test (currently verified live only, not automated)
-- [ ] R20 (rolling scored evidence into `student_competencies`) scoped as a follow-up — scoring now produces something to roll up, but nothing reads it yet
 - [ ] S28 (regulatory review) scheduled with someone outside engineering
