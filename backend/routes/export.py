@@ -184,48 +184,30 @@ async def _build_data(
     ]
 
     # Standards coverage if requested
+    #
+    # Previously this block reimplemented get_coverage()'s computation
+    # inline (per its own comment, "since we can't call FastAPI endpoints
+    # internally") -- a second copy that had silently drifted from the
+    # real thing: no content_alignments union (criteria reached only via
+    # the graph-native write path came out undercounted here vs. the live
+    # coverage API) and no standards_evaluation precedence at all (a
+    # criterion a teacher explicitly marked 'not_met' still showed as met
+    # in the exported PDF/CSV, exactly the gap the standards-evaluation
+    # feature was built to close, silently unfixed in this one path).
+    # compute_standards_coverage() (routes/standards.py) is the shared
+    # implementation both this export and GET /standards/{set_id}/coverage
+    # now call -- see that function's docstring for why a second copy
+    # must not come back.
     standards_coverage = None
     if standards_set_id:
         try:
-            from routes.standards import get_coverage
-            # Re-use the coverage endpoint logic directly
+            from routes.standards import compute_standards_coverage
             std_result = await db.execute(
                 select(StandardsSet).where(StandardsSet.id == UUID(standards_set_id))
             )
             std_set = std_result.scalar_one_or_none()
             if std_set:
-                from routes.standards import get_coverage as _cov
-                # Build inline since we can't call FastAPI endpoints internally
-                from models.database import ActivityStandardsMap
-                maps_result = await db.execute(
-                    select(ActivityStandardsMap).where(
-                        ActivityStandardsMap.standards_set_id == UUID(standards_set_id)
-                    )
-                )
-                all_maps = maps_result.scalars().all()
-                completed_ids = {str(s.activity_id) for s in completed}
-                criteria = std_set.criteria or []
-                cov: dict = {}
-                for c in criteria:
-                    cid = c["id"]
-                    relevant = [m for m in all_maps if m.criterion_id == cid
-                                and str(m.activity_id) in completed_ids]
-                    best = max((m.coverage_level for m in relevant),
-                               key=lambda l: {"partial":1,"full":2,"exceeds":3}.get(l,0),
-                               default=None) if relevant else None
-                    cov[cid] = {
-                        "criterion": c, "times_addressed": len(relevant),
-                        "best_level": best, "met": len(relevant) > 0,
-                    }
-                met = sum(1 for v in cov.values() if v["met"])
-                total = len(criteria)
-                standards_coverage = {
-                    "standards_set_name": std_set.name,
-                    "total_criteria": total,
-                    "criteria_met": met,
-                    "percent_complete": round(met / total * 100) if total else 0,
-                    "coverage": cov,
-                }
+                standards_coverage = await compute_standards_coverage(db, std_set, target_id)
         except Exception as e:
             logger.warning("Could not build standards coverage: %s", e)
 

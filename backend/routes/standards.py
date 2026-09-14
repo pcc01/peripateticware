@@ -693,6 +693,27 @@ async def get_coverage(
     s      = await _get_set(set_id, current_user, db)
     target = UUID(student_id) if student_id else current_user.id
 
+    return await compute_standards_coverage(db, s, target)
+
+
+async def compute_standards_coverage(db: AsyncSession, s: StandardsSet, target: UUID) -> dict:
+    """The actual coverage computation for one standards set + one student —
+    unions ActivityStandardsMap (legacy) with content_alignments (the
+    graph-shaped write path), dedupes the same (activity, criterion) pair
+    reached via both, and lets a teacher's explicit per-submission
+    standards_evaluation verdict override the completion-based heuristic
+    when one exists.
+
+    Extracted from get_coverage() (2026-09-13) so routes/export.py's
+    standards_coverage PDF/CSV export could call the real thing instead of
+    its own separate, drifted reimplementation — that copy had no
+    content_alignments union and no standards_evaluation precedence at
+    all, so an export could show a criterion "met" that the live coverage
+    API (and a teacher's explicit "not_met" judgment) said it wasn't. Do
+    not reintroduce a second copy of this logic; both callers must use
+    this function.
+    """
+    set_id = s.id
     maps = (await db.execute(
         select(ActivityStandardsMap).where(ActivityStandardsMap.standards_set_id == set_id)
     )).scalars().all()

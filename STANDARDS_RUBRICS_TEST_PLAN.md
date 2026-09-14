@@ -7,6 +7,20 @@
 
 ---
 
+## 0a. Update 2026-09-14 — "test remaining features" pass: most of §2–4 automated, and a real export bug found + fixed
+
+Worked through nearly every remaining ❌ in this document (S11–S23, R1–R4, R12–R14, S24/S27, X3) with real tests, not just re-marking rows — 43 new test cases across 4 new files (`test_standards_coverage_dedup.py`, `test_rubric_crud.py`, `test_graph_retrieval.py`, `test_export_coverage_parity.py`) plus extensions to `test_standards_routes.py`. Full suite: 544 passed (up from 460 at the start of the previous session), same 2 pre-existing unrelated `test_mfa.py` failures.
+
+**Found and fixed while writing X5's test (export numbers must match the coverage API): they didn't.** `routes/export.py::_build_data()` had its own, third, independently-drifted reimplementation of the coverage computation — its own comment admitted why ("Build inline since we can't call FastAPI endpoints internally"). That copy had no `content_alignments` union (a criterion reached only via the graph-native write path was silently absent from the exported PDF/CSV) and, more seriously, **no `standards_evaluation` precedence at all** — a criterion a teacher explicitly marked `not_met` still showed as met in the exported homeschool portfolio, because the export's copy predates that feature and was never updated to consume it. This is a real compliance-facing bug: the filed document could show more than what a teacher actually attested to.
+
+**Fix:** extracted `routes/standards.py::compute_standards_coverage()` as the one shared implementation; `get_coverage()` and `routes/export.py` both call it now. A regression guard (`test_no_second_coverage_implementation_exists_in_export_py`) checks the export module's source for the tell of the old duplicated logic, so a future "just copy the computation, just this once" edit gets caught. Verified live: `get_coverage()` and the export's `coverage_rows` now agree on the same (student, set) pair.
+
+Also discovered along the way (not a bug, a real, verified fact worth recording): `activity_standards_map`'s FKs to both `activities` and `standards_sets` are `ON DELETE CASCADE` in the live DB (`pg_constraint.confdeltype = 'c'`) — deleting a `StandardsSet` silently cascades away any mappings built on it, with no app-level warning. Not asserted as wrong here, just documented as the real behavior (see S13 below) — worth a product call if it's ever surprised anyone.
+
+See §2.2–§2.5, §3.1, §3.3, and §4 below for exactly which rows this closed.
+
+---
+
 ## 0. Update 2026-09-13 — the blocking gap is closed
 
 **Built:** `POST /activities/teacher/submissions/{session_id}/score-rubric`. A teacher can now save (partial or complete) per-criterion rubric scores, which merge into `activity_submissions.rubric_scores` and auto-flip `submission_status` to `'graded'` with a computed `grade` once every criterion has a score. `GET .../detail` (the frontend's real submission-detail call) now returns the attached rubric definition and current scores in one round trip; `TeacherSubmissionsPage.tsx` renders a scoring panel wired to it.
@@ -59,51 +73,53 @@ There was no working path — frontend or backend — for a teacher to score a s
 
 ### 2.2 Save / CRUD (`POST /standards`, `GET /standards`, `GET|PUT|DELETE /standards/{id}`)
 
-**Automated 2026-09-13** (`backend/tests/test_standards_routes.py`): S8–S10 below are covered (normalized-type persistence including the BUG-14 regression by name, checksum cache-hit dedup, the global-set 403 gate). S11–S14 are not yet.
+**Automated** (`backend/tests/test_standards_routes.py`): S8–S11 and S14 are covered. S12 (refresh, needs multipart file mocking) and S13's *app-level* contract (ownership check, `db.delete()` called) are covered; S13's actual cascade behavior was verified live against the real DB (see §0a) rather than simulated in a mock.
 
-| # | Case | Expected |
-|---|---|---|
-| S8 | Save the previewed criteria from S1 as-is | `standards_sets` row created; `processing_status='complete'` |
-| S9 | Edit a criterion's `name`/`required`/`weight` in the preview before saving | The **edited** version persists, not the raw LLM output — this is the human-review gate the source brief claims exists; confirm it's real, not decorative |
-| S10 | Save with `set_type` the frontend sends but the backend doesn't recognize (repeat of historical BUG-14 in `REGRESSION_LOG.md`) | `_normalize_set_type` maps it to `custom` rather than a 422/500 — regression check on a previously-fixed bug |
-| S11 | `PUT /{set_id}` to rename a set | 200; `updated_at` bumps |
-| S12 | `POST /{set_id}/refresh` — re-run extraction against the same source file | `processing_status` cycles `pending → complete`; criteria replaced, not appended-and-duplicated |
-| S13 | `DELETE /{set_id}` on a set with existing `ActivityStandardsMap` rows | Confirm the FK/cascade behavior — does it 409, cascade-delete the mappings, or orphan them? (Not documented anywhere found in this audit — establish the actual behavior and whether it's intentional.) |
-| S14 | List sets as a teacher who doesn't own any (`GET /standards`) | Empty list, not another teacher's sets — authz check |
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| S8 | Save the previewed criteria from S1 as-is | `standards_sets` row created; `processing_status='complete'` | ✅ `test_create_standards_set_persists_normalized_type_and_criteria` |
+| S9 | Edit a criterion's `name`/`required`/`weight` in the preview before saving | The **edited** version persists, not the raw LLM output — the human-review gate the source brief claims exists | ❌ this is a two-step (extract, then save-what-was-edited) UI flow, not testable at this endpoint alone |
+| S10 | Save with `set_type` the frontend sends but the backend doesn't recognize (BUG-14) | `_normalize_set_type` maps it to `custom`, not a 422/500 | ✅ `test_normalize_set_type_bug14_regression_curriculum_alias` + the create-set test uses `type: "curriculum"` directly |
+| S11 | `PUT /{set_id}` to rename a set | 200; field updates | ✅ `test_update_standards_set_renames`, `test_update_standards_set_forbidden_for_non_owner_non_admin` |
+| S12 | `POST /{set_id}/refresh` — re-run extraction against the same source file | `processing_status` cycles `pending → complete`; criteria replaced, not appended-and-duplicated | ❌ still open (multipart file upload mocking) |
+| S13 | `DELETE /{set_id}` on a set with existing `ActivityStandardsMap` rows | App-level: authorizes then calls `db.delete()`. DB-level: **verified live** — both of `activity_standards_map`'s FKs are `ON DELETE CASCADE` (`pg_constraint.confdeltype='c'`), so dependent mappings are silently cascade-deleted, no 409, no warning. Documented as real behavior, not asserted as correct — a product call if it ever surprises anyone. | ✅ (app-level) `test_delete_standards_set_calls_delete_and_requires_ownership`, `test_delete_standards_set_forbidden_for_non_owner` |
+| S14 | List sets as a teacher who doesn't own any (`GET /standards`) | Empty list, not another teacher's sets | ✅ `test_list_standards_sets_only_returns_own_and_global` (asserts the compiled WHERE clause is actually scoped, not just a canned empty response), `test_list_standards_sets_excludes_expired_by_default` |
 
 ### 2.3 Mapping an activity to a criterion (`POST /{set_id}/map`)
 
-**Automated 2026-09-13** (`backend/tests/test_standards_routes.py`): S15 and S18 are covered (primary write, dual-write failure isolation, re-map-updates-not-duplicates). S16 is covered by the re-map test. S17 (the race with materialization) is not.
+**Automated** (`backend/tests/test_standards_routes.py`): S15, S16, S18 covered. S17 (the materialization race) is not — it's a live-timing concern, not something a mocked unit test can meaningfully simulate.
 
-| # | Case | Expected |
-|---|---|---|
-| S15 | Map a real activity to a real criterion, `coverage_level="full"` | 201; `ActivityStandardsMap` row created **and** a `content_alignments` row created (dual-write per `standards_graph_fold.py`) — assert both, not just the response `{"status":"mapped"}` |
-| S16 | Re-map the same (activity, criterion) pair with a different `coverage_level` | Updates the existing row (`existing.coverage_level = body.coverage_level`), doesn't duplicate |
-| S17 | Map before `materialize_standards_set()` has ever run for that set | Per the code comment at `routes/standards.py:605-610`, this is called synchronously here specifically to avoid a race with the background indexing task — confirm the `content_alignments` FK write doesn't 500 on a set that was *just* saved |
-| S18 | Force the `content_alignments` dual-write to fail (e.g. a bad `item_id`) | `ActivityStandardsMap` write still commits (the comment says this is non-fatal/best-effort) — confirm the primary write really does survive a secondary-write failure, not just in comments |
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| S15 | Map a real activity to a real criterion, `coverage_level="full"` | 201; `ActivityStandardsMap` row created | ✅ `test_map_creates_activity_standards_map_row` |
+| S16 | Re-map the same (activity, criterion) pair with a different `coverage_level` | Updates the existing row, doesn't duplicate | ✅ `test_remap_same_criterion_updates_instead_of_duplicating` |
+| S17 | Map before `materialize_standards_set()` has ever run for that set | The `content_alignments` FK write doesn't 500 on a set that was *just* saved | ❌ still open — a live-timing race, not mock-testable |
+| S18 | Force the `content_alignments` dual-write to fail (e.g. a bad `item_id`) | `ActivityStandardsMap` write still commits (best-effort/non-fatal) | ✅ `test_map_content_alignment_dual_write_failure_does_not_block_primary_write` |
 
-### 2.4 Coverage reporting — **two independent implementations**
+### 2.4 Coverage reporting — **now one shared implementation** (was two independent ones)
 
-There are two separate coverage endpoints that must independently union `ActivityStandardsMap` and `content_alignments` and agree with each other:
-- `GET /standards/{set_id}/coverage` (`routes/standards.py::get_coverage`)
-- `GET /homeschool/coverage` (`routes/homeschool.py::coverage_summary`)
+`GET /standards/{set_id}/coverage` and the `routes/export.py` standards-coverage export both call `routes/standards.py::compute_standards_coverage()` — extracted 2026-09-14 after finding the export had its own third, drifted copy (see §0a). `routes/homeschool.py::coverage_summary()` remains a genuinely separate implementation (different data shape — aggregates across all of a parent's children rather than one student) with its own precedence logic (`_criterion_status()`), tested separately.
 
-| # | Case | Expected |
-|---|---|---|
-| S19 | Map 3 of 10 criteria via `ActivityStandardsMap` only (simulate the legacy path — e.g. a row inserted directly, bypassing the dual-write) | Both coverage endpoints report `3/10` |
-| S20 | Map 2 more criteria via `content_alignments` only (simulate the graph-native path) | Both endpoints now report `5/10` — this is the "dedup so a criterion mapped through both paths for the same activity doesn't double-count" logic from the GraphRAG PRD; **write this as an actual test**, it was previously only "verified against a simulated case" by hand |
-| S21 | Map the *same* criterion through both paths for the same activity | Coverage still counts it once, not twice — the specific double-count case |
-| S22 | `?student_id=` filter on `get_coverage` | Only that student's evidence counts toward the percentage |
-| S23 | A criterion with zero activities mapped to it | Appears in the matrix as not-met, not silently omitted (a family filing a state report needs to see what's *missing*, not just what's done) |
+**Automated**: S19–S23 (`backend/tests/test_standards_coverage_dedup.py`, 6 cases) and S21's specific double-count case were flagged as needing "an actual test" — they now have one, including the case that matters (the dual-write producing the *same* activity+criterion via both paths, counted once) and the case that could be mistaken for it (two *different* activities via the two paths, legitimately counted twice).
+
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| S19 | Map 3 of 10 criteria via `ActivityStandardsMap` only | Coverage reports `3/10` | ✅ `test_activity_standards_map_only_counts_correctly` |
+| S20 | Map more criteria via `content_alignments` only | Endpoint reports the combined total, not just the `ActivityStandardsMap` subset | ✅ `test_content_alignments_only_criteria_also_count` |
+| S21 | Map the *same* criterion through both paths for the same activity | Coverage still counts it once, not twice | ✅ `test_same_activity_criterion_via_both_paths_counts_once` (+ the contrasting case, `test_different_activities_same_criterion_both_count_addressed`) |
+| S22 | `?student_id=` filter on `get_coverage` | Only that student's evidence counts toward the percentage | ✅ `test_student_id_filter_targets_that_student_not_the_caller` |
+| S23 | A criterion with zero activities mapped to it | Appears in the matrix as not-met, not silently omitted | ✅ `test_unaddressed_criterion_appears_as_not_met_not_omitted` |
 
 ### 2.5 GraphRAG retrieval (`StandardsExplorer` / `/rag-retrieve`)
 
-| # | Case | Expected |
-|---|---|---|
-| S24 | Search a query with a known ancestor/prerequisite chain (e.g. "fraction equivalence" against Wisconsin's framework, per the source brief's own example) | Results include `relation: "match"` plus `"ancestor"`/`"prerequisite"`/`"cross_reference"` entries, not just flat similarity hits |
-| S25 | Same query, timed | Should land in the 85–188ms range the migration PRD measured after the N+1 fix, not 955ms–2.8s — a regression here means the batched-query fix silently reverted |
-| S26 | `jurisdiction_id` filter | Only that state's (and its ancestor jurisdiction's) results returned |
-| S27 | A query against a state with only an upload (no CASE data) vs. a state with both | Confirm `is_authoritative_over_uploads` is computed correctly (it is, per the PRD) even though — separately — nothing in ranking uses it yet; don't test for ranking behavior that was never built |
+**Automated** (`backend/tests/test_graph_retrieval.py`, 13 cases): `expand_seeds()`'s orchestration — which seeds are expandable, `include_ancestors`/`include_related` flags, dedup against already-seen nodes (S24's underlying logic), hop-decay scoring, never-raises-degrades-to-empty. Deliberately does *not* mock the three `_fetch_*_batch()` helpers' raw recursive-CTE SQL — that's a live-data concern, and was live-verified this session (a real seed standard's ancestor chain resolved correctly: 3 levels, correct labels — see §0a for method). S25 (latency) and S26 (`jurisdiction_id` filter) remain live-only checks; S27 (`is_authoritative_over_uploads` computed correctly) was verified in the original GraphRAG PRD, not re-tested here.
+
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| S24 | Search a query with a known ancestor/prerequisite chain | Results include `relation: "match"` plus `"ancestor"`/`"prerequisite"`/`"cross_reference"` entries | ✅ orchestration (`test_ancestor_expansion_tags_relation_and_decays_score_by_depth`, `test_association_relations_pass_through_unmodified`); ✅ live-verified the real SQL against real data |
+| S25 | Same query, timed | 85–188ms range, not 955ms–2.8s | ❌ still live-only, no perf test harness |
+| S26 | `jurisdiction_id` filter | Only that state's results returned | ❌ still open — this param lives on the `/rag-retrieve` route, not `expand_seeds()` itself |
+| S27 | A query against a state with only an upload vs. both | `is_authoritative_over_uploads` computed correctly | ❌ verified in the original PRD, not re-tested this pass |
 
 ### 2.6 Manual / regulatory (no automated test can substitute)
 
@@ -118,12 +134,14 @@ There are two separate coverage endpoints that must independently union `Activit
 
 ### 3.1 CRUD (`POST/GET/PUT/DELETE /rubrics`)
 
-| # | Case | Expected |
-|---|---|---|
-| R1 | Create a rubric with 3 criteria, 4 levels each | 201; `total_points` matches the sum the teacher entered, not a server-recalculated value (confirm which is authoritative) |
-| R2 | `GET /rubrics` as a different teacher | Only the caller's own rubrics — `AssessmentRubric.teacher_id == current_user.id` filter |
-| R3 | `PUT /{rubric_id}` to add a 4th criterion | Full replace or merge? Confirm which, and that `RubricBuilder.tsx`'s save button matches whichever it is |
-| R4 | `DELETE /{rubric_id}` | Soft-delete (`is_active = False`, confirmed in code) — verify `GET /rubrics` excludes it afterward, and that an activity already attached to it doesn't break |
+**Automated** (`backend/tests/test_rubric_crud.py`).
+
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| R1 | Create a rubric with 3 criteria, 4 levels each | 201; `total_points` matches the sum the teacher entered, not a server-recalculated value | ✅ `test_create_rubric_persists_teacher_supplied_total_points` — confirmed: the teacher-entered value is authoritative, nothing recalculates it server-side |
+| R2 | `GET /rubrics` as a different teacher | Only the caller's own rubrics | ✅ `test_list_rubrics_query_is_scoped_to_caller` (asserts the compiled WHERE clause, not just a canned response) |
+| R3 | `PUT /{rubric_id}` to add a 4th criterion | Full replace or merge? | ✅ `test_update_rubric_merges_only_provided_fields` — confirmed: partial merge (only fields present in the request body change; omitted fields survive untouched) |
+| R4 | `DELETE /{rubric_id}` | Soft-delete (`is_active = False`) — verify `GET /rubrics` excludes it afterward, and that an activity already attached to it doesn't break | ✅ `test_delete_rubric_soft_deletes` + **found while testing**: deletion is already blocked outright (409) if the rubric is attached to a *published* activity — `test_delete_rubric_blocked_when_attached_to_a_published_activity`. Better than the plan assumed; no gap here. |
 
 ### 3.2 AI-generation (`POST /rubrics/generate`) — **just fixed this session, needs its first real coverage run**
 
@@ -141,11 +159,13 @@ This is the route fixed in `fix/ai-route-provider-agnostic`. Automated coverage 
 
 ### 3.3 Attach to activity (`POST /{rubric_id}/attach/{activity_id}`)
 
-| # | Case | Expected |
-|---|---|---|
-| R12 | Attach as the owning teacher | 200; `Activity.rubric_id` set |
-| R13 | Attach someone else's rubric, or to someone else's activity | 404 (both lookups filter by `teacher_id == current_user.id`) — confirm this isn't a silent no-op that returns 200 |
-| R14 | Re-attach a different rubric to an activity that already has one | Overwrites `rubric_id` — confirm this is intended (no "are you sure" / no versioning of the old attachment) |
+**Automated** (`backend/tests/test_rubric_crud.py`).
+
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| R12 | Attach as the owning teacher | 200; `Activity.rubric_id` set | ✅ `test_attach_rubric_sets_activity_rubric_id` |
+| R13 | Attach someone else's rubric, or to someone else's activity | 404, not a silent no-op 200 | ✅ `test_attach_someone_elses_rubric_is_404`, `test_attach_to_someone_elses_activity_is_404` |
+| R14 | Re-attach a different rubric to an activity that already has one | Overwrites `rubric_id`, no versioning | ✅ `test_reattach_overwrites_the_previous_rubric_id` — confirmed: silently overwritten, no trace of the old attachment kept, exactly as the plan suspected |
 
 ### 3.4 Scoring (`POST /teacher/submissions/{session_id}/score-rubric`) — built 2026-09-13
 
@@ -165,13 +185,13 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 
 ## 4. Cross-cutting
 
-| # | Case | Expected |
-|---|---|---|
-| X1 | Regression guard | `pytest tests/test_ai_route_providers.py::test_no_route_imports_ollama_directly` stays in CI — fails the build if any route reaches Ollama directly again |
-| X2 | Full backend suite | `docker exec peripateticware-backend python -m pytest tests/ -q` — baseline is 446 passed / 2 pre-existing unrelated `test_mfa.py` failures / 4 skipped; any new failure is a real regression, any *drop* in passed count is worse |
-| X3 | Non-teacher role hits any `/standards` or `/rubrics` write endpoint | 403 — spot-check with a student/parent JWT against `POST /rubrics`, `POST /standards`, `POST /rubrics/generate` |
-| X4 | Homeschool role vs. teacher role on rubric routes | Per `targeted-flows.spec.ts`'s existing e2e coverage ("homeschool role is accepted by the rubrics API (no 403)"), confirm this still holds — homeschool parents are meant to use rubrics too, not just teachers in a classroom |
-| X5 | Export end-to-end | `GET /export/pdf/homeschool_portfolio` and `GET /export/csv/standards_coverage` against an activity/rubric/standard set built in this test pass — confirm the numbers in the export match what §2.4's coverage endpoints report, not a separately-computed value |
+| # | Case | Expected | Automated? |
+|---|---|---|---|
+| X1 | Regression guard | `pytest tests/test_ai_route_providers.py::test_no_route_imports_ollama_directly` stays in CI — fails the build if any route reaches Ollama directly again | ✅ |
+| X2 | Full backend suite | `docker exec peripateticware-backend python -m pytest tests/ -q` — baseline is now **544 passed** / 2 pre-existing unrelated `test_mfa.py` failures / 4 skipped; any new failure is a real regression, any *drop* in passed count is worse | ✅ (ongoing) |
+| X3 | Non-teacher role hits any `/standards` or `/rubrics` write endpoint | 403 | ✅ `test_rubric_crud.py::test_non_teacher_role_cannot_create_a_rubric`; `test_standards_routes.py::test_create_global_set_forbidden_for_non_teacher_non_admin` |
+| X4 | Homeschool role vs. teacher role on rubric routes | Per `targeted-flows.spec.ts`'s existing e2e coverage, homeschool parents are accepted, not just teachers | ❌ still e2e-only, no backend unit test written this pass |
+| X5 | Export end-to-end | The numbers in the export match what the coverage endpoints report, not a separately-computed value | ✅ **Was false before this pass — see §0a.** `test_export_coverage_parity.py` (3 cases) proves the specific bug this caught (a content_alignments-only criterion and an explicit `not_met` verdict were both silently absent from the export) and guards against the duplicated-logic pattern recurring. `GET /export/pdf/homeschool_portfolio`'s actual PDF rendering (`services/export_service.py::generate_pdf`) remains untested — the *data* feeding it is now provably correct, the reportlab rendering itself isn't. |
 
 ---
 
@@ -192,11 +212,17 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 ## 6. Exit criteria
 
 - [x] §0's decision made — built, not deferred: a real scoring path plus per-submission standards evaluation
-- [x] R18's coverage-side effect has a real automated test (`test_standards_coverage_evaluation.py`) — closed 2026-09-13
+- [x] R18's coverage-side effect has a real automated test — closed 2026-09-13
 - [x] R20 (rolling scored evidence into `student_competencies`) — built and tested 2026-09-13, not just scoped
-- [x] `extract_criteria` (parsing) and `create_standards_set`/`map_activity_to_criterion` (applying) have real automated coverage — closed 2026-09-13, was the other 0%-coverage gap from the original audit
+- [x] `extract_criteria` (parsing) and `create_standards_set`/`map_activity_to_criterion` (applying) have real automated coverage — closed 2026-09-13
+- [x] S19–S23 (coverage dedup, explicitly flagged as needing "an actual test") — closed 2026-09-14
+- [x] R1–R4, R12–R14 (rubric CRUD, attach) — closed 2026-09-14, zero coverage existed before
+- [x] S24/S27 (`expand_seeds()` orchestration) — closed 2026-09-14; SQL correctness live-verified, not unit-tested (a deliberate scope line, see §2.5)
+- [x] X5 (export parity) — **was failing**, not just untested; found and fixed 2026-09-14 (see §0a) — a real compliance-facing bug where an exported homeschool portfolio could show a standard as met that a teacher explicitly marked `not_met`
 - [ ] S1/S2/S5 (the actual `POST /standards/upload` HTTP endpoint, multipart PDF/CSV/scanned-image handling) still untested — `extract_criteria` itself is covered, the upload route wrapping it isn't
-- [ ] All of §3.2 (rubric generation) executed at least once against a real Anthropic call in CI, not only this session's manual check
+- [ ] S12 (`POST /{set_id}/refresh`), S17 (materialization race), S25/S26 (GraphRAG latency/jurisdiction filter), X4 (homeschool-role backend unit test) still open — see each section for why (mostly: needs either multipart mocking or is a live-timing concern a unit test can't meaningfully simulate)
+- [ ] `services/export_service.py::generate_pdf`'s actual reportlab rendering is untested — the data feeding it is now provably correct (X5), the PDF byte output itself isn't
+- [ ] All of §3.2 (rubric generation) executed at least once against a real Anthropic call in CI, not only manual checks
 - [ ] §5's end-to-end pass re-run with fresh fixtures (not this session's throwaway test data) and committed as a reusable seed
 - [ ] X1–X2 green in CI
 - [ ] S28 (regulatory review) scheduled with someone outside engineering

@@ -155,7 +155,14 @@ async def test_create_standards_set_persists_normalized_type_and_criteria():
             {"id": "wa-4-oaa1", "description": "Interpret multiplicative comparison", "category": "Algebraic Reasoning"},
         ],
     }
-    with patch("routes.standards.asyncio.create_task"):  # don't actually spawn the fire-and-forget indexer
+    # Patch the indexer itself (not just create_task) to a plain MagicMock --
+    # patching only create_task still constructs the real coroutine object
+    # via _index_standards_set_criteria(...) before handing it to the mock,
+    # which then never awaits or closes it (a real "coroutine was never
+    # awaited" warning). Patching the function means create_task() never
+    # receives a real coroutine to begin with.
+    with patch("routes.standards._index_standards_set_criteria", new=MagicMock(return_value=None)), \
+         patch("routes.standards.asyncio.create_task"):
         async with client:
             resp = await client.post("/api/v1/standards", json=payload)
 
@@ -338,3 +345,187 @@ async def test_remap_same_criterion_updates_instead_of_duplicating():
     db.add.assert_not_called()  # updates the existing row instead of inserting
     assert existing_map.coverage_level == "exceeds"
     assert existing_map.notes == "revised"
+
+
+# ===========================================================================
+# GET /standards, GET|PUT|DELETE /standards/{id}
+# ===========================================================================
+
+def _fake_set(set_id: UUID, owner_id: UUID, *, is_global: bool = False, name: str = "Test Set",
+              criteria: list | None = None, valid_until=None, created_at=None):
+    s = MagicMock()
+    s.id = set_id
+    s.owner_id = owner_id
+    s.is_global = is_global
+    s.name = name
+    s.description = ""
+    s.type = "state_standards"
+    s.state_code = "WA"
+    s.criteria = criteria if criteria is not None else []
+    s.processing_status = "complete"
+    s.last_processed_at = None
+    s.valid_until = valid_until
+    s.created_at = created_at
+    return s
+
+
+@pytest.mark.asyncio
+async def test_list_standards_sets_only_returns_own_and_global():
+    """GET /standards filters at the query level to (owner_id == caller) OR
+    is_global -- confirm a teacher never sees another teacher's private set
+    by asserting the actual .where() filter reaches the DB, not just that
+    the response happens to be empty in this particular mock."""
+    teacher = _fake_user("TEACHER")
+    own_set = _fake_set(uuid4(), teacher.id, name="My Set")
+    result = MagicMock()
+    result.scalars.return_value.all.return_value = [own_set]
+    client, db = await _client_for(teacher, execute_side_effect=[result])
+
+    async with client:
+        resp = await client.get("/api/v1/standards")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body) == 1
+    assert body[0]["name"] == "My Set"
+    # The query itself must be scoped -- inspect the compiled WHERE clause
+    # rather than trusting the mock's canned return alone.
+    compiled_sql = str(db.execute.call_args.args[0])
+    assert "owner_id" in compiled_sql and "is_global" in compiled_sql
+
+
+@pytest.mark.asyncio
+async def test_list_standards_sets_excludes_expired_by_default():
+    teacher = _fake_user("TEACHER")
+    expired = _fake_set(uuid4(), teacher.id, name="Expired", valid_until=date(2020, 1, 1))
+    current = _fake_set(uuid4(), teacher.id, name="Current", valid_until=date(2099, 1, 1))
+    result = MagicMock()
+    result.scalars.return_value.all.return_value = [expired, current]
+    client, db = await _client_for(teacher, execute_side_effect=[result])
+
+    async with client:
+        resp = await client.get("/api/v1/standards")
+
+    names = {s["name"] for s in resp.json()}
+    assert names == {"Current"}
+
+
+@pytest.mark.asyncio
+async def test_update_standards_set_renames():
+    teacher = _fake_user("TEACHER")
+    set_id = uuid4()
+    existing = _fake_set(set_id, teacher.id, name="Old Name")
+    get_set_result = MagicMock()
+    get_set_result.scalar_one_or_none.return_value = existing
+    client, db = await _client_for(teacher, execute_side_effect=[get_set_result])
+
+    async with client:
+        resp = await client.put(f"/api/v1/standards/{set_id}", json={"name": "New Name"})
+
+    assert resp.status_code == 200
+    assert resp.json()["name"] == "New Name"
+    assert existing.name == "New Name"
+    db.commit.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_update_standards_set_forbidden_for_non_owner_non_admin():
+    teacher = _fake_user("TEACHER")
+    other_owner_id = uuid4()
+    set_id = uuid4()
+    existing = _fake_set(set_id, other_owner_id, is_global=True, name="Someone Else's Global Set")
+    get_set_result = MagicMock()
+    get_set_result.scalar_one_or_none.return_value = existing  # is_global lets _get_set() find it...
+    client, db = await _client_for(teacher, execute_side_effect=[get_set_result])
+
+    async with client:
+        # ...but ownership is still required to WRITE it, even though a
+        # global set is readable by anyone via _get_set()'s OR clause.
+        resp = await client.put(f"/api/v1/standards/{set_id}", json={"name": "Hijacked"})
+
+    assert resp.status_code == 403
+    assert existing.name == "Someone Else's Global Set"  # unchanged
+
+
+@pytest.mark.asyncio
+async def test_delete_standards_set_calls_delete_and_requires_ownership():
+    """The app-level contract: delete_standards_set() authorizes then calls
+    db.delete(). What actually happens to dependent activity_standards_map
+    rows is a DB-level FK decision, not app logic -- verified live against
+    the real dev DB for this session: both activity_standards_map's FKs
+    (activity_id, standards_set_id) are ON DELETE CASCADE (confdeltype='c'
+    in pg_constraint), so deleting a StandardsSet silently cascades away
+    any mappings built on it. No app-level warning or 409 exists for that
+    today -- worth a product decision, not asserted here as "correct",
+    just documented as the real, verified behavior."""
+    teacher = _fake_user("TEACHER")
+    set_id = uuid4()
+    existing = _fake_set(set_id, teacher.id)
+    get_set_result = MagicMock()
+    get_set_result.scalar_one_or_none.return_value = existing
+    client, db = await _client_for(teacher, execute_side_effect=[get_set_result])
+    db.delete = AsyncMock()
+
+    async with client:
+        resp = await client.delete(f"/api/v1/standards/{set_id}")
+
+    assert resp.status_code == 204
+    db.delete.assert_awaited_once_with(existing)
+    db.commit.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_delete_standards_set_forbidden_for_non_owner():
+    teacher = _fake_user("TEACHER")
+    other_owner_id = uuid4()
+    set_id = uuid4()
+    existing = _fake_set(set_id, other_owner_id, is_global=True)
+    get_set_result = MagicMock()
+    get_set_result.scalar_one_or_none.return_value = existing
+    client, db = await _client_for(teacher, execute_side_effect=[get_set_result])
+    db.delete = AsyncMock()
+
+    async with client:
+        resp = await client.delete(f"/api/v1/standards/{set_id}")
+
+    assert resp.status_code == 403
+    db.delete.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_get_nonexistent_set_is_404_not_500():
+    teacher = _fake_user("TEACHER")
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = None
+    client, db = await _client_for(teacher, execute_side_effect=[result])
+
+    async with client:
+        resp = await client.get(f"/api/v1/standards/{uuid4()}")
+
+    assert resp.status_code == 404
+
+
+# ===========================================================================
+# X3 (cross-cutting): non-owner/wrong-role write attempts across the
+# standards routes that don't already have a dedicated test above.
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_map_to_a_set_owned_by_someone_else_is_404():
+    """_get_set()'s (owner_id == caller) OR is_global filter means a
+    private set owned by another teacher simply isn't found -- confirm the
+    map endpoint inherits that via _get_set() rather than trusting set_id
+    alone."""
+    teacher = _fake_user("TEACHER")
+    set_id = uuid4()
+    result = MagicMock()
+    result.scalar_one_or_none.return_value = None  # not owned, not global -> _get_set() finds nothing
+    client, db = await _client_for(teacher, execute_side_effect=[result])
+
+    async with client:
+        resp = await client.post(
+            f"/api/v1/standards/{set_id}/map",
+            json={"activity_id": str(uuid4()), "criterion_id": "x"},
+        )
+
+    assert resp.status_code == 404
