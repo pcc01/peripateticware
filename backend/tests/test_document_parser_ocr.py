@@ -17,9 +17,13 @@ break are covered here:
   2. One page's failure must not affect the others (matching the original
      per-page try/except's behavior: log + empty string for that page only).
 
-fitz (PyMuPDF) isn't a pinned dependency in this environment, so it's faked
-via sys.modules rather than skipped — real PDF rendering isn't what's under
-test here, the concurrent-dispatch logic downstream of it is.
+PyMuPDF is a real, pinned dependency as of 2026-09-14 (requirements.txt),
+and services/document_parser.py imports it as `import pymupdf as fitz`
+(not the legacy `import fitz` — see that module's comment on the
+deprecation warning this avoids). It's still faked here via sys.modules
+rather than exercising real rendering — the concurrent-dispatch logic
+downstream of it is what's under test in this file; real PyMuPDF page
+rendering is covered separately in tests/test_document_parser.py.
 """
 
 from __future__ import annotations
@@ -33,9 +37,12 @@ import pytest
 
 
 def _install_fake_fitz(page_pngs: list[bytes]) -> None:
-    """Registers a fake `fitz` module in sys.modules that "renders" len(page_pngs)
-    pages, each producing the corresponding bytes in page_pngs when
-    `page.get_pixmap(dpi=150).tobytes("png")` is called."""
+    """Registers a fake `pymupdf` module in sys.modules that "renders"
+    len(page_pngs) pages, each producing the corresponding bytes in
+    page_pngs when `page.get_pixmap(dpi=150).tobytes("png")` is called.
+    Patches sys.modules["pymupdf"], not "fitz" — document_parser.py does
+    `import pymupdf as fitz`, so it's the "pymupdf" import machinery
+    resolves, regardless of the local alias it's bound to."""
     fake_pages = []
     for png_bytes in page_pngs:
         pix = MagicMock()
@@ -44,15 +51,15 @@ def _install_fake_fitz(page_pngs: list[bytes]) -> None:
         page.get_pixmap.return_value = pix
         fake_pages.append(page)
 
-    fake_fitz = types.ModuleType("fitz")
+    fake_fitz = types.ModuleType("pymupdf")
     fake_fitz.open = MagicMock(return_value=fake_pages)
-    sys.modules["fitz"] = fake_fitz
+    sys.modules["pymupdf"] = fake_fitz
 
 
 @pytest.fixture(autouse=True)
 def _cleanup_fake_fitz():
     yield
-    sys.modules.pop("fitz", None)
+    sys.modules.pop("pymupdf", None)
 
 
 @pytest.mark.asyncio

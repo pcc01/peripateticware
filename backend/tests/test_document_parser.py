@@ -15,28 +15,32 @@ Real, exact PDF bytes are generated with reportlab (already a backend
 dependency, same one services/export_service.py uses) rather than
 committing a binary fixture file, so the "known text in, known text out"
 round trip is self-contained and doesn't rot if a fixture file goes stale.
+Real .xlsx bytes are likewise generated with openpyxl itself rather than
+committing a binary fixture.
 
-Two real findings from actually running this module in this environment,
-not assumed from reading the code: neither PyMuPDF (`fitz`) nor
-`openpyxl` is installed here (confirmed: ModuleNotFoundError for both;
-neither appears in requirements.txt at all -- not a stale-container
-issue, they were never added). That means:
-  - Scanned-PDF OCR (S5) never actually reaches a vision LLM in this
-    deployment -- has_fitz is always False, so _extract_pdf_ocr always
-    takes its "PyMuPDF not installed" fallback branch, which just re-runs
-    the same sparse pypdf extraction under a different label. The
-    provider-agnostic OCR routing code (AGENT_DOCUMENT_OCR_PROVIDER) is
-    real and correctly written but currently unreachable dead code here.
-  - Excel upload (.xlsx/.xlsm/.xls) always hits the ImportError branch and
-    returns an empty document telling the user to convert to CSV --
-    "Excel support" is advertised in this module's own docstring but not
-    functional in this environment.
-Not fixed here (adding pymupdf/openpyxl to requirements.txt changes the
-production container image -- a real infra decision, not a test-writing
-one) -- documented so it's a decision made on purpose, not by omission.
-Both the real degraded-mode behavior AND the code path that would run if
-these were installed are tested below (the latter via mocking), so the
-code is verified correct in either state.
+Update 2026-09-14: PyMuPDF (`pymupdf`, importable as `fitz`) and openpyxl
+are now real requirements.txt dependencies (previously neither was
+installed at all -- confirmed via ModuleNotFoundError the first time this
+file was written, which is why some of the tests below used to describe a
+"not installed" fallback that no longer exists). Consequences now that
+both are genuinely present, confirmed by actually running this suite
+against the real packages rather than assumed from reading the code:
+  - Scanned-PDF OCR (S5) reaches real PyMuPDF page rendering and a real
+    vision-LLM dispatch call. Locally that vision call still degrades
+    per-page (this deployment's Ollama doesn't have the `llava` model
+    pulled -- a 404, not a bug) -- confirmed separately, live, that the
+    same pipeline produces correct text end-to-end against Claude's
+    vision API instead. The tests below mock only the LLM dispatch call
+    itself (agents.provider.dispatch), not PyMuPDF, so real page-to-PNG
+    rendering is exercised every run without depending on any specific
+    vision model being pulled or an API key being configured in CI.
+  - Excel upload (.xlsx/.xlsm/.xls) parses real workbooks via openpyxl.
+    A genuinely corrupt/mislabeled file (e.g. a .csv renamed to .xlsx)
+    raises inside openpyxl itself (zipfile.BadZipFile, not ImportError --
+    there is no "not installed" branch to fall back to anymore), which
+    parse_csv() now catches with its own except Exception handler added
+    alongside the pre-existing except ImportError, returning a specific,
+    actionable warning either way.
 """
 
 from __future__ import annotations
@@ -65,6 +69,27 @@ def _make_test_pdf(paragraphs: list[str]) -> bytes:
     for p in paragraphs:
         story.append(Paragraph(p, styles["Normal"]))
         story.append(Spacer(1, 12))
+    doc.build(story)
+    return buffer.getvalue()
+
+
+def _make_multi_page_test_pdf(pages: list[str]) -> bytes:
+    """Same as _make_test_pdf, but forces one page per string with an
+    explicit PageBreak -- needed to exercise _extract_pdf_ocr's per-page
+    rendering/dispatch with a real, predictable page_count instead of
+    whatever reportlab's own auto-pagination happens to produce."""
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.pagesizes import LETTER
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=LETTER)
+    styles = getSampleStyleSheet()
+    story = []
+    for i, p in enumerate(pages):
+        story.append(Paragraph(p, styles["Normal"]))
+        if i < len(pages) - 1:
+            story.append(PageBreak())
     doc.build(story)
     return buffer.getvalue()
 
@@ -127,68 +152,76 @@ async def test_parse_pdf_ocr_fallback_still_returning_nothing_adds_a_specific_wa
 
 
 # ===========================================================================
-# _extract_pdf_ocr — real environment state (no PyMuPDF installed here)
+# _extract_pdf_ocr — real PyMuPDF rendering (installed 2026-09-14), mocked
+# vision-LLM dispatch (so the suite doesn't depend on a specific vision
+# model being pulled locally or a live API key in CI)
 # ===========================================================================
 
 @pytest.mark.asyncio
-async def test_ocr_without_pymupdf_degrades_to_sparse_pypdf_text_with_a_warning():
-    """The real, current state of this deployment: fitz isn't installed,
-    so OCR silently degrades to re-running the same (sparse) pypdf
-    extraction under a different label, rather than reaching a vision
-    LLM at all. This must never raise -- a teacher uploading a scanned
-    PDF still gets *something* back, with a warning explaining why it's
-    thin, not a 500."""
+async def test_ocr_real_pymupdf_dispatches_through_the_provider_abstraction_and_degrades_a_failed_page():
+    """Real, multi-page PDF -> real PyMuPDF page-to-PNG rendering -> real
+    dispatch() call per page. Only the LLM call itself is mocked. Verifies:
+    (a) _extract_pdf_ocr resolves through agents/provider.py's dispatch()
+    (provider-agnostic, per AGENT_DOCUMENT_OCR_PROVIDER) with real rendered
+    image bytes, not a hardcoded client or a stand-in for PyMuPDF itself;
+    (b) one page's OCR failure degrades only that page to empty text rather
+    than raising and losing the whole document -- this is exactly what
+    happens live in this deployment today, where Ollama's vision call 404s
+    per-page because the `llava` model isn't pulled (confirmed
+    2026-09-14: `Ollama API 404: {"error":"model 'llava' not found"}`,
+    gracefully degraded, not a crash -- separately confirmed the same
+    pipeline works end-to-end against Claude's vision API instead)."""
+    from unittest.mock import AsyncMock, patch
     from services.document_parser import _extract_pdf_ocr
-    pdf_bytes = _make_test_pdf(["Hi"])
 
-    result = await _extract_pdf_ocr(pdf_bytes)
-
-    assert result.method == "ocr_vision_fallback"
-    assert any("PyMuPDF not installed" in w for w in result.warnings)
-    # It's still pypdf's real (sparse) extraction, not empty/garbage.
-    assert "Hi" in result.text
-
-
-@pytest.mark.asyncio
-async def test_ocr_with_pymupdf_present_dispatches_through_the_provider_abstraction():
-    """The code path that WOULD run if PyMuPDF were installed -- verifies
-    it resolves through agents/provider.py's dispatch() (provider-agnostic,
-    per AGENT_DOCUMENT_OCR_PROVIDER), not a hardcoded client, and that a
-    per-page OCR failure degrades that one page to empty text rather than
-    failing the whole document."""
-    from unittest.mock import AsyncMock, MagicMock, patch
-
-    fake_fitz_module = MagicMock()
-    fake_page = MagicMock()
-    fake_pixmap = MagicMock()
-    fake_pixmap.tobytes.return_value = b"fake-png-bytes"
-    fake_page.get_pixmap.return_value = fake_pixmap
-    fake_doc = [fake_page, fake_page]  # 2-page document, iterable
-    fake_fitz_module.open.return_value = fake_doc
+    # Real reportlab PDF, forced to 2 pages via PageBreak.
+    pdf_bytes = _make_multi_page_test_pdf(["Page one content", "Page two content"])
 
     async def _dispatch_side_effect(provider, messages, **kwargs):
-        # Second page's OCR call fails -- must degrade that page to "",
-        # not raise and lose the whole document.
+        # Confirms real PyMuPDF rendering reached dispatch(), not a mock
+        # standing in for the whole render step.
+        images = kwargs.get("images")
+        assert images and isinstance(images[0], str) and len(images[0]) > 100, \
+            "expected real base64-encoded PNG page bytes reaching dispatch()"
         if _dispatch_side_effect.calls == 0:
             _dispatch_side_effect.calls += 1
             return "Page one OCR text"
-        raise RuntimeError("vision call failed")
+        raise RuntimeError("vision call failed")  # simulates page two's model/provider failure
     _dispatch_side_effect.calls = 0
 
-    with patch.dict("sys.modules", {"fitz": fake_fitz_module}), \
-         patch("agents.provider.dispatch", new=AsyncMock(side_effect=_dispatch_side_effect)) as mock_dispatch, \
+    with patch("agents.provider.dispatch", new=AsyncMock(side_effect=_dispatch_side_effect)) as mock_dispatch, \
          patch("core.config.settings.AGENT_DOCUMENT_OCR_PROVIDER", "claude"):
-        from services.document_parser import _extract_pdf_ocr
-        result = await _extract_pdf_ocr(b"irrelevant-with-fitz-mocked")
+        result = await _extract_pdf_ocr(pdf_bytes)
 
     assert result.method == "ocr_vision"
-    assert "Page one OCR text" in result.text
     assert result.page_count == 2
+    assert "Page one OCR text" in result.text
+    assert result.pages[1] == ""  # page two degraded to empty, not raised
     # Confirms provider-agnostic routing, not a hardcoded Ollama client --
     # the same class of bug fixed 2026-09-13 in classify_taxonomy/
     # generate_rubric_criteria.
     called_provider = mock_dispatch.call_args_list[0].args[0]
     assert called_provider == "claude"
+    assert mock_dispatch.call_count == 2  # both pages attempted
+
+
+@pytest.mark.asyncio
+async def test_ocr_all_pages_failing_still_returns_gracefully_not_a_crash():
+    """Every page's OCR call fails (e.g. no vision model reachable at all)
+    -- must still return an empty-but-valid ParsedDocument, never raise,
+    so parse_pdf()'s "OCR produced no text" warning (tested above via a
+    mocked _extract_pdf_ocr) has real content to layer onto."""
+    from unittest.mock import AsyncMock, patch
+    from services.document_parser import _extract_pdf_ocr
+
+    pdf_bytes = _make_test_pdf(["Hi"])
+
+    with patch("agents.provider.dispatch", new=AsyncMock(side_effect=RuntimeError("no vision model"))):
+        result = await _extract_pdf_ocr(pdf_bytes)
+
+    assert result.method == "ocr_vision"
+    assert result.text == ""
+    assert result.page_count == 1
 
 
 # ===========================================================================
@@ -230,39 +263,54 @@ def test_parse_csv_handles_non_utf8_bytes_without_raising():
 
 
 # ===========================================================================
-# parse_csv — Excel, current real environment state (no openpyxl installed)
+# parse_csv — Excel, real openpyxl (installed 2026-09-14)
 # ===========================================================================
 
-def test_excel_upload_without_openpyxl_degrades_to_a_clear_warning_not_a_crash():
-    """The real, current state of this deployment: .xlsx uploads can't
-    actually be parsed. Confirm that fails gracefully (empty rows + a
-    specific, actionable warning) rather than a 500."""
-    result = parse_csv(b"not real xlsx bytes", "standards.xlsx")
-    assert result.rows == []
-    assert result.method == "excel"
-    assert any("openpyxl not installed" in w.lower() for w in result.warnings)
+def _make_test_xlsx(headers: list[str], rows: list[tuple]) -> bytes:
+    """A real, minimal .xlsx workbook with known content, built with
+    openpyxl itself -- the same round-trip approach _make_test_pdf takes
+    with reportlab, so this doesn't depend on committing a binary
+    fixture file."""
+    import openpyxl
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(headers)
+    for row in rows:
+        ws.append(row)
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return buffer.getvalue()
 
 
-def test_excel_upload_with_openpyxl_present_parses_real_rows():
-    """The code path that WOULD run if openpyxl were installed."""
-    from unittest.mock import MagicMock, patch
-
-    fake_ws = MagicMock()
-    fake_ws.iter_rows.return_value = [
-        ("id", "name"),
-        ("wa-1", "Multiplicative comparison"),
-        (None, None),  # a fully-blank row must be skipped
-    ]
-    fake_wb = MagicMock()
-    fake_wb.active = fake_ws
-    fake_openpyxl_module = MagicMock()
-    fake_openpyxl_module.load_workbook.return_value = fake_wb
-
-    with patch.dict("sys.modules", {"openpyxl": fake_openpyxl_module}):
-        result = parse_csv(b"irrelevant-with-openpyxl-mocked", "standards.xlsx")
+def test_excel_upload_parses_real_workbook_rows_and_skips_blank_rows():
+    """Real openpyxl round trip: a genuine .xlsx built by openpyxl, parsed
+    back by the same parse_csv() path routes/standards.py's upload
+    endpoint calls."""
+    xlsx_bytes = _make_test_xlsx(
+        ["id", "name"],
+        [("wa-1", "Multiplicative comparison"), (None, None)],  # trailing blank row
+    )
+    result = parse_csv(xlsx_bytes, "standards.xlsx")
 
     assert result.method == "excel"
     assert result.rows == [{"id": "wa-1", "name": "Multiplicative comparison"}]
+
+
+def test_excel_upload_of_a_genuinely_corrupt_file_degrades_to_a_clear_warning_not_a_crash():
+    """A mislabeled/corrupt file (not a real zip-based .xlsx at all) must
+    fail gracefully -- empty rows + a specific, actionable warning --
+    rather than propagating openpyxl's raw zipfile.BadZipFile up to the
+    caller. This is the real failure mode now that openpyxl is actually
+    installed (confirmed 2026-09-14: parse_csv() only caught ImportError
+    before, so this exact input used to raise uncaught out of parse_csv()
+    itself, though routes/standards.py's own outer try/except still kept
+    it from reaching the client as a raw 500)."""
+    result = parse_csv(b"not real xlsx bytes", "standards.xlsx")
+    assert result.rows == []
+    assert result.method == "excel"
+    assert any("couldn't read this as an excel file" in w.lower() for w in result.warnings)
+    assert any("BadZipFile" in w for w in result.warnings)
 
 
 # ===========================================================================

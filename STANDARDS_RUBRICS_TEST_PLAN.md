@@ -33,6 +33,24 @@ Also closed the remaining feasible gaps from §6's list: the `POST /standards/up
 
 ---
 
+## 0c. Update 2026-09-14 (third pass) — OCR/Excel dependencies actually integrated
+
+§0b's pass deliberately left `pymupdf` and `openpyxl` uninstalled, documenting it as "a real infra decision, not a test-writing one" — added, not fixed here, by explicit request this pass.
+
+**What changed:** both added to `requirements.txt` (pinned: `pymupdf==1.28.2`, `openpyxl==3.1.5`) and installed. Before this, `document_parser.py::_extract_pdf_ocr` never actually reached a vision LLM at all — `has_fitz` was always `False`, so every "scanned PDF" upload silently re-ran the same near-empty pypdf extraction under an `ocr_vision_fallback` label. Excel uploads (`.xlsx`/`.xlsm`/`.xls`) always hit the `ImportError` branch and returned an empty document telling the teacher to convert to CSV, despite Excel support being advertised in the module's own docstring.
+
+**Real bugs found once these paths could actually run, both fixed:**
+1. `import fitz` emitted a deprecation warning under the real package (`import pymupdf as fitz` now, same call sites unchanged).
+2. `parse_csv()`'s Excel branch only caught `ImportError`; a genuinely corrupt/mislabeled `.xlsx` (e.g. a `.csv` renamed to `.xlsx`) raised `zipfile.BadZipFile` uncaught out of `parse_csv()` itself — `routes/standards.py`'s outer try/except still kept it from reaching the client as a raw 500, but with a generic "Spreadsheet parse error" instead of something a teacher can act on. Added a dedicated `except Exception` handler with a specific, actionable warning.
+
+**Verified live** (not just via tests): the real pipeline — PyMuPDF page rendering → PNG → vision-LLM call — confirmed working end-to-end against Claude's vision API. Local Ollama does **not** have the `llava` model pulled, so real OCR against Ollama 404s per page and degrades that page to empty text; this is the existing, correct degrade-gracefully contract (§0's `_extract_pdf_ocr` per-page try/except), not a new bug — documented so it isn't mistaken for one later.
+
+`tests/test_document_parser.py` rewritten: the two tests that asserted "dependency not installed" fallback behavior no longer describe reality and were replaced with tests against the real packages (real PyMuPDF page rendering with only the LLM dispatch call mocked; real openpyxl round-trip via a workbook built with openpyxl itself, plus the new corrupt-file warning). `tests/test_document_parser_ocr.py` (pre-existing, page-concurrency/ordering tests) needed one fix: it faked PyMuPDF via `sys.modules["fitz"]`, which stopped being intercepted once the source switched to `import pymupdf as fitz` — changed to `sys.modules["pymupdf"]`.
+
+Full suite: 603 passed, 4 skipped, same 2 pre-existing unrelated `test_mfa.py` failures (a test-fixture `MagicMock` issue in `routes/auth.py`'s MFA login response, untouched by any of this session's changes).
+
+---
+
 ## 0. Update 2026-09-13 — the blocking gap is closed
 
 **Built:** `POST /activities/teacher/submissions/{session_id}/score-rubric`. A teacher can now save (partial or complete) per-criterion rubric scores, which merge into `activity_submissions.rubric_scores` and auto-flip `submission_status` to `'graded'` with a computed `grade` once every criterion has a score. `GET .../detail` (the frontend's real submission-detail call) now returns the attached rubric definition and current scores in one round trip; `TeacherSubmissionsPage.tsx` renders a scoring panel wired to it.
@@ -79,7 +97,7 @@ There was no working path — frontend or backend — for a teacher to score a s
 | S2 | Upload a CSV instead of PDF | Same extraction path via `document_parser.py`; criteria list returned | ❌ same as S1 |
 | S3 | Upload with no local Ollama reachable, `LLM_PROVIDER=ollama` | Graceful `{criteria: [], error: "..."}", not a 500 — matches `extract_criteria`'s never-raises contract | ✅ `test_provider_unreachable_is_graceful_not_raised` |
 | S4 | Upload with `LLM_PROVIDER=claude` (or per-feature `AGENT_STANDARDS_EXTRACTION_PROVIDER=claude`) | Extraction succeeds against the real Anthropic API | ✅ verified live this session with a real sample science-standards excerpt; `test_routes_through_the_provider_abstraction_not_a_hardcoded_client` covers the provider-resolution logic (mocked) |
-| S5 | Upload a scanned/image-only PDF | Falls through to `document_parser.py::_extract_pdf_ocr` (vision call) — confirm it also resolves through `dispatch()`/`AGENT_DOCUMENT_OCR_PROVIDER`, not a hardcoded provider (this path wasn't touched by this session's fix — verify it wasn't already broken the same way) | ❌ still open — `document_parser.py` has no test file yet |
+| S5 | Upload a scanned/image-only PDF | Falls through to `document_parser.py::_extract_pdf_ocr` (vision call) — confirm it also resolves through `dispatch()`/`AGENT_DOCUMENT_OCR_PROVIDER`, not a hardcoded provider | ✅ closed 2026-09-14, see §0c — `tests/test_document_parser.py` (real PyMuPDF rendering, mocked dispatch) + `tests/test_document_parser_ocr.py` (concurrency/ordering, mocked PyMuPDF) |
 | S6 | Upload text that yields zero usable criteria (e.g. a blank page) | `{criteria: [], error: "...didn't identify any criteria..."}`, not an empty-list-with-no-explanation | ✅ `test_zero_criteria_found_has_a_distinct_message_from_a_dead_provider` (also confirms this message differs from S3's) |
 | S7 | Text over `max_chars` (12,000) | Truncated silently, extraction still runs on the truncated text | ✅ `test_oversized_document_text_is_truncated_before_reaching_the_prompt` |
 
@@ -241,4 +259,5 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 - [ ] §5's end-to-end pass re-run with fresh fixtures (not this session's throwaway test data) and committed as a reusable seed
 - [ ] X1–X2 green in CI
 - [ ] S28 (regulatory review) scheduled with someone outside engineering
-- [ ] `services/document_parser.py` (real PDF/CSV/scanned-image byte parsing, as opposed to the route wrapping it) still has no test file of its own — needs real fixture files, not route-level mocking
+- [x] `services/document_parser.py` (real PDF/CSV/scanned-image byte parsing, as opposed to the route wrapping it) — closed 2026-09-14, `tests/test_document_parser.py` (17 cases, real reportlab/openpyxl-generated bytes) + `tests/test_document_parser_ocr.py` (concurrency/ordering)
+- [x] S5 / OCR-Excel dependencies — `pymupdf`/`openpyxl` actually added to `requirements.txt` and installed (previously a deliberately deferred infra decision, see §0b) — closed 2026-09-14, see §0c

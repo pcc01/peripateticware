@@ -111,6 +111,20 @@ reportlab==4.0.9
 pypdf==6.16.2
 
 # ============================================================================
+# DOCUMENT PARSING (services/document_parser.py)
+# PyMuPDF ("fitz"): scanned-PDF page rendering for the OCR fallback in
+# parse_pdf()/_extract_pdf_ocr() -- without it, a scanned standards upload
+# silently degraded to re-running the same near-empty pypdf text extraction
+# under an "ocr_vision_fallback" label instead of ever reaching a vision
+# LLM (confirmed 2026-09-14 via tests/test_document_parser.py; neither this
+# nor openpyxl below was in requirements.txt before). openpyxl: .xlsx/.xlsm
+# upload support in parse_csv() -- without it, Excel uploads returned an
+# empty document telling the teacher to convert to CSV.
+# ============================================================================
+pymupdf==1.28.2
+openpyxl==3.1.5
+
+# ============================================================================
 # IMAGE PROCESSING
 # FIX: opencv-python-headless replaces opencv-python (no display in Docker)
 # ============================================================================
