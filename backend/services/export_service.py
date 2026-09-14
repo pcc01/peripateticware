@@ -214,7 +214,15 @@ def _build_homeschool_portfolio(story, data, h2, normal, Table, TableStyle, colo
         headers = ["Criterion", "Category", "Status", "Times addressed"]
         rows = [headers] + [
             [
-                v["criterion"].get("name", "")[:45],
+                # A criterion parsed from a teacher's uploaded standards
+                # document (routes/standards.py::CriterionIn) never has a
+                # "name" field -- only "description" -- so v["criterion"].
+                # get("name", "") was silently blank for every real-world
+                # export (confirmed 2026-09-14 by extracting a generated
+                # PDF's actual text: the whole Criterion column was empty).
+                # Same fallback used elsewhere this criterion dict flows
+                # through (routes/activities.py::_mapped_standards_for_activity).
+                (v["criterion"].get("name") or v["criterion"].get("description", ""))[:45],
                 v["criterion"].get("category", ""),
                 "✓ Met" if v["met"] else "○ Not yet",
                 str(v["times_addressed"]),

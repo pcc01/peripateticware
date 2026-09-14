@@ -21,6 +21,18 @@ See §2.2–§2.5, §3.1, §3.3, and §4 below for exactly which rows this close
 
 ---
 
+## 0b. Update 2026-09-14 (second pass) — reportlab output tested, two more real bugs found
+
+Closed the last big structural gap: `services/export_service.py::generate_pdf` had never been tested against its actual rendered output, only assumed to work if it didn't raise. Testing it properly — generating real PDF bytes and extracting their actual text with `pypdf` rather than just checking for the `%PDF` header — found two real, user-facing bugs, both fixed in the same pass:
+
+1. **The homeschool portfolio's Standards Coverage table's Criterion column was blank for every real-world export.** `_build_homeschool_portfolio` read `v["criterion"].get("name", "")`, but a criterion parsed from an uploaded standards document (`routes/standards.py::CriterionIn`) never has a `name` field — only `description`. Confirmed by generating a real PDF with realistic data and reading the extracted text: the row showed category, status, and times-addressed, but the one column identifying *which standard* was empty. Fixed with the same `name`-or-`description` fallback used elsewhere this criterion dict flows through.
+
+2. **The student-progress report's "Recent Sessions" Duration column always read "` min`"** (a blank followed by the unit) — `learning_sessions` has no stored duration, and `routes/export.py` never computed one for the export's `sess_dicts`. Fixed by deriving `duration_minutes` from `completed_at - created_at` when both exist.
+
+Also closed the remaining feasible gaps from §6's list: the `POST /standards/upload` and `POST /{set_id}/refresh` HTTP endpoints (multipart handling, file-size limits, parse/extraction failure paths), a real test of `get_current_teacher`'s role logic (X4 — homeschool acceptance), and `core/rate_limit.py` (R10 — zero coverage existed for this at all before, despite it guarding every metered LLM route in the app). Full suite: 586 passed, same 2 pre-existing unrelated failures, 4 skipped.
+
+---
+
 ## 0. Update 2026-09-13 — the blocking gap is closed
 
 **Built:** `POST /activities/teacher/submissions/{session_id}/score-rubric`. A teacher can now save (partial or complete) per-criterion rubric scores, which merge into `activity_submissions.rubric_scores` and auto-flip `submission_status` to `'graded'` with a computed `grade` once every criterion has a score. `GET .../detail` (the frontend's real submission-detail call) now returns the attached rubric definition and current scores in one round trip; `TeacherSubmissionsPage.tsx` renders a scoring panel wired to it.
@@ -219,10 +231,14 @@ Automated coverage exists (`backend/tests/test_submission_rubric_scoring.py`, 14
 - [x] R1–R4, R12–R14 (rubric CRUD, attach) — closed 2026-09-14, zero coverage existed before
 - [x] S24/S27 (`expand_seeds()` orchestration) — closed 2026-09-14; SQL correctness live-verified, not unit-tested (a deliberate scope line, see §2.5)
 - [x] X5 (export parity) — **was failing**, not just untested; found and fixed 2026-09-14 (see §0a) — a real compliance-facing bug where an exported homeschool portfolio could show a standard as met that a teacher explicitly marked `not_met`
-- [ ] S1/S2/S5 (the actual `POST /standards/upload` HTTP endpoint, multipart PDF/CSV/scanned-image handling) still untested — `extract_criteria` itself is covered, the upload route wrapping it isn't
-- [ ] S12 (`POST /{set_id}/refresh`), S17 (materialization race), S25/S26 (GraphRAG latency/jurisdiction filter), X4 (homeschool-role backend unit test) still open — see each section for why (mostly: needs either multipart mocking or is a live-timing concern a unit test can't meaningfully simulate)
-- [ ] `services/export_service.py::generate_pdf`'s actual reportlab rendering is untested — the data feeding it is now provably correct (X5), the PDF byte output itself isn't
+- [x] S1/S2/S5 (`POST /standards/upload` HTTP endpoint — multipart PDF/CSV, file-size limit, parse failures, extraction-failure warnings) — closed 2026-09-14, `tests/test_standards_upload.py`
+- [x] S12 (`POST /{set_id}/refresh` — cache-hit vs. re-extraction, ownership, failure marks the set `failed` not silently stale) — closed 2026-09-14, same file
+- [x] X4 (homeschool-role backend unit test) — closed 2026-09-14, `tests/test_rubric_crud.py`; tests `get_current_teacher`'s real role logic directly (not a stub), not just the e2e claim
+- [x] R10 (rate-limit threshold) — closed 2026-09-14, `tests/test_rate_limit.py` (11 cases, zero coverage existed for `core/rate_limit.py` at all before this — it guards every metered LLM route in the app, not just this domain). Reproduces the exact free-tier 6th-call-429 case the plan asked for directly, since the live manual check's test account wasn't actually on the free tier.
+- [x] `services/export_service.py::generate_pdf`'s reportlab rendering — closed 2026-09-14, `tests/test_export_service.py` (19 cases, real PDF bytes generated and their actual text extracted with `pypdf`, not just "did it raise"). **Found two real bugs by actually reading the extracted text, not just checking `%PDF` magic bytes**: the homeschool portfolio's Criterion column was completely blank for every real-world upload (criteria have a `description` field, never `name` — the table read the wrong key with no fallback), and the student-progress "Recent Sessions" Duration column always read "` min`" (no `duration_minutes` was ever computed for it). Both fixed.
+- [ ] S17 (materialization race), S25/S26 (GraphRAG latency/`jurisdiction_id` filter) still open — live-timing/live-SQL concerns a mocked unit test can't meaningfully simulate, not attempted
 - [ ] All of §3.2 (rubric generation) executed at least once against a real Anthropic call in CI, not only manual checks
 - [ ] §5's end-to-end pass re-run with fresh fixtures (not this session's throwaway test data) and committed as a reusable seed
 - [ ] X1–X2 green in CI
 - [ ] S28 (regulatory review) scheduled with someone outside engineering
+- [ ] `services/document_parser.py` (real PDF/CSV/scanned-image byte parsing, as opposed to the route wrapping it) still has no test file of its own — needs real fixture files, not route-level mocking

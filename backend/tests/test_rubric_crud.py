@@ -358,3 +358,53 @@ async def test_non_teacher_role_cannot_create_a_rubric():
         resp = await client.post("/api/v1/rubrics", json={"title": "x", "criteria": []})
 
     assert resp.status_code == 403
+
+
+# ===========================================================================
+# X4 — core.dependencies.get_current_teacher's actual role logic, exercised
+# directly (the test above stubs it out entirely, so it can't prove which
+# roles the real dependency accepts). Rubric routes use this dependency,
+# not a teacher-only one -- per targeted-flows.spec.ts's existing e2e
+# coverage ("homeschool role is accepted by the rubrics API (no 403)"),
+# confirm that's actually backed by the dependency's own logic, not luck.
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_get_current_teacher_accepts_teacher_admin_and_homeschool():
+    from core.dependencies import get_current_teacher
+
+    for role in ("TEACHER", "ADMIN", "HOMESCHOOL"):
+        user = MagicMock()
+        user.role = role
+        result = await get_current_teacher(current_user=user)
+        assert result is user
+
+
+@pytest.mark.asyncio
+async def test_get_current_teacher_rejects_student_and_parent():
+    from core.dependencies import get_current_teacher
+    from fastapi import HTTPException
+
+    for role in ("STUDENT", "PARENT"):
+        user = MagicMock()
+        user.role = role
+        with pytest.raises(HTTPException) as exc_info:
+            await get_current_teacher(current_user=user)
+        assert exc_info.value.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_homeschool_role_can_actually_create_a_rubric_end_to_end():
+    """Not just the dependency in isolation -- a homeschool user's request
+    really does reach create_rubric() and succeed, matching the e2e claim."""
+    homeschool_parent = _fake_teacher()
+    homeschool_parent.role = "HOMESCHOOL"
+    client, db = await _client_for(homeschool_parent)
+
+    async with client:
+        resp = await client.post("/api/v1/rubrics", json={
+            "title": "Nature Journal Rubric", "criteria": [], "total_points": 10,
+        })
+
+    assert resp.status_code == 201
+    assert resp.json()["teacher_id"] == str(homeschool_parent.id)

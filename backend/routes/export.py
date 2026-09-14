@@ -179,6 +179,16 @@ async def _build_data(
             "location_name": s.location_name or "",
             "created_at": s.created_at.isoformat() if s.created_at else "",
             "completed_at": s.completed_at.isoformat() if s.completed_at else "",
+            # learning_sessions has no stored duration column -- derive one
+            # from completed_at - created_at when both exist. Without this,
+            # services/export_service.py::_build_student_progress's
+            # "Recent Sessions" table always rendered a blank Duration
+            # column (confirmed 2026-09-14 by extracting a generated PDF's
+            # actual text: every row read "<blank> min").
+            "duration_minutes": (
+                round((s.completed_at - s.created_at).total_seconds() / 60)
+                if s.completed_at and s.created_at else ""
+            ),
         }
         for s in sessions
     ]
