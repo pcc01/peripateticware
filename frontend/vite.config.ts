@@ -1,9 +1,23 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: false,
+    setupFiles: ['./src/tests/setup.ts'],
+    css: false,
+    // Vitest's own default include glob (**/*.{test,spec}.*) also swept up
+    // tests/e2e/*.spec.ts (Playwright specs -- a different test runner
+    // entirely, its `test`/`expect` aren't Vitest's) and the unrelated
+    // my-app/app/src/__tests__/ scaffold directory. Scope explicitly to
+    // this project's actual unit-test location.
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['**/node_modules/**', 'tests/e2e/**', 'my-app/**'],
+  },
   resolve: {
     // FIX 1: Force a single React instance across all packages.
     // react-i18next v14 (and some other packages) that import 'react' internally

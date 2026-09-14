@@ -244,7 +244,7 @@ export const TeacherSubmissionsPage: React.FC = () => {
                 key={submission.id ?? submission.session_id}
                 onClick={() => setSelectedSubmissionId(submission.id ?? submission.session_id)}
                 className={`bg-white rounded-lg p-4 cursor-pointer border-l-4 transition ${
-                selectedSubmissionId === submission.id ?
+                selectedSubmissionId === (submission.id ?? submission.session_id) ?
                 'border-green-700 bg-green-50' :
                 'border-gray-200 hover:shadow-lg'}`
                 }>
