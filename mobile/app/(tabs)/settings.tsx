@@ -13,6 +13,8 @@ import { LANGUAGE_STORAGE_KEY, DEFAULT_LOCALE } from '@/src/i18n/locales';
 import { ensureLocaleLoaded } from '@/src/i18n/localePacks';
 import LanguagePicker from '@/src/components/LanguagePicker';
 import VoicePicker from '@/src/components/VoicePicker';
+import OfflineTranscriptionSettings from '@/src/components/OfflineTranscriptionSettings';
+import AsrDiagnosticsPanel from '@/src/components/AsrDiagnosticsPanel';
 import { fetchParentRequests, approveParentRequest, denyParentRequest, ParentLinkRequest } from '@/src/api/parentLinkRequests';
 import { requestPasswordReset } from '@/src/api/passwordReset';
 
@@ -274,6 +276,17 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('settings.voiceLabel', 'VOICE')}</Text>
           <VoicePicker theme={theme} />
         </View>
+
+        {/* Offline transcription model download (Android only — see the
+            component's own header comment for why iOS has no equivalent
+            control). Keyed to the app language selected above; re-checks
+            itself whenever that changes. */}
+        <OfflineTranscriptionSettings theme={theme} />
+
+        {/* Pre-ship testing tool — see the component's own header comment
+            for why this is always-visible for now and what to do before
+            shipping. */}
+        <AsrDiagnosticsPanel theme={theme} />
 
         {/* Logout */}
         <TouchableOpacity

@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NativeProxy.java b/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NativeProxy.java
+index cc12c5d..0e35afa 100644
+--- a/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NativeProxy.java
++++ b/node_modules/react-native-reanimated/android/src/main/java/com/swmansion/reanimated/NativeProxy.java
+@@ -71,7 +71,18 @@ public class NativeProxy {
+     mContext = new WeakReference<>(context);
+     reanimatedSensorContainer = new ReanimatedSensorContainer(mContext);
+     keyboardAnimationManager = new KeyboardAnimationManager(mContext);
+-    addDevMenuOption();
++    // PATCHED (see mobile/patches/): upstream calls this unconditionally,
++    // but DevMenuUtils.addDevMenuOption() unconditionally dereferences
++    // ReactHost.getDevSupportManager() with no null guard on getReactHost()
++    // itself -- in a release build (this class's own BuildConfig.DEBUG is
++    // false here, same flag already used a few lines below for a different
++    // check) that's null and this NPEs, crashing the app the first time
++    // Reanimated's native module is ever touched. Confirmed still present
++    // upstream as of 4.6.0 (rewritten to Kotlin there, using `!!` on the
++    // same null reactHost -- same bug, not yet fixed).
++    if (BuildConfig.DEBUG) {
++      addDevMenuOption();
++    }
+ 
+     GestureHandlerStateManager tempHandlerStateManager;
+     try {

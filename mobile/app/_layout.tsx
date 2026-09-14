@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, LogBox } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -197,21 +198,28 @@ export default function RootLayout() {
   if (!appReady) return null;
 
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <SpeechVoiceProvider>
-          <AuthProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
-              <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
-              <Stack.Screen name="login"         options={{ headerShown: false }} />
-              <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
-            </Stack>
-            <AuthGuard />
-            <StatusBar style="auto" />
-          </AuthProvider>
-        </SpeechVoiceProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+    // Required by react-native-gesture-handler for any GestureDetector to
+    // work at all (e.g. SketchCanvas.tsx's drawing surface) — added
+    // 2026-09-13 alongside the "Draw" capture tool; gesture-handler itself
+    // was already a transitive dependency (navigation) but nothing in this
+    // app used its gesture API directly until now.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <SpeechVoiceProvider>
+            <AuthProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)"        options={{ headerShown: false }} />
+                <Stack.Screen name="(onboarding)"  options={{ headerShown: false }} />
+                <Stack.Screen name="login"         options={{ headerShown: false }} />
+                <Stack.Screen name="activity/[id]" options={{ headerShown: false }} />
+              </Stack>
+              <AuthGuard />
+              <StatusBar style="auto" />
+            </AuthProvider>
+          </SpeechVoiceProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }

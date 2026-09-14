@@ -63,14 +63,31 @@ export async function clearStoredUser(): Promise<void> {
 
 /** Thrown by apiFetch for a non-2xx response — carries the HTTP status so
  *  callers can tell an auth rejection (401/403) from a server error, and
- *  both of those from a network failure (a plain TypeError from fetch). */
+ *  both of those from a network failure (a plain TypeError from fetch).
+ *  `errorCode` (2026-09-14) — some routes now raise with a structured
+ *  `detail: {error_code, message}` instead of a bare string (see
+ *  privacy_engine.py's enforce_or_raise) so callers like
+ *  src/db/offlineQueue.ts can tell a PERMANENT block (e.g.
+ *  'consent_required') apart from a transient failure without
+ *  string-matching prose. Undefined when the endpoint used a plain string
+ *  detail (still supported — see the extraction below). */
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  errorCode?: string;
+  constructor(status: number, message: string, errorCode?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.errorCode = errorCode;
   }
+}
+
+function _apiErrorFromDetail(status: number, detail: unknown): ApiError {
+  if (detail && typeof detail === 'object' && 'message' in (detail as any)) {
+    const d = detail as { message?: string; error_code?: string };
+    return new ApiError(status, d.message ?? `HTTP ${status}`, d.error_code);
+  }
+  return new ApiError(status, typeof detail === 'string' ? detail : `HTTP ${status}`);
 }
 
 export async function apiFetch<T>(
@@ -88,7 +105,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body?.detail ?? `HTTP ${res.status}`);
+    throw _apiErrorFromDetail(res.status, body?.detail);
   }
   if (res.status === 204) return undefined as unknown as T;
   return res.json();

@@ -737,6 +737,7 @@ CREATE TABLE IF NOT EXISTS student_captures (
     transcript            TEXT,
     transcript_confidence FLOAT,
     transcript_language   VARCHAR(10),
+    transcript_status     VARCHAR(20), -- pending | completed | failed | disabled
     duration_seconds      INTEGER,
     dimensions            VARCHAR(20),
     description           TEXT

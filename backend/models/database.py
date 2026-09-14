@@ -745,6 +745,31 @@ class CaptureType(str, enum.Enum):
     MEASUREMENT = "measurement"
 
 
+class TranscriptStatus(str, enum.Enum):
+    """State of an AUDIO capture's transcript.
+
+    Added 2026-09-13 alongside removing the server-side ASR pipeline
+    entirely (Ollama could never actually transcribe audio — see git history
+    for services/asr_service.py, deleted the same day — and the OpenAI/
+    Claude cloud tiers were removed even earlier that day for the
+    third-party-audio-leak they caused). Transcription now happens
+    on-device (mobile CaptureSheet.tsx, expo-speech-recognition with
+    requiresOnDeviceRecognition=true) and the client submits the resulting
+    text directly with the upload — there is no server-side ASR step or
+    cloud/self-hosted fallback of any kind. See
+    AUDIO_TRANSCRIPTION_ON_DEVICE_HANDOFF.md.
+
+    PENDING/FAILED/DISABLED are kept only so any pre-existing rows from the
+    old async server pipeline still deserialize; no code path sets them any
+    more — new AUDIO captures only ever get COMPLETED or UNAVAILABLE.
+    """
+    PENDING     = "pending"     # legacy: old background job scheduled, unresolved
+    COMPLETED   = "completed"   # client submitted a transcript with the upload
+    FAILED      = "failed"      # legacy: old server-side ASR attempt failed
+    DISABLED    = "disabled"    # legacy: old server-side ASR_ENABLED was false
+    UNAVAILABLE = "unavailable"  # client submitted no transcript (on-device STT unsupported/denied/failed on that device)
+
+
 class StudentCapture(Base):
     """Evidence of learning captured by student"""
     __tablename__ = "student_captures"
@@ -779,6 +804,13 @@ class StudentCapture(Base):
     transcript            = Column(Text, nullable=True)
     transcript_confidence = Column(Float, nullable=True)
     transcript_language   = Column(String(10), nullable=True)
+    # native_enum=False + values_callable: same reasoning as capture_type
+    # above (avoids depending on a Postgres enum type that no bootstrap path
+    # creates, and stores the lowercase value rather than the member name).
+    transcript_status = Column(
+        Enum(TranscriptStatus, native_enum=False, values_callable=lambda e: [x.value for x in e]),
+        nullable=True,
+    )
 
     duration_seconds = Column(Integer, nullable=True)
     dimensions       = Column(String(20), nullable=True)

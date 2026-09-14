@@ -18,12 +18,13 @@ import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
 import CaptureSheet from '@/src/components/CaptureSheet';
 import CapturePreviewModal from '@/src/components/CapturePreviewModal';
-import { Capture } from '@/src/api/captures';
+import { Capture, fetchCaptures, requestGuardianConsent } from '@/src/api/captures';
 import Btn from '@/src/components/Btn';
 import { useGeofence } from '@/src/hooks/useGeofence';
 import WayfindingPanel from '@/src/components/WayfindingPanel';
 import { logSessionEvent } from '@/src/api/sessionEvents';
-import { flushQueue } from '@/src/db/offlineQueue';
+import { flushQueue, getConsentBlockedCaptures } from '@/src/db/offlineQueue';
+import { ApiError } from '@/src/api/client';
 import {
   createNotebookEntry, updateNotebookEntry, submitNotebookEntry,
   linkCaptureToNotebook, fetchNotebookEntryForActivity,
@@ -89,10 +90,17 @@ export default function ActivityScreen() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showCapture, setShowCapture] = useState(false);
-  const [captureMode, setCaptureMode] = useState<'photo' | 'audio' | 'note' | 'video' | null>(null);
+  const [captureMode, setCaptureMode] = useState<'photo' | 'audio' | 'note' | 'video' | 'sketch' | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
   const [previewCapture, setPreviewCapture] = useState<Capture | null>(null);
   const [geofenceToast, setGeofenceToast] = useState(false);
+  const [savingProgress, setSavingProgress] = useState(false);
+  // Number of local captures currently stuck on
+  // blocked_reason='consent_required' (src/db/offlineQueue.ts) — surfaced
+  // in Inquiry so the student can request guardian consent without waiting
+  // until Reflect/Submit to discover something didn't go through.
+  const [consentBlockedCount, setConsentBlockedCount] = useState(0);
+  const [requestingConsent, setRequestingConsent] = useState(false);
 
   // M-13: Geofence guard — non-blocking toast when student leaves activity radius
   const { isInside, distanceMeters } = useGeofence({
@@ -102,6 +110,13 @@ export default function ActivityScreen() {
     enabled: phase === 'inquiry' && !!activity?.location_latitude,
     onExit: () => { setGeofenceToast(true); if (sessionId) logSessionEvent(sessionId, 'geofence_exit', 'inquiry'); },
   });
+
+  // Surface any capture already stuck on blocked_reason='consent_required'
+  // from a prior visit (or a prior "Save to Server") without needing the
+  // student to trigger a fresh flush first.
+  useEffect(() => {
+    getConsentBlockedCaptures().then((rows) => setConsentBlockedCount(rows.length)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -128,6 +143,23 @@ export default function ActivityScreen() {
           setNotebookEntryId(existing.id);
           if (existing.learning_insights) setReflection(existing.learning_insights);
           setSubmitted(existing.is_submitted);
+          // BUG FIX (2026-09-14): previously `phase` always started at
+          // 'brief' regardless of an existing draft, so reopening a saved
+          // draft silently discarded the fact that the student had already
+          // gotten past Brief/Orient — and since `captures` state is
+          // per-mount local state (never restored from the server), any
+          // captures made in an earlier visit were invisible until this
+          // fetch. There's no "back" from Reflect to Inquiry in this screen
+          // (see PHASES / advancePhase below), so land on 'inquiry' rather
+          // than 'reflect' — that's the only phase where the student can
+          // still add captures before moving on, and it's also where the
+          // capture strip (and the "draft" they came back for) is actually
+          // visible. Only for an unsubmitted draft — a submitted entry has
+          // nothing left to resume.
+          if (!existing.is_submitted) {
+            setPhase('inquiry');
+            fetchCaptures(a.id).then(setCaptures).catch(() => {});
+          }
         }
       })
       .catch(() => Alert.alert(t('common.error', 'Error'), t('activity.loadError', 'Could not load activity')))
@@ -178,19 +210,96 @@ export default function ActivityScreen() {
     return created.id;
   }, [activity, reflection, notebookEntryId]);
 
-  // Captures always save to the device first (see CaptureSheet.tsx) and
-  // normally drain via the connectivity-triggered background poll — but
-  // Save/Submit is the other guaranteed sync point ("save to device until
-  // the activity is turned in, or a connection shows up"), so force one
-  // real attempt here rather than leaving it purely to the 15s poll timing.
-  // Still best-effort: captures already exist as their own local records
-  // regardless of linking, so a still-unsynced capture (e.g. no signal at
-  // all right now) shouldn't block Save/Submit — it'll link on a later
-  // Save/Submit or whenever the background poll catches up.
-  const linkPendingCaptures = useCallback(async (entryId: string) => {
-    await flushQueue().catch(() => {});
-    await Promise.allSettled(captures.map((c) => linkCaptureToNotebook(entryId, c.id)));
-  }, [captures]);
+  // Captures always save to the device first (see CaptureSheet.tsx) and stay
+  // there until an explicit sync point — there is no background/opportunistic
+  // flush anymore (see CaptureSheet.tsx's upload()/useConnectivity.ts/
+  // appInit.ts for the matching removals, and the age-scoped-consent plan
+  // doc's "Local capture is never gated" section for why). Three explicit
+  // actions call this: handleSaveProgress (Inquiry, no reflection required),
+  // handleSaveDraft, and handleSubmit.
+  const linkPendingCaptures = useCallback(async (entryId: string): Promise<{ blocked: number }> => {
+    let blocked = 0;
+    try {
+      const result = await flushQueue();
+      blocked = result.blocked;
+    } catch {
+      // best-effort — a still-unsynced capture (no signal right now)
+      // shouldn't block this action; it stays queued for the next attempt.
+    }
+    setConsentBlockedCount(blocked);
+    // BUG FIX (2026-09-14): `captures` holds the local offline-queue ids
+    // CaptureSheet hands back at capture time (see CaptureSheet.tsx's
+    // upload() — `id: queueId`), not the real server-side capture ids.
+    // flushQueue() above uploads each queued item and gets back a brand new
+    // server id, but this component's `captures` state is never updated
+    // with it. Linking with the stale queue id 404s against
+    // /notebook/{id}/link-capture (silently, via allSettled) every single
+    // time, so a capture could go unlinked even though it uploaded fine.
+    // Re-fetch this activity's real captures from the server instead of
+    // trusting local state, and link all of them — link-capture is
+    // idempotent (returns "already_linked" on a repeat), so relinking
+    // captures from an earlier save is harmless.
+    if (!activity) return { blocked };
+    try {
+      const serverCaptures = await fetchCaptures(activity.id);
+      await Promise.allSettled(serverCaptures.map((c) => linkCaptureToNotebook(entryId, c.id)));
+    } catch {
+      // best-effort, same as before — an unsynced/unreachable capture
+      // shouldn't block Save/Submit
+    }
+    return { blocked };
+  }, [activity]);
+
+  // Explicit "Save to Server" — reachable from Inquiry (unlike Save Draft/
+  // Submit, needs no reflection text) so a student can back up captures to
+  // the server mid-activity without being forced to write a reflection
+  // first. Does NOT mark anything submitted/teacher-visible — see the
+  // age-scoped-consent plan doc's sync-model section.
+  const handleSaveProgress = useCallback(async () => {
+    if (!activity) return;
+    setSavingProgress(true);
+    try {
+      const entryId = await persistReflection();
+      const { blocked } = await linkPendingCaptures(entryId);
+      if (sessionId) logSessionEvent(sessionId, 'reflection_saved', 'inquiry');
+      Alert.alert(
+        t('activity.inquiry.progressSavedTitle', 'Saved to server'),
+        blocked > 0
+          ? t('activity.inquiry.progressSavedWithBlockedBody', 'Your other captures are backed up. {{count}} item(s) are saved on your device but need a parent\'s OK before they can be shared with your teacher.', { count: blocked })
+          : t('activity.inquiry.progressSavedBody', "Your captures are backed up to the server — they aren't visible to your teacher until you submit.")
+      );
+    } catch (e) {
+      Alert.alert(t('common.error', 'Error'), e instanceof Error ? e.message : t('common.tryAgain', 'Try again'));
+    } finally {
+      setSavingProgress(false);
+    }
+  }, [activity, persistReflection, linkPendingCaptures, sessionId]);
+
+  // Student-triggered guardian consent request (age-scoped-consent plan
+  // doc) — reachable next to a consent-blocked capture so the family isn't
+  // stuck passively waiting on whatever happened at signup.
+  const handleRequestGuardianConsent = useCallback(async () => {
+    setRequestingConsent(true);
+    try {
+      await requestGuardianConsent();
+      Alert.alert(
+        t('activity.inquiry.consentRequestSentTitle', 'Request sent'),
+        t('activity.inquiry.consentRequestSentBody', 'Check back after your parent responds, then tap Save to Server again.')
+      );
+    } catch (e) {
+      let message = t('common.tryAgain', 'Try again');
+      if (e instanceof ApiError) {
+        if (e.errorCode === 'no_guardian_email_on_file') {
+          message = t('activity.inquiry.noGuardianEmail', 'No guardian email is on file for your account. Ask a teacher to add one.');
+        } else if (e.message) {
+          message = e.message; // covers consent_request_cooldown's server-composed "try again in N hours"
+        }
+      }
+      Alert.alert(t('common.error', 'Error'), message);
+    } finally {
+      setRequestingConsent(false);
+    }
+  }, [t]);
 
   const handleSaveDraft = useCallback(async () => {
     if (!reflection.trim()) {
@@ -200,11 +309,13 @@ export default function ActivityScreen() {
     setSavingDraft(true);
     try {
       const entryId = await persistReflection();
-      await linkPendingCaptures(entryId);
+      const { blocked } = await linkPendingCaptures(entryId);
       if (sessionId) logSessionEvent(sessionId, 'reflection_saved', 'reflect');
       Alert.alert(
         t('activity.reflect.savedTitle', 'Saved'),
-        t('activity.reflect.savedBody', 'Your progress is saved — come back anytime to add more before submitting.'),
+        blocked > 0
+          ? t('activity.reflect.savedWithBlockedBody', 'Your progress is saved. {{count}} item(s) are on your device but need a parent\'s OK before they can be shared with your teacher.', { count: blocked })
+          : t('activity.reflect.savedBody', 'Your progress is saved — come back anytime to add more before submitting.'),
         [{ text: t('common.ok', 'OK'), onPress: () => router.back() }]
       );
     } catch (e) {
@@ -223,13 +334,19 @@ export default function ActivityScreen() {
     setSubmitting(true);
     try {
       const entryId = await persistReflection();
-      await linkPendingCaptures(entryId);
+      // Submit completes for the reflection text and every capture that DID
+      // upload/consent-clear -- a consent-blocked capture stays local-only
+      // and is called out below rather than silently dropped or failing the
+      // whole Submit action over one blocked item.
+      const { blocked } = await linkPendingCaptures(entryId);
       await submitNotebookEntry(entryId);
       setSubmitted(true);
       if (sessionId) logSessionEvent(sessionId, 'session_submitted', 'reflect');
       Alert.alert(
         t('activity.reflect.submittedTitle', 'Submitted! 🎉'),
-        t('activity.reflect.submittedBody', 'Your field work has been sent to your teacher.'),
+        blocked > 0
+          ? t('activity.reflect.submittedWithBlockedBody', 'Your field work has been sent to your teacher. {{count}} item(s) are still waiting on parental consent and weren\'t included yet — they\'ll be added once consent is granted.', { count: blocked })
+          : t('activity.reflect.submittedBody', 'Your field work has been sent to your teacher.'),
         [{ text: t('common.done', 'Done'), onPress: () => router.replace('/(tabs)') }]
       );
     } catch (e) {
@@ -319,12 +436,17 @@ export default function ActivityScreen() {
             sessionId={sessionId}
             onNext={advancePhase}
             onAskPeri={() => setShowChat(true)}
-            onCapture={(mode: 'photo' | 'audio' | 'note' | 'video') => {
+            onCapture={(mode: 'photo' | 'audio' | 'note' | 'video' | 'sketch') => {
               setCaptureMode(mode);
               setShowCapture(true);
             }}
             captures={captures}
             onReviewCapture={setPreviewCapture}
+            onSaveProgress={handleSaveProgress}
+            savingProgress={savingProgress}
+            consentBlockedCount={consentBlockedCount}
+            onRequestConsent={handleRequestGuardianConsent}
+            requestingConsent={requestingConsent}
           />
         )}
         <PeriChatSheet
@@ -538,9 +660,12 @@ function OrientPhase({ activity, theme, onReady }: any) {
 }
 
 // ── Inquiry phase ──────────────────────────────────────────────────────────
-const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️' };
+const CAPTURE_TYPE_EMOJI: Record<string, string> = { photo: '📷', audio: '🎤', video: '🎥', text: '✏️', note: '✏️', sketch: '🎨' };
 
-function InquiryPhase({ activity, question, theme, sessionId, onNext, onAskPeri, onCapture, captures, onReviewCapture }: any) {
+function InquiryPhase({
+  activity, question, theme, sessionId, onNext, onAskPeri, onCapture, captures, onReviewCapture,
+  onSaveProgress, savingProgress, consentBlockedCount, onRequestConsent, requestingConsent,
+}: any) {
   const { t } = useTranslation();
   const periText = question?.question_text
     ?? t('activity.inquiry.defaultQuestion', 'Look closely. What evidence can you find? Capture what you observe.');
@@ -584,10 +709,11 @@ function InquiryPhase({ activity, question, theme, sessionId, onNext, onAskPeri,
         </Text>
         <View style={styles.captureRow}>
           {[
-            { icon: '📷', id: 'photo', testID: 'capture-btn-photo', label: t('activity.capture.photo', 'Add photo') },
-            { icon: '🎤', id: 'audio', testID: 'capture-btn-audio', label: t('activity.capture.audio', 'Add voice recording') },
-            { icon: '✏️', id: 'note',  testID: 'capture-btn-note',  label: t('activity.capture.note', 'Add note')  },
-            { icon: '🎥', id: 'video', testID: 'capture-btn-video', label: t('activity.capture.video', 'Add video') },
+            { icon: '📷', id: 'photo',  testID: 'capture-btn-photo',  label: t('activity.capture.photo', 'Add photo') },
+            { icon: '🎤', id: 'audio',  testID: 'capture-btn-audio',  label: t('activity.capture.audio', 'Add voice recording') },
+            { icon: '✏️', id: 'note',   testID: 'capture-btn-note',   label: t('activity.capture.note', 'Add note')  },
+            { icon: '🎨', id: 'sketch', testID: 'capture-btn-sketch', label: t('activity.capture.sketch', 'Add drawing') },
+            { icon: '🎥', id: 'video',  testID: 'capture-btn-video',  label: t('activity.capture.video', 'Add video') },
           ].map(({ icon, id, testID, label }) => (
             <TouchableOpacity
               key={id}
@@ -622,6 +748,54 @@ function InquiryPhase({ activity, question, theme, sessionId, onNext, onAskPeri,
               ))}
             </ScrollView>
           </>
+        )}
+
+        {captures.length > 0 && (
+          <TouchableOpacity
+            testID="save-progress-btn"
+            onPress={onSaveProgress}
+            disabled={savingProgress}
+            style={[styles.saveProgressBtn, { borderColor: theme.border, borderRadius: theme.radiusSm, backgroundColor: theme.surfaceAlt, marginTop: 10 }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('activity.inquiry.saveProgress', 'Save to server')}
+          >
+            <Text style={[styles.saveProgressLabel, { fontFamily: theme.fontBody, color: theme.accent }]}>
+              {savingProgress
+                ? t('activity.inquiry.savingProgress', 'Saving…')
+                : `☁️ ${t('activity.inquiry.saveProgress', 'Save to server')}`}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Local capture is never gated — only the upload boundary is (see
+            the age-scoped-consent plan doc). A student blocked here still
+            has their work safely on-device; this just makes that state
+            visible instead of silently invisible, and offers the one
+            action that can actually resolve it. */}
+        {consentBlockedCount > 0 && (
+          <View style={[styles.consentBlockedNote, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}>
+            <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+              {t(
+                'activity.inquiry.consentBlockedNote',
+                '{{count}} item(s) are saved on your device but need a parent\'s OK before they can be shared with your teacher.',
+                { count: consentBlockedCount }
+              )}
+            </Text>
+            <TouchableOpacity
+              testID="request-consent-btn"
+              onPress={onRequestConsent}
+              disabled={requestingConsent}
+              accessibilityRole="button"
+              accessibilityLabel={t('activity.inquiry.requestConsent', 'Ask a parent for permission')}
+              style={{ marginTop: 8 }}
+            >
+              <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.accent, fontWeight: '600' }]}>
+                {requestingConsent
+                  ? t('activity.inquiry.requestingConsent', 'Sending…')
+                  : t('activity.inquiry.requestConsent', 'Ask a parent for permission')}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
       {activity.ai_interaction_mode !== 'curated_only' && (
@@ -799,7 +973,7 @@ const styles = StyleSheet.create({
   targetRow:       { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   targetDot:       { fontSize: 8, marginTop: 7 },
   followUpCard:    { padding: 12, gap: 4 },
-  captureRow:      { flexDirection: 'row', gap: 10, justifyContent: 'center', paddingTop: 4 },
+  captureRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'center', paddingTop: 4 },
   captureBtn:      { width: 56, height: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   captureIcon:     { fontSize: 24 },
   evidenceStrip:   { flexDirection: 'row', gap: 8, paddingTop: 8 },
@@ -815,4 +989,7 @@ const styles = StyleSheet.create({
   askPeriBtn:      { borderWidth: 1, padding: 12, alignItems: 'center' },
   askPeriLabel:    { fontSize: 14, fontWeight: '600' },
   submitHint:      { fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  saveProgressBtn:  { borderWidth: 1, padding: 10, alignItems: 'center' },
+  saveProgressLabel:{ fontSize: 13, fontWeight: '600' },
+  consentBlockedNote: { borderWidth: 1, padding: 10, marginTop: 10 },
 });

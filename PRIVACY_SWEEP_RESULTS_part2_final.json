@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "table": "2c-ii",
+      "jurisdiction": "gdpr",
+      "endpoint": "C1 /activities/start",
+      "scenario": "S1(gps)",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-ii",
+      "jurisdiction": "lenient",
+      "endpoint": "C1 /activities/start",
+      "scenario": "S1(gps)",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-ii",
+      "jurisdiction": "gdpr",
+      "endpoint": "C1 /activities/start",
+      "scenario": "S3(no-gps)",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": null,
+      "pass": true,
+      "note": "no evidence_types passed -> enforce_or_raise structurally not called; absence of a new audit row is the expected/correct signal"
+    },
+    {
+      "table": "2c-ii",
+      "jurisdiction": "lenient",
+      "endpoint": "C1 /activities/start",
+      "scenario": "S3(no-gps)",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": null,
+      "pass": true,
+      "note": "no evidence_types passed -> enforce_or_raise structurally not called; absence of a new audit row is the expected/correct signal"
+    },
+    {
+      "table": "2c-ii",
+      "jurisdiction": "gdpr",
+      "endpoint": "C4 /sessions/",
+      "scenario": "S1(gps, required)",
+      "expected_would_block": true,
+      "actual_would_block": true,
+      "http_status": 200,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-ii",
+      "jurisdiction": "lenient",
+      "endpoint": "C4 /sessions/",
+      "scenario": "S1(gps, required)",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 200,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-vi",
+      "jurisdiction": "strict",
+      "endpoint": "C3 /sessions/{id}/reflection",
+      "scenario": "confirm-only",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    },
+    {
+      "table": "2c-vi",
+      "jurisdiction": "strict",
+      "endpoint": "C9 /student/notebook",
+      "scenario": "confirm-only",
+      "expected_would_block": false,
+      "actual_would_block": false,
+      "http_status": 201,
+      "compliance_status": "ALLOWED",
+      "pass": true,
+      "note": ""
+    }
+  ]
+}

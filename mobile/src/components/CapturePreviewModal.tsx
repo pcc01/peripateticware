@@ -5,12 +5,14 @@
 // rather than re-fetching the uploaded copy from the server.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Video, ResizeMode, Audio } from 'expo-av';
+import { SvgUri } from 'react-native-svg';
 import { Theme } from '@/src/theme/tokens';
-import { Capture } from '@/src/api/captures';
+import { Capture, getMediaStreamUrl } from '@/src/api/captures';
 import { t } from '@/src/i18n/t';
+import { transcriptDisplayText } from '@/src/lib/transcriptDisplay';
 
 interface Props {
   visible: boolean;
@@ -23,6 +25,38 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
   const [isPlaying, setIsPlaying] = useState(false);
   const soundRef = useRef<Audio.Sound | null>(null);
 
+  // `local_uri` only exists for a capture reviewed moments after taking it
+  // (CaptureSheet.tsx's optimistic client-only state — never sent by or
+  // re-fetched from the backend). Opening an OLDER capture later (e.g. from
+  // journal.tsx's portfolio list) has no local_uri at all, so fall back to
+  // streaming it from the server via a short-lived signed media token —
+  // same backend endpoints the web app already uses (see
+  // getMediaStreamUrl's own comment). `resolvedUri` is whichever of the two
+  // this capture actually has; everything below plays/renders from it
+  // instead of `capture.local_uri` directly.
+  const [resolvedUri, setResolvedUri] = useState<string | null>(null);
+  const [resolvingUri, setResolvingUri] = useState(false);
+
+  useEffect(() => {
+    if (!capture) { setResolvedUri(null); return; }
+    if (capture.local_uri) { setResolvedUri(capture.local_uri); return; }
+    if (capture.capture_type === 'note' || capture.capture_type === 'text') return; // nothing to stream
+    let cancelled = false;
+    setResolvingUri(true);
+    setResolvedUri(null);
+    getMediaStreamUrl(capture.id)
+      .then((uri) => { if (!cancelled) setResolvedUri(uri); })
+      .catch(() => { if (!cancelled) setResolvedUri(null); })
+      .finally(() => { if (!cancelled) setResolvingUri(false); });
+    return () => { cancelled = true; };
+    // Deliberately keyed on the two primitive fields that actually decide
+    // the outcome, not the whole `capture` object — a new object reference
+    // for the same underlying capture (a common re-render pattern from a
+    // parent's list state) would otherwise re-fetch a stream URL we already
+    // resolved.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [capture?.id, capture?.local_uri]);
+
   // Stop/unload audio playback whenever the sheet closes or a different
   // capture is opened — otherwise a recording could keep playing silently
   // in the background after the student navigates away.
@@ -34,7 +68,7 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
   }, [visible, capture?.id]);
 
   const toggleAudio = async () => {
-    if (!capture?.local_uri) return;
+    if (!resolvedUri) return;
     if (isPlaying) {
       await soundRef.current?.pauseAsync();
       setIsPlaying(false);
@@ -42,7 +76,7 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
     }
     if (!soundRef.current) {
       const { sound } = await Audio.Sound.createAsync(
-        { uri: capture.local_uri },
+        { uri: resolvedUri },
         { shouldPlay: true },
         (status) => {
           if (status.isLoaded && status.didJustFinish) setIsPlaying(false);
@@ -76,32 +110,49 @@ export default function CapturePreviewModal({ visible, onClose, capture, theme }
             </TouchableOpacity>
           </View>
 
-          {capture.capture_type === 'photo' && capture.local_uri && (
-            <Image source={{ uri: capture.local_uri }} style={styles.media} contentFit="contain" />
+          {resolvingUri && (
+            <View style={[styles.media, styles.mediaLoading]}>
+              <ActivityIndicator color={theme.accent} />
+            </View>
           )}
 
-          {capture.capture_type === 'video' && capture.local_uri && (
+          {capture.capture_type === 'photo' && resolvedUri && (
+            <Image source={{ uri: resolvedUri }} style={styles.media} contentFit="contain" />
+          )}
+
+          {capture.capture_type === 'video' && resolvedUri && (
             <Video
-              source={{ uri: capture.local_uri }}
+              source={{ uri: resolvedUri }}
               style={styles.media}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
             />
           )}
 
-          {capture.capture_type === 'audio' && capture.local_uri && (
+          {capture.capture_type === 'sketch' && resolvedUri && (
+            // SvgUri handles both a local data:image/svg+xml;base64 URI
+            // (just drawn — see CaptureSheet.tsx's submitSketch) and an
+            // http(s) stream URL (an older capture, via getMediaStreamUrl)
+            // transparently — see react-native-svg's fetchText().
+            <View style={[styles.media, styles.sketchMedia]}>
+              <SvgUri uri={resolvedUri} width="100%" height="100%" />
+            </View>
+          )}
+
+          {capture.capture_type === 'audio' && (
             <View style={styles.audioRow}>
               <TouchableOpacity
                 testID="capture-preview-play"
                 onPress={toggleAudio}
-                style={[styles.playBtn, { backgroundColor: theme.accent }]}
+                disabled={!resolvedUri}
+                style={[styles.playBtn, { backgroundColor: theme.accent, opacity: resolvedUri ? 1 : 0.5 }]}
                 accessibilityRole="button"
                 accessibilityLabel={isPlaying ? t('capture.preview.pause', 'Pause') : t('capture.preview.play', 'Play')}
               >
                 <Text style={styles.playIcon}>{isPlaying ? '⏸' : '▶'}</Text>
               </TouchableOpacity>
               <Text style={[styles.bodyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
-                {capture.transcript ?? t('journal.transcriptPending', 'Transcript pending…')}
+                {transcriptDisplayText(capture, t)}
               </Text>
             </View>
           )}
@@ -126,6 +177,13 @@ const styles = StyleSheet.create({
   title:     { fontSize: 17, fontWeight: '700', flexShrink: 1 },
   closeBtn:  { fontSize: 18, padding: 4, flexShrink: 0 },
   media:     { width: '100%', aspectRatio: 1, borderRadius: 10, backgroundColor: '#000' },
+  mediaLoading: { alignItems: 'center', justifyContent: 'center' },
+  // Overrides media's black letterbox background — a sketch's own white
+  // rect is baked into the SVG, but the drawing canvas it was made on
+  // isn't square, so this square preview frame still shows the container
+  // background in the letterboxed margin; black behind a white drawing
+  // looked wrong, unlike photo/video where black is the expected letterbox.
+  sketchMedia: { backgroundColor: '#ffffff' },
   audioRow:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
   playBtn:   { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   playIcon:  { fontSize: 18, color: 'white' },

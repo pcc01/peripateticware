@@ -1,25 +1,20 @@
-# Covers MANUAL_TESTING_GUIDE.md section 5E.2 ("Re-enable WiFi -> Queued
-# capture auto-uploads"). Companion to 13.1-offline-capture-queued.yaml —
-# run AFTER that flow, and after scripts/run-offline-capture-test.ps1 has
-# re-enabled the network (`adb shell svc wifi enable` / `svc data enable`).
+# UPDATED 2026-09-14 (age-scoped-consent / explicit-sync redesign):
+# reconnecting no longer auto-uploads anything — useConnectivity.ts's
+# flushQueue()-on-reconnect call was removed, along with the opportunistic
+# flush in CaptureSheet.tsx and the flush-on-launch in appInit.ts. Nothing
+# leaves the device except an explicit "Save to Server" (Inquiry phase) or
+# Save Draft/Submit (Reflect phase) action — see the age-scoped-consent plan
+# doc's "Local capture is never gated" section for why. This flow's original
+# premise (MANUAL_TESTING_GUIDE.md section 5E.2, "Re-enable WiFi -> Queued
+# capture auto-uploads") is therefore no longer how the app behaves; kept as
+# a plain "reconnecting and relaunching doesn't crash" smoke check (which is
+# still real and worth having), not a sync-behavior assertion. A real
+# capture-sync test now needs to drive the explicit Save-to-Server button
+# instead of just waiting for reconnect.
 #
-# Known limitation, documented rather than papered over: there is currently
-# no UI-visible "synced" / "pending" indicator anywhere in the app (checked
-# app/(tabs)/journal.tsx — capture entries carry no sync-status testID or
-# text). src/hooks/useConnectivity.ts's flushQueue() call on reconnect only
-# logs to the console ("✅ Synced N items"), nothing renders. So this flow
-# can only assert the WEAKER thing: that reconnecting and relaunching
-# doesn't crash or error, not that the specific queued note from 13.1
-# actually made it to the server. Confirming the strong version would need
-# either (a) a real sync-status indicator added to the Journal UI — worth
-# doing anyway, see the feature plan for why — or (b) a direct backend
-# check (GET the capture by the queue id and confirm it exists server-side)
-# added to the wrapper script outside Maestro. Flagging this rather than
-# writing an assertion that looks stronger than it actually is.
-#
-# useConnectivity polls every 15s (see the `setInterval(check, 15_000)`),
-# so the wrapper script waits at least that long after re-enabling the
-# network before running this flow.
+# Companion to 13.1-offline-capture-queued.yaml — run AFTER that flow, and
+# after scripts/run-offline-capture-test.ps1 has re-enabled the network
+# (`adb shell svc wifi enable` / `svc data enable`).
 # Two platform-gated launchApp blocks, not one `${LOCATION_PERMISSION}`
 # value — see 12.1-note-capture.yaml header: env substitution doesn't reach
 # launchApp's permissions map on iOS.

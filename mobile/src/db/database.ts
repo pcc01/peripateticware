@@ -67,9 +67,19 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
       description   TEXT,
       latitude      REAL,
       longitude     REAL,
+      transcript    TEXT,
       created_at    INTEGER DEFAULT (strftime('%s','now')),
       retry_count   INTEGER DEFAULT 0,
-      last_error    TEXT
+      last_error    TEXT,
+      -- Set to 'consent_required' when the server's privacy-enforcement gate
+      -- (backend/services/privacy_engine.py) rejects this upload with a
+      -- 403 error_code='consent_required' -- a PERMANENT state until a
+      -- guardian grants consent, not a transient failure. Distinct from
+      -- retry_count (which keeps bumping on ordinary network/server
+      -- errors): a blocked_reason row is never auto-retried on the normal
+      -- cadence, since retrying does nothing until consent changes. See
+      -- src/db/offlineQueue.ts's flushQueue().
+      blocked_reason TEXT
     );
 
     -- Field note / reflection queue
@@ -109,6 +119,36 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
       created_at    INTEGER DEFAULT (strftime('%s','now')),
       retry_count   INTEGER DEFAULT 0
     );
+
+    -- On-device ASR diagnostics: one row per audio recording, capturing
+    -- whether recognition ran cleanly alongside expo-av's recording and
+    -- whether it looks like it cost anything (battery, recording integrity).
+    -- Local-only, testing aid — see src/lib/asrDiagnostics.ts and
+    -- mobile/docs/ON_DEVICE_ASR_TEST_PLAN.md. Not sent to any server.
+    CREATE TABLE IF NOT EXISTS asr_diagnostics (
+      id                              TEXT PRIMARY KEY,
+      captured_at                     INTEGER NOT NULL,
+      platform                        TEXT NOT NULL,
+      os_version                      TEXT,
+      device_model                    TEXT,
+      is_physical_device              INTEGER,
+      app_language                    TEXT,
+      stt_locale                      TEXT,
+      recognition_available           INTEGER,
+      recognition_attempted           INTEGER,
+      recognition_start_latency_ms    INTEGER,
+      recognition_error_code          TEXT,
+      recognition_transcript_length   INTEGER,
+      recording_expected_duration_s   INTEGER,
+      recording_actual_duration_ms    INTEGER,
+      recording_file_size_bytes       INTEGER,
+      recording_media_services_reset  INTEGER,
+      battery_level_before            REAL,
+      battery_level_after             REAL,
+      battery_state_before            TEXT,
+      low_power_mode                  INTEGER,
+      total_wall_time_ms              INTEGER
+    );
   `);
 
   // Idempotent column add for the full activity-detail payload (wayfinding
@@ -117,6 +157,23 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
   // so a re-run doesn't throw "duplicate column".
   try {
     await db.execAsync('ALTER TABLE activity_cache ADD COLUMN detail_json TEXT');
+  } catch {
+    // column already exists — fine
+  }
+
+  // On-device speech-recognition transcript, captured alongside an audio
+  // recording in CaptureSheet.tsx and carried through the queue so it
+  // uploads together with the audio file. Older installs predate this.
+  try {
+    await db.execAsync('ALTER TABLE capture_queue ADD COLUMN transcript TEXT');
+  } catch {
+    // column already exists — fine
+  }
+
+  // Consent-block tracking (2026-09-14, age-scoped-consent redesign) —
+  // older installs predate this column.
+  try {
+    await db.execAsync('ALTER TABLE capture_queue ADD COLUMN blocked_reason TEXT');
   } catch {
     // column already exists — fine
   }

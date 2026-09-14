@@ -87,6 +87,15 @@ class DataCategory(str, Enum):
     HEALTH      = "health"
     SPECIAL     = "special"
     FINANCIAL   = "financial"
+    # Added 2026-09-14 (age-scoped consent redesign): covers photo/audio/
+    # video capture specifically, distinct from BIOMETRIC (which implies
+    # identity-verification data like a fingerprint/faceprint, not just "a
+    # photo exists"). Legally grounded, not invented -- COPPA's own text (16
+    # CFR 312.2) explicitly names "a photograph, video, or audio file
+    # containing a child's image or voice" as personal information requiring
+    # parental consent. See migrations/007_age_scope_media_consent.py, which
+    # adds "media" to the consent_rules of every jurisdiction this applies to.
+    MEDIA       = "media"
 
 
 class ConsentType(str, Enum):
@@ -679,20 +688,21 @@ async def _has_valid_consent(
         return False
 
 
-# Loose evidence-type -> DataCategory mapping for the age-differentiated
-# consent check below (PRIVACY_BUGFIX_PLAN.md Bug 2). Deliberately
-# conservative: only evidence types with an unambiguous DataCategory
-# counterpart in the actual seeded consent_rules data are mapped ("gps"/
-# "location" -> location, "biometric" -> biometric). "audio"/"video"/"photo"
-# are part of the outer `sensitive` set (they still drive the existing
-# student_monitoring_allowed check above) but have no corresponding
-# DataCategory in the current seed data's consent_rules.data_categories
-# lists -- mapping them to one would be inventing rule semantics the seed
-# data doesn't actually specify, not implementing what's already there.
+# Evidence-type -> DataCategory mapping for the age-differentiated consent
+# check above. "gps"/"location" -> LOCATION and "biometric" -> BIOMETRIC were
+# added for PRIVACY_BUGFIX_PLAN.md Bug 2; "audio"/"video"/"photo" -> MEDIA
+# were added 2026-09-14 once migration 007_age_scope_media_consent.py gave
+# the relevant jurisdictions' consent_rules a "media" data_category to match
+# against -- until that migration lands, MEDIA-mapped evidence simply won't
+# match any consent_rules entry (matching_rule stays None), which is a
+# harmless no-op, not a crash.
 _EVIDENCE_DATA_CATEGORY: Dict[str, str] = {
     "gps": DataCategory.LOCATION.value,
     "location": DataCategory.LOCATION.value,
     "biometric": DataCategory.BIOMETRIC.value,
+    "audio": DataCategory.MEDIA.value,
+    "video": DataCategory.MEDIA.value,
+    "photo": DataCategory.MEDIA.value,
 }
 
 
@@ -786,57 +796,48 @@ async def enforce_on_submission(
                 f"Jurisdiction disallows student data sharing generally "
                 f"(informational only, not enforced at this {data_type} storage step)"
             )
-        # Under strict frameworks, location/biometric evidence needs consent.
+        # Under strict frameworks, location/media/biometric evidence needs
+        # consent -- but ONLY from students the jurisdiction's own law
+        # actually targets by age, not every student in the org.
+        #
+        # REDESIGN (2026-09-14, replaces the pre-existing "BUG FIX (2026-09)"
+        # blanket-flag branch and generalizes the "BUG FIX (2026-09-12,
+        # PRIVACY_BUGFIX_PLAN.md Bug 2)" age-differentiated branch into the
+        # SOLE gate for this evidence set): the old code blocked ANY student
+        # -- 8 or 28 -- whenever `config.student_monitoring_allowed` was
+        # False, entirely independent of age. Every jurisdiction that sets
+        # that flag False (COPPA, GDPR, LGPD, POPIA, LPDC, AEPD, PDPA,
+        # Privacy Act AU -- see migrations/002 and 005) does so because its
+        # OWN consent_rules already encode a real, source-grounded age
+        # threshold (COPPA: under_13, GDPR: under_16, etc. -- see 005's own
+        # docstring for the careful per-jurisdiction translation). Blocking
+        # by the blanket flag instead of by those age-scoped rules meant an
+        # adult in a COPPA-jurisdiction org was blocked identically to an
+        # 8-year-old -- confirmed live in prod (2026-09-14): once
+        # ENFORCEMENT_MODE=block was flipped, this produced a ~100% block
+        # rate on ordinary photo/audio/video capture uploads platform-wide,
+        # not a targeted minors-only protection. See
+        # PRIVACY_ENFORCEMENT_HANDOFF.md / the age-scoped-consent plan doc
+        # for the full incident writeup and the product decision to prefer
+        # precise age-scoping over blanket over-protection.
+        #
+        # `student_monitoring_allowed` is NOT consulted here anymore, by
+        # design -- it stays authoritative for routes/sessions.py's live
+        # GPS-streaming Gate 2 (_require_effective_rung), which is a
+        # separate, deliberately age-blind region gate for a different,
+        # higher-stakes real-time feature and is intentionally untouched by
+        # this change.
         sensitive = {"gps", "location", "audio", "video", "photo", "biometric"}
         if evidence_types and any(e.lower() in sensitive for e in evidence_types):
-            if not config.student_monitoring_allowed:
-                consent_required = True
-                # BUG FIX (2026-09): this used to block unconditionally --
-                # consent_required was set but never actually checked against
-                # anything, so even a family that had genuinely already
-                # consented (via routes/privacy.py::record_consent, or a
-                # prior GPS-specific consent_logs grant) would show
-                # would_block=True forever, with no way to ever satisfy the
-                # requirement. Now checks the real consent state before
-                # blocking; consent_required stays True either way so the
-                # audit trail keeps recording that this write relied on
-                # consent (satisfied or not).
-                has_consent = await _has_valid_consent(
-                    db=db,
-                    student_id=student_id,
-                    activity_id=activity_id,
-                    evidence_types=[e.lower() for e in evidence_types],
-                )
-                if not has_consent:
-                    blocking_reasons.append(
-                        "Sensitive evidence (location/audio/video/biometric) requires "
-                        "consent under the applicable jurisdiction, and no active "
-                        "consent record was found"
-                    )
-
-            # BUG FIX (2026-09-12, PRIVACY_BUGFIX_PLAN.md Bug 2): every
-            # age_group consumer in this codebase used to treat age_group as
-            # a binary under_13-vs-everything-else split -- under_16/under_18
-            # students got identical treatment to adults everywhere,
-            # including here, even though GDPR/CCPA's own seeded
-            # consent_rules data specifies an additional teen-consent
-            # requirement (age_groups + requires_parental_consent) this
-            # engine never consulted. This check is INDEPENDENT of the
-            # student_monitoring_allowed branch above -- it can fire even
-            # when that org-level check passes (student_monitoring_allowed=
-            # True), so it adds a genuinely new, separately-triggerable
-            # reason rather than just duplicating the existing one. Only
-            # ever additive/tightening: an empty config.consent_rules (any
-            # jurisdiction without an age-differentiated rule, e.g. plain
-            # FERPA/COPPA) or a student with no age_group on file leaves
-            # this branch a no-op.
             evidence_categories = {
                 _EVIDENCE_DATA_CATEGORY[e]
                 for e in (e.lower() for e in evidence_types)
                 if e in _EVIDENCE_DATA_CATEGORY
             }
+            matched_via_age_rules = False
             if config.consent_rules and evidence_categories:
                 student_age_group = await _get_student_age_group(student_id, db)
+                matching_rule = None
                 if student_age_group:
                     matching_rule = next(
                         (
@@ -854,21 +855,77 @@ async def enforce_on_submission(
                         ),
                         None,
                     )
-                    if matching_rule is not None:
-                        consent_required = True
-                        has_age_consent = await _has_valid_consent(
-                            db=db,
-                            student_id=student_id,
-                            activity_id=activity_id,
-                            evidence_types=[e.lower() for e in evidence_types],
-                        )
-                        if not has_age_consent:
-                            blocking_reasons.append(
+                else:
+                    # DESIGN DECISION (2026-09-14, product call): a student
+                    # with no age_group on file (true for most accounts
+                    # today -- it's only set via the classroom-invite
+                    # date-of-birth flow) fails CLOSED, not open. If this
+                    # jurisdiction has ANY consent rule that would apply to
+                    # this evidence category for SOME age group, treat the
+                    # unknown-age student as needing consent too, rather
+                    # than silently skipping the check -- matches
+                    # _has_valid_consent()'s own "fail closed on missing
+                    # data" contract, and avoids reopening the exact
+                    # under-13-with-no-age_group hole this engine was
+                    # originally built to close. Known, accepted consequence:
+                    # an org with many un-backfilled students will still see
+                    # elevated blocks post-fix, now for an honest, sizeable
+                    # reason (missing age data) instead of blanket
+                    # age-blindness -- see the plan doc's "final evaluation"
+                    # step for sizing this before any prod rollout.
+                    matching_rule = next(
+                        (
+                            r for r in config.consent_rules
+                            if r.requires_parental_consent
+                            and evidence_categories & set(r.data_categories)
+                        ),
+                        None,
+                    )
+                if matching_rule is not None:
+                    matched_via_age_rules = True
+                    consent_required = True
+                    has_consent = await _has_valid_consent(
+                        db=db,
+                        student_id=student_id,
+                        activity_id=activity_id,
+                        evidence_types=[e.lower() for e in evidence_types],
+                    )
+                    if not has_consent:
+                        blocking_reasons.append(
+                            (
                                 f"Student's age group ('{student_age_group}') requires "
                                 "parental consent for this data category under the "
                                 "applicable jurisdiction's age-based consent rule, and no "
                                 "active consent record was found"
+                            ) if student_age_group else (
+                                "Student's age is not on file; this jurisdiction requires "
+                                "parental consent for this evidence category and no exemption "
+                                "could be verified without it, and no active consent record "
+                                "was found"
                             )
+                        )
+            # Defensive fallback, not expected to fire against current seed
+            # data (every jurisdiction with student_monitoring_allowed=False
+            # today has at least one applicable consent_rules entry -- see
+            # migrations 002/005/007): if a jurisdiction disallows student
+            # monitoring but defines NO age-scoped consent_rules at all for
+            # this evidence category, that's a data gap, not "no one needs
+            # consent here" -- fall back to the old blanket behavior rather
+            # than silently allowing everyone through.
+            if not matched_via_age_rules and not config.student_monitoring_allowed and not config.consent_rules:
+                consent_required = True
+                has_consent = await _has_valid_consent(
+                    db=db,
+                    student_id=student_id,
+                    activity_id=activity_id,
+                    evidence_types=[e.lower() for e in evidence_types],
+                )
+                if not has_consent:
+                    blocking_reasons.append(
+                        "Jurisdiction disallows student monitoring and defines no "
+                        "age-scoped consent rule for this evidence category (data gap) "
+                        "-- failing closed, and no active consent record was found"
+                    )
 
     # Decide status by mode.
     if mode == "block" and blocking_reasons:
@@ -1041,9 +1098,19 @@ async def enforce_or_raise(
                 override_status=effective_status,
             )
         if should_block:
+            # Structured detail (2026-09-14), not a bare string: the mobile
+            # client needs to tell "blocked pending parental consent"
+            # (permanent until a parent acts, never worth silently retrying
+            # on a network-error cadence) apart from a transient failure,
+            # without string-matching this message's English prose. See
+            # src/db/offlineQueue.ts's flushQueue() / the age-scoped-consent
+            # plan doc.
             raise HTTPException(
                 status_code=_status.HTTP_403_FORBIDDEN,
-                detail=result.blocking_reason or "Submission blocked by privacy policy",
+                detail={
+                    "error_code": "consent_required",
+                    "message": result.blocking_reason or "Submission blocked by privacy policy",
+                },
             )
         return result
     except HTTPException:

@@ -15,6 +15,7 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Peripateticware uses your camera to capture field evidence.",
         "NSMicrophoneUsageDescription": "Peripateticware uses your microphone to record field audio.",
+        "NSSpeechRecognitionUsageDescription": "Peripateticware transcribes your voice recordings on this device so you can review them as text. Nothing is sent to a speech-recognition server.",
         "NSPhotoLibraryUsageDescription": "Peripateticware saves captures to your photo library.",
         "NSLocationWhenInUseUsageDescription": "Peripateticware uses your location to find nearby activities.",
         "NSAppTransportSecurity": {
@@ -78,6 +79,14 @@
           "microphonePermission": "Peripateticware uses your microphone to record field audio."
         }
       ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Peripateticware uses your microphone to record field audio.",
+          "speechRecognitionPermission": "Peripateticware transcribes your voice recordings on this device so you can review them as text. Nothing is sent to a speech-recognition server."
+        }
+      ],
+      "./plugins/withGoogleMapsApiKeyPlaceholder.js",
       [
         "expo-splash-screen",
         {
