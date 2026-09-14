@@ -130,6 +130,7 @@ class SignupRequest(BaseModel):
     has_under_13:     Optional[bool] = True  # default safe: assume under-13 students
     org_type_v2:      Optional[str] = None   # individual_teacher | homeschool_family | …
     ip_country_hint:  Optional[str] = None   # raw value from /geo/hint (audit only)
+    signup_locale:    Optional[str] = None   # active frontend i18n language, e.g. 'en', 'fr'
 
     class Config:
         json_schema_extra = {
@@ -553,7 +554,9 @@ async def signup(
             last_name=body.last_name,
             full_name=f"{body.first_name} {body.last_name}",
             role=role_upper,
-            is_active=auto_activate  # True in dev; False in prod (requires email verify)
+            is_active=auto_activate,  # True in dev; False in prod (requires email verify)
+            created_via="public_signup",
+            signup_locale=getattr(body, 'signup_locale', None),
         )
 
         db.add(new_user)
@@ -591,6 +594,23 @@ async def signup(
             background_tasks.add_task(send_verification_email, new_user.email, ver_token)
         except Exception as _e:
             logger.warning("Could not queue verification email (non-blocking): %s", _e)
+
+        # Notify ADMIN_EMAIL unless this looks like your own account/tooling
+        # (see services/signup_alerts.py — no IP capture, decided from
+        # created_via + email pattern).
+        try:
+            from services.signup_alerts import queue_new_signup_notification
+            queue_new_signup_notification(
+                background_tasks,
+                created_via="public_signup",
+                email=new_user.email,
+                username=new_user.username,
+                role=new_user.role,
+                country_code=getattr(new_user, 'signup_country_code', None) or body.country_code,
+                locale=new_user.signup_locale,
+            )
+        except Exception as _e:
+            logger.warning("Could not queue new-signup notification (non-blocking): %s", _e)
 
         token = create_access_token(data={"sub": str(new_user.id), "is_platform_admin": False, "is_content_admin": False})
         

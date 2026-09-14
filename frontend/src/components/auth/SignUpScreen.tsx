@@ -76,7 +76,7 @@ export default function SignupScreen({
   const [selectedRole, setSelectedRole] = useState<UserRole>('TEACHER');
   const [schoolName, setSchoolName] = useState('');
   const { signup, isLoading, error: authError } = useAuthStore();
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
 
   // ── Teaching Context state (sprint 2E) ────────────────────────────────────
   const geoHint = useGeoHint();
@@ -135,6 +135,7 @@ export default function SignupScreen({
         has_under_13:     showTeachingContext ? hasUnder13 : undefined,
         org_type_v2:      orgTypeV2 || undefined,
         ip_country_hint:  geoHint.countryCode || undefined,
+        signup_locale:    i18n.language || undefined,
         invite_token:     inviteToken,
       });
 

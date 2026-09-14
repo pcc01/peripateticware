@@ -35,7 +35,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, File, status
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -204,6 +204,7 @@ class StudentJoinRequest(BaseModel):
     password_confirm: str
     date_of_birth:    Optional[str] = None   # YYYY-MM-DD — used for COPPA age gate
     parent_email:     Optional[EmailStr] = None  # required when student is under 13
+    signup_locale:    Optional[str] = None   # active frontend i18n language, e.g. 'en', 'fr'
 
 
 # ── Teacher: classroom CRUD ────────────────────────────────────────────────────
@@ -666,6 +667,7 @@ async def preview_invite(token: str, db: AsyncSession = Depends(get_db)):
 async def accept_invite(
     token: str,
     body: StudentJoinRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -753,6 +755,8 @@ async def accept_invite(
         is_active=True,
         org_id=inv[5],
         invite_token_used=token,
+        created_via="invite_accept",
+        signup_locale=body.signup_locale,
     )
     db.add(new_student)
     await db.flush()
@@ -784,13 +788,24 @@ async def accept_invite(
                 purpose="parent_consent",
                 payload={"student_id": str(user_id)},
             )
+            # Persist parent_email (2026-09-14) — previously discarded after
+            # this one send, leaving no stored address for a later
+            # student-triggered resend (routes/student.py::request_guardian_consent)
+            # if this initial link expires (72h TTL) or the parent misses it.
+            # Encrypted manually before this raw SQL write: `parent_email` is
+            # an EncryptedString column at the ORM layer (models/user.py),
+            # but a raw `text()` UPDATE bypasses that TypeDecorator entirely
+            # — without this, the address would land in the DB as plaintext.
+            from core.encryption import encrypt as _encrypt_field
             await db.execute(text("""
                 UPDATE users
                 SET requires_parental_consent = TRUE,
                     is_active = FALSE,
-                    age_group = 'under_13'
+                    age_group = 'under_13',
+                    parent_email = :parent_email,
+                    last_consent_request_at = now()
                 WHERE id = :uid
-            """), {"uid": user_id})
+            """), {"uid": user_id, "parent_email": _encrypt_field(str(body.parent_email))})
             await db.flush()
             student_name = f"{body.first_name} {body.last_name}"
             try:
@@ -857,6 +872,23 @@ async def accept_invite(
     """), {"uid": user_id, "iid": str(inv[0])})
 
     await db.commit()
+
+    # Notify ADMIN_EMAIL unless this looks like your own account/tooling
+    # (see services/signup_alerts.py — no IP capture, decided from
+    # created_via + email pattern). Fires regardless of the parental-consent
+    # branch below — the account row exists either way.
+    try:
+        from services.signup_alerts import queue_new_signup_notification
+        queue_new_signup_notification(
+            background_tasks,
+            created_via="invite_accept",
+            email=new_student.email,
+            username=new_student.username,
+            role="STUDENT",
+            locale=body.signup_locale,
+        )
+    except Exception as _e:
+        logger.warning("Could not queue new-signup notification (non-blocking): %s", _e)
 
     # Re-check is_active — age gate may have set it FALSE for under-13 students
     active_row = (await db.execute(

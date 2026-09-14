@@ -18,7 +18,7 @@ interface InvitePreview {
 }
 
 export default function JoinClassroomPage() {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
   const { token }   = useParams<{ token: string }>();
   const navigate    = useNavigate();
   const { setUser } = useAuthStore();
@@ -75,7 +75,11 @@ export default function JoinClassroomPage() {
     validateAge();
     setFormErr(''); setSub(true);
     try {
-      const payload = { ...form, ...(dateOfBirth ? { date_of_birth: dateOfBirth } : {}) };
+      const payload = {
+        ...form,
+        ...(dateOfBirth ? { date_of_birth: dateOfBirth } : {}),
+        signup_locale: i18n.language || undefined,
+      };
       const { data } = await axios.post(`/api/v1/classrooms/join/${token}`, payload);
       localStorage.setItem('auth_token', data.access_token);
       setUser({ id: data.user_id, email: data.email || '', role: 'STUDENT', name: data.name || '' });

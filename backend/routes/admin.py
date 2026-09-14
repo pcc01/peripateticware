@@ -582,6 +582,7 @@ async def create_admin_user(
         is_active=True,
         created_at=datetime.now(),
         updated_at=datetime.now(),
+        created_via="admin_panel",
     )
     db.add(user)
     await db.commit()

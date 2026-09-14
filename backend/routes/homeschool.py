@@ -223,6 +223,7 @@ async def create_child(
         is_active=True,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
+        created_via="homeschool_child_added",
     )
     db.add(child)
     await db.flush()

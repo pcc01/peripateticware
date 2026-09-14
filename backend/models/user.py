@@ -32,12 +32,36 @@ class User(Base):
     age_group = Column(String(20), nullable=True)
     requires_parental_consent = Column(Boolean, default=False)
     consent_token = Column(String(128), nullable=True)
+    # Persisted 2026-09-14 (previously a one-shot request field at
+    # accept_invite time, used once to send the initial consent email, then
+    # discarded — see routes/classrooms.py::accept_invite and
+    # routes/student.py::request_guardian_consent, which needs a stored
+    # address to resend to later). Encrypted like `email` above — same PII
+    # sensitivity.
+    parent_email = Column(EncryptedString(600), nullable=True)
+    last_consent_request_at = Column(DateTime, nullable=True)
     # org_id/primary_org_id: the primary multi-tenant filter column, used
     # throughout org-scoped queries (ai_router._budget_check,
     # platform_ai_ledger.org_id, etc.) but never indexed.
     org_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     primary_org_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     signup_country_code = Column(String(10), nullable=True)
+    # Which UI locale the signup form was displaying in (e.g. 'en', 'fr',
+    # 'pt-BR') -- the frontend's active react-i18next language, forwarded as
+    # a plain string, same "coarse hint, not real telemetry" spirit as
+    # signup_country_code/ip_country_hint above. No IP address is ever
+    # captured or stored (deliberate call — see services/signup_alerts.py).
+    signup_locale = Column(String(20), nullable=True)
+    # Which code path created this account: 'public_signup' (POST
+    # /auth/signup), 'invite_accept' (classroom join link), 'admin_panel'
+    # (routes/admin.py create_admin_user), 'homeschool_child_added'
+    # (routes/homeschool.py create_child), 'seed_script' (dev/demo fixtures).
+    # NULL means the row predates this column (2026-09-14) — no path is known
+    # for it either way. Drives the new-account admin-notification decision
+    # in services/signup_alerts.py: only 'public_signup'/'invite_accept' rows
+    # are candidates for a real stranger, everything else is something you or
+    # your own tooling did on purpose.
+    created_via = Column(String(30), nullable=True)
     state_code = Column(String(10), nullable=True)  # P1-5: homeschool state reporting
     is_platform_admin = Column(Boolean, default=False, nullable=False)
     # Gates /admin/blog and /admin/pages -- deliberately independent of
