@@ -23,7 +23,7 @@ from core.cache import get_cache, set_cache
 from core.rate_limit import ai_rate_limit
 from models import User, Activity, ActivityStatus, ActivityType, Project
 from models.database import ActivityWaypoint
-from models.assessment import TAXONOMY_DESCRIPTIONS
+from models.assessment import TAXONOMY_DESCRIPTIONS, AssessmentRubric
 from services.polling import poll_interval_seconds
 from schemas.activities import (
     ActivityCreate,
@@ -1727,7 +1727,8 @@ async def submission_detail(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Full submission detail including field phase and reflection status."""
+    """Full submission detail including field phase, reflection status, and
+    (if the activity has one attached) the rubric to score it against."""
     row = (await db.execute(
         text("""
             SELECT
@@ -1741,6 +1742,7 @@ async def submission_detail(
                 a.title           AS activity_title,
                 a.completion_mode,
                 a.require_field_approval,
+                a.rubric_id,
                 u.first_name, u.last_name,
                 sub.id                    AS sub_id,
                 sub.submission_status,
@@ -1752,7 +1754,9 @@ async def submission_detail(
                 sub.reflection_content,
                 sub.linked_field_note_id,
                 sub.teacher_feedback,
-                sub.grade
+                sub.grade,
+                sub.rubric_scores,
+                sub.standards_evaluation
             FROM learning_sessions ls
             JOIN activities a  ON a.id  = ls.activity_id
             JOIN users u       ON u.id  = ls.user_id
@@ -1764,10 +1768,58 @@ async def submission_detail(
     if not row:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    rubric_id = row[10]
+    rubric_payload = None
+    if rubric_id:
+        rubric = (await db.execute(
+            select(AssessmentRubric).where(AssessmentRubric.id == rubric_id)
+        )).scalar_one_or_none()
+        if rubric:
+            rubric_payload = {
+                "id": str(rubric.id),
+                "title": rubric.title,
+                "description": rubric.description,
+                "criteria": rubric.criteria,
+                "total_points": rubric.total_points,
+            }
+
+    # What state/curriculum standards this activity is mapped to (design-time,
+    # activity_standards_map — the "authoritative write" per
+    # map_activity_to_criterion's dual-write comment) — so the teacher can
+    # evaluate THIS submission against them, not just the rubric. Coverage
+    # reporting previously had no way to reflect that judgment at all; see
+    # migration 20260913b_submission_standards_evaluation.
+    from models.database import ActivityStandardsMap, StandardsSet
+
+    std_maps = (await db.execute(
+        select(ActivityStandardsMap).where(ActivityStandardsMap.activity_id == row[6])
+    )).scalars().all()
+    standards_targets = []
+    if std_maps:
+        sets_by_id = {
+            s.id: s for s in (await db.execute(
+                select(StandardsSet).where(StandardsSet.id.in_({m.standards_set_id for m in std_maps}))
+            )).scalars().all()
+        }
+        for m in std_maps:
+            s = sets_by_id.get(m.standards_set_id)
+            criterion_text = None
+            for c in (s.criteria if s and s.criteria else []):
+                if str(c.get("id") or c.get("code") or "") == m.criterion_id:
+                    criterion_text = c.get("name") or c.get("description")
+                    break
+            standards_targets.append({
+                "criterion_id":        m.criterion_id,
+                "standards_set_id":    str(m.standards_set_id),
+                "standards_set_name":  s.name if s else None,
+                "criterion_name":      criterion_text or m.criterion_id,
+                "design_coverage_level": m.coverage_level,  # the activity-level mapping, not this student's evaluation
+            })
+
     return {
         "session_id":             str(row[0]),
         "student_id":             str(row[1]),
-        "student_name":           f"{row[10]} {row[11]}",
+        "student_name":           f"{row[11]} {row[12]}",
         "session_status":         row[2],
         "started_at":             row[3].isoformat() if row[3] else None,
         "completed_at":           row[4].isoformat() if row[4] else None,
@@ -1776,18 +1828,225 @@ async def submission_detail(
         "activity_title":         row[7],
         "completion_mode":        row[8],
         "require_field_approval": row[9],
-        "submission_id":          str(row[12]) if row[12] else None,
-        "submission_status":      row[13],
-        "completion_phase":       row[14],
-        "field_phase_status":     row[15],
-        "field_phase_feedback":   row[16],
-        "field_phase_reviewed_at":row[17].isoformat() if row[17] else None,
-        "reflection_status":      row[18],
-        "reflection_content":     row[19],
-        "linked_field_note_id":   str(row[20]) if row[20] else None,
-        "teacher_feedback":       row[21],
-        "grade":                  row[22],
+        "rubric_id":              str(rubric_id) if rubric_id else None,
+        "rubric":                 rubric_payload,
+        "rubric_scores":          row[24] or {},
+        "standards_targets":      standards_targets,
+        "standards_evaluation":   row[25] or {},
+        "submission_id":          str(row[13]) if row[13] else None,
+        "submission_status":      row[14],
+        "completion_phase":       row[15],
+        "field_phase_status":     row[16],
+        "field_phase_feedback":   row[17],
+        "field_phase_reviewed_at":row[18].isoformat() if row[18] else None,
+        "reflection_status":      row[19],
+        "reflection_content":     row[20],
+        "linked_field_note_id":   str(row[21]) if row[21] else None,
+        "teacher_feedback":       row[22],
+        "grade":                  row[23],
     }
+
+
+# ── Score a submission against its rubric and/or its mapped standards ────────
+#
+# Fills the gap found 2026-09-13: neither the frontend nor the backend had a
+# working path for a teacher to actually score a submission against a
+# rubric — frontend/src/services/api.ts::scoreAssignment() posted to
+# POST /assessment/score, which didn't exist anywhere, and was itself never
+# called from any component. agents/rubric_scoring_agent.py (AI-assisted)
+# never wrote to the DB either. This is the real, persisted path both of
+# those were meant to lead to.
+#
+# Also fills a second, related gap: activity_standards_map/content_alignments
+# only ever recorded that an activity *targets* a standard, never whether any
+# given student's work *met* it — routes/standards.py::get_coverage's `met`
+# flag was `times_addressed > 0` against a completed learning_sessions row,
+# independent of quality. `standards_evaluation` below is a *teacher's*
+# per-submission verdict, and is accepted even when the activity has no
+# rubric attached at all — a submission can be evaluated against its mapped
+# standards on its own, they aren't gated behind rubric scoring existing.
+
+_VALID_COVERAGE_LEVELS = {"not_met", "partial", "full", "exceeds"}
+
+
+class RubricCriterionScoreIn(_BaseModel):
+    criterion_id: str
+    score: int
+
+
+class StandardsEvaluationIn(_BaseModel):
+    criterion_id: str
+    coverage_level: str  # one of _VALID_COVERAGE_LEVELS
+
+
+class SubmissionScoreRequest(_BaseModel):
+    scores: List[RubricCriterionScoreIn] = []
+    standards_evaluation: List[StandardsEvaluationIn] = []
+    feedback: Optional[str] = None
+
+
+def _rubric_criteria_maps(rubric: AssessmentRubric) -> Dict[str, Dict[str, Any]]:
+    """criterion_id -> {valid_scores: {int}, max_score: int} from a rubric's
+    stored criteria JSON ({id, name, description, levels:[{score,label,..}]})."""
+    out: Dict[str, Dict[str, Any]] = {}
+    for c in (rubric.criteria or []):
+        cid = str(c.get("id") or "")
+        if not cid:
+            continue
+        level_scores = {int(l["score"]) for l in (c.get("levels") or []) if "score" in l}
+        out[cid] = {"valid_scores": level_scores, "max_score": max(level_scores) if level_scores else 0}
+    return out
+
+
+@router.post("/teacher/submissions/{session_id}/score-rubric")
+async def score_submission_rubric(
+    session_id: str,
+    body: SubmissionScoreRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save (partial or complete) rubric scores and/or a standards evaluation
+    for one student's submission. Both `scores` and `standards_evaluation`
+    are optional and independent — an activity with no rubric can still be
+    evaluated against its mapped standards, and vice versa — but at least
+    one must be non-empty.
+
+    Rubric scores merge into activity_submissions.rubric_scores (a partial
+    call only touches the criteria it names — safe to score one criterion at
+    a time and come back). Once every criterion on the attached rubric has a
+    score, submission_status flips to 'graded' and `grade` is set to the
+    percentage of total points earned; until then the submission stays in
+    its current status with partial progress saved.
+
+    standards_evaluation merges the same way into
+    activity_submissions.standards_evaluation, independently of whether the
+    rubric is complete.
+    """
+    if not body.scores and not body.standards_evaluation:
+        raise HTTPException(status_code=422, detail="Provide at least one of scores or standards_evaluation.")
+
+    row = (await db.execute(
+        text("""
+            SELECT ls.user_id, ls.activity_id, a.rubric_id
+            FROM   learning_sessions ls
+            JOIN   activities a ON a.id = ls.activity_id
+            WHERE  ls.id = :sid AND a.teacher_id = :tid
+        """),
+        {"sid": session_id, "tid": str(current_user.id)},
+    )).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Session not found")
+    student_id, activity_id, rubric_id = str(row[0]), str(row[1]), row[2]
+
+    sub = await _upsert_submission(db, session_id, student_id, activity_id)
+
+    result: Dict[str, Any] = {"submission_id": sub["id"]}
+
+    # ── Rubric scores ────────────────────────────────────────────────────────
+    if body.scores:
+        if not rubric_id:
+            raise HTTPException(status_code=400, detail="This activity has no rubric attached.")
+        rubric = (await db.execute(
+            select(AssessmentRubric).where(AssessmentRubric.id == rubric_id)
+        )).scalar_one_or_none()
+        if not rubric:
+            raise HTTPException(status_code=404, detail="Attached rubric no longer exists.")
+
+        criteria_map = _rubric_criteria_maps(rubric)
+        new_scores: Dict[str, int] = {}
+        for s in body.scores:
+            crit = criteria_map.get(s.criterion_id)
+            if not crit:
+                raise HTTPException(status_code=422, detail=f"Unknown rubric criterion: {s.criterion_id}")
+            if s.score not in crit["valid_scores"]:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Score {s.score} is not a valid level for criterion {s.criterion_id} "
+                           f"(valid: {sorted(crit['valid_scores'])})",
+                )
+            new_scores[s.criterion_id] = s.score
+
+        merged_row = (await db.execute(
+            text("""
+                UPDATE activity_submissions
+                SET    rubric_scores = COALESCE(rubric_scores, '{}'::jsonb) || CAST(:new_scores AS jsonb),
+                       updated_at    = NOW()
+                WHERE  id = :sub_id
+                RETURNING rubric_scores
+            """),
+            {"new_scores": json.dumps(new_scores), "sub_id": sub["id"]},
+        )).first()
+        merged_scores: Dict[str, Any] = merged_row[0] or {}
+
+        total_points = sum(int(v) for k, v in merged_scores.items() if k in criteria_map)
+        max_points = sum(c["max_score"] for c in criteria_map.values())
+        is_complete = set(criteria_map.keys()) <= set(merged_scores.keys())
+
+        if is_complete:
+            grade_pct = round(total_points / max_points * 100) if max_points else 0
+            await db.execute(
+                text("""
+                    UPDATE activity_submissions
+                    SET    submission_status = 'graded', grade = :grade,
+                           graded_at = NOW(), updated_at = NOW()
+                    WHERE  id = :sub_id
+                """),
+                {"grade": grade_pct, "sub_id": sub["id"]},
+            )
+            result["grade"] = grade_pct
+
+        result.update({
+            "rubric_scores": merged_scores,
+            "total_points": total_points,
+            "max_points": max_points,
+            "rubric_complete": is_complete,
+        })
+
+    # ── Standards evaluation — independent of rubric scoring ────────────────
+    if body.standards_evaluation:
+        mapped_ids = {
+            m.criterion_id for m in (await db.execute(
+                text("SELECT criterion_id FROM activity_standards_map WHERE activity_id = :aid"),
+                {"aid": activity_id},
+            )).fetchall()
+        }
+        new_eval: Dict[str, str] = {}
+        for e in body.standards_evaluation:
+            if e.criterion_id not in mapped_ids:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Criterion {e.criterion_id} is not mapped to this activity — "
+                           "map it first via POST /standards/{set_id}/map.",
+                )
+            if e.coverage_level not in _VALID_COVERAGE_LEVELS:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"coverage_level must be one of {sorted(_VALID_COVERAGE_LEVELS)}, got {e.coverage_level!r}",
+                )
+            new_eval[e.criterion_id] = e.coverage_level
+
+        eval_row = (await db.execute(
+            text("""
+                UPDATE activity_submissions
+                SET    standards_evaluation = COALESCE(standards_evaluation, '{}'::jsonb) || CAST(:new_eval AS jsonb),
+                       updated_at = NOW()
+                WHERE  id = :sub_id
+                RETURNING standards_evaluation
+            """),
+            {"new_eval": json.dumps(new_eval), "sub_id": sub["id"]},
+        )).first()
+        result["standards_evaluation"] = eval_row[0] or {}
+
+    if body.feedback is not None:
+        await db.execute(
+            text("UPDATE activity_submissions SET teacher_feedback = :fb, updated_at = NOW() WHERE id = :sub_id"),
+            {"fb": body.feedback, "sub_id": sub["id"]},
+        )
+        result["teacher_feedback"] = body.feedback
+
+    await db.commit()
+    return result
 
 
 # ── Privacy compliance check for ActivityManager badge ────────────────────────

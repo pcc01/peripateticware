@@ -3,11 +3,19 @@ import { fmtDate, fmtDateTime, fmtTime } from '@/utils/date';
 // This source code is licensed under the Business Source License 1.1
 // found in the LICENSE.md file in the root directory of this source tree.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, XCircle, Clock, User, FileText, PenLine, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, FileText, PenLine, Eye, ClipboardCheck } from 'lucide-react';
 import { useApiData, useTeacher } from '@/services/api';
 import { SubmissionQueryParams } from '@/services/api';
+import type { SubmissionDetail, StandardsCoverageLevel } from '@/services/types';
+
+const COVERAGE_LEVELS: { value: StandardsCoverageLevel; label: string; color: string }[] = [
+  { value: 'not_met', label: 'Not Met', color: 'bg-red-100 text-red-700 border-red-300' },
+  { value: 'partial', label: 'Partial', color: 'bg-amber-100 text-amber-700 border-amber-300' },
+  { value: 'full', label: 'Full', color: 'bg-green-100 text-green-700 border-green-300' },
+  { value: 'exceeds', label: 'Exceeds', color: 'bg-emerald-100 text-emerald-800 border-emerald-400' },
+];
 
 /**
  * TeacherSubmissionsPage
@@ -24,7 +32,7 @@ import { SubmissionQueryParams } from '@/services/api';
 
 export const TeacherSubmissionsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { getSubmissions, approveSubmission, rejectSubmission, reviewFieldPhase, getSubmissionDetail } = useTeacher();
+  const { getSubmissions, approveSubmission, rejectSubmission, reviewFieldPhase, getSubmissionDetail, scoreRubric } = useTeacher();
 
   // State
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending_review' | 'approved' | 'rejected'>('pending_review');
@@ -36,6 +44,51 @@ export const TeacherSubmissionsPage: React.FC = () => {
   const [fieldReviewMode, setFieldReviewMode] = useState(false);
   const [fieldFeedback, setFieldFeedback] = useState('');
   const [fieldActionPending, setFieldActionPending] = useState(false);
+
+  // Rubric + standards scoring state — populated from GET .../detail, which
+  // (unlike the flat list row) carries the attached rubric definition, any
+  // scores already saved, and which state/curriculum standards this
+  // activity is mapped to. See routes/activities.py::score_submission_rubric.
+  const { data: submissionDetail } = useApiData<SubmissionDetail | null>(
+    () => (selectedSubmissionId ? getSubmissionDetail(selectedSubmissionId) : Promise.resolve(null)),
+    [selectedSubmissionId]
+  );
+  const [draftScores, setDraftScores] = useState<Record<string, number>>({});
+  const [draftEvaluation, setDraftEvaluation] = useState<Record<string, StandardsCoverageLevel>>({});
+  const [rubricFeedback, setRubricFeedback] = useState('');
+  const [savingRubric, setSavingRubric] = useState(false);
+  const [rubricSaveError, setRubricSaveError] = useState<string | null>(null);
+  const [rubricSaved, setRubricSaved] = useState(false);
+
+  useEffect(() => {
+    setDraftScores(submissionDetail?.rubric_scores ?? {});
+    setDraftEvaluation((submissionDetail?.standards_evaluation as Record<string, StandardsCoverageLevel>) ?? {});
+    setRubricFeedback(submissionDetail?.teacher_feedback ?? '');
+    setRubricSaveError(null);
+    setRubricSaved(false);
+  }, [submissionDetail]);
+
+  const handleSaveRubricScore = async () => {
+    if (!selectedSubmissionId) return;
+    setSavingRubric(true);
+    setRubricSaveError(null);
+    setRubricSaved(false);
+    try {
+      await scoreRubric(selectedSubmissionId, {
+        scores: Object.entries(draftScores).map(([criterion_id, s]) => ({ criterion_id, score: s })),
+        standards_evaluation: Object.entries(draftEvaluation).map(([criterion_id, coverage_level]) => ({
+          criterion_id,
+          coverage_level,
+        })),
+        feedback: rubricFeedback || undefined,
+      });
+      setRubricSaved(true);
+    } catch (err: any) {
+      setRubricSaveError(err?.response?.data?.detail || err?.message || 'Could not save. Try again.');
+    } finally {
+      setSavingRubric(false);
+    }
+  };
 
   // Fetch submissions
   const params: SubmissionQueryParams = {
@@ -304,6 +357,114 @@ export const TeacherSubmissionsPage: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Rubric + Standards Scoring — shown when the activity has a
+                    rubric attached and/or is mapped to state/curriculum
+                    standards. Independent of each other: an activity with no
+                    rubric can still be evaluated against its mapped
+                    standards, and vice versa. */}
+                {submissionDetail && (submissionDetail.rubric || submissionDetail.standards_targets?.length > 0) && (
+                  <div className="mb-6 pb-6 border-b">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <ClipboardCheck className="w-4 h-4 text-green-700" />
+                      Score This Submission
+                      {submissionDetail.submission_status === 'graded' && (
+                        <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                          ✓ Graded{submissionDetail.grade != null ? ` — ${submissionDetail.grade}%` : ''}
+                        </span>
+                      )}
+                    </h3>
+
+                    {submissionDetail.rubric && (
+                      <div className="space-y-3 mb-4">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          {submissionDetail.rubric.title}
+                        </p>
+                        {submissionDetail.rubric.criteria.map((criterion) => (
+                          <div key={criterion.id} className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-sm font-medium text-gray-800 mb-2">{criterion.name}</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[...criterion.levels].sort((a, b) => b.score - a.score).map((level) => (
+                                <button
+                                  key={level.score}
+                                  type="button"
+                                  title={level.description}
+                                  onClick={() =>
+                                    setDraftScores((s) => ({ ...s, [criterion.id]: level.score }))
+                                  }
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                                    draftScores[criterion.id] === level.score
+                                      ? 'bg-green-700 text-white border-green-700'
+                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  {level.label} ({level.score})
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {submissionDetail.standards_targets?.length > 0 && (
+                      <div className="space-y-3 mb-4">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          Mapped Standards — Did This Submission Meet Them?
+                        </p>
+                        {submissionDetail.standards_targets.map((target) => (
+                          <div key={target.criterion_id} className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-sm font-medium text-gray-800 mb-0.5">{target.criterion_name}</div>
+                            {target.standards_set_name && (
+                              <div className="text-xs text-gray-500 mb-2">{target.standards_set_name}</div>
+                            )}
+                            <div className="flex flex-wrap gap-1.5">
+                              {COVERAGE_LEVELS.map((lvl) => (
+                                <button
+                                  key={lvl.value}
+                                  type="button"
+                                  onClick={() =>
+                                    setDraftEvaluation((s) => ({ ...s, [target.criterion_id]: lvl.value }))
+                                  }
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                                    draftEvaluation[target.criterion_id] === lvl.value
+                                      ? lvl.color + ' ring-2 ring-offset-1 ring-gray-400'
+                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  {lvl.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <textarea
+                      value={rubricFeedback}
+                      onChange={(e) => setRubricFeedback(e.target.value)}
+                      placeholder="Feedback for the student..."
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 mb-2"
+                      rows={2}
+                    />
+
+                    {rubricSaveError && (
+                      <p className="text-xs text-red-600 mb-2">{rubricSaveError}</p>
+                    )}
+                    {rubricSaved && !rubricSaveError && (
+                      <p className="text-xs text-green-600 mb-2">✓ Saved</p>
+                    )}
+
+                    <button
+                      onClick={handleSaveRubricScore}
+                      disabled={savingRubric || (Object.keys(draftScores).length === 0 && Object.keys(draftEvaluation).length === 0)}
+                      className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                    >
+                      {savingRubric ? 'Saving…' : 'Save Scores'}
+                    </button>
+                  </div>
+                )}
 
                 {/* Field Work Review Panel — shown for Field + Reflection activities */}
                 {selectedSubmission.completion_mode === 'field_and_reflection' &&

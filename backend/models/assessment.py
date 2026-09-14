@@ -137,7 +137,20 @@ class AssessmentRubric(Base):
     description = Column(Text, nullable=True)
     
     # Framework
-    framework = Column(SQLEnum(AssessmentFramework), default=AssessmentFramework.BLOOMS, nullable=False)
+    # native_enum=False: the real assessment_rubrics.framework column is a
+    # plain VARCHAR (confirmed against the live DB) -- no `assessmentframework`
+    # Postgres enum type was ever created for it. Without native_enum=False,
+    # SQLAlchemy assumes a native enum exists and emits an explicit
+    # `::assessmentframework` CAST on every INSERT/UPDATE, which fails with
+    # `UndefinedObjectError: type "assessmentframework" does not exist` --
+    # meaning every POST /rubrics call has always 500'd (found 2026-09-13
+    # while building the rubric-scoring feature: assessment_rubrics had zero
+    # rows in the dev DB, and this is why). Same fix already applied
+    # elsewhere in this codebase for the identical class of bug -- see
+    # StudentCapture.capture_type / transcript_status in models/database.py
+    # and models/student_models.py.
+    framework = Column(SQLEnum(AssessmentFramework, native_enum=False, length=20),
+                        default=AssessmentFramework.BLOOMS, nullable=False)
     
     # Rubric criteria and levels
     criteria = Column(JSONB, nullable=False)

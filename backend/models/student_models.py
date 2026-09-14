@@ -216,6 +216,15 @@ class ActivitySubmission(Base):
     teacher_feedback = Column(Text,  nullable=True)
     grade            = Column(Float, nullable=True)
     rubric_scores    = Column(JSONB, nullable=True)   # {criterion_id: score}
+    # {criterion_id: "not_met"|"partial"|"full"|"exceeds"} -- the teacher's
+    # verdict on whether THIS submission demonstrated each state/curriculum
+    # standard the activity is mapped to (activity_standards_map /
+    # content_alignments only record that the activity *targets* a standard,
+    # not that any given student's work met it). routes/standards.py::
+    # get_coverage and routes/homeschool.py::coverage_summary prefer this
+    # per-submission verdict when present; see migration
+    # 20260913b_submission_standards_evaluation.
+    standards_evaluation = Column(JSONB, nullable=True)
 
     # Timestamps
     submitted_at = Column(DateTime, nullable=True)
@@ -238,6 +247,7 @@ class ActivitySubmission(Base):
             "teacher_feedback":  self.teacher_feedback,
             "grade":             self.grade,
             "rubric_scores":     self.rubric_scores,
+            "standards_evaluation": self.standards_evaluation,
             "submitted_at":      self.submitted_at.isoformat() if self.submitted_at else None,
             "graded_at":         self.graded_at.isoformat()    if self.graded_at    else None,
             "created_at":        self.created_at.isoformat()   if self.created_at   else None,

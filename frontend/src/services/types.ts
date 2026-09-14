@@ -209,6 +209,27 @@ export type ReflectionStatus =
 
 export type CompletionPhase = 'field_work' | 'reflection' | 'complete'
 
+export type RubricLevel = { score: number; label: string; description: string }
+export type RubricCriterion = { id: string; name: string; description: string; levels: RubricLevel[] }
+export type RubricDefinition = {
+  id: string
+  title: string
+  description: string | null
+  criteria: RubricCriterion[]
+  total_points: number
+}
+
+export type StandardsCoverageLevel = 'not_met' | 'partial' | 'full' | 'exceeds'
+
+/** One state/curriculum standard this activity is mapped to (design-time) */
+export type StandardsTarget = {
+  criterion_id:           string
+  standards_set_id:       string
+  standards_set_name:     string | null
+  criterion_name:         string
+  design_coverage_level:  string
+}
+
 /** Full submission detail including both phases */
 export interface SubmissionDetail {
   session_id:               string
@@ -218,6 +239,11 @@ export interface SubmissionDetail {
   activity_title:           string
   completion_mode:          CompletionMode
   require_field_approval:   boolean
+  rubric_id:                string | null
+  rubric:                   RubricDefinition | null
+  rubric_scores:            Record<string, number>
+  standards_targets:        StandardsTarget[]
+  standards_evaluation:     Record<string, StandardsCoverageLevel>
   submission_id:            string | null
   submission_status:        string
   completion_phase:         CompletionPhase
@@ -232,6 +258,23 @@ export interface SubmissionDetail {
   evidence:                 Evidence[]
   started_at:               string | null
   completed_at:             string | null
+}
+
+export interface ScoreSubmissionRequest {
+  scores?:               { criterion_id: string; score: number }[]
+  standards_evaluation?: { criterion_id: string; coverage_level: StandardsCoverageLevel }[]
+  feedback?:             string
+}
+
+export interface ScoreSubmissionResponse {
+  submission_id:        string
+  rubric_scores?:        Record<string, number>
+  total_points?:          number
+  max_points?:            number
+  rubric_complete?:       boolean
+  grade?:                 number
+  standards_evaluation?: Record<string, StandardsCoverageLevel>
+  teacher_feedback?:      string
 }
 
 /** Evidence capture submitted by a student during a session */
