@@ -35,20 +35,28 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
 
-  useEffect(() => {
-    if (!visible) return;
-    setClassroomId(null); setRecipients(null); setStudent(null);
-    setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
-    fetchTeacherClasses().then(setClasses).catch(() => setClasses([]));
-  }, [visible]);
-
-  const pickClassroom = (id: string) => {
+  const pickClassroom = useCallback((id: string) => {
     setClassroomId(id);
     setRecipients(null);
     setStudent(null);
     setLoadingRecipients(true);
     fetchClassroomRecipients(id).then(setRecipients).catch(() => setRecipients({ students: [], parents: [] })).finally(() => setLoadingRecipients(false));
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    setClassroomId(null); setRecipients(null); setStudent(null);
+    setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
+    fetchTeacherClasses().then((cs) => {
+      setClasses(cs);
+      // BUG FIX (2026-09-15): classroomId used to stay null until the
+      // teacher explicitly tapped a classroom chip — easy to miss when
+      // there's only one, and `valid` below requires it, so Send stayed
+      // silently disabled ("I can write the message but I can't send it").
+      // Auto-select the first/only classroom instead.
+      if (cs.length > 0) pickClassroom(cs[0].id);
+    }).catch(() => setClasses([]));
+  }, [visible, pickClassroom]);
 
   const valid = classroomId && subject.trim() && body.trim() && (audience === 'all_students' || audience === 'all_parents' || student);
 
