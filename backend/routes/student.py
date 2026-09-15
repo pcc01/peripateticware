@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
 from core.database import get_db
 from core.dependencies import get_current_user
+from core.encryption import decrypt as _decrypt
 from models.database import (
     CaptureAnnotation,
     CaptureType,
@@ -174,6 +175,19 @@ def _require_student(user: User) -> None:
     """
     if user.role not in (UserRole.STUDENT, UserRole.ADMIN):
         raise HTTPException(status_code=403, detail="Student access required")
+
+
+def _decrypted_name(full_name: Optional[str], email: Optional[str]) -> str:
+    """COALESCE(full_name, email)-equivalent for raw-SQL results, where both
+    columns are EncryptedString — the ORM's TypeDecorator that normally
+    decrypts on load never runs for raw text() queries, so a plain SQL
+    COALESCE just returns whichever ciphertext is non-null. Decrypt each
+    candidate individually instead of coalescing the raw values."""
+    if full_name:
+        return _decrypt(full_name)
+    if email:
+        return _decrypt(email)
+    return ""
 
 
 # ==============================================================================
@@ -737,7 +751,7 @@ async def get_student_announcements(
     try:
         rows = (await db.execute(text("""
             SELECT a.id, a.classroom_id, c.name AS classroom_name,
-                   a.teacher_id, COALESCE(t.full_name, t.email) AS teacher_name,
+                   a.teacher_id, t.full_name, t.email,
                    a.title, a.body, a.created_at
             FROM classroom_announcements a
             JOIN classrooms c ON c.id = a.classroom_id
@@ -754,7 +768,7 @@ async def get_student_announcements(
                 classroom_id=str(r["classroom_id"]),
                 classroom_name=r["classroom_name"],
                 teacher_id=str(r["teacher_id"]),
-                teacher_name=r["teacher_name"],
+                teacher_name=_decrypted_name(r["full_name"], r["email"]),
                 title=r["title"],
                 body=r["body"],
                 created_at=r["created_at"].isoformat() if r["created_at"] else datetime.utcnow().isoformat(),
@@ -799,7 +813,7 @@ async def list_student_conversations(
         SELECT DISTINCT ON (m.conversation_id)
                m.conversation_id, m.subject, m.body, m.created_at, m.from_user_id, m.to_user_id, m.read_at,
                CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END AS other_user_id,
-               COALESCE(u.full_name, u.email) AS other_user_name
+               u.full_name, u.email
         FROM parent_messages m
         JOIN users u ON u.id = CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END
         WHERE m.from_user_id = :uid OR m.to_user_id = :uid
@@ -811,7 +825,7 @@ async def list_student_conversations(
         {
             "conversation_id": str(r["conversation_id"]),
             "other_user_id": str(r["other_user_id"]),
-            "other_user_name": r["other_user_name"],
+            "other_user_name": _decrypted_name(r["full_name"], r["email"]),
             "subject": r["subject"],
             "last_message": r["body"],
             "last_message_at": r["created_at"].isoformat() if r["created_at"] else None,
@@ -840,7 +854,7 @@ async def get_student_conversation_thread(
 
     rows = (await db.execute(text("""
         SELECT m.id, m.from_user_id, m.to_user_id, m.subject, m.body, m.created_at, m.read_at,
-               COALESCE(u.full_name, u.email) AS from_name
+               u.full_name, u.email
         FROM parent_messages m
         JOIN users u ON u.id = m.from_user_id
         WHERE m.conversation_id = CAST(:conv AS uuid)
@@ -855,7 +869,7 @@ async def get_student_conversation_thread(
         {
             "id": str(r["id"]),
             "from_user_id": str(r["from_user_id"]),
-            "from_name": r["from_name"],
+            "from_name": _decrypted_name(r["full_name"], r["email"]),
             "is_mine": str(r["from_user_id"]) == str(current_user.id),
             "subject": r["subject"],
             "body": r["body"],
