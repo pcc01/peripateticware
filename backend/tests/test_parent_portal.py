@@ -535,3 +535,92 @@ async def test_settings_upsert(ctx):
     assert get_body["language"] == "es"
     assert get_body["email_frequency"] == "daily"
     assert get_body["notifications_enabled"] is False
+
+
+# ===========================================================================
+# 11. GET /parent/announcements — returns AnnouncementResponse objects,
+#     including which child each announcement applies to
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_get_announcements_returns_list(ctx):
+    """GET /parent/announcements returns classroom announcements scoped to
+    the calling parent's linked children, including child_id/child_name."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    announcement_id = uuid4()
+    classroom_id = uuid4()
+    teacher_id = uuid4()
+    child_id = uuid4()
+    now = datetime(2026, 2, 1, 9, 0, 0)
+
+    fake_row = _row(
+        id=announcement_id,
+        classroom_id=classroom_id,
+        classroom_name="5th Grade Science",
+        teacher_id=teacher_id,
+        teacher_name="Ms. Rivera",
+        child_id=child_id,
+        child_name="Grace Hopper",
+        title="Field trip Friday",
+        body="Please send a signed permission slip by Thursday.",
+        created_at=now,
+    )
+
+    result_mock = MagicMock()
+    result_mock.mappings.return_value.all.return_value = [fake_row]
+    db.execute.return_value = result_mock
+
+    resp = await client.get("/api/v1/parent/announcements")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    ann = data[0]
+    assert ann["id"] == str(announcement_id)
+    assert ann["classroom_name"] == "5th Grade Science"
+    assert ann["teacher_name"] == "Ms. Rivera"
+    assert ann["child_id"] == str(child_id)
+    assert ann["child_name"] == "Grace Hopper"
+    assert ann["title"] == "Field trip Friday"
+
+
+# ===========================================================================
+# 12. GET /parent/announcements — regression: query must filter
+#     parent_child_links.status = 'approved', not just parent_id.
+#
+#     Every other place that joins through parent_child_links filters on
+#     status = 'approved' too (see routes/teacher_communication.py's
+#     _resolve_recipients "parent" audience branch) — a pending or denied
+#     link is not supposed to grant access to anything. This endpoint's
+#     query previously filtered only on pcl.parent_id, which meant a
+#     pending/denied parent-child link still surfaced that classroom's
+#     announcements. Since this test suite mocks db.execute entirely (the
+#     fake DB returns whatever rows we hand it regardless of the WHERE
+#     clause), the only way to pin the fix in place is to assert the actual
+#     SQL text sent to db.execute includes the status filter.
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_get_announcements_query_filters_approved_links_only(ctx):
+    """The SQL for GET /parent/announcements must scope through
+    parent_child_links with BOTH pcl.parent_id = :pid AND
+    pcl.status = 'approved' -- a pending/denied link must not surface
+    announcements for that child's classroom."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    result_mock = MagicMock()
+    result_mock.mappings.return_value.all.return_value = []
+    db.execute.return_value = result_mock
+
+    resp = await client.get("/api/v1/parent/announcements")
+
+    assert resp.status_code == 200
+
+    call_args = db.execute.call_args
+    sql = str(call_args.args[0])
+    assert "parent_child_links" in sql
+    assert "pcl.parent_id" in sql
+    assert "pcl.status = 'approved'" in sql

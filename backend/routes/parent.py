@@ -830,6 +830,7 @@ async def get_parent_announcements(
             JOIN users t ON t.id = a.teacher_id
             JOIN users s ON s.id = cs.student_id
             WHERE pcl.parent_id = CAST(:pid AS uuid)
+              AND pcl.status = 'approved'
             ORDER BY a.created_at DESC
             LIMIT :lim
         """), {"pid": str(current_user.id), "lim": limit})).mappings().all()
