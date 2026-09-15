@@ -19,7 +19,7 @@ Routes (prefix: /api/v1/teacher, registered in main.py):
   GET  /classrooms/{classroom_id}/recipients   Students + their linked parents, for the compose picker
   GET  /messages                                Teacher's conversations (as sender or recipient), threaded
   GET  /messages/{conversation_id}              Full thread for one conversation
-  POST /messages                                Send a new message (one recipient, or a classroom-wide broadcast)
+  POST /messages                                Send a new message (one or more specific recipients, or a classroom-wide broadcast)
   POST /messages/{conversation_id}/reply         Reply within an existing conversation
 
 Every parent_child_links join below filters status='approved' — a
@@ -58,7 +58,7 @@ def _require_teacher(user: User) -> None:
 class SendMessageRequest(BaseModel):
     classroom_id: str
     audience: Literal["student", "parent", "all_students", "all_parents"]
-    student_id: Optional[str] = None  # required when audience is "student" or "parent"
+    student_ids: Optional[List[str]] = None  # one or more; required when audience is "student" or "parent"
     subject: str = Field(..., min_length=1, max_length=500)
     body: str = Field(..., min_length=1)
     notify: bool = True  # also create a row in `notifications` for each recipient
@@ -117,21 +117,26 @@ async def _verify_classroom_ownership_403(db: AsyncSession, classroom_id: str, t
 
 
 async def _resolve_recipients(
-    db: AsyncSession, classroom_id: str, audience: str, student_id: Optional[str]
+    db: AsyncSession, classroom_id: str, audience: str, student_ids: Optional[List[str]]
 ) -> List[dict]:
-    """Returns a list of {user_id, name} for the chosen audience."""
+    """Returns a list of {user_id, name} for the chosen audience.
+
+    student_ids may contain more than one id (multi-recipient compose) — a
+    partial match (some ids resolve, some don't, e.g. a bogus id mixed in
+    with valid ones) is not an error; only an EMPTY resolved list 404s.
+    """
     if audience == "student":
-        if not student_id:
-            raise HTTPException(status_code=422, detail="student_id is required for audience=student")
-        row = (await db.execute(text("""
+        if not student_ids:
+            raise HTTPException(status_code=422, detail="student_ids is required for audience=student")
+        rows = (await db.execute(text("""
             SELECT u.id, COALESCE(u.full_name, u.email) AS name
             FROM classroom_students cs
             JOIN users u ON u.id = cs.student_id
-            WHERE cs.classroom_id = :cid AND cs.student_id = :sid
-        """), {"cid": classroom_id, "sid": student_id})).mappings().first()
-        if not row:
-            raise HTTPException(status_code=404, detail="Student not found in this classroom")
-        return [{"user_id": str(row["id"]), "name": row["name"]}]
+            WHERE cs.classroom_id = :cid AND cs.student_id = ANY(CAST(:sids AS uuid[]))
+        """), {"cid": classroom_id, "sids": [str(s) for s in student_ids]})).mappings().all()
+        if not rows:
+            raise HTTPException(status_code=404, detail="No matching students found")
+        return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
 
     if audience == "all_students":
         rows = (await db.execute(text("""
@@ -143,17 +148,17 @@ async def _resolve_recipients(
         return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
 
     if audience == "parent":
-        if not student_id:
-            raise HTTPException(status_code=422, detail="student_id is required for audience=parent")
+        if not student_ids:
+            raise HTTPException(status_code=422, detail="student_ids is required for audience=parent")
         rows = (await db.execute(text("""
             SELECT DISTINCT p.id, COALESCE(p.full_name, p.email) AS name
             FROM classroom_students cs
             JOIN parent_child_links pcl ON pcl.child_id = cs.student_id AND pcl.status = 'approved'
             JOIN users p ON p.id = pcl.parent_id
-            WHERE cs.classroom_id = :cid AND cs.student_id = :sid
-        """), {"cid": classroom_id, "sid": student_id})).mappings().all()
+            WHERE cs.classroom_id = :cid AND cs.student_id = ANY(CAST(:sids AS uuid[]))
+        """), {"cid": classroom_id, "sids": [str(s) for s in student_ids]})).mappings().all()
         if not rows:
-            raise HTTPException(status_code=404, detail="No linked parent found for this student")
+            raise HTTPException(status_code=404, detail="No linked parent found for these students")
         return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
 
     if audience == "all_parents":
@@ -284,7 +289,7 @@ async def send_message(
     _require_teacher(current_user)
     classroom_name = await _verify_classroom_ownership(db, body.classroom_id, current_user)
 
-    recipients = await _resolve_recipients(db, body.classroom_id, body.audience, body.student_id)
+    recipients = await _resolve_recipients(db, body.classroom_id, body.audience, body.student_ids)
     if not recipients:
         raise HTTPException(status_code=404, detail="No recipients found for this audience")
 

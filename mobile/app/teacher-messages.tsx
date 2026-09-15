@@ -23,7 +23,19 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   const [recipients, setRecipients] = useState<ClassroomRecipients | null>(null);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [audience, setAudience] = useState<MessageAudience>('all_parents');
-  const [student, setStudent] = useState<Recipient | null>(null);
+  // Multi-select (2026-09-15): a teacher can now pick SEVERAL specific
+  // students/parents in one compose instead of only one at a time. Every
+  // entry here is keyed by the STUDENT's own id regardless of recipientKind
+  // below — the roster chips, and both search-select helpers, always store
+  // the student id; recipientKind decides whether the backend resolves it
+  // to that student directly or to their approved parent(s). Toggling
+  // recipientKind therefore does NOT need to clear this list.
+  const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
+  // Set when a searched result's classroom differs from the one already in
+  // progress — see selectSearchedStudent/selectSearchedParent below. A
+  // message can only target one classroom, so switching classrooms clears
+  // the previous selection; this note tells the teacher that happened.
+  const [switchNote, setSwitchNote] = useState<string | null>(null);
   // BUG FIX (2026-09-15): the "or one family" picker below used to always
   // send to that student's PARENT (audience='parent') no matter what — there
   // was no way to message an individual STUDENT directly even though the
@@ -51,14 +63,15 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   const pickClassroom = useCallback((id: string) => {
     setClassroomId(id);
     setRecipients(null);
-    setStudent(null);
+    setSelectedRecipients([]);
+    setSwitchNote(null);
     setLoadingRecipients(true);
     fetchClassroomRecipients(id).then(setRecipients).catch(() => setRecipients({ students: [], parents: [] })).finally(() => setLoadingRecipients(false));
   }, []);
 
   useEffect(() => {
     if (!visible) return;
-    setClassroomId(null); setRecipients(null); setStudent(null);
+    setClassroomId(null); setRecipients(null); setSelectedRecipients([]); setSwitchNote(null);
     setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
     setClassesLoaded(false);
     setSearchQuery(''); setSearchResults(null);
@@ -89,10 +102,13 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Deliberately NOT reusing pickClassroom here — it resets `student` to
-  // null, which would wipe out the very selection this function is making.
-  // Only the recipients list (for consistency with the browse view below,
-  // e.g. switching recipientKind afterward) needs refetching.
+  // Deliberately NOT reusing pickClassroom here — it resets the selection to
+  // empty unconditionally, which would wipe out the very selection this
+  // function is making when the searched result is in the SAME classroom
+  // already in progress. Only the recipients list (for consistency with the
+  // browse view below, e.g. switching recipientKind afterward) needs
+  // refetching; whether the selection itself survives is decided by the
+  // callers below based on whether the classroom is actually changing.
   const loadClassroomIfNeeded = (id: string) => {
     if (id === classroomId) return;
     setClassroomId(id);
@@ -100,23 +116,50 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
     fetchClassroomRecipients(id).then(setRecipients).catch(() => setRecipients({ students: [], parents: [] })).finally(() => setLoadingRecipients(false));
   };
 
-  const selectSearchedStudent = (s: { id: string; name: string; classroom_id: string }) => {
+  const toggleRecipient = (s: Recipient) => {
+    setSelectedRecipients((prev) => (
+      prev.some((r) => r.id === s.id) ? prev.filter((r) => r.id !== s.id) : [...prev, s]
+    ));
+    setAudience(recipientKind);
+  };
+
+  // A message can only target ONE classroom (classroom_id is a single value
+  // in the request), so a searched result from a DIFFERENT classroom than
+  // the one currently in progress can't just be merged into the existing
+  // selection — switch to its classroom and clear the previous selection
+  // instead (same as today's single-select loadClassroomIfNeeded behavior),
+  // and surface switchNote so the teacher knows why their picks reset.
+  const selectSearchedStudent = (s: { id: string; name: string; classroom_id: string; classroom_name: string }) => {
+    const switchingClassroom = s.classroom_id !== classroomId;
     loadClassroomIfNeeded(s.classroom_id);
     setRecipientKind('student');
     setAudience('student');
-    setStudent({ id: s.id, name: s.name, email: '' });
+    const entry: Recipient = { id: s.id, name: s.name, email: '' };
+    if (switchingClassroom) {
+      setSelectedRecipients([entry]);
+      setSwitchNote(t('teacherMessages.switchedClassroom', 'Switched to {{classroom}} — previous selection cleared.', { classroom: s.classroom_name }));
+    } else {
+      setSelectedRecipients((prev) => (prev.some((r) => r.id === entry.id) ? prev : [...prev, entry]));
+    }
     setSearchQuery(''); setSearchResults(null);
   };
 
-  const selectSearchedParent = (p: { id: string; name: string; student_id: string; student_name: string; classroom_id: string }) => {
+  const selectSearchedParent = (p: { id: string; name: string; student_id: string; student_name: string; classroom_id: string; classroom_name: string }) => {
+    const switchingClassroom = p.classroom_id !== classroomId;
     loadClassroomIfNeeded(p.classroom_id);
     setRecipientKind('parent');
     setAudience('parent');
-    setStudent({ id: p.student_id, name: p.student_name, email: '' });
+    const entry: Recipient = { id: p.student_id, name: p.student_name, email: '' };
+    if (switchingClassroom) {
+      setSelectedRecipients([entry]);
+      setSwitchNote(t('teacherMessages.switchedClassroom', 'Switched to {{classroom}} — previous selection cleared.', { classroom: p.classroom_name }));
+    } else {
+      setSelectedRecipients((prev) => (prev.some((r) => r.id === entry.id) ? prev : [...prev, entry]));
+    }
     setSearchQuery(''); setSearchResults(null);
   };
 
-  const valid = classroomId && subject.trim() && body.trim() && (audience === 'all_students' || audience === 'all_parents' || student);
+  const valid = classroomId && subject.trim() && body.trim() && (audience === 'all_students' || audience === 'all_parents' || selectedRecipients.length > 0);
 
   const submit = async () => {
     if (!valid || !classroomId) return;
@@ -125,7 +168,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
       await sendTeacherMessage({
         classroom_id: classroomId,
         audience,
-        student_id: student?.id,
+        student_ids: selectedRecipients.length > 0 ? selectedRecipients.map((r) => r.id) : undefined,
         subject: subject.trim(),
         body: body.trim(),
       });
@@ -244,7 +287,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                         <TouchableOpacity
                           key={a}
                           testID={`teacher-compose-audience-${a}`}
-                          onPress={() => { setAudience(a); setStudent(null); }}
+                          onPress={() => { setAudience(a); setSelectedRecipients([]); }}
                           style={[styles.chip, { borderColor: audience === a ? theme.accent : theme.border, backgroundColor: audience === a ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
                         >
                           <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: audience === a ? theme.accent : theme.textMuted }}>
@@ -254,7 +297,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                       ))}
                     </View>
 
-                    <Text style={[styles.orLabel, { fontFamily: theme.fontBody, color: theme.textFaint }]}>{t('teacherMessages.orOneStudentOrFamily', 'or one student or family:')}</Text>
+                    <Text style={[styles.orLabel, { fontFamily: theme.fontBody, color: theme.textFaint }]}>{t('teacherMessages.orOneStudentOrFamily', 'or one or more students or families:')}</Text>
                     <View style={styles.chipRow}>
                       {(['parent', 'student'] as const).map((kind) => (
                         <TouchableOpacity
@@ -262,7 +305,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                           testID={`teacher-compose-recipient-kind-${kind}`}
                           onPress={() => {
                             setRecipientKind(kind);
-                            if (student) setAudience(kind);
+                            if (selectedRecipients.length > 0) setAudience(kind);
                           }}
                           style={[styles.chip, { borderColor: recipientKind === kind ? theme.accent : theme.border, backgroundColor: recipientKind === kind ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
                         >
@@ -272,23 +315,35 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                         </TouchableOpacity>
                       ))}
                     </View>
+                    {switchNote && (
+                      <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>{switchNote}</Text>
+                    )}
                     <View style={styles.chipRow}>
-                      {(recipients?.students ?? []).map((s) => (
-                        <TouchableOpacity
-                          key={s.id}
-                          testID={`teacher-compose-student-${s.id}`}
-                          onPress={() => { setStudent(s); setAudience(recipientKind); }}
-                          style={[styles.chip, { borderColor: student?.id === s.id ? theme.accent : theme.border, backgroundColor: student?.id === s.id ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
-                        >
-                          <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: student?.id === s.id ? theme.accent : theme.textMuted }}>{s.name}</Text>
-                        </TouchableOpacity>
-                      ))}
+                      {(recipients?.students ?? []).map((s) => {
+                        const isSelected = selectedRecipients.some((r) => r.id === s.id);
+                        return (
+                          <TouchableOpacity
+                            key={s.id}
+                            testID={`teacher-compose-student-${s.id}`}
+                            onPress={() => toggleRecipient(s)}
+                            style={[styles.chip, { borderColor: isSelected ? theme.accent : theme.border, backgroundColor: isSelected ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
+                          >
+                            <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: isSelected ? theme.accent : theme.textMuted }}>
+                              {isSelected ? '✓ ' : ''}{s.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
-                    {student && (
+                    {selectedRecipients.length > 0 && (
                       <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
-                        {recipientKind === 'parent'
-                          ? t('teacherMessages.willMessageParent', "Sends to {{name}}'s parent(s).", { name: student.name })
-                          : t('teacherMessages.willMessageStudent', 'Sends directly to {{name}}.', { name: student.name })}
+                        {selectedRecipients.length === 1
+                          ? (recipientKind === 'parent'
+                              ? t('teacherMessages.willMessageParent', "Sends to {{name}}'s parent(s).", { name: selectedRecipients[0].name })
+                              : t('teacherMessages.willMessageStudent', 'Sends directly to {{name}}.', { name: selectedRecipients[0].name }))
+                          : (recipientKind === 'parent'
+                              ? t('teacherMessages.willMessageParents', 'Sends to {{count}} parents.', { count: selectedRecipients.length })
+                              : t('teacherMessages.willMessageStudents', 'Sends directly to {{count}} students.', { count: selectedRecipients.length }))}
                       </Text>
                     )}
                   </>

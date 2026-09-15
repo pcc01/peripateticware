@@ -45,7 +45,7 @@ export interface ThreadMessage {
 export interface SendMessageInput {
   classroom_id: string;
   audience: MessageAudience;
-  student_id?: string;
+  student_ids?: string[];
   subject: string;
   body: string;
   notify?: boolean;

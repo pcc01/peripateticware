@@ -670,9 +670,9 @@ class TestSendMessageActionUrl:
         ownership_result = MagicMock()
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
-        recipients_result.mappings.return_value.first.return_value = _mapping_row(
-            id=student_id, name="Grace Hopper"
-        )
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=student_id, name="Grace Hopper")
+        ]
         insert_result = MagicMock()
         notif_result = MagicMock()
         db.execute.side_effect = [ownership_result, recipients_result, insert_result, notif_result]
@@ -682,7 +682,7 @@ class TestSendMessageActionUrl:
             json={
                 "classroom_id": str(classroom_id),
                 "audience": "student",
-                "student_id": str(student_id),
+                "student_ids": [str(student_id)],
                 "subject": "Great work today",
                 "body": "You did a great job on your project.",
             },
@@ -718,7 +718,7 @@ class TestSendMessageActionUrl:
             json={
                 "classroom_id": str(classroom_id),
                 "audience": "parent",
-                "student_id": str(student_id),
+                "student_ids": [str(student_id)],
                 "subject": "Parent-teacher conference",
                 "body": "Please sign up for a slot this week.",
             },
@@ -727,6 +727,281 @@ class TestSendMessageActionUrl:
         assert resp.status_code == 201
         notif_params = db.execute.call_args_list[3].args[1]
         assert notif_params["url"] == "/parent/messages"
+
+
+# ===========================================================================
+# 10. Multi-recipient compose — POST /teacher/messages with student_ids
+#    (routes/teacher_communication.py::_resolve_recipients). New 2026-09-15:
+#    a teacher can now message SEVERAL specific students/parents in one
+#    request instead of only one-at-a-time or the whole classroom.
+# ===========================================================================
+
+class TestMultiRecipientSendMessage:
+    @pytest.mark.asyncio
+    async def test_send_to_multiple_students_messages_and_notifies_both(self, teacher_ctx):
+        """audience=student with two student_ids resolves both students and
+        creates a parent_messages row + notification for each — and the SQL
+        sent to the DB uses the ANY(CAST(:sids AS uuid[])) list-matching
+        pattern (this suite mocks db.execute entirely, so we assert on the
+        query text and bound params rather than real Postgres matching)."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        student_id_1 = uuid4()
+        student_id_2 = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=student_id_1, name="Grace Hopper"),
+            _mapping_row(id=student_id_2, name="Ada Lovelace"),
+        ]
+        db.execute.side_effect = [
+            ownership_result,
+            recipients_result,
+            MagicMock(),  # insert parent_messages for student 1
+            MagicMock(),  # insert notifications for student 1
+            MagicMock(),  # insert parent_messages for student 2
+            MagicMock(),  # insert notifications for student 2
+        ]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "student",
+                "student_ids": [str(student_id_1), str(student_id_2)],
+                "subject": "Field trip reminder",
+                "body": "You still need to turn in your permission slip.",
+            },
+        )
+
+        assert resp.status_code == 201
+        body = resp.json()
+        assert body["sent_count"] == 2
+        recipient_ids = {r["recipient_id"] for r in body["recipients"]}
+        assert recipient_ids == {str(student_id_1), str(student_id_2)}
+
+        # Second call is the recipient-resolution query -- verify it used the
+        # ANY(CAST(:sids AS uuid[])) list-matching pattern with both ids bound.
+        resolve_call = db.execute.call_args_list[1]
+        resolve_sql = str(resolve_call.args[0])
+        resolve_params = resolve_call.args[1]
+        assert "= ANY(CAST(:sids AS uuid[]))" in resolve_sql
+        assert resolve_params["sids"] == [str(student_id_1), str(student_id_2)]
+
+    @pytest.mark.asyncio
+    async def test_send_to_multiple_students_parents_resolves_approved_links_for_all(self, teacher_ctx):
+        """audience=parent with several student_ids resolves the approved
+        parent link for EVERY requested student, not just the first."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        student_id_1 = uuid4()
+        student_id_2 = uuid4()
+        parent_id_1 = uuid4()
+        parent_id_2 = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=parent_id_1, name="Parent One"),
+            _mapping_row(id=parent_id_2, name="Parent Two"),
+        ]
+        db.execute.side_effect = [
+            ownership_result,
+            recipients_result,
+            MagicMock(), MagicMock(),
+            MagicMock(), MagicMock(),
+        ]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "parent",
+                "student_ids": [str(student_id_1), str(student_id_2)],
+                "subject": "Parent-teacher conference",
+                "body": "Please sign up for a slot this week.",
+            },
+        )
+
+        assert resp.status_code == 201
+        assert resp.json()["sent_count"] == 2
+
+        resolve_call = db.execute.call_args_list[1]
+        resolve_sql = str(resolve_call.args[0])
+        resolve_params = resolve_call.args[1]
+        assert "pcl.status = 'approved'" in resolve_sql
+        assert "= ANY(CAST(:sids AS uuid[]))" in resolve_sql
+        assert resolve_params["sids"] == [str(student_id_1), str(student_id_2)]
+
+    @pytest.mark.asyncio
+    async def test_send_partial_match_still_sends_to_resolved_recipients(self, teacher_ctx):
+        """A mix of a valid and a bogus student_id shouldn't fail the whole
+        request -- it just sends to whichever ids actually resolved."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        real_student_id = uuid4()
+        bogus_student_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=real_student_id, name="Grace Hopper"),
+        ]
+        db.execute.side_effect = [
+            ownership_result, recipients_result, MagicMock(), MagicMock(),
+        ]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "student",
+                "student_ids": [str(real_student_id), str(bogus_student_id)],
+                "subject": "Field trip reminder",
+                "body": "You still need to turn in your permission slip.",
+            },
+        )
+
+        assert resp.status_code == 201
+        assert resp.json()["sent_count"] == 1
+
+    @pytest.mark.asyncio
+    async def test_send_student_audience_missing_student_ids_422(self, teacher_ctx):
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+        classroom_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        db.execute.return_value = ownership_result
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "student",
+                "subject": "Great work today",
+                "body": "You did a great job on your project.",
+            },
+        )
+
+        assert resp.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_send_student_audience_empty_student_ids_422(self, teacher_ctx):
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+        classroom_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        db.execute.return_value = ownership_result
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "student",
+                "student_ids": [],
+                "subject": "Great work today",
+                "body": "You did a great job on your project.",
+            },
+        )
+
+        assert resp.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_send_parent_audience_missing_student_ids_422(self, teacher_ctx):
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+        classroom_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        db.execute.return_value = ownership_result
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "parent",
+                "subject": "Parent-teacher conference",
+                "body": "Please sign up for a slot this week.",
+            },
+        )
+
+        assert resp.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_send_all_students_audience_unaffected_by_student_ids_change(self, teacher_ctx):
+        """Regression: audience=all_students still needs no student_ids at
+        all -- the classroom-wide broadcast path is untouched."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        student_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=student_id, name="Grace Hopper")
+        ]
+        db.execute.side_effect = [ownership_result, recipients_result, MagicMock(), MagicMock()]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "all_students",
+                "subject": "Class-wide reminder",
+                "body": "Don't forget your permission slip.",
+            },
+        )
+
+        assert resp.status_code == 201
+        assert resp.json()["sent_count"] == 1
+
+    @pytest.mark.asyncio
+    async def test_send_all_parents_audience_unaffected_by_student_ids_change(self, teacher_ctx):
+        """Regression: audience=all_parents still needs no student_ids."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        parent_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=parent_id, name="Test Parent")
+        ]
+        db.execute.side_effect = [ownership_result, recipients_result, MagicMock(), MagicMock()]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "all_parents",
+                "subject": "Class-wide reminder",
+                "body": "Don't forget your permission slip.",
+            },
+        )
+
+        assert resp.status_code == 201
+        assert resp.json()["sent_count"] == 1
 
 
 # ===========================================================================
