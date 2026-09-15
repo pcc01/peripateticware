@@ -24,8 +24,14 @@ function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible
 
   useEffect(() => {
     if (!visible) return;
-    setClassroomId(null); setTitle(''); setBody('');
-  }, [visible]);
+    // BUG FIX (2026-09-15): same shape as teacher-messages.tsx's
+    // ComposeModal — classroomId used to stay null until the teacher
+    // explicitly tapped a classroom chip, which `valid` requires, so Post
+    // stayed silently disabled when there was only one classroom to pick
+    // ("I can write the message but I can't send it"). Auto-select instead.
+    setClassroomId(classes.length > 0 ? classes[0].id : null);
+    setTitle(''); setBody('');
+  }, [visible, classes]);
 
   const valid = classroomId && title.trim() && body.trim();
 
