@@ -226,6 +226,14 @@ async def send_message(
     if not recipients:
         raise HTTPException(status_code=404, detail="No recipients found for this audience")
 
+    # The audience is homogeneous per request (either all students or all
+    # parents — see _resolve_recipients), so the deep link every recipient in
+    # this loop should get is fixed by the audience, not per-recipient.
+    # Previously this was hardcoded to '/parent/messages' regardless of
+    # audience, which sent a broken web-app link to student recipients (who
+    # have no such route — see mobile app's '/student-messages').
+    action_url = "/parent/messages" if body.audience in ("parent", "all_parents") else "/student-messages"
+
     sent = []
     for recipient in recipients:
         conversation_id = str(uuid4())
@@ -245,7 +253,7 @@ async def send_message(
             """), {
                 "id": str(uuid4()), "uid": recipient["user_id"],
                 "title": f"New message from {current_user.full_name or 'your teacher'}",
-                "msg": body.subject, "url": "/parent/messages",
+                "msg": body.subject, "url": action_url,
             })
 
         sent.append({"recipient_id": recipient["user_id"], "recipient_name": recipient["name"], "conversation_id": conversation_id})

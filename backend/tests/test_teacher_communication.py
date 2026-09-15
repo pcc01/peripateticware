@@ -451,3 +451,244 @@ async def test_student_announcements_empty_when_not_enrolled_anywhere(student_ct
 
     assert resp.status_code == 200
     assert resp.json() == []
+
+
+# ===========================================================================
+# 8. Student messages — GET /student/messages, GET /student/messages/{id},
+#    POST /student/messages/{id}/reply (routes/student.py)
+#
+# Mirrors the teacher-side conversation tests above (same table, same query
+# shapes) plus the send_message() action_url regression check.
+# ===========================================================================
+
+class TestStudentMessages:
+    @pytest.mark.asyncio
+    async def test_list_conversations_scoped_to_caller(self, student_ctx):
+        """GET /student/messages returns only conversations this student is
+        a participant in, bound on current_user.id (:uid)."""
+        client = student_ctx["client"]
+        db = student_ctx["db"]
+        student = student_ctx["student"]
+
+        conv_id = uuid4()
+        teacher_id = uuid4()
+        now = datetime(2026, 7, 10, 9, 0, 0)
+
+        result_mock = MagicMock()
+        result_mock.mappings.return_value.all.return_value = [
+            _mapping_row(
+                conversation_id=conv_id, subject="Field trip Friday",
+                body="Don't forget your permission slip.", created_at=now,
+                from_user_id=teacher_id, to_user_id=student.id, read_at=None,
+                other_user_id=teacher_id, other_user_name="Ms. Rivera",
+            )
+        ]
+        db.execute.return_value = result_mock
+
+        resp = await client.get("/api/v1/student/messages")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["conversation_id"] == str(conv_id)
+        assert data[0]["other_user_name"] == "Ms. Rivera"
+        assert data[0]["unread"] is True
+
+        call_args, _ = db.execute.call_args
+        params = call_args[1]
+        assert params["uid"] == str(student.id)
+
+    @pytest.mark.asyncio
+    async def test_get_thread_success_when_participant(self, student_ctx):
+        """GET /student/messages/{conversation_id} returns the full thread
+        when the calling student is a participant."""
+        client = student_ctx["client"]
+        db = student_ctx["db"]
+        student = student_ctx["student"]
+
+        conv_id = uuid4()
+        teacher_id = uuid4()
+        msg_id = uuid4()
+        now = datetime(2026, 7, 10, 9, 0, 0)
+
+        result_mock = MagicMock()
+        result_mock.mappings.return_value.all.return_value = [
+            _mapping_row(
+                id=msg_id, from_user_id=teacher_id, to_user_id=student.id,
+                subject="Field trip Friday", body="Don't forget your permission slip.",
+                created_at=now, read_at=None, from_name="Ms. Rivera",
+            )
+        ]
+        db.execute.return_value = result_mock
+
+        resp = await client.get(f"/api/v1/student/messages/{conv_id}")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["id"] == str(msg_id)
+        assert data[0]["is_mine"] is False
+        assert data[0]["from_name"] == "Ms. Rivera"
+
+    @pytest.mark.asyncio
+    async def test_get_thread_404_when_not_participant_or_missing(self, student_ctx):
+        """A conversation_id that doesn't exist, or belongs to a different
+        student, must come back as 404 — the query is scoped to the caller
+        so both cases look identical (matches the teacher-side convention)."""
+        client = student_ctx["client"]
+        db = student_ctx["db"]
+
+        result_mock = MagicMock()
+        result_mock.mappings.return_value.all.return_value = []
+        db.execute.return_value = result_mock
+
+        resp = await client.get(f"/api/v1/student/messages/{uuid4()}")
+
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_reply_success_creates_message_and_notifies_teacher(self, student_ctx):
+        """A student replying within their own conversation inserts a reply
+        row (correct from/to) and a notification for the teacher."""
+        client = student_ctx["client"]
+        db = student_ctx["db"]
+        student = student_ctx["student"]
+
+        conv_id = uuid4()
+        teacher_id = uuid4()
+
+        orig_result = MagicMock()
+        # from_user_id = teacher, to_user_id = this student, subject
+        orig_result.first.return_value = _row(str(teacher_id), str(student.id), "Field trip Friday")
+        insert_result = MagicMock()
+        notif_result = MagicMock()
+        db.execute.side_effect = [orig_result, insert_result, notif_result]
+
+        resp = await client.post(
+            f"/api/v1/student/messages/{conv_id}/reply",
+            json={"body": "Got it, thank you!"},
+        )
+
+        assert resp.status_code == 201
+        body = resp.json()
+        assert body["success"] is True
+        db.commit.assert_called_once()
+
+        # Second call is the parent_messages insert — verify from/to.
+        insert_call = db.execute.call_args_list[1]
+        insert_params = insert_call.args[1]
+        assert insert_params["from_uid"] == str(student.id)
+        assert insert_params["to_uid"] == str(teacher_id)
+
+        # Third call is the notifications insert — verify it targets the
+        # teacher with a teacher-facing action_url.
+        notif_call = db.execute.call_args_list[2]
+        notif_params = notif_call.args[1]
+        assert notif_params["uid"] == str(teacher_id)
+        notif_sql = str(notif_call.args[0])
+        assert "/teacher/messages" in notif_sql
+
+    @pytest.mark.asyncio
+    async def test_reply_forbidden_when_not_participant(self, student_ctx):
+        """A student who is neither from_user_id nor to_user_id on the
+        conversation's latest message must be rejected with 403 — otherwise
+        any student could inject a message into another student's
+        conversation with a teacher just by guessing a conversation_id."""
+        client = student_ctx["client"]
+        db = student_ctx["db"]
+
+        conv_id = uuid4()
+        other_teacher_id = uuid4()
+        other_student_id = uuid4()
+
+        orig_result = MagicMock()
+        orig_result.first.return_value = _row(str(other_teacher_id), str(other_student_id), "Homework")
+        db.execute.return_value = orig_result
+
+        resp = await client.post(
+            f"/api/v1/student/messages/{conv_id}/reply",
+            json={"body": "Sneaky reply from an unrelated student"},
+        )
+
+        assert resp.status_code == 403
+        db.commit.assert_not_called()
+
+
+# ===========================================================================
+# 9. send_message() action_url regression check (routes/teacher_communication.py)
+#
+# Previously hardcoded to '/parent/messages' for every recipient regardless
+# of audience — this must be '/student-messages' for a student/all_students
+# audience and stay '/parent/messages' for parent/all_parents (regression).
+# ===========================================================================
+
+class TestSendMessageActionUrl:
+    @pytest.mark.asyncio
+    async def test_send_to_student_notifies_with_student_action_url(self, teacher_ctx):
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+        teacher = teacher_ctx["teacher"]
+
+        classroom_id = uuid4()
+        student_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.first.return_value = _mapping_row(
+            id=student_id, name="Grace Hopper"
+        )
+        insert_result = MagicMock()
+        notif_result = MagicMock()
+        db.execute.side_effect = [ownership_result, recipients_result, insert_result, notif_result]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "student",
+                "student_id": str(student_id),
+                "subject": "Great work today",
+                "body": "You did a great job on your project.",
+            },
+        )
+
+        assert resp.status_code == 201
+        notif_params = db.execute.call_args_list[3].args[1]
+        assert notif_params["url"] == "/student-messages"
+
+    @pytest.mark.asyncio
+    async def test_send_to_parent_still_notifies_with_parent_action_url(self, teacher_ctx):
+        """Regression check: sending to a parent/all_parents audience must
+        not have silently changed from '/parent/messages'."""
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        student_id = uuid4()
+        parent_id = uuid4()
+
+        ownership_result = MagicMock()
+        ownership_result.first.return_value = _row("Ms. Rivera's Class")
+        recipients_result = MagicMock()
+        recipients_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=parent_id, name="Test Parent")
+        ]
+        insert_result = MagicMock()
+        notif_result = MagicMock()
+        db.execute.side_effect = [ownership_result, recipients_result, insert_result, notif_result]
+
+        resp = await client.post(
+            "/api/v1/teacher/messages",
+            json={
+                "classroom_id": str(classroom_id),
+                "audience": "parent",
+                "student_id": str(student_id),
+                "subject": "Parent-teacher conference",
+                "body": "Please sign up for a slot this week.",
+            },
+        )
+
+        assert resp.status_code == 201
+        notif_params = db.execute.call_args_list[3].args[1]
+        assert notif_params["url"] == "/parent/messages"
