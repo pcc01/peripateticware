@@ -174,7 +174,7 @@ export default function TeacherProposalsScreen() {
       )}
 
       <Modal visible={!!rejecting} animationType="slide" transparent onRequestClose={() => setRejecting(null)}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalBackdrop}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
           <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setRejecting(null)} />
           <View style={[styles.modalCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}>
             <Text style={[styles.cardTitle, { fontFamily: theme.fontHead, color: theme.text }]}>

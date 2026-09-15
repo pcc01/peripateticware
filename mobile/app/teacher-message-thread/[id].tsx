@@ -50,7 +50,7 @@ export default function TeacherMessageThreadScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={90}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} keyboardVerticalOffset={90}>
         {loading ? (
           <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
         ) : error ? (
@@ -60,6 +60,12 @@ export default function TeacherMessageThreadScreen() {
         ) : (
           <FlatList
             testID="teacher-message-thread-list"
+            // BUG FIX (2026-09-14): same shape as PeriChatSheet.tsx's fix —
+            // a FlatList with only `contentContainerStyle` (no `style`)
+            // doesn't shrink when KeyboardAvoidingView's "padding" behavior
+            // reduces available height on iOS, pushing the fixed reply row
+            // below it off-screen behind the keyboard.
+            style={{ flex: 1 }}
             data={messages}
             keyExtractor={(m) => m.id}
             contentContainerStyle={{ padding: 16, gap: 10 }}

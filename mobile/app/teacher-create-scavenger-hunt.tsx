@@ -252,8 +252,12 @@ export default function CreateScavengerHuntScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        {/* BUG FIX (2026-09-14): same shape as PeriChatSheet.tsx's fix — no
+            `style` prop (only `contentContainerStyle`) meant this ScrollView
+            didn't shrink for the keyboard on iOS, pushing the fixed Publish
+            button below it off-screen. */}
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <Text style={labelStyle}>{t('createScavengerHunt.titleLabel', 'CHALLENGE TITLE')}</Text>
           <TextInput
             testID="scavenger-hunt-title"
