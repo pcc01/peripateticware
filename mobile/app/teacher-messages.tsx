@@ -69,7 +69,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={[styles.composeRoot, { backgroundColor: theme.bg }]}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[styles.composeRoot, { backgroundColor: theme.bg }]}>
         <View style={[styles.composeHeader, { borderBottomColor: theme.border }]}>
           <Text style={[styles.composeTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('teacherMessages.composeTitle', 'New message')}</Text>
           <TouchableOpacity testID="teacher-compose-close" onPress={onClose} hitSlop={12}>
@@ -78,6 +78,11 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
         </View>
 
         <FlatList
+          // BUG FIX (2026-09-14): same shape as PeriChatSheet.tsx's fix —
+          // no `style` prop (only `contentContainerStyle`) meant this list
+          // didn't shrink for the keyboard on iOS, pushing the fixed Send
+          // footer below it off-screen.
+          style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16, gap: 8 }}
           keyboardShouldPersistTaps="handled"
           data={[1]}

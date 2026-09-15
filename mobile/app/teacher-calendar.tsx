@@ -53,7 +53,7 @@ function AddEventModal({ visible, onClose, classroomId, onCreated, theme, t }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalBackdrop}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalBackdrop}>
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <View style={[styles.modalCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}>
           <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text }]}>{t('teacherCalendar.addTitle', 'New calendar event')}</Text>

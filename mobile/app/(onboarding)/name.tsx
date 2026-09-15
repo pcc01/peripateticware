@@ -37,7 +37,7 @@ export default function NameScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View testID="onboarding-name" style={[styles.root, { backgroundColor: theme.mapBase }]}>
         <StatusBar barStyle={themeName === 'atmosphere' ? 'light-content' : 'dark-content'} translucent backgroundColor="transparent" />
         <View style={StyleSheet.absoluteFill}>
