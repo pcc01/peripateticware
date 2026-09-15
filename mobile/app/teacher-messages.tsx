@@ -13,8 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchMyClassrooms, Classroom } from '@/src/api/classrooms';
 import {
-  fetchTeacherConversations, fetchClassroomRecipients, sendTeacherMessage,
-  TeacherConversation, ClassroomRecipients, Recipient, MessageAudience,
+  fetchTeacherConversations, fetchClassroomRecipients, sendTeacherMessage, searchRecipients,
+  TeacherConversation, ClassroomRecipients, Recipient, MessageAudience, RecipientSearchResults,
 } from '@/src/api/teacherMessages';
 
 function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean; onClose: () => void; onSent: () => void; theme: any; t: (k: string, d: string, o?: any) => any }) {
@@ -39,6 +39,14 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   // CLASSROOM row and a permanently-disabled Send with no explanation at
   // all (classroomId can never get set, so `valid` below never passes).
   const [classesLoaded, setClassesLoaded] = useState(false);
+  // Cross-classroom search (2026-09-15) — "class > student" browsing below
+  // still works for a teacher with few classrooms, but this is how one with
+  // several finds a specific student or parent by name directly, without
+  // knowing which classroom they're in first. Debounced; a hit fills in
+  // classroom + recipient and collapses back to the normal browse view.
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<RecipientSearchResults | null>(null);
+  const [searching, setSearching] = useState(false);
 
   const pickClassroom = useCallback((id: string) => {
     setClassroomId(id);
@@ -53,6 +61,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
     setClassroomId(null); setRecipients(null); setStudent(null);
     setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
     setClassesLoaded(false);
+    setSearchQuery(''); setSearchResults(null);
     fetchMyClassrooms().then((cs) => {
       setClasses(cs);
       setClassesLoaded(true);
@@ -64,6 +73,48 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
       if (cs.length > 0) pickClassroom(cs[0].id);
     }).catch(() => { setClasses([]); setClassesLoaded(true); });
   }, [visible, pickClassroom]);
+
+  // Debounced cross-classroom search — fires ~300ms after typing stops, only
+  // once there's enough to search on.
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (query.length < 2) { setSearchResults(null); setSearching(false); return; }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      searchRecipients(query)
+        .then(setSearchResults)
+        .catch(() => setSearchResults({ students: [], parents: [] }))
+        .finally(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Deliberately NOT reusing pickClassroom here — it resets `student` to
+  // null, which would wipe out the very selection this function is making.
+  // Only the recipients list (for consistency with the browse view below,
+  // e.g. switching recipientKind afterward) needs refetching.
+  const loadClassroomIfNeeded = (id: string) => {
+    if (id === classroomId) return;
+    setClassroomId(id);
+    setLoadingRecipients(true);
+    fetchClassroomRecipients(id).then(setRecipients).catch(() => setRecipients({ students: [], parents: [] })).finally(() => setLoadingRecipients(false));
+  };
+
+  const selectSearchedStudent = (s: { id: string; name: string; classroom_id: string }) => {
+    loadClassroomIfNeeded(s.classroom_id);
+    setRecipientKind('student');
+    setAudience('student');
+    setStudent({ id: s.id, name: s.name, email: '' });
+    setSearchQuery(''); setSearchResults(null);
+  };
+
+  const selectSearchedParent = (p: { id: string; name: string; student_id: string; student_name: string; classroom_id: string }) => {
+    loadClassroomIfNeeded(p.classroom_id);
+    setRecipientKind('parent');
+    setAudience('parent');
+    setStudent({ id: p.student_id, name: p.student_name, email: '' });
+    setSearchQuery(''); setSearchResults(null);
+  };
 
   const valid = classroomId && subject.trim() && body.trim() && (audience === 'all_students' || audience === 'all_parents' || student);
 
@@ -111,7 +162,58 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
           keyExtractor={() => 'form'}
           renderItem={() => (
             <View style={{ gap: 8 }}>
-              <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('teacherMessages.classroomLabel', 'CLASSROOM')}</Text>
+              <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('teacherMessages.searchLabel', 'FIND A STUDENT OR PARENT')}</Text>
+              <TextInput
+                testID="teacher-compose-search"
+                style={inputStyle}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('teacherMessages.searchPlaceholder', 'Search by name, any of your classes…')}
+                placeholderTextColor={theme.textFaint}
+              />
+
+              {searchQuery.trim().length >= 2 ? (
+                <View style={{ gap: 6, marginTop: 4 }}>
+                  {searching ? (
+                    <ActivityIndicator color={theme.accent} style={{ marginTop: 8 }} />
+                  ) : searchResults && searchResults.students.length === 0 && searchResults.parents.length === 0 ? (
+                    <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
+                      {t('teacherMessages.searchEmpty', 'No matches.')}
+                    </Text>
+                  ) : (
+                    <>
+                      {(searchResults?.students ?? []).map((s) => (
+                        <TouchableOpacity
+                          key={`s-${s.id}`}
+                          testID={`teacher-compose-search-student-${s.id}`}
+                          onPress={() => selectSearchedStudent(s)}
+                          style={[styles.searchRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}
+                        >
+                          <Text style={{ fontFamily: theme.fontBody, fontSize: 14, fontWeight: '600', color: theme.text }}>{s.name}</Text>
+                          <Text style={[styles.searchRowMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+                            {t('teacherMessages.searchTagStudent', 'Student')} · {s.classroom_name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                      {(searchResults?.parents ?? []).map((p) => (
+                        <TouchableOpacity
+                          key={`p-${p.id}`}
+                          testID={`teacher-compose-search-parent-${p.id}`}
+                          onPress={() => selectSearchedParent(p)}
+                          style={[styles.searchRow, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}
+                        >
+                          <Text style={{ fontFamily: theme.fontBody, fontSize: 14, fontWeight: '600', color: theme.text }}>{p.name}</Text>
+                          <Text style={[styles.searchRowMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+                            {t('teacherMessages.searchTagParent', 'Parent of {{name}}', { name: p.student_name })} · {p.classroom_name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
+                </View>
+              ) : (
+              <>
+              <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 14 }]}>{t('teacherMessages.classroomLabel', 'CLASSROOM')}</Text>
               <View style={styles.chipRow}>
                 {classes.map((c) => (
                   <TouchableOpacity
@@ -191,6 +293,8 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                     )}
                   </>
                 )
+              )}
+              </>
               )}
 
               <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('teacherMessages.subjectLabel', 'SUBJECT')}</Text>
@@ -324,6 +428,8 @@ const styles = StyleSheet.create({
   multiline:       { minHeight: 90, textAlignVertical: 'top' },
   chipRow:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip:            { paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1 },
+  searchRow:       { padding: 10, borderWidth: 1, gap: 2 },
+  searchRowMeta:   { fontSize: 10, letterSpacing: 0.3 },
   composeFooter:   { padding: 16, borderTopWidth: 1 },
   sendBtn:         { minHeight: 48, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   sendBtnText:     { color: '#fff', fontWeight: '700', fontSize: 15 },

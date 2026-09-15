@@ -211,6 +211,68 @@ async def list_recipients(
     }
 
 
+# ── Cross-classroom recipient search ────────────────────────────────────────
+# list_recipients above is scoped to ONE classroom (the compose screen's
+# existing "pick a class, then pick from its roster" flow) -- this is the
+# other half: a teacher with several classrooms typing a name and finding
+# that person directly, whichever classroom they're actually in. Searches by
+# name only, not email: `email` is an EncryptedString column and raw SQL
+# here (matching this file's existing convention) reads the ciphertext, so
+# an ILIKE against it could never match a typed plaintext query.
+
+@router.get("/recipients/search")
+async def search_recipients(
+    q: str = Query(..., min_length=1, max_length=200),
+    limit: int = Query(20, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    _require_teacher(current_user)
+    like = f"%{q}%"
+
+    students = (await db.execute(text("""
+        SELECT u.id, u.full_name AS name, cs.classroom_id, c.name AS classroom_name
+        FROM classroom_students cs
+        JOIN classrooms c ON c.id = cs.classroom_id
+        JOIN users u ON u.id = cs.student_id
+        WHERE c.teacher_id = :tid AND u.full_name ILIKE :like
+        ORDER BY u.full_name
+        LIMIT :lim
+    """), {"tid": str(current_user.id), "like": like, "lim": limit})).mappings().all()
+
+    parents = (await db.execute(text("""
+        SELECT DISTINCT p.id AS parent_id, p.full_name AS parent_name,
+               s.id AS student_id, s.full_name AS student_name,
+               cs.classroom_id, c.name AS classroom_name
+        FROM classroom_students cs
+        JOIN classrooms c ON c.id = cs.classroom_id
+        JOIN users s ON s.id = cs.student_id
+        JOIN parent_child_links pcl ON pcl.child_id = s.id AND pcl.status = 'approved'
+        JOIN users p ON p.id = pcl.parent_id
+        WHERE c.teacher_id = :tid AND p.full_name ILIKE :like
+        ORDER BY p.full_name
+        LIMIT :lim
+    """), {"tid": str(current_user.id), "like": like, "lim": limit})).mappings().all()
+
+    return {
+        "students": [
+            {
+                "id": str(r["id"]), "name": r["name"] or "",
+                "classroom_id": str(r["classroom_id"]), "classroom_name": r["classroom_name"],
+            }
+            for r in students
+        ],
+        "parents": [
+            {
+                "id": str(r["parent_id"]), "name": r["parent_name"] or "",
+                "student_id": str(r["student_id"]), "student_name": r["student_name"] or "",
+                "classroom_id": str(r["classroom_id"]), "classroom_name": r["classroom_name"],
+            }
+            for r in parents
+        ],
+    }
+
+
 # ── Send / broadcast ────────────────────────────────────────────────────────
 
 @router.post("/messages", status_code=201)

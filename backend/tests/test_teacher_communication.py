@@ -727,3 +727,68 @@ class TestSendMessageActionUrl:
         assert resp.status_code == 201
         notif_params = db.execute.call_args_list[3].args[1]
         assert notif_params["url"] == "/parent/messages"
+
+
+# ===========================================================================
+# 9. Cross-classroom recipient search — GET /teacher/recipients/search
+#    (routes/teacher_communication.py::search_recipients). New 2026-09-15
+#    alongside the mobile compose screen's search box — list_recipients
+#    above only ever covers ONE already-chosen classroom; this lets a
+#    teacher with several classrooms find a student/parent by name without
+#    knowing which classroom they're in first.
+# ===========================================================================
+
+class TestSearchRecipients:
+    @pytest.mark.asyncio
+    async def test_returns_matching_students_and_parents_with_classroom_context(self, teacher_ctx):
+        client = teacher_ctx["client"]
+        db = teacher_ctx["db"]
+
+        classroom_id = uuid4()
+        student_id = uuid4()
+        parent_id = uuid4()
+
+        student_result = MagicMock()
+        student_result.mappings.return_value.all.return_value = [
+            _mapping_row(id=student_id, name="Grace Hopper", classroom_id=classroom_id, classroom_name="5th Grade Science"),
+        ]
+        parent_result = MagicMock()
+        parent_result.mappings.return_value.all.return_value = [
+            _mapping_row(parent_id=parent_id, parent_name="Grace's Guardian", student_id=student_id,
+                         student_name="Grace Hopper", classroom_id=classroom_id, classroom_name="5th Grade Science"),
+        ]
+        db.execute.side_effect = [student_result, parent_result]
+
+        resp = await client.get("/api/v1/teacher/recipients/search", params={"q": "Grace"})
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["students"] == [
+            {"id": str(student_id), "name": "Grace Hopper", "classroom_id": str(classroom_id), "classroom_name": "5th Grade Science"},
+        ]
+        assert body["parents"] == [
+            {
+                "id": str(parent_id), "name": "Grace's Guardian",
+                "student_id": str(student_id), "student_name": "Grace Hopper",
+                "classroom_id": str(classroom_id), "classroom_name": "5th Grade Science",
+            },
+        ]
+
+    @pytest.mark.asyncio
+    async def test_empty_query_string_rejected(self, teacher_ctx):
+        """min_length=1 on `q` -- an empty search shouldn't silently return
+        every student/parent across every classroom."""
+        client = teacher_ctx["client"]
+        resp = await client.get("/api/v1/teacher/recipients/search", params={"q": ""})
+        assert resp.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_forbidden_for_non_teacher(self, student_ctx):
+        """_require_teacher gate -- a student calling the teacher search
+        endpoint must be rejected, not silently scoped to nothing."""
+        # search_recipients lives on the teacher router, which student_ctx's
+        # app doesn't mount -- confirm the route simply doesn't exist there
+        # (404), i.e. a student has no path to this endpoint at all.
+        client = student_ctx["client"]
+        resp = await client.get("/api/v1/teacher/recipients/search", params={"q": "Grace"})
+        assert resp.status_code == 404

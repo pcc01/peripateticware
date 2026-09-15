@@ -39,6 +39,12 @@ export interface TeacherSubmission {
   activity_title: string;
   status: string;
   started_at: string | null;
+  // 2026-09-15, for the class > student grouped/collapsible submissions
+  // list (app/teacher-submissions.tsx) -- null when the student isn't in
+  // any of this teacher's classrooms (activities aren't required to be
+  // classroom-scoped), grouped there under an "Unassigned" bucket.
+  classroom_id: string | null;
+  classroom_name: string | null;
 }
 
 export async function fetchTeacherSubmissions(): Promise<TeacherSubmission[]> {

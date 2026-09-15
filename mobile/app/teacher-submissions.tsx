@@ -1,20 +1,20 @@
-// app/teacher-submissions.tsx — flat list of every session on this
-// teacher's (or HOMESCHOOL parent's) activities. Reached by tapping the
-// "Pending" or "Students" stat cards on (tabs)/teacher-dashboard.tsx
-// (Session 47 Addendum 3, item 1 — those cards had no tap target at all
-// before this). "Active"/"Classes" cards are left non-interactive: there's
-// no built mobile screen for either (classroom/roster management stays
-// web-only, and "Active" just duplicates the Recent Activities list already
-// visible on the dashboard itself) — a scope call, not an oversight.
-// Reuses the existing GET /activities/teacher/submissions, no backend change.
+// app/teacher-submissions.tsx — every session on this teacher's (or
+// HOMESCHOOL parent's) activities, grouped class > student in collapsible
+// sections (2026-09-15 — was a flat list; classroom_id/classroom_name now
+// come back on each row from GET /activities/teacher/submissions, see that
+// endpoint's docstring for how a student's classroom is resolved).
+// Reached by tapping the "Pending" or "Students" stat cards on
+// (tabs)/teacher-dashboard.tsx. Reuses the existing endpoint, just consumes
+// two new fields on it.
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchTeacherSubmissions, TeacherSubmission } from '@/src/api/teacher';
+import CollapsibleSection from '@/src/components/CollapsibleSection';
 
 const STATUS_COLOR_KEY: Record<string, 'accent' | 'textMuted' | 'warn'> = {
   completed: 'accent',
@@ -30,6 +30,12 @@ function agoLabel(iso: string | null, t: (k: string, d: string, o?: any) => any)
   const hours = Math.floor(mins / 60);
   if (hours < 24) return t('liveTracking.hoursAgo', '{{n}}h ago', { n: hours });
   return t('teacherActivity.daysAgo', '{{n}}d ago', { n: Math.floor(hours / 24) });
+}
+
+interface ClassGroup {
+  key: string;
+  name: string;
+  items: TeacherSubmission[];
 }
 
 export default function TeacherSubmissionsScreen() {
@@ -57,6 +63,23 @@ export default function TeacherSubmissionsScreen() {
     setRefreshing(false);
   }, [load]);
 
+  // Grouped by classroom, "Unassigned" (no classroom_id) sorted last —
+  // everything else alphabetical by classroom name.
+  const groups = useMemo<ClassGroup[]>(() => {
+    const byKey = new Map<string, ClassGroup>();
+    for (const s of submissions) {
+      const key = s.classroom_id ?? '__unassigned__';
+      const name = s.classroom_name ?? t('teacherSubmissions.unassigned', 'Unassigned');
+      if (!byKey.has(key)) byKey.set(key, { key, name, items: [] });
+      byKey.get(key)!.items.push(s);
+    }
+    return Array.from(byKey.values()).sort((a, b) => {
+      if (a.key === '__unassigned__') return 1;
+      if (b.key === '__unassigned__') return -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [submissions, t]);
+
   return (
     <SafeAreaView testID="teacher-submissions-screen" style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
@@ -82,40 +105,48 @@ export default function TeacherSubmissionsScreen() {
             {t('teacherSubmissions.loadError', 'Could not load submissions.')}
           </Text>
         </View>
+      ) : groups.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyEmoji}>📥</Text>
+          <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+            {t('teacherSubmissions.empty', 'No submissions yet.')}
+          </Text>
+        </View>
       ) : (
-        <FlatList
+        <ScrollView
           testID="teacher-submissions-list"
-          data={submissions}
-          keyExtractor={(s) => s.session_id}
           contentContainerStyle={{ padding: 16, gap: 10 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
-          ListEmptyComponent={
-            <View style={styles.center}>
-              <Text style={styles.emptyEmoji}>📥</Text>
-              <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
-                {t('teacherSubmissions.empty', 'No submissions yet.')}
-              </Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              testID={`teacher-submission-${item.session_id}`}
-              onPress={() => router.push({ pathname: '/teacher-activity/[id]', params: { id: item.activity_id } })}
-              style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
-              activeOpacity={0.75}
-              accessibilityRole="button"
+        >
+          {groups.map((group) => (
+            <CollapsibleSection
+              key={group.key}
+              testID={`teacher-submissions-group-${group.key}`}
+              title={group.name}
+              count={group.items.length}
+              theme={theme}
             >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[styles.studentName, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>{item.student_name}</Text>
-                <Text style={[styles.activityTitle, { fontFamily: theme.fontBody, color: theme.textMuted }]} numberOfLines={1}>{item.activity_title}</Text>
-                <Text style={[styles.meta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{agoLabel(item.started_at, t)}</Text>
-              </View>
-              <View style={[styles.statusPill, { flexShrink: 0, borderColor: theme[STATUS_COLOR_KEY[item.status] ?? 'textMuted'] }]}>
-                <Text style={[styles.statusPillText, { fontFamily: theme.fontMono, color: theme[STATUS_COLOR_KEY[item.status] ?? 'textMuted'] }]}>{item.status}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+              {group.items.map((item) => (
+                <TouchableOpacity
+                  key={item.session_id}
+                  testID={`teacher-submission-${item.session_id}`}
+                  onPress={() => router.push({ pathname: '/teacher-activity/[id]', params: { id: item.activity_id } })}
+                  style={[styles.card, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}
+                  activeOpacity={0.75}
+                >
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={[styles.studentName, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={1}>{item.student_name}</Text>
+                    <Text style={[styles.activityTitle, { fontFamily: theme.fontBody, color: theme.textMuted }]} numberOfLines={1}>{item.activity_title}</Text>
+                    <Text style={[styles.meta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{agoLabel(item.started_at, t)}</Text>
+                  </View>
+                  <View style={[styles.statusPill, { flexShrink: 0, borderColor: theme[STATUS_COLOR_KEY[item.status] ?? 'textMuted'] }]}>
+                    <Text style={[styles.statusPillText, { fontFamily: theme.fontMono, color: theme[STATUS_COLOR_KEY[item.status] ?? 'textMuted'] }]}>{item.status}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </CollapsibleSection>
+          ))}
+        </ScrollView>
       )}
     </SafeAreaView>
   );
@@ -130,8 +161,8 @@ const styles = StyleSheet.create({
   backTouchTarget: { width: 40, alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 4, flexShrink: 0 },
   backArrow:       { fontSize: 28 },
   title:           { fontSize: 17, fontWeight: '700', flex: 1, textAlign: 'center' },
-  card:            { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderWidth: 1 },
-  studentName:     { fontSize: 16, fontWeight: '700' },
+  card:            { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderWidth: 1 },
+  studentName:     { fontSize: 15, fontWeight: '700' },
   activityTitle:   { fontSize: 12, marginTop: 1 },
   meta:            { fontSize: 10, letterSpacing: 0.4, marginTop: 2 },
   statusPill:      { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, borderWidth: 1 },

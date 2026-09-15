@@ -7,14 +7,15 @@
 // Reached from (tabs)/teacher-dashboard.tsx. The receiving side is
 // app/student-announcements.tsx.
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl, Modal, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl, Modal, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchMyClassrooms, Classroom } from '@/src/api/classrooms';
 import { fetchClassroomAnnouncements, createClassroomAnnouncement, TeacherAnnouncement } from '@/src/api/teacherAnnouncements';
+import CollapsibleSection from '@/src/components/CollapsibleSection';
 
 function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible: boolean; onClose: () => void; onSent: () => void; classes: Classroom[]; theme: any; t: (k: string, d: string, o?: any) => any }) {
   const [classroomId, setClassroomId] = useState<string | null>(null);
@@ -120,41 +121,60 @@ function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible
   );
 }
 
+interface ClassGroup {
+  classroom: Classroom;
+  items: TeacherAnnouncement[];
+}
+
 export default function TeacherAnnouncementsScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [classes, setClasses] = useState<Classroom[]>([]);
-  const [classroomId, setClassroomId] = useState<string | null>(null);
-  const [announcements, setAnnouncements] = useState<TeacherAnnouncement[]>([]);
+  // Announcements for every classroom at once, keyed by classroom_id — the
+  // backend only offers a per-classroom GET, so the "class > announcement"
+  // grouped view (2026-09-15) fetches each classroom's list in parallel and
+  // groups client-side, rather than requiring the teacher to pick one
+  // classroom at a time just to browse.
+  const [byClassroom, setByClassroom] = useState<Record<string, TeacherAnnouncement[]>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
 
-  useEffect(() => {
-    fetchMyClassrooms()
-      .then((cs) => { setClasses(cs); if (cs.length > 0) setClassroomId(cs[0].id); })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, []);
-
   const load = useCallback(async () => {
-    if (!classroomId) { setAnnouncements([]); return; }
     try {
       setError(false);
-      setAnnouncements(await fetchClassroomAnnouncements(classroomId));
+      const cs = await fetchMyClassrooms();
+      setClasses(cs);
+      const results = await Promise.all(
+        cs.map((c) => fetchClassroomAnnouncements(c.id).catch(() => [] as TeacherAnnouncement[]))
+      );
+      const map: Record<string, TeacherAnnouncement[]> = {};
+      cs.forEach((c, i) => { map[c.id] = results[i]; });
+      setByClassroom(map);
     } catch {
       setError(true);
     }
-  }, [classroomId]);
+  }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await load();
     setRefreshing(false);
   }, [load]);
+
+  const groups = useMemo<ClassGroup[]>(() => {
+    return classes
+      .map((c) => ({ classroom: c, items: byClassroom[c.id] ?? [] }))
+      .sort((a, b) => a.classroom.name.localeCompare(b.classroom.name));
+  }, [classes, byClassroom]);
+
+  const totalAnnouncements = useMemo(
+    () => groups.reduce((sum, g) => sum + g.items.length, 0),
+    [groups]
+  );
 
   return (
     <SafeAreaView testID="teacher-announcements-screen" style={[styles.root, { backgroundColor: theme.bg }]} edges={['top']}>
@@ -167,21 +187,6 @@ export default function TeacherAnnouncementsScreen() {
           <Text style={{ fontSize: 22, color: theme.accent }}>✎</Text>
         </TouchableOpacity>
       </View>
-
-      {classes.length > 1 && (
-        <View style={[styles.chipRow, { paddingHorizontal: 16, paddingVertical: 10 }]}>
-          {classes.map((c) => (
-            <TouchableOpacity
-              key={c.id}
-              testID={`teacher-announcements-classroom-${c.id}`}
-              onPress={() => setClassroomId(c.id)}
-              style={[styles.chip, { borderColor: classroomId === c.id ? theme.accent : theme.border, backgroundColor: classroomId === c.id ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
-            >
-              <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: classroomId === c.id ? theme.accent : theme.textMuted }}>{c.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
 
       {loading ? (
         <View style={styles.center}><ActivityIndicator color={theme.accent} size="large" /></View>
@@ -196,32 +201,47 @@ export default function TeacherAnnouncementsScreen() {
             {t('teacherAnnouncements.noClassrooms', "You don't have any classrooms yet — set one up on the web app first, then come back here to post one.")}
           </Text>
         </View>
+      ) : totalAnnouncements === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyEmoji}>📣</Text>
+          <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>{t('teacherAnnouncements.empty', 'No announcements yet for this classroom.')}</Text>
+        </View>
       ) : (
-        <FlatList
+        <ScrollView
           testID="teacher-announcements-list"
-          data={announcements}
-          keyExtractor={(a) => a.id}
           contentContainerStyle={{ padding: 16, gap: 10 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
-          ListEmptyComponent={
-            <View style={styles.center}>
-              <Text style={styles.emptyEmoji}>📣</Text>
-              <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>{t('teacherAnnouncements.empty', 'No announcements yet for this classroom.')}</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View
-              testID={`teacher-announcement-${item.id}`}
-              style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border, borderRadius: theme.radius }]}
+        >
+          {groups.map((group) => (
+            <CollapsibleSection
+              key={group.classroom.id}
+              testID={`teacher-announcements-group-${group.classroom.id}`}
+              title={group.classroom.name}
+              count={group.items.length}
+              theme={theme}
             >
-              <Text style={[styles.cardTitle, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={2}>{item.title}</Text>
-              <Text style={[styles.cardBody, { fontFamily: theme.fontBody, color: theme.text }]}>{item.body}</Text>
-              <Text style={[styles.cardMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
-                {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
-              </Text>
-            </View>
-          )}
-        />
+              {group.items.length === 0 ? (
+                <Text style={[styles.hintText, { color: theme.textFaint, fontFamily: theme.fontBody, paddingHorizontal: 4 }]}>
+                  {t('teacherAnnouncements.emptyGroup', 'Nothing posted to this class yet.')}
+                </Text>
+              ) : (
+                group.items.map((item) => (
+                  <View
+                    key={item.id}
+                    testID={`teacher-announcement-${item.id}`}
+                    style={[styles.card, { backgroundColor: theme.surfaceAlt, borderColor: theme.border, borderRadius: theme.radiusSm }]}
+                  >
+                    <Text style={[styles.cardTitle, { fontFamily: theme.fontHead, color: theme.text }]} numberOfLines={2}>{item.title}</Text>
+                    <Text style={[styles.cardBody, { fontFamily: theme.fontBody, color: theme.text }]}>{item.body}</Text>
+                    <Text style={[styles.cardMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+                      {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </CollapsibleSection>
+          ))}
+        </ScrollView>
       )}
 
       <ComposeModal visible={composeOpen} onClose={() => setComposeOpen(false)} onSent={load} classes={classes} theme={theme} t={t} />
