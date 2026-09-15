@@ -55,6 +55,35 @@ export async function fetchClassroomRecipients(classroomId: string): Promise<Cla
   return apiFetch<ClassroomRecipients>(`/api/v1/teacher/classrooms/${classroomId}/recipients`);
 }
 
+export interface SearchedStudent {
+  id: string;
+  name: string;
+  classroom_id: string;
+  classroom_name: string;
+}
+
+export interface SearchedParent {
+  id: string;
+  name: string;
+  student_id: string;
+  student_name: string;
+  classroom_id: string;
+  classroom_name: string;
+}
+
+export interface RecipientSearchResults {
+  students: SearchedStudent[];
+  parents: SearchedParent[];
+}
+
+// Cross-classroom search (routes/teacher_communication.py::search_recipients)
+// — unlike fetchClassroomRecipients above, this isn't scoped to a classroom
+// the teacher has already picked; it's how a teacher with several
+// classrooms finds a specific student or parent by name directly.
+export async function searchRecipients(query: string): Promise<RecipientSearchResults> {
+  return apiFetch<RecipientSearchResults>(`/api/v1/teacher/recipients/search?q=${encodeURIComponent(query)}`);
+}
+
 export async function fetchTeacherConversations(): Promise<TeacherConversation[]> {
   return apiFetch<TeacherConversation[]>('/api/v1/teacher/messages');
 }

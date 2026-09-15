@@ -1278,7 +1278,20 @@ async def teacher_submissions(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List completed/in-progress sessions on this teacher's activities."""
+    """
+    List completed/in-progress sessions on this teacher's activities.
+
+    Each row is also tagged with classroom_id/classroom_name (2026-09-15,
+    for the mobile app's class > student grouped/collapsible submissions
+    list) via a LATERAL join against classroom_students/classrooms rather
+    than a plain JOIN: a student could in principle be in more than one of
+    this teacher's classrooms, and a plain join would duplicate that
+    session's row once per classroom membership. The LATERAL picks their
+    single earliest-enrolled classroom deterministically. classroom_id is
+    null when the student isn't in any classroom row of this teacher's at
+    all (activities aren't required to be classroom-scoped) -- the mobile
+    client groups those under an "Unassigned" bucket.
+    """
     result = await db.execute(
         text("""
             SELECT
@@ -1290,10 +1303,20 @@ async def teacher_submissions(
                 a.title        AS activity_title,
                 u.first_name,
                 u.last_name,
-                u.email        AS student_email
+                u.email        AS student_email,
+                cls.id         AS classroom_id,
+                cls.name       AS classroom_name
             FROM learning_sessions ls
             JOIN activities a ON ls.activity_id = a.id
             JOIN users u      ON ls.user_id     = u.id
+            LEFT JOIN LATERAL (
+                SELECT c.id, c.name
+                FROM classroom_students cs
+                JOIN classrooms c ON c.id = cs.classroom_id
+                WHERE cs.student_id = ls.user_id AND c.teacher_id = :teacher_id
+                ORDER BY cs.enrolled_at ASC
+                LIMIT 1
+            ) cls ON true
             WHERE a.teacher_id = :teacher_id
             ORDER BY ls.created_at DESC
             OFFSET :skip LIMIT :limit
@@ -1314,6 +1337,8 @@ async def teacher_submissions(
             "activity_title": r["activity_title"],
             "status": r["status"],
             "started_at": r["started_at"].isoformat() if r["started_at"] else None,
+            "classroom_id": str(r["classroom_id"]) if r["classroom_id"] else None,
+            "classroom_name": r["classroom_name"],
         }
         for r in rows
     ]

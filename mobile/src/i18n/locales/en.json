@@ -555,7 +555,8 @@
   "teacherSubmissions": {
     "title": "Submissions",
     "loadError": "Could not load submissions.",
-    "empty": "No submissions yet."
+    "empty": "No submissions yet.",
+    "unassigned": "Unassigned"
   },
   "wayfinding": {
     "progress": "{{reached}} of {{total}} stops",
@@ -667,6 +668,7 @@
     "classroomLabel": "CLASSROOM",
     "composeTitle": "New announcement",
     "empty": "No announcements yet for this classroom.",
+    "emptyGroup": "Nothing posted to this class yet.",
     "hint": "Visible to every student and linked parent in this classroom. One-way — they can’t reply.",
     "loadError": "Could not load announcements.",
     "noClassrooms": "You don't have any classrooms yet — set one up on the web app first, then come back here to post one.",
@@ -691,6 +693,11 @@
     "recipientKindParent": "The parent",
     "recipientKindStudent": "The student",
     "replyPlaceholder": "Write a reply…",
+    "searchEmpty": "No matches.",
+    "searchLabel": "FIND A STUDENT OR PARENT",
+    "searchPlaceholder": "Search by name, any of your classes…",
+    "searchTagParent": "Parent of {{name}}",
+    "searchTagStudent": "Student",
     "send": "Send",
     "sendError": "Could not send this message.",
     "subjectLabel": "SUBJECT",
