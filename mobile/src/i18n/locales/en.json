@@ -695,7 +695,7 @@
     "empty": "No conversations yet.",
     "loadError": "Could not load messages.",
     "noClassrooms": "You don't have any classrooms yet — set one up on the web app first, then come back here to message it.",
-    "orOneStudentOrFamily": "or one student or family:",
+    "orOneStudentOrFamily": "or one or more students or families:",
     "recipientKindParent": "The parent",
     "recipientKindStudent": "The student",
     "replyPlaceholder": "Write a reply…",
@@ -708,9 +708,12 @@
     "sendError": "Could not send this message.",
     "subjectLabel": "SUBJECT",
     "subjectPlaceholder": "e.g. Field trip permission slip",
+    "switchedClassroom": "Switched to {{classroom}} — previous selection cleared.",
     "title": "Messages",
     "willMessageParent": "Sends to {{name}}'s parent(s).",
-    "willMessageStudent": "Sends directly to {{name}}."
+    "willMessageParents": "Sends to {{count}} parents.",
+    "willMessageStudent": "Sends directly to {{name}}.",
+    "willMessageStudents": "Sends directly to {{count}} students."
   },
   "teacherProposals": {
     "actionError": "Please try again.",
