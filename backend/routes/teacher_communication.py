@@ -226,6 +226,14 @@ async def send_message(
     if not recipients:
         raise HTTPException(status_code=404, detail="No recipients found for this audience")
 
+    # The audience is homogeneous per request (either all students or all
+    # parents — see _resolve_recipients), so the deep link every recipient in
+    # this loop should get is fixed by the audience, not per-recipient.
+    # Previously this was hardcoded to '/parent/messages' regardless of
+    # audience, which sent a broken web-app link to student recipients (who
+    # have no such route — see mobile app's '/student-messages').
+    action_url = "/parent/messages" if body.audience in ("parent", "all_parents") else "/student-messages"
+
     sent = []
     for recipient in recipients:
         conversation_id = str(uuid4())
@@ -245,7 +253,7 @@ async def send_message(
             """), {
                 "id": str(uuid4()), "uid": recipient["user_id"],
                 "title": f"New message from {current_user.full_name or 'your teacher'}",
-                "msg": body.subject, "url": "/parent/messages",
+                "msg": body.subject, "url": action_url,
             })
 
         sent.append({"recipient_id": recipient["user_id"], "recipient_name": recipient["name"], "conversation_id": conversation_id})
@@ -357,12 +365,23 @@ async def reply_in_conversation(
         "subject": f"Re: {orig[2]}" if orig[2] and not str(orig[2]).startswith("Re:") else (orig[2] or "Re:"),
         "body": body.body, "conv": conversation_id,
     })
+    # A teacher's own follow-up reply (as opposed to send_message() above)
+    # doesn't know the conversation's original audience, so the recipient's
+    # actual role decides the deep link — this was the latent half of the
+    # action_url bug fixed in send_message(): a teacher replying into a
+    # thread with a student got the parent's '/parent/messages' link too.
+    other_role_row = (await db.execute(
+        text("SELECT role FROM users WHERE id = CAST(:uid AS uuid)"), {"uid": other_user_id}
+    )).first()
+    other_role = (other_role_row[0] or "").upper() if other_role_row else ""
+    action_url = "/student-messages" if other_role == "STUDENT" else "/parent/messages"
     await db.execute(text("""
         INSERT INTO notifications (id, user_id, title, message, type, action_url, is_read, created_at, updated_at)
-        VALUES (:id, :uid, :title, :msg, 'message', '/parent/messages', FALSE, NOW(), NOW())
+        VALUES (:id, :uid, :title, :msg, 'message', :url, FALSE, NOW(), NOW())
     """), {
         "id": str(uuid4()), "uid": other_user_id,
         "title": f"New reply from {current_user.full_name or 'your teacher'}", "msg": body.body[:200],
+        "url": action_url,
     })
     await db.commit()
     return {"success": True, "message_id": message_id, "created_at": datetime.utcnow().isoformat()}

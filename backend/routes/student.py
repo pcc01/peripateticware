@@ -14,10 +14,10 @@ import uuid as uuid_lib
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File, Form
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +33,7 @@ from models.database import (
     StudentNotebook,
     TranscriptStatus,
     User,
+    UserRole,
 )
 from services.privacy_engine import enforce_or_raise
 
@@ -163,6 +164,16 @@ def _audio_transcript_fields(
     if transcript:
         return transcript, TranscriptStatus.COMPLETED
     return None, TranscriptStatus.UNAVAILABLE
+
+
+def _require_student(user: User) -> None:
+    """Raise 403 if the caller is not a student or admin.
+
+    Mirrors routes/student_activities.py::_require_student — same router
+    family (/api/v1/student), same convention.
+    """
+    if user.role not in (UserRole.STUDENT, UserRole.ADMIN):
+        raise HTTPException(status_code=403, detail="Student access required")
 
 
 # ==============================================================================
@@ -752,6 +763,157 @@ async def get_student_announcements(
         ]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==============================================================================
+# MESSAGES — student-side read/reply for teacher-initiated 1:1 conversations
+#
+# Reuses the same `parent_messages` / `notifications` tables and query shapes
+# as routes/teacher_communication.py::list_conversations /
+# get_conversation_thread / reply_in_conversation (the teacher side) and
+# routes/parent.py (the parent side). A teacher can send to a student or
+# all_students audience (routes/teacher_communication.py::send_message) but
+# until now there was no way for that student to read or reply to it.
+#
+# Scope matches the parent side exactly: a student can only read/reply within
+# a conversation a teacher already started — there is no student-initiated
+# "compose new message" endpoint here (routes/parent.py has none either).
+# ==============================================================================
+
+class StudentMessageReplyRequest(BaseModel):
+    body: str = Field(..., min_length=1)
+
+
+@router.get("/messages")
+async def list_student_conversations(
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """This student's conversations (as sender or recipient), one row per
+    conversation_id, most-recent message first. Same response shape as
+    routes/teacher_communication.py::list_conversations."""
+    _require_student(current_user)
+
+    rows = (await db.execute(text("""
+        SELECT DISTINCT ON (m.conversation_id)
+               m.conversation_id, m.subject, m.body, m.created_at, m.from_user_id, m.to_user_id, m.read_at,
+               CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END AS other_user_id,
+               COALESCE(u.full_name, u.email) AS other_user_name
+        FROM parent_messages m
+        JOIN users u ON u.id = CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END
+        WHERE m.from_user_id = :uid OR m.to_user_id = :uid
+        ORDER BY m.conversation_id, m.created_at DESC
+        LIMIT :lim
+    """), {"uid": str(current_user.id), "lim": limit})).mappings().all()
+
+    return [
+        {
+            "conversation_id": str(r["conversation_id"]),
+            "other_user_id": str(r["other_user_id"]),
+            "other_user_name": r["other_user_name"],
+            "subject": r["subject"],
+            "last_message": r["body"],
+            "last_message_at": r["created_at"].isoformat() if r["created_at"] else None,
+            "unread": r["read_at"] is None and str(r["to_user_id"]) == str(current_user.id),
+        }
+        for r in rows
+    ]
+
+
+@router.get("/messages/{conversation_id}")
+async def get_student_conversation_thread(
+    conversation_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Full thread for one conversation. Same response shape as
+    routes/teacher_communication.py::get_conversation_thread.
+
+    The WHERE clause scopes to conversations this student is a participant
+    in, so a conversation_id that doesn't exist AND one that exists but
+    belongs to someone else both come back as an empty result -> 404. This
+    matches the teacher-side endpoint's convention (it doesn't distinguish
+    the two cases either).
+    """
+    _require_student(current_user)
+
+    rows = (await db.execute(text("""
+        SELECT m.id, m.from_user_id, m.to_user_id, m.subject, m.body, m.created_at, m.read_at,
+               COALESCE(u.full_name, u.email) AS from_name
+        FROM parent_messages m
+        JOIN users u ON u.id = m.from_user_id
+        WHERE m.conversation_id = CAST(:conv AS uuid)
+          AND (m.from_user_id = :uid OR m.to_user_id = :uid)
+        ORDER BY m.created_at ASC
+    """), {"conv": conversation_id, "uid": str(current_user.id)})).mappings().all()
+
+    if not rows:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return [
+        {
+            "id": str(r["id"]),
+            "from_user_id": str(r["from_user_id"]),
+            "from_name": r["from_name"],
+            "is_mine": str(r["from_user_id"]) == str(current_user.id),
+            "subject": r["subject"],
+            "body": r["body"],
+            "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+            "read_at": r["read_at"].isoformat() if r["read_at"] else None,
+        }
+        for r in rows
+    ]
+
+
+@router.post("/messages/{conversation_id}/reply", status_code=201)
+async def reply_to_student_conversation(
+    conversation_id: str,
+    body: StudentMessageReplyRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Reply within an existing conversation. Same behavior as
+    routes/teacher_communication.py::reply_in_conversation: verify the
+    calling student is a participant, insert the reply row, and notify the
+    other participant (the teacher who started this conversation).
+    """
+    _require_student(current_user)
+
+    orig = (await db.execute(text("""
+        SELECT from_user_id, to_user_id, subject FROM parent_messages
+        WHERE conversation_id = CAST(:conv AS uuid)
+        ORDER BY created_at DESC LIMIT 1
+    """), {"conv": conversation_id})).first()
+    if not orig:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    participant_ids = {str(orig[0]), str(orig[1])}
+    if str(current_user.id) not in participant_ids:
+        raise HTTPException(status_code=403, detail="Not authorized to reply to this conversation")
+
+    other_user_id = str(orig[1]) if str(orig[0]) == str(current_user.id) else str(orig[0])
+    message_id = str(uuid4())
+    await db.execute(text("""
+        INSERT INTO parent_messages (id, from_user_id, to_user_id, subject, body, conversation_id)
+        VALUES (CAST(:id AS uuid), CAST(:from_uid AS uuid), CAST(:to_uid AS uuid), :subject, :body, CAST(:conv AS uuid))
+    """), {
+        "id": message_id, "from_uid": str(current_user.id), "to_uid": other_user_id,
+        "subject": f"Re: {orig[2]}" if orig[2] and not str(orig[2]).startswith("Re:") else (orig[2] or "Re:"),
+        "body": body.body, "conv": conversation_id,
+    })
+    # The other participant here is always the teacher who started this
+    # conversation (students can only reply, never originate) — '/teacher/messages'
+    # is that role's real frontend messages route (see frontend/src/App.tsx).
+    await db.execute(text("""
+        INSERT INTO notifications (id, user_id, title, message, type, action_url, is_read, created_at, updated_at)
+        VALUES (:id, :uid, :title, :msg, 'message', '/teacher/messages', FALSE, NOW(), NOW())
+    """), {
+        "id": str(uuid4()), "uid": other_user_id,
+        "title": f"New reply from {current_user.full_name or 'a student'}", "msg": body.body[:200],
+    })
+    await db.commit()
+    return {"success": True, "message_id": message_id, "created_at": datetime.utcnow().isoformat()}
 
 
 # ==============================================================================
