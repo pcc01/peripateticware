@@ -11,14 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { fetchTeacherClasses, TeacherClass } from '@/src/api/teacher';
+import { fetchMyClassrooms, Classroom } from '@/src/api/classrooms';
 import {
   fetchTeacherConversations, fetchClassroomRecipients, sendTeacherMessage,
   TeacherConversation, ClassroomRecipients, Recipient, MessageAudience,
 } from '@/src/api/teacherMessages';
 
 function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean; onClose: () => void; onSent: () => void; theme: any; t: (k: string, d: string, o?: any) => any }) {
-  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [classes, setClasses] = useState<Classroom[]>([]);
   const [classroomId, setClassroomId] = useState<string | null>(null);
   const [recipients, setRecipients] = useState<ClassroomRecipients | null>(null);
   const [loadingRecipients, setLoadingRecipients] = useState(false);
@@ -34,6 +34,11 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  // Distinguishes "still fetching classes" from "fetched, and there are
+  // none" — without this, a teacher with zero classrooms saw an empty
+  // CLASSROOM row and a permanently-disabled Send with no explanation at
+  // all (classroomId can never get set, so `valid` below never passes).
+  const [classesLoaded, setClassesLoaded] = useState(false);
 
   const pickClassroom = useCallback((id: string) => {
     setClassroomId(id);
@@ -47,15 +52,17 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
     if (!visible) return;
     setClassroomId(null); setRecipients(null); setStudent(null);
     setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
-    fetchTeacherClasses().then((cs) => {
+    setClassesLoaded(false);
+    fetchMyClassrooms().then((cs) => {
       setClasses(cs);
+      setClassesLoaded(true);
       // BUG FIX (2026-09-15): classroomId used to stay null until the
       // teacher explicitly tapped a classroom chip — easy to miss when
       // there's only one, and `valid` below requires it, so Send stayed
       // silently disabled ("I can write the message but I can't send it").
       // Auto-select the first/only classroom instead.
       if (cs.length > 0) pickClassroom(cs[0].id);
-    }).catch(() => setClasses([]));
+    }).catch(() => { setClasses([]); setClassesLoaded(true); });
   }, [visible, pickClassroom]);
 
   const valid = classroomId && subject.trim() && body.trim() && (audience === 'all_students' || audience === 'all_parents' || student);
@@ -117,6 +124,12 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {classesLoaded && classes.length === 0 && (
+                <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody, marginTop: 4 }]}>
+                  {t('teacherMessages.noClassrooms', "You don't have any classrooms yet — set one up on the web app first, then come back here to message it.")}
+                </Text>
+              )}
 
               {classroomId && (
                 loadingRecipients ? (
