@@ -24,6 +24,13 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   const [loadingRecipients, setLoadingRecipients] = useState(false);
   const [audience, setAudience] = useState<MessageAudience>('all_parents');
   const [student, setStudent] = useState<Recipient | null>(null);
+  // BUG FIX (2026-09-15): the "or one family" picker below used to always
+  // send to that student's PARENT (audience='parent') no matter what — there
+  // was no way to message an individual STUDENT directly even though the
+  // backend (routes/teacher_communication.py) and this screen's own
+  // MessageAudience type have always supported audience='student'. This
+  // toggle decides which one a tapped student chip actually targets.
+  const [recipientKind, setRecipientKind] = useState<'parent' | 'student'>('parent');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
@@ -31,7 +38,7 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
   useEffect(() => {
     if (!visible) return;
     setClassroomId(null); setRecipients(null); setStudent(null);
-    setAudience('all_parents'); setSubject(''); setBody('');
+    setAudience('all_parents'); setRecipientKind('parent'); setSubject(''); setBody('');
     fetchTeacherClasses().then(setClasses).catch(() => setClasses([]));
   }, [visible]);
 
@@ -124,13 +131,30 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                       ))}
                     </View>
 
-                    <Text style={[styles.orLabel, { fontFamily: theme.fontBody, color: theme.textFaint }]}>{t('teacherMessages.orOneFamily', 'or one family:')}</Text>
+                    <Text style={[styles.orLabel, { fontFamily: theme.fontBody, color: theme.textFaint }]}>{t('teacherMessages.orOneStudentOrFamily', 'or one student or family:')}</Text>
+                    <View style={styles.chipRow}>
+                      {(['parent', 'student'] as const).map((kind) => (
+                        <TouchableOpacity
+                          key={kind}
+                          testID={`teacher-compose-recipient-kind-${kind}`}
+                          onPress={() => {
+                            setRecipientKind(kind);
+                            if (student) setAudience(kind);
+                          }}
+                          style={[styles.chip, { borderColor: recipientKind === kind ? theme.accent : theme.border, backgroundColor: recipientKind === kind ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
+                        >
+                          <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: recipientKind === kind ? theme.accent : theme.textMuted }}>
+                            {kind === 'parent' ? t('teacherMessages.recipientKindParent', 'The parent') : t('teacherMessages.recipientKindStudent', 'The student')}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                     <View style={styles.chipRow}>
                       {(recipients?.students ?? []).map((s) => (
                         <TouchableOpacity
                           key={s.id}
                           testID={`teacher-compose-student-${s.id}`}
-                          onPress={() => { setStudent(s); setAudience('parent'); }}
+                          onPress={() => { setStudent(s); setAudience(recipientKind); }}
                           style={[styles.chip, { borderColor: student?.id === s.id ? theme.accent : theme.border, backgroundColor: student?.id === s.id ? theme.accentMuted : theme.surfaceAlt, borderRadius: theme.radiusFull }]}
                         >
                           <Text style={{ fontFamily: theme.fontBody, fontSize: 13, fontWeight: '600', color: student?.id === s.id ? theme.accent : theme.textMuted }}>{s.name}</Text>
@@ -139,7 +163,9 @@ function ComposeModal({ visible, onClose, onSent, theme, t }: { visible: boolean
                     </View>
                     {student && (
                       <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
-                        {t('teacherMessages.willMessageParent', "Sends to {{name}}'s parent(s).", { name: student.name })}
+                        {recipientKind === 'parent'
+                          ? t('teacherMessages.willMessageParent', "Sends to {{name}}'s parent(s).", { name: student.name })
+                          : t('teacherMessages.willMessageStudent', 'Sends directly to {{name}}.', { name: student.name })}
                       </Text>
                     )}
                   </>

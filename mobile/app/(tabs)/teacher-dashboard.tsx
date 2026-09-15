@@ -56,6 +56,7 @@ const STAT_DESTINATION: Record<string, string> = {
   classes: '/teacher-classes',
   proposals: '/teacher-proposals',
   messages: '/teacher-messages',
+  announcements: '/teacher-announcements',
   calendar: '/teacher-calendar',
 };
 
@@ -136,6 +137,7 @@ export default function TeacherDashboardScreen() {
               { key: 'pending', label: t('teacherDashboard.stats.pending', 'Pending'), value: data.pending_submissions, emoji: '📥' },
               { key: 'proposals', label: t('teacherDashboard.stats.proposals', 'Proposals'), value: proposalCount, emoji: '🧭' },
               { key: 'messages', label: t('teacherDashboard.stats.messages', 'Messages'), value: unreadMessageCount, emoji: '✉️' },
+              { key: 'announcements', label: t('teacherDashboard.stats.announcements', 'Announcements'), value: '→', emoji: '📣' },
               // TEACHER only — see this file's header comment for why HOMESCHOOL doesn't get this card.
               ...(isTeacher ? [{ key: 'calendar', label: t('teacherDashboard.stats.calendar', 'Calendar'), value: '→', emoji: '📅' }] : []),
             ].map((stat) => (

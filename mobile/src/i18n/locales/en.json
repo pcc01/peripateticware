@@ -547,6 +547,7 @@
       "pending": "Pending",
       "calendar": "Calendar",
       "messages": "Messages",
+      "announcements": "Announcements",
       "proposals": "Proposals"
     },
     "newScavengerHunt": "+ Scavenger hunt"
@@ -660,6 +661,20 @@
     "titlePlaceholder": "e.g. Permission slips due",
     "typeLabel": "TYPE"
   },
+  "teacherAnnouncements": {
+    "bodyLabel": "ANNOUNCEMENT",
+    "bodyPlaceholder": "Write your announcement…",
+    "classroomLabel": "CLASSROOM",
+    "composeTitle": "New announcement",
+    "empty": "No announcements yet for this classroom.",
+    "hint": "Visible to every student and linked parent in this classroom. One-way — they can’t reply.",
+    "loadError": "Could not load announcements.",
+    "post": "Post",
+    "sendError": "Could not post this announcement.",
+    "title": "Announcements",
+    "titleLabel": "TITLE",
+    "titlePlaceholder": "e.g. No school Friday"
+  },
   "teacherMessages": {
     "audienceAllParents": "All parents",
     "audienceAllStudents": "All students",
@@ -670,14 +685,17 @@
     "composeTitle": "New message",
     "empty": "No conversations yet.",
     "loadError": "Could not load messages.",
-    "orOneFamily": "or one family:",
+    "orOneStudentOrFamily": "or one student or family:",
+    "recipientKindParent": "The parent",
+    "recipientKindStudent": "The student",
     "replyPlaceholder": "Write a reply…",
     "send": "Send",
     "sendError": "Could not send this message.",
     "subjectLabel": "SUBJECT",
     "subjectPlaceholder": "e.g. Field trip permission slip",
     "title": "Messages",
-    "willMessageParent": "Sends to {{name}}'s parent(s)."
+    "willMessageParent": "Sends to {{name}}'s parent(s).",
+    "willMessageStudent": "Sends directly to {{name}}."
   },
   "teacherProposals": {
     "actionError": "Please try again.",
