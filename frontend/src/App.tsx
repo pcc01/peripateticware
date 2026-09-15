@@ -144,6 +144,7 @@ const ParentMessagesPage = React.lazy(() => import('./pages/ParentMessagesPage')
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 const MaintenancePage = React.lazy(() => import('./pages/MaintenancePage'));
 const StudentJournalPage = React.lazy(() => import('./pages/student/StudentJournalPage'));
+const StudentMessagesPage = React.lazy(() => import('./pages/student/StudentMessagesPage'));
 
 const API_BASE = '/api/v1'
 
@@ -440,6 +441,7 @@ const App: React.FC = () => {
           <Route path="/student/reflection/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><ReflectionEditorPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/activities" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentActivitiesPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/activities/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentActivityDetailPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/messages" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentMessagesPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/session/:id" element={<ProtectedRoute requiredRole="student"><SessionPage /></ProtectedRoute>} />
 
           {/* TEACHER */}
