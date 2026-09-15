@@ -216,8 +216,19 @@ export default function PeriChatSheet({
         </View>
 
         {/* Messages */}
+        {/* BUG FIX (2026-09-14, real iOS report: "Peri discussion hides the
+            text entry box"): this FlatList had no `style` prop, only
+            `contentContainerStyle` (which only sizes its own scrollable
+            content, not the FlatList's own box). Without flex:1 here, this
+            list doesn't shrink when KeyboardAvoidingView's "padding"
+            behavior reduces the available height for the keyboard -- the
+            input row below it gets pushed off the bottom of the screen
+            instead. CaptureSheet.tsx's equivalent Note-mode TextInput
+            works today because it's already wrapped in an explicitly
+            flex:1 container; this list needed the same. */}
         <FlatList
           ref={listRef}
+          style={styles.messageListContainer}
           data={messages}
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.messageList}
@@ -290,6 +301,7 @@ const styles = StyleSheet.create({
   header:      { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 10, borderBottomWidth: 1 },
   headerTitle: { flex: 1, fontSize: 18, fontWeight: '700' },
   closeBtn:    { fontSize: 18, padding: 4 },
+  messageListContainer: { flex: 1 },
   messageList: { padding: 16, gap: 10 },
   bubble:      { maxWidth: '85%', padding: 12, gap: 6 },
   userBubble:  { alignSelf: 'flex-end', flexDirection: 'row' },
