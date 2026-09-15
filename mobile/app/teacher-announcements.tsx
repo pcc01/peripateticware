@@ -13,10 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { fetchTeacherClasses, TeacherClass } from '@/src/api/teacher';
+import { fetchMyClassrooms, Classroom } from '@/src/api/classrooms';
 import { fetchClassroomAnnouncements, createClassroomAnnouncement, TeacherAnnouncement } from '@/src/api/teacherAnnouncements';
 
-function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible: boolean; onClose: () => void; onSent: () => void; classes: TeacherClass[]; theme: any; t: (k: string, d: string, o?: any) => any }) {
+function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible: boolean; onClose: () => void; onSent: () => void; classes: Classroom[]; theme: any; t: (k: string, d: string, o?: any) => any }) {
   const [classroomId, setClassroomId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
@@ -86,6 +86,12 @@ function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible
                 ))}
               </View>
 
+              {classes.length === 0 && (
+                <Text style={[styles.hintText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>
+                  {t('teacherAnnouncements.noClassrooms', "You don't have any classrooms yet — set one up on the web app first, then come back here to post one.")}
+                </Text>
+              )}
+
               <Text style={[styles.label, { fontFamily: theme.fontMono, color: theme.textFaint }]}>{t('teacherAnnouncements.titleLabel', 'TITLE')}</Text>
               <TextInput testID="teacher-announcement-compose-title" style={inputStyle} value={title} onChangeText={setTitle} placeholder={t('teacherAnnouncements.titlePlaceholder', 'e.g. No school Friday')} placeholderTextColor={theme.textFaint} />
 
@@ -117,7 +123,7 @@ function ComposeModal({ visible, onClose, onSent, classes, theme, t }: { visible
 export default function TeacherAnnouncementsScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [classes, setClasses] = useState<TeacherClass[]>([]);
+  const [classes, setClasses] = useState<Classroom[]>([]);
   const [classroomId, setClassroomId] = useState<string | null>(null);
   const [announcements, setAnnouncements] = useState<TeacherAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +132,7 @@ export default function TeacherAnnouncementsScreen() {
   const [composeOpen, setComposeOpen] = useState(false);
 
   useEffect(() => {
-    fetchTeacherClasses()
+    fetchMyClassrooms()
       .then((cs) => { setClasses(cs); if (cs.length > 0) setClassroomId(cs[0].id); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -182,6 +188,13 @@ export default function TeacherAnnouncementsScreen() {
       ) : error ? (
         <View style={styles.center}>
           <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody }]}>{t('teacherAnnouncements.loadError', 'Could not load announcements.')}</Text>
+        </View>
+      ) : classes.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyEmoji}>📣</Text>
+          <Text style={[styles.emptyText, { fontFamily: theme.fontBody, color: theme.textMuted }]}>
+            {t('teacherAnnouncements.noClassrooms', "You don't have any classrooms yet — set one up on the web app first, then come back here to post one.")}
+          </Text>
         </View>
       ) : (
         <FlatList
