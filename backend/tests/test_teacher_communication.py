@@ -203,8 +203,10 @@ async def test_reply_success_when_participant(teacher_ctx):
     # from_user_id = this teacher, to_user_id = the parent, subject
     orig_result.first.return_value = _row(str(teacher.id), str(parent_id), "Field trip")
     insert_result = MagicMock()
+    role_result = MagicMock()
+    role_result.first.return_value = _row("PARENT")
     notif_result = MagicMock()
-    db.execute.side_effect = [orig_result, insert_result, notif_result]
+    db.execute.side_effect = [orig_result, insert_result, role_result, notif_result]
 
     resp = await client.post(
         f"/api/v1/teacher/messages/{conv_id}/reply",
@@ -216,6 +218,39 @@ async def test_reply_success_when_participant(teacher_ctx):
     assert body["success"] is True
     assert "message_id" in body
     db.commit.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_reply_to_student_notifies_with_student_action_url(teacher_ctx):
+    """A teacher's follow-up reply (not send_message()'s initial fan-out) must
+    also route the notification's action_url by the recipient's actual role
+    — this is the other half of the action_url bug send_message() already
+    had fixed for it; reply_in_conversation had the identical latent bug
+    since it always hardcoded '/parent/messages' regardless of who the
+    conversation's other participant actually is."""
+    client = teacher_ctx["client"]
+    db = teacher_ctx["db"]
+    teacher = teacher_ctx["teacher"]
+
+    conv_id = uuid4()
+    student_id = uuid4()
+
+    orig_result = MagicMock()
+    orig_result.first.return_value = _row(str(teacher.id), str(student_id), "Great work today")
+    insert_result = MagicMock()
+    role_result = MagicMock()
+    role_result.first.return_value = _row("STUDENT")
+    notif_result = MagicMock()
+    db.execute.side_effect = [orig_result, insert_result, role_result, notif_result]
+
+    resp = await client.post(
+        f"/api/v1/teacher/messages/{conv_id}/reply",
+        json={"body": "Keep it up!"},
+    )
+
+    assert resp.status_code == 201
+    notif_call = db.execute.call_args_list[-1]
+    assert notif_call.args[1]["url"] == "/student-messages"
 
 
 # ===========================================================================
