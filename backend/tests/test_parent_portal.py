@@ -152,7 +152,8 @@ async def test_get_messages_returns_list(ctx):
         conversation_id=conv_id,
         read_at=None,
         created_at=now,
-        from_name="Ms. Rivera",
+        full_name="Ms. Rivera",
+        email=None,
     )
 
     result_mock = MagicMock()
@@ -560,9 +561,11 @@ async def test_get_announcements_returns_list(ctx):
         classroom_id=classroom_id,
         classroom_name="5th Grade Science",
         teacher_id=teacher_id,
-        teacher_name="Ms. Rivera",
+        teacher_full_name="Ms. Rivera",
+        teacher_email=None,
         child_id=child_id,
-        child_name="Grace Hopper",
+        child_full_name="Grace Hopper",
+        child_email=None,
         title="Field trip Friday",
         body="Please send a signed permission slip by Thursday.",
         created_at=now,

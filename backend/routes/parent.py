@@ -15,7 +15,7 @@ from typing import List, Optional
 from uuid import uuid4, UUID as _UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from core.encryption import blind_index as _blind_index
+from core.encryption import blind_index as _blind_index, decrypt as _decrypt
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -724,6 +724,19 @@ async def get_monthly_report(
 # MESSAGING ENDPOINTS
 # ============================================================================
 
+def _decrypted_name(full_name: Optional[str], email: Optional[str] = None) -> str:
+    """COALESCE(full_name, email)-equivalent for raw-SQL results, where both
+    columns are EncryptedString — the ORM's TypeDecorator that normally
+    decrypts on load never runs for raw text() queries, so a plain SQL
+    COALESCE just returns whichever ciphertext is non-null. Decrypt each
+    candidate individually instead of coalescing the raw values."""
+    if full_name:
+        return _decrypt(full_name)
+    if email:
+        return _decrypt(email)
+    return ""
+
+
 @router.get("/messages", response_model=List[MessageResponse])
 async def get_messages(
     limit: int = Query(20, ge=1, le=100),
@@ -736,7 +749,7 @@ async def get_messages(
         rows = (await db.execute(text("""
             SELECT m.id, m.from_user_id, m.to_user_id, m.subject, m.body,
                    m.conversation_id, m.read_at, m.created_at,
-                   u.full_name AS from_name
+                   u.full_name, u.email
             FROM parent_messages m
             JOIN users u ON u.id = m.from_user_id
             WHERE m.to_user_id = :uid
@@ -747,7 +760,7 @@ async def get_messages(
             MessageResponse(
                 id=str(r["id"]),
                 from_teacher_id=str(r["from_user_id"]),
-                from_teacher_name=r["from_name"] or "Teacher",
+                from_teacher_name=_decrypted_name(r["full_name"], r["email"]) or "Teacher",
                 to_parent_id=str(r["to_user_id"]),
                 subject=r["subject"],
                 body=r["body"],
@@ -820,8 +833,8 @@ async def get_parent_announcements(
     try:
         rows = (await db.execute(text("""
             SELECT DISTINCT a.id, a.classroom_id, c.name AS classroom_name,
-                   a.teacher_id, COALESCE(t.full_name, t.email) AS teacher_name,
-                   cs.student_id AS child_id, COALESCE(s.full_name, s.email) AS child_name,
+                   a.teacher_id, t.full_name AS teacher_full_name, t.email AS teacher_email,
+                   cs.student_id AS child_id, s.full_name AS child_full_name, s.email AS child_email,
                    a.title, a.body, a.created_at
             FROM classroom_announcements a
             JOIN classrooms c ON c.id = a.classroom_id
@@ -841,9 +854,9 @@ async def get_parent_announcements(
                 classroom_id=str(r["classroom_id"]),
                 classroom_name=r["classroom_name"],
                 teacher_id=str(r["teacher_id"]),
-                teacher_name=r["teacher_name"],
+                teacher_name=_decrypted_name(r["teacher_full_name"], r["teacher_email"]),
                 child_id=str(r["child_id"]),
-                child_name=r["child_name"],
+                child_name=_decrypted_name(r["child_full_name"], r["child_email"]),
                 title=r["title"],
                 body=r["body"],
                 created_at=r["created_at"].isoformat() if r["created_at"] else datetime.utcnow().isoformat(),

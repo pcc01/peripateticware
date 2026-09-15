@@ -43,6 +43,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from core.dependencies import get_current_user
+from core.encryption import decrypt as _decrypt
 from models import User
 
 router = APIRouter(prefix="/teacher", tags=["teacher-communication"])
@@ -51,6 +52,19 @@ router = APIRouter(prefix="/teacher", tags=["teacher-communication"])
 def _require_teacher(user: User) -> None:
     if (user.role or "").upper() not in ("TEACHER", "HOMESCHOOL", "ADMIN"):
         raise HTTPException(status_code=403, detail="Teacher access required")
+
+
+def _decrypted_name(full_name: Optional[str], email: Optional[str]) -> str:
+    """COALESCE(full_name, email)-equivalent for raw-SQL results, where both
+    columns are EncryptedString — the ORM's TypeDecorator that normally
+    decrypts on load never runs for raw text() queries, so a plain SQL
+    COALESCE just returns whichever ciphertext is non-null. Decrypt each
+    candidate individually instead of coalescing the raw values."""
+    if full_name:
+        return _decrypt(full_name)
+    if email:
+        return _decrypt(email)
+    return ""
 
 
 # ── Schemas ─────────────────────────────────────────────────────────────────
@@ -129,29 +143,29 @@ async def _resolve_recipients(
         if not student_ids:
             raise HTTPException(status_code=422, detail="student_ids is required for audience=student")
         rows = (await db.execute(text("""
-            SELECT u.id, COALESCE(u.full_name, u.email) AS name
+            SELECT u.id, u.full_name, u.email
             FROM classroom_students cs
             JOIN users u ON u.id = cs.student_id
             WHERE cs.classroom_id = :cid AND cs.student_id = ANY(CAST(:sids AS uuid[]))
         """), {"cid": classroom_id, "sids": [str(s) for s in student_ids]})).mappings().all()
         if not rows:
             raise HTTPException(status_code=404, detail="No matching students found")
-        return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
+        return [{"user_id": str(r["id"]), "name": _decrypted_name(r["full_name"], r["email"])} for r in rows]
 
     if audience == "all_students":
         rows = (await db.execute(text("""
-            SELECT u.id, COALESCE(u.full_name, u.email) AS name
+            SELECT u.id, u.full_name, u.email
             FROM classroom_students cs
             JOIN users u ON u.id = cs.student_id
             WHERE cs.classroom_id = :cid
         """), {"cid": classroom_id})).mappings().all()
-        return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
+        return [{"user_id": str(r["id"]), "name": _decrypted_name(r["full_name"], r["email"])} for r in rows]
 
     if audience == "parent":
         if not student_ids:
             raise HTTPException(status_code=422, detail="student_ids is required for audience=parent")
         rows = (await db.execute(text("""
-            SELECT DISTINCT p.id, COALESCE(p.full_name, p.email) AS name
+            SELECT DISTINCT p.id, p.full_name, p.email
             FROM classroom_students cs
             JOIN parent_child_links pcl ON pcl.child_id = cs.student_id AND pcl.status = 'approved'
             JOIN users p ON p.id = pcl.parent_id
@@ -159,17 +173,17 @@ async def _resolve_recipients(
         """), {"cid": classroom_id, "sids": [str(s) for s in student_ids]})).mappings().all()
         if not rows:
             raise HTTPException(status_code=404, detail="No linked parent found for these students")
-        return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
+        return [{"user_id": str(r["id"]), "name": _decrypted_name(r["full_name"], r["email"])} for r in rows]
 
     if audience == "all_parents":
         rows = (await db.execute(text("""
-            SELECT DISTINCT p.id, COALESCE(p.full_name, p.email) AS name
+            SELECT DISTINCT p.id, p.full_name, p.email
             FROM classroom_students cs
             JOIN parent_child_links pcl ON pcl.child_id = cs.student_id AND pcl.status = 'approved'
             JOIN users p ON p.id = pcl.parent_id
             WHERE cs.classroom_id = :cid
         """), {"cid": classroom_id})).mappings().all()
-        return [{"user_id": str(r["id"]), "name": r["name"]} for r in rows]
+        return [{"user_id": str(r["id"]), "name": _decrypted_name(r["full_name"], r["email"])} for r in rows]
 
     raise HTTPException(status_code=422, detail=f"Unknown audience: {audience}")
 
@@ -185,35 +199,53 @@ async def list_recipients(
     _require_teacher(current_user)
     await _verify_classroom_ownership(db, classroom_id, current_user)
 
+    # full_name/email are EncryptedString columns -- raw SQL (this whole file's
+    # convention) reads ciphertext, and the ORM's TypeDecorator that normally
+    # decrypts on load never runs here. This surfaced as literal ciphertext
+    # ("gAAAAAB...") in the compose picker (reported live 2026-09-15) --
+    # decrypt every name/email field below before returning it. COALESCE'ing
+    # ciphertext also means the SQL-level ORDER BY sorted by ciphertext, not
+    # by name, so re-sort in Python after decrypting too.
     students = (await db.execute(text("""
-        SELECT u.id, COALESCE(u.full_name, u.email) AS name, u.email
+        SELECT u.id, u.full_name, u.email
         FROM classroom_students cs
         JOIN users u ON u.id = cs.student_id
         WHERE cs.classroom_id = :cid
-        ORDER BY name
     """), {"cid": classroom_id})).mappings().all()
 
     parents = (await db.execute(text("""
-        SELECT DISTINCT p.id AS parent_id, COALESCE(p.full_name, p.email) AS parent_name,
-               p.email AS parent_email, s.id AS student_id, COALESCE(s.full_name, s.email) AS student_name
+        SELECT DISTINCT p.id AS parent_id, p.full_name AS parent_name, p.email AS parent_email,
+               s.id AS student_id, s.full_name AS student_name
         FROM classroom_students cs
         JOIN users s ON s.id = cs.student_id
         JOIN parent_child_links pcl ON pcl.child_id = s.id AND pcl.status = 'approved'
         JOIN users p ON p.id = pcl.parent_id
         WHERE cs.classroom_id = :cid
-        ORDER BY parent_name
     """), {"cid": classroom_id})).mappings().all()
 
-    return {
-        "students": [{"id": str(r["id"]), "name": r["name"], "email": r["email"]} for r in students],
-        "parents": [
-            {
-                "id": str(r["parent_id"]), "name": r["parent_name"], "email": r["parent_email"],
-                "student_id": str(r["student_id"]), "student_name": r["student_name"],
-            }
-            for r in parents
-        ],
-    }
+    student_list = [
+        {
+            "id": str(r["id"]),
+            "name": (_decrypt(r["full_name"]) if r["full_name"] else None) or (_decrypt(r["email"]) if r["email"] else ""),
+            "email": _decrypt(r["email"]) if r["email"] else r["email"],
+        }
+        for r in students
+    ]
+    student_list.sort(key=lambda s: s["name"])
+
+    parent_list = [
+        {
+            "id": str(r["parent_id"]),
+            "name": (_decrypt(r["parent_name"]) if r["parent_name"] else None) or (_decrypt(r["parent_email"]) if r["parent_email"] else ""),
+            "email": _decrypt(r["parent_email"]) if r["parent_email"] else r["parent_email"],
+            "student_id": str(r["student_id"]),
+            "student_name": (_decrypt(r["student_name"]) if r["student_name"] else ""),
+        }
+        for r in parents
+    ]
+    parent_list.sort(key=lambda p: p["name"])
+
+    return {"students": student_list, "parents": parent_list}
 
 
 # ── Cross-classroom recipient search ────────────────────────────────────────
@@ -221,9 +253,17 @@ async def list_recipients(
 # existing "pick a class, then pick from its roster" flow) -- this is the
 # other half: a teacher with several classrooms typing a name and finding
 # that person directly, whichever classroom they're actually in. Searches by
-# name only, not email: `email` is an EncryptedString column and raw SQL
-# here (matching this file's existing convention) reads the ciphertext, so
-# an ILIKE against it could never match a typed plaintext query.
+# name only, not email.
+#
+# BUG FIX (2026-09-15): this used to filter with `WHERE u.full_name ILIKE
+# :like` directly in SQL. full_name is an EncryptedString column, so that
+# WHERE clause was matching against ciphertext -- a typed plaintext query
+# could never match, meaning this endpoint had silently returned empty
+# results for every real search since it was built. There's no way to do a
+# substring search against encrypted content in SQL; since the candidate
+# set is already bounded to this teacher's own classrooms (dozens to a few
+# hundred rows, not the whole `users` table), the fix is to fetch every
+# candidate, decrypt each name in Python, and filter/sort there instead.
 
 @router.get("/recipients/search")
 async def search_recipients(
@@ -233,19 +273,17 @@ async def search_recipients(
     db: AsyncSession = Depends(get_db),
 ):
     _require_teacher(current_user)
-    like = f"%{q}%"
+    q_lower = q.lower()
 
-    students = (await db.execute(text("""
-        SELECT u.id, u.full_name AS name, cs.classroom_id, c.name AS classroom_name
+    student_rows = (await db.execute(text("""
+        SELECT u.id, u.full_name, cs.classroom_id, c.name AS classroom_name
         FROM classroom_students cs
         JOIN classrooms c ON c.id = cs.classroom_id
         JOIN users u ON u.id = cs.student_id
-        WHERE c.teacher_id = :tid AND u.full_name ILIKE :like
-        ORDER BY u.full_name
-        LIMIT :lim
-    """), {"tid": str(current_user.id), "like": like, "lim": limit})).mappings().all()
+        WHERE c.teacher_id = :tid
+    """), {"tid": str(current_user.id)})).mappings().all()
 
-    parents = (await db.execute(text("""
+    parent_rows = (await db.execute(text("""
         SELECT DISTINCT p.id AS parent_id, p.full_name AS parent_name,
                s.id AS student_id, s.full_name AS student_name,
                cs.classroom_id, c.name AS classroom_name
@@ -254,28 +292,32 @@ async def search_recipients(
         JOIN users s ON s.id = cs.student_id
         JOIN parent_child_links pcl ON pcl.child_id = s.id AND pcl.status = 'approved'
         JOIN users p ON p.id = pcl.parent_id
-        WHERE c.teacher_id = :tid AND p.full_name ILIKE :like
-        ORDER BY p.full_name
-        LIMIT :lim
-    """), {"tid": str(current_user.id), "like": like, "lim": limit})).mappings().all()
+        WHERE c.teacher_id = :tid
+    """), {"tid": str(current_user.id)})).mappings().all()
 
-    return {
-        "students": [
-            {
-                "id": str(r["id"]), "name": r["name"] or "",
+    students = []
+    for r in student_rows:
+        name = _decrypt(r["full_name"]) if r["full_name"] else ""
+        if q_lower in name.lower():
+            students.append({
+                "id": str(r["id"]), "name": name,
                 "classroom_id": str(r["classroom_id"]), "classroom_name": r["classroom_name"],
-            }
-            for r in students
-        ],
-        "parents": [
-            {
-                "id": str(r["parent_id"]), "name": r["parent_name"] or "",
-                "student_id": str(r["student_id"]), "student_name": r["student_name"] or "",
+            })
+    students.sort(key=lambda s: s["name"])
+
+    parents = []
+    for r in parent_rows:
+        name = _decrypt(r["parent_name"]) if r["parent_name"] else ""
+        if q_lower in name.lower():
+            parents.append({
+                "id": str(r["parent_id"]), "name": name,
+                "student_id": str(r["student_id"]),
+                "student_name": _decrypt(r["student_name"]) if r["student_name"] else "",
                 "classroom_id": str(r["classroom_id"]), "classroom_name": r["classroom_name"],
-            }
-            for r in parents
-        ],
-    }
+            })
+    parents.sort(key=lambda p: p["name"])
+
+    return {"students": students[:limit], "parents": parents[:limit]}
 
 
 # ── Send / broadcast ────────────────────────────────────────────────────────
@@ -343,7 +385,7 @@ async def list_conversations(
         SELECT DISTINCT ON (m.conversation_id)
                m.conversation_id, m.subject, m.body, m.created_at, m.from_user_id, m.to_user_id, m.read_at,
                CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END AS other_user_id,
-               COALESCE(u.full_name, u.email) AS other_user_name
+               u.full_name, u.email
         FROM parent_messages m
         JOIN users u ON u.id = CASE WHEN m.from_user_id = :uid THEN m.to_user_id ELSE m.from_user_id END
         WHERE m.from_user_id = :uid OR m.to_user_id = :uid
@@ -355,7 +397,7 @@ async def list_conversations(
         {
             "conversation_id": str(r["conversation_id"]),
             "other_user_id": str(r["other_user_id"]),
-            "other_user_name": r["other_user_name"],
+            "other_user_name": _decrypted_name(r["full_name"], r["email"]),
             "subject": r["subject"],
             "last_message": r["body"],
             "last_message_at": r["created_at"].isoformat() if r["created_at"] else None,
@@ -375,7 +417,7 @@ async def get_conversation_thread(
 
     rows = (await db.execute(text("""
         SELECT m.id, m.from_user_id, m.to_user_id, m.subject, m.body, m.created_at, m.read_at,
-               COALESCE(u.full_name, u.email) AS from_name
+               u.full_name, u.email
         FROM parent_messages m
         JOIN users u ON u.id = m.from_user_id
         WHERE m.conversation_id = CAST(:conv AS uuid)
@@ -390,7 +432,7 @@ async def get_conversation_thread(
         {
             "id": str(r["id"]),
             "from_user_id": str(r["from_user_id"]),
-            "from_name": r["from_name"],
+            "from_name": _decrypted_name(r["full_name"], r["email"]),
             "is_mine": str(r["from_user_id"]) == str(current_user.id),
             "subject": r["subject"],
             "body": r["body"],
@@ -505,7 +547,7 @@ async def list_classroom_announcements(
 
     rows = (await db.execute(text("""
         SELECT a.id, a.classroom_id, a.teacher_id, a.title, a.body, a.created_at,
-               COALESCE(u.full_name, u.email) AS teacher_name
+               u.full_name, u.email
         FROM classroom_announcements a
         JOIN users u ON u.id = a.teacher_id
         WHERE a.classroom_id = CAST(:cid AS uuid)
@@ -519,7 +561,7 @@ async def list_classroom_announcements(
             classroom_id=str(r["classroom_id"]),
             classroom_name=classroom_name,
             teacher_id=str(r["teacher_id"]),
-            teacher_name=r["teacher_name"],
+            teacher_name=_decrypted_name(r["full_name"], r["email"]),
             title=r["title"],
             body=r["body"],
             created_at=r["created_at"].isoformat() if r["created_at"] else datetime.utcnow().isoformat(),

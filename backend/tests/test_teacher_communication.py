@@ -391,8 +391,8 @@ async def test_parent_announcements_scoped_to_caller(parent_ctx):
     result_mock.mappings.return_value.all.return_value = [
         _mapping_row(
             id=ann_id, classroom_id=classroom_id, classroom_name="Room 4",
-            teacher_id=teacher_id, teacher_name="Ms. Rivera",
-            child_id=child_id, child_name="Grace Hopper",
+            teacher_id=teacher_id, teacher_full_name="Ms. Rivera", teacher_email=None,
+            child_id=child_id, child_full_name="Grace Hopper", child_email=None,
             title="Field trip Friday", body="Permission slips due Thursday.",
             created_at=now,
         )
@@ -454,7 +454,7 @@ async def test_student_announcements_scoped_to_caller(student_ctx):
     result_mock.mappings.return_value.all.return_value = [
         _mapping_row(
             id=ann_id, classroom_id=classroom_id, classroom_name="Room 4",
-            teacher_id=teacher_id, teacher_name="Ms. Rivera",
+            teacher_id=teacher_id, full_name="Ms. Rivera", email=None,
             title="Field trip Friday", body="Bring a permission slip.",
             created_at=now,
         )
@@ -515,7 +515,7 @@ class TestStudentMessages:
                 conversation_id=conv_id, subject="Field trip Friday",
                 body="Don't forget your permission slip.", created_at=now,
                 from_user_id=teacher_id, to_user_id=student.id, read_at=None,
-                other_user_id=teacher_id, other_user_name="Ms. Rivera",
+                other_user_id=teacher_id, full_name="Ms. Rivera", email=None,
             )
         ]
         db.execute.return_value = result_mock
@@ -551,7 +551,7 @@ class TestStudentMessages:
             _mapping_row(
                 id=msg_id, from_user_id=teacher_id, to_user_id=student.id,
                 subject="Field trip Friday", body="Don't forget your permission slip.",
-                created_at=now, read_at=None, from_name="Ms. Rivera",
+                created_at=now, read_at=None, full_name="Ms. Rivera", email=None,
             )
         ]
         db.execute.return_value = result_mock
@@ -671,7 +671,7 @@ class TestSendMessageActionUrl:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=student_id, name="Grace Hopper")
+            _mapping_row(id=student_id, full_name="Grace Hopper", email=None)
         ]
         insert_result = MagicMock()
         notif_result = MagicMock()
@@ -707,7 +707,7 @@ class TestSendMessageActionUrl:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=parent_id, name="Test Parent")
+            _mapping_row(id=parent_id, full_name="Test Parent", email=None)
         ]
         insert_result = MagicMock()
         notif_result = MagicMock()
@@ -755,8 +755,8 @@ class TestMultiRecipientSendMessage:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=student_id_1, name="Grace Hopper"),
-            _mapping_row(id=student_id_2, name="Ada Lovelace"),
+            _mapping_row(id=student_id_1, full_name="Grace Hopper", email=None),
+            _mapping_row(id=student_id_2, full_name="Ada Lovelace", email=None),
         ]
         db.execute.side_effect = [
             ownership_result,
@@ -809,8 +809,8 @@ class TestMultiRecipientSendMessage:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=parent_id_1, name="Parent One"),
-            _mapping_row(id=parent_id_2, name="Parent Two"),
+            _mapping_row(id=parent_id_1, full_name="Parent One", email=None),
+            _mapping_row(id=parent_id_2, full_name="Parent Two", email=None),
         ]
         db.execute.side_effect = [
             ownership_result,
@@ -855,7 +855,7 @@ class TestMultiRecipientSendMessage:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=real_student_id, name="Grace Hopper"),
+            _mapping_row(id=real_student_id, full_name="Grace Hopper", email=None),
         ]
         db.execute.side_effect = [
             ownership_result, recipients_result, MagicMock(), MagicMock(),
@@ -956,7 +956,7 @@ class TestMultiRecipientSendMessage:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=student_id, name="Grace Hopper")
+            _mapping_row(id=student_id, full_name="Grace Hopper", email=None)
         ]
         db.execute.side_effect = [ownership_result, recipients_result, MagicMock(), MagicMock()]
 
@@ -986,7 +986,7 @@ class TestMultiRecipientSendMessage:
         ownership_result.first.return_value = _row("Ms. Rivera's Class")
         recipients_result = MagicMock()
         recipients_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=parent_id, name="Test Parent")
+            _mapping_row(id=parent_id, full_name="Test Parent", email=None)
         ]
         db.execute.side_effect = [ownership_result, recipients_result, MagicMock(), MagicMock()]
 
@@ -1025,7 +1025,7 @@ class TestSearchRecipients:
 
         student_result = MagicMock()
         student_result.mappings.return_value.all.return_value = [
-            _mapping_row(id=student_id, name="Grace Hopper", classroom_id=classroom_id, classroom_name="5th Grade Science"),
+            _mapping_row(id=student_id, full_name="Grace Hopper", classroom_id=classroom_id, classroom_name="5th Grade Science"),
         ]
         parent_result = MagicMock()
         parent_result.mappings.return_value.all.return_value = [
