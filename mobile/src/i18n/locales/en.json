@@ -332,6 +332,12 @@
       "hours": "Hours",
       "engagement": "Engagement"
     },
+    "announcements": {
+      "empty": "No announcements yet.",
+      "forChild": "for {{name}}",
+      "loadError": "Could not load announcements.",
+      "title": "Announcements"
+    },
     "linkChild": {
       "body": "Enter your child's Peripateticware email address. They'll need to approve the request in their own app before their progress appears here.",
       "emailPlaceholder": "Child's email address",

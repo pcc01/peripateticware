@@ -25,6 +25,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchLinkedChildren, fetchChildProgress, linkChild as apiLinkChild, unlinkChild as apiUnlinkChild, LinkedChild, ChildProgress } from '@/src/api/parent';
 import { fetchNotifications, markNotificationRead, ParentNotification } from '@/src/api/notifications';
 import { fetchParentMessages, replyToParentMessage, ParentMessage } from '@/src/api/parentMessages';
+import { fetchParentAnnouncements, ParentAnnouncement } from '@/src/api/parentAnnouncements';
 
 function ChildCard({ child, theme, t, onUnlinked }: { child: LinkedChild; theme: any; t: (k: string, d: string, o?: any) => any; onUnlinked: () => void }) {
   const [progress, setProgress] = useState<ChildProgress | null>(null);
@@ -456,6 +457,82 @@ function MessagesModal({
   );
 }
 
+function AnnouncementsModal({
+  visible, onClose, showChildContext, theme, t,
+}: { visible: boolean; onClose: () => void; showChildContext: boolean; theme: any; t: (k: string, d: string, o?: any) => any }) {
+  const [items, setItems] = useState<ParentAnnouncement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError(false);
+    fetchParentAnnouncements()
+      .then(setItems)
+      .catch(() => { setItems([]); setError(true); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { if (visible) load(); }, [visible, load]);
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.notifCard, { backgroundColor: theme.bg, borderColor: theme.border, borderRadius: theme.radius }]}
+        >
+          <View style={styles.notifHeader}>
+            <Text style={[styles.modalTitle, { fontFamily: theme.fontHead, color: theme.text }]}>
+              {t('parentDashboard.announcements.title', 'Announcements')}
+            </Text>
+            <TouchableOpacity testID="parent-announcements-close" onPress={onClose} hitSlop={12}>
+              <Text style={{ fontSize: 18, color: theme.textMuted }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <ActivityIndicator color={theme.accent} style={{ marginVertical: 24 }} />
+          ) : error ? (
+            <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody, marginVertical: 24 }]}>
+              {t('parentDashboard.announcements.loadError', 'Could not load announcements.')}
+            </Text>
+          ) : items.length === 0 ? (
+            <Text style={[styles.emptyText, { color: theme.textMuted, fontFamily: theme.fontBody, marginVertical: 24 }]}>
+              {t('parentDashboard.announcements.empty', 'No announcements yet.')}
+            </Text>
+          ) : (
+            <FlatList
+              data={items}
+              keyExtractor={(a) => a.id}
+              style={{ maxHeight: 420 }}
+              renderItem={({ item: a }) => (
+                <View style={[styles.notifRow, { borderColor: theme.border }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.notifTitle, { fontFamily: theme.fontBody, color: theme.text, fontWeight: '700' }]}>{a.title}</Text>
+                    <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint }]}>
+                      {a.classroom_name} · {a.teacher_name}
+                    </Text>
+                    <Text style={[styles.notifBody, { fontFamily: theme.fontBody, color: theme.textMuted, marginTop: 4 }]}>{a.body}</Text>
+                    {showChildContext && (
+                      <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 4 }]}>
+                        {t('parentDashboard.announcements.forChild', 'for {{name}}', { name: a.child_name })}
+                      </Text>
+                    )}
+                    <Text style={[styles.childMeta, { fontFamily: theme.fontMono, color: theme.textFaint, marginTop: 4 }]}>
+                      {new Date(a.created_at).toLocaleString()}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            />
+          )}
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+}
+
 export default function ParentDashboardScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -466,6 +543,7 @@ export default function ParentDashboardScreen() {
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [notifModalOpen, setNotifModalOpen] = useState(false);
   const [messagesModalOpen, setMessagesModalOpen] = useState(false);
+  const [announcementsModalOpen, setAnnouncementsModalOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   // Denied requests aren't shown at all — a declined child isn't "in
   // limbo" the way pending is, and the parent can always send a fresh
@@ -506,6 +584,14 @@ export default function ParentDashboardScreen() {
             accessibilityLabel={t('parentDashboard.messages.title', 'Messages')}
           >
             <Text style={{ fontSize: 20 }}>✉️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="parent-dashboard-announcements-open"
+            onPress={() => setAnnouncementsModalOpen(true)}
+            style={styles.bellBtn}
+            accessibilityLabel={t('parentDashboard.announcements.title', 'Announcements')}
+          >
+            <Text style={{ fontSize: 20 }}>📣</Text>
           </TouchableOpacity>
           <TouchableOpacity
             testID="parent-dashboard-notifications-open"
@@ -582,6 +668,13 @@ export default function ParentDashboardScreen() {
       <MessagesModal
         visible={messagesModalOpen}
         onClose={() => setMessagesModalOpen(false)}
+        theme={theme}
+        t={t}
+      />
+      <AnnouncementsModal
+        visible={announcementsModalOpen}
+        onClose={() => setAnnouncementsModalOpen(false)}
+        showChildContext={visibleChildren.length > 1}
         theme={theme}
         t={t}
       />
