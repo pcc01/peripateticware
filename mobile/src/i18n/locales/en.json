@@ -628,9 +628,22 @@
     "titleLabel": "CHALLENGE TITLE",
     "titlePlaceholder": "e.g. The Oak Tree Mystery"
   },
+  "studentAnnouncements": {
+    "empty": "No announcements yet.",
+    "loadError": "Could not load announcements.",
+    "title": "Announcements"
+  },
   "studentCalendar": {
     "loadError": "Could not load your calendar.",
     "title": "My Calendar"
+  },
+  "studentMessages": {
+    "empty": "No messages from teachers yet.",
+    "loadError": "Could not load messages.",
+    "replyPlaceholder": "Write a reply…",
+    "send": "Send",
+    "sendError": "Could not send this message.",
+    "title": "Messages"
   },
   "teacherCalendar": {
     "addTitle": "New calendar event",

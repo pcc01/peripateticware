@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivities, Activity } from '@/src/api/activities';
+import { fetchStudentConversations } from '@/src/api/studentMessages';
 import { useTranslation } from 'react-i18next';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -27,6 +28,7 @@ export default function DiscoverScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -38,13 +40,22 @@ export default function DiscoverScreen() {
     }
   }, []);
 
-  useEffect(() => { load().finally(() => setLoading(false)); }, [load]);
+  // Cheap unread badge derived from the conversation list itself (same
+  // `unread` flag app/student-messages.tsx renders a dot for) — no separate
+  // notifications-badge system needed for this.
+  const loadUnreadMessageCount = useCallback(() => {
+    fetchStudentConversations()
+      .then((items) => setUnreadMessageCount(items.filter((c) => c.unread).length))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { load().finally(() => setLoading(false)); loadUnreadMessageCount(); }, [load, loadUnreadMessageCount]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), Promise.resolve(loadUnreadMessageCount())]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadUnreadMessageCount]);
 
   const periText = activities.length > 0
     ? t('discover.periText', '{{count}} activity waiting for you. Where will you explore today?', {
@@ -55,10 +66,35 @@ export default function DiscoverScreen() {
 
   return (
     <SafeAreaView testID="discover-screen" style={[styles.root, { backgroundColor: theme.bg }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, styles.headerRow]}>
         <Text style={[styles.title, { fontFamily: theme.fontHead, color: theme.text }]}>
           {t('tabs.discover', 'Discover')}
         </Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            testID="student-home-messages-open"
+            onPress={() => router.push('/student-messages')}
+            style={styles.headerIconBtn}
+            accessibilityRole="button"
+            accessibilityLabel={t('studentMessages.title', 'Messages')}
+          >
+            <Text style={{ fontSize: 20 }}>✉️</Text>
+            {unreadMessageCount > 0 && (
+              <View style={[styles.unreadBadge, { backgroundColor: theme.warn }]}>
+                <Text style={styles.unreadBadgeText}>{unreadMessageCount > 9 ? '9+' : unreadMessageCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="student-home-announcements-open"
+            onPress={() => router.push('/student-announcements')}
+            style={styles.headerIconBtn}
+            accessibilityRole="button"
+            accessibilityLabel={t('studentAnnouncements.title', 'Announcements')}
+          >
+            <Text style={{ fontSize: 20 }}>📣</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {!isOnline && (
@@ -155,6 +191,11 @@ function ActivityCard({ activity, theme, onPress }: { activity: Activity; theme:
 const styles = StyleSheet.create({
   root:         { flex: 1 },
   header:       { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
+  headerRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerIconBtn: { padding: 6 },
+  unreadBadge:      { position: 'absolute', top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
+  unreadBadgeText:  { color: '#fff', fontSize: 9, fontWeight: '700' },
   title:        { fontSize: 28, fontWeight: '700' },
   center:       { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
   errorText:    { fontSize: 14, textAlign: 'center' },
