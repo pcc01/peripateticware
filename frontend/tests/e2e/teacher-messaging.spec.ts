@@ -143,6 +143,11 @@ test.describe('Teacher — Messages', () => {
 
     await page.getByTestId('new-message-button').click();
     await page.getByTestId('message-audience-select').selectOption('parent');
+    // Replaced the old single-select student picker with a checkbox list
+    // (2026-09-15) so a teacher can message several specific students/
+    // parents in one compose — checking one box here still exercises the
+    // single-recipient case.
+    await page.getByTestId('message-student-option-student-1').getByRole('checkbox').check();
     await page.getByTestId('message-subject-input').fill('Field trip reminder');
     await page.getByTestId('message-body-input').fill("Don't forget the permission slip.");
     await page.getByTestId('send-message-button').click();

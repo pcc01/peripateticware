@@ -155,7 +155,7 @@ const TeacherMessagesPage: React.FC = () => {
   const [students, setStudents] = useState<Recipient[]>([]);
   const [parents, setParents] = useState<ParentRecipient[]>([]);
   const [audience, setAudience] = useState<'all_parents' | 'all_students' | 'parent' | 'student'>('all_parents');
-  const [studentId, setStudentId] = useState('');
+  const [studentIds, setStudentIds] = useState<string[]>([]);
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
@@ -222,7 +222,7 @@ const TeacherMessagesPage: React.FC = () => {
       .then(r => {
         setStudents(r.data?.students ?? []);
         setParents(r.data?.parents ?? []);
-        setStudentId('');
+        setStudentIds([]);
       })
       .catch(() => { setStudents([]); setParents([]); });
   }, [classroomId]);
@@ -232,8 +232,8 @@ const TeacherMessagesPage: React.FC = () => {
       setSendError('Please fill in a subject and message.');
       return;
     }
-    if ((audience === 'student' || audience === 'parent') && !studentId) {
-      setSendError('Please choose a student.');
+    if ((audience === 'student' || audience === 'parent') && studentIds.length === 0) {
+      setSendError('Please choose at least one student.');
       return;
     }
     setSending(true);
@@ -243,7 +243,7 @@ const TeacherMessagesPage: React.FC = () => {
       const r = await apiClient.post('/teacher/messages', {
         classroom_id: classroomId,
         audience,
-        student_id: studentId || undefined,
+        student_ids: studentIds.length > 0 ? studentIds : undefined,
         subject: subject.trim(),
         body: body.trim(),
       });
@@ -462,7 +462,7 @@ const TeacherMessagesPage: React.FC = () => {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.send_to', 'Send to')}</label>
-              <select value={audience} onChange={e => setAudience(e.target.value as any)} data-testid="message-audience-select"
+              <select value={audience} onChange={e => { setAudience(e.target.value as any); setStudentIds([]); }} data-testid="message-audience-select"
                 style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
                 <option value="parent">{t('pages_teacher_teachermessagespage.a_specific_students_parent', 'A specific student\'s parent')}</option>
                 <option value="student">{t('pages_teacher_teachermessagespage.a_specific_student', 'A specific student')}</option>
@@ -474,14 +474,33 @@ const TeacherMessagesPage: React.FC = () => {
 
           {(audience === 'student' || audience === 'parent') && (
             <div style={{ marginBottom: 12 }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.student', 'Student')}</label>
-              <select value={studentId} onChange={e => setStudentId(e.target.value)}
-                style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)' }}>
-                <option value="">{t('pages_teacher_teachermessagespage.choose_a_student', 'Choose a student…')}</option>
-                {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              {audience === 'parent' && studentId && !parents.some(p => p.student_id === studentId) && (
-                <p style={{ color: '#b45309', fontSize: '0.78rem', marginTop: 6 }}>{t('pages_teacher_teachermessagespage.no_linked_parent_found_for_this_student_', 'No linked parent found for this student yet.')}</p>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4 }}>{t('pages_teacher_teachermessagespage.students', 'Students (choose one or more)')}</label>
+              <div
+                data-testid="message-student-checklist"
+                style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 10px' }}
+              >
+                {students.length === 0 && (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '6px 0' }}>{t('pages_teacher_teachermessagespage.no_students_in_this_classroom', 'No students in this classroom yet.')}</p>
+                )}
+                {students.map(s => (
+                  <label
+                    key={s.id}
+                    data-testid={`message-student-option-${s.id}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 2px', fontSize: '0.88rem', cursor: 'pointer' }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={studentIds.includes(s.id)}
+                      onChange={e => setStudentIds(prev => (
+                        e.target.checked ? [...prev, s.id] : prev.filter(id => id !== s.id)
+                      ))}
+                    />
+                    {s.name}
+                  </label>
+                ))}
+              </div>
+              {audience === 'parent' && studentIds.length > 0 && studentIds.some(id => !parents.some(p => p.student_id === id)) && (
+                <p style={{ color: '#b45309', fontSize: '0.78rem', marginTop: 6 }}>{t('pages_teacher_teachermessagespage.no_linked_parent_found_for_some_students_', 'No linked parent found yet for one or more of the selected students.')}</p>
               )}
             </div>
           )}
