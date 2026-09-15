@@ -3229,6 +3229,18 @@
     "pages_student_studentcalendarpage": {
       "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
     },
+    "pages_student_studentmessagespage": {
+      "title": "Messages",
+      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
+      "announcements_title": "Classroom Announcements",
+      "messages_title": "Messages",
+      "loading": "Loading…",
+      "no_announcements_yet": "No announcements yet.",
+      "no_messages_yet": "No messages from teachers yet.",
+      "placeholder_write_a_reply": "Write a reply…",
+      "back_to_messages": "Back to messages",
+      "you": "You"
+    },
     "announcements": "Announcements",
     "projectCompletionReportPage": {
       "back": "← Back to Project",

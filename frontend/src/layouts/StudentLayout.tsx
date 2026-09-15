@@ -21,6 +21,7 @@ const StudentLayout: React.FC<Props> = ({ children }) => {
       items: [
         { icon: '📓', label: 'Field Notes',    path: '/student/field-notes' },
         { icon: '📔', label: 'Journal',        path: '/student/journal' },
+        { icon: '✉️', label: t('nav.messages', 'Messages'), path: '/student/messages' },
       ],
     },
     {
