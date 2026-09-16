@@ -42,6 +42,7 @@ const StudentLayout: React.FC<Props> = ({ children }) => {
     {
       label: 'Account',
       items: [
+        { icon: '👪', label: 'Parent Requests', path: '/student/parent-requests' },
         { icon: '⚙️', label: t('nav.settings', 'Settings'), path: '/student/settings' },
       ],
     },

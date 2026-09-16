@@ -20,7 +20,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
-from core.encryption import blind_index
+from core.encryption import blind_index, encrypt
 
 logger = logging.getLogger(__name__)
 
@@ -1675,7 +1675,7 @@ async def seed_demo_fieldwork_submission(engine) -> None:
     try:
         async with engine.begin() as conn:
             student_row = (await conn.execute(text(
-                "SELECT id FROM users WHERE email = 'student@example.com'"
+                "SELECT id FROM users WHERE username = 'student'"
             ))).fetchone()
             activity_row = (await conn.execute(text(
                 "SELECT id FROM activities WHERE title = 'Creek Habitat Study' "
@@ -1784,18 +1784,34 @@ async def seed_demo_users(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "SecurePass123!"
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"
-            # BUG (found while debugging why every seeded demo/test account got
+            # BUG #1 (found while debugging why every seeded demo/test account got
             # 401 "Invalid email/id or password" on a fresh database): this raw
             # SQL INSERT bypasses the ORM entirely, so it never populated
             # email_index. routes/auth.py's login ALWAYS looks up by
             # `User.email_index == blind_index(email)` — never by the plain
             # `email` column — so a row with email_index left NULL can never
             # be found at login, no matter how correct its password hash is.
-            # This never surfaced locally because these accounts, once
-            # created via the real signup flow (which does set email_index),
-            # persist in a long-lived local dev DB; a fresh CI database hits
-            # this raw INSERT for the first time and exposes it. Computing
-            # email_index here so every seeded row is actually loginable.
+            # Computing email_index here so every seeded row is actually loginable.
+            #
+            # BUG #2 (found 2026-09-15, same class as the accept_invite() /
+            # seed_sample_data.py plaintext-PII bug): `email`/`full_name` are
+            # `EncryptedString` columns (models/user.py) — encryption only
+            # happens via the ORM's process_bind_param, which a raw text()
+            # INSERT with untyped bind params never triggers. This wrote
+            # plaintext PII straight into encrypted columns. Fixed by calling
+            # encrypt() in Python before binding, same as anywhere else that
+            # writes these columns outside the ORM.
+            #
+            # BUG #3 (found alongside #2): ON CONFLICT (email) can never fire
+            # once email is properly encrypted — Fernet ciphertext is
+            # non-deterministic (random IV per call), so re-running this on
+            # restart would insert a brand-new row with different ciphertext
+            # every time instead of upserting, silently duplicating these
+            # accounts on every deploy. `username` is unique, unencrypted,
+            # and stable per seed account, so it's the correct conflict
+            # target and the correct join key for every other seed function
+            # that looks these accounts up (see seed_demo_classroom etc.).
+            #
             # is_protected=TRUE on every row (both the initial INSERT and the
             # ON CONFLICT reconciliation) -- these are seed/demo accounts a
             # tester could delete/modify through the admin panel mid-test;
@@ -1809,24 +1825,30 @@ async def seed_demo_users(engine) -> None:
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active, is_protected)
                 VALUES
-                  ('homeschool@example.com',:ei_hs,'homeschool','Sarah','Rivera','Sarah Rivera',
+                  (:email_hs,:ei_hs,'homeschool','Sarah','Rivera',:full_hs,
                    :pw,'HOMESCHOOL',TRUE,TRUE),
-                  ('student@example.com',:ei_student,'student','Alex','Johnson','Alex Johnson',
+                  (:email_student,:ei_student,'student','Alex','Johnson',:full_student,
                    :pw,'STUDENT',TRUE,TRUE),
-                  ('teacher@example.com',:ei_teacher,'teacher','Jane','Smith','Jane Smith',
+                  (:email_teacher,:ei_teacher,'teacher','Jane','Smith',:full_teacher,
                    :pw,'TEACHER',TRUE,TRUE),
-                  ('parent@example.com',:ei_parent,'parent','Margaret','Brown','Margaret Brown',
+                  (:email_parent,:ei_parent,'parent','Margaret','Brown',:full_parent,
                    :pw,'PARENT',TRUE,TRUE)
-                ON CONFLICT (email) DO UPDATE SET
+                ON CONFLICT (username) DO UPDATE SET
+                    email           = EXCLUDED.email,
+                    full_name       = EXCLUDED.full_name,
                     hashed_password = EXCLUDED.hashed_password,
                     email_index     = EXCLUDED.email_index,
                     is_active       = TRUE,
                     is_protected    = TRUE
             """), {
                 "pw": _PW,
+                "email_hs": encrypt("homeschool@example.com"), "full_hs": encrypt("Sarah Rivera"),
                 "ei_hs":      blind_index("homeschool@example.com"),
+                "email_student": encrypt("student@example.com"), "full_student": encrypt("Alex Johnson"),
                 "ei_student": blind_index("student@example.com"),
+                "email_teacher": encrypt("teacher@example.com"), "full_teacher": encrypt("Jane Smith"),
                 "ei_teacher": blind_index("teacher@example.com"),
+                "email_parent": encrypt("parent@example.com"), "full_parent": encrypt("Margaret Brown"),
                 "ei_parent":  blind_index("parent@example.com"),
             })
         logger.info("✅ Demo seed users ensured (homeschool/student/teacher/parent @example.com, SecurePass123!)")
@@ -1844,8 +1866,9 @@ async def seed_demo_admin_account(engine) -> None:
     try:
         async with engine.begin() as conn:
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
-            # See the email_index note in seed_demo_users() above — same bug,
-            # same fix.
+            # See the email_index and plaintext-encryption notes in
+            # seed_demo_users() above — same bugs, same fix (encrypt in
+            # Python, conflict-target on username not email).
             # is_protected=TRUE (see seed_demo_users()'s comment on the same
             # pattern) -- this account being reachable/live on prod at all is
             # a deliberate call (see main.py), NOT this function running
@@ -1857,15 +1880,22 @@ async def seed_demo_admin_account(engine) -> None:
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active, is_protected, is_content_admin)
-                VALUES ('admin@example.com',:ei,'admin','Paul','Admin','Paul Christopher Cerda',
+                VALUES (:email,:ei,'admin','Paul','Admin',:full,
                         :pw,'ADMIN',TRUE,TRUE,FALSE)
-                ON CONFLICT (email) DO UPDATE SET
+                ON CONFLICT (username) DO UPDATE SET
+                    email            = EXCLUDED.email,
+                    full_name        = EXCLUDED.full_name,
                     hashed_password  = EXCLUDED.hashed_password,
                     email_index      = EXCLUDED.email_index,
                     is_active        = TRUE,
                     is_protected     = TRUE,
                     is_content_admin = FALSE
-            """), {"pw": _PW, "ei": blind_index("admin@example.com")})
+            """), {
+                "pw": _PW,
+                "email": encrypt("admin@example.com"),
+                "full": encrypt("Paul Christopher Cerda"),
+                "ei": blind_index("admin@example.com"),
+            })
         logger.info("✅ Demo admin account ensured (admin@example.com, SecurePass123!) — dev only")
     except Exception as e:
         logger.error(f"❌ Demo admin seed upsert FAILED: {e}", exc_info=True)
@@ -1896,8 +1926,10 @@ async def seed_homeschool_example_children(engine) -> None:
         async with engine.begin() as conn:
             _PW = "$2b$12$nVqpepgIpsqIYLr5JzOtZeV/HYj1ib6CGtweKasJ4SN3sGQA0eBsG"  # SecurePass123!
 
+            # username, not email, is the correct lookup key — see the BUG #2/#3
+            # comment in seed_demo_users() (email is encrypted+non-deterministic).
             parent_row = (await conn.execute(text(
-                "SELECT id FROM users WHERE email = 'homeschool@example.com'"
+                "SELECT id FROM users WHERE username = 'homeschool'"
             ))).first()
             if not parent_row:
                 logger.warning("⊘ homeschool@example.com not found — skipping child seed (run seed_demo_users first)")
@@ -1911,16 +1943,21 @@ async def seed_homeschool_example_children(engine) -> None:
 
             for email, username, first, last, grade_level, age_band in child_specs:
                 child_id = uuid.uuid4()
-                # Same email_index bug as seed_demo_users() above.
+                # Same email_index + plaintext-encryption + ON CONFLICT target
+                # bugs as seed_demo_users() above — same fix.
                 result = await conn.execute(text("""
                     INSERT INTO users (id, email, email_index, username, first_name, last_name, full_name,
                                        hashed_password, role, is_active)
                     VALUES (:id, :email, :ei, :username, :first, :last, :full, :pw, 'STUDENT', TRUE)
-                    ON CONFLICT (email) DO UPDATE SET is_active = TRUE, email_index = EXCLUDED.email_index
+                    ON CONFLICT (username) DO UPDATE SET
+                        is_active   = TRUE,
+                        email       = EXCLUDED.email,
+                        full_name   = EXCLUDED.full_name,
+                        email_index = EXCLUDED.email_index
                     RETURNING id
                 """), {
-                    "id": child_id, "email": email, "ei": blind_index(email), "username": username,
-                    "first": first, "last": last, "full": f"{first} {last}", "pw": _PW,
+                    "id": child_id, "email": encrypt(email), "ei": blind_index(email), "username": username,
+                    "first": first, "last": last, "full": encrypt(f"{first} {last}"), "pw": _PW,
                 })
                 # ON CONFLICT DO UPDATE ... RETURNING always returns a row (unlike
                 # DO NOTHING), so this gives us the real id whether inserted or
@@ -1952,32 +1989,35 @@ async def seed_test_accounts(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "Test1234!"
             _TEST_PW = "$2b$12$9x4KrIaTK6Ihpc/00eDlUuJIcXim7VUT0Ob9X/PQRdvvF4IxcAk7m"
-            # Same email_index bug as seed_demo_users() above — these are the
-            # accounts mobile/e2e.js Detox and Maestro suites log in as, so
-            # this alone would have blocked every mobile E2E run on a fresh DB.
-            # is_protected=TRUE + is_content_admin=FALSE on every row, every
-            # startup -- see seed_demo_users()'s comment on the same pattern.
-            # test_admin/test_platform are role=ADMIN specifically, so
-            # forcing is_content_admin=FALSE here also closes off a tester
-            # granting themselves blog/pages access mid-test and having it
-            # silently stick around.
+            # Same email_index + plaintext-encryption + ON CONFLICT target bugs
+            # as seed_demo_users() above — same fix. These are the accounts
+            # mobile/e2e.js Detox and Maestro suites log in as, so the
+            # email_index bug alone would have blocked every mobile E2E run
+            # on a fresh DB. is_protected=TRUE + is_content_admin=FALSE on
+            # every row, every startup -- see seed_demo_users()'s comment on
+            # the same pattern. test_admin/test_platform are role=ADMIN
+            # specifically, so forcing is_content_admin=FALSE here also
+            # closes off a tester granting themselves blog/pages access
+            # mid-test and having it silently stick around.
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active, is_protected, is_content_admin)
                 VALUES
-                  ('student@test.local',:ei_student,'test_student','Test','Student','Test Student',
+                  (:email_student,:ei_student,'test_student','Test','Student',:full_student,
                    :pw,'STUDENT',TRUE,TRUE,FALSE),
-                  ('teacher@test.local',:ei_teacher,'test_teacher','Test','Teacher','Test Teacher',
+                  (:email_teacher,:ei_teacher,'test_teacher','Test','Teacher',:full_teacher,
                    :pw,'TEACHER',TRUE,TRUE,FALSE),
-                  ('parent@test.local',:ei_parent,'test_parent','Test','Parent','Test Parent',
+                  (:email_parent,:ei_parent,'test_parent','Test','Parent',:full_parent,
                    :pw,'PARENT',TRUE,TRUE,FALSE),
-                  ('admin@test.local',:ei_admin,'test_admin','Test','Admin','Test Admin',
+                  (:email_admin,:ei_admin,'test_admin','Test','Admin',:full_admin,
                    :pw,'ADMIN',TRUE,TRUE,FALSE),
-                  ('homeschool@test.local',:ei_hs,'test_homeschool','Test','Homeschool','Test Homeschool',
+                  (:email_hs,:ei_hs,'test_homeschool','Test','Homeschool',:full_hs,
                    :pw,'HOMESCHOOL',TRUE,TRUE,FALSE),
-                  ('platform@test.local',:ei_platform,'test_platform','Test','Platform','Test Platform',
+                  (:email_platform,:ei_platform,'test_platform','Test','Platform',:full_platform,
                    :pw,'ADMIN',TRUE,TRUE,FALSE)
-                ON CONFLICT (email) DO UPDATE SET
+                ON CONFLICT (username) DO UPDATE SET
+                    email            = EXCLUDED.email,
+                    full_name        = EXCLUDED.full_name,
                     hashed_password  = EXCLUDED.hashed_password,
                     email_index      = EXCLUDED.email_index,
                     is_active        = TRUE,
@@ -1985,11 +2025,17 @@ async def seed_test_accounts(engine) -> None:
                     is_content_admin = FALSE
             """), {
                 "pw": _TEST_PW,
+                "email_student": encrypt("student@test.local"), "full_student": encrypt("Test Student"),
                 "ei_student": blind_index("student@test.local"),
+                "email_teacher": encrypt("teacher@test.local"), "full_teacher": encrypt("Test Teacher"),
                 "ei_teacher": blind_index("teacher@test.local"),
+                "email_parent": encrypt("parent@test.local"), "full_parent": encrypt("Test Parent"),
                 "ei_parent":  blind_index("parent@test.local"),
+                "email_admin": encrypt("admin@test.local"), "full_admin": encrypt("Test Admin"),
                 "ei_admin":   blind_index("admin@test.local"),
+                "email_hs": encrypt("homeschool@test.local"), "full_hs": encrypt("Test Homeschool"),
                 "ei_hs":      blind_index("homeschool@test.local"),
+                "email_platform": encrypt("platform@test.local"), "full_platform": encrypt("Test Platform"),
                 "ei_platform": blind_index("platform@test.local"),
             })
         logger.info("✅ E2E test seed accounts ensured (student/teacher/parent/admin/homeschool/platform @test.local)")
@@ -2003,44 +2049,54 @@ async def seed_homeschool_demo(engine) -> None:
         async with engine.begin() as conn:
             # bcrypt hash of "Demo@1234!"
             _DEMO_PW = "$2b$12$KwGO4zE1S5Xar9BFJJoaZuXsMZqbqvy38/wzm/T1ELjNE96Tq6sbC"
-            # Same email_index bug as seed_demo_users() above.
+            # Same email_index + plaintext-encryption + ON CONFLICT target bugs
+            # as seed_demo_users() above — same fix. Downstream lookups below
+            # join on username (plaintext, stable) instead of email (now
+            # correctly encrypted, so non-deterministic ciphertext can't be
+            # matched by a literal).
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('homeschool.parent@demo.com',:ei,'hs_parent','Laura','Chen','Laura Chen',
+                VALUES (:email,:ei,'hs_parent','Laura','Chen',:full,
                         :pw, 'HOMESCHOOL', TRUE)
-                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
-            """), {"pw": _DEMO_PW, "ei": blind_index("homeschool.parent@demo.com")})
+                ON CONFLICT (username) DO UPDATE SET
+                    email = EXCLUDED.email, full_name = EXCLUDED.full_name, email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "email": encrypt("homeschool.parent@demo.com"),
+                   "full": encrypt("Laura Chen"), "ei": blind_index("homeschool.parent@demo.com")})
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('hs.child1@demo.com',:ei,'hs_child1','Emma','Chen','Emma Chen',
+                VALUES (:email,:ei,'hs_child1','Emma','Chen',:full,
                         :pw, 'STUDENT', TRUE)
-                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
-            """), {"pw": _DEMO_PW, "ei": blind_index("hs.child1@demo.com")})
+                ON CONFLICT (username) DO UPDATE SET
+                    email = EXCLUDED.email, full_name = EXCLUDED.full_name, email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "email": encrypt("hs.child1@demo.com"),
+                   "full": encrypt("Emma Chen"), "ei": blind_index("hs.child1@demo.com")})
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
                                    hashed_password, role, is_active)
-                VALUES ('hs.child2@demo.com',:ei,'hs_child2','Liam','Chen','Liam Chen',
+                VALUES (:email,:ei,'hs_child2','Liam','Chen',:full,
                         :pw, 'STUDENT', TRUE)
-                ON CONFLICT (email) DO UPDATE SET email_index = EXCLUDED.email_index
-            """), {"pw": _DEMO_PW, "ei": blind_index("hs.child2@demo.com")})
+                ON CONFLICT (username) DO UPDATE SET
+                    email = EXCLUDED.email, full_name = EXCLUDED.full_name, email_index = EXCLUDED.email_index
+            """), {"pw": _DEMO_PW, "email": encrypt("hs.child2@demo.com"),
+                   "full": encrypt("Liam Chen"), "ei": blind_index("hs.child2@demo.com")})
             await conn.execute(text("""
                 INSERT INTO homeschool_children (parent_id, child_id, grade_level, age_band)
                 SELECT p.id, c.id,
-                       CASE c.email WHEN 'hs.child1@demo.com' THEN 3 ELSE 6 END,
+                       CASE c.username WHEN 'hs_child1' THEN 3 ELSE 6 END,
                        'k6'
                 FROM users p, users c
-                WHERE p.email = 'homeschool.parent@demo.com'
-                  AND c.email IN ('hs.child1@demo.com', 'hs.child2@demo.com')
+                WHERE p.username = 'hs_parent'
+                  AND c.username IN ('hs_child1', 'hs_child2')
                 ON CONFLICT (parent_id, child_id) DO NOTHING
             """))
             await conn.execute(text("""
                 INSERT INTO parent_child_links (parent_id, child_id, relationship)
                 SELECT p.id, c.id, 'guardian'
                 FROM users p, users c
-                WHERE p.email = 'homeschool.parent@demo.com'
-                  AND c.email IN ('hs.child1@demo.com', 'hs.child2@demo.com')
+                WHERE p.username = 'hs_parent'
+                  AND c.username IN ('hs_child1', 'hs_child2')
                 ON CONFLICT (parent_id, child_id) DO NOTHING
             """))
         logger.info("✅ Demo homeschool family seeded (homeschool.parent@demo.com + 2 children)")
@@ -2060,9 +2116,9 @@ async def seed_demo_classroom(engine) -> None:
             """))
             await conn.execute(text("""
                 INSERT INTO classrooms (name, grade_level, subject, teacher_id, org_id, is_active)
-                SELECT :cname, 5, 'Science', t.id, o.id, TRUE
+                SELECT CAST(:cname AS VARCHAR), 5, 'Science', t.id, o.id, TRUE
                 FROM users t, organizations o
-                WHERE t.email = 'teacher@example.com' AND o.slug = 'demo-school'
+                WHERE t.username = 'teacher' AND o.slug = 'demo-school'
                   AND NOT EXISTS (
                       SELECT 1 FROM classrooms c
                       WHERE c.name = :cname AND c.teacher_id = t.id
@@ -2072,14 +2128,14 @@ async def seed_demo_classroom(engine) -> None:
                 INSERT INTO classroom_students (classroom_id, student_id)
                 SELECT c.id, s.id
                 FROM classrooms c, users s
-                WHERE c.name = :cname AND s.email = 'student@example.com'
+                WHERE c.name = :cname AND s.username = 'student'
                 ON CONFLICT (classroom_id, student_id) DO NOTHING
             """), {"cname": _DEMO_CLASS_NAME})
             await conn.execute(text("""
                 INSERT INTO classes (teacher_id, name, grade_level, is_active)
-                SELECT t.id, :cname, 5, TRUE
+                SELECT t.id, CAST(:cname AS VARCHAR), 5, TRUE
                 FROM users t
-                WHERE t.email = 'teacher@example.com'
+                WHERE t.username = 'teacher'
                   AND NOT EXISTS (
                       SELECT 1 FROM classes c WHERE c.name = :cname AND c.teacher_id = t.id
                   )
@@ -2097,7 +2153,7 @@ async def seed_demo_classroom(engine) -> None:
                 FROM users s,
                      (VALUES ('photo','Maple leaf — early autumn color change'),
                              ('note','Observed three bird species near the pond')) AS v(ctype, note)
-                WHERE s.email = 'student@example.com'
+                WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_captures sc
                       WHERE sc.student_id = s.id AND sc.transcript = v.note
@@ -2114,7 +2170,7 @@ async def seed_demo_classroom(engine) -> None:
                 INSERT INTO student_notebooks (student_id, content)
                 SELECT s.id, 'My first field note: the pond ecosystem has frogs, dragonflies, and cattails.'
                 FROM users s
-                WHERE s.email = 'student@example.com'
+                WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_notebooks n
                       WHERE n.student_id = s.id AND n.content LIKE 'My first field note%'
@@ -2133,7 +2189,7 @@ async def seed_demo_classroom(engine) -> None:
                        'A personal project collecting observations from around my home and school.',
                        'personal'
                 FROM users s
-                WHERE s.email = 'student@example.com'
+                WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_self_projects p
                       WHERE p.student_id = s.id AND p.title = 'My Backyard Nature Study'
@@ -2155,7 +2211,7 @@ async def seed_demo_classroom(engine) -> None:
                        'Recorded the plants and animals around the school pond over one week.',
                        'submitted', 'School Pond'
                 FROM users s
-                WHERE s.email = 'student@example.com'
+                WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_field_notes f
                       WHERE f.student_id = s.id AND f.title = 'Pond Ecosystem Observation'
@@ -2174,7 +2230,7 @@ async def seed_demo_classroom(engine) -> None:
                        'I want to measure rainfall and temperature in the schoolyard for a month.',
                        'Schoolyard', 'Science', 'pending'
                 FROM users s, users t
-                WHERE s.email = 'student@example.com' AND t.email = 'teacher@example.com'
+                WHERE s.username = 'student' AND t.username = 'teacher'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_proposals p
                       WHERE p.student_id = s.id AND p.title = 'Build a Weather Station'
@@ -2193,7 +2249,7 @@ async def seed_demo_classroom(engine) -> None:
                        (SELECT id FROM activities ORDER BY created_at LIMIT 1),
                        'submitted', NOW()
                 FROM users s
-                WHERE s.email = 'student@example.com'
+                WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM activity_submissions a
                       WHERE a.student_id = s.id AND a.submission_status = 'submitted'
@@ -2217,8 +2273,8 @@ async def seed_demo_classroom(engine) -> None:
                        '["What lives here that does not live in the other habitat?"]'::jsonb,
                        'whole_class', 'submitted', TRUE
                 FROM users s, users t, classes c
-                WHERE s.email = 'student@example.com'
-                  AND t.email = 'teacher@example.com'
+                WHERE s.username = 'student'
+                  AND t.username = 'teacher'
                   AND c.teacher_id = t.id AND c.name = :cname
                   AND NOT EXISTS (
                       SELECT 1 FROM student_peer_projects p
@@ -2254,9 +2310,9 @@ async def seed_test_classroom(engine) -> None:
             """))
             await conn.execute(text("""
                 INSERT INTO classrooms (name, grade_level, subject, teacher_id, org_id, is_active)
-                SELECT :cname, 5, 'Science', t.id, o.id, TRUE
+                SELECT CAST(:cname AS VARCHAR), 5, 'Science', t.id, o.id, TRUE
                 FROM users t, organizations o
-                WHERE t.email = 'teacher@test.local' AND o.slug = 'test-school'
+                WHERE t.username = 'test_teacher' AND o.slug = 'test-school'
                   AND NOT EXISTS (
                       SELECT 1 FROM classrooms c
                       WHERE c.name = :cname AND c.teacher_id = t.id
@@ -2266,14 +2322,14 @@ async def seed_test_classroom(engine) -> None:
                 INSERT INTO classroom_students (classroom_id, student_id)
                 SELECT c.id, s.id
                 FROM classrooms c, users s
-                WHERE c.name = :cname AND s.email = 'student@test.local'
+                WHERE c.name = :cname AND s.username = 'test_student'
                 ON CONFLICT (classroom_id, student_id) DO NOTHING
             """), {"cname": _TEST_CLASS_NAME})
             await conn.execute(text("""
                 INSERT INTO classes (teacher_id, name, grade_level, is_active)
-                SELECT t.id, :cname, 5, TRUE
+                SELECT t.id, CAST(:cname AS VARCHAR), 5, TRUE
                 FROM users t
-                WHERE t.email = 'teacher@test.local'
+                WHERE t.username = 'test_teacher'
                   AND NOT EXISTS (
                       SELECT 1 FROM classes c WHERE c.name = :cname AND c.teacher_id = t.id
                   )

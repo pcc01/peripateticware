@@ -499,6 +499,25 @@ export const studentApi = {
     const data = response.data as any
     return Array.isArray(data) ? data : (data?.activities ?? [])
   },
+
+  async getParentRequests(): Promise<Types.ParentLinkRequest[]> {
+    const response = await axiosInstance.get<Types.ParentLinkRequest[]>('/student/parent-requests')
+    return response.data
+  },
+
+  async approveParentRequest(parentId: string): Promise<{ success: boolean; status: string }> {
+    const response = await axiosInstance.post<{ success: boolean; status: string }>(
+      `/student/parent-requests/${parentId}/approve`
+    )
+    return response.data
+  },
+
+  async denyParentRequest(parentId: string): Promise<{ success: boolean; status: string }> {
+    const response = await axiosInstance.post<{ success: boolean; status: string }>(
+      `/student/parent-requests/${parentId}/deny`
+    )
+    return response.data
+  },
 }
 
 /* ============================================================================ */

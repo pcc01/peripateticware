@@ -87,6 +87,7 @@ const StudentHowItWorksPage = React.lazy(() => import('./pages/student/StudentHo
 const StudentCalendarPage = React.lazy(() => import('./pages/student/StudentCalendarPage'));
 const SessionPage = React.lazy(() => import('./pages/SessionPage'));
 const StudentSettingsPage = React.lazy(() => import('./pages/StudentSettingsPage').then(m => ({ default: m.StudentSettingsPage })));
+const StudentParentRequestsPage = React.lazy(() => import('./pages/StudentParentRequestsPage'));
 const FieldNotesListPage = React.lazy(() => import('./pages/student/FieldNotesListPage'));
 const SelfProjectsListPage = React.lazy(() => import('./pages/student/SelfProjectsListPage'));
 const PeerProjectsListPage = React.lazy(() => import('./pages/student/PeerProjectsListPage'));
@@ -430,6 +431,7 @@ const App: React.FC = () => {
           <Route path="/student/how-it-works" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentHowItWorksPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/calendar" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentCalendarPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/settings" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentSettingsPage /></StudentLayout></ProtectedRoute>} />
+          <Route path="/student/parent-requests" element={<ProtectedRoute requiredRole="student"><StudentLayout><StudentParentRequestsPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/field-notes" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNotesListPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/field-notes/:id" element={<ProtectedRoute requiredRole="student"><StudentLayout><FieldNoteEditorPage /></StudentLayout></ProtectedRoute>} />
           <Route path="/student/self-projects" element={<ProtectedRoute requiredRole="student"><StudentLayout><SelfProjectsListPage /></StudentLayout></ProtectedRoute>} />

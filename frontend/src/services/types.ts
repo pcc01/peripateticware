@@ -671,6 +671,7 @@ export type {
   EvidenceFilters,
   EvidenceFormData,
   LinkedChild,
+  ParentLinkRequest,
   PaginatedCurriculumResponse,
   PaginatedEvidenceResponse,
   PaginatedProjectResponse,

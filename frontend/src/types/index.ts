@@ -403,6 +403,14 @@ export interface LinkedChild {
   verified: boolean
 }
 
+export interface ParentLinkRequest {
+  parent_id: string
+  parent_name: string
+  parent_email: string
+  relationship: string
+  requested_at: string
+}
+
 export interface ChildProgress {
   student_id: string
   student_name: string
