@@ -27,6 +27,11 @@ services:
         VITE_PADDLE_PRICE_HS_YEARLY: ${VITE_PADDLE_PRICE_HS_YEARLY:-}
         VITE_PADDLE_PRICE_TEACHER_MONTHLY: ${VITE_PADDLE_PRICE_TEACHER_MONTHLY:-}
         VITE_PADDLE_PRICE_TEACHER_YEARLY: ${VITE_PADDLE_PRICE_TEACHER_YEARLY:-}
+        # Set VITE_SHOW_DEMO_LOGINS=true in prod .env to show the demo-account
+        # quick-login panel on /login (see LoginScreen.tsx). Only useful
+        # alongside ENABLE_DEMO_SEED_ACCOUNTS=true, which actually creates
+        # those accounts.
+        VITE_SHOW_DEMO_LOGINS: ${VITE_SHOW_DEMO_LOGINS:-false}
     restart: always
     environment:
       NODE_ENV: production

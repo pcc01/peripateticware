@@ -166,10 +166,16 @@ export default function LoginScreen({
             <p className="text-gray-600">{t('auth.login_subtitle')}</p>
           </div>
 
-          {/* Demo accounts — dev/staging only. Never render on production:
-              it advertised a working one-click login (incl. Admin) plus the
-              shared password in plaintext. Opt a demo/staging deploy back in
-              with VITE_SHOW_DEMO_LOGINS=true at build time. */}
+          {/* Demo accounts — dev/staging only by default. Never render the
+              Admin button outside dev: backend/startup.py's
+              seed_demo_admin_account() is gated dev-only (never runs under
+              prod's ENABLE_DEMO_SEED_ACCOUNTS=true, see main.py) precisely
+              because a published-password ADMIN login is a real backdoor
+              once it's public — this button previously advertised it
+              anyway, so it's now spliced out for anything but a real dev
+              build. Opt the other 4 (non-admin, actually seeded on prod)
+              logins into a demo/staging deploy with VITE_SHOW_DEMO_LOGINS=true
+              at build time. */}
           {(import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO_LOGINS === 'true') && (
           <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '0.75rem', padding: '12px', marginBottom: '16px' }}>
             <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534', marginBottom: '8px', letterSpacing: '0.05em' }}>{t('components_auth_loginscreen.try_a_demo_account', 'TRY A DEMO ACCOUNT')}</p>
@@ -179,7 +185,7 @@ export default function LoginScreen({
                 { label: 'Student',    email: 'student@example.com',    color: '#0369a1' },
                 { label: 'Parent',     email: 'parent@example.com',     color: '#b45309' },
                 { label: 'Homeschool', email: 'homeschool@example.com', color: '#15803d' },
-                { label: 'Admin',      email: 'admin@example.com',      color: '#64748b' },
+                ...(import.meta.env.DEV ? [{ label: 'Admin', email: 'admin@example.com', color: '#64748b' }] : []),
               ].map(({ label, email: demoEmail, color }) => (
                 <button key={label} type="button"
                   aria-label={`Fill demo credentials for ${label}`}

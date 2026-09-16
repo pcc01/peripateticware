@@ -495,6 +495,12 @@ export const LandingPage: React.FC = () => {
                   {currentHero.secondary_cta}
                 </button>
               </div>
+              <button
+                onClick={handleNavigateToAuth}
+                className="btn-link"
+                style={{ background: 'none', border: 'none', padding: 0, marginTop: '12px', font: 'inherit', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}>
+                {t('landing:try_demo_account', 'Or try a demo account — no signup required →')}
+              </button>
             </div>
 
             <div className="hero-mockup">
