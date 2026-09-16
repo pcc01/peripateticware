@@ -424,11 +424,14 @@ async def list_parent_children(
             WHERE l.parent_id = :pid
             ORDER BY l.linked_at DESC
         """), {"pid": str(current_user.id)})).mappings().all()
+        # u.full_name/u.email are EncryptedString — see _decrypted_name()'s
+        # docstring below (same raw-SQL-bypasses-ORM-decryption bug, fixed
+        # here the same way).
         return [
             ChildLinkResponse(
                 id=str(r["child_id"]),
                 child_id=str(r["child_id"]),
-                child_name=r["full_name"] or r["email"],
+                child_name=_decrypted_name(r["full_name"], r["email"]),
                 relationship=r["relationship"] or "guardian",
                 linked_at=(r["linked_at"].isoformat() if r["linked_at"] else ""),
                 status=r["status"] or "approved",

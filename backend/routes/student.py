@@ -962,11 +962,15 @@ async def list_parent_requests(
             WHERE l.child_id = CAST(:cid AS uuid) AND l.status = 'pending'
             ORDER BY l.linked_at DESC
         """), {"cid": str(current_user.id)})).mappings().all()
+        # p.full_name/p.email are EncryptedString columns — raw SQL via text()
+        # never triggers the ORM's process_result_value decryption, so these
+        # came back as ciphertext (same bug class as elsewhere in this file,
+        # see _decrypted_name()'s docstring above).
         return [
             ParentLinkRequestResponse(
                 parent_id=str(r["parent_id"]),
-                parent_name=r["full_name"] or r["email"],
-                parent_email=r["email"],
+                parent_name=_decrypted_name(r["full_name"], r["email"]),
+                parent_email=_decrypt(r["email"]),
                 relationship=r["relationship"] or "guardian",
                 requested_at=(r["linked_at"].isoformat() if r["linked_at"] else ""),
             )
