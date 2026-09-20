@@ -1,0 +1,1766 @@
+[
+ {
+  "id": "CSTA-EK-ALG-IM-03",
+  "code": "EK-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[PK/Kindergarten] Describe how people create algorithms to solve problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-ALG-ML-02",
+  "code": "EK-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[PK/Kindergarten] Recognize attributes of objects to notice patterns and make decisions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-ALG-PS-01",
+  "code": "EK-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[PK/Kindergarten] Carry out algorithms in daily activities.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-PRO-PD-04",
+  "code": "EK-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[PK/Kindergarten] Create a sequence of commands to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-PRO-VD-05",
+  "code": "EK-PRO-VD-05",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[PK/Kindergarten] Identify everyday gestures and symbols that represent information people use to make choices.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-PRO-RD-06",
+  "code": "EK-PRO-RD-06",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[PK/Kindergarten] Describe how a sequence of commands completes a task.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-PRO-TR-07",
+  "code": "EK-PRO-TR-07",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[PK/Kindergarten] Identify a step in a sequence of commands that does not work as expected.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-DAT-DI-09",
+  "code": "EK-DAT-DI-09",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[PK/Kindergarten] Investigate a question that can be answered by collecting data in students' everyday environments.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-DAT-DC-08",
+  "code": "EK-DAT-DC-08",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[PK/Kindergarten] Use collected data to help answer questions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-DAT-IM-10",
+  "code": "EK-DAT-IM-10",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[PK/Kindergarten] Investigate how data can help a person make informed decisions in everyday life.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SYS-HW-11",
+  "code": "EK-SYS-HW-11",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[PK/Kindergarten] Examine the use of tools to accomplish a task or solve a problem for different users.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SYS-SE-12",
+  "code": "EK-SYS-SE-12",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[PK/Kindergarten] Differentiate between public and private information.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SYS-IM-13",
+  "code": "EK-SYS-IM-13",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[PK/Kindergarten] Identify responsible behavior when using computing systems and digital tools.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SOC-HI-14",
+  "code": "EK-SOC-HI-14",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[PK/Kindergarten] Identify computing technologies used in daily life that have changed over time.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SOC-HU-15",
+  "code": "EK-SOC-HU-15",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[PK/Kindergarten] Explain that people design and develop computing technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-EK-SOC-CE-16",
+  "code": "EK-SOC-CE-16",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[PK/Kindergarten] Identify how people use digital devices at home, at school, and at work.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-ALG-IM-03",
+  "code": "E1-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Grade 1] Explain how a change to an algorithm leads to a different outcome.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-ALG-ML-02",
+  "code": "E1-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Grade 1] Recognize that AI systems are technologies that use patterns in data to make decisions or generate new things.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-ALG-PS-01",
+  "code": "E1-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Grade 1] Decompose a problem or task into individual parts to develop an algorithm.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-PRO-PD-04",
+  "code": "E1-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 1] Create code from an algorithm that includes sequence to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-PRO-VD-05",
+  "code": "E1-PRO-VD-05",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Grade 1] Identify terms that refer to data values that change over time in everyday life.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-PRO-RD-06",
+  "code": "E1-PRO-RD-06",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Grade 1] Explain the function of code that includes an event and sequence.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-PRO-TR-07",
+  "code": "E1-PRO-TR-07",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Grade 1] Debug a program that includes a sequence of commands.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-DAT-DI-09",
+  "code": "E1-DAT-DI-09",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Grade 1] Compare a question that can be answered through a data investigation and a question that can be answered through other means.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-DAT-DC-08",
+  "code": "E1-DAT-DC-08",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Grade 1] Use multiple methods to collect both numeric and non-numeric data to help answer questions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-DAT-IM-10",
+  "code": "E1-DAT-IM-10",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Grade 1] Examine a variety of data questions that address the needs of a person or community.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SYS-HW-11",
+  "code": "E1-SYS-HW-11",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Grade 1] Describe the purpose of basic hardware components of a computing system, using accurate terminology.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SYS-SE-12",
+  "code": "E1-SYS-SE-12",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Grade 1] Describe how to keep devices and online accounts safe from unauthorized access.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SYS-IM-13",
+  "code": "E1-SYS-IM-13",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Grade 1] Describe an individual's role in responsibly using computing systems and digital tools.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SOC-HI-14",
+  "code": "E1-SOC-HI-14",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 1] Compare how an everyday activity changed after a specific computing technology was introduced.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SOC-HU-15",
+  "code": "E1-SOC-HU-15",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 1] Differentiate between activities that humans do well and activities that computing technologies do well.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E1-SOC-CE-16",
+  "code": "E1-SOC-CE-16",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Grade 1] Describe how computing is used by people at home, at school, and in the community.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-ALG-IM-03",
+  "code": "E2-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Grade 2] Describe how an algorithm might impact peers in varied situations.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-ALG-ML-02",
+  "code": "E2-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Grade 2] Examine how data is used to train a machine learning model.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-ALG-PS-01",
+  "code": "E2-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Grade 2] Create an algorithm that includes sequence, events, and iteration to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-PRO-PD-04",
+  "code": "E2-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 2] Create code from an algorithm that includes sequence, events, and iteration to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-PRO-VD-05",
+  "code": "E2-PRO-VD-05",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Grade 2] Label different representations of information with a name and whether its value is constant or changes.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-PRO-RD-06",
+  "code": "E2-PRO-RD-06",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Grade 2] Explain the steps taken to create a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-PRO-TR-07",
+  "code": "E2-PRO-TR-07",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Grade 2] Debug a program that includes sequence, events, and iteration.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-DAT-DI-09",
+  "code": "E2-DAT-DI-09",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Grade 2] Develop a question that can be answered with data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-DAT-DC-08",
+  "code": "E2-DAT-DC-08",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Grade 2] Compare numeric and non-numeric types of data in terms of how they are collected and what information they provide.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-DAT-IM-10",
+  "code": "E2-DAT-IM-10",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Grade 2] Distinguish between data collection approaches, including those that may lead to inaccurate or biased data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SYS-HW-11",
+  "code": "E2-SYS-HW-11",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Grade 2] Explain how the basic hardware components of a computing system work together to perform input and output (I/O) operations.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SYS-SE-12",
+  "code": "E2-SYS-SE-12",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Grade 2] Explain how online actions have real-world consequences.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SYS-IM-13",
+  "code": "E2-SYS-IM-13",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Grade 2] Describe the benefits and harms that arise from an individual's use of computing systems and digital tools.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SOC-HI-14",
+  "code": "E2-SOC-HI-14",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 2] Analyze the ways that people from different cultures, backgrounds, and time periods have designed computing technologies to help them solve problems and express ideas.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SOC-HU-15",
+  "code": "E2-SOC-HU-15",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 2] Investigate situations where humans have created computing technologies to solve problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E2-SOC-CE-16",
+  "code": "E2-SOC-CE-16",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Grade 2] Investigate how personal interests connect to computing in different industries and careers.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-ALG-IM-03",
+  "code": "E3-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Grade 3] Compare how different algorithms may affect outcomes, situations, and people with a wide range of needs.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-ALG-ML-02",
+  "code": "E3-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Grade 3] Investigate how a machine learning model can change when new data is added to a training set.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-ALG-PS-01",
+  "code": "E3-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Grade 3] Create an algorithm that includes a combination of sequence, events, iteration, and selection to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-PRO-PD-04",
+  "code": "E3-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 3] Develop code from a student-created algorithm that includes a combination of sequence, events, iteration, and selection to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-PRO-PD-05",
+  "code": "E3-PRO-PD-05",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 3] Use constructive feedback to improve a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-PRO-VD-06",
+  "code": "E3-PRO-VD-06",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Grade 3] Identify the variables being stored and manipulated in a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-PRO-RD-07",
+  "code": "E3-PRO-RD-07",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Grade 3] Articulate how a specific segment of code contributes to the overall purpose of a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-PRO-TR-08",
+  "code": "E3-PRO-TR-08",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Grade 3] Debug a program that includes a combination of sequence, events, iteration, and selection.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-DAT-DI-10",
+  "code": "E3-DAT-DI-10",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Grade 3] Investigate a data question involving relationships between multiple attributes.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-DAT-DC-09",
+  "code": "E3-DAT-DC-09",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Grade 3] Evaluate numeric and non-numeric data for accuracy and completeness.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-DAT-IM-11",
+  "code": "E3-DAT-IM-11",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Grade 3] Design a data collection process that addresses the needs of people from different backgrounds or groups.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SYS-HW-12",
+  "code": "E3-SYS-HW-12",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Grade 3] Describe the role of software in a computing system to accomplish tasks or solve problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SYS-SE-13",
+  "code": "E3-SYS-SE-13",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Grade 3] Evaluate how sharing information online might reveal personally identifiable information and other details.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SYS-NT-14",
+  "code": "E3-SYS-NT-14",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[Grade 3] Explain how people access the internet to gain information and communicate with each other.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SYS-IM-15",
+  "code": "E3-SYS-IM-15",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Grade 3] Describe how widely used computing systems may impact an individual's life and community.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SOC-HI-16",
+  "code": "E3-SOC-HI-16",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 3] Examine how computing innovations have changed the ways people live, work, or communicate over time.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SOC-ET-17",
+  "code": "E3-SOC-ET-17",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Grade 3] Describe how new technologies create both benefits and risks in personal and family life.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SOC-HU-18",
+  "code": "E3-SOC-HU-18",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 3] Examine why people design and build computing technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E3-SOC-CE-19",
+  "code": "E3-SOC-CE-19",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Grade 3] Explain how people in different industries use computing technologies and skills to accomplish their work.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-ALG-IM-03",
+  "code": "E4-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Grade 4] Evaluate how different algorithms for solving the same problem produce outcomes that may benefit or disadvantage different groups of people.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-ALG-ML-02",
+  "code": "E4-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Grade 4] Analyze relationships between the properties of training data and a machine learning model's output.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-ALG-PS-01",
+  "code": "E4-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Grade 4] Create a written representation of an algorithm that includes a combination of sequence, events, iteration, and selection to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-PRO-PD-04",
+  "code": "E4-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 4] Compare different programming solutions to the same problem based on correctness and clarity.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-PRO-PD-05",
+  "code": "E4-PRO-PD-05",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 4] Collaborate with a team by offering a meaningful contribution to creating a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-PRO-VD-06",
+  "code": "E4-PRO-VD-06",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Grade 4] Trace how data flows and changes variable values in a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-PRO-RD-07",
+  "code": "E4-PRO-RD-07",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Grade 4] Document a program to clarify its functionality.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-PRO-TR-08",
+  "code": "E4-PRO-TR-08",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Grade 4] Debug a program incrementally and repeatedly throughout the development process.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-DAT-DI-10",
+  "code": "E4-DAT-DI-10",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Grade 4] Create an explanation that includes at least one data visualization to report the process and results of a data investigation.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-DAT-DC-09",
+  "code": "E4-DAT-DC-09",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Grade 4] Organize collected data into a table using a computational tool, with rows representing records and columns representing attributes.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-DAT-IM-11",
+  "code": "E4-DAT-IM-11",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Grade 4] Investigate how data collected about people may affect individuals and groups.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SYS-HW-12",
+  "code": "E4-SYS-HW-12",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Grade 4] Apply a basic troubleshooting process to identify and fix common hardware and software issues.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SYS-SE-13",
+  "code": "E4-SYS-SE-13",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Grade 4] Distinguish between authentication and authorization in protecting devices and private information.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SYS-NT-14",
+  "code": "E4-SYS-NT-14",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[Grade 4] Compare wired and wireless methods that computing devices use to connect to the internet.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SYS-IM-15",
+  "code": "E4-SYS-IM-15",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Grade 4] Investigate the impacts of widely used computing systems on natural resources and the environment.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SOC-HI-16",
+  "code": "E4-SOC-HI-16",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 4] Investigate the contributions of diverse individuals and communities in the history of computing.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SOC-ET-17",
+  "code": "E4-SOC-ET-17",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Grade 4] Analyze how the limitations of existing technologies can lead to emerging technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SOC-HU-18",
+  "code": "E4-SOC-HU-18",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 4] Distinguish between human learning and machine learning processes.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E4-SOC-CE-19",
+  "code": "E4-SOC-CE-19",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Grade 4] Investigate how the workforce adopts new computing technologies and continues to update their computing skills.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-ALG-IM-03",
+  "code": "E5-ALG-IM-03",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Grade 5] Articulate how human-centered design principles are incorporated into the development of a computing technology.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-ALG-ML-02",
+  "code": "E5-ALG-ML-02",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Grade 5] Train a machine learning model to make a classification or prediction.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-ALG-PS-01",
+  "code": "E5-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Grade 5] Create a visual representation of an algorithm that includes variables and a combination of sequence, events, iteration, and selection to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-PRO-PD-04",
+  "code": "E5-PRO-PD-04",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 5] Create a novel program by modifying or combining elements of existing programs.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-PRO-PD-05",
+  "code": "E5-PRO-PD-05",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Grade 5] Construct individual components of a program that are collaboratively assembled into a programming project.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-PRO-VD-06",
+  "code": "E5-PRO-VD-06",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Grade 5] Use variables to store, compare, and modify data within a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-PRO-RD-07",
+  "code": "E5-PRO-RD-07",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Grade 5] Create embedded or external documentation for a programming project.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-PRO-TR-08",
+  "code": "E5-PRO-TR-08",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Grade 5] Debug a program using systematic strategies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-DAT-DI-10",
+  "code": "E5-DAT-DI-10",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Grade 5] Analyze a dataset to identify the nature and possible sources of variability in the data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-DAT-DC-09",
+  "code": "E5-DAT-DC-09",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Grade 5] Use computational tools to collect and organize different types of data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-DAT-IM-11",
+  "code": "E5-DAT-IM-11",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Grade 5] Analyze the benefits and risks of a computing technology that uses collected data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SYS-HW-12",
+  "code": "E5-SYS-HW-12",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Grade 5] Explain how hardware and software components of a computing system work together to perform input and output operations, processing, and storage.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SYS-SE-13",
+  "code": "E5-SYS-SE-13",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Grade 5] Describe the concepts of the CIA triad and how each component is important in protecting information.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SYS-NT-14",
+  "code": "E5-SYS-NT-14",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[Grade 5] Distinguish between the components of wired and wireless networks.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SYS-IM-15",
+  "code": "E5-SYS-IM-15",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Grade 5] Examine how computing systems impact culture and the ways people live and work.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SOC-HI-16",
+  "code": "E5-SOC-HI-16",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 5] Analyze how the inclusion or exclusion of diverse individuals and communities has shaped the design, development, and societal impact of computing technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SOC-ET-17",
+  "code": "E5-SOC-ET-17",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Grade 5] Examine how people decide whether or not to use emerging technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SOC-HU-18",
+  "code": "E5-SOC-HU-18",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Grade 5] Evaluate when it is appropriate to use or not use computing technologies to solve a problem.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-E5-SOC-CE-19",
+  "code": "E5-SOC-CE-19",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Grade 5] Examine how professionals collaborate while using computing technologies to solve problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-IM-09",
+  "code": "MS-ALG-IM-09",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Evaluate which human-centered design principles are present or missing in an existing computing technology.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-IM-10",
+  "code": "MS-ALG-IM-10",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Examine evidence of beneficial and harmful impacts, ethical issues, and biases of algorithms encountered in daily life.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-IM-11",
+  "code": "MS-ALG-IM-11",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Modify an algorithm to address a specific societal impact, ethical issue, or bias.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-ML-06",
+  "code": "MS-ALG-ML-06",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Hypothesize how a machine learning model generates classifications or predictions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-ML-07",
+  "code": "MS-ALG-ML-07",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Investigate ways to improve the accuracy of a machine learning model and reduce bias by refining the quality of examples and nonexamples in the training data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-ML-08",
+  "code": "MS-ALG-ML-08",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Evaluate the features and limitations of a machine learning model.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-PS-01",
+  "code": "MS-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Design an algorithm that includes variables of multiple data types to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-PS-02",
+  "code": "MS-ALG-PS-02",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Model a given algorithm with a flowchart or pseudocode that includes a combination of control structures and procedures.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-PS-03",
+  "code": "MS-ALG-PS-03",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Verify the accuracy of an algorithm for given inputs.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-PS-04",
+  "code": "MS-ALG-PS-04",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Justify whether a problem is best solved using procedural instructions, rule-based logic, data-driven methods, or a combination of these approaches.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-ALG-PS-05",
+  "code": "MS-ALG-PS-05",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[Middle School] Use an AI tool to generate outputs that assist in solving a computational problem.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-PD-12",
+  "code": "MS-PRO-PD-12",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Middle School] Use a procedure to structure code for clarity and reusability.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-PD-13",
+  "code": "MS-PRO-PD-13",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Middle School] Use reference documentation in program development.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-PD-14",
+  "code": "MS-PRO-PD-14",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Middle School] Justify the importance of attribution and intellectual property when developing computing technologies.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-PD-15",
+  "code": "MS-PRO-PD-15",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[Middle School] Develop a program utilizing inclusive collaboration practices.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-VD-16",
+  "code": "MS-PRO-VD-16",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[Middle School] Use variables of multiple data types to store, access, and manipulate data within a program.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-RD-17",
+  "code": "MS-PRO-RD-17",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Middle School] Analyze the roles of iteration, selection, variables, and procedures in a segment of code.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-RD-18",
+  "code": "MS-PRO-RD-18",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[Middle School] Analyze AI-generated code for accuracy and usability in a programming project.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-TR-19",
+  "code": "MS-PRO-TR-19",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Middle School] Use systematic strategies to test, refine, and document changes to a computing technology to meet the intended purpose.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-PRO-TR-20",
+  "code": "MS-PRO-TR-20",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[Middle School] Refine a computing technology based on user feedback to improve its usability and accessibility.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DI-25",
+  "code": "MS-DAT-DI-25",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Use a computational tool to identify relationships among variables in a dataset and make a classification or prediction.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DI-26",
+  "code": "MS-DAT-DI-26",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Create data visualizations to show how different design choices can impact the interpretation of the same data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DI-27",
+  "code": "MS-DAT-DI-27",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Summarize a data investigation process, including potential biases, limitations, and supporting evidence.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DC-21",
+  "code": "MS-DAT-DC-21",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Evaluate how different levels of precision and granularity in data collection affect accuracy, storage, and analysis.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DC-22",
+  "code": "MS-DAT-DC-22",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Explain how data and its associated metadata can be used to answer questions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DC-23",
+  "code": "MS-DAT-DC-23",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Use a computational tool to sort, filter, group, and summarize structured data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-DC-24",
+  "code": "MS-DAT-DC-24",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Analyze options to address a data quality issue.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-IM-28",
+  "code": "MS-DAT-IM-28",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Explain the benefits and risks of allowing personal data and metadata to be collected and used in datasets, including issues of data ownership, privacy, and sovereignty.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-DAT-IM-29",
+  "code": "MS-DAT-IM-29",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[Middle School] Analyze how decisions made at different stages of working with data can lead to biased data, misleading conclusions, and compromised AI models.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-HW-30",
+  "code": "MS-SYS-HW-30",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Middle School] Examine differences between computing systems based on user needs, system requirements, and potential societal, environmental, and ethical impacts.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-HW-31",
+  "code": "MS-SYS-HW-31",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[Middle School] Describe computing devices used in various industries, their basic functions, and how they are used to accomplish tasks or solve problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-SE-32",
+  "code": "MS-SYS-SE-32",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Middle School] Explain the effects of not using the CIA triad when working with data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-SE-33",
+  "code": "MS-SYS-SE-33",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[Middle School] Evaluate common types of cyber attacks and preventions.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-NT-34",
+  "code": "MS-SYS-NT-34",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[Middle School] Model how information in a network is broken down into packets, transmitted between devices, and reassembled.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-NT-35",
+  "code": "MS-SYS-NT-35",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[Middle School] Explain how the resilience of the internet depends on interconnected devices and their roles and functions within the network.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-IM-36",
+  "code": "MS-SYS-IM-36",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Middle School] Collaborate to improve the design of a computing system to meet the needs of diverse users.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SYS-IM-37",
+  "code": "MS-SYS-IM-37",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[Middle School] Examine how access to computing systems can vary based on personal and social factors, such as physical ability, geographic location, socioeconomic status, and age.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-HI-38",
+  "code": "MS-SOC-HI-38",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Middle School] Compare the roles of individuals, communities, organizations, and governments in shaping computing technologies across major eras in computing history.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-HI-39",
+  "code": "MS-SOC-HI-39",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[Middle School] Analyze intended and unintended impacts of a historical computing technology on society and the environment.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-ET-40",
+  "code": "MS-SOC-ET-40",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Middle School] Evaluate when it is appropriate to use AI and other emerging technologies to solve a problem based on their capabilities, limitations, and environmental impacts.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-ET-41",
+  "code": "MS-SOC-ET-41",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Middle School] Evaluate how the decisions made while designing an emerging technology influence user experiences differently across different communities.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-ET-42",
+  "code": "MS-SOC-ET-42",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[Middle School] Debate ways an emerging technology impacts the social, cultural, and environmental issues in local communities.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-HU-43",
+  "code": "MS-SOC-HU-43",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[Middle School] Analyze how the decisions humans make when using computing technologies have ethical and social consequences.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-CE-44",
+  "code": "MS-SOC-CE-44",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Middle School] Analyze how workers in different careers use computational thinking to solve real-world problems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-MS-SOC-CE-45",
+  "code": "MS-SOC-CE-45",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[Middle School] Evaluate how automation in technology can create or replace jobs and change how people work.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-IM-09",
+  "code": "HS-ALG-IM-09",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[High School] Design a computing technology using human-centered design principles.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-IM-10",
+  "code": "HS-ALG-IM-10",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[High School] Evaluate the ethical implications, societal impacts, and potential biases of rule-based and data-driven algorithms.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-IM-11",
+  "code": "HS-ALG-IM-11",
+  "subject": "Impacts of Algorithms & Design",
+  "category": "Algorithms & Design",
+  "description": "[High School] Articulate the values embedded in the design of an algorithmic system.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-ML-06",
+  "code": "HS-ALG-ML-06",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[High School] Justify the selection of a type of AI algorithm to accomplish a task.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-ML-07",
+  "code": "HS-ALG-ML-07",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[High School] Evaluate training data by examining its source, quality, representativeness, potential biases, and privacy implications.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-ML-08",
+  "code": "HS-ALG-ML-08",
+  "subject": "Machine Learning",
+  "category": "Algorithms & Design",
+  "description": "[High School] Develop a machine learning model for a chosen task using appropriate data and tools.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-PS-01",
+  "code": "HS-ALG-PS-01",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[High School] Design an algorithm using appropriate data structures to solve a problem or express an idea.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-PS-02",
+  "code": "HS-ALG-PS-02",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[High School] Optimize the design of an algorithm using procedural abstraction and control structures.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-PS-03",
+  "code": "HS-ALG-PS-03",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[High School] Evaluate algorithms for efficiency, correctness, and clarity, using metrics or test cases.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-PS-04",
+  "code": "HS-ALG-PS-04",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[High School] Describe the differences between deterministic and probabilistic algorithms.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-ALG-PS-05",
+  "code": "HS-ALG-PS-05",
+  "subject": "Algorithmic Problem Solving",
+  "category": "Algorithms & Design",
+  "description": "[High School] Evaluate AI-generated output to assess bias, accuracy, and potential harms.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-PD-12",
+  "code": "HS-PRO-PD-12",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[High School] Create a modular program that uses procedures, external libraries, or objects to improve reusability and readability.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-PD-13",
+  "code": "HS-PRO-PD-13",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[High School] Use documentation, libraries, application programming interfaces (APIs), and other tools in program development.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-PD-14",
+  "code": "HS-PRO-PD-14",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[High School] Apply appropriate attribution of intellectual property when developing a computing technology.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-PD-15",
+  "code": "HS-PRO-PD-15",
+  "subject": "Program Development",
+  "category": "Programming",
+  "description": "[High School] Collaborate on a programming project using a defined workflow that includes design documentation and clear task roles.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-VD-16",
+  "code": "HS-PRO-VD-16",
+  "subject": "Variables & Data Storage",
+  "category": "Programming",
+  "description": "[High School] Create a program that uses appropriate data structures to store, access, and manipulate data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-RD-17",
+  "code": "HS-PRO-RD-17",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[High School] Analyze how a segment of code works, including the role of parameters, return values, and data structures.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-RD-18",
+  "code": "HS-PRO-RD-18",
+  "subject": "Reading & Documenting",
+  "category": "Programming",
+  "description": "[High School] Evaluate AI-generated code for accuracy, reliability, and alignment with program requirements.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-TR-19",
+  "code": "HS-PRO-TR-19",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[High School] Evaluate a computing technology's alignment with design specifications and responsible design values, including its correctness, effectiveness, and user experience.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-PRO-TR-20",
+  "code": "HS-PRO-TR-20",
+  "subject": "Testing & Refining",
+  "category": "Programming",
+  "description": "[High School] Refine a computing technology based on user feedback, testing results, and responsible design values to improve its effectiveness and impact.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DI-25",
+  "code": "HS-DAT-DI-25",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[High School] Create a data visualization of a multivariate dataset to answer a question or make a classification or prediction.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DI-26",
+  "code": "HS-DAT-DI-26",
+  "subject": "Data Investigation",
+  "category": "Data & Analysis",
+  "description": "[High School] Evaluate a data simulation or visualization to answer a data question, inform decision-making, and identify potential limitations.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DC-21",
+  "code": "HS-DAT-DC-21",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[High School] Use a computational tool to generate simulated data that fits certain parameters for use in a simulation.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DC-22",
+  "code": "HS-DAT-DC-22",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[High School] Create a data dictionary that describes the name, type, and allowable values for each attribute and the logical relationships between variables in a dataset.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DC-23",
+  "code": "HS-DAT-DC-23",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[High School] Use a computational tool to clean and organize text-based data.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-DC-24",
+  "code": "HS-DAT-DC-24",
+  "subject": "Data Collection & Preparation",
+  "category": "Data & Analysis",
+  "description": "[High School] Evaluate different approaches to verifying consistency and compliance with expected data types, values, and ranges.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-IM-27",
+  "code": "HS-DAT-IM-27",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[High School] Evaluate the societal, environmental, and ethical implications of large-scale data collection and processing, including within AI applications.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-DAT-IM-28",
+  "code": "HS-DAT-IM-28",
+  "subject": "Impacts of Data Science",
+  "category": "Data & Analysis",
+  "description": "[High School] Debate the efficacy of a policy or regulation to ensure responsible data use.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-HW-29",
+  "code": "HS-SYS-HW-29",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[High School] Differentiate an operating system as a special type of software that manages both the hardware and other software components of a computing system, including handling memory and peripherals.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-HW-30",
+  "code": "HS-SYS-HW-30",
+  "subject": "Hardware & Software",
+  "category": "Systems & Security",
+  "description": "[High School] Demonstrate the capabilities and limitations of a physical or simulated computing device to address a task or problem.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-SE-31",
+  "code": "HS-SYS-SE-31",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[High School] Identify different types of cybersecurity and physical security measures and the trade-offs for users, data, and devices.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-SE-32",
+  "code": "HS-SYS-SE-32",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[High School] Classify the causes and impacts of security breaches and social engineering attacks for individuals, industries, communities, and governments.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-SE-33",
+  "code": "HS-SYS-SE-33",
+  "subject": "Security",
+  "category": "Systems & Security",
+  "description": "[High School] Formulate a solution to a security flaw in a given system.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-NT-34",
+  "code": "HS-SYS-NT-34",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[High School] Diagram a network of computing systems, including hardware and software.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-NT-35",
+  "code": "HS-SYS-NT-35",
+  "subject": "Networks",
+  "category": "Systems & Security",
+  "description": "[High School] Analyze how the internet functions as a network of networks and how it differs from other types of networks.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-IM-36",
+  "code": "HS-SYS-IM-36",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[High School] Evaluate the rationale behind a law or policy governing the design and use of computing systems.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SYS-IM-37",
+  "code": "HS-SYS-IM-37",
+  "subject": "Impacts of Computing Systems",
+  "category": "Systems & Security",
+  "description": "[High School] Investigate how computing systems and infrastructure impact society and the environment, identifying who is affected and why.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-HI-38",
+  "code": "HS-SOC-HI-38",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[High School] Analyze the historical trajectory of a specific computing technology and how its development is linked to societal and environmental factors.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-HI-39",
+  "code": "HS-SOC-HI-39",
+  "subject": "History of Computing",
+  "category": "Computing & Society",
+  "description": "[High School] Propose modifications to an existing policy or piece of legislation that encourages ethical innovation and minimizes societal risks associated with technology.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-ET-40",
+  "code": "HS-SOC-ET-40",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[High School] Evaluate the fundamental technological differences between an emerging technology and established technologies and how those differences influence computing.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-ET-41",
+  "code": "HS-SOC-ET-41",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[High School] Evaluate the societal and environmental impacts of an emerging technology, including those that lead to inequities in access and outcomes.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-ET-42",
+  "code": "HS-SOC-ET-42",
+  "subject": "Emerging Technologies",
+  "category": "Computing & Society",
+  "description": "[High School] Design a conceptual solution to a real-world problem using an emerging technology, analyzing its potential benefits and harms.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-HU-43",
+  "code": "HS-SOC-HU-43",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[High School] Evaluate how human choices in using, designing, deploying, and regulating computing technologies have risks, benefits, and long-term impacts.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-HU-44",
+  "code": "HS-SOC-HU-44",
+  "subject": "Humans & Computing",
+  "category": "Computing & Society",
+  "description": "[High School] Debate perspectives on differences between human and artificial intelligence and their implications for consciousness, ethics, and human responsibility.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-CE-45",
+  "code": "HS-SOC-CE-45",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[High School] Analyze how diverse teams of people use computational thinking and computing technologies to solve problems and express ideas.",
+  "required": true,
+  "weight": 1.0
+ },
+ {
+  "id": "CSTA-HS-SOC-CE-46",
+  "code": "HS-SOC-CE-46",
+  "subject": "Career Exploration",
+  "category": "Computing & Society",
+  "description": "[High School] Connect computing knowledge and skills acquired to students' personal goals and career aspirations.",
+  "required": true,
+  "weight": 1.0
+ }
+]
