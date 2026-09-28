@@ -20,6 +20,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { inferenceService } from '@/services/inferenceService';
 import { RagDocument } from '@/types/api';
 
@@ -43,12 +44,22 @@ function RelationBadge({ relation }: { relation: string }) {
   );
 }
 
-function ResultCard({ doc }: { doc: RagDocument }) {
+function ResultCard({
+  doc, canDraft, selected, onToggleSelect,
+}: {
+  doc: RagDocument;
+  canDraft: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+}) {
   const meta = doc.metadata || {};
   const code = (meta as any).human_coding_scheme || (meta as any).criterion_id;
+  // Only an actual standards_items node can seed activity generation — an
+  // "aligned_content" relation result points at an activity, not a standard.
+  const isStandardsItem = doc.node_type === 'standards_item' && !!doc.node_id;
   return (
     <div style={{
-      padding: '12px 16px', background: 'var(--surface)', border: '1px solid var(--border)',
+      padding: '12px 16px', background: 'var(--surface)', border: selected ? '1px solid var(--primary)' : '1px solid var(--border)',
       borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 6,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -68,18 +79,61 @@ function ResultCard({ doc }: { doc: RagDocument }) {
         </span>
       </div>
       <div style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{doc.content}</div>
+      {canDraft && isStandardsItem && (
+        <button
+          type="button"
+          onClick={onToggleSelect}
+          style={{
+            alignSelf: 'flex-start', fontSize: '0.72rem', padding: '3px 10px', borderRadius: 6,
+            border: selected ? 'none' : '1px solid var(--border)',
+            background: selected ? 'var(--primary)' : 'none',
+            color: selected ? 'white' : 'var(--text-muted)',
+            cursor: 'pointer',
+          }}
+        >
+          {selected ? '✓ Selected for new activity' : '+ Draft an activity for this'}
+        </button>
+      )}
     </div>
   );
 }
 
-export const StandardsExplorer: React.FC<{ sourceType?: string }> = ({ sourceType }) => {
+export const StandardsExplorer: React.FC<{
+  sourceType?: string;
+  // Opt-in: only a page that can actually send the teacher to an activity
+  // builder (i.e. a teacher's own standards page, not the admin one) should
+  // pass this. draftRoute is the create-activity route to navigate to.
+  enableActivityDraft?: boolean;
+  draftRoute?: string;
+}> = ({ sourceType, enableActivityDraft = false, draftRoute = '/teacher/activities/new' }) => {
   const { t } = useTranslation('landing');
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<RagDocument[] | null>(null);
   const [meta, setMeta] = useState<{ seedCount: number; expandedCount: number; ms: number } | null>(null);
   const [includeRelated, setIncludeRelated] = useState(true);
+  const [selectedStandards, setSelectedStandards] = useState<Map<string, string>>(new Map()); // node_id -> code, for the tray label
+
+  const toggleSelect = (doc: RagDocument) => {
+    if (!doc.node_id) return;
+    setSelectedStandards(prev => {
+      const next = new Map(prev);
+      if (next.has(doc.node_id!)) {
+        next.delete(doc.node_id!);
+      } else {
+        const meta = doc.metadata || {};
+        const code = (meta as any).human_coding_scheme || (meta as any).criterion_id || doc.node_id!;
+        next.set(doc.node_id!, code);
+      }
+      return next;
+    });
+  };
+
+  const generateFromSelection = () => {
+    navigate(draftRoute, { state: { standardIds: Array.from(selectedStandards.keys()) } });
+  };
 
   const runSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -161,10 +215,45 @@ export const StandardsExplorer: React.FC<{ sourceType?: string }> = ({ sourceTyp
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {documents.map((doc, i) => (
-              <ResultCard key={doc.id ?? `${doc.node_type}-${doc.node_id}-${i}`} doc={doc} />
+              <ResultCard
+                key={doc.id ?? `${doc.node_type}-${doc.node_id}-${i}`}
+                doc={doc}
+                canDraft={enableActivityDraft}
+                selected={!!doc.node_id && selectedStandards.has(doc.node_id)}
+                onToggleSelect={() => toggleSelect(doc)}
+              />
             ))}
           </div>
         </>
+      )}
+
+      {enableActivityDraft && selectedStandards.size > 0 && (
+        <div style={{
+          position: 'sticky', bottom: 12, marginTop: 16, padding: '12px 16px', borderRadius: 10,
+          background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center',
+          gap: 12, flexWrap: 'wrap', boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+        }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+            {t('components_standards_explorer.selected_count', '{{count}} standard(s) selected', { count: selectedStandards.size })}:
+          </span>
+          <span style={{ fontSize: '0.78rem', fontFamily: 'monospace', opacity: 0.9, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {Array.from(selectedStandards.values()).join(', ')}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelectedStandards(new Map())}
+            style={{ fontSize: '0.78rem', padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.5)', background: 'none', color: 'white', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {t('components_standards_explorer.clear', 'Clear')}
+          </button>
+          <button
+            type="button"
+            onClick={generateFromSelection}
+            style={{ fontSize: '0.82rem', fontWeight: 700, padding: '6px 16px', borderRadius: 6, border: 'none', background: 'white', color: 'var(--primary)', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {t('components_standards_explorer.generate_activity', '✨ Generate activity from these standards')}
+          </button>
+        </div>
       )}
     </div>
   );

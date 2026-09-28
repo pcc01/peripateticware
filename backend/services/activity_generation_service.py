@@ -59,6 +59,7 @@ class ActivityGenerationService:
         solo_level: Optional[int] = None,
         curriculum_titles: Optional[List[str]] = None,
         additional_context: Optional[str] = None,
+        standards_context: Optional[List[Dict[str, str]]] = None,
         db: Session = None,
         num_suggestions: int = 3
     ) -> Dict[str, Any]:
@@ -80,6 +81,11 @@ class ActivityGenerationService:
             dok_level: Depth of Knowledge (1-4) if specified
             solo_level: SOLO level (1-5) if specified
             curriculum_titles: List of curriculum standards/titles
+            standards_context: Real standards to draft the activity for — the
+                standards-first flow (StandardsExplorer -> "generate an
+                activity for these"). Each item is {"code": ..., "statement":
+                ...}, resolved server-side from standards_items so the prompt
+                gets the actual standard text, not just an id or a title.
             db: SQLAlchemy session for caching
             num_suggestions: Number of suggestions to generate
         
@@ -135,17 +141,30 @@ class ActivityGenerationService:
                     latitude, longitude, location_name, db
                 )
 
+            # Standards the activity must actually target, formatted for the
+            # prompt as "CODE: statement text" — folded into the same
+            # curriculum-standards prompt section as curriculum_titles (kept
+            # as a separate param, not merged into curriculum_titles itself,
+            # since that field is fed elsewhere from teacher-authored titles
+            # and shouldn't silently absorb resolved standard text too).
+            standards_text = [
+                f"{c.get('code', '').strip()}: {c.get('statement', '')[:300]}".strip(": ")
+                for c in (standards_context or [])
+                if c.get("code") or c.get("statement")
+            ]
+            prompt_standards = [*(curriculum_titles or []), *standards_text]
+
             # Step 2: Build curriculum context string
             curriculum_context = self._build_curriculum_context(
                 subject, grade_level, bloom_level, marzano_level,
-                dok_level, solo_level, curriculum_titles
+                dok_level, solo_level, prompt_standards
             )
-            
+
             # Step 3: Build prompt for LLM
             prompt = self._build_generation_prompt(
                 location_name, location_context, subject, grade_level, num_suggestions,
                 bloom_level=bloom_level, dok_level=dok_level,
-                curriculum_titles=curriculum_titles,
+                curriculum_titles=prompt_standards,
                 additional_context=additional_context,
             )
             
@@ -161,7 +180,7 @@ class ActivityGenerationService:
 
             return self._build_success_result(
                 activities, location_name, latitude, longitude, location_context,
-                subject, grade_level, curriculum_titles,
+                subject, grade_level, prompt_standards,
                 bloom_level, marzano_level, dok_level, solo_level,
             )
 
@@ -233,6 +252,7 @@ class ActivityGenerationService:
         solo_level: Optional[int] = None,
         curriculum_titles: Optional[List[str]] = None,
         additional_context: Optional[str] = None,
+        standards_context: Optional[List[Dict[str, str]]] = None,
         db: Session = None,
         num_suggestions: int = 3
     ):
@@ -268,15 +288,22 @@ class ActivityGenerationService:
                     latitude, longitude, location_name, db
                 )
 
+            standards_text = [
+                f"{c.get('code', '').strip()}: {c.get('statement', '')[:300]}".strip(": ")
+                for c in (standards_context or [])
+                if c.get("code") or c.get("statement")
+            ]
+            prompt_standards = [*(curriculum_titles or []), *standards_text]
+
             curriculum_context = self._build_curriculum_context(
                 subject, grade_level, bloom_level, marzano_level,
-                dok_level, solo_level, curriculum_titles
+                dok_level, solo_level, prompt_standards
             )
 
             prompt = self._build_generation_prompt(
                 location_name, location_context, subject, grade_level, num_suggestions,
                 bloom_level=bloom_level, dok_level=dok_level,
-                curriculum_titles=curriculum_titles,
+                curriculum_titles=prompt_standards,
                 additional_context=additional_context,
             )
 
@@ -298,7 +325,7 @@ class ActivityGenerationService:
                 "type": "done",
                 "result": self._build_success_result(
                     activities, location_name, latitude, longitude, location_context,
-                    subject, grade_level, curriculum_titles,
+                    subject, grade_level, prompt_standards,
                     bloom_level, marzano_level, dok_level, solo_level,
                 ),
             }

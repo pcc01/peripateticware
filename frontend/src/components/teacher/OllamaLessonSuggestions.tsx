@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './OllamaLessonSuggestions.module.css';
 
 export interface AcceptedSuggestion {
@@ -26,6 +26,13 @@ interface OllamaLessonSuggestionsProps {
   // a stacked list — used when this panel sits in a full-width header
   // rather than a sidebar.
   layout?: 'vertical' | 'horizontal';
+  // Standards-first flow (StandardsExplorer -> "generate an activity for
+  // these standards"): standards_items.id GUIDs to draft for. When set,
+  // generation is allowed (and auto-triggered once) even with no
+  // subject/grade yet — the backend derives both from the standard(s) and
+  // hands them back via onContextResolved so the form can prefill them.
+  standardIds?: string[];
+  onContextResolved?: (subject: string, gradeLevel: number) => void;
 }
 
 interface Suggestion {
@@ -58,6 +65,8 @@ export const OllamaLessonSuggestions = ({
   longitude,
   onSuggestionSelected,
   layout = 'vertical',
+  standardIds,
+  onContextResolved,
 }: OllamaLessonSuggestionsProps) => {
   const { t } = useTranslation('landing');
 
@@ -67,7 +76,8 @@ export const OllamaLessonSuggestions = ({
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [generated, setGenerated] = useState(false);
-  const canGenerate = subject.trim().length > 0 && !!gradeLevel;
+  const hasStandards = !!standardIds && standardIds.length > 0;
+  const canGenerate = (subject.trim().length > 0 && !!gradeLevel) || hasStandards;
 
   const mapSuggestions = (raw: any[]): Suggestion[] =>
     (raw || []).map((s: any) => ({
@@ -96,7 +106,7 @@ export const OllamaLessonSuggestions = ({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          subject,
+          subject: subject || undefined,
           grade_level: gradeLevel,
           location_name: locationName || undefined,
           location_latitude: latitude,
@@ -109,6 +119,7 @@ export const OllamaLessonSuggestions = ({
           // card was never shown).
           activity_count: 3,
           additional_context: focus.trim() || undefined,
+          standard_ids: hasStandards ? standardIds : undefined,
         }),
       });
 
@@ -157,6 +168,13 @@ export const OllamaLessonSuggestions = ({
             setSuggestions(mapSuggestions(payload.result?.suggestions));
             setGenerated(true);
             doneReceived = true;
+            // Standards-first generation derives subject/grade server-side
+            // when the teacher hadn't set them — hand them back so the form
+            // reflects what was actually generated for, instead of staying
+            // blank.
+            if (hasStandards && payload.result?.subject && payload.result?.grade_level) {
+              onContextResolved?.(payload.result.subject, payload.result.grade_level);
+            }
           }
         }
       }
@@ -178,7 +196,20 @@ export const OllamaLessonSuggestions = ({
     } finally {
       setIsLoading(false);
     }
-  }, [canGenerate, subject, gradeLevel, locationName, latitude, longitude, taxonomyType, focus]);
+  }, [canGenerate, subject, gradeLevel, locationName, latitude, longitude, taxonomyType, focus, hasStandards, standardIds, onContextResolved]);
+
+  // Standards-first flow: the teacher already chose the standards before
+  // arriving here (StandardsExplorer's "generate an activity for these"),
+  // so there's no reason to make them click "Ask Peri" too — run once as
+  // soon as this panel mounts with standards to draft for.
+  const autoTriggeredRef = React.useRef(false);
+  useEffect(() => {
+    if (hasStandards && !autoTriggeredRef.current) {
+      autoTriggeredRef.current = true;
+      fetchSuggestions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasStandards]);
 
   const handleSelect = (s: Suggestion) => {
     const key = s.title;
@@ -210,8 +241,10 @@ export const OllamaLessonSuggestions = ({
   return (
     <div className={styles.container}>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
-        {canGenerate ? (
+        {subject.trim().length > 0 && !!gradeLevel ? (
           <>{t('components_teacher_ollamalessonsuggestions.peri_intro', 'Peri will suggest activities for')} <strong style={{ color: 'var(--text)' }}>{subject}</strong>, {t('components_teacher_ollamalessonsuggestions.grade', 'grade')} <strong style={{ color: 'var(--text)' }}>{gradeLevel}</strong>{locationName ? <> {t('components_teacher_ollamalessonsuggestions.at', 'at')} <strong style={{ color: 'var(--text)' }}>{locationName}</strong></> : ''}.</>
+        ) : hasStandards ? (
+          t('components_teacher_ollamalessonsuggestions.drafting_from_standards', 'Drafting an activity for the standards you selected…')
         ) : (
           t('components_teacher_ollamalessonsuggestions.need_subject_grade', 'Add a subject and grade level above to get suggestions from Peri.')
         )}

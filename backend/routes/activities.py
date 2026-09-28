@@ -212,6 +212,33 @@ async def create_activity(
 
     logger.info(f"Created activity: {db_activity.id} by teacher {current_user.id}")
 
+    # Standards-first flow: this activity was drafted from a chosen set of
+    # standards (StandardsExplorer -> "generate an activity for these") —
+    # seed those as approved alignments now. method='manual' since the
+    # teacher explicitly picked them as the generation target, not an
+    # inference; still fully editable afterward via AppliedStandardsPanel
+    # (override #2/#3 — nothing here locks these in).
+    if getattr(activity, "seed_standard_ids", None):
+        try:
+            from services.standards_alignment_service import apply_alignments, AlignmentInput
+            valid_ids = []
+            for sid in activity.seed_standard_ids:
+                try:
+                    valid_ids.append(UUID(sid))
+                except ValueError:
+                    continue
+            if valid_ids:
+                await apply_alignments(
+                    db, content_id=db_activity.id, content_type="activity",
+                    alignments=[AlignmentInput(item_id=i, method="manual", status="approved") for i in valid_ids],
+                    reviewed_by=current_user.id,
+                )
+                await db.commit()
+        except Exception as e:
+            # Non-fatal — the activity itself saved fine; the teacher can
+            # still add these standards manually via AppliedStandardsPanel.
+            logger.warning(f"Failed to seed standard alignments for activity {db_activity.id}: {e}")
+
     # Re-fetch so the response includes waypoints (Activity.waypoints is
     # lazy="selectin", so a plain select eager-loads them — same pattern as
     # get_activity).
@@ -775,6 +802,21 @@ async def generate_draft_activity_suggestions(
     import time
     started = time.monotonic()
 
+    standards_context: Optional[List[Dict[str, str]]] = None
+    subject = request.subject
+    grade_level = request.grade_level
+
+    if request.standard_ids:
+        standards_context, derived_subject, derived_grade = await _resolve_standards_context(db, request.standard_ids)
+        subject = subject or derived_subject
+        grade_level = grade_level or derived_grade
+
+    if not subject or grade_level is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="subject and grade_level are required (or provide standard_ids they can be derived from).",
+        )
+
     # generate_activity_suggestions() takes bloom_level (singular — not
     # "blooms_level", unlike TaxonomyFramework.BLOOMS.value) / marzano_level /
     # dok_level / solo_level as separate kwargs; CUSTOM has no matching kwarg.
@@ -793,12 +835,13 @@ async def generate_draft_activity_suggestions(
     service = ActivityGenerationService(llm_provider=settings.LLM_PROVIDER.lower())
 
     generation_result = await service.generate_activity_suggestions(
-        subject=request.subject,
-        grade_level=request.grade_level,
+        subject=subject,
+        grade_level=grade_level,
         location_name=request.location_name,
         latitude=request.location_latitude,
         longitude=request.location_longitude,
         additional_context=request.additional_context,
+        standards_context=standards_context,
         db=db,
         num_suggestions=request.activity_count,
         **taxonomy_kwargs,
@@ -815,13 +858,71 @@ async def generate_draft_activity_suggestions(
     return ActivityGenerationResponse(
         suggestions=suggestions,
         location_name=generation_result.get("location", {}).get("name") or "No specific location",
-        subject=request.subject,
-        grade_level=request.grade_level,
+        subject=subject,
+        grade_level=grade_level,
         taxonomy_framework=request.taxonomy_framework,
         provider=generation_result.get("llm_model", service.llm_provider),
         model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
         generation_time_ms=int((time.monotonic() - started) * 1000),
     )
+
+
+async def _resolve_standards_context(
+    db: AsyncSession, standard_ids: List[str],
+) -> "tuple[List[Dict[str, str]], Optional[str], Optional[int]]":
+    """standards_items.id list -> (prompt context, derived subject, derived
+    grade_level) for standards-first generation. Subject/grade are derived
+    from the first item/framework that has one — a mixed-subject selection
+    just means the teacher should set subject/grade explicitly, this is a
+    best-effort default, not a hard rule.
+    """
+    from models.database import StandardsItem, StandardsFramework
+
+    try:
+        ids = [UUID(sid) for sid in standard_ids]
+    except ValueError:
+        return [], None, None
+
+    rows = (await db.execute(
+        select(StandardsItem, StandardsFramework)
+        .join(StandardsFramework, StandardsItem.framework_id == StandardsFramework.id)
+        .where(StandardsItem.id.in_(ids))
+    )).all()
+
+    context: List[Dict[str, str]] = []
+    derived_subject: Optional[str] = None
+    derived_grade: Optional[int] = None
+    for item, framework in rows:
+        context.append({
+            "code": item.human_coding_scheme or "",
+            "statement": item.full_statement or "",
+        })
+        if derived_subject is None and framework.subject:
+            derived_subject = framework.subject
+        if derived_grade is None:
+            for level in (item.education_levels or []):
+                try:
+                    derived_grade = int(level)
+                    break
+                except (TypeError, ValueError):
+                    continue
+    return context, derived_subject, derived_grade
+
+
+async def _approved_standard_alignments(db: AsyncSession, activity_id: UUID) -> List["ContentAlignment"]:
+    """This activity's approved content_alignments rows — shared by the
+    regenerate-suggestions endpoint (feeds real standards text back into
+    generation) and anywhere else that needs "what this activity is
+    actually approved to teach" rather than every suggested/rejected row."""
+    from models.database import ContentAlignment
+
+    return list((await db.execute(
+        select(ContentAlignment).where(
+            ContentAlignment.content_id == activity_id,
+            ContentAlignment.content_type == "activity",
+            ContentAlignment.status == "approved",
+        )
+    )).scalars().all())
 
 
 def _map_raw_suggestions_to_schema(raw_suggestions: List[Dict[str, Any]]) -> List["ActivitySuggestion"]:
@@ -876,6 +977,21 @@ async def generate_draft_activity_suggestions_stream(
     import time
     started = time.monotonic()
 
+    standards_context: Optional[List[Dict[str, str]]] = None
+    subject = request.subject
+    grade_level = request.grade_level
+
+    if request.standard_ids:
+        standards_context, derived_subject, derived_grade = await _resolve_standards_context(db, request.standard_ids)
+        subject = subject or derived_subject
+        grade_level = grade_level or derived_grade
+
+    if not subject or grade_level is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="subject and grade_level are required (or provide standard_ids they can be derived from).",
+        )
+
     _TAXONOMY_LEVEL_KWARG = {
         TaxonomyFramework.BLOOMS: "bloom_level",
         TaxonomyFramework.MARZANO: "marzano_level",
@@ -892,12 +1008,13 @@ async def generate_draft_activity_suggestions_stream(
 
     async def _event_stream():
         async for event in service.generate_activity_suggestions_stream(
-            subject=request.subject,
-            grade_level=request.grade_level,
+            subject=subject,
+            grade_level=grade_level,
             location_name=request.location_name,
             latitude=request.location_latitude,
             longitude=request.location_longitude,
             additional_context=request.additional_context,
+            standards_context=standards_context,
             db=db,
             num_suggestions=request.activity_count,
             **taxonomy_kwargs,
@@ -912,8 +1029,8 @@ async def generate_draft_activity_suggestions_stream(
                 response = ActivityGenerationResponse(
                     suggestions=suggestions,
                     location_name=result.get("location", {}).get("name") or "No specific location",
-                    subject=request.subject,
-                    grade_level=request.grade_level,
+                    subject=subject,
+                    grade_level=grade_level,
                     taxonomy_framework=request.taxonomy_framework,
                     provider=result.get("llm_model", service.llm_provider),
                     model=settings.CLAUDE_MODEL if service.llm_provider == "claude" else settings.OLLAMA_MODEL_TEXT,
@@ -1012,6 +1129,18 @@ async def generate_activity_suggestions(
             llm_provider=settings.LLM_PROVIDER.lower()
         )
 
+        # This activity's approved standards (if any were applied via
+        # AppliedStandardsPanel) feed back in as real standards text —
+        # regenerating suggestions for an already-mapped activity should
+        # stay grounded in what it's supposed to teach. curriculum_titles is
+        # intentionally left unset here: activity.curriculum_unit_ids was a
+        # bug (raw UUIDs passed as if they were title strings — see
+        # AppliedStandardsPanel/content_alignments, which supersede
+        # curriculum_units for this purpose).
+        standards_context, _, _ = await _resolve_standards_context(
+            db, [str(a.item_id) for a in await _approved_standard_alignments(db, activity_id)]
+        )
+
         generation_result = await service.generate_activity_suggestions(
             location_name=activity.location_name,
             latitude=activity.location_latitude,
@@ -1022,7 +1151,7 @@ async def generate_activity_suggestions(
             marzano_level=getattr(activity, "marzano_level", None),
             dok_level=getattr(activity, "dok_level", None),
             solo_level=getattr(activity, "solo_level", None),
-            curriculum_titles=activity.curriculum_unit_ids,
+            standards_context=standards_context,
             db=db,
             num_suggestions=3,
         )
@@ -1043,6 +1172,273 @@ async def generate_activity_suggestions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate activity suggestions: {str(e)}",
         )
+
+
+def _alignment_response(row: "ContentAlignment", item: Optional["StandardsItem"]) -> "AppliedStandard":
+    """ContentAlignment row (+ its resolved StandardsItem, if found) ->
+    the shape every endpoint below returns. Centralized so suggest/list/add/
+    review can't drift on field names."""
+    return AppliedStandard(
+        alignment_id=str(row.id),
+        item_id=str(row.item_id),
+        code=(item.human_coding_scheme if item else None) or "",
+        title=((item.full_statement or "")[:200] if item else ""),
+        rationale=row.rationale or "",
+        confidence=row.confidence,
+        status=row.status,
+        method=row.method,
+    )
+
+
+class AppliedStandard(_BaseModel):
+    alignment_id: str
+    item_id: str
+    code: str
+    title: str
+    rationale: str
+    confidence: Optional[float] = None
+    status: str    # suggested | approved | rejected
+    method: str    # ai_suggested | manual
+
+
+class SuggestStandardsResponse(_BaseModel):
+    suggestions: List[AppliedStandard]
+    error: Optional[str] = None
+
+
+class AddStandardRequest(_BaseModel):
+    item_id: str
+
+
+class ReviewStandardRequest(_BaseModel):
+    status: str    # approved | rejected
+
+
+@router.post("/{activity_id}/suggest-standards", response_model=SuggestStandardsResponse)
+async def suggest_standards_for_activity(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),  # per-org RPM cap; a real, metered LLM call
+):
+    """
+    Auto-apply standards to this activity from its own title/description/
+    objectives — the frontend calls this immediately after every create and
+    update (see ActivityManager's AppliedStandardsPanel), not from a button
+    a teacher has to click, so a standard is attached the moment an activity
+    is saved. Also safe to call again as an explicit "re-check standards"
+    action after a substantial edit.
+
+    Writes content_alignments directly (method='ai_suggested',
+    status='suggested') rather than just previewing — "automatically
+    applied" per the design brief — but never at status='approved': the
+    model can be wrong, so a teacher reviews/approves or rejects each one
+    afterward via PATCH/DELETE below. Never raises on an AI failure; returns
+    {suggestions: [], error: "..."} so a save is never blocked by this.
+
+    Reuses agents/standards_mapping_agent.py's StandardsMappingAgent, built
+    for grading submissions against the standards graph — the input is just
+    text, so activity text works unchanged.
+    """
+    _require_teacher(current_user, "Only teachers can generate standards suggestions")
+
+    activity = (await db.execute(
+        select(Activity).where(Activity.id == activity_id)
+    )).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+
+    text_parts = [activity.title or "", activity.description or "", *(activity.learning_objectives or [])]
+    submission_text = "\n".join(p for p in text_parts if p).strip()
+    if not submission_text:
+        return SuggestStandardsResponse(suggestions=[], error="Add a title or description before suggesting standards.")
+
+    from agents.standards_mapping_agent import StandardsMappingAgent, StandardsMappingInput
+    from services.standards_alignment_service import apply_alignments, AlignmentInput
+
+    agent = StandardsMappingAgent()
+    result = await agent.run_with_retrieval(
+        StandardsMappingInput(
+            submission_text=submission_text,
+            grade_level=str(activity.grade_level) if activity.grade_level is not None else None,
+            subject=activity.subject,
+        ),
+        user_id=current_user.id,
+        db=db,
+    )
+
+    if result.status == "error" or result.output is None:
+        logger.warning(f"suggest-standards failed for activity {activity_id}: {result.error}")
+        return SuggestStandardsResponse(suggestions=[], error=result.error or "Standards suggestion failed.")
+
+    applicable = [m for m in result.output.mappings if m.decision in ("applies", "partially") and m.item_id]
+    if not applicable:
+        return SuggestStandardsResponse(suggestions=[])
+
+    written = await apply_alignments(
+        db,
+        content_id=activity_id,
+        content_type="activity",
+        alignments=[
+            AlignmentInput(item_id=UUID(m.item_id), method="ai_suggested", status="suggested",
+                            confidence=m.confidence, rationale=m.rationale)
+            for m in applicable
+        ],
+    )
+    await db.commit()
+
+    decisions_by_item = {m.item_id: m for m in applicable}
+    return SuggestStandardsResponse(suggestions=[
+        AppliedStandard(
+            alignment_id=str(row.id), item_id=str(row.item_id),
+            code=decisions_by_item[str(row.item_id)].code,
+            title=decisions_by_item[str(row.item_id)].title,
+            rationale=row.rationale or "", confidence=row.confidence,
+            status=row.status, method=row.method,
+        )
+        for row in written
+    ])
+
+
+@router.get("/{activity_id}/standards", response_model=List[AppliedStandard])
+async def list_activity_standards(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Every standard currently applied to this activity — suggested,
+    approved, and rejected alike, so AppliedStandardsPanel can render the
+    full review state (not just what's currently active)."""
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+
+    from models.database import ContentAlignment, StandardsItem
+    rows = (await db.execute(
+        select(ContentAlignment).where(
+            ContentAlignment.content_id == activity_id,
+            ContentAlignment.content_type == "activity",
+        )
+    )).scalars().all()
+    if not rows:
+        return []
+    items = {
+        i.id: i for i in (await db.execute(
+            select(StandardsItem).where(StandardsItem.id.in_({r.item_id for r in rows}))
+        )).scalars().all()
+    }
+    return [_alignment_response(row, items.get(row.item_id)) for row in rows]
+
+
+@router.post("/{activity_id}/standards", response_model=AppliedStandard, status_code=status.HTTP_201_CREATED)
+async def add_activity_standard(
+    activity_id: UUID,
+    body: AddStandardRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Manually attach a standard the AI didn't suggest (override #1: 'add
+    a new standard'). A direct teacher pick, so it's written approved
+    immediately — no review step, unlike the AI-suggested path above."""
+    _require_teacher(current_user, "Only teachers can edit an activity's standards")
+
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+
+    from models.database import StandardsItem
+    try:
+        item_uuid = UUID(body.item_id)
+    except ValueError:
+        raise HTTPException(status_code=422, detail="item_id must be a UUID")
+    item = (await db.execute(select(StandardsItem).where(StandardsItem.id == item_uuid))).scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Standard not found")
+
+    from services.standards_alignment_service import apply_alignments, AlignmentInput
+    written = await apply_alignments(
+        db, content_id=activity_id, content_type="activity",
+        alignments=[AlignmentInput(item_id=item.id, method="manual", status="approved")],
+        reviewed_by=current_user.id,
+    )
+    await db.commit()
+    return _alignment_response(written[0], item)
+
+
+@router.patch("/{activity_id}/standards/{alignment_id}", response_model=AppliedStandard)
+async def review_activity_standard(
+    activity_id: UUID,
+    alignment_id: UUID,
+    body: ReviewStandardRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Approve or reject an applied standard — override #2 ('revise what's
+    applied'), for either an AI suggestion or a previously manual add."""
+    _require_teacher(current_user, "Only teachers can edit an activity's standards")
+    if body.status not in ("approved", "rejected"):
+        raise HTTPException(status_code=422, detail="status must be 'approved' or 'rejected'")
+
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+
+    from models.database import ContentAlignment, StandardsItem
+    row = (await db.execute(
+        select(ContentAlignment).where(
+            ContentAlignment.id == alignment_id,
+            ContentAlignment.content_id == activity_id,
+            ContentAlignment.content_type == "activity",
+        )
+    )).scalar_one_or_none()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Standard alignment not found")
+
+    row.status = body.status
+    row.reviewed_by = current_user.id
+    row.reviewed_at = datetime.utcnow()
+    await db.commit()
+
+    item = (await db.execute(select(StandardsItem).where(StandardsItem.id == row.item_id))).scalar_one_or_none()
+    return _alignment_response(row, item)
+
+
+@router.delete("/{activity_id}/standards/{alignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_activity_standard(
+    activity_id: UUID,
+    alignment_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Outright remove an applied standard — the rest of override #2.
+    Distinct from PATCH .../rejected, which soft-rejects and keeps the
+    audit row; DELETE is for discarding a manual add, or clearing out a
+    rejection the teacher doesn't want to see anymore."""
+    _require_teacher(current_user, "Only teachers can edit an activity's standards")
+
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+
+    from models.database import ContentAlignment
+    row = (await db.execute(
+        select(ContentAlignment).where(
+            ContentAlignment.id == alignment_id,
+            ContentAlignment.content_id == activity_id,
+            ContentAlignment.content_type == "activity",
+        )
+    )).scalar_one_or_none()
+    if row:
+        await db.delete(row)
+        await db.commit()
 
 
 @router.get("/{activity_id}/taxonomy-alignment")

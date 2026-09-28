@@ -42,6 +42,10 @@ class MappingDecision(BaseModel):
     decision: str       # "applies" | "partially" | "no"
     rationale: str
     confidence: float   # 0-1
+    item_id: Optional[str] = None  # standards_items.id — filled in from the
+                                    # retrieved candidate after classification,
+                                    # never by the model itself (see
+                                    # run_with_retrieval's _attach_item_ids)
 
 
 class StandardsMappingOutput(BaseModel):
@@ -160,7 +164,11 @@ class StandardsMappingAgent(BaseAgent):
                         code = meta.get("human_coding_scheme") or meta.get("criterion_id") or row[1] or ""
                         if not code or code in candidate_codes:
                             continue
-                        candidates.append({"code": code, "title": row[1] or code, "description": row[0] or ""})
+                        # item_id only means something for a real standards_items
+                        # node — other node_types (e.g. aligned content) share this
+                        # query but their node_id isn't a standards_items.id.
+                        item_id = row[4] if row[3] == "standards_item" else None
+                        candidates.append({"code": code, "title": row[1] or code, "description": row[0] or "", "item_id": item_id})
                         candidate_codes.add(code)
                         seeds.append({
                             "id": None, "node_type": row[3], "node_id": row[4],
@@ -178,7 +186,8 @@ class StandardsMappingAgent(BaseAgent):
                             code = item.get("source_name") or ""
                             if not code or code in candidate_codes:
                                 continue
-                            candidates.append({"code": code, "title": code, "description": item.get("content") or ""})
+                            item_id = item.get("node_id") if item.get("node_type") == "standards_item" else None
+                            candidates.append({"code": code, "title": code, "description": item.get("content") or "", "item_id": item_id})
                             candidate_codes.add(code)
 
                 logger.debug(
@@ -199,5 +208,10 @@ class StandardsMappingAgent(BaseAgent):
 
         if result.status == "success" and result.output is not None:
             result.output = self._validate_against_candidates(result.output, candidate_codes)
+            # The model returns only `code`; item_id is looked up from the
+            # candidate list we retrieved (never trust an id from the model).
+            item_id_by_code = {c["code"]: c.get("item_id") for c in candidates}
+            for mapping in result.output.mappings:
+                mapping.item_id = item_id_by_code.get(mapping.code)
 
         return result

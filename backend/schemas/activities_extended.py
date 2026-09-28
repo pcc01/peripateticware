@@ -113,8 +113,14 @@ class ActivityGenerationRequest(BaseModel):
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
     location_name: Optional[str] = None
-    subject: str = Field(..., min_length=1, max_length=100)
-    grade_level: int = Field(..., ge=3, le=12)
+    # subject/grade_level are normally required, but a standards-first
+    # generation (standard_ids set) can derive both from the chosen
+    # standard(s) server-side — see routes/activities.py's
+    # generate_draft_activity_suggestions, which enforces "subject/grade
+    # required unless standard_ids is given" since pydantic alone can't
+    # express that either/or.
+    subject: Optional[str] = Field(None, min_length=1, max_length=100)
+    grade_level: Optional[int] = Field(None, ge=3, le=12)
     taxonomy_framework: TaxonomyFramework = TaxonomyFramework.BLOOMS
     desired_taxonomy_level: Optional[int] = Field(None, ge=1, le=6)
     activity_count: int = Field(default=3, ge=1, le=5,
@@ -123,6 +129,12 @@ class ActivityGenerationRequest(BaseModel):
         description="Include discovery / scavenger-hunt style activities")
     additional_context: Optional[str] = Field(None, max_length=500,
         description="Extra context to pass to the AI (e.g. 'focus on biodiversity')")
+    standard_ids: Optional[List[str]] = Field(None,
+        description="standards_items.id GUIDs to draft this activity for — the "
+                     "'generate from these standards' flow. When set, subject/"
+                     "grade_level are optional and derived from the standard(s) "
+                     "if omitted; the generated activity's alignments are "
+                     "auto-approved for these ids on save.")
 
 
 class ActivitySuggestion(BaseModel):
