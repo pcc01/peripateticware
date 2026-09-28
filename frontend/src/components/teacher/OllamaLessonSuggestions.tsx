@@ -208,8 +208,10 @@ export const OllamaLessonSuggestions = ({
       autoTriggeredRef.current = true;
       fetchSuggestions();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasStandards]);
+    // The ref guard above (not this deps array) is what prevents refiring —
+    // fetchSuggestions is included so the effect stays lint-clean without
+    // needing an exhaustive-deps suppression.
+  }, [hasStandards, fetchSuggestions]);
 
   const handleSelect = (s: Suggestion) => {
     const key = s.title;
