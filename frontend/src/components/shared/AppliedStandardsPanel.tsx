@@ -101,8 +101,7 @@ export const AppliedStandardsPanel: React.FC<{
 
   useEffect(() => {
     onCountChange?.(standards.filter(s => s.status !== 'rejected').length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [standards]);
+  }, [standards, onCountChange]);
 
   const review = async (alignmentId: string, status: 'approved' | 'rejected') => {
     if (!activityId) return;
