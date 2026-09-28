@@ -280,7 +280,13 @@ class ActivityBase(BaseModel):
 
 class ActivityCreate(ActivityBase):
     """Create activity request"""
-    pass
+    # Set only when this activity was drafted from the standards-first flow
+    # (StandardsExplorer -> "generate an activity for these standards") —
+    # standards_items.id GUIDs to auto-approve as content_alignments on
+    # save, since the teacher explicitly chose them as the generation seed.
+    # Not stored on the Activity row itself; routes/activities.py::create_activity
+    # consumes it and writes the alignments separately.
+    seed_standard_ids: Optional[List[str]] = None
 
 
 class ActivityUpdate(BaseModel):

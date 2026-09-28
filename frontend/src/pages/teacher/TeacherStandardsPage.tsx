@@ -129,7 +129,7 @@ export const TeacherStandardsPage: React.FC = () => {
 
       {sets.length > 0 && (
         <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid var(--border)' }}>
-          <StandardsExplorer />
+          <StandardsExplorer enableActivityDraft draftRoute="/teacher/activities/new" />
         </div>
       )}
     </div>

@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
 import { WikiLocationInfo } from './WikiLocationInfo';
-import CurriculumMapper from './CurriculumMapper';
+import AppliedStandardsPanel, { triggerStandardsSuggestion } from '@/components/shared/AppliedStandardsPanel';
 import WayfindingBuilder, { WayfindingValue } from './WayfindingBuilder';
 import styles from './ActivityManager.module.css';
 
@@ -114,6 +114,17 @@ const ActivityManager = () => {
   const { activities, getActivity, createActivity, updateActivity, loading, error, clearCurrentActivity } = useTeacherStore();
 
   const isEditing = !!id;
+
+  // Standards-first flow: StandardsExplorer's "Generate an activity for
+  // these standards" navigates here with the chosen standards_items ids in
+  // route state. Only meaningful for a brand-new activity — read once, not
+  // re-derived on every render, so it survives the teacher editing the form.
+  const [seedStandardIds] = useState<string[]>(
+    () => (!isEditing && Array.isArray((location.state as any)?.standardIds)
+      ? (location.state as any).standardIds
+      : [])
+  );
+
   const [formData, setFormData] = useState<CreateActivityInput>({
     title: '',
     description: '',
@@ -174,6 +185,7 @@ const ActivityManager = () => {
   }, [isHomeschool, isEditing]);
 
   const [selectedRubricId, setSelectedRubricId] = useState('');
+  const [appliedStandardsCount, setAppliedStandardsCount] = useState(0);
   // Filter-as-you-type for the rubric list — a plain <select> gets slow to
   // scan once a teacher has more than a handful of rubrics.
   const [rubricFilter, setRubricFilter] = useState('');
@@ -552,6 +564,11 @@ const ActivityManager = () => {
         waypoints: wayfinding.discovery_wayfinding_enabled
           ? wayfinding.waypoints.map((w, i) => ({ ...w, sequence_index: i }))
           : [],
+        // Standards-first flow only, and only on the initial create — these
+        // get auto-approved as content_alignments the moment the activity
+        // is saved (routes/activities.py::create_activity), since the
+        // teacher explicitly chose them as the generation target.
+        ...(!isEditing && seedStandardIds.length > 0 ? { seed_standard_ids: seedStandardIds } : {}),
       } as any;
 
       let savedActivityId: string | undefined = isEditing ? id : undefined;
@@ -560,6 +577,14 @@ const ActivityManager = () => {
       } else {
         const created = await createActivity(payload);
         savedActivityId = created?.id;
+      }
+
+      // Auto-apply standards from this activity's own content — no button,
+      // runs on every save (see AppliedStandardsPanel.tsx). Awaited so the
+      // suggestions already exist the next time this activity is opened;
+      // failure here never blocks the save itself (it's caught internally).
+      if (savedActivityId) {
+        await triggerStandardsSuggestion(savedActivityId);
       }
 
       // Attach rubric if one was selected
@@ -806,6 +831,10 @@ const ActivityManager = () => {
           latitude={formData.location_latitude}
           longitude={formData.location_longitude}
           onSuggestionSelected={handleAISuggestionSelected}
+          standardIds={seedStandardIds.length > 0 ? seedStandardIds : undefined}
+          onContextResolved={(subject, gradeLevel) =>
+            setFormData(f => ({ ...f, subject: f.subject || subject, grade_level: f.grade_level || gradeLevel }))
+          }
         />
       </aside>
 
@@ -1134,26 +1163,25 @@ const ActivityManager = () => {
             <span className={styles.chapterMeta}>
               {/* Taxonomy always carries a value (defaults to the first
                   level), so it counts as always-applied; standards and
-                  rubric start empty and count only once the teacher picks one. */}
-              {((formData.curriculum_unit_ids || []).length > 0 ? 1 : 0) + (selectedRubricId ? 1 : 0) + 1}/3 {t('components_teacher_activitymanager.applied', 'applied')}
+                  rubric start empty and count only once applied. */}
+              {(appliedStandardsCount > 0 ? 1 : 0) + (selectedRubricId ? 1 : 0) + 1}/3 {t('components_teacher_activitymanager.applied', 'applied')}
             </span>
           </summary>
           <div className={styles.chapterBody}>
           <p className="text-sm text-[var(--text-faint)] mb-4">{t('components_teacher_activitymanager.assessments_intro', 'Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.')}</p>
 
           <div className="space-y-5">
-            {/* 1. State / Curriculum Standards */}
+            {/* 1. State / Curriculum Standards — auto-applied from this
+                activity's own title/description/objectives right after
+                every save (see handleSubmit's triggerStandardsSuggestion
+                call); a teacher can also search and add one manually, and
+                approve/reject/remove any of them here at any time. */}
             <div className="rounded-lg border border-[var(--border)] p-4">
               <label className="block text-sm font-semibold text-[var(--text)] mb-2">
                 📐 {t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards')}{' '}
                 <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
               </label>
-              <CurriculumMapper
-                selectedUnits={formData.curriculum_unit_ids || []}
-                onUnitsChange={(unitIds) => setFormData((p) => ({ ...p, curriculum_unit_ids: unitIds }))}
-                subject={formData.subject}
-                gradeLevel={formData.grade_level}
-              />
+              <AppliedStandardsPanel activityId={id} onCountChange={setAppliedStandardsCount} />
             </div>
 
             {/* 2. Taxonomy — two-level picker */}
