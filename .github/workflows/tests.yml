@@ -73,6 +73,11 @@ jobs:
           SECRET_KEY: test-secret-key
           LLM_PROVIDER: ollama
           ENVIRONMENT: test
+          # main.py does os.makedirs(UPLOAD_DIR) at import time; the default
+          # (/app/uploads) is a Docker-container path this runner can't
+          # write to, which fails `from main import app` for any test that
+          # imports it (test_openapi_schema.py) before a single test runs.
+          UPLOAD_DIR: ${{ runner.temp }}/uploads
       - uses: codecov/codecov-action@v4
         with:
           files: ./backend/coverage.xml

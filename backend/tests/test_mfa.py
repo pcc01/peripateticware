@@ -84,6 +84,14 @@ def _fake_user(**overrides):
     user.mfa_secret = overrides.get("mfa_secret", None)
     user.mfa_backup_codes = overrides.get("mfa_backup_codes", None)
     user.hashed_password = overrides.get("hashed_password", "")
+    # Unset MagicMock attributes auto-vivify as child MagicMocks, not None --
+    # TokenResponse.first_name/full_name are Optional[str], so a real value
+    # (even None) is required or pydantic rejects the MagicMock as an
+    # invalid string (routes/auth.py's /mfa/login builds TokenResponse
+    # straight from these via getattr(..., None), which only helps for a
+    # truly *missing* attribute, not one MagicMock already auto-created).
+    user.first_name = overrides.get("first_name", None)
+    user.full_name = overrides.get("full_name", None)
     return user
 
 

@@ -150,7 +150,6 @@ export default function WayfindingBuilder({ activityId, value, onChange }: Props
       m.remove()
       map.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value.discovery_wayfinding_enabled])
 
   // Give the click handler current data without re-binding it.

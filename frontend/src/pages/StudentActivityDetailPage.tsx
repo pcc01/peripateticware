@@ -142,7 +142,6 @@ const StudentActivityDetailPage: React.FC = () => {
       .catch(() => setPageError('Could not load activity.'))
       .finally(() => setPageLoading(false));
   // loadEvidence / getSessionReflections are stable refs from useStudent()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityId]);
 
   // ── Start / resume session ─────────────────────────────────────────────────
