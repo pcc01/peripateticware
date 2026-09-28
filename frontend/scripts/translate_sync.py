@@ -678,11 +678,21 @@ class UniversalOrchestrator:
             
         elif self.provider == "MICROSOFT":
             key = os.getenv("MS_TRANSLATOR_KEY")
+            # Unlike the other providers above, a missing Microsoft key is not
+            # fatal: it doesn't block on an interactive input() prompt (which
+            # hangs or immediately EOFs in a non-interactive/CI run) and
+            # doesn't raise. self.ms_key stays None; translate_batch()'s
+            # MICROSOFT branch below checks it and passes texts through
+            # unchanged instead of calling the API, so the run finishes
+            # (locale files still get written, just untranslated for this
+            # provider) rather than aborting. If the key IS present, this
+            # behaves exactly as before.
             if not key or key == "YOUR_MICROSOFT_AZURE_KEY":
-                key = input("🔑 MS_TRANSLATOR_KEY not found in environment. Please paste your key: ").strip()
-                if not key: raise ValueError("Missing MS_TRANSLATOR_KEY token.")
+                print("⚠️  MS_TRANSLATOR_KEY not set — Microsoft translation will be skipped "
+                      "(source text passed through unchanged) rather than failing this run.")
+                key = None
             self.ms_key = key
-            self.active_model = "Azure-Cognitive-v3"
+            self.active_model = "Azure-Cognitive-v3" if key else "Azure-Cognitive-v3 (unconfigured, pass-through)"
             
         elif self.provider == "OLLAMA":
             self.active_model = os.getenv("OLLAMA_MODEL_TEXT", "mistral")
@@ -936,6 +946,10 @@ class UniversalOrchestrator:
             return [res.text for res in results]
 
         elif self.provider == "MICROSOFT":
+            if not self.ms_key:
+                # No key configured — pass texts through unchanged rather
+                # than failing the run (see __init__'s MICROSOFT branch).
+                return list(texts)
             # Groups up to 100 elements in a single POST body
             path = '/translate?api-version=3.0'
             params = f'&from=en&to={lang_code.lower()}'
