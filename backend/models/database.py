@@ -1823,6 +1823,8 @@ class StandardsItem(Base):
     framework_id = Column(UUID(as_uuid=True), ForeignKey("standards_frameworks.id", ondelete="CASCADE"),
                            nullable=False, index=True)
     human_coding_scheme = Column(String(200), nullable=True)     # 'CCSS.MATH.4.NF.A.1'
+    local_code           = Column(String(200), nullable=True)    # raw code as printed in the state's own source PDF
+    case_code             = Column(String(200), nullable=True)   # code of the matched CASE framework item, if any (may equal local_code or human_coding_scheme)
     full_statement       = Column(Text, nullable=False)
     education_levels     = Column(ARRAY(String(10)), nullable=True)   # CASE educationLevel, e.g. ['04']
     item_type            = Column(String(50), nullable=True)     # 'Standard', 'Cluster', 'Domain', ...
