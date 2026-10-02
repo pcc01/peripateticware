@@ -104,6 +104,14 @@ class Settings(BaseSettings):
     VOYAGE_API_KEY: str = os.getenv("VOYAGE_API_KEY", "")
     VOYAGE_BASE_URL: str = os.getenv("VOYAGE_BASE_URL", "https://api.voyageai.com/v1")
 
+    # ── Reranking ─────────────────────────────────────────────────────────────
+    # See services/rerank_service.py and PRD-standards-extensibility-reranking-2026-10-02.md §1.
+    # Off by default — ships dark until A/B'd against current (no-rerank) recall/precision.
+    RERANK_ENABLED: bool = os.getenv("RERANK_ENABLED", "false").lower() == "true"
+    RERANK_PROVIDER: str = os.getenv("RERANK_PROVIDER", "voyage")
+    # Blank = rerank_service.py's own default ("rerank-3-lite").
+    RERANK_MODEL: str = os.getenv("RERANK_MODEL", "")
+
     # ── AI Batch Processing ───────────────────────────────────────────────────
     AI_BATCH_CRON: str = os.getenv("AI_BATCH_CRON", "0 1 * * *")   # default: 1 AM UTC
 

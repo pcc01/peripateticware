@@ -888,6 +888,27 @@ async def rag_retrieve(
                 "expanded_from":   None,
             })
 
+    # Stage 1c, optional reranking: re-score Stage 1's seeds (vector+lexical
+    # RRF fusion, still a cheap approximate signal) against the literal query
+    # text via a cross-encoder reranker, before graph expansion walks outward
+    # from them. Only reranks the small seed set, never the whole corpus —
+    # see services/rerank_service.py. Feature-flagged and fail-open: a
+    # reranking failure or RERANK_ENABLED=false just keeps Stage 1's own
+    # order, exactly as before this existed.
+    rerank_ms = 0
+    if seeds:
+        from services.rerank_service import rerank as _rerank
+        _t_rerank0 = _time.monotonic()
+        rerank_result = await _rerank(query, [s["content"] for s in seeds], top_k=top_k)
+        rerank_ms = int((_time.monotonic() - _t_rerank0) * 1000)
+        if rerank_result:
+            reranked_seeds = []
+            for r in rerank_result:
+                seed = seeds[r["index"]]
+                seed["relevance_score"] = r["relevance_score"]
+                reranked_seeds.append(seed)
+            seeds = reranked_seeds
+
     expanded: list[dict] = []
     if seeds and (include_ancestors or include_related):
         _t_expand0 = _time.monotonic()
@@ -916,7 +937,7 @@ async def rag_retrieve(
     logger.info(
         f"RAG retrieved {len(seeds)} seeds + {len(expanded)} expanded for '{query[:50]}' "
         f"({len(combined)} returned) in {elapsed_ms}ms "
-        f"(embed={embed_ms}ms db={db_ms}ms expand={expand_ms}ms)"
+        f"(embed={embed_ms}ms db={db_ms}ms rerank={rerank_ms}ms expand={expand_ms}ms)"
     )
     return {
         "query":                     query,
@@ -936,7 +957,9 @@ async def rag_retrieve(
         # modulo the Stage-3 sort/trim which isn't separately timed.
         "embed_ms":                  embed_ms,
         "db_ms":                     db_ms,
+        "rerank_ms":                 rerank_ms,
         "expand_ms":                 expand_ms,
+        "reranked":                  settings.RERANK_ENABLED,
         "total_retrieved":           len(combined),
         "success":                   True,
     }
