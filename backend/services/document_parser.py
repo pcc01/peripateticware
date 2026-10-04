@@ -404,6 +404,19 @@ def parse_html(file_bytes: bytes, encoding: str = "utf-8") -> ParsedDocument:
 # Unified entry point
 # ---------------------------------------------------------------------------
 
+def _strip_nul(doc: ParsedDocument) -> ParsedDocument:
+    """Some PDFs' font/encoding tables make pypdf (and, for the same
+    underlying reason, other extractors) yield embedded NUL (0x00) bytes in
+    otherwise-normal text -- confirmed on Ohio's math standards PDF, page 23.
+    Postgres' text type rejects NUL outright (CharacterNotInRepertoireError),
+    so any consumer that stores this in the DB needs it gone; stripping here,
+    once, covers every caller rather than each one re-discovering the bug."""
+    if "\x00" in doc.text:
+        doc.text = doc.text.replace("\x00", "")
+    doc.pages = [p.replace("\x00", "") if "\x00" in p else p for p in doc.pages]
+    return doc
+
+
 async def parse_document(
     file_bytes: bytes,
     filename: str,
@@ -418,21 +431,21 @@ async def parse_document(
 
     if ext == ".pdf" or "pdf" in mime:
         try:
-            return await parse_pdf(file_bytes)
+            return _strip_nul(await parse_pdf(file_bytes))
         except Exception as e:
             logger.error("PDF parse failed: %s", e)
             return ParsedDocument(text="", warnings=[f"PDF parse error: {e}"])
 
     if ext in (".csv", ".tsv", ".xlsx", ".xlsm", ".xls") or "csv" in mime or "spreadsheet" in mime:
         try:
-            return parse_csv(file_bytes, filename)
+            return _strip_nul(parse_csv(file_bytes, filename))
         except Exception as e:
             logger.error("CSV/Excel parse failed: %s", e)
             return ParsedDocument(text="", warnings=[f"Spreadsheet parse error: {e}"])
 
     if ext == ".docx" or "wordprocessingml" in mime:
         try:
-            return parse_docx(file_bytes)
+            return _strip_nul(parse_docx(file_bytes))
         except ImportError:
             return ParsedDocument(text="", warnings=["python-docx not installed — cannot parse .docx. Add python-docx to requirements.txt."])
         except Exception as e:
@@ -441,7 +454,7 @@ async def parse_document(
 
     if ext in (".html", ".htm") or "html" in mime:
         try:
-            return parse_html(file_bytes)
+            return _strip_nul(parse_html(file_bytes))
         except ImportError:
             return ParsedDocument(text="", warnings=["beautifulsoup4 not installed — cannot parse HTML. Add beautifulsoup4 to requirements.txt."])
         except Exception as e:
