@@ -349,6 +349,58 @@ def parse_docx(file_bytes: bytes) -> ParsedDocument:
 
 
 # ---------------------------------------------------------------------------
+# HTML parsing
+# ---------------------------------------------------------------------------
+
+def parse_html(file_bytes: bytes, encoding: str = "utf-8") -> ParsedDocument:
+    """
+    Extract text from a standards page published as HTML rather than a
+    downloadable file (several states' standards only exist this way).
+
+    Strips navigation/script/style noise, then applies the same "label a
+    table's cells by column header" treatment used for PDF and DOCX
+    tables (table_extract.py, parse_docx() above) before taking the page's
+    text -- a <table> is replaced in-place with its own labeled text
+    *before* extracting, so document order is preserved (the labeled
+    rows end up exactly where the table was) without double-counting the
+    table's text once as raw cell content and again as part of a
+    surrounding element's .get_text().
+    """
+    from bs4 import BeautifulSoup, NavigableString
+
+    html = file_bytes.decode(encoding, errors="replace")
+    soup = BeautifulSoup(html, "html.parser")
+
+    for tag in soup(["script", "style", "nav", "header", "footer", "noscript", "svg", "form"]):
+        tag.decompose()
+
+    for table in soup.find_all("table"):
+        rows = table.find_all("tr")
+        if not rows:
+            table.decompose()
+            continue
+        header = [c.get_text(strip=True) for c in rows[0].find_all(["th", "td"])]
+        lines = []
+        for row in rows[1:]:
+            for col_idx, cell in enumerate(row.find_all(["td", "th"])):
+                txt = cell.get_text(strip=True)
+                if not txt:
+                    continue
+                label = header[col_idx] if col_idx < len(header) and header[col_idx] else f"column {col_idx + 1}"
+                lines.append(f"[{label}] {txt}")
+        table.replace_with(NavigableString("\n" + "\n".join(lines) + "\n"))
+
+    body = soup.body or soup
+    full_text = body.get_text(separator="\n", strip=True)
+    return ParsedDocument(
+        text=full_text,
+        pages=[full_text] if full_text else [],
+        page_count=1,
+        method="html",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Unified entry point
 # ---------------------------------------------------------------------------
 
@@ -387,7 +439,16 @@ async def parse_document(
             logger.error("DOCX parse failed: %s", e)
             return ParsedDocument(text="", warnings=[f"DOCX parse error: {e}"])
 
+    if ext in (".html", ".htm") or "html" in mime:
+        try:
+            return parse_html(file_bytes)
+        except ImportError:
+            return ParsedDocument(text="", warnings=["beautifulsoup4 not installed — cannot parse HTML. Add beautifulsoup4 to requirements.txt."])
+        except Exception as e:
+            logger.error("HTML parse failed: %s", e)
+            return ParsedDocument(text="", warnings=[f"HTML parse error: {e}"])
+
     return ParsedDocument(
         text="",
-        warnings=[f"Unsupported file type: {ext or mime or 'unknown'}. Supported: PDF, CSV, XLSX, DOCX."],
+        warnings=[f"Unsupported file type: {ext or mime or 'unknown'}. Supported: PDF, CSV, XLSX, DOCX, HTML."],
     )

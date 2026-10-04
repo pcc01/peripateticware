@@ -124,6 +124,7 @@ pypdf==6.16.2
 pymupdf==1.28.2
 openpyxl==3.1.5
 python-docx==1.2.0   # .docx upload support in parse_docx() -- see document_parser.py
+beautifulsoup4==4.15.0   # HTML standards-page support in parse_html() -- see document_parser.py
 
 # ============================================================================
 # IMAGE PROCESSING
