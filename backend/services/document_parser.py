@@ -274,6 +274,81 @@ def parse_csv(file_bytes: bytes, filename: str = "file.csv") -> ParsedDocument:
 
 
 # ---------------------------------------------------------------------------
+# DOCX parsing
+# ---------------------------------------------------------------------------
+
+def _iter_docx_blocks(document):
+    """python-docx has no public API for walking paragraphs and tables in
+    their real document order (only .paragraphs and .tables separately,
+    each losing the other's position) -- this is the documented workaround:
+    walk the underlying XML body and wrap each child back into the
+    matching python-docx object."""
+    from docx.oxml.table import CT_Tbl
+    from docx.oxml.text.paragraph import CT_P
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
+
+    for child in document.element.body.iterchildren():
+        if isinstance(child, CT_P):
+            yield Paragraph(child, document)
+        elif isinstance(child, CT_Tbl):
+            yield Table(child, document)
+
+
+def parse_docx(file_bytes: bytes) -> ParsedDocument:
+    """
+    Extract text from a .docx file with python-docx.
+
+    A table's cells are rendered one non-empty cell per line, labeled by
+    its column header -- "[column header] cell text" -- the same
+    "don't let a standard's grade/position be implied by table formatting
+    alone" contract used for table-aware PDF extraction (see
+    PPW-Standards_Puller's table_extract.py, built for Missouri's
+    grade-comparison tables). A plain per-cell text dump without labels
+    would recreate that exact failure mode for any standards document
+    published as a Word table instead of a PDF.
+
+    Paragraphs and tables are walked in their real document order (not
+    tables-after-all-paragraphs) so a table sitting between two headings
+    stays with its actual surrounding context.
+    """
+    from docx import Document
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
+
+    doc = Document(io.BytesIO(file_bytes))
+    parts: list[str] = []
+
+    for block in _iter_docx_blocks(doc):
+        if isinstance(block, Paragraph):
+            t = block.text.strip()
+            if t:
+                parts.append(t)
+        elif isinstance(block, Table):
+            if not block.rows:
+                continue
+            header = [c.text.strip() for c in block.rows[0].cells]
+            for row in block.rows[1:]:
+                for col_idx, cell in enumerate(row.cells):
+                    txt = cell.text.strip()
+                    if not txt:
+                        continue
+                    label = header[col_idx] if col_idx < len(header) and header[col_idx] else f"column {col_idx + 1}"
+                    parts.append(f"[{label}] {txt}")
+
+    full_text = "\n".join(parts)
+    # No page concept in a .docx -- one "page" holding everything is correct
+    # here: extract.py's chunking is character-count based (CHUNK_CHARS),
+    # not page based, so this doesn't lose anything downstream.
+    return ParsedDocument(
+        text=full_text,
+        pages=[full_text] if full_text else [],
+        page_count=1,
+        method="docx",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Unified entry point
 # ---------------------------------------------------------------------------
 
@@ -303,7 +378,16 @@ async def parse_document(
             logger.error("CSV/Excel parse failed: %s", e)
             return ParsedDocument(text="", warnings=[f"Spreadsheet parse error: {e}"])
 
+    if ext == ".docx" or "wordprocessingml" in mime:
+        try:
+            return parse_docx(file_bytes)
+        except ImportError:
+            return ParsedDocument(text="", warnings=["python-docx not installed — cannot parse .docx. Add python-docx to requirements.txt."])
+        except Exception as e:
+            logger.error("DOCX parse failed: %s", e)
+            return ParsedDocument(text="", warnings=[f"DOCX parse error: {e}"])
+
     return ParsedDocument(
         text="",
-        warnings=[f"Unsupported file type: {ext or mime or 'unknown'}. Supported: PDF, CSV, XLSX."],
+        warnings=[f"Unsupported file type: {ext or mime or 'unknown'}. Supported: PDF, CSV, XLSX, DOCX."],
     )
