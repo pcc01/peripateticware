@@ -123,6 +123,7 @@ pypdf==6.16.2
 # ============================================================================
 pymupdf==1.28.2
 openpyxl==3.1.5
+python-docx==1.2.0   # .docx upload support in parse_docx() -- see document_parser.py
 
 # ============================================================================
 # IMAGE PROCESSING
