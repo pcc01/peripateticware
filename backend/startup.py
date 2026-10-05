@@ -353,6 +353,19 @@ async def apply_location_table_migrations(engine) -> None:
             END IF;
         END $$;""",
         "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS captured_at TIMESTAMP DEFAULT NOW()",
+        """CREATE TABLE IF NOT EXISTS learning_outcomes (
+            id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            teacher_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            text           TEXT NOT NULL,
+            subject        VARCHAR(100),
+            grade_min      INTEGER,
+            grade_max      INTEGER,
+            taxonomy_level VARCHAR(50),
+            evidence_type  VARCHAR(50),
+            created_at     TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at     TIMESTAMP NOT NULL DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_learning_outcomes_teacher_id ON learning_outcomes(teacher_id)",
         """CREATE TABLE IF NOT EXISTS location_search_history (
             id             UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
             latitude       FLOAT   NOT NULL,

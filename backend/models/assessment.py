@@ -254,3 +254,26 @@ TAXONOMY_DESCRIPTIONS = {
     }
 }
 
+
+
+class LearningOutcome(Base):
+    """
+    A teacher's reusable learning outcome (the "outcome library").
+
+    Activities keep their outcomes as plain text in activities.learning_objectives;
+    the wizard copies a library entry's text into the activity when it is added,
+    so editing an activity never changes the saved library entry.
+    """
+
+    __tablename__ = "learning_outcomes"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    teacher_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    text = Column(Text, nullable=False)
+    subject = Column(String(100), nullable=True)
+    grade_min = Column(Integer, nullable=True)
+    grade_max = Column(Integer, nullable=True)
+    taxonomy_level = Column(String(50), nullable=True)   # e.g. 'apply', 'dok2'
+    evidence_type = Column(String(50), nullable=True)    # e.g. 'field_notes'
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

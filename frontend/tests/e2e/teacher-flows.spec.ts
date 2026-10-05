@@ -8,6 +8,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startWizard, createFromBasics, activePane } from './helpers/activity-wizard';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -190,10 +191,17 @@ test.describe('Homeschool — Activities List resilience (null list-typed fields
 // ── 3. Create Activity ────────────────────────────────────────────────────────
 
 test.describe('Teacher — Create Activity', () => {
-  test('form renders with title input', async ({ page }) => {
+  test('starts by asking what to start from', async ({ page }) => {
     await page.goto('/teacher/activities/new');
-    const titleInput = page.locator('input[name="title"], input[placeholder*="itle" i]').first();
-    await expect(titleInput).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: /what do you want to start from/i })).toBeVisible({ timeout: 10_000 });
+    for (const name of [/a location/i, /an activity type/i, /an assessment/i, /learning outcomes/i]) {
+      await expect(page.getByRole('button', { name })).toBeVisible();
+    }
+  });
+
+  test('form renders with title input after choosing a start point', async ({ page }) => {
+    await startWizard(page);
+    await expect(page.locator('#title')).toBeVisible({ timeout: 10_000 });
   });
 
   test('heading renders', async ({ page }) => {
@@ -202,23 +210,24 @@ test.describe('Teacher — Create Activity', () => {
   });
 
   test('can fill in a title and value persists', async ({ page }) => {
-    await page.goto('/teacher/activities/new');
-    const titleInput = page.locator('input[name="title"], input[placeholder*="itle" i]').first();
+    await startWizard(page);
+    const titleInput = page.locator('#title');
     await expect(titleInput).toBeVisible({ timeout: 10_000 });
     await titleInput.fill('E2E Test Activity');
     await expect(titleInput).toHaveValue('E2E Test Activity');
   });
 
+  test('Basics blocks Next until the required fields are filled', async ({ page }) => {
+    await startWizard(page);
+    await page.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(page.getByText(/error: title is required/i)).toBeVisible();
+    await expect(activePane(page)).toHaveAttribute('aria-label', 'Basics');
+  });
+
   test('cancel/back returns to activities', async ({ page }) => {
-    await page.goto('/teacher/activities/new');
-    const cancelBtn = page.getByRole('button', { name: /cancel|back/i }).first();
-    if (await cancelBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await cancelBtn.click();
-      await expect(page).toHaveURL(/\/teacher(\/activities)?$/, { timeout: 8_000 });
-    } else {
-      await page.goBack();
-      await expect(page).not.toHaveURL(/\/teacher\/activities\/new/);
-    }
+    await startWizard(page);
+    await page.getByRole('button', { name: /^cancel$/i }).click();
+    await expect(page).toHaveURL(/\/teacher(\/activities)?$/, { timeout: 8_000 });
   });
 });
 
@@ -249,14 +258,13 @@ test.describe('Teacher — Publish with compliance check succeeding', () => {
       });
     });
 
-    await page.goto('/teacher/activities/new');
-    await page.locator('#title').fill('E2E Publish Test Activity');
+    await startWizard(page);
 
     // Compliance badge fires on a debounce after location/grade change — the
     // effect runs on mount too, so just wait for the badge to appear.
     await expect(page.getByText(/privacy compliant/i)).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole('button', { name: /^create activity$/i }).click();
+    await createFromBasics(page, 'E2E Publish Test Activity');
 
     await expect.poll(() => createCalled, { timeout: 10_000 }).toBe(true);
     // On success, ActivityManager navigates away from the create form.
@@ -279,7 +287,7 @@ test.describe('Teacher — Publish with compliance check succeeding', () => {
       await route.fulfill({ status: 201, json: { id: 'new-activity-2', status: 'published' } });
     });
 
-    await page.goto('/teacher/activities/new');
+    await startWizard(page);
     await page.locator('#title').fill('E2E Review Then Publish');
 
     await expect(page.getByText(/privacy review needed/i)).toBeVisible({ timeout: 10_000 });
@@ -294,7 +302,7 @@ test.describe('Teacher — Publish with compliance check succeeding', () => {
 
     await expect(page.getByText(/privacy settings confirmed/i)).toBeVisible({ timeout: 5_000 });
 
-    await page.getByRole('button', { name: /^create activity$/i }).click();
+    await createFromBasics(page, 'E2E Review Then Publish');
 
     await expect.poll(() => createCalled, { timeout: 10_000 }).toBe(true);
     expect(createBody).toMatchObject({ privacy_confirmed: true });
