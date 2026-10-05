@@ -6,13 +6,18 @@ import { useTranslation } from 'react-i18next';
 import { useTeacherStore } from '@/stores/teacher';
 import { useAuthStore } from '@/stores/auth';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
-import { WikiLocationInfo } from './WikiLocationInfo';
 import AppliedStandardsPanel, { triggerStandardsSuggestion } from '@/components/shared/AppliedStandardsPanel';
 import WayfindingBuilder, { WayfindingValue } from './WayfindingBuilder';
-import styles from './ActivityManager.module.css';
+import wizardStyles from './wizard/ActivityWizard.module.css';
+import { WizardShell, StepKey, WizardApi } from './wizard/WizardShell';
+import { StartPicker } from './wizard/StartPicker';
+import { AboutPlaceDialog } from './wizard/AboutPlaceDialog';
+import { OutcomesStep } from './wizard/OutcomesStep';
+import { SuggestedStandards, PickedStandards } from './wizard/SuggestedStandards';
+import { Chapter, ChoiceCard, PaneHeader } from './wizard/Chapter';
 
 const EMPTY_WAYFINDING: WayfindingValue = {
   discovery_wayfinding_enabled: false,
@@ -190,10 +195,20 @@ const ActivityManager = () => {
   // scan once a teacher has more than a handful of rubrics.
   const [rubricFilter, setRubricFilter] = useState('');
 
+  // Guided wizard state
+  const wizardRef = useRef<WizardApi | null>(null);
+  const errorStepRef = useRef<StepKey | null>(null);
+  const [wizardCurrent, setWizardCurrent] = useState<StepKey | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  // Standards the teacher ticked in the suggestions list (standards_items id -> code/text).
+  // Sent as seed_standard_ids on create, which approves them as alignments.
+  const [pickedStandards, setPickedStandards] = useState<PickedStandards>({});
+  const [standardsMatched, setStandardsMatched] = useState(0);
+  const [stateCode, setStateCode] = useState<string>(() => ((currentUser as any)?.state_standard ?? (currentUser as any)?.state_code ?? '') as string);
+
   // GPS live tracking + homeschool self-consent (parent IS the user, so consent
   // is recorded at save time rather than via the async per-student parent-consent
   // flow used for org/school accounts). See GPS_MAP_HANDOFF.md.
-  const [showLocationTools, setShowLocationTools] = useState(false);
   const [wayfinding, setWayfinding] = useState<WayfindingValue>(EMPTY_WAYFINDING);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [homeschoolGpsConsent, setHomeschoolGpsConsent] = useState(false);
@@ -242,20 +257,6 @@ const ActivityManager = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Collapsible form chapters — Basic Information and Context start open
-  // (Context feeds Peri AI), the rest start closed to cut initial scroll
-  // length. A chapter is forced open regardless of this state whenever one
-  // of its own fields has a validation error, so a failed submit never
-  // hides the reason why.
-  const [openSections, setOpenSections] = useState({
-    context: true, basic: true, academic: false, assessments: false, materials: false, additional: false,
-  });
-  const toggleSection = (key: keyof typeof openSections) => (e: React.SyntheticEvent<HTMLDetailsElement>) => {
-    setOpenSections(s => ({ ...s, [key]: (e.target as HTMLDetailsElement).open }));
-  };
-  const contextHasError = !!(errors.subject || errors.location_name || errors.location_latitude || errors.location_longitude);
-  const basicHasError = !!(errors.title || errors.description);
-  const academicHasError = !!(errors.grade_level || errors.difficulty_level || errors.estimated_duration_minutes);
 
   // 14e.3 — Privacy compliance badge: debounced check when location or grade changes
   useEffect(() => {
@@ -292,7 +293,6 @@ const ActivityManager = () => {
 
   const [submitError, setSubmitError] = useState('');
   const [newMaterial, setNewMaterial] = useState('');
-  const [newObjective, setNewObjective] = useState('');
   const [newResource, setNewResource] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [compliance, setCompliance] = useState<{ status: 'compliant'|'review'|'blocked'; issues: string[] } | null>(null);
@@ -448,7 +448,6 @@ const ActivityManager = () => {
         // Hydrate the wayfinding builder from the loaded activity.
         const a = activity as any;
         if (a.discovery_wayfinding_enabled || (a.waypoints && a.waypoints.length)) {
-          setShowLocationTools(true);
           setWayfinding({
             discovery_wayfinding_enabled: !!a.discovery_wayfinding_enabled,
             wayfinding_mode: a.wayfinding_mode ?? 'ordered',
@@ -529,7 +528,10 @@ const ActivityManager = () => {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const keys = Object.keys(newErrors);
+    const basicsKeys = ['title', 'description', 'location_name', 'subject', 'grade_level', 'location_latitude', 'location_longitude'];
+    errorStepRef.current = keys.length === 0 ? null : keys.some(k => basicsKeys.includes(k)) ? 'basics' : 'experience';
+    return keys.length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -539,6 +541,8 @@ const ActivityManager = () => {
 
     if (!validateForm()) {
       setIsSubmitting(false);
+      // Take the teacher to the step that holds the first problem.
+      if (errorStepRef.current) wizardRef.current?.goTo(errorStepRef.current);
       return;
     }
 
@@ -568,7 +572,10 @@ const ActivityManager = () => {
         // get auto-approved as content_alignments the moment the activity
         // is saved (routes/activities.py::create_activity), since the
         // teacher explicitly chose them as the generation target.
-        ...(!isEditing && seedStandardIds.length > 0 ? { seed_standard_ids: seedStandardIds } : {}),
+        // plus any the teacher ticked in the Assessment step's suggestions.
+        ...(!isEditing && (seedStandardIds.length > 0 || Object.keys(pickedStandards).length > 0)
+          ? { seed_standard_ids: Array.from(new Set([...seedStandardIds, ...Object.keys(pickedStandards)])) }
+          : {}),
       } as any;
 
       let savedActivityId: string | undefined = isEditing ? id : undefined;
@@ -641,23 +648,6 @@ const ActivityManager = () => {
     setFormData({
       ...formData,
       materials_needed: formData.materials_needed?.filter((_, i) => i !== index) || []
-    });
-  };
-
-  const handleAddObjective = () => {
-    if (newObjective.trim()) {
-      setFormData({
-        ...formData,
-        learning_objectives: [...(formData.learning_objectives || []), newObjective.trim()]
-      });
-      setNewObjective('');
-    }
-  };
-
-  const handleRemoveObjective = (index: number) => {
-    setFormData({
-      ...formData,
-      learning_objectives: formData.learning_objectives?.filter((_, i) => i !== index) || []
     });
   };
 
@@ -738,545 +728,221 @@ const ActivityManager = () => {
     setTaxonomySuggestion(null);
   };
 
-  return (
-    <div className="max-w-[100rem] mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-2">
-        {isEditing ? 'Edit Activity' : 'Create Activity'}
-      </h1>
-      <p className="text-[var(--text-muted)] mb-6">
-        {isEditing ? 'Update your activity details' : 'Create a new educational activity'}
-      </p>
+  // ── Guided wizard ─────────────────────────────────────────────────────────
+  const reqMark = <span aria-hidden="true" style={{ color: 'var(--w-error-text)' }}> *</span>;
+  const fieldCls = (err?: string) => `w-full px-4 py-2 border rounded-lg ${err ? wizardStyles.invalid : ''}`;
+  const fieldErr = (id: string, err?: string) =>
+    err ? <p id={id} role="alert" className={wizardStyles.fieldError}>{t('components_teacher_activitywizard.error_prefix', 'Error')}: {err}</p> : null;
+  const hasCoords = !!(formData.location_latitude && formData.location_longitude);
+  const gradeLabel = (g: number) => `${t('landing:activitymanager.grade', 'Grade')} ${g}`;
+  const isWayfaring = wayfinding.discovery_wayfinding_enabled;
+  const seedIds = isEditing ? [] : Array.from(new Set([...seedStandardIds, ...Object.keys(pickedStandards)]));
+  const standardsCount = isEditing ? appliedStandardsCount : seedIds.length;
+  const outcomeCount = (formData.learning_objectives || []).filter(Boolean).length;
+  const taxonomyLevelLabel = TAXONOMIES[taxonomyType]?.levels.find(l => l.value === formData.bloom_level)?.label.split(' — ')[0] ?? String(formData.bloom_level);
+  const rubricLabel = rubrics.find(r => r.id === selectedRubricId)?.title ?? t('components_teacher_activitymanager.no_rubric', 'No rubric');
 
-      {/* 14e.3 — Privacy compliance badge */}
-      {compliance && (
-        <div className="mb-4">
-          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
-            compliance.status === 'compliant' ? 'bg-green-50 text-green-700 border border-green-200' :
-            compliance.status === 'review'    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                               'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            <span>{compliance.status === 'compliant' ? '✅' : compliance.status === 'review' ? '⚠️' : '🚫'}</span>
-            <span>{compliance.status === 'compliant' ? t("landing:privacy_compliant","Privacy Compliant") :
-                   compliance.status === 'review'    ? t("landing:privacy_review_needed","Privacy Review Needed") :
-                                                      t("landing:privacy_blocked","Privacy Issue — Review Required")}</span>
-            {compliance.issues.length > 0 && (
-              <span className="ml-1 text-xs opacity-75">({compliance.issues.slice(0,2).join('; ')})</span>
-            )}
-            {compliance.status === 'review' && privacyConfirmed && (
-              <span className="ml-auto text-xs font-semibold text-green-700">{t('components_teacher_activitymanager.privacy_settings_confirmed', 'Privacy settings confirmed ✓')}</span>
-            )}
-          </div>
+  const stepLabels: Record<StepKey, string> = {
+    basics: t('components_teacher_activitywizard.step_basics', 'Basics'),
+    experience: t('components_teacher_activitywizard.step_experience', 'Experience'),
+    assessment: t('components_teacher_activitywizard.step_assessment', 'Assessment'),
+    outcomes: t('components_teacher_activitywizard.step_outcomes', 'Outcomes'),
+    review: t('components_teacher_activitywizard.step_review', 'Review'),
+  };
 
-          {/* Privacy confirmation panel — shown when compliance requires review and not yet confirmed */}
-          {compliance.status === 'review' && !privacyConfirmed && (
-            <div className="mt-2 border border-yellow-300 rounded-lg bg-yellow-50 p-4 space-y-3">
-              <p className="text-sm text-yellow-800 font-medium">{t('components_teacher_activitymanager.this_activity_involves_student_location_', 'This activity involves student location data and/or students under 13. Please confirm the following before publishing.')}</p>
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={privacyChecks.dataMinimization}
-                  onChange={e => setPrivacyChecks(p => ({ ...p, dataMinimization: e.target.checked }))}
-                  className="mt-0.5 accent-yellow-600"
-                />
-                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.this_activity_only_collects_data_necessa', 'This activity only collects data necessary for the educational purpose')}</span>
-              </label>
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={privacyChecks.locationPurpose}
-                  onChange={e => setPrivacyChecks(p => ({ ...p, locationPurpose: e.target.checked }))}
-                  className="mt-0.5 accent-yellow-600"
-                />
-                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.location_data_is_used_only_to_verify_stu', 'Location data is used only to verify student presence at the activity site')}</span>
-              </label>
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={privacyChecks.parentalConsent}
-                  onChange={e => setPrivacyChecks(p => ({ ...p, parentalConsent: e.target.checked }))}
-                  className="mt-0.5 accent-yellow-600"
-                />
-                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.parental_or_guardian_consent_is_in_place', 'Parental or guardian consent is in place where required by law')}</span>
-              </label>
-              <button
-                type="button"
-                disabled={!(privacyChecks.dataMinimization && privacyChecks.locationPurpose && privacyChecks.parentalConsent)}
-                onClick={() => {
-                  setPrivacyConfirmed(true);
-                  setCompliance(c => c ? { ...c, status: 'compliant' } : c);
-                }}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: (privacyChecks.dataMinimization && privacyChecks.locationPurpose && privacyChecks.parentalConsent) ? '#ca8a04' : '#d1d5db' }}
-              >
-                Confirm Privacy Settings
-              </button>
-            </div>
-          )}
+  const basicsPane = (
+    <>
+      <PaneHeader
+        stepKey="basics"
+        title={t('components_teacher_activitywizard.basics_title', 'The basics')}
+        lede={t('components_teacher_activitywizard.basics_lede', 'Title, grade, subject and the place. Peri uses these to suggest activities and standards.')}
+      />
+
+      <div className="mb-4">
+        <label htmlFor="title" className="block text-sm font-semibold mb-2">{t('landing:activitymanager.title', 'Title')}{reqMark}</label>
+        <input
+          id="title" type="text" value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className={fieldCls(errors.title)}
+          placeholder={t('landing:enter_activity_title', 'Enter activity title')}
+          maxLength={200} aria-required="true" aria-invalid={!!errors.title}
+          aria-describedby={errors.title ? 'err-title' : undefined} />
+        {fieldErr('err-title', errors.title)}
+        <p className={wizardStyles.hint}>{formData.title?.length || 0}/200</p>
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="description" className="block text-sm font-semibold mb-2">{t('landing:activitymanager.description', 'Description')}{reqMark}</label>
+        <textarea
+          id="description" value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className={fieldCls(errors.description)}
+          placeholder={t('landing:enter_activity_description', 'Enter activity description')}
+          rows={4} aria-required="true" aria-invalid={!!errors.description}
+          aria-describedby={errors.description ? 'err-description' : 'hint-description'} />
+        {fieldErr('err-description', errors.description)}
+        <p id="hint-description" className={wizardStyles.hint}>{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label htmlFor="grade" className="block text-sm font-semibold mb-2">{t('landing:activitymanager.grade_level', 'Grade Level')}{reqMark}</label>
+          <select
+            id="grade" value={formData.grade_level}
+            onChange={(e) => setFormData({ ...formData, grade_level: parseInt(e.target.value) })}
+            className={fieldCls(errors.grade_level)} aria-invalid={!!errors.grade_level}
+            aria-describedby={errors.grade_level ? 'err-grade' : undefined}>
+            {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
+          </select>
+          {fieldErr('err-grade', errors.grade_level)}
+        </div>
+        <div>
+          <label htmlFor="subject" className="block text-sm font-semibold mb-2">{t('landing:subject', 'Subject')}{reqMark}</label>
+          <select
+            id="subject" value={formData.subject}
+            onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+            className={fieldCls(errors.subject)} aria-invalid={!!errors.subject}
+            aria-describedby={errors.subject ? 'err-subject' : undefined}>
+            <option value="Science">{t('landing:science', 'Science')}</option>
+            <option value="Math">{t('landing:math', 'Math')}</option>
+            <option value="Language">{t('components_teacher_activitymanager.language_arts', 'Language Arts')}</option>
+            <option value="History">{t('landing:history', 'History')}</option>
+            <option value="Art">{t('landing:art', 'Art')}</option>
+            <option value="PE">{t('landing:pe', 'PE')}</option>
+            <option value="Social Studies">{t('components_teacher_activitymanager.social_studies', 'Social Studies')}</option>
+            <option value="Interdisciplinary">{t('components_teacher_activitymanager.interdisciplinary', 'Interdisciplinary')}</option>
+            <option value="Other">{t('components_teacher_activitymanager.other', 'Other')}</option>
+          </select>
+          {fieldErr('err-subject', errors.subject)}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="location-name" className="block text-sm font-semibold mb-2">{t('landing:location_name', 'Location Name')}{reqMark}</label>
+        <input
+          id="location-name" type="text" value={formData.location_name}
+          onChange={(e) => handleLocationNameChange(e.target.value)}
+          className={fieldCls(errors.location_name)}
+          placeholder={t('components_teacher_activitymanager.placeholder_eg_lincoln_park_city_museum', 'e.g., Lincoln Park, City Museum…')}
+          aria-required="true" aria-invalid={!!errors.location_name}
+          aria-describedby={errors.location_name ? 'err-location' : undefined} />
+        {fieldErr('err-location', errors.location_name)}
+        {geoStatus && <p className={wizardStyles.hint} role="status" style={{ fontStyle: 'italic' }}>{geoStatus}</p>}
+      </div>
+
+      {hasCoords && formData.location_name?.trim() && (
+        <div className={wizardStyles.placeBar}>
+          <span aria-hidden="true">📍</span>
+          <span className={wizardStyles.placeBarText}>
+            <strong>{formData.location_name}</strong>
+            <span className={wizardStyles.hint} style={{ display: 'block' }}>
+              {t('components_teacher_activitywizard.place_ready', 'Background, features and nearby places are ready.')}
+            </span>
+          </span>
+          <button type="button" className={`${wizardStyles.btn} ${wizardStyles.btnGhost} ${wizardStyles.btnSm}`} onClick={() => setAboutOpen(true)}>
+            📖 {t('components_teacher_activitywizard.about_place', 'About this place')}
+          </button>
         </div>
       )}
 
-      {/* Peri AI header — sticky banner pinned above both columns while
-          they scroll beneath it, not a sidebar: reacts to whatever
-          subject/objective/location is filled in on the form, teacher
-          explicitly clicks a card to add it (see handleAISuggestionSelected)
-          — nothing here auto-applies. */}
-      <aside className="w-full mb-4 sticky top-0 z-10 bg-purple-50 rounded-lg p-4 border-t-[3px] border-purple-300 shadow-sm">
-        <h2 className="text-lg font-bold text-purple-900 mb-1">{t('components_teacher_activitymanager.peri_ai_activity_suggestions', '✨ Peri AI Activity Suggestions')}</h2>
-        <OllamaLessonSuggestions
-          layout="horizontal"
-          subject={formData.subject}
-          gradeLevel={formData.grade_level}
-          taxonomyType={taxonomyType}
-          locationName={formData.location_name}
-          latitude={formData.location_latitude}
-          longitude={formData.location_longitude}
-          onSuggestionSelected={handleAISuggestionSelected}
-          standardIds={seedStandardIds.length > 0 ? seedStandardIds : undefined}
-          onContextResolved={(subject, gradeLevel) =>
-            setFormData(f => ({ ...f, subject: f.subject || subject, grade_level: f.grade_level || gradeLevel }))
-          }
-        />
-      </aside>
-
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
-        {/* Context column — read-only background/reference material, pulled
-            out of the form so a long Wikidata synopsis (description,
-            architect/date, nearby points of interest, etc.) doesn't push
-            the rest of the form's fields far down the page. Always visible
-            once a location is set — no extra click needed to see it. */}
-        <div className={`w-full lg:w-80 flex-shrink-0 p-4 ${styles.journal}`}>
-          <h2 className={`text-lg font-bold text-[var(--text)] mb-1 ${styles.journalTitle}`}>{t('components_teacher_activitymanager.background_context', '📖 Background & Context')}</h2>
-          {formData.location_latitude && formData.location_longitude ? (
-            <WikiLocationInfo
-              latitude={formData.location_latitude}
-              longitude={formData.location_longitude}
-              subject={formData.subject}
-              locationName={formData.location_name}
-              onInfoLoaded={(info) => {
-                setFormData(f => ({
-                  ...f,
-                  location_wiki_data: info,
-                  location_info: info.description || '',
-                }));
-              }}
-            />
-          ) : (
-            <p className="text-sm text-[var(--text-faint)] mt-2">
-              {t('components_teacher_activitymanager.add_a_location_to_see_background', 'Add a location above to see background information about it here.')}
-            </p>
-          )}
+      <Chapter title={t('components_teacher_activitywizard.coordinates', 'Coordinates')} badge={t('components_teacher_activitywizard.optional', 'Optional')} forceOpen={!!(errors.location_latitude || errors.location_longitude)}>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="lat" className="block text-sm text-[var(--w-muted)] mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
+            <input id="lat" type="number" step="0.0001" value={formData.location_latitude || ''}
+              onChange={(e) => { const lat = parseFloat(e.target.value) || 0; setFormData(f => ({ ...f, location_latitude: lat })); handleLatLngChange(lat, formData.location_longitude); }}
+              className={fieldCls(errors.location_latitude)} placeholder="47.6839" aria-invalid={!!errors.location_latitude} />
+            {fieldErr('err-lat', errors.location_latitude)}
+          </div>
+          <div>
+            <label htmlFor="lng" className="block text-sm text-[var(--w-muted)] mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
+            <input id="lng" type="number" step="0.0001" value={formData.location_longitude || ''}
+              onChange={(e) => { const lng = parseFloat(e.target.value) || 0; setFormData(f => ({ ...f, location_longitude: lng })); handleLatLngChange(formData.location_latitude, lng); }}
+              className={fieldCls(errors.location_longitude)} placeholder="-122.3081" aria-invalid={!!errors.location_longitude} />
+            {fieldErr('err-lng', errors.location_longitude)}
+          </div>
         </div>
+      </Chapter>
 
-      <form onSubmit={handleSubmit} className="flex-1 min-w-0 bg-[var(--surface)] rounded-lg p-6 shadow">
-        {/* Error Alert */}
-        {submitError &&
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800 mb-6">
-            <p className="font-semibold">{t("landing:error", "Error")}</p>
-            <p>{submitError}</p>
-          </div>
-        }
+      <Chapter title={t('components_teacher_activitywizard.peri_suggestions', '✨ Peri AI suggestions')} badge={t('components_teacher_activitywizard.optional', 'Optional')}>
+        <div className={wizardStyles.periPanel}>
+          <OllamaLessonSuggestions
+            layout="horizontal"
+            subject={formData.subject}
+            gradeLevel={formData.grade_level}
+            taxonomyType={taxonomyType}
+            locationName={formData.location_name}
+            latitude={formData.location_latitude}
+            longitude={formData.location_longitude}
+            onSuggestionSelected={handleAISuggestionSelected}
+            standardIds={seedStandardIds.length > 0 ? seedStandardIds : undefined}
+            onContextResolved={(subject, gradeLevel) =>
+              setFormData(f => ({ ...f, subject: f.subject || subject, grade_level: f.grade_level || gradeLevel }))
+            }
+          />
+        </div>
+      </Chapter>
+    </>
+  );
 
-        {/* Basic Information Section */}
-        <details className={styles.chapter} open={openSections.basic || basicHasError} onToggle={toggleSection('basic')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t("landing:basic_information", "Basic Information")}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
+  const experiencePane = (
+    <>
+      <PaneHeader
+        stepKey="experience"
+        title={t('components_teacher_activitywizard.experience_title', 'How will students experience it?')}
+        lede={t('components_teacher_activitywizard.experience_lede', 'Choose the kind of activity, whether you can see students on the map, and how they get prompted.')}
+      />
 
-          {/* Title */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.title", "Title")}
-              <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-              errors.title ? 'border-red-500' : 'border-[var(--border)]'}`
-              }
-              placeholder={t("landing:enter_activity_title", "Enter activity title")}
-              maxLength={200} />
+      <Chapter title={t('components_teacher_activitywizard.kind_title', 'Wayfaring or investigative')} defaultOpen>
+        <div className={`${wizardStyles.cards} ${wizardStyles.cardsTwo}`} role="group" aria-label={t('components_teacher_activitywizard.kind_group', 'Activity kind')}>
+          <ChoiceCard
+            selected={isWayfaring} icon="🧭"
+            onSelect={() => setWayfinding(w => ({ ...w, discovery_wayfinding_enabled: true, wayfinding_capability_ceiling: w.wayfinding_capability_ceiling || 'B' }))}
+            title={t('components_teacher_activitywizard.wayfaring', 'Wayfaring')}
+            note={t('components_teacher_activitywizard.wayfaring_note', 'Students move through a route and respond at stops along the way.')} />
+          <ChoiceCard
+            selected={!isWayfaring} icon="🔬"
+            onSelect={() => setWayfinding(w => ({ ...w, discovery_wayfinding_enabled: false }))}
+            title={t('components_teacher_activitywizard.investigative', 'Investigative')}
+            note={t('components_teacher_activitywizard.investigative_note', 'Students gather evidence in one area to answer a question or test an idea.')} />
+        </div>
+        {isWayfaring && (
+          <WayfindingBuilder activityId={isEditing ? id : undefined} value={wayfinding} onChange={setWayfinding} />
+        )}
+      </Chapter>
 
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-            <p className="text-[var(--text-muted)] text-xs mt-1">{formData.title?.length || 0}/200</p>
-          </div>
-
-          {/* Description */}
+      <Chapter title={t('components_teacher_activitywizard.setting_title', 'Setting and timing')} forceOpen={!!(errors.difficulty_level || errors.estimated_duration_minutes)}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.description", "Description")}
-              <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-              errors.description ? 'border-red-500' : 'border-[var(--border)]'}`
-              }
-              placeholder={t("landing:enter_activity_description", "Enter activity description")}
-              rows={4} />
-            {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-            <p className="text-[var(--text-muted)] text-xs mt-1">{t('components_teacher_activitymanager.min_10_characters', 'Minimum 10 characters')}</p>
+            <label htmlFor="activity-type" className="block text-sm font-semibold mb-2">{t('landing:activity_type', 'Activity Type')}</label>
+            <select id="activity-type" value={formData.activity_type}
+              onChange={(e) => setFormData({ ...formData, activity_type: e.target.value as ActivityType })}
+              className="w-full px-4 py-2 border rounded-lg">
+              <option value="outdoor">{t('landing:outdoor', 'Outdoor')}</option>
+              <option value="indoor">{t('landing:indoor', 'Indoor')}</option>
+              <option value="virtual">{t('landing:virtual', 'Virtual')}</option>
+              <option value="mixed">{t('landing:mixed', 'Mixed')}</option>
+            </select>
           </div>
-          </div>
-        </details>
-
-        {/* Context Section — Subject · Location · Objectives (feeds Peri AI). */}
-        <details className={styles.chapter} open={openSections.context || contextHasError} onToggle={toggleSection('context')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t('components_teacher_activitymanager.context', 'Context')}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
-          <p className="text-sm text-[var(--text-faint)] mb-4">{t('components_teacher_activitymanager.subject_location_and_objectives_peri_ai_', 'Subject, location, and objectives — Peri AI uses these to generate activity suggestions.')}</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {/* Subject */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:subject", "Subject")}<span className="text-red-500">*</span></label>
-              <select
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${errors.subject ? 'border-red-500' : 'border-[var(--border)]'}`}>
-                <option value="Science">{t("landing:science", "Science")}</option>
-                <option value="Math">{t("landing:math", "Math")}</option>
-                <option value="Language">{t('components_teacher_activitymanager.language_arts', 'Language Arts')}</option>
-                <option value="History">{t("landing:history", "History")}</option>
-                <option value="Art">{t("landing:art", "Art")}</option>
-                <option value="PE">{t("landing:pe", "PE")}</option>
-                <option value="Social Studies">{t('components_teacher_activitymanager.social_studies', 'Social Studies')}</option>
-                <option value="Interdisciplinary">{t('components_teacher_activitymanager.interdisciplinary', 'Interdisciplinary')}</option>
-                <option value="Other">{t('components_teacher_activitymanager.other', 'Other')}</option>
-              </select>
-              {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject}</p>}
-            </div>
-
-            {/* Location Name */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:location_name", "Location Name")}
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.location_name}
-                onChange={(e) => handleLocationNameChange(e.target.value)}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-                errors.location_name ? 'border-red-500' : 'border-[var(--border)]'}`
-                }
-                placeholder={t('components_teacher_activitymanager.placeholder_eg_lincoln_park_city_museum', 'e.g., Lincoln Park, City Museum…')} />
-              {errors.location_name && <p className="text-red-500 text-sm mt-1">{errors.location_name}</p>}
-              {geoStatus && <p className="text-xs text-[var(--primary)] mt-1 italic">{geoStatus}</p>}
-            </div>
-          </div>
-
-          {/* Lat / Lng — secondary, collapsible feel via small text */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <label className="block text-xs text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.latitude', 'Latitude')}</label>
-              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_latitude', 'Location latitude')} value={formData.location_latitude || ''}
-                onChange={(e) => { const lat = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_latitude:lat})); handleLatLngChange(lat,formData.location_longitude); }}
-                className="w-full px-3 py-1.5 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" placeholder="47.6839" />
-            </div>
-            <div>
-              <label className="block text-xs text-[var(--text-muted)] mb-1">{t('components_teacher_activitymanager.longitude', 'Longitude')}</label>
-              <input type="number" step="0.0001" aria-label={t('components_teacher_activitymanager.aria_label_location_longitude', 'Location longitude')} value={formData.location_longitude || ''}
-                onChange={(e) => { const lng = parseFloat(e.target.value)||0; setFormData(f=>({...f,location_longitude:lng})); handleLatLngChange(formData.location_latitude,lng); }}
-                className="w-full px-3 py-1.5 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" placeholder="-122.3081" />
-            </div>
-          </div>
-
-          {/* GPS live tracking toggle */}
-          <button
-            type="button"
-            onClick={() => setShowLocationTools(v => !v)}
-            className="text-sm text-[var(--primary)] hover:text-[var(--primary-deep)] font-medium mb-3"
-          >
-            {showLocationTools ? '▼' : '▶'} {t('components_teacher_activitymanager.location', '📍 Location')}
-          </button>
-          {showLocationTools && (
-            <div className="mb-4">
-              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={gpsEnabled}
-                  onChange={(e) => {
-                    setGpsEnabled(e.target.checked);
-                    if (!e.target.checked) setHomeschoolGpsConsent(false);
-                  }}
-                  style={{ width: 16, height: 16 }}
-                />
-                <span style={{ fontWeight: 600 }}>{t('components_teacher_activitymanager.enable_live_gps_tracking_during_this_act', '📍 Enable live GPS tracking during this activity')}</span>
-              </label>
-              <p className="text-xs text-[var(--text-muted)] mt-1" style={{ marginLeft: 26 }}>{t('components_teacher_activitymanager.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</p>
-
-              {/* Homeschool self-consent — the parent IS the account holder, so
-                  consent is collected here rather than via the async per-student
-                  parent-consent flow used for org/school accounts. */}
-              {gpsEnabled && currentUser?.role?.toLowerCase() === 'homeschool' && (
-                <div className="mt-2 p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-alt)]" style={{ marginLeft: 26 }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={homeschoolGpsConsent}
-                      onChange={(e) => setHomeschoolGpsConsent(e.target.checked)}
-                      style={{ width: 16, height: 16 }}
-                    />
-                    <span className="text-sm">{t('components_teacher_activitymanager.i_consent_to_gps_location_capture_for_my', 'I consent to GPS location capture for my child during this activity')}</span>
-                  </label>
-                </div>
-              )}
-
-              <WayfindingBuilder
-                activityId={isEditing ? id : undefined}
-                value={wayfinding}
-                onChange={setWayfinding}
-              />
-            </div>
-          )}
-
-          {/* Learning Objectives */}
           <div>
-            <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:learning_objectives", "Learning Objectives")}</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newObjective}
-                onChange={(e) => setNewObjective(e.target.value)}
-                className="flex-1 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                placeholder={t("landing:eg_understand_photosynthesis_process", "e.g., Understand photosynthesis process")}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddObjective())} />
-              <button type="button" onClick={handleAddObjective}
-                className="px-4 py-2 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] font-semibold">
-                {t("landing:activitymanager.add", "Add")}
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(formData.learning_objectives || []).map((objective, index) => (
-                <div key={index} className="bg-green-100 text-green-800 px-3 py-1 rounded-full flex items-center gap-2">
-                  <span>{objective}</span>
-                  <button type="button" onClick={() => handleRemoveObjective(index)} className="font-bold hover:text-green-900">✕</button>
-                </div>
-              ))}
+            <label htmlFor="duration" className="block text-sm font-semibold mb-2">{t('landing:estimated_duration_minutes', 'Estimated Duration (minutes)')}</label>
+            <input id="duration" type="number" min="1" value={formData.estimated_duration_minutes}
+              onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
+              className={fieldCls(errors.estimated_duration_minutes)} aria-invalid={!!errors.estimated_duration_minutes}
+              aria-describedby={errors.estimated_duration_minutes ? 'err-duration' : undefined} />
+            {fieldErr('err-duration', errors.estimated_duration_minutes)}
+          </div>
+          <div>
+            <label htmlFor="difficulty" className="block text-sm font-semibold mb-2">{t('landing:difficulty_level', 'Difficulty Level:')} {formData.difficulty_level}/5</label>
+            <div className="flex items-center gap-4">
+              <input id="difficulty" type="range" min="1" max="5" value={formData.difficulty_level || 3}
+                onChange={(e) => setFormData({ ...formData, difficulty_level: parseInt(e.target.value) })} className="flex-1" />
+              <span className="text-sm font-semibold text-[var(--w-muted)]" aria-hidden="true">
+                {'★'.repeat(formData.difficulty_level || 3)}{'☆'.repeat(5 - (formData.difficulty_level || 3))}
+              </span>
             </div>
           </div>
-          </div>
-        </details>
-
-        {/* Academic Information Section */}
-        <details className={styles.chapter} open={openSections.academic || academicHasError} onToggle={toggleSection('academic')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t("landing:academic_information", "Academic Information")}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Grade Level */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activitymanager.grade_level", "Grade Level")}
-                <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.grade_level}
-                onChange={(e) => setFormData({ ...formData, grade_level: parseInt(e.target.value) })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-                errors.grade_level ? 'border-red-500' : 'border-[var(--border)]'}`
-                }>
-                
-                {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) =>
-                <option key={grade} value={grade}>{t("landing:activitymanager.grade", "Grade")}{grade}</option>
-                )}
-              </select>
-              {errors.grade_level && <p className="text-red-500 text-sm mt-1">{errors.grade_level}</p>}
-            </div>
-
-            {/* Difficulty Level */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:difficulty_level", "Difficulty Level:")}
-                {formData.difficulty_level}/5
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={formData.difficulty_level || 3}
-                  onChange={(e) => setFormData({ ...formData, difficulty_level: parseInt(e.target.value) })}
-                  className="flex-1" />
-                
-                <span className="text-sm font-semibold text-[var(--text-muted)]">
-                  {'★'.repeat(formData.difficulty_level || 3)}{'☆'.repeat(5 - (formData.difficulty_level || 3))}
-                </span>
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:estimated_duration_minutes", "Estimated Duration (minutes)")}
-
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.estimated_duration_minutes}
-                onChange={(e) => setFormData({ ...formData, estimated_duration_minutes: parseInt(e.target.value) || 0 })}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] ${
-                errors.estimated_duration_minutes ? 'border-red-500' : 'border-[var(--border)]'}`
-                } />
-              
-              {errors.estimated_duration_minutes &&
-              <p className="text-red-500 text-sm mt-1">{errors.estimated_duration_minutes}</p>
-              }
-            </div>
-
-            {/* Activity Type */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:activity_type", "Activity Type")}
-
-              </label>
-              <select
-                value={formData.activity_type}
-                onChange={(e) => setFormData({ ...formData, activity_type: e.target.value as ActivityType })}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-                
-                <option value="outdoor">{t("landing:outdoor", "Outdoor")}</option>
-                <option value="indoor">{t("landing:indoor", "Indoor")}</option>
-                <option value="virtual">{t("landing:virtual", "Virtual")}</option>
-                <option value="mixed">{t("landing:mixed", "Mixed")}</option>
-              </select>
-            </div>
-          </div>
-          </div>
-        </details>
-
-        {/* Assessments — the 3 ways a teacher can assess this activity,
-            grouped in one place instead of scattered across the form
-            (state/curriculum standards used to live under a "Share this
-            activity" toggle, taxonomy under Academic Information, rubric at
-            the very bottom). Up to all 3 can be applied together. */}
-        <details className={styles.chapter} open={openSections.assessments} onToggle={toggleSection('assessments')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t('components_teacher_activitymanager.assessments', 'Assessments')}</h2>
-            <span className={styles.chapterMeta}>
-              {/* Taxonomy always carries a value (defaults to the first
-                  level), so it counts as always-applied; standards and
-                  rubric start empty and count only once applied. */}
-              {(appliedStandardsCount > 0 ? 1 : 0) + (selectedRubricId ? 1 : 0) + 1}/3 {t('components_teacher_activitymanager.applied', 'applied')}
-            </span>
-          </summary>
-          <div className={styles.chapterBody}>
-          <p className="text-sm text-[var(--text-faint)] mb-4">{t('components_teacher_activitymanager.assessments_intro', 'Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.')}</p>
-
-          <div className="space-y-5">
-            {/* 1. State / Curriculum Standards — auto-applied from this
-                activity's own title/description/objectives right after
-                every save (see handleSubmit's triggerStandardsSuggestion
-                call); a teacher can also search and add one manually, and
-                approve/reject/remove any of them here at any time. */}
-            <div className="rounded-lg border border-[var(--border)] p-4">
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">
-                📐 {t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards')}{' '}
-                <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
-              </label>
-              <AppliedStandardsPanel activityId={id} onCountChange={setAppliedStandardsCount} />
-            </div>
-
-            {/* 2. Taxonomy — two-level picker */}
-            <div className="rounded-lg border border-[var(--border)] p-4 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <label className="block text-sm font-semibold text-[var(--text)]">🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
-                <button
-                  type="button"
-                  onClick={handleAutoClassify}
-                  disabled={classifyLoading}
-                  className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold disabled:opacity-50 whitespace-nowrap"
-                >
-                  {classifyLoading ? 'Classifying…' : '✨ Auto-classify'}
-                </button>
-              </div>
-              <select
-                value={taxonomyType}
-                onChange={(e) => {
-                  const t = e.target.value;
-                  setTaxonomyType(t);
-                  // Reset bloom_level to first option of new taxonomy
-                  const first = TAXONOMIES[t]?.levels[0]?.value ?? 'remember';
-                  setFormData(f => ({ ...f, bloom_level: first }));
-                  // Suggestion was computed against the previous taxonomy — discard it.
-                  setTaxonomySuggestion(null);
-                  setClassifyError('');
-                }}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
-                {Object.entries(TAXONOMIES).map(([key, tx]) => (
-                  <option key={key} value={key}>{tx.label}</option>
-                ))}
-              </select>
-              <select
-                value={formData.bloom_level}
-                onChange={(e) => setFormData(f => ({ ...f, bloom_level: e.target.value }))}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
-                {TAXONOMIES[taxonomyType]?.levels.map(lvl => (
-                  <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
-                ))}
-              </select>
-              {classifyError && <p className="text-red-500 text-xs mt-1">{classifyError}</p>}
-              {taxonomySuggestion && (
-                <div className="mt-1 p-2 rounded-lg border border-purple-200 bg-purple-50 text-xs">
-                  <p className="text-purple-800">
-                    <span className="font-semibold">{t('components_teacher_activitymanager.ai_suggests', 'AI suggests:')}</span> {taxonomySuggestion.label}
-                    {taxonomySuggestion.rationale && <span className="text-purple-600"> — {taxonomySuggestion.rationale}</span>}
-                  </p>
-                  <div className="mt-1 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={acceptTaxonomySuggestion}
-                      className="px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-700"
-                    >{t('components_teacher_activitymanager.accept', 'Accept')}</button>
-                    <button
-                      type="button"
-                      onClick={() => setTaxonomySuggestion(null)}
-                      className="px-2 py-0.5 rounded border border-purple-300 text-purple-700 hover:bg-purple-100"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Rubric — filter-as-you-type once the list gets long */}
-            <div className="rounded-lg border border-[var(--border)] p-4">
-              <label className="block text-sm font-semibold text-[var(--text)] mb-2">
-                📋 {t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric')}{' '}
-                <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
-              </label>
-              {rubrics.length > 6 && (
-                <input
-                  type="text"
-                  value={rubricFilter}
-                  onChange={(e) => setRubricFilter(e.target.value)}
-                  placeholder={t('components_teacher_activitymanager.filter_rubrics', 'Filter rubrics…')}
-                  className="w-full px-3 py-1.5 mb-2 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                />
-              )}
-              <select
-                value={selectedRubricId}
-                onChange={(e) => setSelectedRubricId(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-              >
-                <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
-                {rubrics
-                  .filter(r => r.title.toLowerCase().includes(rubricFilter.trim().toLowerCase()))
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>{r.title}</option>
-                  ))}
-              </select>
-            </div>
-          </div>
-
+        </div>
           {/* Location Radius — geofence used to verify student presence,
               grouped here with the other verification/assessment settings. */}
           <div className="mt-5 pt-5 border-t border-[var(--border)]">
@@ -1288,17 +954,52 @@ const ActivityManager = () => {
               className="w-48 px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               placeholder="500" />
           </div>
-          </div>
-        </details>
+      </Chapter>
 
-        {/* Materials Section */}
-        <details className={styles.chapter} open={openSections.materials} onToggle={toggleSection('materials')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t("landing:materials_resources", "Materials & Resources")}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
+      <Chapter title={t('components_teacher_activitywizard.tracking_title', 'Live tracking')} badge={gpsEnabled ? t('components_teacher_activitywizard.on', 'On') : t('components_teacher_activitywizard.off', 'Off')}>
+        <label className={`${wizardStyles.card} ${gpsEnabled ? wizardStyles.cardOn : ''}`} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <input
+            type="checkbox" checked={gpsEnabled}
+            onChange={(e) => { setGpsEnabled(e.target.checked); if (!e.target.checked) setHomeschoolGpsConsent(false); }}
+            style={{ width: 20, height: 20, marginTop: 2, flex: 'none' }} />
+          <span>
+            <span className={wizardStyles.cardTitle}>{t('components_teacher_activitymanager.enable_live_gps_tracking_during_this_act', '📍 Enable live GPS tracking during this activity')}</span>
+            <span className={wizardStyles.cardNote}>{t('components_teacher_activitymanager.students_locations_are_shared_with_you_i', 'Students\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.')}</span>
+          </span>
+        </label>
+        {gpsEnabled && currentUser?.role?.toLowerCase() === 'homeschool' && (
+          <label className={wizardStyles.note} style={{ display: 'flex', gap: 10, alignItems: 'center', cursor: 'pointer' }}>
+            <input type="checkbox" checked={homeschoolGpsConsent} onChange={(e) => setHomeschoolGpsConsent(e.target.checked)} style={{ width: 20, height: 20 }} />
+            <span>{t('components_teacher_activitymanager.i_consent_to_gps_location_capture_for_my', 'I consent to GPS location capture for my child during this activity')}</span>
+          </label>
+        )}
+      </Chapter>
 
+      <Chapter title={t('components_teacher_activitywizard.prompts_title', 'Student prompts')} defaultOpen>
+        <p className={wizardStyles.hint} style={{ marginBottom: 8 }}>
+          {t('components_teacher_activitymanager.ai_interaction_intro', "Choose how students get prompted during this activity's Inquiry phase.")}
+        </p>
+        <div className={wizardStyles.cards} role="group" aria-label={t('components_teacher_activitymanager.ai_interaction_label', 'Student AI Interaction')}>
+          <ChoiceCard
+            selected={(formData.ai_interaction_mode ?? 'ai_chat') === 'ai_chat'} icon="💬"
+            onSelect={() => setFormData({ ...formData, ai_interaction_mode: 'ai_chat' })}
+            title={<>{t('components_teacher_activitywizard.ai_chat', 'Ask Peri (AI chat)')}<span className={wizardStyles.tag}>{t('components_teacher_activitywizard.recommended', 'Recommended')}</span></>}
+            note={t('components_teacher_activitymanager.ai_interaction_chat_note', "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.")} />
+          <ChoiceCard
+            selected={formData.ai_interaction_mode === 'curated_only'} icon="📖"
+            onSelect={() => setFormData({ ...formData, ai_interaction_mode: 'curated_only' })}
+            title={t('components_teacher_activitymanager.ai_interaction_curated_label', 'Curated Question Bank Only')}
+            note={t('components_teacher_activitymanager.ai_interaction_curated_note', "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \"Ask Peri\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.")} />
+        </div>
+        <p className={wizardStyles.note}>
+          {t('components_teacher_activitymanager.ai_interaction_footnote', "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.")}
+        </p>
+        <p className={wizardStyles.note}>
+          {t('components_teacher_activitymanager.ai_interaction_privacy_note', "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank.")}
+        </p>
+      </Chapter>
+
+      <Chapter title={t('landing:materials_resources', 'Materials & Resources')}>
           <div>
             <label className="block text-sm font-semibold text-[var(--text)] mb-2">{t("landing:materials_needed", "Materials Needed")}
 
@@ -1378,82 +1079,200 @@ const ActivityManager = () => {
               )}
             </div>
           </div>
-          </div>
-        </details>
+      </Chapter>
+    </>
+  );
 
-        {/* Additional Options */}
-        <details className={styles.chapter} open={openSections.additional} onToggle={toggleSection('additional')}>
-          <summary className={styles.chapterSummary}>
-            <span className={styles.chevron} aria-hidden="true">▸</span>
-            <h2 className={styles.chapterTitle}>{t("landing:additional_options", "Additional Options")}</h2>
-          </summary>
-          <div className={styles.chapterBody}>
+  const assessmentPane = (
+    <>
+      <PaneHeader
+        stepKey="assessment"
+        title={t('components_teacher_activitywizard.assessment_title', 'How will you assess it?')}
+        lede={t('components_teacher_activitywizard.assessment_lede', 'Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.')}
+      />
 
-          {/* AI interaction mode — added 2026-08-20 alongside the landing
-              page copy fix (previously described AI as needing local Ollama
-              or a self-supplied Anthropic key, even after this deployment's
-              own key was configured). Author's choice, shown with explicit
-              tradeoff notes per product decision: this shouldn't be a hidden
-              default a teacher has to discover by accident. */}
-          <div className="p-4 border border-[var(--border)] rounded-lg mb-3">
-            <label className="block text-sm font-semibold text-[var(--text)] mb-1">
-              {t('components_teacher_activitymanager.ai_interaction_label', 'Student AI Interaction')}
-            </label>
-            <p className="text-xs text-[var(--text-muted)] mb-3">
-              {t('components_teacher_activitymanager.ai_interaction_intro', "Choose how students get prompted during this activity's Inquiry phase.")}
-            </p>
-            <div className="grid grid-cols-1 gap-2">
-              {([
-                {
-                  value: 'ai_chat' as const,
-                  icon: '💬',
-                  label: t('components_teacher_activitymanager.ai_interaction_chat_label', 'AI Chat (recommended)'),
-                  note: t(
-                    'components_teacher_activitymanager.ai_interaction_chat_note',
-                    "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection."
-                  ),
-                },
-                {
-                  value: 'curated_only' as const,
-                  icon: '📖',
-                  label: t('components_teacher_activitymanager.ai_interaction_curated_label', 'Curated Question Bank Only'),
-                  note: t(
-                    'components_teacher_activitymanager.ai_interaction_curated_note',
-                    "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \"Ask Peri\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity."
-                  ),
-                },
-              ]).map((opt) => {
-                const selected = (formData.ai_interaction_mode ?? 'ai_chat') === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, ai_interaction_mode: opt.value })}
-                    className="text-left px-4 py-3 rounded-lg border transition"
-                    style={{
-                      background: selected ? 'var(--primary-muted)' : 'white',
-                      borderColor: selected ? 'var(--primary)' : '#d1d5db',
-                    }}
-                  >
-                    <div className="text-sm font-semibold text-[var(--text)]">{opt.icon} {opt.label}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-1">{opt.note}</div>
-                  </button>
-                );
-              })}
+      <Chapter title={<>📐 {t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards')}</>} badge={`${standardsCount} ${t('components_teacher_activitymanager.applied', 'applied')}`} defaultOpen>
+        {isEditing ? (
+          <AppliedStandardsPanel activityId={id} onCountChange={setAppliedStandardsCount} />
+        ) : (
+          <SuggestedStandards
+            active={wizardCurrent === 'assessment' || wizardCurrent === 'outcomes' || wizardCurrent === 'review'}
+            subject={formData.subject}
+            grade={formData.grade_level}
+            stateCode={stateCode}
+            stateLocked={isOrgTeacher}
+            onStateChange={setStateCode}
+            outcomes={(formData.learning_objectives || []).filter(Boolean)}
+            title={formData.title}
+            picked={pickedStandards}
+            onPickedChange={setPickedStandards}
+            onMatchCount={setStandardsMatched}
+          />
+        )}
+      </Chapter>
+
+      <Chapter title={<>🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</>} badge={taxonomyLevelLabel}>
+            {/* 2. Taxonomy — two-level picker */}
+            <div className="rounded-lg border border-[var(--border)] p-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <label className="block text-sm font-semibold text-[var(--text)]">🧠 {t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy')}</label>
+                <button
+                  type="button"
+                  onClick={handleAutoClassify}
+                  disabled={classifyLoading}
+                  className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 font-semibold disabled:opacity-50 whitespace-nowrap"
+                >
+                  {classifyLoading ? 'Classifying…' : '✨ Auto-classify'}
+                </button>
+              </div>
+              <select
+                value={taxonomyType}
+                onChange={(e) => {
+                  const t = e.target.value;
+                  setTaxonomyType(t);
+                  // Reset bloom_level to first option of new taxonomy
+                  const first = TAXONOMIES[t]?.levels[0]?.value ?? 'remember';
+                  setFormData(f => ({ ...f, bloom_level: first }));
+                  // Suggestion was computed against the previous taxonomy — discard it.
+                  setTaxonomySuggestion(null);
+                  setClassifyError('');
+                }}
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
+                {Object.entries(TAXONOMIES).map(([key, tx]) => (
+                  <option key={key} value={key}>{tx.label}</option>
+                ))}
+              </select>
+              <select
+                value={formData.bloom_level}
+                onChange={(e) => setFormData(f => ({ ...f, bloom_level: e.target.value }))}
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white">
+                {TAXONOMIES[taxonomyType]?.levels.map(lvl => (
+                  <option key={lvl.value} value={lvl.value}>{lvl.label}</option>
+                ))}
+              </select>
+              {classifyError && <p className="text-red-500 text-xs mt-1">{classifyError}</p>}
+              {taxonomySuggestion && (
+                <div className="mt-1 p-2 rounded-lg border border-purple-200 bg-purple-50 text-xs">
+                  <p className="text-purple-800">
+                    <span className="font-semibold">{t('components_teacher_activitymanager.ai_suggests', 'AI suggests:')}</span> {taxonomySuggestion.label}
+                    {taxonomySuggestion.rationale && <span className="text-purple-600"> — {taxonomySuggestion.rationale}</span>}
+                  </p>
+                  <div className="mt-1 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={acceptTaxonomySuggestion}
+                      className="px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-700"
+                    >{t('components_teacher_activitymanager.accept', 'Accept')}</button>
+                    <button
+                      type="button"
+                      onClick={() => setTaxonomySuggestion(null)}
+                      className="px-2 py-0.5 rounded border border-purple-300 text-purple-700 hover:bg-purple-100"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-[var(--text-muted)] mt-2 italic">
-              {t(
-                'components_teacher_activitymanager.ai_interaction_footnote',
-                "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that."
+
+      </Chapter>
+
+      <Chapter title={<>📋 {t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric')}</>} badge={selectedRubricId ? t('components_teacher_activitywizard.attached', '1 attached') : t('components_teacher_activitywizard.none', 'None')}>
+            {/* 3. Rubric — filter-as-you-type once the list gets long */}
+            <div className="rounded-lg border border-[var(--border)] p-4">
+              <label className="block text-sm font-semibold text-[var(--text)] mb-2">
+                📋 {t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric')}{' '}
+                <span className="text-[var(--text-faint)] font-normal">{t('components_teacher_activitymanager.optional', '(optional)')}</span>
+              </label>
+              {rubrics.length > 6 && (
+                <input
+                  type="text"
+                  value={rubricFilter}
+                  onChange={(e) => setRubricFilter(e.target.value)}
+                  placeholder={t('components_teacher_activitymanager.filter_rubrics', 'Filter rubrics…')}
+                  className="w-full px-3 py-1.5 mb-2 border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                />
               )}
-            </p>
-            <p className="text-xs text-[var(--text-muted)] mt-1 italic">
-              {t(
-                'components_teacher_activitymanager.ai_interaction_privacy_note',
-                "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
-              )}
-            </p>
-          </div>
+              <select
+                value={selectedRubricId}
+                onChange={(e) => setSelectedRubricId(e.target.value)}
+                className="w-full px-4 py-2 border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              >
+                <option value="">{t('components_teacher_activitymanager.no_rubric', 'No rubric')}</option>
+                {rubrics
+                  .filter(r => r.title.toLowerCase().includes(rubricFilter.trim().toLowerCase()))
+                  .map((r) => (
+                    <option key={r.id} value={r.id}>{r.title}</option>
+                  ))}
+              </select>
+            </div>
+      </Chapter>
+    </>
+  );
+
+  const outcomesPane = (
+    <OutcomesStep
+      objectives={(formData.learning_objectives || []).filter(Boolean)}
+      onChange={(next) => setFormData(f => ({ ...f, learning_objectives: next }))}
+      subject={formData.subject}
+      grade={formData.grade_level}
+      standardsMatched={standardsMatched}
+    />
+  );
+
+  const summaryRow = (step: StepKey, label: string, value: React.ReactNode, extra?: React.ReactNode) => (
+    <div className={wizardStyles.sumRow} key={`${step}-${label}`}>
+      <dt>{label}</dt>
+      <dd>
+        <span>{value}</span>
+        {extra}
+        <button type="button" className={wizardStyles.link} aria-label={`${t('components_teacher_activitywizard.edit', 'Edit')} ${label}`} onClick={() => wizardRef.current?.goTo(step)}>
+          {t('components_teacher_activitywizard.edit', 'Edit')}
+        </button>
+      </dd>
+    </div>
+  );
+
+  const reviewPane = (
+    <>
+      <PaneHeader
+        stepKey="review"
+        title={t('components_teacher_activitywizard.review_title', 'Review and create')}
+        lede={t('components_teacher_activitywizard.review_lede', 'Check the summary. Select Edit on any row to go back to that step; your answers are kept.')}
+      />
+      <dl style={{ margin: '0 0 1rem' }}>
+        {summaryRow('basics', t('landing:activitymanager.title', 'Title'), formData.title || t('components_teacher_activitywizard.not_set', 'Not set yet'))}
+        {summaryRow('basics', t('components_teacher_activitywizard.grade_subject', 'Grade and subject'), `${gradeLabel(formData.grade_level)}, ${formData.subject}`)}
+        {summaryRow('basics', t('landing:location_name', 'Location Name'), formData.location_name || t('components_teacher_activitywizard.not_set', 'Not set yet'),
+          hasCoords && formData.location_name?.trim() ? (
+            <button type="button" className={`${wizardStyles.btn} ${wizardStyles.btnGhost} ${wizardStyles.btnSm}`} onClick={() => setAboutOpen(true)}>
+              📖 {t('components_teacher_activitywizard.about_place', 'About this place')}
+            </button>
+          ) : null)}
+        {summaryRow('experience', t('components_teacher_activitywizard.kind_title', 'Wayfaring or investigative'), isWayfaring ? t('components_teacher_activitywizard.wayfaring', 'Wayfaring') : t('components_teacher_activitywizard.investigative', 'Investigative'))}
+        {summaryRow('experience', t('components_teacher_activitywizard.tracking_title', 'Live tracking'), gpsEnabled ? t('components_teacher_activitywizard.on', 'On') : t('components_teacher_activitywizard.off', 'Off'))}
+        {summaryRow('experience', t('components_teacher_activitywizard.prompts_title', 'Student prompts'), (formData.ai_interaction_mode ?? 'ai_chat') === 'ai_chat' ? t('components_teacher_activitywizard.ai_chat', 'Ask Peri (AI chat)') : t('components_teacher_activitymanager.ai_interaction_curated_label', 'Curated Question Bank Only'))}
+        {summaryRow('outcomes', t('components_teacher_activitywizard.step_outcomes', 'Outcomes'), outcomeCount ? `${outcomeCount}` : t('components_teacher_activitywizard.none_yet', 'None yet'))}
+        {summaryRow('assessment', t('components_teacher_activitymanager.state_curriculum_standards', 'State / Curriculum Standards'), `${standardsCount} ${t('components_teacher_activitymanager.applied', 'applied')}`)}
+        {summaryRow('assessment', t('components_teacher_activitymanager.cognitive_taxonomy', 'Cognitive Taxonomy'), taxonomyLevelLabel)}
+        {summaryRow('assessment', t('components_teacher_activitymanager.attach_rubric', 'Attach Rubric'), rubricLabel)}
+      </dl>
+
+      <div className="flex flex-wrap gap-3 mb-4">
+        <button type="button" onClick={() => setShowQuickPreview(true)} className={`${wizardStyles.btn} ${wizardStyles.btnGhost}`}>
+          👁 {t('components_teacher_activitywizard.quick_preview', 'Quick Preview')}
+        </button>
+        {isEditing && id && (
+          <button type="button" onClick={() => navigate(`${activitiesBase}/${id}/student-preview`)} className={`${wizardStyles.btn} ${wizardStyles.btnGhost}`}>
+            📱 {t('landing:preview_as_student', 'Preview as Student')}
+          </button>
+        )}
+        {isEditing && id && !location.pathname.startsWith('/homeschool') && (
+          <button type="button" onClick={() => navigate(`/teacher/activities/${id}/fieldwork`)} className={`${wizardStyles.btn} ${wizardStyles.btnGhost}`}>
+            🗺 {t('components_teacher_activitymanager.fieldwork_map', 'Fieldwork Map')}
+          </button>
+        )}
+      </div>
 
           {/* Shareable toggle */}
           <div className="flex items-center p-3 border border-[var(--border)] rounded-lg hover:bg-[var(--surface-alt)] mb-3">
@@ -1572,56 +1391,130 @@ const ActivityManager = () => {
               </div>
             </div>
           )}
-          </div>
-        </details>
+    </>
+  );
 
-        {/* Buttons */}
-        <div className="flex gap-3 pt-6 border-t border-[var(--border)]">
-          <button
-            type="button"
-            onClick={() => setShowQuickPreview(true)}
-            className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
-            style={{ background: 'var(--primary)', color: 'white', minWidth: 140 }}>
-            👁 Quick Preview
-          </button>
-          {isEditing && id && (
-            <button
-              type="button"
-              onClick={() => navigate(`${activitiesBase}/${id}/student-preview`)}
-              className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
-              style={{ background: '#2e7d32', color: 'white', minWidth: 160 }}>
-              📱 {t("landing:preview_as_student", "Preview as Student")}
-            </button>
+  return (
+    <div className={`max-w-5xl mx-auto p-4 ${wizardStyles.wizard}`}>
+      <h1 className="text-2xl font-bold mb-2">
+        {isEditing ? 'Edit Activity' : 'Create Activity'}
+      </h1>
+      <p className="mb-6" style={{ color: 'var(--w-muted)' }}>
+        {isEditing ? 'Update your activity details' : 'Create a new educational activity'}
+      </p>
+
+      {/* 14e.3 — Privacy compliance badge */}
+      {compliance && (
+        <div className="mb-4">
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
+            compliance.status === 'compliant' ? 'bg-green-50 text-green-700 border border-green-200' :
+            compliance.status === 'review'    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                               'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            <span>{compliance.status === 'compliant' ? '✅' : compliance.status === 'review' ? '⚠️' : '🚫'}</span>
+            <span>{compliance.status === 'compliant' ? t("landing:privacy_compliant","Privacy Compliant") :
+                   compliance.status === 'review'    ? t("landing:privacy_review_needed","Privacy Review Needed") :
+                                                      t("landing:privacy_blocked","Privacy Issue — Review Required")}</span>
+            {compliance.issues.length > 0 && (
+              <span className="ml-1 text-xs opacity-75">({compliance.issues.slice(0,2).join('; ')})</span>
+            )}
+            {compliance.status === 'review' && privacyConfirmed && (
+              <span className="ml-auto text-xs font-semibold text-green-700">{t('components_teacher_activitymanager.privacy_settings_confirmed', 'Privacy settings confirmed ✓')}</span>
+            )}
+          </div>
+
+          {/* Privacy confirmation panel — shown when compliance requires review and not yet confirmed */}
+          {compliance.status === 'review' && !privacyConfirmed && (
+            <div className="mt-2 border border-yellow-300 rounded-lg bg-yellow-50 p-4 space-y-3">
+              <p className="text-sm text-yellow-800 font-medium">{t('components_teacher_activitymanager.this_activity_involves_student_location_', 'This activity involves student location data and/or students under 13. Please confirm the following before publishing.')}</p>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={privacyChecks.dataMinimization}
+                  onChange={e => setPrivacyChecks(p => ({ ...p, dataMinimization: e.target.checked }))}
+                  className="mt-0.5 accent-yellow-600"
+                />
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.this_activity_only_collects_data_necessa', 'This activity only collects data necessary for the educational purpose')}</span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={privacyChecks.locationPurpose}
+                  onChange={e => setPrivacyChecks(p => ({ ...p, locationPurpose: e.target.checked }))}
+                  className="mt-0.5 accent-yellow-600"
+                />
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.location_data_is_used_only_to_verify_stu', 'Location data is used only to verify student presence at the activity site')}</span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={privacyChecks.parentalConsent}
+                  onChange={e => setPrivacyChecks(p => ({ ...p, parentalConsent: e.target.checked }))}
+                  className="mt-0.5 accent-yellow-600"
+                />
+                <span className="text-sm text-[var(--text)]">{t('components_teacher_activitymanager.parental_or_guardian_consent_is_in_place', 'Parental or guardian consent is in place where required by law')}</span>
+              </label>
+              <button
+                type="button"
+                disabled={!(privacyChecks.dataMinimization && privacyChecks.locationPurpose && privacyChecks.parentalConsent)}
+                onClick={() => {
+                  setPrivacyConfirmed(true);
+                  setCompliance(c => c ? { ...c, status: 'compliant' } : c);
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: (privacyChecks.dataMinimization && privacyChecks.locationPurpose && privacyChecks.parentalConsent) ? '#ca8a04' : '#d1d5db' }}
+              >
+                Confirm Privacy Settings
+              </button>
+            </div>
           )}
-          {isEditing && id && !location.pathname.startsWith('/homeschool') && (
-            <button
-              type="button"
-              onClick={() => navigate(`/teacher/activities/${id}/fieldwork`)}
-              className="px-5 py-3 rounded-lg font-semibold text-sm transition-colors"
-              style={{ background: '#0066cc', color: 'white', minWidth: 140 }}>
-              🗺 {t('components_teacher_activitymanager.fieldwork_map', 'Fieldwork Map')}
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={isSubmitting || loading}
-            className="flex-1 px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-deep)] transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
-            {isSubmitting || loading ?
-            <span className="flex items-center justify-center">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>{t("landing:saving", "Saving...")}
-            </span> :
-            isEditing ? 'Update Activity' : 'Create Activity'
-            }
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/teacher/activities')}
-            disabled={isSubmitting}
-            className="flex-1 px-6 py-3 border border-[var(--border)] text-[var(--text)] rounded-lg hover:bg-[var(--surface-alt)] transition-colors font-semibold disabled:opacity-50">{t("landing:cancel", "Cancel")}
-          </button>
         </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        onKeyDown={(e) => {
+          // Enter inside a text field must not submit the whole activity from step 1.
+          if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type !== 'submit') e.preventDefault();
+        }}
+      >
+        {submitError && (
+          <div role="alert" className="rounded-lg p-4 mb-4" style={{ background: 'var(--error-muted, #f8e4e4)', color: 'var(--w-error-text)', border: '1px solid var(--w-error-text)' }}>
+            <p className="font-semibold">{t('landing:error', 'Error')}</p>
+            <p>{submitError}</p>
+          </div>
+        )}
+
+        <WizardShell
+          apiRef={wizardRef}
+          onStepChange={setWizardCurrent}
+          skipStart={isEditing}
+          labels={stepLabels}
+          panes={{ basics: basicsPane, experience: experiencePane, assessment: assessmentPane, outcomes: outcomesPane, review: reviewPane }}
+          renderStart={(pick) => <StartPicker onPick={pick} />}
+          canLeave={(key) => (key === 'basics' ? (validateForm() || errorStepRef.current !== 'basics') : true)}
+          submitting={isSubmitting || loading}
+          submitLabel={isSubmitting || loading ? t('landing:saving', 'Saving...') : isEditing ? 'Update Activity' : 'Create Activity'}
+          footerExtra={
+            <button type="button" className={`${wizardStyles.btn} ${wizardStyles.btnGhost}`} onClick={() => navigate('/teacher/activities')} disabled={isSubmitting}>
+              {t('landing:cancel', 'Cancel')}
+            </button>
+          }
+        />
       </form>
-      </div>
+
+      <AboutPlaceDialog
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
+        locationName={formData.location_name}
+        latitude={formData.location_latitude}
+        longitude={formData.location_longitude}
+        subject={formData.subject}
+        onInfoLoaded={(info) => {
+          setFormData(f => ({ ...f, location_wiki_data: info, location_info: info.description || '' }));
+        }}
+      />
 
       {/* Quick Preview Modal */}
       {showQuickPreview && (

@@ -568,6 +568,12 @@ except Exception as e:
     print(f"Warning: could not register rubrics_router: {e}")
 
 try:
+    from routes.outcomes import router as outcomes_router
+    app.include_router(outcomes_router, prefix="/api/v1")         # router prefix="/outcomes"
+except Exception as e:
+    print(f"Warning: could not register outcomes_router: {e}")
+
+try:
     from routes.standards import router as standards_router
     app.include_router(standards_router)                          # router prefix="/api/v1/standards"
 except Exception as e:

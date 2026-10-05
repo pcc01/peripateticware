@@ -13,6 +13,7 @@
  * Ollama-backed backend, following the pattern in gps-fieldwork-map.spec.ts.
  */
 import { test, expect, type Page } from '@playwright/test';
+import { startWizard, next, openChapter, activePane } from './helpers/activity-wizard';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -39,10 +40,24 @@ async function mockHealth(page: Page, status: 'available' | 'unavailable' = 'ava
 }
 
 async function openPeriPanel(page: Page) {
-  await page.goto('/teacher/activities/new');
-  await expect(page).not.toHaveURL(/\/login/);
+  await startWizard(page);
   await page.locator('#title').fill('Forest Ecosystem Field Study');
+  await openChapter(page, /peri ai suggestions/i);
   await page.getByRole('button', { name: /ask peri/i }).click();
+}
+
+// Auto-classify lives in the Assessment step's "Cognitive Taxonomy" chapter.
+// Start from Assessment (no validation needed to be there), type a title on
+// Basics (the text auto-classify reads), come back, and open the chapter.
+async function openTaxonomy(page: Page, title: string) {
+  await startWizard(page, 'assessment');
+  await next(page);
+  await page.waitForTimeout(450);
+  await page.locator('#title').fill(title);
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.waitForTimeout(450);
+  await openChapter(page, /cognitive taxonomy/i);
+  return page.locator('section[aria-label="Assessment"] select:has(option[value="remember"])');
 }
 
 test.describe('Teacher — Peri AI Activity Suggestions (Ollama)', () => {
@@ -60,8 +75,8 @@ test.describe('Teacher — Peri AI Activity Suggestions (Ollama)', () => {
     await expect(page.getByText(/map the park's microhabitats/i)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/classify leaf shapes by function/i)).toBeVisible();
     await expect(page.getByText(/design a follow-up investigation/i)).toBeVisible();
-    await expect(page.getByText(/^understand$/i)).toBeVisible();
-    await expect(page.getByText(/^analyze$/i)).toBeVisible();
+    await expect(activePane(page).getByText(/^understand$/i)).toBeVisible();
+    await expect(activePane(page).getByText(/^analyze$/i)).toBeVisible();
 
     // Selecting a card adds it and flips the select indicator
     await page.getByText(/map the park's microhabitats/i).click();
@@ -144,12 +159,9 @@ test.describe('Teacher — AI Taxonomy Auto-classify (ActivityManager)', () => {
       await route.fulfill({ json: { result: { blooms: { level: 4, rationale: 'Involves comparing and contrasting habitats.' } } } });
     });
 
-    await page.goto('/teacher/activities/new');
-    await page.locator('#title').fill('Wetlands Comparative Study');
-
-    // The taxonomy-level <select> is the one with a "remember" option — the
-    // only Bloom's-specific value on the whole page.
-    const levelSelect = page.locator('select:has(option[value="remember"])');
+    // The taxonomy-level <select> is the one in the Assessment step with a
+    // "remember" option (the Outcomes step's thinking-level select has one too).
+    const levelSelect = await openTaxonomy(page, 'Wetlands Comparative Study');
     await expect(levelSelect).toHaveValue('understand');
 
     await page.getByRole('button', { name: /auto-classify/i }).click();
@@ -171,10 +183,7 @@ test.describe('Teacher — AI Taxonomy Auto-classify (ActivityManager)', () => {
       await route.fulfill({ json: { result: { blooms: { level: 6, rationale: 'Requires original design work.' } } } });
     });
 
-    await page.goto('/teacher/activities/new');
-    await page.locator('#title').fill('Design a Trail Marker System');
-
-    const levelSelect = page.locator('select:has(option[value="remember"])');
+    const levelSelect = await openTaxonomy(page, 'Design a Trail Marker System');
     await page.getByRole('button', { name: /auto-classify/i }).click();
     await expect(page.getByText(/ai suggests:/i)).toBeVisible({ timeout: 10_000 });
 
@@ -188,12 +197,11 @@ test.describe('Teacher — AI Taxonomy Auto-classify (ActivityManager)', () => {
       await route.fulfill({ status: 503, json: { detail: 'LLM provider unavailable' } });
     });
 
-    await page.goto('/teacher/activities/new');
-    await page.locator('#title').fill('Trailside Erosion Patterns');
+    await openTaxonomy(page, 'Trailside Erosion Patterns');
     await page.getByRole('button', { name: /auto-classify/i }).click();
 
     await expect(page.getByText(/auto-classify failed\. set the taxonomy manually\./i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#title')).toBeVisible();
+    await expect(page.locator('section[aria-label="Assessment"]')).toBeVisible();
   });
 });
 
