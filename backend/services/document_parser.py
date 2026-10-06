@@ -57,8 +57,119 @@ class ParsedDocument:
 # PDF parsing
 # ---------------------------------------------------------------------------
 
+# Table-aware per-page override (moved in from the standards pipeline's
+# table_extract.py proof-of-concept -- see HANDOFF.md "table_aware_extract.py",
+# 2026-09/10, and the 2026-10-04 Missouri/Ohio grade-band-table fixes).
+# pypdf's plain extraction flattens a multi-column table (e.g. a grade-band
+# table like "Sixth Grade | Seventh Grade | Eighth Grade") into reading
+# order with no column boundary in the text, so a downstream reader has no
+# way to tell which column a row came from -- confirmed as the root cause
+# of real grade-misattribution bugs on Missouri's and Ohio's standards PDFs.
+# PyMuPDF's find_tables() reliably detects the grid, but its own .extract()
+# call garbles cell TEXT (confirmed: every character run doubled, e.g.
+# "33aa.. K Knnoowwleeledddgggeee" instead of "3a. Knowledge") -- so this
+# uses find_tables() only for cell bounding boxes, then re-extracts each
+# cell's text with the page's own well-tested get_text(clip=...).
+#
+# Deliberately scoped to ONLY the pages find_tables() flags as real tables;
+# every other page keeps pypdf's plain text unchanged, and any failure in
+# this pass (corrupt stream, missing pymupdf) falls back to plain pypdf for
+# the whole document rather than failing the parse.
+def _dedupe_repeated_block(text: str) -> str:
+    """Collapse a "same content twice" artifact seen on some state PDFs
+    (looks like an overlapping/duplicated text layer in the source): split
+    into non-empty, whitespace-trimmed lines, and if the first half of the
+    lines is identical to the second half, keep only one copy."""
+    lines = [ln.strip() for ln in text.split("\n")]
+    lines = [ln for ln in lines if ln]
+    n = len(lines)
+    if n >= 2 and n % 2 == 0 and lines[: n // 2] == lines[n // 2 :]:
+        lines = lines[: n // 2]
+    out = []
+    for ln in lines:
+        if len(ln) >= 2 and len(ln) % 2 == 0 and ln[: len(ln) // 2] == ln[len(ln) // 2 :]:
+            ln = ln[: len(ln) // 2]
+        out.append(ln)
+    return "\n".join(out)
+
+
+def _page_has_table(page) -> bool:
+    return bool(page.find_tables().tables)
+
+
+def _extract_page_with_tables(page) -> Optional[str]:
+    """Table-aware text for one PyMuPDF page, or None if find_tables()
+    detects no table. Each cell comes out as `[column header] cell text`,
+    so a row's column (e.g. its grade) is explicit in the text itself
+    rather than implied by position."""
+    import re as _re
+    import pymupdf
+
+    tabs = page.find_tables()
+    if not tabs.tables:
+        return None
+
+    out_parts: list[str] = []
+    covered_rects: list[tuple[float, float, float, float]] = []
+
+    for t_idx, table in enumerate(tabs.tables, 1):
+        covered_rects.append(table.bbox)
+        # row[0] is sometimes a single full-width merged title bar, not the
+        # real header -- use whichever of the first few rows actually has
+        # more than one distinct column. A flat ">2" threshold (not a
+        # fraction of col_count) correctly separates "1-2 cells, a title"
+        # from "several cells, a real header" regardless of how finely the
+        # grid is subdivided (found 2026-10-04 on a 15-raw-column grid with
+        # only 7 semantically real columns).
+        header_row_idx = 0
+        for ri, r in enumerate(table.rows[:3]):
+            if sum(1 for c in r.cells if c is not None) > 2:
+                header_row_idx = ri
+                break
+        header_row = table.rows[header_row_idx] if table.rows else None
+        header_cells = header_row.cells if header_row else []
+        header_labels = []
+        for bbox in header_cells:
+            if bbox is None:
+                header_labels.append(None)
+                continue
+            txt = _dedupe_repeated_block(page.get_text("text", clip=pymupdf.Rect(bbox)).strip())
+            header_labels.append(_re.sub(r"\s+", " ", txt) or None)
+
+        out_parts.append(f"--- Table {t_idx} (page {page.number + 1}) ---")
+        for row in table.rows[header_row_idx + 1 :]:
+            row_had_content = False
+            for col_idx, bbox in enumerate(row.cells):
+                if bbox is None:
+                    continue
+                txt = _dedupe_repeated_block(page.get_text("text", clip=pymupdf.Rect(bbox)).strip())
+                if not txt:
+                    continue
+                label = header_labels[col_idx] if col_idx < len(header_labels) and header_labels[col_idx] else f"column {col_idx + 1}"
+                out_parts.append(f"[{label}] {txt}")
+                row_had_content = True
+            if row_had_content:
+                out_parts.append("")
+
+    blocks = page.get_text("blocks")
+    non_table_text = []
+    for b in blocks:
+        bx0, by0, bx1, by1, text_ = b[0], b[1], b[2], b[3], b[4]
+        inside_a_table = any(
+            bx0 >= r[0] - 2 and by0 >= r[1] - 2 and bx1 <= r[2] + 2 and by1 <= r[3] + 2
+            for r in covered_rects
+        )
+        if not inside_a_table and text_.strip():
+            non_table_text.append(_dedupe_repeated_block(text_.strip()))
+
+    header_text = "\n".join(non_table_text)
+    return (header_text + "\n\n" if header_text else "") + "\n".join(out_parts)
+
+
 def _extract_pdf_text(file_bytes: bytes) -> ParsedDocument:
-    """Extract text from a digital (non-scanned) PDF using pypdf."""
+    """Extract text from a digital (non-scanned) PDF using pypdf, with a
+    table-aware override (see above) on whichever pages PyMuPDF's
+    find_tables() flags as a real grid."""
     from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(file_bytes))
@@ -66,6 +177,20 @@ def _extract_pdf_text(file_bytes: bytes) -> ParsedDocument:
     for page in reader.pages:
         text = page.extract_text() or ""
         pages.append(text.strip())
+
+    try:
+        import pymupdf
+        fitz_doc = pymupdf.open(stream=file_bytes, filetype="pdf")
+        for i, page in enumerate(fitz_doc):
+            if i >= len(pages):
+                break
+            if _page_has_table(page):
+                table_text = _extract_page_with_tables(page)
+                if table_text:
+                    pages[i] = table_text.strip()
+        fitz_doc.close()
+    except Exception as e:
+        logger.warning("table-aware re-extraction skipped: %s", e)
 
     full_text = "\n\n".join(p for p in pages if p)
     return ParsedDocument(
