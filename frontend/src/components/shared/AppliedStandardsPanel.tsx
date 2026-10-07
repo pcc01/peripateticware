@@ -234,15 +234,20 @@ export const AppliedStandardsPanel: React.FC<{
         </button>
       ) : (
         <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 10 }}>
-          <form onSubmit={runSearch} style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+          {/* A plain div, not <form> -- this panel renders inside
+              ActivityManager's own outer <form>; a nested <form> is invalid
+              HTML and routes this submit button's click to the OUTER form
+              instead, firing its handleSubmit early. */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } }}
               autoFocus
               placeholder={t('components_applied_standards.search_placeholder', 'Search standards…')}
               style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.82rem', background: 'var(--surface)', color: 'var(--text)' }}
             />
-            <button type="submit" disabled={searching || !query.trim()}
+            <button type="button" onClick={() => runSearch()} disabled={searching || !query.trim()}
               style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--primary)', color: 'white', border: 'none', fontSize: '0.78rem', cursor: 'pointer', opacity: searching ? 0.6 : 1 }}>
               {searching ? '…' : t('components_applied_standards.search', 'Search')}
             </button>
@@ -250,7 +255,7 @@ export const AppliedStandardsPanel: React.FC<{
               style={{ padding: '6px 10px', borderRadius: 6, background: 'none', border: '1px solid var(--border)', fontSize: '0.78rem', cursor: 'pointer' }}>
               {t('components_applied_standards.cancel', 'Cancel')}
             </button>
-          </form>
+          </div>
 
           {searchResults && searchResults.length === 0 && (
             <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{t('components_applied_standards.no_results', 'No matches.')}</p>

@@ -174,19 +174,26 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
         <label htmlFor="wizard-standard-search" className="block text-sm font-semibold mb-1">
           {t('components_teacher_activitywizard.search_standards', 'Search for a standard')}
         </label>
-        <form onSubmit={runManualSearch} style={{ display: 'flex', gap: 6 }}>
+        {/* A plain div, not <form> -- this whole wizard is already one
+            outer <form> (ActivityManager.tsx's handleSubmit); nesting a
+            second <form> here is invalid HTML and the browser routes its
+            submit button's click to the OUTER form instead, firing
+            handleSubmit early. type="button" + Enter-key handling gets the
+            same UX without that. */}
+        <div style={{ display: 'flex', gap: 6 }}>
           <input
             id="wizard-standard-search"
             value={manualQuery}
             onChange={e => setManualQuery(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); runManualSearch(); } }}
             placeholder={t('components_teacher_activitywizard.search_standards_placeholder', 'e.g. "fraction equivalence" or a standard code…')}
             style={{ flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.875rem' }}
           />
-          <button type="submit" disabled={manualSearching || !manualQuery.trim()}
+          <button type="button" onClick={() => runManualSearch()} disabled={manualSearching || !manualQuery.trim()}
             style={{ padding: '8px 16px', borderRadius: 6, background: 'var(--primary)', color: 'white', border: 'none', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: manualSearching ? 0.6 : 1 }}>
             {manualSearching ? '…' : t('components_teacher_activitywizard.search', 'Search')}
           </button>
-        </form>
+        </div>
         {manualError && <p className={styles.fieldError} role="alert">{manualError}</p>}
         {manualResults && manualResults.length === 0 && !manualSearching && (
           <p className={styles.hint}>{t('components_teacher_activitywizard.no_results', 'No matches.')}</p>
