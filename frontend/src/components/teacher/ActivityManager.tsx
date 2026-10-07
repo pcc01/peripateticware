@@ -204,7 +204,11 @@ const ActivityManager = () => {
   // Sent as seed_standard_ids on create, which approves them as alignments.
   const [pickedStandards, setPickedStandards] = useState<PickedStandards>({});
   const [standardsMatched, setStandardsMatched] = useState(0);
-  const [stateCode, setStateCode] = useState<string>(() => ((currentUser as any)?.state_standard ?? (currentUser as any)?.state_code ?? '') as string);
+  // currentUser.state_standard was a copy-paste from Activity.state_standard
+  // (a per-activity DB column) -- the user never actually carries that
+  // field. state_code is the real one (see stores/auth.ts's User interface
+  // and routes/auth.py's TokenResponse/MeResponse).
+  const [stateCode, setStateCode] = useState<string>(() => (currentUser?.state_code ?? '') as string);
 
   // GPS live tracking + homeschool self-consent (parent IS the user, so consent
   // is recorded at save time rather than via the async per-student parent-consent

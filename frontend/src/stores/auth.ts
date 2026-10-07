@@ -23,6 +23,7 @@ export interface User {
   role: string  // Accept any role format (uppercase or lowercase)
   org_id?: string | null  // null = standalone teacher / platform admin
   is_active?: boolean
+  state_code?: string | null  // default state for standards suggestions, e.g. 'CA'
 }
 
 export interface AuthStore {
@@ -234,6 +235,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           org_id: data.org_id ?? null,
           first_name: data.first_name ?? undefined,
           full_name: data.full_name ?? undefined,
+          state_code: data.state_code ?? null,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -294,6 +296,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           org_id: data.org_id ?? null,
           first_name: data.first_name ?? undefined,
           full_name: data.full_name ?? undefined,
+          state_code: data.state_code ?? null,
         }
         if (!user.id || !user.email || !user.role) {
           throw new Error('Invalid response: missing user fields')
@@ -393,6 +396,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           is_active: result.is_active ?? false,
           first_name: result.first_name ?? undefined,
           full_name: result.full_name ?? undefined,
+          state_code: result.state_code ?? null,
         }
 
         if (!user.id || !user.email || !user.role) {
@@ -480,6 +484,7 @@ export const useAuthStore = create<AuthStore>((set, get) => {
           org_id: data.org_id !== undefined ? (data.org_id ?? null) : get().user?.org_id,
           first_name: data.first_name ?? get().user?.first_name,
           full_name: data.full_name ?? get().user?.full_name,
+          state_code: data.state_code !== undefined ? (data.state_code ?? null) : get().user?.state_code,
         }
         set({ user: freshUser, isAuthenticated: true })
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(freshUser))

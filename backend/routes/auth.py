@@ -168,6 +168,10 @@ class TokenResponse(BaseModel):
     # signup without a second /auth/me round-trip.
     first_name: Optional[str] = None
     full_name: Optional[str] = None
+    # Default state for standards suggestions (ActivityManager's wizard reads
+    # this as the teacher's state when picking/suggesting standards) — same
+    # "avoid a second round-trip" reasoning as first_name/full_name above.
+    state_code: Optional[str] = None
     
     class Config:
         json_schema_extra = {
@@ -385,6 +389,7 @@ async def login(
                 org_id=str(user.org_id) if user.org_id else None,
                 expires_in=300,
                 mfa_required=True,
+                state_code=getattr(user, "state_code", None),
             )
 
         # Create JWT token - FIXED: use data= parameter
@@ -404,6 +409,7 @@ async def login(
             expires_in=_EXPIRES_IN_SECONDS,
             first_name=getattr(user, "first_name", None),
             full_name=getattr(user, "full_name", None),
+            state_code=getattr(user, "state_code", None),
         )
 
     except HTTPException:
@@ -627,6 +633,7 @@ async def signup(
             is_active=new_user.is_active,
             first_name=getattr(new_user, "first_name", None),
             full_name=getattr(new_user, "full_name", None),
+            state_code=getattr(new_user, "state_code", None),
         )
         
     except HTTPException:
@@ -649,6 +656,7 @@ class MeResponse(BaseModel):
     org_id: Optional[str] = None
     first_name: Optional[str] = None
     full_name: Optional[str] = None
+    state_code: Optional[str] = None
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
@@ -690,6 +698,7 @@ async def get_current_user(
         org_id=str(user.org_id) if user.org_id else None,
         first_name=getattr(user, "first_name", None),
         full_name=getattr(user, "full_name", None),
+        state_code=getattr(user, "state_code", None),
     )
 
 
@@ -1041,6 +1050,7 @@ async def mfa_login(
         expires_in=_EXPIRES_IN_SECONDS,
         first_name=getattr(user, "first_name", None),
         full_name=getattr(user, "full_name", None),
+        state_code=getattr(user, "state_code", None),
     )
 
 

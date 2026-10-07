@@ -92,6 +92,7 @@ def _fake_user(**overrides):
     # truly *missing* attribute, not one MagicMock already auto-created).
     user.first_name = overrides.get("first_name", None)
     user.full_name = overrides.get("full_name", None)
+    user.state_code = overrides.get("state_code", None)
     return user
 
 
