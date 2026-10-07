@@ -864,7 +864,15 @@ const ActivityManager = () => {
         </div>
       </Chapter>
 
-      <Chapter title={t('components_teacher_activitywizard.peri_suggestions', '✨ Peri AI suggestions')} badge={t('components_teacher_activitywizard.optional', 'Optional')}>
+      <Chapter
+        title={t('components_teacher_activitywizard.peri_suggestions', '✨ Peri AI suggestions')}
+        badge={t('components_teacher_activitywizard.optional', 'Optional')}
+        // Open by default when standards were already picked before arriving
+        // here -- generation auto-triggers off them (see standardIds below),
+        // so a collapsed chapter would hide the one thing that's actually
+        // happening right now.
+        defaultOpen={seedStandardIds.length > 0}
+      >
         <div className={wizardStyles.periPanel}>
           <OllamaLessonSuggestions
             layout="horizontal"
@@ -1489,7 +1497,13 @@ const ActivityManager = () => {
         <WizardShell
           apiRef={wizardRef}
           onStepChange={setWizardCurrent}
-          skipStart={isEditing}
+          // Also skip the "what do you want to start from?" chooser when
+          // standards were already picked before arriving here (Standards
+          // Explorer's "generate an activity for these standards") -- asking
+          // again is redundant, and canonical order already opens on
+          // 'basics', where the Peri AI suggestions chapter (which auto-runs
+          // off seedStandardIds) lives.
+          skipStart={isEditing || seedStandardIds.length > 0}
           labels={stepLabels}
           panes={{ basics: basicsPane, experience: experiencePane, assessment: assessmentPane, outcomes: outcomesPane, review: reviewPane }}
           renderStart={(pick) => <StartPicker onPick={pick} />}

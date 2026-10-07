@@ -72,6 +72,37 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
   pickedRef.current = picked;
   const outcomesKey = outcomes.join('\n');
 
+  // Search for a specific standard directly, independent of subject/grade --
+  // this is what makes "start from a standard" (StartPicker's 'assessment'
+  // card) actually true rather than just showing the subject/grade-driven
+  // list below with nothing in it yet. Same /inference/rag-retrieve search
+  // AppliedStandardsPanel's "+ Add a standard" box already uses.
+  const [manualQuery, setManualQuery] = useState('');
+  const [manualResults, setManualResults] = useState<Suggestion[] | null>(null);
+  const [manualSearching, setManualSearching] = useState(false);
+  const [manualError, setManualError] = useState('');
+
+  const runManualSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!manualQuery.trim()) return;
+    setManualSearching(true);
+    setManualError('');
+    try {
+      const res = await inferenceService.ragRetrieve(manualQuery, { topK: 8, sourceType: 'standards' });
+      const seen = new Set<string>();
+      setManualResults(
+        (res.documents ?? [])
+          .map(d => toSuggestion(d, outcomes))
+          .filter((s): s is Suggestion => !!s && !seen.has(s.id) && !!seen.add(s.id)),
+      );
+    } catch {
+      setManualError(t('components_teacher_activitywizard.standards_error', 'Could not load standard suggestions. You can add standards after saving.'));
+      setManualResults([]);
+    } finally {
+      setManualSearching(false);
+    }
+  };
+
   const query = useMemo(() => {
     const parts = [subject, `grade ${grade}`, stateCode, 'standards'];
     const body = outcomes.length ? outcomes.join('; ') : title;
@@ -136,6 +167,45 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
             <option value="">{t('components_teacher_activitywizard.any_state', 'Any state')}</option>
             {STATES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 16, border: '1px solid var(--border)', borderRadius: 8, padding: 10 }}>
+        <label htmlFor="wizard-standard-search" className="block text-sm font-semibold mb-1">
+          {t('components_teacher_activitywizard.search_standards', 'Search for a standard')}
+        </label>
+        <form onSubmit={runManualSearch} style={{ display: 'flex', gap: 6 }}>
+          <input
+            id="wizard-standard-search"
+            value={manualQuery}
+            onChange={e => setManualQuery(e.target.value)}
+            placeholder={t('components_teacher_activitywizard.search_standards_placeholder', 'e.g. "fraction equivalence" or a standard code…')}
+            style={{ flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.875rem' }}
+          />
+          <button type="submit" disabled={manualSearching || !manualQuery.trim()}
+            style={{ padding: '8px 16px', borderRadius: 6, background: 'var(--primary)', color: 'white', border: 'none', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', opacity: manualSearching ? 0.6 : 1 }}>
+            {manualSearching ? '…' : t('components_teacher_activitywizard.search', 'Search')}
+          </button>
+        </form>
+        {manualError && <p className={styles.fieldError} role="alert">{manualError}</p>}
+        {manualResults && manualResults.length === 0 && !manualSearching && (
+          <p className={styles.hint}>{t('components_teacher_activitywizard.no_results', 'No matches.')}</p>
+        )}
+        {manualResults && manualResults.length > 0 && (
+          <div role="group" aria-label={t('components_teacher_activitywizard.search_results', 'Search results')} style={{ marginTop: 8 }}>
+            {manualResults.map(s => {
+              const on = !!picked[s.id];
+              return (
+                <label key={s.id} className={`${styles.std} ${on ? styles.stdOn : ''}`}>
+                  <input type="checkbox" checked={on} onChange={e => toggle(s, e.target.checked)} />
+                  <span>
+                    {s.code && <span className={styles.stdCode}>{s.code}</span>}
+                    <span style={{ display: 'block', fontSize: '0.875rem' }}>{s.text.slice(0, 220)}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
         )}
       </div>
 
