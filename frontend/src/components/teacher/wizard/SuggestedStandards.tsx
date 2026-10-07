@@ -94,6 +94,10 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
   const [items, setItems] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // True when a state filter came back thin and this list fell back to an
+  // unfiltered (all-states) search instead -- shown so "why do I see other
+  // states" has a visible answer instead of looking like the filter didn't work.
+  const [broadenedSearch, setBroadenedSearch] = useState(false);
   const touched = useRef(false);
   const pickedRef = useRef(picked);
   pickedRef.current = picked;
@@ -108,20 +112,28 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
   const [manualResults, setManualResults] = useState<Suggestion[] | null>(null);
   const [manualSearching, setManualSearching] = useState(false);
   const [manualError, setManualError] = useState('');
+  const [manualBroadened, setManualBroadened] = useState(false);
 
   const runManualSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!manualQuery.trim()) return;
     setManualSearching(true);
     setManualError('');
+    setManualBroadened(false);
     try {
-      const res = await inferenceService.ragRetrieve(manualQuery, { topK: 8, sourceType: 'standards' });
+      let res = await inferenceService.ragRetrieve(manualQuery, { topK: 8, sourceType: 'standards', stateCode });
+      let broadened = false;
+      if (stateCode && (res.documents?.length ?? 0) < 3) {
+        res = await inferenceService.ragRetrieve(manualQuery, { topK: 8, sourceType: 'standards' });
+        broadened = true;
+      }
       const seen = new Set<string>();
       setManualResults(
         (res.documents ?? [])
           .map(d => toSuggestion(d, outcomes))
           .filter((s): s is Suggestion => !!s && !seen.has(s.id) && !!seen.add(s.id)),
       );
+      setManualBroadened(broadened);
     } catch {
       setManualError(t('components_teacher_activitywizard.standards_error', 'Could not load standard suggestions. You can add standards after saving.'));
       setManualResults([]);
@@ -146,14 +158,29 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
     const timer = setTimeout(async () => {
       setLoading(true);
       setError('');
+      setBroadenedSearch(false);
       try {
-        const res = await inferenceService.ragRetrieve(query, { topK: 8, sourceType: 'standards' });
+        // Filter to the teacher's own state when one is set -- not just a
+        // badge: this is what keeps a handful of real matches from your
+        // state getting buried under a longer list of same-looking results
+        // from elsewhere. But a strict filter can legitimately come back
+        // thin (or empty) for a state/topic combo with shallow coverage --
+        // confirmed happens in practice -- so a weak filtered result falls
+        // back to an unfiltered search rather than showing an almost-empty
+        // list and leaving the teacher to guess why.
+        let res = await inferenceService.ragRetrieve(query, { topK: 8, sourceType: 'standards', stateCode });
+        let broadened = false;
+        if (stateCode && (res.documents?.length ?? 0) < 3) {
+          res = await inferenceService.ragRetrieve(query, { topK: 8, sourceType: 'standards' });
+          broadened = true;
+        }
         if (cancelled) return;
         const seen = new Set<string>();
         const list = (res.documents ?? [])
           .map(d => toSuggestion(d, outcomes))
           .filter((s): s is Suggestion => !!s && !seen.has(s.id) && !!seen.add(s.id));
         setItems(list);
+        setBroadenedSearch(broadened);
         onMatchCount(list.filter(s => s.outcomeHits.length > 0).length);
         if (!touched.current) {
           const next: PickedStandards = {};
@@ -189,7 +216,7 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
         <label htmlFor="wizard-state" className="block text-sm font-semibold mb-1">{t('components_teacher_activitywizard.state', 'State')}</label>
         {stateCode && (
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', marginBottom: 4 }}>
-            📍 {t('components_teacher_activitywizard.state_context', "Standards below are matched for {{state}} first — look for the ✓ {{state}} badge. Other states can still show up; check the badge before you rely on one.", { state: stateCode })}
+            📍 {t('components_teacher_activitywizard.state_context', "Standards below are filtered to {{state}}. If {{state}} doesn't have enough matches for a search, we'll show other states too and say so.", { state: stateCode })}
           </p>
         )}
         {stateLocked ? (
@@ -230,6 +257,11 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
         {manualResults && manualResults.length === 0 && !manualSearching && (
           <p className={styles.hint}>{t('components_teacher_activitywizard.no_results', 'No matches.')}</p>
         )}
+        {manualBroadened && manualResults && manualResults.length > 0 && (
+          <p className={styles.hint}>
+            {t('components_teacher_activitywizard.broadened_search', "{{state}} didn't have enough matches for this search — showing other states too.", { state: stateCode })}
+          </p>
+        )}
         {manualResults && manualResults.length > 0 && (
           <div role="group" aria-label={t('components_teacher_activitywizard.search_results', 'Search results')} style={{ marginTop: 8 }}>
             {manualResults.map(s => {
@@ -259,6 +291,7 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
                 outcomes: outcomes.length ? ` and your ${outcomes.length} outcome${outcomes.length > 1 ? 's' : ''}` : '',
               })}
           {!outcomes.length && !loading && ' ' + t('components_teacher_activitywizard.standards_add_outcomes', 'Add outcomes to sharpen these matches.')}
+          {broadenedSearch && !loading && ' ' + t('components_teacher_activitywizard.broadened_search', "{{state}} didn't have enough matches for this search — showing other states too.", { state: stateCode })}
         </p>
       </div>
 

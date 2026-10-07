@@ -127,6 +127,7 @@ export const StandardsExplorer: React.FC<{
   const [error, setError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<RagDocument[] | null>(null);
   const [meta, setMeta] = useState<{ seedCount: number; expandedCount: number; ms: number } | null>(null);
+  const [broadened, setBroadened] = useState(false);
   const [includeRelated, setIncludeRelated] = useState(true);
   const [selectedStandards, setSelectedStandards] = useState<Map<string, string>>(new Map()); // node_id -> code, for the tray label
 
@@ -154,15 +155,25 @@ export const StandardsExplorer: React.FC<{
     if (!query.trim()) return;
     setLoading(true);
     setError(null);
+    setBroadened(false);
     try {
-      const res = await inferenceService.ragRetrieve(query, {
+      let res = await inferenceService.ragRetrieve(query, {
         topK: 8,
         sourceType,
         includeAncestors: includeRelated,
         includeRelated: includeRelated,
+        stateCode: myState,
       });
+      let didBroaden = false;
+      if (myState && (res.documents?.length ?? 0) < 3) {
+        res = await inferenceService.ragRetrieve(query, {
+          topK: 8, sourceType, includeAncestors: includeRelated, includeRelated,
+        });
+        didBroaden = true;
+      }
       setDocuments(res.documents);
       setMeta({ seedCount: res.seed_count, expandedCount: res.expanded_count, ms: res.retrieval_time_ms });
+      setBroadened(didBroaden);
     } catch (err) {
       setError(t('components_standards_explorer.search_failed', 'Search failed. Try again in a moment.'));
       setDocuments(null);
@@ -207,8 +218,13 @@ export const StandardsExplorer: React.FC<{
       </label>
 
       {myState && (
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 4 }}>
+          📍 {t('components_standards_explorer.state_context', "Results are filtered to {{state}}. If a search comes back thin, other states show too and we'll say so.", { state: myState })}
+        </p>
+      )}
+      {broadened && (
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-          📍 {t('components_standards_explorer.state_context', 'This search covers every state — results tagged ✓ {{state}} match your own.', { state: myState })}
+          {t('components_standards_explorer.broadened_search', "{{state}} didn't have enough matches for this search — showing other states too.", { state: myState })}
         </p>
       )}
 

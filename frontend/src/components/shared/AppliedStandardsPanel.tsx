@@ -93,6 +93,7 @@ export const AppliedStandardsPanel: React.FC<{
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<RagDocument[] | null>(null);
   const [searching, setSearching] = useState(false);
+  const [broadened, setBroadened] = useState(false);
 
   const load = useCallback(() => {
     if (!activityId) return;
@@ -131,9 +132,19 @@ export const AppliedStandardsPanel: React.FC<{
     e?.preventDefault();
     if (!query.trim()) return;
     setSearching(true);
+    setBroadened(false);
     try {
-      const res = await inferenceService.ragRetrieve(query, { topK: 6, sourceType: 'standards' });
+      // Filter to the viewer's own state first; fall back to all states if
+      // that comes back thin rather than showing an almost-empty list (some
+      // state/topic combinations genuinely have shallow coverage).
+      let res = await inferenceService.ragRetrieve(query, { topK: 6, sourceType: 'standards', stateCode: myState });
+      let didBroaden = false;
+      if (myState && (res.documents?.length ?? 0) < 3) {
+        res = await inferenceService.ragRetrieve(query, { topK: 6, sourceType: 'standards' });
+        didBroaden = true;
+      }
       setSearchResults(res.documents);
+      setBroadened(didBroaden);
     } catch {
       setSearchResults([]);
     } finally {
@@ -246,7 +257,12 @@ export const AppliedStandardsPanel: React.FC<{
               instead, firing its handleSubmit early. */}
           {myState && (
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-              📍 {t('components_applied_standards.state_context', 'Results tagged ✓ {{state}} match your state — others may still be relevant.', { state: myState })}
+              📍 {t('components_applied_standards.state_context', 'Results are filtered to {{state}}. If a search comes back thin, other states show too and we\'ll say so.', { state: myState })}
+            </p>
+          )}
+          {broadened && (
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+              {t('components_applied_standards.broadened_search', "{{state}} didn't have enough matches for this search — showing other states too.", { state: myState })}
             </p>
           )}
           <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>

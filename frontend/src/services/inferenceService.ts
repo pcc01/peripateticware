@@ -79,6 +79,9 @@ export const inferenceService = {
       topK?: number
       sourceType?: string
       jurisdictionId?: string
+      /** Two-letter state (e.g. "CA") -- resolved to a jurisdiction server-side,
+       * so callers don't need the UUID. Ignored if jurisdictionId is also set. */
+      stateCode?: string
       includeAncestors?: boolean
       includeRelated?: boolean
     } = {}
@@ -92,6 +95,7 @@ export const inferenceService = {
             top_k: options.topK ?? 5,
             source_type: options.sourceType,
             jurisdiction_id: options.jurisdictionId,
+            state_code: options.stateCode,
             include_ancestors: options.includeAncestors,
             include_related: options.includeRelated,
           },
