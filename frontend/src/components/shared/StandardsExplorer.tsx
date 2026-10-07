@@ -22,6 +22,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { inferenceService } from '@/services/inferenceService';
+import { useAuthStore } from '@/stores/auth';
 import { RagDocument } from '@/types/api';
 
 const RELATION_STYLE: Record<string, { bg: string; color: string; label: string }> = {
@@ -45,15 +46,19 @@ function RelationBadge({ relation }: { relation: string }) {
 }
 
 function ResultCard({
-  doc, canDraft, selected, onToggleSelect,
+  doc, canDraft, selected, onToggleSelect, myState,
 }: {
   doc: RagDocument;
   canDraft: boolean;
   selected: boolean;
   onToggleSelect: () => void;
+  myState: string;
 }) {
   const meta = doc.metadata || {};
   const code = (meta as any).human_coding_scheme || (meta as any).criterion_id;
+  const jurCode = (meta as any).jurisdiction_code || '';
+  const jurName = (meta as any).jurisdiction_name || '';
+  const mine = !!myState && jurCode === myState;
   // Only an actual standards_items node can seed activity generation — an
   // "aligned_content" relation result points at an activity, not a standard.
   const isStandardsItem = doc.node_type === 'standards_item' && !!doc.node_id;
@@ -67,6 +72,14 @@ function ResultCard({
         {code && (
           <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
             {code}
+          </span>
+        )}
+        {!!jurName && (
+          <span
+            title={mine ? 'Matches your state' : undefined}
+            style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 20,
+                     background: mine ? '#dcfce7' : '#f1f5f9', color: mine ? '#15803d' : '#64748b' }}>
+            {mine ? '✓ ' : ''}{jurCode || jurName}
           </span>
         )}
         {doc.source_name && (
@@ -108,6 +121,7 @@ export const StandardsExplorer: React.FC<{
 }> = ({ sourceType, enableActivityDraft = false, draftRoute = '/teacher/activities/new' }) => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
+  const myState = useAuthStore(s => s.user?.state_code) ?? '';
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -187,10 +201,16 @@ export const StandardsExplorer: React.FC<{
         </button>
       </form>
 
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: 16 }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer', marginBottom: 8 }}>
         <input type="checkbox" checked={includeRelated} onChange={e => setIncludeRelated(e.target.checked)} />
         {t('components_standards_explorer.include_related', 'Include related standards (ancestors, cross-references, prerequisites)')}
       </label>
+
+      {myState && (
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+          📍 {t('components_standards_explorer.state_context', 'This search covers every state — results tagged ✓ {{state}} match your own.', { state: myState })}
+        </p>
+      )}
 
       {error && (
         <div style={{ padding: '10px 14px', borderRadius: 8, background: '#fee2e2', color: '#b91c1c', fontSize: '0.85rem', marginBottom: 12 }}>
@@ -221,6 +241,7 @@ export const StandardsExplorer: React.FC<{
                 canDraft={enableActivityDraft}
                 selected={!!doc.node_id && selectedStandards.has(doc.node_id)}
                 onToggleSelect={() => toggleSelect(doc)}
+                myState={myState}
               />
             ))}
           </div>

@@ -666,6 +666,7 @@ async def rag_retrieve(
     top_k: int = 5,
     source_type: Optional[str] = None,
     jurisdiction_id: Optional[str] = None,
+    state_code: Optional[str] = None,
     include_ancestors: bool = True,
     include_related: bool = True,
     db: AsyncSession = Depends(get_db),
@@ -699,7 +700,14 @@ async def rag_retrieve(
     Optional filters:
       ?source_type=      standards | curriculum | homeschool | custom
       ?jurisdiction_id=   only seeds indexed with this jurisdiction_id in
-                          their metadata (set by scripts/backfill_standards_embeddings.py)
+                          their metadata (set by scripts/backfill_standards_embeddings.py),
+                          OR unindexed (national standards like CCSS/NGSS
+                          carry no jurisdiction_id and should still surface
+                          for any state) -- never state-exclusive-only.
+      ?state_code=        two-letter state (e.g. "CA") -- resolved to a
+                          jurisdiction_id server-side so callers don't need
+                          to know the UUID. Ignored if jurisdiction_id is
+                          also given explicitly.
     """
     import re
     import time as _time
@@ -710,6 +718,13 @@ async def rag_retrieve(
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
     t0 = _time.monotonic()
+
+    if not jurisdiction_id and state_code and state_code.strip():
+        resolved = (await db.execute(_t(
+            "SELECT id FROM jurisdictions WHERE subdivision_code = :sub LIMIT 1"
+        ), {"sub": f"US-{state_code.strip().upper()}"})).first()
+        if resolved:
+            jurisdiction_id = str(resolved[0])
 
     emb_result = await embed_text(query, input_type="query")
     query_embedding: list = emb_result.get("embedding", [])
@@ -723,7 +738,13 @@ async def rag_retrieve(
     if query_embedding:
         vec_literal = "[" + ",".join(str(v) for v in query_embedding) + "]"
         type_clause = "AND source_type = :stype" if source_type else ""
-        jurisdiction_clause = "AND metadata->>'jurisdiction_id' = :jid" if jurisdiction_id else ""
+        # Permissive, not exclusive: a row with no jurisdiction_id at all
+        # (a national framework) still matches any state filter -- only a
+        # row explicitly tagged for a *different* state is excluded.
+        jurisdiction_clause = (
+            "AND (metadata->>'jurisdiction_id' IS NULL OR metadata->>'jurisdiction_id' = :jid)"
+            if jurisdiction_id else ""
+        )
         # Cast a wider net than top_k for Stage 1 so Stage 2 has more seeds to
         # expand from before the final trim — otherwise a query that weakly
         # matches several standards in the same cluster would only ever see
@@ -933,6 +954,37 @@ async def rag_retrieve(
     # capped at 3x top_k so a richly-connected result set still has a bound.
     combined = combined[: top_k * 3]
 
+    # Attach a human-readable jurisdiction to each result that has one, so a
+    # caller can show *which* state a standard actually belongs to (every
+    # row in rag_documents carries a real jurisdiction_id -- there is no
+    # "national/no jurisdiction" bucket in practice, confirmed empirically,
+    # so this is never the filter above -- it's purely for display: without
+    # it a teacher has no way to tell a same-looking result apart from one
+    # that's actually from their own state). Only Stage-1 seeds carry
+    # jurisdiction_id in their metadata today (graph-expansion items from
+    # services/graph_retrieval.py don't thread it through yet) -- expanded
+    # results are simply left unlabeled rather than taking on a second,
+    # bigger piece of work here.
+    jur_ids = {
+        d["metadata"].get("jurisdiction_id")
+        for d in combined
+        if isinstance(d.get("metadata"), dict) and d["metadata"].get("jurisdiction_id")
+    }
+    if jur_ids:
+        jur_rows = (await db.execute(_t(
+            "SELECT id::text, subdivision_code, name FROM jurisdictions WHERE id = ANY(:ids)"
+        ), {"ids": list(jur_ids)})).fetchall()
+        jur_lookup = {
+            row[0]: {"code": (row[1] or "").removeprefix("US-"), "name": row[2]}
+            for row in jur_rows
+        }
+        for d in combined:
+            meta = d.get("metadata")
+            jid = meta.get("jurisdiction_id") if isinstance(meta, dict) else None
+            if jid and jid in jur_lookup:
+                meta["jurisdiction_code"] = jur_lookup[jid]["code"]
+                meta["jurisdiction_name"] = jur_lookup[jid]["name"]
+
     elapsed_ms = int((_time.monotonic() - t0) * 1000)
     logger.info(
         f"RAG retrieved {len(seeds)} seeds + {len(expanded)} expanded for '{query[:50]}' "
@@ -947,6 +999,13 @@ async def rag_retrieve(
         "documents":                 combined,
         "seed_count":                len(seeds),
         "expanded_count":            len(expanded),
+        # Echoed back so a caller that only sent ?state_code= (not knowing
+        # the jurisdiction UUID itself) can tell whether the filter actually
+        # applied -- None here despite a state_code being sent means that
+        # state has no jurisdiction row yet (nothing ingested for it),
+        # distinct from "the filter applied but found no results".
+        "jurisdiction_id":           jurisdiction_id,
+        "state_code":                state_code,
         "graph_expansion_enabled":   include_ancestors or include_related,
         "retrieval_time_ms":         elapsed_ms,
         # Breakdown for diagnosing where retrieval_time_ms actually goes --

@@ -21,6 +21,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { inferenceService } from '@/services/inferenceService';
+import { useAuthStore } from '@/stores/auth';
 import { RagDocument } from '@/types/api';
 
 interface AppliedStandard {
@@ -78,6 +79,11 @@ export const AppliedStandardsPanel: React.FC<{
   onCountChange?: (count: number) => void;
 }> = ({ activityId, onCountChange }) => {
   const { t } = useTranslation('landing');
+  // Shown as a badge on each search result below, so a teacher can tell a
+  // standard actually tagged for their own state apart from a same-looking
+  // one from somewhere else -- there's no hard filter here (most topics
+  // don't have deep coverage in every state yet), just visibility.
+  const myState = useAuthStore(s => s.user?.state_code) ?? '';
   const [standards, setStandards] = useState<AppliedStandard[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -238,6 +244,11 @@ export const AppliedStandardsPanel: React.FC<{
               ActivityManager's own outer <form>; a nested <form> is invalid
               HTML and routes this submit button's click to the OUTER form
               instead, firing its handleSubmit early. */}
+          {myState && (
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+              📍 {t('components_applied_standards.state_context', 'Results tagged ✓ {{state}} match your state — others may still be relevant.', { state: myState })}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
             <input
               value={query}
@@ -265,13 +276,24 @@ export const AppliedStandardsPanel: React.FC<{
             {(searchResults || []).map((doc, i) => {
               const canAdd = doc.node_type === 'standards_item' && !!doc.node_id;
               const already = doc.node_id ? alreadyApplied.has(doc.node_id) : false;
-              const code = (doc.metadata as Record<string, unknown> | undefined)?.human_coding_scheme
-                || (doc.metadata as Record<string, unknown> | undefined)?.criterion_id;
+              const meta = doc.metadata as Record<string, unknown> | undefined;
+              const code = meta?.human_coding_scheme || meta?.criterion_id;
+              const jurCode = (meta?.jurisdiction_code as string) || '';
+              const jurName = (meta?.jurisdiction_name as string) || '';
+              const mine = !!myState && jurCode === myState;
               return (
                 <div key={doc.id ?? `${doc.node_type}-${doc.node_id}-${i}`}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     {!!code && <span style={{ fontFamily: 'monospace', fontSize: '0.68rem', fontWeight: 700, marginRight: 6 }}>{String(code)}</span>}
+                    {!!jurName && (
+                      <span
+                        title={mine ? 'Matches your state' : undefined}
+                        style={{ fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: 20, marginRight: 6,
+                                 background: mine ? '#dcfce7' : '#f1f5f9', color: mine ? '#15803d' : '#64748b' }}>
+                        {mine ? '✓ ' : ''}{jurCode || jurName}
+                      </span>
+                    )}
                     <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>{doc.content?.slice(0, 90)}</span>
                   </div>
                   <button

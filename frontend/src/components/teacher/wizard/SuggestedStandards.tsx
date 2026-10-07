@@ -16,6 +16,8 @@ interface Suggestion {
   code: string;
   text: string;
   outcomeHits: number[]; // 1-based indexes of outcomes whose wording overlaps
+  jurisdictionCode: string | null; // e.g. "WI" -- the state this standard actually belongs to
+  jurisdictionName: string | null; // e.g. "Wisconsin", or an org name like "WIDA"
 }
 
 interface SuggestedStandardsProps {
@@ -50,7 +52,32 @@ function toSuggestion(doc: RagDocument, outcomes: string[]): Suggestion | null {
   const body = new Set(tokens(text));
   const outcomeHits: number[] = [];
   outcomes.forEach((o, i) => { if (tokens(o).some(w => body.has(w))) outcomeHits.push(i + 1); });
-  return { id: doc.node_id, code, text, outcomeHits };
+  return {
+    id: doc.node_id, code, text, outcomeHits,
+    jurisdictionCode: (meta.jurisdiction_code as string) || null,
+    jurisdictionName: (meta.jurisdiction_name as string) || null,
+  };
+}
+
+/** Small pill showing which state/org a standard actually belongs to --
+ * highlighted when it matches the teacher's own state, muted otherwise, so
+ * two same-looking results aren't silently from different states. */
+function JurisdictionBadge({ s, myState }: { s: Suggestion; myState: string }) {
+  if (!s.jurisdictionName) return null;
+  const mine = !!myState && s.jurisdictionCode === myState;
+  return (
+    <span
+      title={mine ? 'Matches your state' : undefined}
+      style={{
+        fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 20,
+        background: mine ? '#dcfce7' : '#f1f5f9',
+        color: mine ? '#15803d' : '#64748b',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {mine ? '✓ ' : ''}{s.jurisdictionCode || s.jurisdictionName}
+    </span>
+  );
 }
 
 /**
@@ -160,6 +187,11 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
     <div>
       <div className="mb-3">
         <label htmlFor="wizard-state" className="block text-sm font-semibold mb-1">{t('components_teacher_activitywizard.state', 'State')}</label>
+        {stateCode && (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted, #64748b)', marginBottom: 4 }}>
+            📍 {t('components_teacher_activitywizard.state_context', "Standards below are matched for {{state}} first — look for the ✓ {{state}} badge. Other states can still show up; check the badge before you rely on one.", { state: stateCode })}
+          </p>
+        )}
         {stateLocked ? (
           <p className="text-sm">{stateCode || t('components_teacher_activitywizard.state_not_set', 'Not set by your administrator')}</p>
         ) : (
@@ -207,6 +239,7 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
                   <input type="checkbox" checked={on} onChange={e => toggle(s, e.target.checked)} />
                   <span>
                     {s.code && <span className={styles.stdCode}>{s.code}</span>}
+                    <JurisdictionBadge s={s} myState={stateCode} />
                     <span style={{ display: 'block', fontSize: '0.875rem' }}>{s.text.slice(0, 220)}</span>
                   </span>
                 </label>
@@ -239,6 +272,7 @@ export const SuggestedStandards: React.FC<SuggestedStandardsProps> = ({
               <span>
                 {s.code && <span className={styles.stdCode}>{s.code}</span>}
                 <span className={`${styles.tag} ${styles.tagPeri}`}>{t('components_teacher_activitywizard.suggested', 'Suggested')}</span>
+                <JurisdictionBadge s={s} myState={stateCode} />
                 <span style={{ display: 'block', fontSize: '0.875rem' }}>{s.text.slice(0, 220)}</span>
                 <span className={styles.stdWhy}>{why(s)}</span>
               </span>
