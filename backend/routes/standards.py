@@ -107,14 +107,6 @@ async def _index_standards_set_criteria(
 
     try:
         async with async_session() as session:
-            # Resolve state_code -> jurisdiction_id once, same lookup
-            # routes/inference.py::rag_retrieve uses to turn a state filter into
-            # a jurisdiction_id. Without this, every row indexed from here
-            # carries no jurisdiction_id at all -- and rag_retrieve's state
-            # filter is deliberately permissive on NULL (treats it as a
-            # national standard that matches every state), so an
-            # admin-uploaded TX standards set would otherwise show up for
-            # every state's teachers instead of just TX's.
             # Fold into the standards graph first (services/standards_graph_fold.py) —
             # gives every criterion a real standards_items row (with category-grouped
             # hierarchy) so graph-expansion retrieval can walk it like any CASE-ingested
@@ -164,6 +156,7 @@ async def _index_standards_set_criteria(
                     metadata={
                         "criterion_id":     criterion_id,
                         "state_code":       standards_set.state_code,
+                        "country_code":     getattr(standards_set, "country_code", None) or "US",
                         "jurisdiction_id":  jurisdiction_id,
                         # Visibility signal for rag_retrieve's owner-scoping
                         # check: an is_global=false set is only searchable by
@@ -249,6 +242,7 @@ class StandardsSetCreate(BaseModel):
     description: str = ""
     type: str = "rubric"
     state_code: Optional[str] = None
+    country_code: str = "US"   # ISO 3166-1, e.g. "US", "CA" -- bare subdivision code above pairs with this
     is_global: bool = False
     valid_until: Optional[date] = None
     criteria: list[CriterionIn]
@@ -283,6 +277,7 @@ def _serialize(s: StandardsSet, include_criteria: bool = False) -> dict:
         "description":       s.description or "",
         "type":              s.type,
         "state_code":        s.state_code,
+        "country_code":      getattr(s, 'country_code', None) or 'US',
         "is_global":         s.is_global,
         "owner_id":          str(s.owner_id) if s.owner_id else None,
         "criteria_count":    len(s.criteria or []),
@@ -411,6 +406,7 @@ async def create_standards_set(
         type=body.type,
         owner_id=current_user.id,
         state_code=body.state_code,
+        country_code=(body.country_code or "US").strip().upper(),
         is_global=body.is_global,
         source_checksum=source_checksum,
         processing_status="complete",

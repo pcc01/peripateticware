@@ -1620,7 +1620,8 @@ class StandardsSet(Base):
     description = Column(Text, nullable=True)
     type        = Column(String(50), nullable=False, index=True)   # rubric | curriculum | state_reporting
     owner_id    = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
-    state_code  = Column(String(10), nullable=True)                 # e.g. "TX", "CA" for state_reporting
+    state_code  = Column(String(10), nullable=True)                 # e.g. "TX", "BC" -- bare subdivision code, paired with country_code below
+    country_code = Column(String(4), nullable=False, server_default="US")  # ISO 3166-1, e.g. "US", "CA" -- matches jurisdictions.country_code
     is_global   = Column(Boolean, default=False)                    # True = admin-managed, visible to all
     source_file = Column(String(512), nullable=True)                # original upload filename
     criteria    = Column(JSONB, default=list)                       # [{id, name, description, category, required, weight}]

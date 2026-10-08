@@ -124,21 +124,25 @@ async def _get_or_create_upload_source(db: AsyncSession) -> StandardsSource:
     return src
 
 
-async def _resolve_or_create_jurisdiction(db: AsyncSession, state_code: Optional[str]) -> Optional[Jurisdiction]:
+async def _resolve_or_create_jurisdiction(
+    db: AsyncSession, state_code: Optional[str], country_code: str = "US",
+) -> Optional[Jurisdiction]:
     """
-    Resolve a StandardsSet.state_code (e.g. 'TX') to its jurisdictions row,
-    matching scripts/ingest_case_standards.py's own seeding convention
-    (country_code='US', subdivision_code=f'US-{code}', level='state',
-    external_ref=code) so the two paths land on the same row.
+    Resolve a StandardsSet.(state_code, country_code) pair (e.g. 'TX', 'US')
+    to its jurisdictions row, matching scripts/ingest_case_standards.py's own
+    seeding convention (subdivision_code=f'{country_code}-{state_code}',
+    level='state', external_ref=state_code) so the two paths land on the
+    same row.
 
-    A bare 2-letter code (no hyphen) is assumed US, exactly as before --
-    every existing caller (the 50-state admin/homeschool pickers) keeps
-    working unchanged. A caller that needs a non-US jurisdiction (e.g. a
-    Canadian province) passes an explicit, already-prefixed ISO 3166-2 code
-    instead, e.g. 'CA-BC' -- split on the first '-' into country_code='CA',
-    subdivision_code='CA-BC'. There's no real collision risk letting both
-    conventions share this one function: none of the 50 US state
-    abbreviations match a Canadian province/territory code.
+    country_code defaults to 'US' so every existing bare-state-code caller
+    (the 50-state admin/homeschool pickers) keeps working unchanged without
+    passing it explicitly. A non-US upload (e.g. a Canadian province) passes
+    its own country_code instead -- standards_sets.country_code is a real
+    column (see models/database.py), not encoded into state_code itself.
+    (An earlier version of this function sniffed a '-' in state_code to
+    infer a non-US jurisdiction, e.g. 'CA-BC' -- that convention is
+    deprecated now that country_code is a first-class column; this function
+    no longer parses hyphens out of state_code.)
 
     Creates the row if this jurisdiction has no CASE presence yet (e.g. a
     homeschool state-reporting upload for a state nobody's CASE-ingested,
@@ -150,14 +154,9 @@ async def _resolve_or_create_jurisdiction(db: AsyncSession, state_code: Optional
     """
     if not state_code or not state_code.strip():
         return None
-    raw = state_code.strip().upper()
-
-    if "-" in raw:
-        country, _, code = raw.partition("-")
-        subdivision_code = raw
-    else:
-        country, code = "US", raw
-        subdivision_code = f"US-{code}"
+    country = (country_code or "US").strip().upper()
+    code = state_code.strip().upper()
+    subdivision_code = f"{country}-{code}"
 
     existing = (await db.execute(
         select(Jurisdiction).where(
@@ -199,7 +198,9 @@ async def _is_authoritative(db: AsyncSession, jurisdiction_id: "uuid.UUID | None
 
 
 async def _get_or_create_framework(db: AsyncSession, standards_set: StandardsSet, source: StandardsSource) -> StandardsFramework:
-    jurisdiction = await _resolve_or_create_jurisdiction(db, standards_set.state_code)
+    jurisdiction = await _resolve_or_create_jurisdiction(
+        db, standards_set.state_code, getattr(standards_set, "country_code", None) or "US",
+    )
     jurisdiction_id = jurisdiction.id if jurisdiction else None
     is_authoritative = await _is_authoritative(db, jurisdiction_id, source.id)
 
@@ -219,7 +220,11 @@ async def _get_or_create_framework(db: AsyncSession, standards_set: StandardsSet
         subject=_SET_TYPE_LABEL.get(standards_set.type, standards_set.type),
         official_source_url=f"internal://standards-sets/{standards_set.id}",
         is_authoritative_over_uploads=is_authoritative,
-        raw={"standards_set_id": str(standards_set.id), "type": standards_set.type, "state_code": standards_set.state_code},
+        raw={
+            "standards_set_id": str(standards_set.id), "type": standards_set.type,
+            "state_code": standards_set.state_code,
+            "country_code": getattr(standards_set, "country_code", None) or "US",
+        },
     )
     db.add(fw)
     await db.flush()

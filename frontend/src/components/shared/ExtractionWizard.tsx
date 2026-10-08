@@ -24,7 +24,7 @@ export interface ExtractionWizardProps {
   /** Short description shown on the upload step */
   description: string;
   /** Called when the user confirms the save. Return the new set ID or throw. */
-  onSave: (payload: { name: string; description: string; type: string; criteria: Criterion[]; state_code?: string }) => Promise<string>;
+  onSave: (payload: { name: string; description: string; type: string; criteria: Criterion[]; state_code?: string; country_code?: string }) => Promise<string>;
   /** Called after a successful save with the new set ID */
   onComplete: (id: string) => void;
   /** Called when the user cancels */
@@ -60,12 +60,11 @@ const US_STATE_CODES: [string, string][] = [
   ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
 ];
 
-// Non-US provinces use an already country-prefixed code (e.g. "CA-BC") --
-// see services/standards_graph_fold.py::_resolve_or_create_jurisdiction for
-// why that disambiguates from the bare US codes above. Starting with just
-// British Columbia; add more provinces here as they're actually needed.
+// Bare subdivision codes, paired with country_code='CA' at save time --
+// see services/standards_graph_fold.py::_resolve_or_create_jurisdiction.
+// Starting with just British Columbia; add more provinces here as needed.
 const CANADA_PROVINCE_CODES: [string, string][] = [
-  ['CA-BC', 'British Columbia'],
+  ['BC', 'British Columbia'],
 ];
 
 type Step = 'upload' | 'parsing' | 'review' | 'saving' | 'done';
@@ -126,6 +125,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [setName, setSetName] = useState('');
   const [setDesc, setSetDesc] = useState('');
+  const [countryCode, setCountryCode] = useState('US');
   const [stateCode, setStateCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -202,7 +202,11 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
     setStep('saving');
     setError(null);
     try {
-      const id = await onSave({ name: setName, description: setDesc, type: setType, criteria, state_code: stateCode || undefined });
+      const id = await onSave({
+        name: setName, description: setDesc, type: setType, criteria,
+        state_code: stateCode || undefined,
+        country_code: stateCode ? countryCode : undefined,
+      });
       setSavedId(id);
       setStep('done');
     } catch (e: any) {
@@ -312,22 +316,32 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box', resize: 'vertical' }} />
             {showStateCode && (
               <>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, marginTop: 12 }}>{t('components_shared_extractionwizard.state', 'State')}</label>
+                {includeCanada && (
+                  <>
+                    <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, marginTop: 12 }}>{t('components_shared_extractionwizard.country', 'Country')}</label>
+                    <select value={countryCode} onChange={e => { setCountryCode(e.target.value); setStateCode(''); }}
+                      aria-label={t('components_shared_extractionwizard.aria_label_country', 'Country these standards belong to')}
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }}>
+                      <option value="US">{t('components_shared_extractionwizard.united_states', 'United States')}</option>
+                      <option value="CA">{t('components_shared_extractionwizard.canada', 'Canada')}</option>
+                    </select>
+                  </>
+                )}
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, marginTop: 12 }}>
+                  {countryCode === 'CA'
+                    ? t('components_shared_extractionwizard.province', 'Province')
+                    : t('components_shared_extractionwizard.state', 'State')}
+                </label>
                 <select value={stateCode} onChange={e => setStateCode(e.target.value)}
-                  aria-label={t('components_shared_extractionwizard.aria_label_state', 'State these standards belong to')}
+                  aria-label={t('components_shared_extractionwizard.aria_label_state', 'State/province these standards belong to')}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }}>
-                  <option value="">{t('components_shared_extractionwizard.select_a_state', 'Select a state…')}</option>
-                  <optgroup label={t('components_shared_extractionwizard.united_states', 'United States')}>
-                    {US_STATE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
-                  </optgroup>
-                  {includeCanada && (
-                    <optgroup label={t('components_shared_extractionwizard.canada', 'Canada')}>
-                      {CANADA_PROVINCE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
-                    </optgroup>
-                  )}
+                  <option value="">{t('components_shared_extractionwizard.select_a_state', 'Select…')}</option>
+                  {(countryCode === 'CA' ? CANADA_PROVINCE_CODES : US_STATE_CODES).map(([code, name]) => (
+                    <option key={code} value={code}>{name} ({code})</option>
+                  ))}
                 </select>
                 <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: 4 }}>
-                  {t('components_shared_extractionwizard.state_hint', "Tags this set to one state, so it's only suggested to that state's teachers.")}
+                  {t('components_shared_extractionwizard.state_hint', "Tags this set to one state/province, so it's only suggested to teachers there.")}
                 </div>
               </>
             )}

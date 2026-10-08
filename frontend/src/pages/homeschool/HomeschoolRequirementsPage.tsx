@@ -29,6 +29,7 @@ interface StandardsSet {
   description: string;
   type: string;
   state_code: string | null;
+  country_code: string;
   is_global: boolean;
   criteria_count: number;
   processing_status: 'pending' | 'processing' | 'complete' | 'failed';

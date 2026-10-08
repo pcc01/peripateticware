@@ -79,9 +79,13 @@ export const inferenceService = {
       topK?: number
       sourceType?: string
       jurisdictionId?: string
-      /** Two-letter state (e.g. "CA") -- resolved to a jurisdiction server-side,
-       * so callers don't need the UUID. Ignored if jurisdictionId is also set. */
+      /** Bare subdivision code (e.g. "CA", "BC") -- resolved to a jurisdiction
+       * server-side, so callers don't need the UUID. Ignored if jurisdictionId
+       * is also set. Pairs with countryCode below (defaults to "US" server-side
+       * if omitted). */
       stateCode?: string
+      /** ISO 3166-1 country for stateCode above, e.g. "US" (default) or "CA". */
+      countryCode?: string
       includeAncestors?: boolean
       includeRelated?: boolean
     } = {}
@@ -96,6 +100,7 @@ export const inferenceService = {
             source_type: options.sourceType,
             jurisdiction_id: options.jurisdictionId,
             state_code: options.stateCode,
+            country_code: options.countryCode,
             include_ancestors: options.includeAncestors,
             include_related: options.includeRelated,
           },

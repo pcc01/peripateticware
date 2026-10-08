@@ -30,6 +30,7 @@ interface StandardsSet {
   description: string;
   type: string;
   state_code: string | null;
+  country_code: string;
   is_global: boolean;
   criteria_count: number;
   processing_status: string;
@@ -247,7 +248,7 @@ function SetRow({ set, onDelete, onExtend, deleting }: {
           <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{set.name}</span>
           {set.state_code && (
             <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: '#dbeafe', color: '#1d4ed8' }}>
-              {set.state_code}
+              {set.state_code}{set.country_code && set.country_code !== 'US' ? `, ${set.country_code}` : ''}
             </span>
           )}
         </div>

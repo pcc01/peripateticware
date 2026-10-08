@@ -4,11 +4,16 @@
 
 """
 Tests for services/standards_graph_fold.py::_resolve_or_create_jurisdiction --
-specifically the country-prefix convention added so a non-US upload (e.g. a
-British Columbia standards document) resolves to its own jurisdiction
-instead of being silently mis-tagged as a US state or falling through to
-"no jurisdiction" (which the state-filter in routes/inference.py treats as
-"matches every state").
+the explicit country_code parameter (standards_sets.country_code, a real
+column) that lets a non-US upload (e.g. a British Columbia standards
+document) resolve to its own jurisdiction instead of being silently
+mis-tagged as a US state or falling through to "no jurisdiction" (which the
+state-filter in routes/inference.py treats as "matches every state").
+
+An earlier version encoded this by sniffing a '-' in state_code itself
+(e.g. "CA-BC") -- deprecated now that country_code is a first-class column;
+no stored data ever depended on that convention (confirmed before removing
+it: zero rows anywhere used it).
 """
 
 from __future__ import annotations
@@ -30,7 +35,7 @@ def _db_returning(existing=None):
 
 
 @pytest.mark.asyncio
-async def test_bare_code_resolves_as_a_us_state_exactly_as_before():
+async def test_bare_code_with_no_country_arg_defaults_to_us():
     db = _db_returning(existing=None)
     j = await _resolve_or_create_jurisdiction(db, "tx")
     assert j.country_code == "US"
@@ -40,26 +45,38 @@ async def test_bare_code_resolves_as_a_us_state_exactly_as_before():
 
 
 @pytest.mark.asyncio
-async def test_hyphenated_code_resolves_as_its_own_country_not_us():
+async def test_explicit_country_code_resolves_its_own_jurisdiction_not_us():
     db = _db_returning(existing=None)
-    j = await _resolve_or_create_jurisdiction(db, "CA-BC")
+    j = await _resolve_or_create_jurisdiction(db, "BC", "CA")
     assert j.country_code == "CA"
     assert j.subdivision_code == "CA-BC"
     assert j.external_ref == "BC"
-    # Confirm the created row was queried for under its own country, not US --
-    # a wrong WHERE clause here would make a second BC upload create a
-    # duplicate row instead of reusing this one.
-    where_clause_args = db.execute.call_args.args
-    assert where_clause_args  # a query was actually issued
+    # Confirm a query was actually issued (and, by construction of the WHERE
+    # clause in the function, scoped to country_code='CA' -- a wrong clause
+    # here would make a second BC upload create a duplicate row instead of
+    # reusing this one).
+    assert db.execute.call_args.args
 
 
 @pytest.mark.asyncio
-async def test_hyphenated_code_reuses_an_existing_row_instead_of_creating_a_duplicate():
+async def test_explicit_country_code_reuses_an_existing_row_instead_of_creating_a_duplicate():
     existing = MagicMock(country_code="CA", subdivision_code="CA-BC")
     db = _db_returning(existing=existing)
-    j = await _resolve_or_create_jurisdiction(db, "CA-BC")
+    j = await _resolve_or_create_jurisdiction(db, "BC", "CA")
     assert j is existing
     db.add.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_hyphen_in_state_code_is_no_longer_parsed_specially():
+    """The deprecated sniff-a-hyphen convention is gone -- a state_code
+    containing '-' is now just treated as a literal (unusual but harmless)
+    subdivision code under whatever country_code was passed (default 'US'),
+    not silently reinterpreted as a different country."""
+    db = _db_returning(existing=None)
+    j = await _resolve_or_create_jurisdiction(db, "CA-BC")
+    assert j.country_code == "US"
+    assert j.subdivision_code == "US-CA-BC"
 
 
 @pytest.mark.asyncio
