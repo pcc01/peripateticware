@@ -34,6 +34,7 @@ export const CurriculumImportPage: React.FC = () => {
       title={t('curriculumImportPage.title', 'Import State Academic Standards')}
       description={t('curriculumImportPage.description', 'Upload a PDF, Word, HTML, or CSV/Excel file of official state academic standards (TEKS, NGSS, Common Core, etc.). The AI extracts each standard for review. Once saved as a global set, all teachers and homeschool parents can map their activities against these standards. Re-uploading the same file skips processing (checksum cache).')}
       showStateCode
+      includeCanada
       onSave={handleSave}
       onComplete={() => navigate('/admin/standards')}
       onCancel={() => navigate('/admin/standards')}

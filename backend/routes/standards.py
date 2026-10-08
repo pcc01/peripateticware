@@ -165,6 +165,13 @@ async def _index_standards_set_criteria(
                         "criterion_id":     criterion_id,
                         "state_code":       standards_set.state_code,
                         "jurisdiction_id":  jurisdiction_id,
+                        # Visibility signal for rag_retrieve's owner-scoping
+                        # check: an is_global=false set is only searchable by
+                        # its owner unless jurisdiction_id above is also set
+                        # (i.e. the owner explicitly tagged it as a real
+                        # regional standard, not just a personal criteria
+                        # list) -- see routes/inference.py::rag_retrieve.
+                        "is_global":        bool(standards_set.is_global),
                         "set_type":         src_type,
                         "weight":           criterion.get("weight"),
                         "required":         criterion.get("required"),

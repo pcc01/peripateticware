@@ -29,11 +29,22 @@ export interface ExtractionWizardProps {
   onComplete: (id: string) => void;
   /** Called when the user cancels */
   onCancel: () => void;
-  /** Show a state picker on the review step (for a global state_standards/state_reporting
-   * upload, so the saved set -- and its rag_documents rows -- can be jurisdiction-tagged
-   * and show up correctly in state-filtered standard searches). Omitted for personal/rubric
-   * imports, where state scoping doesn't apply. */
+  /** Show a state picker on the review step, so the saved set -- and its
+   * rag_documents rows -- can be jurisdiction-tagged and show up correctly
+   * in state-filtered standard searches. Matters for personal (is_global=
+   * false) uploads too, not just admin global ones: routes/inference.py's
+   * rag-retrieve only lets a personal upload surface in anyone else's
+   * search if it carries a real jurisdiction tag -- an untagged personal
+   * upload is owner-only. So leaving this off a personal-upload page isn't
+   * just a missing nicety, it silently caps that upload at "only the
+   * uploader can ever find it," even if it's a real regional standard. */
   showStateCode?: boolean;
+  /** Include a Canada/British Columbia optgroup alongside the US states.
+   * Off by default -- non-US jurisdictions are still a stopgap (state_code
+   * is an overloaded hyphen-encoded field, not a real country_code column
+   * yet -- see services/standards_graph_fold.py), so only expose it where
+   * explicitly opted in rather than on every state-picker instance. */
+  includeCanada?: boolean;
 }
 
 const US_STATE_CODES: [string, string][] = [
@@ -105,7 +116,7 @@ const StepIndicator: React.FC<{ current: Step }> = ({ current }) => {
 // ── Main Wizard ───────────────────────────────────────────────────────────
 
 export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
-  setType, title, description, onSave, onComplete, onCancel, showStateCode,
+  setType, title, description, onSave, onComplete, onCancel, showStateCode, includeCanada,
 }) => {
   const { t } = useTranslation('landing');
   const [step, setStep] = useState<Step>('upload');
@@ -309,9 +320,11 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
                   <optgroup label={t('components_shared_extractionwizard.united_states', 'United States')}>
                     {US_STATE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
                   </optgroup>
-                  <optgroup label={t('components_shared_extractionwizard.canada', 'Canada')}>
-                    {CANADA_PROVINCE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
-                  </optgroup>
+                  {includeCanada && (
+                    <optgroup label={t('components_shared_extractionwizard.canada', 'Canada')}>
+                      {CANADA_PROVINCE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
+                    </optgroup>
+                  )}
                 </select>
                 <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: 4 }}>
                   {t('components_shared_extractionwizard.state_hint', "Tags this set to one state, so it's only suggested to that state's teachers.")}

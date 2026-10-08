@@ -752,6 +752,22 @@ async def rag_retrieve(
             "AND (metadata->>'jurisdiction_id' IS NULL OR metadata->>'jurisdiction_id' = :jid)"
             if jurisdiction_id else ""
         )
+        # Visibility gate, independent of the state filter above: a personal
+        # (is_global=false) upload is only searchable by anyone other than
+        # its owner once it's tagged with a real jurisdiction -- i.e. the
+        # uploader marked it as an actual regional standard, not just a
+        # private criteria list. Pipeline-ingested content (owner_id IS
+        # NULL) and admin is_global=true uploads are unaffected. See
+        # routes/standards.py::_index_standards_set_criteria, which is what
+        # stamps owner_id / metadata.is_global / metadata.jurisdiction_id.
+        visibility_clause = """
+                AND (
+                    rd.owner_id IS NULL
+                    OR rd.metadata->>'is_global' = 'true'
+                    OR rd.metadata->>'jurisdiction_id' IS NOT NULL
+                    OR rd.owner_id = :uid
+                )
+        """
         # Cast a wider net than top_k for Stage 1 so Stage 2 has more seeds to
         # expand from before the final trim — otherwise a query that weakly
         # matches several standards in the same cluster would only ever see
@@ -788,10 +804,11 @@ async def rag_retrieve(
                 WHERE rd.embedding IS NOT NULL
                 {type_clause}
                 {jurisdiction_clause}
+                {visibility_clause}
                 {retired_filter}
                 ORDER BY rd.embedding <=> CAST(:emb AS vector)
                 LIMIT :k
-            """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+            """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
         except Exception as e:
             logger.warning(f"rag_documents vector query failed (table may not exist yet): {e}")
 
@@ -857,10 +874,11 @@ async def rag_retrieve(
                     WHERE to_tsvector('simple', rd.content) @@ to_tsquery('simple', :q)
                     {type_clause}
                     {jurisdiction_clause}
+                    {visibility_clause}
                     {retired_filter}
                     ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
                     LIMIT :k
-                """), {"q": lex_tsquery_and, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+                """), {"q": lex_tsquery_and, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
             except Exception as e:
                 logger.warning(f"rag_documents lexical AND query failed (FTS index may not exist yet): {e}")
 
@@ -873,10 +891,11 @@ async def rag_retrieve(
                         WHERE to_tsvector('simple', rd.content) @@ to_tsquery('simple', :q)
                         {type_clause}
                         {jurisdiction_clause}
+                        {visibility_clause}
                         {retired_filter}
                         ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
                         LIMIT :k
-                    """), {"q": lex_tsquery_or, "k": seed_k, "stype": source_type, "jid": jurisdiction_id})).fetchall()
+                    """), {"q": lex_tsquery_or, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
                 except Exception as e:
                     logger.warning(f"rag_documents lexical OR fallback failed: {e}")
         db_ms = int((_time.monotonic() - _t_db0) * 1000)
