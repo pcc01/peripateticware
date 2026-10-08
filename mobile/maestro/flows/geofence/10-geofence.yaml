@@ -43,12 +43,22 @@ env:
     latitude: 37.8716
     longitude: -122.2727
 - runFlow: ../login-student.yaml
-# extendedWaitUntil, not plain tapOn — see
-# maestro/flows/activity/4-6-activity-flow.yaml's matching comment: this
-# is a Maestro/XCTest accessibility-tree reliability gap after the
-# Discover tab mounts post-login, not slow data loading.
-- extendedWaitUntil:
-    visible: "${GEOFENCE_ACTIVITY}"
+# scrollUntilVisible, not extendedWaitUntil — see
+# maestro/flows/activity/4-6-activity-flow.yaml's matching comment for why
+# a plain tapOn isn't enough (Maestro/XCTest accessibility-tree reliability
+# gap right after the Discover tab mounts). extendedWaitUntil alone isn't
+# enough either on prod: Discover's list is virtualized, so an activity
+# below the fold (prod seeds 11; this is the 8th) never enters the tree to
+# be found until scrolled into view — a real prod run timed out waiting on
+# "Creek Habitat Study" for exactly this reason (mobile/docs/mobile-test-plan.md
+# §1's "discover/activity/capture ... assertVisible 'Creek Habitat Study'"
+# gap). scrollUntilVisible handles both cases: already on-screen locally
+# (small seed set) it's a no-op short of its own visibility check; off-screen
+# on prod it scrolls until found, then taps.
+- scrollUntilVisible:
+    element:
+      text: "${GEOFENCE_ACTIVITY}"
+    direction: DOWN
     timeout: 20000
 - tapOn: "${GEOFENCE_ACTIVITY}"
 - assertVisible:

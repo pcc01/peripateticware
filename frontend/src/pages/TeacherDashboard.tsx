@@ -259,7 +259,7 @@ export const TeacherDashboard: React.FC = () => {
                       <button onClick={() => navigate(`/teacher/activities/${activity.id}`)}>{t("landing:view", "View")}
 
                   </button>
-                      <button onClick={() => navigate(`/teacher/activities/${activity.id}/edit`)}>{t("landing:teacherdashboard.edit", "Edit")}
+                      <button onClick={() => navigate(`/teacher/activities/${activity.id}`)}>{t("landing:teacherdashboard.edit", "Edit")}
 
                   </button>
                     </td>

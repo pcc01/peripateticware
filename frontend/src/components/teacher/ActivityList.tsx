@@ -191,7 +191,7 @@ export function ActivityList() {
           <ActivityCard
             key={activity.id}
             activity={activity}
-            onEdit={(id) => navigate(`/teacher/activities/${id}/edit`)}
+            onEdit={(id) => navigate(`/teacher/activities/${id}`)}
             onViewDetail={(id) => navigate(`/teacher/activities/${id}`)} />
 
           )}

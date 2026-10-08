@@ -71,7 +71,7 @@ const ActivityPreview = () => {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`/teacher/activities/${currentActivity.id}/edit`)}
+            onClick={() => navigate(`/teacher/activities/${currentActivity.id}`)}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold">{t("landing:activitypreview.edit", "Edit")}
 
 

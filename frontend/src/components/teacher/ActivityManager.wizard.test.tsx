@@ -53,7 +53,11 @@ const mount = (path = '/teacher/activities/new') =>
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/teacher/activities/new" element={<ActivityManager />} />
-        <Route path="/teacher/activities/:id/edit" element={<ActivityManager />} />
+        {/* Matches the real route in App.tsx — :id with no /edit suffix.
+            Previously this was ":id/edit", which doesn't match App.tsx at
+            all and let TeacherDashboard/ActivityList/ActivityPreview's
+            navigate(`.../${id}/edit`) 404 in production undetected. */}
+        <Route path="/teacher/activities/:id" element={<ActivityManager />} />
         <Route path="/teacher/activities" element={<div>activities list</div>} />
       </Routes>
     </MemoryRouter>,
@@ -184,7 +188,7 @@ describe('ActivityManager guided wizard', () => {
       estimated_duration_minutes: 45, materials_needed: [], resources: [], learning_objectives: ['Existing outcome'],
       curriculum_unit_ids: [], bloom_level: 'apply', activity_type: 'outdoor',
     });
-    mount('/teacher/activities/e1/edit');
+    mount('/teacher/activities/e1');
     expect(screen.queryByText('What do you want to start from?')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText(/^Title/)).toHaveValue('Existing'));
     next(); next();

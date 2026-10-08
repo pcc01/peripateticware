@@ -406,6 +406,17 @@ foreach ($row in $matrix) {
 
         Wait-EmulatorBoot -Serial $serial -TimeoutSec 240
 
+        # sys.boot_completed=1 fires before the emulator's UI/input stack
+        # (and whatever Maestro's own driver needs to attach) is actually
+        # ready. Hit twice in practice with -SkipBuild -SkipSetup (no gradle
+        # build to soak up settle time between "booted" and "run Maestro"):
+        # `maestro test` died immediately with a bare
+        # "java.nio.file.InvalidPathException: Illegal char <:> at index 0: :"
+        # — no flow even started. Never reproduced when a build (or any other
+        # ~1 min of elapsed time post-boot) preceded the Maestro invocation.
+        # Cheap fix: give it a little room before touching the device.
+        Start-Sleep -Seconds 10
+
         # AVDs persist their installed apps across boots. If this AVD was
         # ever used outside this script (e.g. `expo run:android` for manual
         # dev testing, or a previous run with a different keystore), it can

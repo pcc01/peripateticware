@@ -4,14 +4,47 @@ Status snapshot and the concrete work left to call the new features "tested."
 Companion to `PROD_E2E_GUIDE.md` (how to run the suites).
 
 Last full run: 2026-09-11, against **prod** (`peripateticware.com`), account
-`loadtest.student@thewordinbits.com`.
+`loadtest.student@thewordinbits.com`. Wayfinding + geofence run 2026-10-08
+(Android only so far) — see below and §3.
 
 | Suite | Result | Notes |
 |---|---|---|
 | Android non-waypoint (Pixel 6 API 35 emu) | **17 / 17*** | `4-6` root-caused and fixed — see §5 |
 | iOS non-waypoint (iPhone 17 Sim, macOS 26) | **17 / 17*** | all flow fixes committed (`17c5361`) — see note below |
-| Wayfinding + geofence | **not run** | the actual "waypoints" review — see §3 |
+| Wayfinding + geofence — Android | **PASS (2026-10-08)** | both clean; two harness bugs fixed along the way, see below — iOS still not run |
 | Manual on-device | **not started** | field builds: Android on Pixel 10a ✅, iOS pending signing |
+
+**Wayfinding + geofence, 2026-10-08 (Android, API 35, prod)**: `11-wayfinding`
+passed clean (3 ordered stops, in-sequence arrivals, "All stops found",
+`session_waypoint_progress` confirmed no coordinate written). `10-geofence`
+passed clean after a fix (see §3). Along the way: `loadtest.student`'s
+password had actually gone stale (not just "flagged for rotation" — prod
+rejected it outright) and was reset; a resumed-session re-run of
+`11-wayfinding` (expected — see §4) was mistaken for a failure before
+confirming it was just "3 of 3 stops" on a completed session, not stop 1.
+Two harness bugs fixed as part of this pass, both committed:
+- `maestro/flows/geofence/10-geofence.yaml` — `assertVisible` on
+  `${GEOFENCE_ACTIVITY}` never scrolled, so it timed out against prod's
+  11-activity Discover list (the activity is 8th, off the first screen;
+  locally the seed list is short enough this never showed up). Swapped for
+  `scrollUntilVisible`.
+- `scripts/run-maestro-all-devices.ps1` — `-SkipBuild -SkipSetup` runs hit
+  `maestro test` right after `sys.boot_completed=1`, before the emulator's
+  stack was actually ready, and crashed immediately with
+  `InvalidPathException: Illegal char <:> at index 0: :` before any flow
+  started. Never reproduced when a gradle build (or ~1 min of any other
+  elapsed time) separated "booted" from "run Maestro". Added a 10s settle
+  delay after boot-complete.
+
+Separately (same session): the Teacher Dashboard/Activity List/Activity
+Preview "Edit" button 404'd for every activity — it navigated to a
+`/teacher/activities/{id}/edit` URL that was never a registered route
+(`App.tsx` only has `/teacher/activities/:id`, which "View" correctly used).
+Fixed all three call sites + the frontend test that had the same wrong path
+baked in. Also added backend coverage for multi-waypoint content
+(clue/capture-ask/hint-rule round-trip) that nothing previously tested:
+`backend/tests/test_wayfinding_waypoints_apply.py` +
+`backend/scripts/wayfinding_waypoint_smoke.py`.
 
 \* Both platforms' recorded full-suite runs show 16/17, with `4-6-activity-flow`
 as the sole failure — in both cases a **test-state artifact, not a
@@ -79,11 +112,17 @@ the build.
 
 ---
 
-## 3. Wayfinding + geofence final pass  *(owner: Paul, 2026-09-10)*
+## 3. Wayfinding + geofence final pass  *(owner: Paul, 2026-09-10 — Android done 2026-10-08, iOS still open)*
 
 Prod already has `Campus Wayfinding Hunt` (rung B, 3 stops at the seed coords)
 and `Creek Habitat Study`, both visible to `loadtest.student`. The **stock**
 flows work as-is — no `flows-prod/` needed for the emulator/simulator pass.
+
+**Android: PASS (2026-10-08)**, both flows clean on API 35 — see the status
+table above for what got fixed along the way. `loadtest.student`'s password
+needed a reset first (prod rejected the one on file); between
+`11-wayfinding` runs, reset state with §4's command or the resumed session
+opens straight to "All stops found!" (expected, not a failure).
 
 ### Android (this machine)
 ```powershell
@@ -233,7 +272,7 @@ against prod (idempotent, safe to re-run) before it can log in.
 
 Must be **green** before hitting "Submit for Review":
 
-- [ ] Wayfinding + geofence pass on Android **and** iOS (§3)
+- [ ] Wayfinding + geofence pass on Android **and** iOS (§3) — Android ✅ 2026-10-08, iOS still open
 - [x] `4-6` submit confirmed working on iOS (Simulator, §5) — Android still
       needs the real-device check (§5)
 - [ ] Manual GPS/permissions/capture/offline checklist (§4) clean on one
