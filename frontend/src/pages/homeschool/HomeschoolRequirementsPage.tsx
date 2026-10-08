@@ -204,7 +204,7 @@ export const HomeschoolRequirementsPage: React.FC = () => {
   const handleSave = async (payload: any, type: string) => {
     const res = await fetch('/api/v1/standards', {
       method:'POST', headers:authHeader(),
-      body:JSON.stringify({ ...payload, type, is_global:false }),
+      body:JSON.stringify({ ...payload, type, is_global:false, state_code: payload.state_code || stateCode || undefined }),
     });
     if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d.detail||'Save failed'); }
     return (await res.json()).id;
@@ -230,8 +230,8 @@ export const HomeschoolRequirementsPage: React.FC = () => {
         setType={wizard.type}
         title={isReporting ? 'Import Reporting Requirements' : 'Import State Standards'}
         description={isReporting
-          ? 'Upload your state\'s homeschool reporting requirements (PDF or CSV). Ollama extracts each requirement for review. Re-uploading the same file reuses the cached result instantly.'
-          : 'Upload official state academic standards (PDF or CSV). Once extracted, they are available to all users for mapping to activities.'
+          ? 'Upload your state\'s homeschool reporting requirements (PDF, Word, HTML, or CSV/Excel). The AI extracts each requirement for review. Re-uploading the same file reuses the cached result instantly.'
+          : 'Upload official state academic standards (PDF, Word, HTML, or CSV/Excel). Once extracted, they are available to all users for mapping to activities.'
         }
         onSave={(p) => handleSave(p, wizard.type)}
         onComplete={() => { setWizard(null); load(); }}

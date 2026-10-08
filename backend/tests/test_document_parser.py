@@ -314,6 +314,109 @@ def test_excel_upload_of_a_genuinely_corrupt_file_degrades_to_a_clear_warning_no
 
 
 # ===========================================================================
+# parse_docx — real python-docx bytes
+# ===========================================================================
+
+pytest.importorskip("docx")
+
+from services.document_parser import parse_docx  # noqa: E402
+
+
+def _make_test_docx(paragraphs: list[str], table: tuple[list[str], list[list[str]]] | None = None) -> bytes:
+    """A real, minimal .docx with known content, built with python-docx
+    itself -- same round-trip approach as _make_test_pdf/_make_test_xlsx."""
+    from docx import Document
+
+    doc = Document()
+    for p in paragraphs:
+        doc.add_paragraph(p)
+    if table:
+        header, rows = table
+        t = doc.add_table(rows=1, cols=len(header))
+        for i, h in enumerate(header):
+            t.rows[0].cells[i].text = h
+        for row in rows:
+            cells = t.add_row().cells
+            for i, v in enumerate(row):
+                cells[i].text = v
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    return buffer.getvalue()
+
+
+def test_parse_docx_extracts_real_paragraph_text():
+    docx_bytes = _make_test_docx(["Standard WA-1: Multiplicative comparison.", "Standard WA-2: Word problems."])
+    result = parse_docx(docx_bytes)
+    assert result.method == "docx"
+    assert "Standard WA-1: Multiplicative comparison." in result.text
+    assert "Standard WA-2: Word problems." in result.text
+
+
+def test_parse_docx_table_cells_are_labeled_by_column_header():
+    """Mirrors the table-aware PDF extraction contract: a cell's column
+    (e.g. grade) must be explicit in the text, not implied by position."""
+    docx_bytes = _make_test_docx(
+        ["Grade-band standards"],
+        table=(["Grade", "Standard"], [["5", "Decompose a fraction"], ["6", "Ratio reasoning"]]),
+    )
+    result = parse_docx(docx_bytes)
+    assert "[Grade] 5" in result.text
+    assert "[Standard] Decompose a fraction" in result.text
+    assert "[Grade] 6" in result.text
+
+
+def test_parse_docx_corrupt_file_degrades_to_a_clear_warning_not_a_crash():
+    import pytest as _pytest
+    with _pytest.raises(Exception):
+        # parse_docx() itself may raise on genuinely corrupt bytes -- the
+        # caller, parse_document(), is what's contracted never to raise
+        # (covered in test_parse_document_routes_docx_extension below).
+        parse_docx(b"not a real docx file")
+
+
+# ===========================================================================
+# parse_html — real HTML bytes
+# ===========================================================================
+
+pytest.importorskip("bs4")
+
+from services.document_parser import parse_html  # noqa: E402
+
+
+def test_parse_html_extracts_text_and_strips_script_and_style():
+    html = b"""
+    <html><head><style>.x{color:red}</style></head>
+    <body>
+      <script>trackPageview();</script>
+      <nav>Home | About</nav>
+      <h1>Grade 5 Science Standards</h1>
+      <p>Standard 5.1: Plan and conduct an investigation.</p>
+    </body></html>
+    """
+    result = parse_html(html)
+    assert result.method == "html"
+    assert "Grade 5 Science Standards" in result.text
+    assert "Standard 5.1: Plan and conduct an investigation." in result.text
+    assert "trackPageview" not in result.text
+    assert "color:red" not in result.text
+    assert "Home" not in result.text  # stripped <nav>
+
+
+def test_parse_html_table_cells_are_labeled_by_column_header():
+    html = b"""
+    <html><body>
+      <table>
+        <tr><th>Grade</th><th>Standard</th></tr>
+        <tr><td>5</td><td>Decompose a fraction</td></tr>
+      </table>
+    </body></html>
+    """
+    result = parse_html(html)
+    assert "[Grade] 5" in result.text
+    assert "[Standard] Decompose a fraction" in result.text
+
+
+# ===========================================================================
 # parse_document — routing, never raises
 # ===========================================================================
 
@@ -340,9 +443,39 @@ async def test_parse_document_routes_by_mime_type_when_filename_has_no_extension
 
 @pytest.mark.asyncio
 async def test_parse_document_unsupported_type_returns_a_clear_warning_not_an_exception():
-    result = await parse_document(b"whatever bytes", "notes.docx", "application/msword")
+    # .docx used to be the "unsupported" example here, back when
+    # document_parser had no DOCX branch at all -- it does now (see
+    # test_parse_document_routes_docx_extension_below), which is why this
+    # test used to fail once python-docx was actually installed: the real
+    # genuinely-unsupported case is something with no parser branch at all,
+    # e.g. a legacy binary .doc (no "wordprocessingml" in its MIME, unlike
+    # .docx) or an arbitrary unknown extension.
+    result = await parse_document(b"whatever bytes", "notes.rtf", "application/rtf")
     assert result.text == ""
     assert any("Unsupported file type" in w for w in result.warnings)
+
+
+@pytest.mark.asyncio
+async def test_parse_document_routes_docx_extension_to_docx_parser():
+    docx_bytes = _make_test_docx(["Real DOCX content here, standard text."])
+    result = await parse_document(docx_bytes, "standards.docx", None)
+    assert result.method == "docx"
+    assert "Real DOCX content here" in result.text
+
+
+@pytest.mark.asyncio
+async def test_parse_document_never_raises_on_genuinely_corrupt_docx_bytes():
+    result = await parse_document(b"not a real docx file", "corrupt.docx", None)
+    assert result.text == ""
+    assert any("DOCX parse error" in w for w in result.warnings)
+
+
+@pytest.mark.asyncio
+async def test_parse_document_routes_html_extension_to_html_parser():
+    html_bytes = b"<html><body><p>Standard HTML content here.</p></body></html>"
+    result = await parse_document(html_bytes, "standards.html", None)
+    assert result.method == "html"
+    assert "Standard HTML content here." in result.text
 
 
 @pytest.mark.asyncio

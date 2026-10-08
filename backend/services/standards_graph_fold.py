@@ -131,32 +131,48 @@ async def _resolve_or_create_jurisdiction(db: AsyncSession, state_code: Optional
     (country_code='US', subdivision_code=f'US-{code}', level='state',
     external_ref=code) so the two paths land on the same row.
 
-    Creates the row if this state has no CASE presence yet (e.g. a
-    homeschool state-reporting upload for a state nobody's CASE-ingested).
-    Deterministic id is safe here even though ingest_case_standards.py mints
-    random uuid4 ids for jurisdictions it creates — that script looks rows
-    up by (country_code, external_ref) before creating, not by id, so
-    whichever path gets there first just gets reused by the other; no
-    duplicate-jurisdiction risk either way.
+    A bare 2-letter code (no hyphen) is assumed US, exactly as before --
+    every existing caller (the 50-state admin/homeschool pickers) keeps
+    working unchanged. A caller that needs a non-US jurisdiction (e.g. a
+    Canadian province) passes an explicit, already-prefixed ISO 3166-2 code
+    instead, e.g. 'CA-BC' -- split on the first '-' into country_code='CA',
+    subdivision_code='CA-BC'. There's no real collision risk letting both
+    conventions share this one function: none of the 50 US state
+    abbreviations match a Canadian province/territory code.
+
+    Creates the row if this jurisdiction has no CASE presence yet (e.g. a
+    homeschool state-reporting upload for a state nobody's CASE-ingested,
+    or a first-ever non-US upload). Deterministic id is safe here even
+    though ingest_case_standards.py mints random uuid4 ids for jurisdictions
+    it creates — that script looks rows up by (country_code, external_ref)
+    before creating, not by id, so whichever path gets there first just
+    gets reused by the other; no duplicate-jurisdiction risk either way.
     """
     if not state_code or not state_code.strip():
         return None
-    code = state_code.strip().upper()
+    raw = state_code.strip().upper()
+
+    if "-" in raw:
+        country, _, code = raw.partition("-")
+        subdivision_code = raw
+    else:
+        country, code = "US", raw
+        subdivision_code = f"US-{code}"
 
     existing = (await db.execute(
         select(Jurisdiction).where(
-            Jurisdiction.country_code == "US",
-            Jurisdiction.subdivision_code == f"US-{code}",
+            Jurisdiction.country_code == country,
+            Jurisdiction.subdivision_code == subdivision_code,
         )
     )).scalar_one_or_none()
     if existing:
         return existing
 
     j = Jurisdiction(
-        id=uuid.uuid5(_NAMESPACE, f"jurisdiction:US-{code}"),
-        country_code="US",
-        subdivision_code=f"US-{code}",
-        level="state",
+        id=uuid.uuid5(_NAMESPACE, f"jurisdiction:{subdivision_code}"),
+        country_code=country,
+        subdivision_code=subdivision_code,
+        level="state",   # matches the documented level vocabulary (country|state|county|city|district|organization) -- covers state/province alike
         name=code,   # best-effort fallback name; a subsequent CASE ingest's own registry entry has the real one
         external_ref=code,
     )

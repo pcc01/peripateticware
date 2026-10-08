@@ -14,9 +14,8 @@ covered, the upload route wrapping it isn't").
 
 document_parser.parse_document and standards_parser.extract_criteria are
 both mocked here -- their own correctness is covered elsewhere
-(test_standards_parser.py for extraction; document_parser.py has no test
-file of its own yet, noted as a remaining gap, not addressed in this pass
-since it needs real PDF/CSV byte fixtures rather than route-level mocking).
+(test_standards_parser.py for extraction; test_document_parser.py for real
+PDF/CSV/Excel/DOCX/HTML byte-level parsing).
 """
 
 from __future__ import annotations

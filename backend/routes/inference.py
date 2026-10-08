@@ -704,7 +704,12 @@ async def rag_retrieve(
                           OR unindexed (national standards like CCSS/NGSS
                           carry no jurisdiction_id and should still surface
                           for any state) -- never state-exclusive-only.
-      ?state_code=        two-letter state (e.g. "CA") -- resolved to a
+      ?state_code=        two-letter US state (e.g. "CA"), or an explicit
+                          already-prefixed ISO 3166-2 code for a non-US
+                          jurisdiction (e.g. "CA-BC" for British Columbia --
+                          see services/standards_graph_fold.py's
+                          _resolve_or_create_jurisdiction for the same
+                          bare-vs-prefixed convention) -- resolved to a
                           jurisdiction_id server-side so callers don't need
                           to know the UUID. Ignored if jurisdiction_id is
                           also given explicitly.
@@ -720,9 +725,11 @@ async def rag_retrieve(
     t0 = _time.monotonic()
 
     if not jurisdiction_id and state_code and state_code.strip():
+        raw_code = state_code.strip().upper()
+        subdivision_code = raw_code if "-" in raw_code else f"US-{raw_code}"
         resolved = (await db.execute(_t(
             "SELECT id FROM jurisdictions WHERE subdivision_code = :sub LIMIT 1"
-        ), {"sub": f"US-{state_code.strip().upper()}"})).first()
+        ), {"sub": subdivision_code})).first()
         if resolved:
             jurisdiction_id = str(resolved[0])
 

@@ -41,7 +41,7 @@ export const StandardsImportPage: React.FC = () => {
       title={t('standardsImportPage.title', 'Import Learning Standards')}
       description={t(
         'standardsImportPage.description',
-        'Upload a PDF or CSV of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage.'
+        'Upload a PDF, Word, HTML, or CSV/Excel file of the learning standards for your discipline — Common Core, NGSS, state standards, or your own custom framework. Once saved, you can tag activities against these standards and track student coverage.'
       )}
       onSave={handleSave}
       onComplete={(id) => {

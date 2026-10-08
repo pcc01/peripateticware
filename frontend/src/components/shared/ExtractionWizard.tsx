@@ -24,12 +24,38 @@ export interface ExtractionWizardProps {
   /** Short description shown on the upload step */
   description: string;
   /** Called when the user confirms the save. Return the new set ID or throw. */
-  onSave: (payload: { name: string; description: string; type: string; criteria: Criterion[] }) => Promise<string>;
+  onSave: (payload: { name: string; description: string; type: string; criteria: Criterion[]; state_code?: string }) => Promise<string>;
   /** Called after a successful save with the new set ID */
   onComplete: (id: string) => void;
   /** Called when the user cancels */
   onCancel: () => void;
+  /** Show a state picker on the review step (for a global state_standards/state_reporting
+   * upload, so the saved set -- and its rag_documents rows -- can be jurisdiction-tagged
+   * and show up correctly in state-filtered standard searches). Omitted for personal/rubric
+   * imports, where state scoping doesn't apply. */
+  showStateCode?: boolean;
 }
+
+const US_STATE_CODES: [string, string][] = [
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
+  ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
+  ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
+  ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
+  ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
+  ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
+  ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+  ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+  ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+];
+
+// Non-US provinces use an already country-prefixed code (e.g. "CA-BC") --
+// see services/standards_graph_fold.py::_resolve_or_create_jurisdiction for
+// why that disambiguates from the bare US codes above. Starting with just
+// British Columbia; add more provinces here as they're actually needed.
+const CANADA_PROVINCE_CODES: [string, string][] = [
+  ['CA-BC', 'British Columbia'],
+];
 
 type Step = 'upload' | 'parsing' | 'review' | 'saving' | 'done';
 
@@ -79,7 +105,7 @@ const StepIndicator: React.FC<{ current: Step }> = ({ current }) => {
 // ── Main Wizard ───────────────────────────────────────────────────────────
 
 export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
-  setType, title, description, onSave, onComplete, onCancel,
+  setType, title, description, onSave, onComplete, onCancel, showStateCode,
 }) => {
   const { t } = useTranslation('landing');
   const [step, setStep] = useState<Step>('upload');
@@ -89,6 +115,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [setName, setSetName] = useState('');
   const [setDesc, setSetDesc] = useState('');
+  const [stateCode, setStateCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -164,7 +191,7 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
     setStep('saving');
     setError(null);
     try {
-      const id = await onSave({ name: setName, description: setDesc, type: setType, criteria });
+      const id = await onSave({ name: setName, description: setDesc, type: setType, criteria, state_code: stateCode || undefined });
       setSavedId(id);
       setStep('done');
     } catch (e: any) {
@@ -219,11 +246,11 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
             ) : (
               <>
                 <div style={{ fontWeight: 600, color: 'var(--text)' }}>{t('components_shared_extractionwizard.drop_a_file_here_or_click_to_browse', 'Drop a file here or click to browse')}</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>{t('components_shared_extractionwizard.pdf_or_csv_max_10_mb', 'PDF or CSV · Max 10 MB')}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>{t('components_shared_extractionwizard.pdf_or_csv_max_10_mb', 'PDF, Word, HTML, CSV, or Excel · Max 10 MB')}</div>
               </>
             )}
           </div>
-          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx" aria-label={t('components_shared_extractionwizard.aria_label_upload_file_pdf_csv_or_excel', 'Upload file (PDF, CSV, or Excel)')} style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept=".pdf,.csv,.xlsx,.xls,.docx,.html,.htm" aria-label={t('components_shared_extractionwizard.aria_label_upload_file_pdf_csv_or_excel', 'Upload file (PDF, Word, HTML, CSV, or Excel)')} style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
           {file && (
             <div style={{ marginBottom: 24 }}>
@@ -272,6 +299,25 @@ export const ExtractionWizard: React.FC<ExtractionWizardProps> = ({
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>{t('components_shared_extractionwizard.description', 'Description')}</label>
             <textarea value={setDesc} onChange={e => setSetDesc(e.target.value)} rows={2}
               style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box', resize: 'vertical' }} />
+            {showStateCode && (
+              <>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: 6, marginTop: 12 }}>{t('components_shared_extractionwizard.state', 'State')}</label>
+                <select value={stateCode} onChange={e => setStateCode(e.target.value)}
+                  aria-label={t('components_shared_extractionwizard.aria_label_state', 'State these standards belong to')}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.95rem', boxSizing: 'border-box' }}>
+                  <option value="">{t('components_shared_extractionwizard.select_a_state', 'Select a state…')}</option>
+                  <optgroup label={t('components_shared_extractionwizard.united_states', 'United States')}>
+                    {US_STATE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
+                  </optgroup>
+                  <optgroup label={t('components_shared_extractionwizard.canada', 'Canada')}>
+                    {CANADA_PROVINCE_CODES.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
+                  </optgroup>
+                </select>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: 4 }}>
+                  {t('components_shared_extractionwizard.state_hint', "Tags this set to one state, so it's only suggested to that state's teachers.")}
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

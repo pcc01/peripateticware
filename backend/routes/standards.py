@@ -82,9 +82,11 @@ async def _index_standards_set_criteria(
     Runs as a fire-and-forget asyncio.Task after create/update — never blocks
     the HTTP response.  Uses a fresh DB session to avoid using a closed one.
     """
-    from core.database import async_session
+    from core.database import get_session_factory
     from services.rag_store import upsert_rag_chunk, delete_rag_chunks
     from services.standards_graph_fold import materialize_standards_set
+
+    async_session = get_session_factory()
 
     set_id   = str(standards_set.id)
     set_name = standards_set.name
@@ -105,12 +107,34 @@ async def _index_standards_set_criteria(
 
     try:
         async with async_session() as session:
+            # Resolve state_code -> jurisdiction_id once, same lookup
+            # routes/inference.py::rag_retrieve uses to turn a state filter into
+            # a jurisdiction_id. Without this, every row indexed from here
+            # carries no jurisdiction_id at all -- and rag_retrieve's state
+            # filter is deliberately permissive on NULL (treats it as a
+            # national standard that matches every state), so an
+            # admin-uploaded TX standards set would otherwise show up for
+            # every state's teachers instead of just TX's.
             # Fold into the standards graph first (services/standards_graph_fold.py) —
             # gives every criterion a real standards_items row (with category-grouped
             # hierarchy) so graph-expansion retrieval can walk it like any CASE-ingested
             # standard, not just find it via flat vector search. Returns criterion_id ->
             # standards_items.id so the rag_documents rows below can link to their node.
+            # This is also what resolves/creates the jurisdictions row for
+            # standards_set.state_code (via _get_or_create_framework ->
+            # _resolve_or_create_jurisdiction) -- read it back off the
+            # framework row right after rather than re-deriving it here, so
+            # there's exactly one place that decides what state_code resolves
+            # to (including lazily creating a brand-new state/province's
+            # jurisdiction row on its very first upload).
             criterion_node_ids = await materialize_standards_set(session, standards_set)
+
+            jurisdiction_id: Optional[str] = None
+            fw_row = (await session.execute(text(
+                "SELECT jurisdiction_id FROM standards_frameworks WHERE id = :fid"
+            ), {"fid": set_id})).first()
+            if fw_row and fw_row[0]:
+                jurisdiction_id = str(fw_row[0])
 
             # Remove stale chunks for this source so we don't accumulate duplicates
             await delete_rag_chunks(session, source_type=rag_source_type, source_id=set_id)
@@ -138,11 +162,12 @@ async def _index_standards_set_criteria(
                     chunk_index=idx,
                     content=chunk_text,
                     metadata={
-                        "criterion_id":  criterion_id,
-                        "state_code":    standards_set.state_code,
-                        "set_type":      src_type,
-                        "weight":        criterion.get("weight"),
-                        "required":      criterion.get("required"),
+                        "criterion_id":     criterion_id,
+                        "state_code":       standards_set.state_code,
+                        "jurisdiction_id":  jurisdiction_id,
+                        "set_type":         src_type,
+                        "weight":           criterion.get("weight"),
+                        "required":         criterion.get("required"),
                     },
                     owner_id=owner_id,
                     node_type="standards_item",
@@ -278,8 +303,9 @@ async def upload_and_parse(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Upload a PDF or CSV. Ollama extracts criteria; returns them for review.
-    Nothing is saved yet. Also returns the SHA-256 checksum for cache checking.
+    Upload a PDF, DOCX, HTML, CSV, or Excel file. The configured AI provider
+    extracts criteria; returns them for review. Nothing is saved yet. Also
+    returns the SHA-256 checksum for cache checking.
     """
     file_bytes = await file.read()
     if len(file_bytes) > MAX_FILE_BYTES:
