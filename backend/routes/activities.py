@@ -624,37 +624,62 @@ async def publish_activity(
         )
 
     # ── Privacy compliance check ──────────────────────────────────────────────
-    # Determine data categories based on grade level (younger students = more
-    # sensitive data collection flags that trigger stricter compliance rules).
+    # Determine data categories from what this activity actually does, not a
+    # blanket per-grade assumption.
     #
-    # BUG FIX (2026-10-08): "location" used to be unconditional here for every
-    # grade, regardless of what the activity actually does -- including a
-    # rung-B wayfinding hunt, whose entire design point (see
-    # WAYFINDING_CONSENT_LADDER.md §1-2) is that NO coordinate ever leaves the
-    # phone at that rung. That made every wayfinding-enabled activity at
-    # grade <=8 permanently unpublishable under any jurisdiction with a COPPA
-    # 'location' restriction, independent of the teacher's actual settings --
-    # found when a real rung-B hunt (zero waypoint capture_requirements, zero
-    # location collection by design) still hard-blocked at publish with the
-    # identical COPPA 'location' issue before and after removing every
-    # photo/note ask on every stop. photo/audio/behavioral are left as the
-    # existing blanket per-grade flags: unlike location, capture (camera/mic/
-    # note) is a standing feature of the Inquiry-phase toolbar for every
-    # activity regardless of per-waypoint settings, so flagging it by grade
-    # alone isn't shown to be wrong the same way.
+    # BUG FIX (2026-10-08): every category here used to be unconditional for
+    # grade <=8 ("location" always, "audio"/"photo"/"behavioral" always too),
+    # regardless of the activity's actual settings. That directly contradicted
+    # this platform's own opt-in-per-rung design (WAYFINDING_CONSENT_LADDER.md
+    # §1-2: rung B wayfinding transmits no coordinate; capture is only asked
+    # for at a stop if the teacher specifically turned it on there) and made
+    # it structurally impossible to ever publish ANY grade <=8 discovery/
+    # wayfinding activity under a jurisdiction with COPPA 'young_child'
+    # restrictions, however the teacher configured it. Confirmed live: a real
+    # rung-B hunt with zero waypoint capture_requirements anywhere still
+    # hard-blocked on 'location', then (after that part of this fix) still
+    # hard-blocked on 'photo'/'audio' despite asking for neither at any stop.
+    # Each category below is now true only when the activity's own settings
+    # actually request it.
     compliance_warnings: list = []
     try:
         from services.privacy_engine import get_privacy_checker, check_activity_compliance_for_org
         checker = get_privacy_checker()
         await checker.load_from_db(db)
         grade = activity.grade_level or 9
+
         if activity.discovery_wayfinding_enabled:
             # Rungs A/B (the defaults) never transmit a coordinate; only C/D/E
             # do -- see WAYFINDING_CONSENT_LADDER.md §2.
             collects_location = (activity.wayfinding_capability_ceiling or "B") in ("C", "D", "E")
         else:
             collects_location = bool(activity.discovery_location_gps_capture_enabled)
-        data_types = ["audio", "photo", "behavioral"] if grade <= 8 else []
+
+        # Per-waypoint capture_requirements only ever has 'photo'/'note' keys
+        # (see schemas/activities.py::WaypointBase) -- there's no per-stop way
+        # to specifically ask for audio. discovery_documentation_requirements
+        # is the (rarely-set, legacy) single-location equivalent; its 'photos'
+        # key maps to the same thing WaypointBase calls 'photo'.
+        legacy_docs = activity.discovery_documentation_requirements or {}
+        collects_photo = bool(legacy_docs.get("photos")) or any(
+            (wp.capture_requirements or {}).get("photo") for wp in (activity.waypoints or [])
+        )
+        collects_audio = bool(legacy_docs.get("audio"))
+        # 'behavioral': AI_CHAT genuinely sends a transcript of the student's
+        # interaction to a third-party provider (Anthropic) -- a real,
+        # defensible behavioral/third-party-sharing signal, unlike the old
+        # blanket-true-for-every-activity version of this flag.
+        collects_behavioral = (
+            getattr(activity, "ai_interaction_mode", None) == "ai_chat"
+        )
+
+        data_types = []
+        if grade <= 8 and collects_photo:
+            data_types.append("photo")
+        if grade <= 8 and collects_audio:
+            data_types.append("audio")
+        if grade <= 8 and collects_behavioral:
+            data_types.append("behavioral")
         if collects_location:
             data_types.append("location")
         activity_data = {
