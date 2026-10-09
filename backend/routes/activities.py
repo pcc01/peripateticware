@@ -626,18 +626,39 @@ async def publish_activity(
     # ── Privacy compliance check ──────────────────────────────────────────────
     # Determine data categories based on grade level (younger students = more
     # sensitive data collection flags that trigger stricter compliance rules).
+    #
+    # BUG FIX (2026-10-08): "location" used to be unconditional here for every
+    # grade, regardless of what the activity actually does -- including a
+    # rung-B wayfinding hunt, whose entire design point (see
+    # WAYFINDING_CONSENT_LADDER.md §1-2) is that NO coordinate ever leaves the
+    # phone at that rung. That made every wayfinding-enabled activity at
+    # grade <=8 permanently unpublishable under any jurisdiction with a COPPA
+    # 'location' restriction, independent of the teacher's actual settings --
+    # found when a real rung-B hunt (zero waypoint capture_requirements, zero
+    # location collection by design) still hard-blocked at publish with the
+    # identical COPPA 'location' issue before and after removing every
+    # photo/note ask on every stop. photo/audio/behavioral are left as the
+    # existing blanket per-grade flags: unlike location, capture (camera/mic/
+    # note) is a standing feature of the Inquiry-phase toolbar for every
+    # activity regardless of per-waypoint settings, so flagging it by grade
+    # alone isn't shown to be wrong the same way.
     compliance_warnings: list = []
     try:
         from services.privacy_engine import get_privacy_checker, check_activity_compliance_for_org
         checker = get_privacy_checker()
         await checker.load_from_db(db)
         grade = activity.grade_level or 9
+        if activity.discovery_wayfinding_enabled:
+            # Rungs A/B (the defaults) never transmit a coordinate; only C/D/E
+            # do -- see WAYFINDING_CONSENT_LADDER.md §2.
+            collects_location = (activity.wayfinding_capability_ceiling or "B") in ("C", "D", "E")
+        else:
+            collects_location = bool(activity.discovery_location_gps_capture_enabled)
+        data_types = ["audio", "photo", "behavioral"] if grade <= 8 else []
+        if collects_location:
+            data_types.append("location")
         activity_data = {
-            "data_collection": (
-                ["location", "audio", "photo", "behavioral"]
-                if grade <= 8
-                else ["location"]
-            ),
+            "data_collection": data_types,
             "third_parties": [],
             "purpose": "educational",
         }
