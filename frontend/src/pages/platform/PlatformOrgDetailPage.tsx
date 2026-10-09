@@ -50,6 +50,7 @@ export default function PlatformOrgDetailPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [tierChoice, setTierChoice] = useState('');
   const [customDays, setCustomDays] = useState('');
+  const [exactDate, setExactDate] = useState('');
 
   const fetchOrg = async () => {
     setLoading(true);
@@ -81,7 +82,7 @@ export default function PlatformOrgDetailPage() {
   };
 
   const doLicenseUpdate = async (
-    body: { tier?: string; extend_days?: number; clear_valid_until?: boolean },
+    body: { tier?: string; valid_until?: string; extend_days?: number; clear_valid_until?: boolean },
     successMsg: string,
   ) => {
     setActing(true); setMessage(null);
@@ -214,6 +215,21 @@ export default function PlatformOrgDetailPage() {
           )}
         </div>
 
+        <div className="flex items-center gap-1 pt-1 border-t border-gray-100">
+          <input
+            type="date" value={exactDate}
+            onChange={e => setExactDate(e.target.value)}
+            className="text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <button
+            onClick={() => { if (exactDate) doLicenseUpdate({ valid_until: exactDate }, `License set to expire ${exactDate}.`); }}
+            disabled={acting || !exactDate}
+            className="text-xs border border-gray-300 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
+            Set exact date
+          </button>
+          <p className="text-xs text-gray-400 ml-1">sets license_valid_until directly, overriding any extend-by-days math</p>
+        </div>
+
         <div className="flex items-center gap-2 pt-1 border-t border-gray-100">
           <select value={tierChoice} onChange={e => setTierChoice(e.target.value)}
             className="text-xs border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -269,7 +285,18 @@ export default function PlatformOrgDetailPage() {
             className="flex items-center gap-2 text-sm border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition">
             <UserCheck className="w-4 h-4" />Impersonate owner
           </button>
+          <Link to="/admin/users"
+            className="flex items-center gap-2 text-sm border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">
+            <UserCheck className="w-4 h-4" />Manage users
+          </Link>
         </div>
+        <p className="text-xs text-gray-400">
+          "Manage users" is this org's own admin panel (add/edit/deactivate individual
+          members) — it only works once you've impersonated the owner above, since
+          it's gated to members of the org, not platform admins generally. There's no
+          per-user expiration there (or anywhere) — access is entirely inherited from
+          the org's license above; only <code>is_active</code> can be toggled per user.
+        </p>
         <p className="text-xs text-gray-400">{t('pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo', 'All actions are recorded in the audit log.')}</p>
       </div>
     </div>

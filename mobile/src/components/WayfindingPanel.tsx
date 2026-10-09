@@ -35,7 +35,18 @@ import {
   TILE_CACHE_MAX_AGE_SEC,
 } from '@/src/lib/tileCache';
 
-const OSM_TILE_URL = 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+// Was tile.openstreetmap.org directly -- their shared servers started
+// 403ing ("App is not following the tile usage policy") since direct
+// production/app-distribution use is against OSM's terms regardless of
+// headers (react-native-maps' UrlTile has no way to set a custom
+// User-Agent anyway -- see tileCache.ts's matching note). LocationIQ's
+// free tier permits commercial use with attribution (the <Text> below) --
+// see .env.example. No key configured yet = falls back to the old OSM URL
+// so local dev without a key still shows *something*, even if it 403s.
+const LOCATIONIQ_KEY = process.env.EXPO_PUBLIC_LOCATIONIQ_KEY;
+const OSM_TILE_URL = LOCATIONIQ_KEY
+  ? `https://{s}-tiles.locationiq.com/v3/streets/r/{z}/{x}/{y}.png?key=${LOCATIONIQ_KEY}`
+  : 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 interface Props {
   activityId: string;
@@ -263,6 +274,7 @@ export default function WayfindingPanel({
         </View>
       )}
       {initialRegion && (
+        <View style={styles.mapWrap}>
         <MapView
           testID="wayfinding-map"
           style={styles.map}
@@ -295,6 +307,14 @@ export default function WayfindingPanel({
             />
           ))}
         </MapView>
+        {/* Required by LocationIQ's commercial-use terms (free tier) --
+            keep in sync if the tile source changes again. Shown even on
+            the OSM-direct fallback (no key configured) since that source
+            requires its own "© OpenStreetMap contributors" either way. */}
+        <Text style={styles.tileAttribution}>
+          {LOCATIONIQ_KEY ? '© LocationIQ © OpenStreetMap contributors' : '© OpenStreetMap contributors'}
+        </Text>
+        </View>
       )}
 
       {/* Progress */}
@@ -381,7 +401,13 @@ export default function WayfindingPanel({
 const styles = StyleSheet.create({
   wrap: { borderWidth: 1, overflow: 'hidden' },
   consentWrap: { padding: 12 },
+  mapWrap: { position: 'relative' },
   map: { width: '100%', height: 260 },
+  tileAttribution: {
+    position: 'absolute', right: 4, bottom: 2,
+    fontSize: 9, color: '#000', backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 3,
+  },
   progressRow: { paddingHorizontal: 14, paddingTop: 12, gap: 6 },
   progressText: { fontSize: 11, letterSpacing: 0.5 },
   progressTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },

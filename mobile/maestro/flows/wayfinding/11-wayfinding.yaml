@@ -71,12 +71,28 @@ env:
 # 11.1 — walk in to stop 1. useWayfinding needs ARRIVAL_CONFIRM_FIXES (2)
 # in-radius fixes; each setLocation steps ~10 m (0.0001°) so the emulator's
 # location provider emits a distinct update, and every point stays inside the
-# stop's 60 m radius. A run between fixes gives watchPositionAsync time to
-# deliver each callback.
+# stop's 60 m radius.
+#
+# The waitForAnimationToEnd between each setLocation (same pseudo-delay
+# pattern already used elsewhere in this suite, e.g.
+# offline/14.0-wayfinding-warm.yaml) isn't optional on iOS, confirmed via a
+# real Simulator run: back-to-back setLocation calls with no gap get
+# coalesced by iOS into a single delivered watchPositionAsync callback (only
+# the FINAL point is ever seen), so the 2-consecutive-in-radius-fixes streak
+# this hook requires can never be satisfied — arrival never confirms, no
+# matter how the app's own subscription is managed (ruled out: a resubscribe
+# bug WAS real and worth fixing in useWayfinding.ts, but fixing it alone
+# didn't fix this — the coalescing happens below the JS layer). Android
+# reliably delivers one callback per setLocation regardless of spacing, so
+# this costs it nothing.
 - setLocation: { latitude: 37.87152, longitude: -122.27258 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87155, longitude: -122.27264 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87158, longitude: -122.27268 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87160, longitude: -122.27270 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87161, longitude: -122.27271 }
 - extendedWaitUntil:
     visible: "1 of 3 stops"
@@ -84,9 +100,13 @@ env:
 
 # 11.2 — walk to stop 2.
 - setLocation: { latitude: 37.87252, longitude: -122.27158 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87255, longitude: -122.27164 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87258, longitude: -122.27168 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87260, longitude: -122.27170 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87261, longitude: -122.27171 }
 - extendedWaitUntil:
     visible: "2 of 3 stops"
@@ -94,9 +114,13 @@ env:
 
 # 11.3 — walk to the final stop; the hunt completes.
 - setLocation: { latitude: 37.87352, longitude: -122.27058 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87355, longitude: -122.27064 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87358, longitude: -122.27068 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87360, longitude: -122.27070 }
+- waitForAnimationToEnd: { timeout: 500 }
 - setLocation: { latitude: 37.87361, longitude: -122.27071 }
 - extendedWaitUntil:
     visible: "All stops found! 🎉"

@@ -20,8 +20,18 @@ const CACHE_DIR = new Directory(Paths.document, 'hunt-map-tiles');
 export const TILE_CACHE_PATH = CACHE_DIR.uri.replace(/^file:\/\//, '');
 export const TILE_CACHE_MAX_AGE_SEC = 30 * 24 * 60 * 60; // 30 days
 
+// Unreachable while prefetchTilesForRoute short-circuits below, but kept
+// in sync with WayfindingPanel.tsx's live tile source rather than left
+// pointed at the OSM URL that got this function disabled in the first
+// place. NOTE if this is ever re-enabled: LocationIQ's bulk-caching terms
+// haven't been checked (only "commercial use with attribution" was,
+// before wiring in the key) -- confirm that specifically, not just
+// assumed from the live-tile terms, before turning bulk prefetch back on.
+const LOCATIONIQ_KEY = process.env.EXPO_PUBLIC_LOCATIONIQ_KEY;
 const OSM_TILE = (z: number, x: number, y: number) =>
-  `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  LOCATIONIQ_KEY
+    ? `https://tiles.locationiq.com/v3/streets/r/${z}/${x}/${y}.png?key=${LOCATIONIQ_KEY}`
+    : `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
 
 // Zoom band to pre-cache. 14 ≈ neighbourhood, 17 ≈ individual buildings —
 // enough to walk a route by. offlineMode scales a lower zoom up to 4 levels
@@ -120,38 +130,57 @@ export async function prefetchTilesForRoute(
   wayfinding: Pick<WayfindingDetail, 'waypoints' | 'route_geometry'>,
   opts: { minZoom?: number; maxZoom?: number } = {}
 ): Promise<number> {
-  if (_running) return 0;
-  _running = true;
-  let fetched = 0;
-  try {
-    const b = boundsFor(pointsFor(wayfinding));
-    if (!b) return 0;
-
-    CACHE_DIR.create({ idempotent: true, intermediates: true });
-    const tiles = tilesForBounds(b, opts.minZoom, opts.maxZoom);
-
-    for (const [z, x, y] of tiles) {
-      const xDir = new Directory(CACHE_DIR, String(z), String(x));
-      // react-native-maps stores the tile as the bare y-coordinate, no ext.
-      const dest = new File(xDir, String(y));
-      if (dest.exists) continue;
-      try {
-        xDir.create({ idempotent: true, intermediates: true });
-        await File.downloadFileAsync(OSM_TILE(z, x, y), dest, {
-          idempotent: true,
-          headers: { 'User-Agent': 'Peripateticware/1.0 (offline hunt cache)' },
-        });
-        fetched++;
-      } catch {
-        // one tile failing is fine — map falls back to the online source
-      }
-    }
-  } catch {
-    // no write permission / disk full — the map just stays online-only
-  } finally {
-    _running = false;
-  }
-  return fetched;
+  // DISABLED 2026-10-08 — a live run surfaced tile.openstreetmap.org
+  // returning 403 "App is not following the tile usage policy" on the live
+  // <UrlTile> layer too (see WayfindingPanel.tsx's OSM_TILE_URL). OSM's
+  // usage policy explicitly prohibits bulk/automated downloading, which is
+  // exactly what this function does — the custom User-Agent below made it a
+  // more clearly-identifiable violation, not a compliant one. Re-enable only
+  // once both tile call sites point at a provider whose terms allow bulk
+  // caching for offline use (most commercial OSM-styled providers do, OSM's
+  // own shared servers do not) — LocationIQ's live-tile terms were checked
+  // before wiring in EXPO_PUBLIC_LOCATIONIQ_KEY, but its *bulk-caching*
+  // terms specifically were not, so don't assume this body is safe to just
+  // uncomment once a key exists. No-op until then; the map still draws
+  // live/online, just without an offline fallback.
+  //
+  // Original body, kept for when a compliant provider is confirmed:
+  //
+  // if (_running) return 0;
+  // _running = true;
+  // let fetched = 0;
+  // try {
+  //   const b = boundsFor(pointsFor(wayfinding));
+  //   if (!b) return 0;
+  //
+  //   CACHE_DIR.create({ idempotent: true, intermediates: true });
+  //   const tiles = tilesForBounds(b, opts.minZoom, opts.maxZoom);
+  //
+  //   for (const [z, x, y] of tiles) {
+  //     const xDir = new Directory(CACHE_DIR, String(z), String(x));
+  //     // react-native-maps stores the tile as the bare y-coordinate, no ext.
+  //     const dest = new File(xDir, String(y));
+  //     if (dest.exists) continue;
+  //     try {
+  //       xDir.create({ idempotent: true, intermediates: true });
+  //       await File.downloadFileAsync(OSM_TILE(z, x, y), dest, {
+  //         idempotent: true,
+  //         headers: { 'User-Agent': 'Peripateticware/1.0 (offline hunt cache)' },
+  //       });
+  //       fetched++;
+  //     } catch {
+  //       // one tile failing is fine — map falls back to the online source
+  //     }
+  //   }
+  // } catch {
+  //   // no write permission / disk full — the map just stays online-only
+  // } finally {
+  //   _running = false;
+  // }
+  // return fetched;
+  void wayfinding;
+  void opts;
+  return 0;
 }
 
 /** Best-effort size check — how many tiles are currently cached on disk. */
