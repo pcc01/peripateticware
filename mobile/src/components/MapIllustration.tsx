@@ -9,10 +9,34 @@ interface MapIllustrationProps {
   height: number;
 }
 
+// Map-pin silhouette (rounded head, pointed base) built from a single
+// `size` scalar, not independent w/h fractions. These screens pass
+// full-bleed, non-square width/height (a phone is ~1:2.2), so a pin whose
+// x-offsets scale with width and y-offsets scale with height independently
+// comes out stretched tall and thin instead of round. Keeping both axes
+// derived from one scalar keeps the pin's proportions fixed regardless of
+// the container's aspect ratio.
+function teardropPinPath(cx: number, cy: number, size: number): string {
+  const rx = size / 2;
+  const ry = size * 0.62;
+  const tipY = cy + size * 0.85;
+  return (
+    `M${cx - rx},${cy} ` +
+    `Q${cx - rx},${cy - ry} ${cx},${cy - ry} ` +
+    `Q${cx + rx},${cy - ry} ${cx + rx},${cy} ` +
+    `Q${cx + rx},${cy + ry * 0.3} ${cx},${tipY} ` +
+    `Q${cx - rx},${cy + ry * 0.3} ${cx - rx},${cy}Z`
+  );
+}
+
 export default function MapIllustration({ theme, themeName, width, height }: MapIllustrationProps) {
   const { mapBase: b, mapInk: ink, mapAccent: acc } = theme;
   const w = width;
   const h = height;
+  // Reference size for pin/halo shapes — tied to width only (not height),
+  // so onboarding's full-screen-height calls don't stretch them. See
+  // teardropPinPath above.
+  const pinSize = w * 0.08;
 
   if (themeName === 'atmosphere') {
     return (
@@ -25,7 +49,7 @@ export default function MapIllustration({ theme, themeName, width, height }: Map
           <Line key={`v${i}`} x1={w * f} y1={0} x2={w * f} y2={h} stroke={ink} strokeWidth="0.8" opacity={0.5} />
         ))}
         <Ellipse cx={w * 0.3} cy={h * 0.45} rx={w * 0.18} ry={h * 0.12} fill={ink} opacity={0.15} />
-        <Path d={`M${w*.1},${h*.45} Q${w*.2},${h*.38} ${w*.3},${h*.36} Q${w*.4},${h*.34} ${w*.42},${h*.45} Q${w*.4},${h*.54} ${w*.27},${h*.52} Q${w*.12},${h*.5} ${w*.1},${h*.45}Z`} fill={acc} opacity={0.2} />
+        <Path d={teardropPinPath(w * 0.3, h * 0.44, pinSize * 1.6)} fill={acc} opacity={0.2} />
         <Circle cx={w * 0.3} cy={h * 0.44} r={7} fill={acc} opacity={0.9} />
         <Circle cx={w * 0.3} cy={h * 0.44} r={3.5} fill={b} opacity={0.8} />
         <Circle cx={w * 0.3} cy={h * 0.44} r={16} fill={acc} opacity={0.1} />
@@ -65,7 +89,7 @@ export default function MapIllustration({ theme, themeName, width, height }: Map
       {[[0.1,0.48],[0.16,0.5],[0.2,0.47],[0.13,0.52],[0.18,0.53]].map(([fx,fy],i) => (
         <Circle key={i} cx={w*fx} cy={h*fy} r="4" fill={acc} opacity={0.35} />
       ))}
-      <Path d={`M${w*.16},${h*.48} Q${w*.13},${h*.43} ${w*.13},${h*.4} Q${w*.13},${h*.36} ${w*.17},${h*.36} Q${w*.21},${h*.36} ${w*.21},${h*.4} Q${w*.21},${h*.43} ${w*.16},${h*.48}Z`} fill={acc} opacity={0.9} />
+      <Path d={teardropPinPath(w * 0.165, h * 0.4, pinSize)} fill={acc} opacity={0.9} />
       <Circle cx={w*.165} cy={h*.39} r={3.5} fill={b} opacity={0.8} />
       <Circle cx={w*.165} cy={h*.44} r={14} fill={acc} opacity={0.1} />
     </Svg>
