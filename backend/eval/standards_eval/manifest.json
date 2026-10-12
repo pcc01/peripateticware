@@ -1,0 +1,66 @@
+{
+  "_comment": "Framework ids chosen from the prod `frameworks` run on 2026-09-24 (English editions). grade_from_code is used where education_levels is unusable: TX has none; GA stamps every item 09-12. GA science is not in the database, so it is left out. Set pdf.pages for GA math and NC math after `pdf-pages`.",
+  "grade_band": ["06", "07", "08"],
+  "sample_per_target": 40,
+  "top_k": 5,
+  "seed": 13,
+  "targets": [
+    {
+      "state": "TX", "state_name": "Texas", "subject": "math",
+      "framework_ids": ["bc997e24-7f3b-5df0-a0cd-3a8ac9cf0e2e"],
+      "grade_from_code": [
+        ["^111\\.26\\.", 6], ["^111\\.27\\.", 7], ["^111\\.28\\.", 8],
+        ["^111\\.29\\.", 6], ["^111\\.30\\.", 7], ["^111\\.31\\.", 8]
+      ],
+      "_grade_note": "111.26-.28 = Grades 6-8; 111.29-.31 = Grade 6-8 Middle School Advanced Mathematics (adopted 2025).",
+      "pdf": {
+        "url": "https://tea.texas.gov/laws-and-rules/sboe-rules-tac/sboe-tac-currently-effect/ch111b.pdf",
+        "path": "/app/logs/standards_eval/pdfs/tx_math_ch111b.pdf",
+        "pages": null,
+        "verified": true
+      }
+    },
+    {
+      "state": "TX", "state_name": "Texas", "subject": "science",
+      "framework_ids": ["2ccca18f-b9cf-5710-8e66-13be2b1b71ba"],
+      "grade_from_code": [["^112\\.26\\.", 6], ["^112\\.27\\.", 7], ["^112\\.28\\.", 8]],
+      "_grade_note": "112.26-.28 = Grades 6-8 science (adopted 2021, in effect 2024-25). Older 112.18-.20 are deliberately excluded to match the current PDF.",
+      "pdf": {
+        "url": "https://tea.texas.gov/laws-and-rules/sboe-rules-tac/sboe-tac-currently-effect/ch112b.pdf",
+        "path": "/app/logs/standards_eval/pdfs/tx_science_ch112b.pdf",
+        "pages": null,
+        "verified": true
+      }
+    },
+    {
+      "state": "GA", "state_name": "Georgia", "subject": "math",
+      "framework_ids": ["e9dd7229-3558-4df2-85c6-57b8938f6180"],
+      "grade_from_code": [["^6\\.", 6], ["^7\\.", 7], ["^8\\.", 8]],
+      "_grade_note": "Every item in this framework has education_levels 09-12, including K-8 items. Grade comes from the code prefix.",
+      "pdf": {
+        "url": "https://lor2.gadoe.org/gadoe/file/1d6838d1-8779-4109-9e54-e179997dc18f/1/Georgia-K-8-Mathematics-Standards.pdf",
+        "path": "/app/logs/standards_eval/pdfs/ga_math_k8.pdf",
+        "pages": null,
+        "_pages_note": "K-8 document: set to the grade 6-8 pages after running pdf-pages.",
+        "verified": true
+      }
+    },
+    {
+      "state": "NC", "state_name": "North Carolina", "subject": "math",
+      "framework_ids": ["c649d809-d7cb-11e8-824f-0242ac160002"],
+      "pdf": {
+        "url": "https://docs.google.com/document/d/1ZCt83aTtuev58rHlZkakK989vziGI3eLk2xNXi8u_4o/export?format=pdf",
+        "path": "/app/logs/standards_eval/pdfs/nc_math_k12.pdf",
+        "pages": null,
+        "_pages_note": "NC DPI now publishes the K-12 math standards as a Google Doc; this is its PDF export. Set to the grade 6-8 pages after running pdf-pages.",
+        "verified": true
+      }
+    },
+    {
+      "state": "NC", "state_name": "North Carolina", "subject": "science",
+      "framework_ids": ["47e89cb5-3293-47d2-a002-92373efd6b7a"],
+      "_pdf_note": "No official PDF located for the 2023 NC science standards; CASE-only target (retrieval and alignment, no PDF comparison)."
+    }
+  ],
+  "human_queries": []
+}
