@@ -10,6 +10,7 @@ import StorySection from './landing/StorySection';
 import { PhoneCarousel } from './PhoneCarousel';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { Seo } from './Seo';
+import { Crow } from './Crow';
 import { usePageBlocks } from '../hooks/usePageBlocks';
 import './PhoneCarousel.css';
 import '../styles/landing.css';
@@ -131,12 +132,22 @@ export const LandingPage: React.FC = () => {
     ],
     teacher: [
       {
-        title: t('phone_carousel.teacher.1.title', 'Create Activity — River Study'),
-        prompt: t('phone_carousel.teacher.1.prompt', "Set location, objectives, and cognitive level. Peri generates guiding questions automatically."),
-        emoji: '🗺️',
+        // Mirrors the real (tabs)/teacher-dashboard.tsx stat row — general
+        // activity creation (grade bands, standards, AI-assisted drafting)
+        // is web-only, so this screen (not an AI "create activity" flow)
+        // is what the teacher app actually opens to.
+        title: t('phone_carousel.teacher.dashboard.title', 'Teacher Dashboard'),
+        subtitle: t('phone_carousel.teacher.dashboard.subtitle', 'This week'),
+        emoji: '🏫',
         backgroundColor: '#eef2ff',
-        badge: t('phone_carousel.teacher.1.badge', 'Setup'),
-        location: 'Activity Builder'
+        badge: t('phone_carousel.teacher.dashboard.badge', 'Overview'),
+        badgeColor: '#4a5fc1',
+        location: t('phone_carousel.teacher.dashboard.location', 'Recent Activities'),
+        stats: [
+          { label: t('phone_carousel.teacher.dashboard.stat.1.label', 'Students'), value: '28' },
+          { label: t('phone_carousel.teacher.dashboard.stat.2.label', 'Classes'), value: '3' },
+          { label: t('phone_carousel.teacher.dashboard.stat.3.label', 'Active'), value: '5' },
+        ],
       },
       {
         title: t('phone_carousel.teacher.2.title', 'Live Session Monitor'),
@@ -147,16 +158,21 @@ export const LandingPage: React.FC = () => {
         location: 'Sessions Dashboard'
       },
       {
-        title: t('phone_carousel.teacher.3.title', 'Peri AI Suggestions'),
-        prompt: t('phone_carousel.teacher.3.prompt', "Based on your subject and location, here are 4 Bloom's-aligned activity ideas…"),
-        emoji: '✨',
+        // Reverse-scavenger-hunt proposal review (app/teacher-proposals.tsx)
+        // — a real mobile screen, unlike the AI activity-suggestion flow
+        // this used to show, which only exists in the web builder.
+        title: t('phone_carousel.teacher.proposal.title', 'Review a Proposal'),
+        subtitle: t('phone_carousel.teacher.proposal.subtitle', 'From Jordan M. · Submitted today'),
+        prompt: t('phone_carousel.teacher.proposal.prompt', '"Find and photograph 5 native plants along the creek trail." — a challenge Jordan designed and submitted for your approval.'),
+        emoji: '🧭',
         backgroundColor: '#faf5ff',
-        badge: t('phone_carousel.teacher.3.badge', 'AI Assist'),
-        location: 'Activity Builder'
+        badge: t('phone_carousel.teacher.proposal.badge', 'Proposal'),
+        badgeColor: '#9333ea',
+        location: t('phone_carousel.teacher.proposal.location', 'Proposals Queue'),
       },
       {
-        title: t('phone_carousel.teacher.4.title', 'Multi-Step Hunt — 6 stops'),
-        prompt: t('phone_carousel.teacher.4.prompt', "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."),
+        title: t('phone_carousel.teacher.4.title', 'New Scavenger Hunt — 3 stops'),
+        prompt: t('phone_carousel.teacher.4.prompt', "Walk the route and drop a stop wherever you're standing. Set the subject, learning level, and challenge — then publish right from the field."),
         emoji: '🗺️',
         backgroundColor: '#eef2ff',
         badge: t('phone_carousel.teacher.4.badge', 'Route Builder'),
@@ -238,45 +254,41 @@ export const LandingPage: React.FC = () => {
         ],
       },
       {
-        emoji: '📋',
+        // Mirrors app/(tabs)/homeschool-dashboard.tsx's "Children" tab — per-
+        // child Sessions/Completed stats + overall progress. Standards
+        // coverage and portfolio export are web-only, so they don't belong
+        // in a phone mockup; this is what the app actually shows instead.
+        emoji: '🧑‍🎓',
         backgroundColor: '#f0fdf4',
-        title: t('phone_carousel.homeschool.2.title', 'Standards Coverage'),
-        subtitle: t('phone_carousel.homeschool.2.subtitle', 'Texas Homeschool Requirements'),
-        badge: t('phone_carousel.homeschool.2.badge', '68% Met'),
+        title: t('phone_carousel.homeschool.children.title', 'Emma — Grade 4'),
+        subtitle: t('phone_carousel.homeschool.children.subtitle', 'Children · This term'),
+        badge: t('phone_carousel.homeschool.children.badge', '68% Progress'),
         badgeColor: '#16a34a',
-        location: 'Coverage Dashboard',
+        location: t('phone_carousel.homeschool.children.location', 'Barton Creek Greenbelt'),
         stats: [
-          { label: t('phone_carousel.homeschool.2.stat.1.label', 'Met'), value: '17' },
-          { label: t('phone_carousel.homeschool.2.stat.2.label', 'Partial'), value: '5' },
-          { label: t('phone_carousel.homeschool.2.stat.3.label', 'Gaps'), value: '3' },
-        ],
-        tasks: [
-          { text: t('phone_carousel.homeschool.2.task.1.text', 'Science — Earth Systems ✓'), done: true },
-          { text: t('phone_carousel.homeschool.2.task.2.text', 'Math — Measurement ✓'), done: true },
-          { text: t('phone_carousel.homeschool.2.task.3.text', 'History — Texas Geography'), done: false },
-          { text: t('phone_carousel.homeschool.2.task.4.text', 'Language Arts — Research'), done: false },
+          { label: t('phone_carousel.homeschool.children.stat.1.label', 'Sessions'), value: '24' },
+          { label: t('phone_carousel.homeschool.children.stat.2.label', 'Completed'), value: '17' },
         ],
       },
       {
-        emoji: '📄',
+        // Mirrors (tabs)/teacher-dashboard.tsx, which HOMESCHOOL accounts
+        // see as their primary tab (a homeschool parent owns activities the
+        // same way a teacher does — see that file's own header comment).
+        emoji: '🏕️',
         backgroundColor: '#ecfdf5',
-        title: t('phone_carousel.homeschool.3.title', 'Portfolio Ready'),
-        subtitle: t('phone_carousel.homeschool.3.subtitle', 'Spring 2026 · Emma Rivera'),
-        badge: t('phone_carousel.homeschool.3.badge', 'Export Ready'),
+        title: t('phone_carousel.homeschool.dashboard.title', 'Dashboard'),
+        subtitle: t('phone_carousel.homeschool.dashboard.subtitle', 'This week · Emma & Lucas'),
+        badge: t('phone_carousel.homeschool.dashboard.badge', 'Overview'),
         badgeColor: '#16a34a',
-        location: 'Export',
+        location: t('phone_carousel.homeschool.dashboard.location', 'Recent Activities'),
         stats: [
-          { label: t('phone_carousel.homeschool.3.stat.1.label', 'Activities'), value: '24' },
-          { label: t('phone_carousel.homeschool.3.stat.2.label', 'Evidence'), value: '61' },
-          { label: t('phone_carousel.homeschool.3.stat.3.label', 'Pages'), value: '18' },
+          { label: t('phone_carousel.homeschool.dashboard.stat.1.label', 'Active'), value: '2' },
+          { label: t('phone_carousel.homeschool.dashboard.stat.2.label', 'Pending'), value: '1' },
         ],
         tasks: [
-          { text: t('phone_carousel.homeschool.3.task.1.text', 'Cover page ✓'), done: true },
-          { text: t('phone_carousel.homeschool.3.task.2.text', 'Activity log ✓'), done: true },
-          { text: t('phone_carousel.homeschool.3.task.3.text', 'Standards coverage ✓'), done: true },
-          { text: t('phone_carousel.homeschool.3.task.4.text', 'Evidence thumbnails ✓'), done: true },
+          { text: t('phone_carousel.homeschool.dashboard.task.1.text', 'River Ecosystem Study — published'), done: true },
+          { text: t('phone_carousel.homeschool.dashboard.task.2.text', 'Capitol Field Trip — draft'), done: false },
         ],
-        prompt: t('phone_carousel.homeschool.3.prompt', 'PDF portfolio is ready. Includes all required TX state reporting fields.'),
       },
       {
         emoji: '🧭',
@@ -395,7 +407,7 @@ export const LandingPage: React.FC = () => {
       <nav className="sticky top-0 z-50" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div className="landing-nav-inner">
           <h1 className="landing-nav-logo">
-            <span>🧭</span>{PRODUCT_NAME}
+            <Crow size={32} />{PRODUCT_NAME}
           </h1>
 
           <div className="md-nav-links landing-nav-links">

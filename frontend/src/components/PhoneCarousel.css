@@ -96,6 +96,13 @@
   line-height: 1.4;
 }
 
+.carousel-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .carousel-title {
   font-size: 12px;
   font-weight: 700;
@@ -103,10 +110,87 @@
   color: #1e1a14;
 }
 
+.carousel-badge {
+  flex-shrink: 0;
+  font-size: 8px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 .carousel-subtitle {
   font-size: 10px;
   color: #6b6150; /* was #7a6f5e — 4.06:1 against .carousel-placeholder's #dceedd bg, failed WCAG AA (needs 4.5:1); #6b6150 gives 5.02:1. Same fix already applied to mobile's fieldGuide theme (src/theme/tokens.ts) — this is the web copy of the same color that never got it. */
   margin: 0 0 8px 0;
+}
+
+.carousel-location {
+  font-size: 9px;
+  color: #6b6150;
+  margin: -4px 0 8px 0;
+}
+
+.carousel-stats {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 10px 0;
+}
+
+.carousel-stat {
+  flex: 1;
+  text-align: center;
+  background-color: #f5f0e6;
+  border: 1px solid #e0d8cb;
+  border-radius: 8px;
+  padding: 6px 4px;
+}
+
+.carousel-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e1a14;
+}
+
+.carousel-stat-label {
+  font-size: 8px;
+  color: #6b6150;
+  margin-top: 2px;
+}
+
+.carousel-tasks {
+  list-style: none;
+  margin: 0 0 10px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.carousel-task {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 10px;
+  color: #1e1a14;
+}
+
+.carousel-task.done {
+  color: #6b6150;
+}
+
+.carousel-task-check {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #4a7c59;
+}
+
+.carousel-task:not(.done) .carousel-task-check {
+  color: #b0a68f;
 }
 
 .carousel-prompt,

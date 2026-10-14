@@ -19,6 +19,11 @@ export interface CarouselScreen {
   response?: string;
   imageUrl?: string;
   backgroundColor?: string;
+  badge?: string;
+  badgeColor?: string;
+  location?: string;
+  stats?: { label: string; value: string }[];
+  tasks?: { text: string; done: boolean }[];
 }
 
 interface PhoneCarouselProps {
@@ -76,9 +81,44 @@ export function PhoneCarousel({ screens, personaColor }: PhoneCarouselProps): Re
             )}
 
             <div className="carousel-text">
-              <h3 className="carousel-title">{currentScreen.title}</h3>
+              <div className="carousel-title-row">
+                <h3 className="carousel-title">{currentScreen.title}</h3>
+                {currentScreen.badge && (
+                  <span
+                    className="carousel-badge"
+                    style={{ backgroundColor: currentScreen.badgeColor || '#4a7c59' }}
+                  >
+                    {currentScreen.badge}
+                  </span>
+                )}
+              </div>
               {currentScreen.subtitle && (
                 <p className="carousel-subtitle">{currentScreen.subtitle}</p>
+              )}
+              {currentScreen.location && (
+                <p className="carousel-location">📍 {currentScreen.location}</p>
+              )}
+
+              {currentScreen.stats && (
+                <div className="carousel-stats">
+                  {currentScreen.stats.map((stat, i) => (
+                    <div key={i} className="carousel-stat">
+                      <div className="carousel-stat-value">{stat.value}</div>
+                      <div className="carousel-stat-label">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {currentScreen.tasks && (
+                <ul className="carousel-tasks">
+                  {currentScreen.tasks.map((task, i) => (
+                    <li key={i} className={`carousel-task ${task.done ? 'done' : ''}`}>
+                      <span className="carousel-task-check">{task.done ? '✓' : '○'}</span>
+                      {task.text}
+                    </li>
+                  ))}
+                </ul>
               )}
 
               {currentScreen.prompt && (
