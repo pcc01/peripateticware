@@ -34,6 +34,26 @@ logger = logging.getLogger(__name__)
 # successfully find a real POI: https://meta.wikimedia.org/wiki/User-Agent_policy
 WIKIMEDIA_USER_AGENT = "PeripateticwareApp/1.0 (contact: support@peripateticware.com)"
 
+# The broadest-coverage edition, and the only one safe to assume as a
+# universal fallback when a student's preferred-language edition has no
+# usable coverage for a given place.
+WIKIMEDIA_FALLBACK_LANG = "en"
+
+
+def normalize_wiki_lang(lang: Optional[str]) -> str:
+    """
+    Normalize a UI locale (i18next-style, e.g. "fr-CA", "pt-BR", "zh") to a
+    real Wikipedia edition code. Wikipedia editions are keyed on the
+    primary language subtag only -- there is no fr-ca.wikipedia.org or
+    pt-br.wikipedia.org, just fr.wikipedia.org and pt.wikipedia.org -- so
+    the region suffix must be dropped before it's used to build a
+    {lang}.wikipedia.org URL, or every regional locale would 404.
+    """
+    if not lang:
+        return WIKIMEDIA_FALLBACK_LANG
+    primary = lang.strip().split("-")[0].split("_")[0].lower()
+    return primary or WIKIMEDIA_FALLBACK_LANG
+
 # Shared, connection-pooled client for all Overpass/Nominatim/Wikipedia/
 # Wikidata calls in this module. Every call site here used to open its own
 # `async with httpx.AsyncClient()` — a fresh TCP+TLS handshake per hop, even
@@ -84,7 +104,14 @@ class LocationData:
     image_url: Optional[str] = None
     wikipedia_url: Optional[str] = None
     wikidata_id: Optional[str] = None
-    
+
+    # Which language edition the enrichment content (description, etc.)
+    # actually ended up in. Set whenever a lang-aware fetch runs — may
+    # differ from the lang that was *requested* (e.g. UI locale "es") when
+    # that edition had no coverage and the English fallback engaged. Never
+    # silently relabel a fallback as if it were native to the request.
+    content_language: Optional[str] = None
+
     # Educational enrichment
     subjects: List[str] = None
     keywords: List[str] = None
@@ -117,16 +144,18 @@ class LocationBackend(ABC):
         longitude: float,
         radius_meters: int = 5000,
         location_types: Optional[List[str]] = None,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
         """Search for nearby locations"""
         pass
-    
+
     @abstractmethod
     async def enrich_location(
         self,
         location: LocationData,
-        subject: Optional[str] = None
+        subject: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> LocationData:
         """Add educational data to location"""
         pass
@@ -148,11 +177,17 @@ class OpenStreetMapBackend(LocationBackend):
         longitude: float,
         radius_meters: int = 5000,
         location_types: Optional[List[str]] = None,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
         """
         Search using Overpass API
         Returns OSM data for educational locations
+
+        `lang` is accepted for interface parity with the other backends but
+        unused here -- Overpass/OSM discovery itself has no language axis,
+        only the Wikidata/Wikipedia enrichment step (enrich_location below)
+        does.
         """
         
         # Build Overpass query for educational locations
@@ -219,21 +254,22 @@ class OpenStreetMapBackend(LocationBackend):
     async def enrich_location(
         self,
         location: LocationData,
-        subject: Optional[str] = None
+        subject: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> LocationData:
         """Enrich OSM data with Wikidata/Wikipedia"""
 
         # Get Wikidata ID from OSM tags if available
         if not location.wikidata_id:
-            location = await fetch_wikidata_id_by_name(location)
+            location = await fetch_wikidata_id_by_name(location, lang=lang)
 
         # Fetch from Wikidata
         if location.wikidata_id:
-            location = await enrich_with_wikidata(location)
+            location = await enrich_with_wikidata(location, lang=lang)
 
         # Fetch from Wikipedia
         if location.wikipedia_url:
-            location = await enrich_with_wikipedia(location)
+            location = await enrich_with_wikipedia(location, lang=lang)
 
         # Add educational metadata
         location = add_educational_metadata(location, subject)
@@ -409,7 +445,7 @@ class OpenStreetMapBackend(LocationBackend):
 # step afterward, hence sharing this code instead of duplicating it.
 # ─────────────────────────────────────────────────────────────────────────
 
-async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
+async def fetch_wikidata_id_by_name(location: LocationData, lang: str = WIKIMEDIA_FALLBACK_LANG) -> LocationData:
     """Fetch Wikidata ID by searching Wikidata for the location's name"""
     if location.name:
         try:
@@ -419,7 +455,7 @@ async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
                 params={
                     "action": "wbsearchentities",
                     "search": location.name,
-                    "language": "en",
+                    "language": lang,
                     "format": "json"
                 },
             )
@@ -434,7 +470,7 @@ async def fetch_wikidata_id_by_name(location: LocationData) -> LocationData:
     return location
 
 
-async def enrich_with_wikidata(location: LocationData) -> LocationData:
+async def enrich_with_wikidata(location: LocationData, lang: str = WIKIMEDIA_FALLBACK_LANG) -> LocationData:
     """Fetch enrichment data from Wikidata"""
     if not location.wikidata_id:
         return location
@@ -468,21 +504,33 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
             # enrich_with_wikipedia's full article synopsis is what
             # "points of interest about the location" actually means,
             # and must never get clobbered by this one-liner regardless
-            # of which function happens to run first.
-            if not location.description and "en" in entity.get("descriptions", {}):
-                location.description = entity["descriptions"]["en"]["value"]
+            # of which function happens to run first. Prefer the requested
+            # language's description, falling back to English only when
+            # Wikidata has no description in that language at all.
+            descriptions = entity.get("descriptions", {})
+            if not location.description:
+                desc_entry = descriptions.get(lang) or descriptions.get(WIKIMEDIA_FALLBACK_LANG)
+                if desc_entry:
+                    location.description = desc_entry["value"]
 
-            # Cross-link to the English Wikipedia article via Wikidata's
-            # own sitelinks. OSM tags frequently carry a wikidata= tag
-            # without a matching wikipedia= tag (or no tags at all, when
-            # we got here via the name-search fallback) — without this,
-            # location.wikipedia_url stays empty, enrich_with_wikipedia()
-            # never runs, and the panel is stuck showing only the short
-            # Wikidata description above instead of a real synopsis.
+            # Cross-link to the requested-language Wikipedia article via
+            # Wikidata's own sitelinks, falling back to the English edition
+            # only when that language has no sitelink at all. OSM tags
+            # frequently carry a wikidata= tag without a matching
+            # wikipedia= tag (or no tags at all, when we got here via the
+            # name-search fallback) — without this, location.wikipedia_url
+            # stays empty, enrich_with_wikipedia() never runs, and the
+            # panel is stuck showing only the short Wikidata description
+            # above instead of a real synopsis.
             if not location.wikipedia_url:
-                enwiki_title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
-                if enwiki_title:
-                    location.wikipedia_url = f"https://en.wikipedia.org/wiki/{enwiki_title.replace(' ', '_')}"
+                sitelinks = entity.get("sitelinks", {})
+                site_title = sitelinks.get(f"{lang}wiki", {}).get("title")
+                site_lang = lang
+                if not site_title:
+                    site_title = sitelinks.get(f"{WIKIMEDIA_FALLBACK_LANG}wiki", {}).get("title")
+                    site_lang = WIKIMEDIA_FALLBACK_LANG
+                if site_title:
+                    location.wikipedia_url = f"https://{site_lang}.wikipedia.org/wiki/{site_title.replace(' ', '_')}"
 
             # Get inception date
             if "P571" in claims:  # inception
@@ -515,19 +563,18 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
                             "action": "wbgetentities",
                             "ids": creator_id,
                             "props": "labels",
-                            "languages": "en",
+                            "languages": f"{lang}|{WIKIMEDIA_FALLBACK_LANG}",
                             "format": "json",
                         },
                     )
                     if label_resp.status_code == 200:
                         label_data = label_resp.json()
-                        label = (
+                        labels = (
                             label_data.get("entities", {})
                             .get(creator_id, {})
                             .get("labels", {})
-                            .get("en", {})
-                            .get("value")
                         )
+                        label = labels.get(lang, {}).get("value") or labels.get(WIKIMEDIA_FALLBACK_LANG, {}).get("value")
                         location.architect_or_artist = label or creator_id
                 except Exception:
                     location.architect_or_artist = creator_id
@@ -538,8 +585,60 @@ async def enrich_with_wikidata(location: LocationData) -> LocationData:
     return location
 
 
-async def enrich_with_wikipedia(location: LocationData) -> LocationData:
-    """Fetch enrichment from Wikipedia"""
+def _wikipedia_host_lang(wikipedia_url: str) -> Optional[str]:
+    """Pull the edition code out of a fully-qualified Wikipedia URL
+    (e.g. "https://es.wikipedia.org/wiki/..." -> "es"), or None if it
+    doesn't look like one."""
+    try:
+        host = wikipedia_url.split("://", 1)[-1].split("/", 1)[0]
+        if host.endswith(".wikipedia.org"):
+            return host[: -len(".wikipedia.org")]
+    except Exception:
+        pass
+    return None
+
+
+async def _fetch_wikipedia_extract(client: httpx.AsyncClient, host_lang: str, title: str) -> Optional[Dict[str, Any]]:
+    """One extract fetch against a specific {host_lang}.wikipedia.org edition."""
+    response = await client.get(
+        f"https://{host_lang}.wikipedia.org/w/api.php",
+        params={
+            "action": "query",
+            "titles": title,
+            # pageprops added so we can pull the linked Wikidata QID
+            # (wikibase_item) from this same response — previously a
+            # separate wbsearchentities round trip to Wikidata was
+            # always made afterward to find it by name-matching,
+            # which is both slower (one more network hop in the
+            # critical path) and less reliable (name search can
+            # match the wrong entity). One fewer sequential request
+            # when this succeeds.
+            "prop": "extracts|pageimages|pageprops",
+            "exintro": True,
+            "explaintext": True,
+            "format": "json"
+        },
+    )
+    if response.status_code != 200:
+        return None
+    data = response.json()
+    pages = data.get("query", {}).get("pages", {})
+    for page_id, page in pages.items():
+        if page_id != "-1" and page.get("extract"):
+            return page
+    return None
+
+
+async def enrich_with_wikipedia(location: LocationData, lang: str = WIKIMEDIA_FALLBACK_LANG) -> LocationData:
+    """Fetch enrichment from Wikipedia.
+
+    Tries the requested-language edition first. If that edition's article
+    is missing or has an empty extract, retries against en.wikipedia.org
+    (the broadest-coverage edition) rather than returning nothing — but
+    `location.content_language` always records which edition the content
+    actually came from, so a fallback is never silently presented as if it
+    were the requested language.
+    """
     if not location.wikipedia_url:
         return location
 
@@ -547,48 +646,36 @@ async def enrich_with_wikipedia(location: LocationData) -> LocationData:
         # Extract page title
         title = location.wikipedia_url.split("/wiki/")[-1]
 
+        # The URL may already be host-qualified to a specific edition (a
+        # Wikidata sitelink or an OSM wikipedia= tag resolved it already) —
+        # honor that language rather than overriding it with the requested
+        # UI locale, which would silently swap in a different article than
+        # the one actually linked.
+        article_lang = _wikipedia_host_lang(location.wikipedia_url) or lang
+
         client = get_http_client()
-        response = await client.get(
-            "https://en.wikipedia.org/w/api.php",
-            params={
-                "action": "query",
-                "titles": title,
-                # pageprops added so we can pull the linked Wikidata QID
-                # (wikibase_item) from this same response — previously a
-                # separate wbsearchentities round trip to Wikidata was
-                # always made afterward to find it by name-matching,
-                # which is both slower (one more network hop in the
-                # critical path) and less reliable (name search can
-                # match the wrong entity). One fewer sequential request
-                # when this succeeds.
-                "prop": "extracts|pageimages|pageprops",
-                "exintro": True,
-                "explaintext": True,
-                "format": "json"
-            },
-        )
+        page = await _fetch_wikipedia_extract(client, article_lang, title)
 
-        if response.status_code == 200:
-            data = response.json()
-            pages = data.get("query", {}).get("pages", {})
+        if not page and article_lang != WIKIMEDIA_FALLBACK_LANG:
+            page = await _fetch_wikipedia_extract(client, WIKIMEDIA_FALLBACK_LANG, title)
+            if page:
+                article_lang = WIKIMEDIA_FALLBACK_LANG
 
-            for page_id, page in pages.items():
-                if page_id != "-1":
-                    if "extract" in page:
-                        # 500 chars was one clipped sentence — not what
-                        # "tell me interesting points about this place"
-                        # means. `exintro=True` already limits this to
-                        # just the lead section (before the first
-                        # heading), so it won't run away into the whole
-                        # article; 2000 chars comfortably fits a full
-                        # multi-sentence synopsis for most landmarks.
-                        location.description = page["extract"][:2000]
-                    if "thumbnail" in page:
-                        location.image_url = page["thumbnail"]["source"]
-                    if not location.wikidata_id:
-                        qid = page.get("pageprops", {}).get("wikibase_item")
-                        if qid:
-                            location.wikidata_id = qid
+        if page:
+            # 500 chars was one clipped sentence — not what "tell me
+            # interesting points about this place" means. `exintro=True`
+            # already limits this to just the lead section (before the
+            # first heading), so it won't run away into the whole
+            # article; 2000 chars comfortably fits a full multi-sentence
+            # synopsis for most landmarks.
+            location.description = page["extract"][:2000]
+            location.content_language = article_lang
+            if "thumbnail" in page:
+                location.image_url = page["thumbnail"]["source"]
+            if not location.wikidata_id:
+                qid = page.get("pageprops", {}).get("wikibase_item")
+                if qid:
+                    location.wikidata_id = qid
 
     except Exception as e:
         logger.warning(f"Error enriching with Wikipedia: {e}")
@@ -669,9 +756,10 @@ class NominatimBackend(LocationBackend):
         longitude: float,
         radius_meters: int = 5000,
         location_types: Optional[List[str]] = None,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
-        """Search using Nominatim reverse geocoding"""
+        """Search using Nominatim reverse geocoding (lang unused: geocoding-only, no language axis)"""
         
         try:
             client = get_http_client()
@@ -723,7 +811,8 @@ class NominatimBackend(LocationBackend):
     async def enrich_location(
         self,
         location: LocationData,
-        subject: Optional[str] = None
+        subject: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> LocationData:
         """Nominatim doesn't provide enrichment, just geocoding"""
         location.source = "nominatim"
@@ -763,17 +852,27 @@ class WikipediaGeosearchBackend(LocationBackend):
         longitude: float,
         radius_meters: int = 5000,
         location_types: Optional[List[str]] = None,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
-        """Search using Wikipedia's geosearch API (list=geosearch)"""
+        """
+        Search using Wikipedia's geosearch API (list=geosearch).
+
+        Tries the requested-language edition's geosearch first. If it
+        finds zero articles near this coordinate, retries against
+        en.wikipedia.org — the only edition broad enough to safely assume
+        as a universal fallback — rather than silently falling through to
+        the other (non-Wikipedia) backends whenever a smaller-coverage
+        edition simply has nothing nearby.
+        """
 
         # Wikipedia's geosearch caps gsradius at 10,000 meters.
         gsradius = min(radius_meters, 10000)
 
-        try:
+        async def _geosearch(host_lang: str) -> list:
             client = get_http_client()
             response = await client.get(
-                "https://en.wikipedia.org/w/api.php",
+                f"https://{host_lang}.wikipedia.org/w/api.php",
                 params={
                     "action": "query",
                     "list": "geosearch",
@@ -783,13 +882,18 @@ class WikipediaGeosearchBackend(LocationBackend):
                     "format": "json",
                 },
             )
-
             if response.status_code != 200:
-                logger.error(f"Wikipedia geosearch error: {response.status_code}")
+                logger.error(f"Wikipedia geosearch error ({host_lang}): {response.status_code}")
                 return []
-
             data = response.json()
-            results = data.get("query", {}).get("geosearch", [])
+            return data.get("query", {}).get("geosearch", [])
+
+        try:
+            used_lang = lang
+            results = await _geosearch(lang)
+            if not results and lang != WIKIMEDIA_FALLBACK_LANG:
+                results = await _geosearch(WIKIMEDIA_FALLBACK_LANG)
+                used_lang = WIKIMEDIA_FALLBACK_LANG
 
             locations = []
             for r in results:
@@ -804,9 +908,13 @@ class WikipediaGeosearchBackend(LocationBackend):
                     address="",
                     # pageid is stable and unique — safer than slugifying
                     # the title, which can contain characters place_id
-                    # lookups elsewhere don't expect.
-                    place_id=f"wikipedia_{r.get('pageid')}",
-                    wikipedia_url=f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                    # lookups elsewhere don't expect. Scoped per-edition
+                    # (pageids aren't shared across languages) so the same
+                    # real-world place found via different editions gets
+                    # distinct cache entries instead of colliding.
+                    place_id=f"wikipedia_{used_lang}_{r.get('pageid')}",
+                    wikipedia_url=f"https://{used_lang}.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                    content_language=used_lang,
                     source="wikipedia",
                 ))
 
@@ -819,7 +927,8 @@ class WikipediaGeosearchBackend(LocationBackend):
     async def enrich_location(
         self,
         location: LocationData,
-        subject: Optional[str] = None
+        subject: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> LocationData:
         """Enrich a Wikipedia-discovered place with Wikidata + full extract"""
 
@@ -846,9 +955,9 @@ class WikipediaGeosearchBackend(LocationBackend):
         # Lincoln Memorial (both reached via the /enrich cache-miss path).
         wikidata_enriched = False
         if not location.wikipedia_url and not location.wikidata_id:
-            location = await fetch_wikidata_id_by_name(location)
+            location = await fetch_wikidata_id_by_name(location, lang=lang)
             if location.wikidata_id:
-                location = await enrich_with_wikidata(location)
+                location = await enrich_with_wikidata(location, lang=lang)
                 wikidata_enriched = True
 
         # Path A (wikipedia_url already set) lands here directly; Path B
@@ -857,7 +966,7 @@ class WikipediaGeosearchBackend(LocationBackend):
         # Wikidata QID via pageprops in the same request when one wasn't
         # already found, saving the separate name-search below.
         if location.wikipedia_url:
-            location = await enrich_with_wikipedia(location)
+            location = await enrich_with_wikipedia(location, lang=lang)
 
         # Final fallback: still no QID (e.g. Path A where the article has no
         # linked Wikidata item, or Path B where the name search above found
@@ -867,9 +976,9 @@ class WikipediaGeosearchBackend(LocationBackend):
         # Special:EntityData round trip.
         if not wikidata_enriched:
             if not location.wikidata_id:
-                location = await fetch_wikidata_id_by_name(location)
+                location = await fetch_wikidata_id_by_name(location, lang=lang)
             if location.wikidata_id:
-                location = await enrich_with_wikidata(location)
+                location = await enrich_with_wikidata(location, lang=lang)
 
         location = add_educational_metadata(location, subject)
 
@@ -932,7 +1041,8 @@ class MultiBackendLocationService:
         longitude: float,
         radius_meters: int = 5000,
         location_types: Optional[List[str]] = None,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
         """
         Search all configured backends concurrently, then pick a result by
@@ -955,7 +1065,7 @@ class MultiBackendLocationService:
         results = await asyncio.gather(
             *[
                 self.backends[name].search_nearby(
-                    latitude, longitude, radius_meters, location_types, query
+                    latitude, longitude, radius_meters, location_types, query, lang
                 )
                 for name in active_names
             ],
@@ -976,18 +1086,19 @@ class MultiBackendLocationService:
     async def enrich_location(
         self,
         location: LocationData,
-        subject: Optional[str] = None
+        subject: Optional[str] = None,
+        lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> LocationData:
         """Enrich using location's source backend or first available"""
-        
+
         backend_to_use = location.source if location.source in self.backends else self.backend_names[0]
-        
+
         if backend_to_use in self.backends:
             try:
-                return await self.backends[backend_to_use].enrich_location(location, subject)
+                return await self.backends[backend_to_use].enrich_location(location, subject, lang)
             except Exception as e:
                 logger.warning(f"Error enriching with {backend_to_use}: {e}")
-        
+
         return location
 
 

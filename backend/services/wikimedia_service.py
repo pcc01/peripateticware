@@ -28,16 +28,26 @@ class WikimediaLocationService:
     - Reverse geocoding to find nearby articles
     """
     
-    WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php"
+    WIKIPEDIA_API_URL_TEMPLATE = "https://{lang}.wikipedia.org/w/api.php"
     WIKIDATA_API_URL = "https://www.wikidata.org/w/api.php"
-    REVERSE_GEOCODE_API_URL = "https://en.wikipedia.org/w/api.php"
-    
+
+    # The broadest-coverage edition -- the only one safe to assume as a
+    # universal fallback when the requested-language edition has no
+    # coverage for a given place.
+    FALLBACK_LANG = "en"
+
     TIMEOUT = 10  # seconds
-    
+
+    @classmethod
+    def _wikipedia_api_url(cls, lang: str) -> str:
+        return cls.WIKIPEDIA_API_URL_TEMPLATE.format(lang=lang or cls.FALLBACK_LANG)
+
     @staticmethod
-    def create_location_hash(latitude: float, longitude: float) -> str:
-        """Create consistent hash for lat/lng coordinates"""
-        rounded = f"{latitude:.4f}_{longitude:.4f}"
+    def create_location_hash(latitude: float, longitude: float, lang: str = "en") -> str:
+        """Create consistent hash for lat/lng coordinates, scoped per language
+        so an English-cached result for a coordinate is never silently
+        served to a request for that same coordinate in another language."""
+        rounded = f"{latitude:.4f}_{longitude:.4f}_{lang}"
         return hashlib.md5(rounded.encode()).hexdigest()
     
     @classmethod
@@ -47,7 +57,8 @@ class WikimediaLocationService:
         longitude: float,
         location_name: str,
         db: AsyncSession = None,
-        use_cache: bool = True
+        use_cache: bool = True,
+        lang: str = "en"
     ) -> Dict[str, Any]:
         """
         Get comprehensive location context from Wikimedia
@@ -86,7 +97,7 @@ class WikimediaLocationService:
         try:
             # Check cache first if database available
             if db and use_cache:
-                location_hash = cls.create_location_hash(latitude, longitude)
+                location_hash = cls.create_location_hash(latitude, longitude, lang)
                 from models.assessment import LocationContext
                 
                 cache_result = await db.execute(
@@ -100,33 +111,51 @@ class WikimediaLocationService:
             
             # Fetch from APIs
             async with httpx.AsyncClient(timeout=cls.TIMEOUT) as client:
-                # 1. Reverse geocode to find nearby Wikipedia article
+                # 1. Reverse geocode to find nearby Wikipedia article in the
+                # requested language, falling back to English when that
+                # edition has no nearby article at all.
+                content_lang = lang or cls.FALLBACK_LANG
                 nearby_articles = await cls._find_nearby_articles(
-                    client, latitude, longitude
+                    client, latitude, longitude, lang=content_lang
                 )
-                
+                if not nearby_articles and content_lang != cls.FALLBACK_LANG:
+                    content_lang = cls.FALLBACK_LANG
+                    nearby_articles = await cls._find_nearby_articles(
+                        client, latitude, longitude, lang=content_lang
+                    )
+
                 wikipedia_data = None
                 wikidata_data = None
-                
+
                 if nearby_articles:
                     article_title = nearby_articles[0]
-                    
-                    # 2. Fetch Wikipedia article
+
+                    # 2. Fetch Wikipedia article — retry against English if
+                    # the requested-language article is missing or empty,
+                    # same fallback contract as the geosearch step above.
                     wikipedia_data = await cls._fetch_wikipedia_article(
-                        client, article_title
+                        client, article_title, lang=content_lang
                     )
-                    
+                    if not wikipedia_data and content_lang != cls.FALLBACK_LANG:
+                        content_lang = cls.FALLBACK_LANG
+                        wikipedia_data = await cls._fetch_wikipedia_article(
+                            client, article_title, lang=content_lang
+                        )
+
                     # 3. Get Wikidata ID and fetch Wikidata
                     if wikipedia_data:
                         wikidata_id = await cls._get_wikidata_id(
-                            client, article_title
+                            client, article_title, lang=content_lang
                         )
                         if wikidata_id:
                             wikidata_data = await cls._fetch_wikidata(
-                                client, wikidata_id
+                                client, wikidata_id, lang=content_lang
                             )
                 
-                # 4. Compile context
+                # 4. Compile context. content_language records which edition
+                # the content actually came from -- may differ from the
+                # requested `lang` when the fallback above engaged, and
+                # must never be silently reported as a match for it.
                 context = {
                     "location_name": location_name,
                     "latitude": latitude,
@@ -139,13 +168,14 @@ class WikimediaLocationService:
                     "educational_value": cls._generate_educational_summary(
                         wikipedia_data, wikidata_data
                     ),
+                    "content_language": content_lang if (wikipedia_data or wikidata_data) else None,
                     "success": bool(wikipedia_data or wikidata_data)
                 }
-                
+
                 # 5. Cache result if database available
                 if db and (wikipedia_data or wikidata_data):
                     await cls._cache_location_context(
-                        db, latitude, longitude, location_name, context
+                        db, latitude, longitude, location_name, context, lang=content_lang
                     )
                 
                 return context
@@ -164,12 +194,14 @@ class WikimediaLocationService:
                 "error": str(e)
             }
     
-    @staticmethod
+    @classmethod
     async def _find_nearby_articles(
+        cls,
         client: httpx.AsyncClient,
         latitude: float,
         longitude: float,
-        radius_km: int = 10
+        radius_km: int = 10,
+        lang: str = "en"
     ) -> list:
         """
         Find Wikipedia articles near coordinates using geosearch
@@ -187,12 +219,12 @@ class WikimediaLocationService:
             }
             
             response = await client.get(
-                "https://en.wikipedia.org/w/api.php",
+                cls._wikipedia_api_url(lang),
                 params=params
             )
             response.raise_for_status()
             data = response.json()
-            
+
             articles = [
                 item["title"]
                 for item in data.get("query", {}).get("geosearch", [])
@@ -205,10 +237,12 @@ class WikimediaLocationService:
             logger.error(f"Error in reverse geocode: {e}")
             return []
     
-    @staticmethod
+    @classmethod
     async def _fetch_wikipedia_article(
+        cls,
         client: httpx.AsyncClient,
-        title: str
+        title: str,
+        lang: str = "en"
     ) -> Optional[Dict[str, Any]]:
         """Fetch Wikipedia article data"""
         try:
@@ -221,24 +255,24 @@ class WikimediaLocationService:
                 "piprop": "original",
                 "format": "json"
             }
-            
+
             response = await client.get(
-                "https://en.wikipedia.org/w/api.php",
+                cls._wikipedia_api_url(lang),
                 params=params
             )
             response.raise_for_status()
             data = response.json()
-            
+
             pages = data.get("query", {}).get("pages", {})
             page = next(iter(pages.values()), None)
-            
-            if not page or "missing" in page:
+
+            if not page or "missing" in page or not page.get("extract"):
                 return None
-            
+
             return {
                 "title": page.get("title"),
                 "extract": page.get("extract", ""),
-                "url": f"https://en.wikipedia.org/wiki/{page.get('title', '').replace(' ', '_')}",
+                "url": f"https://{lang}.wikipedia.org/wiki/{page.get('title', '').replace(' ', '_')}",
                 "image_url": page.get("original", {}).get("source") if page.get("original") else None
             }
         
@@ -246,10 +280,12 @@ class WikimediaLocationService:
             logger.error(f"Error fetching Wikipedia article '{title}': {e}")
             return None
     
-    @staticmethod
+    @classmethod
     async def _get_wikidata_id(
+        cls,
         client: httpx.AsyncClient,
-        title: str
+        title: str,
+        lang: str = "en"
     ) -> Optional[str]:
         """Get Wikidata ID (Q-number) for Wikipedia article"""
         try:
@@ -259,9 +295,9 @@ class WikimediaLocationService:
                 "prop": "pageprops",
                 "format": "json"
             }
-            
+
             response = await client.get(
-                "https://en.wikipedia.org/w/api.php",
+                cls._wikipedia_api_url(lang),
                 params=params
             )
             response.raise_for_status()
@@ -283,7 +319,8 @@ class WikimediaLocationService:
     @staticmethod
     async def _fetch_wikidata(
         client: httpx.AsyncClient,
-        wikidata_id: str
+        wikidata_id: str,
+        lang: str = "en"
     ) -> Optional[Dict[str, Any]]:
         """Fetch structured data from Wikidata"""
         try:
@@ -291,25 +328,27 @@ class WikimediaLocationService:
                 "action": "wbgetentities",
                 "ids": wikidata_id,
                 "props": "descriptions|claims",
-                "languages": "en",
+                "languages": f"{lang}|en",
                 "format": "json"
             }
-            
+
             response = await client.get(
                 "https://www.wikidata.org/w/api.php",
                 params=params
             )
             response.raise_for_status()
             data = response.json()
-            
+
             entity = data.get("entities", {}).get(wikidata_id, {})
-            
+
             if not entity or "missing" in entity:
                 return None
-            
+
+            descriptions = entity.get("descriptions", {})
+            description = descriptions.get(lang, {}).get("value") or descriptions.get("en", {}).get("value")
             return {
                 "id": wikidata_id,
-                "description": entity.get("descriptions", {}).get("en", {}).get("value"),
+                "description": description,
                 "claims": entity.get("claims", {})
             }
         
@@ -413,13 +452,14 @@ class WikimediaLocationService:
         latitude: float,
         longitude: float,
         location_name: str,
-        context: Dict[str, Any]
+        context: Dict[str, Any],
+        lang: str = "en"
     ):
         """Cache location context in database"""
         try:
             from models.assessment import LocationContext
-            
-            location_hash = WikimediaLocationService.create_location_hash(latitude, longitude)
+
+            location_hash = WikimediaLocationService.create_location_hash(latitude, longitude, lang)
             
             cached = LocationContext(
                 latitude=latitude,
@@ -452,10 +492,11 @@ async def get_location_context_for_activity(
     latitude: float,
     longitude: float,
     location_name: str,
-    db: AsyncSession = None
+    db: AsyncSession = None,
+    lang: str = "en"
 ) -> Dict[str, Any]:
     """Convenience function for routes"""
     service = WikimediaLocationService()
     return await service.get_location_context(
-        latitude, longitude, location_name, db, use_cache=True
+        latitude, longitude, location_name, db, use_cache=True, lang=lang
     )

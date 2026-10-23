@@ -7,7 +7,7 @@ Privacy and Location API Routes
 Integrated with lesson generation flow
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -17,7 +17,10 @@ from core.database import get_db
 from core.config import settings
 from services.privacy_engine import get_privacy_checker
 from services.privacy_config_loader import PrivacyConfigurationLoader
-from services.multi_backend_location_service import get_location_service, get_http_client, LocationData
+from services.multi_backend_location_service import (
+    get_location_service, get_http_client, LocationData,
+    normalize_wiki_lang, WIKIMEDIA_FALLBACK_LANG,
+)
 from services.iapp_privacy_crawler import run_privacy_crawler, run_jurisdiction_crawl, get_supported_countries
 
 logger = logging.getLogger(__name__)
@@ -36,6 +39,11 @@ class LocationSearchRequest(BaseModel):
     location_types: Optional[List[str]] = None
     query: Optional[str] = None
     jurisdiction_id: Optional[str] = None
+    # The student/teacher's current UI locale (i18next's i18n.language,
+    # e.g. "es", "fr-CA", "pt-BR"). Drives which Wikipedia/Wikidata edition
+    # content is fetched from -- defaults to English when omitted, so any
+    # caller that doesn't pass it keeps the previous behavior.
+    lang: Optional[str] = None
 
 
 class LocationSearchResponse(BaseModel):
@@ -250,7 +258,7 @@ async def geocode_location(
     )
 
 
-async def _prewarm_enrichment(place_ids: List[str]) -> None:
+async def _prewarm_enrichment(place_ids: List[str], lang: str = WIKIMEDIA_FALLBACK_LANG) -> None:
     """
     Pre-fetch and cache enrichment for the top few /locations/search results
     so picking a different nearby place still feels instant. Runs after the
@@ -264,7 +272,7 @@ async def _prewarm_enrichment(place_ids: List[str]) -> None:
     for place_id in place_ids:
         try:
             async with session_factory() as session:
-                await enrich_location(place_id=place_id, subject=None, refresh=False, db=session)
+                await enrich_location(place_id=place_id, subject=None, refresh=False, lang=lang, db=session)
         except Exception as prewarm_err:
             logger.warning(f"Pre-warm enrichment skipped for {place_id}: {prewarm_err}")
 
@@ -283,6 +291,7 @@ async def search_nearby_locations(
     """
     try:
         service = get_location_service()
+        lang = normalize_wiki_lang(request.lang)
 
         # Search for locations
         locations = await service.search_nearby(
@@ -290,7 +299,8 @@ async def search_nearby_locations(
             longitude=request.longitude,
             radius_meters=request.radius_meters,
             location_types=request.location_types,
-            query=request.query
+            query=request.query,
+            lang=lang
         )
 
         # Cache write-back — WITHOUT this, the real name/lat/lng/address a
@@ -358,7 +368,7 @@ async def search_nearby_locations(
         # cached by the time the teacher clicks it.
         if settings.ENABLE_LOCATION_CACHE and responses:
             background_tasks.add_task(
-                _prewarm_enrichment, [r.place_id for r in responses[:3]]
+                _prewarm_enrichment, [r.place_id for r in responses[:3]], lang
             )
 
         logger.info(f"Found {len(responses)} locations")
@@ -377,6 +387,7 @@ async def enrich_location(
     place_id: str,
     subject: Optional[str] = None,
     refresh: bool = False,
+    lang: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -391,11 +402,24 @@ async def enrich_location(
     already-cached place_id until the TTL happened to expire, which is
     exactly what made earlier fixes this session look like they "weren't
     working" (the cached pre-fix row was still being served).
+
+    `lang` is the requester's UI locale (e.g. i18next's i18n.language).
+    Content is fetched from that Wikipedia/Wikidata edition when possible,
+    falling back to English only when that edition has no coverage for
+    this place — the response's `content_language` field always says
+    which one actually got used, since a silent fallback would otherwise
+    be indistinguishable from a real match in the requested language.
+    EnrichedLocation rows are cached per (place, language): a place_id
+    shared across languages (e.g. an OSM-sourced POI, which has no
+    language axis of its own) must not have its Spanish enrichment
+    silently overwritten by -- or silently serve -- an English one.
     """
     try:
         from sqlalchemy import select as _sel
         from datetime import datetime, timedelta
         from models.database import CachedLocation, EnrichedLocation as _EL
+
+        content_lang = normalize_wiki_lang(lang)
 
         # 1. Check cache
         result = await db.execute(
@@ -405,7 +429,10 @@ async def enrich_location(
         enriched = None
         if cached:
             er = await db.execute(
-                _sel(_EL).where(_EL.cached_location_id == cached.id)
+                _sel(_EL).where(
+                    _EL.cached_location_id == cached.id,
+                    _EL.language == content_lang,
+                )
             )
             enriched = er.scalar_one_or_none()
 
@@ -452,6 +479,7 @@ async def enrich_location(
                 "construction_date": enriched.construction_date,
                 "historical_significance": enriched.historical_significance,
                 "keywords": enriched.keywords or [],
+                "content_language": enriched.language or content_lang,
             }
 
         # 2. Cache miss (or stale) — reconstruct a LocationData and run the
@@ -485,7 +513,11 @@ async def enrich_location(
                 source="openstreetmap",
             )
 
-        enriched_location = await service.enrich_location(location, subject=subject)
+        enriched_location = await service.enrich_location(location, subject=subject, lang=content_lang)
+        # Whatever lang/edition the enrichment pipeline actually landed on
+        # (may have fallen back to English) -- never silently reported as
+        # a match for the requested language.
+        resolved_content_lang = enriched_location.content_language or content_lang
 
         # AI-synopsis fallback: small local sites (a watershed restoration
         # project, a school's own outdoor classroom) often have no Wikipedia
@@ -537,6 +569,7 @@ async def enrich_location(
             "construction_date": enriched_location.construction_date,
             "historical_significance": enriched_location.historical_significance,
             "keywords": enriched_location.keywords or [],
+            "content_language": resolved_content_lang,
         }
 
         # 3. Cache write-back — mirrors inference.py::_write_inference_cache().
@@ -561,9 +594,10 @@ async def enrich_location(
                     cached.source = enriched_location.source
 
                 if enriched:
-                    # Stale row found earlier — refresh it in place rather
-                    # than inserting a second row (cached_location_id is
-                    # unique on EnrichedLocation).
+                    # Stale row found earlier for this exact (place, language)
+                    # pair — refresh it in place rather than inserting a
+                    # second row ((cached_location_id, language) is unique
+                    # on EnrichedLocation).
                     enriched.subjects = enriched_location.subjects or []
                     enriched.keywords = enriched_location.keywords or []
                     enriched.learning_opportunities = enriched_location.learning_opportunities or []
@@ -580,6 +614,7 @@ async def enrich_location(
                 else:
                     new_enriched = _EL(
                         cached_location_id=cached.id,
+                        language=resolved_content_lang,
                         subjects=enriched_location.subjects or [],
                         keywords=enriched_location.keywords or [],
                         learning_opportunities=enriched_location.learning_opportunities or [],

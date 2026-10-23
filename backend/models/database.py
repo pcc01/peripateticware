@@ -1010,7 +1010,16 @@ class EnrichedLocation(Base):
     __tablename__ = "enriched_locations"
 
     id                 = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    cached_location_id = Column(UUID(as_uuid=True), ForeignKey("cached_locations.id"), unique=True)
+    cached_location_id = Column(UUID(as_uuid=True), ForeignKey("cached_locations.id"))
+
+    # Which Wikipedia/Wikidata edition this row's content actually came
+    # from (post-fallback, not necessarily the locale that was requested).
+    # A place_id with no language axis of its own (e.g. an OSM-sourced POI)
+    # can legitimately have separate English and Spanish enrichment --
+    # without this column, uniqueness on cached_location_id alone meant a
+    # Spanish enrichment would silently overwrite -- or be overwritten by --
+    # an English one for the exact same place.
+    language = Column(String(10), nullable=False, default="en", server_default="en")
 
     subjects               = Column(ARRAY(String), default=list)
     keywords               = Column(ARRAY(String), default=list)
@@ -1042,6 +1051,7 @@ class EnrichedLocation(Base):
 
     __table_args__ = (
         Index('idx_enriched_locations_usage', 'usage_count'),
+        UniqueConstraint('cached_location_id', 'language', name='uq_enriched_locations_place_language'),
     )
 
 

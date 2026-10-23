@@ -1670,7 +1670,8 @@
   "why": "Why",
   "wikilocationinfo": {
     "latitude": "Latitude:",
-    "longitude": "Longitude:"
+    "longitude": "Longitude:",
+    "only_available_in_language": "Only available in {{language}} right now"
   },
   "work_with_teammates_share_observations_a": "Work with teammates, share observations, and learn from each other's discoveries.",
   "work_with_your_teammates_and_share_your_": "Work with your teammates and share your observations and ideas.",

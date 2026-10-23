@@ -91,6 +91,7 @@ async def test_enrich_location_cache_hit_happy_path(ctx):
     enriched_row.construction_date = None
     enriched_row.historical_significance = None
     enriched_row.keywords = ["park", "nature"]
+    enriched_row.language = "en"
 
     cache_lookup_result = MagicMock()
     cache_lookup_result.scalar_one_or_none.return_value = cached_row
@@ -109,6 +110,7 @@ async def test_enrich_location_cache_hit_happy_path(ctx):
     assert body["description"] == "A large urban park."
     assert body["wikidata_id"] == "Q1234"
     assert body["enrichment_quality"] == 0.9
+    assert body["content_language"] == "en"
 
 
 # ===========================================================================
@@ -218,6 +220,118 @@ async def test_enrich_location_ai_synopsis_fallback_when_no_wiki_match(ctx):
     body = resp.json()
     assert body["description"] == "A small local site useful for observing rural land use."
     assert body["source"] == "ai_generated"
+
+
+# ===========================================================================
+# 2b. Locale-aware Wikipedia/Wikidata content (handoff-peripateticware-
+#     localized-wikipedia.md): `lang` passthrough, UI-locale normalization,
+#     and honest content_language reporting when the fallback engages.
+# ===========================================================================
+
+@pytest.mark.asyncio
+async def test_enrich_location_normalizes_locale_and_passes_lang_to_service(ctx):
+    """A regional i18next locale like "fr-CA" must be normalized to the
+    Wikipedia edition code "fr" (there is no fr-ca.wikipedia.org) before
+    being passed down to the location service."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    place_id = "osm_eiffel"
+
+    cache_lookup_result = MagicMock()
+    cache_lookup_result.scalar_one_or_none.return_value = None
+    db.execute.return_value = cache_lookup_result
+
+    from services.multi_backend_location_service import LocationData
+
+    enriched = LocationData(
+        name="Eiffel Tower",
+        latitude=48.8584,
+        longitude=2.2945,
+        location_type="point_of_interest",
+        address="",
+        place_id=place_id,
+        source="openstreetmap",
+        description="La tour Eiffel...",
+        content_language="fr",
+    )
+
+    fake_service = MagicMock()
+    fake_service.enrich_location = AsyncMock(return_value=enriched)
+
+    with patch("routes.privacy_locations.get_location_service", return_value=fake_service):
+        with patch("routes.privacy_locations.settings.ENABLE_LOCATION_CACHE", False):
+            resp = await client.get(f"/api/v1/locations/{place_id}/enrich?lang=fr-CA")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["content_language"] == "fr"
+
+    fake_service.enrich_location.assert_awaited_once()
+    _, call_kwargs = fake_service.enrich_location.call_args
+    assert call_kwargs["lang"] == "fr"
+
+
+@pytest.mark.asyncio
+async def test_enrich_location_reports_honest_fallback_content_language(ctx):
+    """When the requested-language edition has no coverage and the service
+    falls back to English, the response must report content_language="en"
+    -- never silently relabeled as if it matched the requested language."""
+    client = ctx["client"]
+    db = ctx["db"]
+
+    place_id = "wikipedia_en_1116801"
+
+    cache_lookup_result = MagicMock()
+    cache_lookup_result.scalar_one_or_none.return_value = None
+    db.execute.return_value = cache_lookup_result
+
+    from services.multi_backend_location_service import LocationData
+
+    enriched = LocationData(
+        name="Maxwelton, Washington",
+        latitude=47.93722,
+        longitude=-122.44444,
+        location_type="point_of_interest",
+        address="",
+        place_id=place_id,
+        source="wikipedia",
+        description="Maxwelton is an unincorporated community...",
+        content_language="en",  # fallback engaged inside the service
+    )
+
+    fake_service = MagicMock()
+    fake_service.enrich_location = AsyncMock(return_value=enriched)
+
+    with patch("routes.privacy_locations.get_location_service", return_value=fake_service):
+        with patch("routes.privacy_locations.settings.ENABLE_LOCATION_CACHE", False):
+            resp = await client.get(f"/api/v1/locations/{place_id}/enrich?lang=fr")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["content_language"] == "en"
+
+
+@pytest.mark.asyncio
+async def test_search_nearby_locations_normalizes_and_passes_lang(ctx):
+    """POST /locations/search must normalize a regional locale the same
+    way and pass the result through to the location service."""
+    client = ctx["client"]
+
+    fake_service = MagicMock()
+    fake_service.search_nearby = AsyncMock(return_value=[])
+
+    with patch("routes.privacy_locations.get_location_service", return_value=fake_service):
+        with patch("routes.privacy_locations.settings.ENABLE_LOCATION_CACHE", False):
+            resp = await client.post(
+                "/api/v1/locations/search",
+                json={"latitude": 48.8584, "longitude": 2.2945, "radius_meters": 500, "lang": "pt-BR"},
+            )
+
+    assert resp.status_code == 200
+    fake_service.search_nearby.assert_awaited_once()
+    _, call_kwargs = fake_service.search_nearby.call_args
+    assert call_kwargs["lang"] == "pt"
 
 
 # ===========================================================================

@@ -27,6 +27,11 @@ interface LocationInfo {
   // Must be visibly distinguished from sourced content in the UI: an LLM's
   // knowledge of an obscure place can be thin or simply wrong on specifics.
   aiGenerated?: boolean;
+  // Which Wikipedia/Wikidata edition the description actually came from
+  // (backend enrich.content_language). May differ from the UI's own
+  // language when that edition had no coverage and the English fallback
+  // engaged — never silently presented as if it were native content.
+  contentLanguage?: string;
 }
 
 interface WikiLocationInfoProps {
@@ -76,13 +81,19 @@ const pickBestMatch = (results: any[], targetName?: string): any => {
   return results[0];
 };
 
+// Wikipedia editions are keyed on the primary language subtag only -- there
+// is no fr-ca.wikipedia.org or pt-br.wikipedia.org, just fr.wikipedia.org
+// and pt.wikipedia.org -- so i18next locales like "fr-CA"/"pt-BR" need their
+// region suffix dropped before building a {lang}.wikipedia.org URL.
+const toWikiLang = (locale: string): string => (locale || 'en').split('-')[0].toLowerCase() || 'en';
+
 export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, onInfoLoaded }: WikiLocationInfoProps) => {
-  const { t } = useTranslation('landing');
-  
-  
-  
-  
-  
+  const { t, i18n } = useTranslation('landing');
+  const wikiLang = toWikiLang(i18n.language);
+
+
+
+
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   // Separate from isLoading: gates only the enrichment sub-panel
@@ -96,7 +107,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
 
   useEffect(() => {
     fetchLocationInfo();
-  }, [latitude, longitude]);
+  }, [latitude, longitude, wikiLang]);
 
   /**
    * Fast phase: POST /api/v1/locations/search to find a nearby indexed POI.
@@ -107,7 +118,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
     const searchResponse = await fetch('/api/v1/locations/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ latitude, longitude, radius_meters: 500 }),
+      body: JSON.stringify({ latitude, longitude, radius_meters: 500, lang: wikiLang }),
     });
     if (!searchResponse.ok) {
       throw new Error(`locations/search failed (${searchResponse.status})`);
@@ -140,6 +151,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
   const fetchEnrichment = async (placeId: string, forceRefresh: boolean): Promise<any> => {
     const params = new URLSearchParams();
     if (subject) params.set('subject', subject);
+    params.set('lang', wikiLang);
     // Bypasses the backend's up-to-7-day enrichment cache. Without this,
     // clicking "Refresh Information" for a place that was already enriched
     // once just re-serves the same cached (possibly stale/thin) result —
@@ -205,6 +217,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
                   ? enrich.learning_opportunities
                   : undefined,
               aiGenerated: enrich.source === 'ai_generated',
+              contentLanguage: enrich.content_language || undefined,
             };
             setLocationInfo(fullInfo);
             onInfoLoaded(fullInfo);
@@ -234,19 +247,32 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
       geoData.address?.state ||
       `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
 
-      // Step 2: Search Wikipedia for location info
-      const wikiResponse = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${latitude}|${longitude}&gsradius=10000&format=json&origin=*`
+      // Step 2: Search Wikipedia for location info — prefer the UI's own
+      // language edition, falling back to English only when that edition
+      // has nothing nearby (the only edition broad enough to safely
+      // assume as a universal fallback).
+      let geosearchLang = wikiLang;
+      let wikiResponse = await fetch(
+        `https://${geosearchLang}.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${latitude}|${longitude}&gsradius=10000&format=json&origin=*`
       );
-      const wikiData = await wikiResponse.json();
+      let wikiData = await wikiResponse.json();
+      if (!(wikiData.query?.geosearch?.length > 0) && geosearchLang !== 'en') {
+        geosearchLang = 'en';
+        wikiResponse = await fetch(
+          `https://${geosearchLang}.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${latitude}|${longitude}&gsradius=10000&format=json&origin=*`
+        );
+        wikiData = await wikiResponse.json();
+      }
 
       if (wikiData.query?.geosearch?.length > 0) {
         const result = wikiData.query.geosearch[0];
         const pageTitle = result.title;
 
-        // Step 3: Get detailed page content
+        // Step 3: Get detailed page content, same edition as the geosearch
+        // hit above (they must stay in sync -- a title from one edition
+        // doesn't exist as a page on another).
         const pageResponse = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=extracts|pageimages&exintro&explaintext&format=json&origin=*`
+          `https://${geosearchLang}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=extracts|pageimages&exintro&explaintext&format=json&origin=*`
         );
         const pageData = await pageResponse.json();
         const pages = pageData.query?.pages;
@@ -256,6 +282,7 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
           name: (pageContent as any)?.title || locationName,
           description: (pageContent as any)?.extract || `Location near ${locationName}`,
           wikiId: pageTitle,
+          contentLanguage: geosearchLang,
           type: result.type || 'location',
           features: extractFeatures((pageContent as any)?.extract || '')
         };
@@ -386,6 +413,15 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
             {locationInfo.aiGenerated &&
           <p style={{ fontSize: '12px', fontWeight: 600, color: '#92610e', marginBottom: 4 }}>
                 {t("landing:ai_generated_overview", "🤖 AI-generated overview — verify details")}
+              </p>
+          }
+            {!locationInfo.aiGenerated && locationInfo.contentLanguage && locationInfo.contentLanguage !== wikiLang &&
+          <p style={{ fontSize: '12px', fontWeight: 600, color: '#92610e', marginBottom: 4 }}>
+                {t(
+                  "landing:wikilocationinfo.only_available_in_language",
+                  "Only available in {{language}} right now",
+                  { language: locationInfo.contentLanguage }
+                )}
               </p>
           }
             {locationInfo.description

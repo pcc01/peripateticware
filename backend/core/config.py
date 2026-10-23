@@ -221,7 +221,12 @@ class Settings(BaseSettings):
     LOCATION_ENRICHMENT_ENABLED: bool = os.getenv("LOCATION_ENRICHMENT_ENABLED", "true").lower() == "true"
     NOMINATIM_USER_AGENT: str = os.getenv("NOMINATIM_USER_AGENT", "Peripateticware/1.0")
     WIKIDATA_SPARQL_URL: str = os.getenv("WIKIDATA_SPARQL_URL", "https://query.wikidata.org/sparql")
-    WIKIPEDIA_API_URL: str = os.getenv("WIKIPEDIA_API_URL", "https://en.wikipedia.org/w/api.php")
+    # Template, not a fixed English URL — Wikipedia content is fetched
+    # per-request from whichever {lang} edition matches the student's UI
+    # locale (see services/multi_backend_location_service.py and
+    # services/wikimedia_service.py), falling back to the English edition
+    # only when that one has no coverage for a place.
+    WIKIPEDIA_API_URL_TEMPLATE: str = os.getenv("WIKIPEDIA_API_URL_TEMPLATE", "https://{lang}.wikipedia.org/w/api.php")
 
     # ── Phase 7: Audio ────────────────────────────────────────────────────────
     AUDIO_ENABLED: bool = os.getenv("AUDIO_ENABLED", "true").lower() == "true"

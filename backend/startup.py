@@ -289,6 +289,44 @@ async def apply_location_table_migrations(engine) -> None:
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS last_used TIMESTAMP",
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS created_lessons INTEGER DEFAULT 0",
         "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS cached_location_id UUID",
+        # Locale-aware Wikipedia/Wikidata content: a place_id with no
+        # language axis of its own (e.g. an OSM-sourced POI) can
+        # legitimately have separate English and Spanish enrichment rows.
+        # The original UNIQUE(cached_location_id) constraint made that
+        # impossible -- a second language's enrichment would collide with
+        # (and either fail against, or silently overwrite) the first's.
+        # NOT NULL DEFAULT 'en' backfills every pre-existing row as English,
+        # which is what they all actually are today.
+        "ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS language VARCHAR(10) NOT NULL DEFAULT 'en'",
+        """DO $$
+        DECLARE
+            con_name TEXT;
+        BEGIN
+            SELECT con.conname INTO con_name
+            FROM pg_constraint con
+            JOIN pg_class rel ON rel.oid = con.conrelid
+            WHERE rel.relname = 'enriched_locations'
+              AND con.contype = 'u'
+              AND con.conkey = (
+                  SELECT array_agg(attnum ORDER BY attnum)
+                  FROM pg_attribute
+                  WHERE attrelid = rel.oid AND attname = 'cached_location_id'
+              )
+            LIMIT 1;
+
+            IF con_name IS NOT NULL THEN
+                EXECUTE format('ALTER TABLE enriched_locations DROP CONSTRAINT %I', con_name);
+            END IF;
+        END $$;""",
+        """DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'uq_enriched_locations_place_language'
+            ) THEN
+                ALTER TABLE enriched_locations
+                    ADD CONSTRAINT uq_enriched_locations_place_language UNIQUE (cached_location_id, language);
+            END IF;
+        END $$;""",
         # `subjects`/`grade_levels`/`learning_opportunities` were healed above
         # as JSONB, but the ORM model declares them ARRAY(String)/ARRAY(Integer)
         # (native Postgres TEXT[]/INTEGER[]) — on any DB where those ALTERs
