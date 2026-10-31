@@ -2311,18 +2311,32 @@ async def seed_demo_classroom(engine) -> None:
         logger.warning(f"⊘ Demo activity submission seed skipped: {e}")
 
     # Step 7: peer project for teacher review
+    #
+    # 2026-10-30 fix: this row used to be seeded with status='submitted' —
+    # not a valid PeerProjectStatus ('draft'|'pending_approval'|'published'|
+    # 'rejected'|'archived') — so it never matched the teacher review page's
+    # `selected.status === 'pending_approval'` check and never showed the
+    # Approve/Reject buttons. guiding_prompts/learning_objectives_text were
+    # also seeded as flat JSON string arrays instead of the
+    # {prompt/text, order} object shape frontend/src/types/phase7.ts expects
+    # (GuidingPrompt/LearningObjectiveText), so every prompt rendered blank
+    # (`p.prompt` on a plain string is undefined). allowed_capture_types was
+    # never set either, so "Allows:" rendered empty. This is the first thing
+    # anyone exploring the Peer Project Review page sees — fixed shape below,
+    # plus a one-time repair UPDATE for rows already seeded with the old bug.
     try:
         async with engine.begin() as conn:
             await conn.execute(text("""
                 INSERT INTO student_peer_projects
                     (author_student_id, class_id, title, description,
-                     learning_objectives_text, guiding_prompts,
+                     learning_objectives_text, guiding_prompts, allowed_capture_types,
                      audience, status, approval_required)
                 SELECT s.id, c.id, 'Compare Two Local Habitats',
                        'A peer project comparing the pond and the meadow ecosystems.',
-                       '["Compare biodiversity across two habitats", "Record evidence with photos"]'::jsonb,
-                       '["What lives here that does not live in the other habitat?"]'::jsonb,
-                       'whole_class', 'submitted', TRUE
+                       '[{"text": "Compare biodiversity across two habitats", "order": 0}, {"text": "Record evidence with photos", "order": 1}]'::jsonb,
+                       '[{"prompt": "What lives here that does not live in the other habitat?", "order": 0}]'::jsonb,
+                       '{photo,text}',
+                       'whole_class', 'pending_approval', TRUE
                 FROM users s, users t, classes c
                 WHERE s.username = 'student'
                   AND t.username = 'teacher'
@@ -2332,6 +2346,16 @@ async def seed_demo_classroom(engine) -> None:
                       WHERE p.author_student_id = s.id AND p.title = 'Compare Two Local Habitats'
                   )
             """), {"cname": _DEMO_CLASS_NAME})
+            # Repair rows seeded by the old (buggy) INSERT above before this fix.
+            await conn.execute(text("""
+                UPDATE student_peer_projects
+                SET status = 'pending_approval',
+                    guiding_prompts = '[{"prompt": "What lives here that does not live in the other habitat?", "order": 0}]'::jsonb,
+                    learning_objectives_text = '[{"text": "Compare biodiversity across two habitats", "order": 0}, {"text": "Record evidence with photos", "order": 1}]'::jsonb,
+                    allowed_capture_types = '{photo,text}',
+                    updated_at = NOW()
+                WHERE title = 'Compare Two Local Habitats' AND status = 'submitted'
+            """))
         logger.info("✅ Demo peer project seeded")
     except Exception as e:
         logger.warning(f"⊘ Demo peer project seed skipped: {e}")

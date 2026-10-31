@@ -122,9 +122,13 @@ export const teacherFieldNoteApi = {
 // ============================================================================
 
 export const peerProjectApi = {
-  listAuthored: (params?: { status?: string; page?: number }) =>
-    apiClient.get<PaginatedPeerProjects>('/student/peer-projects/authored', { params })
-      .then(r => r.data),
+  // Backend's query param is `project_status`, not `status` — see
+  // routes/phase7_student_initiated.py::list_authored_peer_projects. Mapped
+  // here so callers can keep using the friendlier `status` key.
+  listAuthored: ({ status, ...params }: { status?: string; page?: number } = {}) =>
+    apiClient.get<PaginatedPeerProjects>('/student/peer-projects/authored', {
+      params: { ...params, project_status: status },
+    }).then(r => r.data),
 
   listAvailable: (params?: { class_id?: string; page?: number }) =>
     apiClient.get<PaginatedPeerProjects>('/student/peer-projects/available', { params })
@@ -170,8 +174,15 @@ export const peerProjectApi = {
 // ============================================================================
 
 export const teacherPeerProjectApi = {
-  list: (params?: { class_id?: string; status?: string; page?: number }) =>
-    apiClient.get<PaginatedPeerProjects>('/teacher/peer-projects', { params }).then(r => r.data),
+  // Backend's query param is `project_status`, not `status` — see
+  // routes/phase7_student_initiated.py::list_peer_projects_for_teacher. Was
+  // sending `status`, which FastAPI silently ignores (unknown query params
+  // aren't errors), so every tab on the Peer Project Review page (Pending
+  // Approval / Published) showed the exact same unfiltered list.
+  list: ({ status, ...params }: { class_id?: string; status?: string; page?: number } = {}) =>
+    apiClient.get<PaginatedPeerProjects>('/teacher/peer-projects', {
+      params: { ...params, project_status: status },
+    }).then(r => r.data),
 
   approve: (id: string, body: { feedback?: string; curriculum_objective_ids?: string[] }) =>
     apiClient.post(`/teacher/peer-projects/${id}/approve`, body).then(r => r.data),
