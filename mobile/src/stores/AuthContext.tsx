@@ -11,6 +11,7 @@ import {
   ApiError,
 } from '@/src/api/client';
 import { login as apiLogin, logout as apiLogout, getCurrentUser, LoginResponse } from '@/src/api/auth';
+import type { GradeBand } from '@/src/lib/peri/engine';
 
 interface User {
   id: string;
@@ -20,7 +21,7 @@ interface User {
   // Peri engine for mixed-age wording selection. Stored here (the app's
   // key-value store), never in SQLite, and never included in any request
   // body or log. Absent/null is normal (not every account has one on file).
-  gradeBand?: string | null;
+  gradeBand?: GradeBand | null;
 }
 
 interface AuthContextValue {
@@ -65,7 +66,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const me = await getCurrentUser();
         const fresh: User = {
           id: me.user_id, email: me.email, role: me.role.toUpperCase(),
-          gradeBand: me.grade_band ?? null,
+          // Server only ever returns one of the four known bands or null
+          // (services/grade_band.py); this cast reflects that trust
+          // boundary rather than re-validating it on-device.
+          gradeBand: (me.grade_band ?? null) as GradeBand | null,
         };
         setUser(fresh);
         await setStoredUser(fresh);

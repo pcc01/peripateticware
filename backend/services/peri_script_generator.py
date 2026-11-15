@@ -284,6 +284,11 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
         "v": 1,
         "framework": framework,
         "level": level,
+        # The activity's own grade_level -- used device-side as the no-band
+        # fallback when resolving a mixed-age lo/hi wording with no known
+        # student grade_band (spec: "use the wording on the side of the
+        # span that contains the activity's own grade_level").
+        "grade": activity.grade_level,
         "rubric": (
             {"id": str(activity.rubric_id), "criteria": [c.get("id") for c in rubric_criteria]}
             if rubric_criteria else None

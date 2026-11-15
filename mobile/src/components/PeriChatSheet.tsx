@@ -2,7 +2,7 @@
 // Peri AI chat — bottom sheet, prefilled with activity context
 // M-8: ChatBubble + CrowAvatar → POST /api/v1/inference/chat
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, Modal,
@@ -14,9 +14,11 @@ import { Capture } from '@/src/api/captures';
 import { queueCapture, updateQueuedCaptureUri } from '@/src/db/offlineQueue';
 import { useTranslation } from 'react-i18next';
 import {
-  createPeriEngineState, next as nextPeriTurn, PeriEngineState, PeriScript,
+  createPeriEngineState, next as nextPeriTurn, resolvePeriScriptForBand,
+  PeriEngineState, PeriScript,
 } from '@/src/lib/peri/engine';
 import type { LocationWikiData } from '@/src/api/activities';
+import { useAuth } from '@/src/stores/AuthContext';
 
 interface Props {
   visible: boolean;
@@ -66,10 +68,18 @@ export default function PeriChatSheet({
   onCaptured,
 }: Props) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const listRef = useRef<FlatList>(null);
+
+  // Resolved ONCE per script/band, not per turn — resolvePeriScriptForBand
+  // is pure but there's no reason to redo its work on every keystroke.
+  const resolvedScript = useMemo(
+    () => resolvePeriScriptForBand(periScript ?? { v: 1, stages: {} }, user?.gradeBand),
+    [periScript, user?.gradeBand]
+  );
 
   // On-device dialogue engine state for this chat session — in memory
   // only, never persisted (PERI_OFFLINE_SPEC_v2.md section C.1). Reset
@@ -90,10 +100,10 @@ export default function PeriChatSheet({
       // the student ever opened this chat (periOpeningPrompt() in
       // engine.ts). Pre-mark those same ids as asked so the chat's first
       // reply doesn't repeat a question the student already saw on screen.
-      const alreadyShown = (periScript?.stages?.orient ?? []).slice(0, 2).map((q) => q.id);
+      const alreadyShown = (resolvedScript.stages?.orient ?? []).slice(0, 2).map((q) => q.id);
       engineStateRef.current = { ...createPeriEngineState(), askedIds: alreadyShown };
     }
-    const result = nextPeriTurn(periScript ?? { v: 1, stages: {} }, engineStateRef.current, studentText);
+    const result = nextPeriTurn(resolvedScript, engineStateRef.current, studentText);
     engineStateRef.current = result.state;
     return result.periText;
   };

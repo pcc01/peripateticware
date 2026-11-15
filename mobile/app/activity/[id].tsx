@@ -13,8 +13,9 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivity, startActivitySession, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
-import { periOpeningPrompt } from '@/src/lib/peri/engine';
+import { periOpeningPrompt, resolvePeriScriptForBand } from '@/src/lib/peri/engine';
 import { gradeToBand, bloomLevelToBankKey } from '@/src/lib/gradeBand';
+import { useAuth } from '@/src/stores/AuthContext';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
@@ -80,6 +81,7 @@ export default function ActivityScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme, setLocationSkin } = useTheme();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const [activity, setActivity] = useState<Activity | null>(null);
   const [phase, setPhase] = useState<Phase>('brief');
@@ -190,7 +192,10 @@ export default function ActivityScreen() {
   // as before when no script is on this activity.
   useEffect(() => {
     if (phase !== 'inquiry' || !activity) return;
-    const opening = periOpeningPrompt(activity.peri_script);
+    const resolvedScript = activity.peri_script
+      ? resolvePeriScriptForBand(activity.peri_script, user?.gradeBand)
+      : null;
+    const opening = periOpeningPrompt(resolvedScript);
     if (opening) {
       setQuestion({
         id: -1,

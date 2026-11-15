@@ -6,11 +6,11 @@ import {
   next,
   periOpeningPrompt,
   fillPeriTemplate,
-  PeriScript,
+  ResolvedPeriScript,
   PERI_WRAP_UP_TEXT,
 } from '../engine';
 
-function makeScript(overrides: Partial<PeriScript> = {}): PeriScript {
+function makeScript(overrides: Partial<ResolvedPeriScript> = {}): ResolvedPeriScript {
   return {
     v: 1,
     place: 'Cliff Palace',

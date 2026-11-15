@@ -27,13 +27,16 @@ export const PERI_STAGE_ORDER: PeriStageName[] = [
   'reflect',
 ];
 
+// Mixed-age wording (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups"). A plain
+// string means one wording for everyone (also how pre-mixed-age scripts
+// keep working). resolvePeriScriptForBand() below resolves every question
+// in a script to a plain string BEFORE it reaches next()/periOpeningPrompt()
+// — the rest of this engine stays grade-band-agnostic by design.
+export type PeriWording = string | { lo: string; hi: string };
+
 export interface PeriScriptQuestion {
   id: string;
-  // Plain string = one wording for everyone. The mixed-age `{lo, hi}` form
-  // (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups") is resolved to a plain
-  // string by the caller before it reaches this engine — the engine itself
-  // stays framework- and grade-band-agnostic.
-  q: string;
+  q: PeriWording;
   // Focus terms (from the script's top-level `focus` list) that make this
   // question the preferred branch when the student mentions one.
   on?: string[];
@@ -53,7 +56,30 @@ export interface PeriScript {
   generated_at?: string;
   source_hash?: string;
   approved?: boolean;
+  // The activity's own grade_level — the no-band fallback for resolving a
+  // mixed-age wording (see resolvePeriScriptForBand below).
+  grade?: number;
+  // Present only when the activity has a mixed-age span set.
+  grade_span?: { min: number; max: number } | null;
+  mixed_age_cutoff_grade?: number | null;
 }
+
+export type GradeBand = 'k-2' | '3-5' | '6-8' | '9-12';
+
+export interface ResolvedPeriScriptQuestion {
+  id: string;
+  q: string;
+  on?: string[];
+  crit?: string;
+}
+
+// Every question's wording resolved to a single plain string for one
+// student — see resolvePeriScriptForBand(). This is the shape next() and
+// periOpeningPrompt() actually consume; nothing past this point ever sees
+// a {lo, hi} object.
+export type ResolvedPeriScript = Omit<PeriScript, 'stages'> & {
+  stages: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>>;
+};
 
 export interface PeriEngineState {
   stage: PeriStageName;
@@ -72,6 +98,66 @@ export const PERI_WRAP_UP_TEXT =
   "That's a great place to stop. Think back on everything you noticed here today.";
 
 const FALLBACK_QUESTION_TEXT = 'What do you notice right now?';
+
+// A representative grade per band, used only to compare against a
+// script's mixed_age_cutoff_grade — a coarse band necessarily loses
+// precision versus an exact grade, so this picks each band's midpoint as
+// the least-biased single number to compare with.
+const BAND_MIDPOINT_GRADE: Record<GradeBand, number> = {
+  'k-2': 1, '3-5': 4, '6-8': 7, '9-12': 10,
+};
+
+function resolveOneWording(q: PeriWording, useHi: boolean): string {
+  if (typeof q === 'string') return q;
+  return useHi ? q.hi : q.lo;
+}
+
+/**
+ * Resolve every question's wording to a single plain string for one
+ * student, given their coarse grade band (AuthContext's cached
+ * `gradeBand`, PERI_OFFLINE_SPEC_v2.md item 21). Run this ONCE, before the
+ * script reaches next()/periOpeningPrompt() — everything past this point
+ * stays grade-band-agnostic by design (plain strings only).
+ *
+ * Resolution order (spec "Mixed-age groups"):
+ *   1. A plain-string q is unaffected either way — this is also how a
+ *      script with no mixed-age span at all keeps working unchanged.
+ *   2. With a known band and a cutoff on the script, compare the band's
+ *      representative grade against mixed_age_cutoff_grade.
+ *   3. With no known band, fall back to the activity's own grade_level
+ *      ("use the wording on the side of the span that contains the
+ *      activity's own grade_level" — never infer from anything else).
+ *   4. If neither is available (no span was ever set), {lo,hi} objects
+ *      can't occur in the script in the first place, so this never
+ *      actually has to guess.
+ */
+export function resolvePeriScriptForBand(
+  script: PeriScript,
+  gradeBand: GradeBand | null | undefined
+): ResolvedPeriScript {
+  const cutoff = script.mixed_age_cutoff_grade;
+  let useHi: boolean;
+  if (gradeBand && cutoff !== null && cutoff !== undefined) {
+    useHi = BAND_MIDPOINT_GRADE[gradeBand] >= cutoff;
+  } else if (cutoff !== null && cutoff !== undefined && typeof script.grade === 'number') {
+    useHi = script.grade >= cutoff;
+  } else {
+    useHi = false; // last-resort default when nothing else is known
+  }
+
+  const resolvedStages: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>> = {};
+  for (const stage of PERI_STAGE_ORDER) {
+    const questions = script.stages?.[stage];
+    if (!questions) continue;
+    resolvedStages[stage] = questions.map((q) => ({
+      id: q.id,
+      q: resolveOneWording(q.q, useHi),
+      on: q.on,
+      crit: q.crit,
+    }));
+  }
+  return { ...script, stages: resolvedStages };
+}
 
 const VAGUE_PHRASES = new Set([
   'idk',
@@ -96,21 +182,21 @@ export function createPeriEngineState(startStage: PeriStageName = 'orient'): Per
   };
 }
 
-function stageQuestions(script: PeriScript, stage: PeriStageName): PeriScriptQuestion[] {
+function stageQuestions(script: ResolvedPeriScript, stage: PeriStageName): ResolvedPeriScriptQuestion[] {
   return script.stages?.[stage] ?? [];
 }
 
 function unaskedIn(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
   stage: PeriStageName
-): PeriScriptQuestion[] {
+): ResolvedPeriScriptQuestion[] {
   return stageQuestions(script, stage).filter((q) => !state.askedIds.includes(q.id));
 }
 
 /** First stage at or after `from` (inclusive) that still has an unasked question. */
 function firstAvailableStage(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
   from: PeriStageName
 ): PeriStageName | null {
@@ -150,7 +236,7 @@ function matchedFocusTerms(text: string, focus: string[] | undefined): string[] 
   });
 }
 
-function fillTemplate(text: string, script: PeriScript): string {
+function fillTemplate(text: string, script: Pick<PeriScript, 'place' | 'focus'>): string {
   const place = script.place || 'this place';
   const focus = (script.focus && script.focus[0]) || 'what you see';
   return text.replace(/\{place\}/g, place).replace(/\{focus\}/g, focus);
@@ -159,7 +245,7 @@ function fillTemplate(text: string, script: PeriScript): string {
 /** Exported so screens that just need to DISPLAY script text (not run the
  * engine) still get the same {place}/{focus} substitution — e.g. the
  * activity screen's opening Inquiry prompt (item 9). */
-export function fillPeriTemplate(text: string, script: PeriScript): string {
+export function fillPeriTemplate(text: string, script: Pick<PeriScript, 'place' | 'focus'>): string {
   return fillTemplate(text, script);
 }
 
@@ -175,8 +261,11 @@ export interface PeriOpeningPrompt {
  * bank's ObservationQuestion: a main question plus an optional follow-up).
  * Returns null if the script has no usable orient question, so callers can
  * fall back to the curated bank unchanged.
+ *
+ * Takes an already-RESOLVED script (see resolvePeriScriptForBand) — call
+ * that first if the script may have mixed-age wordings.
  */
-export function periOpeningPrompt(script: PeriScript | null | undefined): PeriOpeningPrompt | null {
+export function periOpeningPrompt(script: ResolvedPeriScript | null | undefined): PeriOpeningPrompt | null {
   const orient = script?.stages?.orient;
   if (!orient || orient.length === 0) return null;
   return {
@@ -185,7 +274,7 @@ export function periOpeningPrompt(script: PeriScript | null | undefined): PeriOp
   };
 }
 
-function pickProbe(script: PeriScript): string {
+function pickProbe(script: ResolvedPeriScript): string {
   const probes = script.probes ?? [];
   if (probes.length === 0) {
     return 'Look again. What exactly do you notice?';
@@ -195,11 +284,11 @@ function pickProbe(script: PeriScript): string {
 
 /** Prefer an unasked question in `stage` whose `on` list matches one of `terms`. */
 function pickPreferringFocus(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
   stage: PeriStageName,
   terms: string[]
-): PeriScriptQuestion | null {
+): ResolvedPeriScriptQuestion | null {
   const pool = unaskedIn(script, state, stage);
   if (pool.length === 0) return null;
   if (terms.length > 0) {
@@ -211,10 +300,10 @@ function pickPreferringFocus(
 
 /** Move state onto the next stage that still has a question, or close. */
 function advanceStage(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
   from: PeriStageName
-): { question: PeriScriptQuestion | null; state: PeriEngineState } {
+): { question: ResolvedPeriScriptQuestion | null; state: PeriEngineState } {
   const fromIdx = PERI_STAGE_ORDER.indexOf(from);
   if (fromIdx === PERI_STAGE_ORDER.length - 1) {
     // Already on the last stage (reflect) — nothing to advance to.
@@ -235,9 +324,9 @@ function advanceStage(
 }
 
 function askQuestion(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
-  question: PeriScriptQuestion
+  question: ResolvedPeriScriptQuestion
 ): PeriEngineResult {
   return {
     periText: fillTemplate(question.q, script),
@@ -261,9 +350,12 @@ function closeResult(state: PeriEngineState): PeriEngineResult {
  * session, to get the opening question with no reply to evaluate yet.
  * Every subsequent call must pass the student's (possibly empty/vague)
  * reply so the engine can apply its branching rules.
+ *
+ * Takes an already-RESOLVED script (see resolvePeriScriptForBand) — call
+ * that first if the script may have mixed-age wordings.
  */
 export function next(
-  script: PeriScript,
+  script: ResolvedPeriScript,
   state: PeriEngineState,
   studentText?: string
 ): PeriEngineResult {
