@@ -67,6 +67,22 @@ _LATE_STAGES = {"explain", "connect", "reflect"}
 _DEFAULT_QUESTIONS_PER_STAGE = 2
 _MAX_RUBRIC_CRITERIA = 6
 
+# Per-stage id prefix, matching the spec's own example script (section A) and
+# engine.test.ts's fixtures. NOT simply stage[0]: "orient"/"observe" both
+# start with 'o' and "classify"/"connect" both start with 'c', which
+# produced colliding ids across stages (caught by peri_script_validator's
+# duplicate_id check during manual testing) -- the engine's askedIds is a
+# single flat list across the WHOLE script, so a collision there makes the
+# engine treat an unasked question as already-asked.
+_STAGE_ID_PREFIX = {
+    "orient": "o",
+    "observe": "b",
+    "classify": "c",
+    "explain": "e",
+    "connect": "n",
+    "reflect": "r",
+}
+
 
 def resolve_framework_and_level(activity: Activity) -> tuple[str, Optional[int], bool]:
     """Resolve (framework, level, level_was_fallback_to_bloom) per
@@ -211,7 +227,7 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
                 prior_questions=prior_questions[-3:],
             )
             question_text = (await _call_llm(prompt, system=SYSTEM_PERI)).strip()
-            qid = f"{stage[0]}{i + 1}"
+            qid = f"{_STAGE_ID_PREFIX[stage]}{i + 1}"
             item: dict[str, Any] = {"id": qid, "q": question_text}
             matched_focus = [t for t in focus_terms if t in question_text.lower()]
             if matched_focus:

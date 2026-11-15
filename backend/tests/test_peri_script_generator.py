@@ -14,11 +14,26 @@ import pytest
 
 from services.peri_script_generator import (
     _question_count,
+    _STAGE_ID_PREFIX,
     compute_source_hash,
     derive_focus_terms,
     resolve_framework_and_level,
     select_rubric_criteria,
 )
+from services.peri_script_validator import STAGE_ORDER
+
+
+class TestStageIdPrefixes:
+    def test_every_stage_has_a_prefix(self):
+        assert set(_STAGE_ID_PREFIX.keys()) == set(STAGE_ORDER)
+
+    def test_no_two_stages_share_a_prefix(self):
+        # Caught during manual end-to-end testing: "orient"/"observe" both
+        # start with 'o' and "classify"/"connect" both start with 'c', so a
+        # naive stage[0] prefix produced colliding ids across stages (the
+        # engine's askedIds is one flat list for the whole script).
+        prefixes = list(_STAGE_ID_PREFIX.values())
+        assert len(prefixes) == len(set(prefixes))
 
 
 def _activity(**overrides) -> SimpleNamespace:
