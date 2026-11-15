@@ -11,12 +11,13 @@ import json
 from services.peri_script_validator import (
     HARD_CAP_BYTES,
     K2_MAX_WORDS,
+    MIXED_AGE_HARD_CAP_BYTES,
     validate_peri_script,
     validate_question_text,
 )
 
 
-def _question(id_: str, q: str, on: list[str] | None = None) -> dict:
+def _question(id_: str, q, on: list[str] | None = None) -> dict:
     d = {"id": id_, "q": q}
     if on:
         d["on"] = on
@@ -156,3 +157,56 @@ class TestValidatePeriScript:
         )
         issues = validate_peri_script(script, location_description=description)
         assert any(i.code == "question_text" and "verbatim" in i.message for i in issues)
+
+
+class TestMixedAgeWordings:
+    def _mixed_script(self, **stage_overrides) -> dict:
+        script = _full_script(**stage_overrides)
+        script["grade_span"] = {"min": 1, "max": 6}
+        # Convert every plain-string q into a clean {lo, hi} pair unless the
+        # test already overrode that stage with its own dict-form q.
+        for stage, questions in script["stages"].items():
+            for q in questions:
+                if isinstance(q["q"], str):
+                    q["q"] = {"lo": q["q"], "hi": q["q"]}
+        return script
+
+    def test_clean_mixed_age_script_has_no_issues(self):
+        assert validate_peri_script(self._mixed_script()) == []
+
+    def test_each_wording_checked_against_its_own_band(self):
+        long_q = "What do you notice about the way the stones are stacked up near the base of this very old wall?"
+        script = self._mixed_script(
+            observe=[_question("b1", {"lo": long_q, "hi": long_q})]
+        )
+        issues = validate_peri_script(script, lo_band="k-2", hi_band="9-12")
+        lo_issues = [i for i in issues if i.code == "question_text" and i.message.startswith("[lo]")]
+        hi_issues = [i for i in issues if i.code == "question_text" and i.message.startswith("[hi]")]
+        assert any("12 words" in i.message for i in lo_issues)
+        assert hi_issues == []  # same long text is fine for a 9-12 band
+
+    def test_short_wording_passes_k2_band_on_both_sides(self):
+        script = self._mixed_script(
+            observe=[_question("b1", {"lo": "What color is the wall?", "hi": "What color is the wall?"})]
+        )
+        issues = validate_peri_script(script, lo_band="k-2", hi_band="k-2")
+        assert issues == []
+
+    def test_raised_cap_applies_when_grade_span_present(self):
+        # Comfortably over the plain 8 KB cap but under the mixed-age 12 KB one.
+        padding = "x" * 9000
+        script = self._mixed_script(
+            reflect=[_question("r1", {"lo": f"What do you see? {padding}", "hi": "What do you see?"})]
+        )
+        size = len(json.dumps(script).encode("utf-8"))
+        assert HARD_CAP_BYTES < size < MIXED_AGE_HARD_CAP_BYTES
+        issues = validate_peri_script(script)
+        assert not any(i.code == "size_exceeded" for i in issues)
+
+    def test_plain_string_q_still_works_in_an_otherwise_mixed_age_script(self):
+        # Spec: "A plain string q means one wording for everyone (also how
+        # old scripts keep working)" -- even inside a script that otherwise
+        # has a grade_span set.
+        script = _full_script()
+        script["grade_span"] = {"min": 1, "max": 6}
+        assert validate_peri_script(script) == []

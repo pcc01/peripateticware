@@ -370,6 +370,13 @@ class Activity(Base):
     # (schemas/student_activities.py).
     peri_script = Column(JSONB, nullable=True)
 
+    # Optional mixed-age span (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups").
+    # Both nullable; when either is absent, the generator behaves exactly as
+    # with a single grade_level. A span of 3 or fewer grades may still use a
+    # single wording -- the generator decides and records that in the script.
+    grade_span_min = Column(Integer, nullable=True)
+    grade_span_max = Column(Integer, nullable=True)
+
     # =========================================================================
     # STUDENT MOBILE PHASE CONTENT (teacher-authored)
     # =========================================================================

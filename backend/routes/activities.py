@@ -165,6 +165,8 @@ async def create_activity(
         solo_level=getattr(activity, "solo_level", None),
         primary_framework=getattr(activity, "primary_framework", "blooms"),
         rubric_id=getattr(activity, "rubric_id", None),
+        grade_span_min=getattr(activity, "grade_span_min", None),
+        grade_span_max=getattr(activity, "grade_span_max", None),
         location_context_id=getattr(activity, "location_context_id", None),
         # ActivityBuilder fields
         assessment_type=getattr(activity, "assessment_type", "formative"),
@@ -1524,6 +1526,17 @@ def _peri_is_stale(activity: Activity, script: Dict[str, Any]) -> bool:
     return compute_source_hash(activity, framework, level) != script.get("source_hash")
 
 
+def _peri_validator_bands(activity: Activity) -> dict:
+    """grade_band/lo_band/hi_band kwargs for validate_peri_script(), from
+    this activity's own grade_level and (if set) mixed-age span."""
+    from services.grade_band import grade_to_band
+    return {
+        "grade_band": grade_to_band(activity.grade_level),
+        "lo_band": grade_to_band(activity.grade_span_min),
+        "hi_band": grade_to_band(activity.grade_span_max),
+    }
+
+
 @router.post("/{activity_id}/peri-script/generate", response_model=PeriScriptResponse)
 async def generate_peri_script_endpoint(
     activity_id: UUID,
@@ -1568,10 +1581,9 @@ async def generate_peri_script_endpoint(
             detail="AI inference service is temporarily unavailable — please try again shortly.",
         )
 
-    from services.grade_band import grade_to_band
     issues = validate_peri_script(
         script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-        grade_band=grade_to_band(activity.grade_level),
+        **_peri_validator_bands(activity),
     )
 
     activity.peri_script = script
@@ -1596,12 +1608,11 @@ async def get_peri_script(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only view your own activities")
 
     from services.peri_script_validator import validate_peri_script
-    from services.grade_band import grade_to_band
     script = activity.peri_script or {}
     issues = (
         validate_peri_script(
             script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-            grade_band=grade_to_band(activity.grade_level),
+            **_peri_validator_bands(activity),
         )
         if script else []
     )
@@ -1632,10 +1643,9 @@ async def update_peri_script(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
 
     from services.peri_script_validator import validate_peri_script
-    from services.grade_band import grade_to_band
     issues = validate_peri_script(
         body.script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-        grade_band=grade_to_band(activity.grade_level),
+        **_peri_validator_bands(activity),
     )
     if body.script.get("approved") and issues:
         raise HTTPException(

@@ -12,7 +12,8 @@ every teacher edit in the builder UI (spec section B.3). Pure function over
 the script dict: no DB, no network, fully unit-testable.
 
 Rules enforced (spec section B.3):
-  • size cap (hard cap 8 KB)
+  • size cap (hard cap 8 KB; 12 KB when the script has mixed-age lo/hi
+    wordings — "Mixed-age groups")
   • every question has exactly one question mark
   • every question is at most 2 sentences
   • no yes/no openers ("Is...", "Do...", "Can...", etc.)
@@ -21,6 +22,10 @@ Rules enforced (spec section B.3):
     (section B.6)
   • no empty stages — all six inquiry stages must have at least one question
     so the on-device engine never dead-ends
+
+A question's `q` field is either a plain string (one wording for everyone)
+or `{"lo": ..., "hi": ...}` (mixed-age — "Mixed-age groups"). Each wording
+is validated independently against its OWN grade band when one is given.
 
 Plus one engine-correctness check not explicitly named in the spec's bullet
 list but required by it implicitly: mobile/src/lib/peri/engine.ts tracks
@@ -40,6 +45,9 @@ STAGE_ORDER = ["orient", "observe", "classify", "explain", "connect", "reflect"]
 
 TARGET_SIZE_BYTES = 6 * 1024
 HARD_CAP_BYTES = 8 * 1024
+# Raised cap when the script carries mixed-age lo/hi wordings (spec:
+# "the cap rises from 8 KB to 12 KB for a script").
+MIXED_AGE_HARD_CAP_BYTES = 12 * 1024
 
 # A question opening with one of these (case-insensitive) collapses to a
 # yes/no answer — not useful for Aristotelian inquiry ("Ask Peri" RULES in
@@ -119,23 +127,31 @@ def validate_question_text(
 
 
 def validate_peri_script(
-    script: dict, *, location_description: str = "", grade_band: str | None = None,
+    script: dict, *, location_description: str = "",
+    grade_band: str | None = None,
+    lo_band: str | None = None, hi_band: str | None = None,
 ) -> list[PeriScriptIssue]:
     """Validate a full peri_script dict. Returns [] if clean.
 
     `grade_band` (spec "Adding the K-2 band" / "Grade level"): pass the
     ACTIVITY's own band (services.grade_band.grade_to_band(activity.grade_level))
-    so the K-2 word-count ceiling applies only when it should — a per-wording
-    ceiling for mixed-age lo/hi scripts isn't implemented yet (item 16).
+    so the K-2 word-count ceiling applies to a single-wording script.
+
+    `lo_band`/`hi_band` (spec "Mixed-age groups"): for a script with lo/hi
+    wordings, pass each side's own band
+    (grade_to_band(activity.grade_span_min) / grade_to_band(activity.grade_span_max))
+    so each wording is checked against ITS OWN band, not the activity's.
     """
     issues: list[PeriScriptIssue] = []
 
+    is_mixed_age = bool((script or {}).get("grade_span"))
+    cap = MIXED_AGE_HARD_CAP_BYTES if is_mixed_age else HARD_CAP_BYTES
     raw = json.dumps(script or {}, ensure_ascii=False)
     size_bytes = len(raw.encode("utf-8"))
-    if size_bytes > HARD_CAP_BYTES:
+    if size_bytes > cap:
         issues.append(PeriScriptIssue(
             None, None, "size_exceeded",
-            f"script is {size_bytes} bytes, over the {HARD_CAP_BYTES}-byte hard cap",
+            f"script is {size_bytes} bytes, over the {cap}-byte hard cap",
         ))
 
     leakage_runs = _word_runs(location_description) if location_description else set()
@@ -151,7 +167,7 @@ def validate_peri_script(
         any_questions = True
         for q in questions:
             qid = q.get("id")
-            text = q.get("q", "")
+            qtext = q.get("q", "")
             if qid in seen_ids:
                 issues.append(PeriScriptIssue(
                     stage, qid, "duplicate_id",
@@ -160,8 +176,16 @@ def validate_peri_script(
                 ))
             else:
                 seen_ids[qid] = stage
-            for problem in validate_question_text(text, leakage_runs=leakage_runs, grade_band=grade_band):
-                issues.append(PeriScriptIssue(stage, qid, "question_text", problem))
+
+            if isinstance(qtext, dict):
+                for key, band in (("lo", lo_band), ("hi", hi_band)):
+                    for problem in validate_question_text(
+                        qtext.get(key, ""), leakage_runs=leakage_runs, grade_band=band,
+                    ):
+                        issues.append(PeriScriptIssue(stage, qid, "question_text", f"[{key}] {problem}"))
+            else:
+                for problem in validate_question_text(qtext, leakage_runs=leakage_runs, grade_band=grade_band):
+                    issues.append(PeriScriptIssue(stage, qid, "question_text", problem))
 
     if not any_questions:
         issues.append(PeriScriptIssue(None, None, "no_questions", "script has no questions in any stage"))
@@ -169,5 +193,11 @@ def validate_peri_script(
     return issues
 
 
-def is_valid(script: dict, *, location_description: str = "", grade_band: str | None = None) -> bool:
-    return len(validate_peri_script(script, location_description=location_description, grade_band=grade_band)) == 0
+def is_valid(
+    script: dict, *, location_description: str = "",
+    grade_band: str | None = None, lo_band: str | None = None, hi_band: str | None = None,
+) -> bool:
+    return len(validate_peri_script(
+        script, location_description=location_description,
+        grade_band=grade_band, lo_band=lo_band, hi_band=hi_band,
+    )) == 0

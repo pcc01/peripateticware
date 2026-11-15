@@ -173,6 +173,10 @@ class ActivityBase(BaseModel):
     dok_level: Optional[int] = Field(None, ge=1, le=4, description="Depth of Knowledge level (1-4)")
     solo_level: Optional[int] = Field(None, ge=1, le=5, description="SOLO taxonomy level (1-5)")
     rubric_id: Optional[UUID] = None
+    # Optional mixed-age span (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups") --
+    # both nullable; absent means "behave exactly like a single grade_level".
+    grade_span_min: Optional[int] = Field(None, ge=0, le=12)
+    grade_span_max: Optional[int] = Field(None, ge=0, le=12)
     activity_type: ActivityTypeEnum = ActivityTypeEnum.INQUIRY
     # Author's choice, shown with explanatory copy in the builder (2026-08-20
     # -- previously every activity silently got AI chat with no way to turn
@@ -310,6 +314,8 @@ class ActivityUpdate(BaseModel):
     dok_level: Optional[int] = Field(None, ge=1, le=4)
     solo_level: Optional[int] = Field(None, ge=1, le=5)
     rubric_id: Optional[UUID] = None
+    grade_span_min: Optional[int] = Field(None, ge=0, le=12)
+    grade_span_max: Optional[int] = Field(None, ge=0, le=12)
     activity_type: Optional[ActivityTypeEnum] = None
     ai_interaction_mode: Optional[AIInteractionModeEnum] = None
     is_shareable: Optional[bool] = None

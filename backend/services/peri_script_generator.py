@@ -170,6 +170,8 @@ def compute_source_hash(activity: Activity, framework: str, level: Optional[int]
         "framework": framework,
         "level": level,
         "rubric_id": str(activity.rubric_id) if activity.rubric_id else None,
+        "grade_span_min": activity.grade_span_min,
+        "grade_span_max": activity.grade_span_max,
     }, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
@@ -196,9 +198,29 @@ async def _call_llm(prompt: str, *, system: str) -> str:
     )
 
 
+# Spans of 3 or fewer grades may still use a single wording -- the
+# generator decides that here, per spec ("Mixed-age groups").
+MIXED_AGE_MIN_SPAN = 4
+
+
+def resolve_mixed_age(activity: Activity) -> tuple[bool, Optional[int]]:
+    """Returns (is_mixed_age, cutoff_grade). cutoff_grade is the midpoint of
+    the span rounded up -- grades below it get the "lo" wording, at or
+    above get "hi". (None, None)-shaped False result when no span is set,
+    the span is invalid (max <= min), or it's 3 grades or fewer."""
+    lo, hi = activity.grade_span_min, activity.grade_span_max
+    if lo is None or hi is None or hi <= lo:
+        return False, None
+    if (hi - lo) < MIXED_AGE_MIN_SPAN:
+        return False, None
+    cutoff = -(-(lo + hi) // 2)  # ceil((lo+hi)/2) without importing math
+    return True, cutoff
+
+
 async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str, Any]:
     """Generate a full draft script (all six stages). One LLM call per
-    question; see _call_llm for provider dispatch and error propagation."""
+    question (two when the activity has a mixed-age span -- one per
+    wording); see _call_llm for provider dispatch and error propagation."""
     location_wiki = activity.location_wiki_data or {}
     location_name = activity.location_name or "this place"
     location_description = (location_wiki.get("description") or "")[:800]
@@ -206,6 +228,23 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
     framework, level, level_was_fallback = resolve_framework_and_level(activity)
     rubric_criteria = await select_rubric_criteria(db, activity)
     focus_terms = derive_focus_terms(location_wiki)
+    is_mixed_age, cutoff_grade = resolve_mixed_age(activity)
+
+    async def _generate_one(stage: str, grade_level: int, prior: list[str]) -> str:
+        prompt = build_peri_prompt(
+            location_name=location_name,
+            location_description=location_description,
+            subject=activity.subject or "",
+            grade_level=grade_level,
+            bloom_level=str(activity.bloom_level or "analyze"),
+            framework=framework,
+            level=level,
+            rubric_criteria=rubric_criteria,
+            inquiry_stage=stage,
+            learning_objectives=activity.learning_objectives or [],
+            prior_questions=prior[-3:],
+        )
+        return (await _call_llm(prompt, system=SYSTEM_PERI)).strip()
 
     stages: dict[str, list[dict]] = {}
     prior_questions: list[str] = []
@@ -213,29 +252,32 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
         count = _question_count(stage, framework, level)
         stage_questions: list[dict] = []
         for i in range(count):
-            prompt = build_peri_prompt(
-                location_name=location_name,
-                location_description=location_description,
-                subject=activity.subject or "",
-                grade_level=activity.grade_level or 0,
-                bloom_level=str(activity.bloom_level or "analyze"),
-                framework=framework,
-                level=level,
-                rubric_criteria=rubric_criteria,
-                inquiry_stage=stage,
-                learning_objectives=activity.learning_objectives or [],
-                prior_questions=prior_questions[-3:],
-            )
-            question_text = (await _call_llm(prompt, system=SYSTEM_PERI)).strip()
             qid = f"{_STAGE_ID_PREFIX[stage]}{i + 1}"
-            item: dict[str, Any] = {"id": qid, "q": question_text}
-            matched_focus = [t for t in focus_terms if t in question_text.lower()]
+            item: dict[str, Any] = {"id": qid}
+
+            if is_mixed_age:
+                # Cognitive level is NOT split -- same framework/level/rubric
+                # for both calls; only grade_level (and so vocabulary/
+                # scaffolding) differs (spec: "A younger child gets the same
+                # demand in simpler words").
+                lo_text = await _generate_one(stage, activity.grade_span_min, prior_questions)
+                prior_questions.append(lo_text)
+                hi_text = await _generate_one(stage, activity.grade_span_max, prior_questions)
+                prior_questions.append(hi_text)
+                item["q"] = {"lo": lo_text, "hi": hi_text}
+                combined_text = f"{lo_text} {hi_text}".lower()
+            else:
+                text = await _generate_one(stage, activity.grade_level or 0, prior_questions)
+                prior_questions.append(text)
+                item["q"] = text
+                combined_text = text.lower()
+
+            matched_focus = [t for t in focus_terms if t in combined_text]
             if matched_focus:
                 item["on"] = matched_focus
             if rubric_criteria and i < len(rubric_criteria):
                 item["crit"] = rubric_criteria[i].get("id")
             stage_questions.append(item)
-            prior_questions.append(question_text)
         stages[stage] = stage_questions
 
     script: dict[str, Any] = {
@@ -257,6 +299,13 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
         "source_hash": compute_source_hash(activity, framework, level),
         "approved": False,
     }
+    if is_mixed_age:
+        # Device-side wording resolution (mobile/src/lib/peri/engine.ts)
+        # needs the span + cutoff without reimplementing this module's
+        # integer math -- grade is the finest signal it ever gets (coarse
+        # bands lose too much precision for a clean midpoint comparison).
+        script["grade_span"] = {"min": activity.grade_span_min, "max": activity.grade_span_max}
+        script["mixed_age_cutoff_grade"] = cutoff_grade
     if level_was_fallback:
         # Reported to the teacher in the builder draft, not asserted to the
         # student (spec "Taxonomy and rubric" step 2).

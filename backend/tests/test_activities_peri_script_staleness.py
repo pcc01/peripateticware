@@ -25,6 +25,8 @@ def _activity(**overrides) -> SimpleNamespace:
         location_name="Cliff Palace",
         subject="History",
         grade_level=5,
+        grade_span_min=None,
+        grade_span_max=None,
     )
     base.update(overrides)
     return SimpleNamespace(**base)

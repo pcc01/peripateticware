@@ -284,7 +284,11 @@ CREATE TABLE IF NOT EXISTS activities (
     -- On-device Peri dialogue script (PERI_OFFLINE_SPEC_v2.md). Also ships
     -- here so a fresh install has it without waiting on startup's
     -- apply_peri_script_migrations().
-    peri_script                    JSONB
+    peri_script                    JSONB,
+    -- Optional mixed-age span ("Mixed-age groups") — nullable; absent means
+    -- "behave exactly like a single grade_level".
+    grade_span_min                 INTEGER,
+    grade_span_max                 INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);

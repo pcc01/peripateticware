@@ -18,6 +18,7 @@ from services.peri_script_generator import (
     compute_source_hash,
     derive_focus_terms,
     resolve_framework_and_level,
+    resolve_mixed_age,
     select_rubric_criteria,
 )
 from services.peri_script_validator import STAGE_ORDER
@@ -48,6 +49,8 @@ def _activity(**overrides) -> SimpleNamespace:
         location_name="Cliff Palace",
         subject="History",
         grade_level=5,
+        grade_span_min=None,
+        grade_span_max=None,
     )
     base.update(overrides)
     return SimpleNamespace(**base)
@@ -141,6 +144,36 @@ class TestDeriveFocusTerms:
         assert len(terms) == 4
 
 
+class TestResolveMixedAge:
+    def test_no_span_set_is_not_mixed_age(self):
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=None, grade_span_max=None))
+        assert (is_mixed, cutoff) == (False, None)
+
+    def test_span_of_three_or_fewer_grades_is_not_mixed_age(self):
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=3, grade_span_max=6))  # span of 3
+        assert (is_mixed, cutoff) == (False, None)
+
+    def test_span_of_four_or_more_grades_is_mixed_age(self):
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=2, grade_span_max=6))  # span of 4
+        assert is_mixed is True
+        assert cutoff == 4  # ceil((2+6)/2)
+
+    def test_cutoff_rounds_up_for_an_odd_sum(self):
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=1, grade_span_max=6))  # span of 5
+        assert is_mixed is True
+        assert cutoff == 4  # ceil((1+6)/2) = ceil(3.5) = 4
+
+    def test_invalid_span_max_not_greater_than_min_is_not_mixed_age(self):
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=6, grade_span_max=6))
+        assert (is_mixed, cutoff) == (False, None)
+        is_mixed, cutoff = resolve_mixed_age(_activity(grade_span_min=6, grade_span_max=2))
+        assert (is_mixed, cutoff) == (False, None)
+
+    def test_only_one_bound_set_is_not_mixed_age(self):
+        assert resolve_mixed_age(_activity(grade_span_min=2, grade_span_max=None))[0] is False
+        assert resolve_mixed_age(_activity(grade_span_min=None, grade_span_max=6))[0] is False
+
+
 class TestComputeSourceHash:
     def test_same_inputs_produce_same_hash(self):
         a1 = _activity()
@@ -166,6 +199,13 @@ class TestComputeSourceHash:
         base = compute_source_hash(_activity(), "blooms", 4)
         changed = compute_source_hash(
             _activity(rubric_id="33333333-3333-3333-3333-333333333333"), "blooms", 4
+        )
+        assert base != changed
+
+    def test_changing_grade_span_changes_hash(self):
+        base = compute_source_hash(_activity(), "blooms", 4)
+        changed = compute_source_hash(
+            _activity(grade_span_min=2, grade_span_max=6), "blooms", 4
         )
         assert base != changed
 
