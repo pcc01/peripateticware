@@ -80,7 +80,13 @@ export default function PeriChatSheet({
    * without crashing (engine.ts's empty/missing-stage tests). */
   const engineReply = (studentText: string): string => {
     if (!engineStateRef.current) {
-      engineStateRef.current = createPeriEngineState();
+      // The activity screen's static Inquiry prompt already showed the
+      // orient stage's first question (and its follow-up, if any) BEFORE
+      // the student ever opened this chat (periOpeningPrompt() in
+      // engine.ts). Pre-mark those same ids as asked so the chat's first
+      // reply doesn't repeat a question the student already saw on screen.
+      const alreadyShown = (periScript?.stages?.orient ?? []).slice(0, 2).map((q) => q.id);
+      engineStateRef.current = { ...createPeriEngineState(), askedIds: alreadyShown };
     }
     const result = nextPeriTurn(periScript ?? { v: 1, stages: {} }, engineStateRef.current, studentText);
     engineStateRef.current = result.state;
