@@ -15,6 +15,7 @@
 
 import { getDb } from './database';
 import { initQuestions } from './questions';
+import { pruneActivityCache } from './activityCache';
 import * as Network from 'expo-network';
 
 export async function initOfflineLayer(): Promise<void> {
@@ -29,6 +30,17 @@ export async function initOfflineLayer(): Promise<void> {
       await initQuestions();
     } else {
       console.log('📵 Offline at launch — using cached data');
+    }
+
+    // activity_cache was never pruned anywhere (PERI_OFFLINE_SPEC_v2.md
+    // "SQLite growth") — run on every launch, online or offline, since
+    // it's a pure local-DB cleanup with no network dependency. Never
+    // blocks startup on failure.
+    try {
+      const { deleted } = await pruneActivityCache();
+      if (deleted > 0) console.log(`🧹 Pruned ${deleted} stale cached activit${deleted === 1 ? 'y' : 'ies'}`);
+    } catch (e) {
+      console.warn('⊘ pruneActivityCache error:', e);
     }
   } catch (e) {
     console.warn('⊘ initOfflineLayer error:', e);

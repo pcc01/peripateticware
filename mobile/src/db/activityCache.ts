@@ -67,6 +67,78 @@ export async function cacheActivityDetail(a: Activity): Promise<void> {
   );
 }
 
+export const CACHE_PRUNE_MAX_AGE_DAYS = 30;
+export const CACHE_PRUNE_KEEP_MOST_RECENT = 50;
+
+/**
+ * Delete stale activity_cache rows (PERI_OFFLINE_SPEC_v2.md "SQLite
+ * growth" — activity_cache is the one table that was INSERT-OR-REPLACE'd
+ * forever with no prune anywhere, unlike `questions`, which is wiped and
+ * reloaded on every sync).
+ *
+ * An activity is a prune candidate once it's older than
+ * CACHE_PRUNE_MAX_AGE_DAYS OR falls outside the CACHE_PRUNE_KEEP_MOST_RECENT
+ * most-recently-cached rows — UNLESS it has any unsynced local data
+ * (a queued capture/note/arrival, or a hunt still in progress), which is
+ * never pruned no matter how old, since that's the only copy of that work
+ * until the next successful sync.
+ *
+ * Also prunes mirror-progress for any activity actually removed here
+ * (spec's wayfinding section: "extend [pruning] to prune wp_progress rows
+ * for activities removed from the cache, in the same pass") — once the
+ * activity_cache row is gone there's nothing left to resume progress
+ * display against, so keeping synced wp_progress rows around indefinitely
+ * would just be the same unbounded-growth problem moved one table over.
+ */
+export async function pruneActivityCache(): Promise<{ deleted: number }> {
+  const db = await getDb();
+  const cutoff = Math.floor(Date.now() / 1000) - CACHE_PRUNE_MAX_AGE_DAYS * 86400;
+
+  const [captureRows, noteRows, arrivalRows, progressRows, cacheRows] = await Promise.all([
+    db.getAllAsync<{ activity_id: string | null }>(
+      'SELECT DISTINCT activity_id FROM capture_queue'
+    ),
+    db.getAllAsync<{ activity_id: string | null }>(
+      'SELECT DISTINCT activity_id FROM note_queue'
+    ),
+    db.getAllAsync<{ activity_id: string }>(
+      'SELECT DISTINCT activity_id FROM wp_arrival_queue'
+    ),
+    // An in-progress hunt: a stop reached but not yet synced. (A fully-
+    // synced wp_progress row is NOT protection on its own — only queue
+    // rows and in-progress hunts are.)
+    db.getAllAsync<{ activity_id: string }>(
+      'SELECT DISTINCT activity_id FROM wp_progress WHERE arrived_at IS NOT NULL AND synced = 0'
+    ),
+    db.getAllAsync<{ id: string; cached_at: number }>(
+      'SELECT id, cached_at FROM activity_cache ORDER BY cached_at DESC'
+    ),
+  ]);
+
+  const protectedIds = new Set<string>();
+  for (const r of [...captureRows, ...noteRows]) {
+    if (r.activity_id) protectedIds.add(r.activity_id);
+  }
+  for (const r of arrivalRows) protectedIds.add(r.activity_id);
+  for (const r of progressRows) protectedIds.add(r.activity_id);
+
+  const toDelete = cacheRows
+    .filter((row, index) => {
+      if (protectedIds.has(row.id)) return false;
+      const tooOld = row.cached_at < cutoff;
+      const beyondKeepCount = index >= CACHE_PRUNE_KEEP_MOST_RECENT;
+      return tooOld || beyondKeepCount;
+    })
+    .map((row) => row.id);
+
+  for (const id of toDelete) {
+    await db.runAsync('DELETE FROM activity_cache WHERE id = ?', [id]);
+    await db.runAsync('DELETE FROM wp_progress WHERE activity_id = ?', [id]);
+  }
+
+  return { deleted: toDelete.length };
+}
+
 export async function getCachedActivity(id: string): Promise<Activity | null> {
   const db = await getDb();
   const row = await db.getFirstAsync<Activity & { detail_json?: string | null }>(

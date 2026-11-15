@@ -85,11 +85,27 @@ export async function syncQuestionsFromServer(): Promise<void> {
   }
 }
 
-/** Get a random question from local DB — zero network. Falls back to null. */
+// Reverse of gradeBand.ts's _OBSERVATION_TYPE_TO_STAGE — which bank
+// observation_type values to prefer for a given inquiry stage (spec item
+// 10). A stage with no mapped type (orient/connect/reflect — the bank
+// models description/causation, not an arrival or wrap-up moment) simply
+// matches nothing, and the caller falls back to the unfiltered pick below.
+const _STAGE_TO_OBSERVATION_TYPES: Record<string, string[]> = {
+  observe: ['observation', 'measurement'],
+  classify: ['comparison', 'classification', 'pattern'],
+  explain: ['causation', 'evidence'],
+};
+
+/** Get a random question from local DB — zero network. Falls back to null.
+ * `stage`, when given, prefers a row whose observation_type maps to that
+ * inquiry stage; if none match (common — several stages have no mapped
+ * type at all), falls back to the same query without that preference
+ * rather than returning nothing. */
 export async function getLocalQuestion(params: {
   subject?: string;
   gradeBand?: string;
   bloomLevel?: string;
+  stage?: string;
 }): Promise<LocalQuestion | null> {
   try {
     const db = await getDb();
@@ -107,6 +123,19 @@ export async function getLocalQuestion(params: {
     if (params.bloomLevel) {
       conditions.push('bloom_level = ?');
       args.push(params.bloomLevel.toLowerCase());
+    }
+
+    const stageTypes = params.stage ? _STAGE_TO_OBSERVATION_TYPES[params.stage] : undefined;
+    if (stageTypes && stageTypes.length > 0) {
+      const stageConditions = [...conditions, `observation_type IN (${stageTypes.map(() => '?').join(',')})`];
+      const stageArgs = [...args, ...stageTypes];
+      const stageRow = await db.getFirstAsync<LocalQuestion>(
+        `SELECT * FROM questions WHERE ${stageConditions.join(' AND ')} ORDER BY RANDOM() LIMIT 1`,
+        stageArgs
+      );
+      if (stageRow) return stageRow;
+      // No row for this stage's observation types — fall through to the
+      // unfiltered pick below rather than returning nothing.
     }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';

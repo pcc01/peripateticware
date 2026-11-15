@@ -2782,5 +2782,53 @@
     "observation_type": "evidence",
     "question_text": "How would you evaluate whether an intervention to help this ecosystem would do more good than harm?",
     "follow_up": "What unintended consequence would concern you most?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "k-2",
+    "bloom_level": "remember",
+    "observation_type": "observation",
+    "question_text": "What is one thing you can see at {place}?",
+    "follow_up": "Can you point to it?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "3-5",
+    "bloom_level": "understand",
+    "observation_type": "measurement",
+    "question_text": "If you took a few steps around {place}, what would you notice changing?",
+    "follow_up": "What stayed the same the whole way?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "6-8",
+    "bloom_level": "apply",
+    "observation_type": "comparison",
+    "question_text": "How does {place} compare to the last place you stopped to really look at something closely?",
+    "follow_up": "Which difference surprised you most?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "3-5",
+    "bloom_level": "analyse",
+    "observation_type": "classification",
+    "question_text": "What clues at {place} tell you something about when or why it was built?",
+    "follow_up": "Which clue is the most convincing?"
+  },
+  {
+    "subject": "history",
+    "grade_band": "6-8",
+    "bloom_level": "analyse",
+    "observation_type": "causation",
+    "question_text": "Why do you think {place} was put exactly where it is, rather than somewhere else nearby?",
+    "follow_up": "What would have to be different about the location for your answer to change?"
+  },
+  {
+    "subject": "science",
+    "grade_band": "9-12",
+    "bloom_level": "evaluate",
+    "observation_type": "evidence",
+    "question_text": "What evidence at {place} would you point to if someone doubted your observation?",
+    "follow_up": "What would change your mind?"
   }
 ]

@@ -14,6 +14,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivity, startActivitySession, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
 import { periOpeningPrompt } from '@/src/lib/peri/engine';
+import { gradeToBand, bloomLevelToBankKey } from '@/src/lib/gradeBand';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
@@ -202,7 +203,13 @@ export default function ActivityScreen() {
       });
       return;
     }
-    fetchQuestion({ subject: activity.subject }).then(setQuestion).catch(() => {});
+    fetchQuestion({
+      subject: activity.subject,
+      grade: gradeToBand(activity.grade_level) ?? undefined,
+      bloom: bloomLevelToBankKey(activity.bloom_level),
+      stage: 'orient',
+      placeName: activity.location_name,
+    }).then(setQuestion).catch(() => {});
   }, [phase, activity]);
 
   const advancePhase = useCallback(() => {
