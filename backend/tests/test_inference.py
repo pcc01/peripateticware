@@ -362,6 +362,70 @@ async def test_chat_curated_only_activity_still_blocks_everyone_regardless_of_ag
 
 
 @pytest.mark.asyncio
+async def test_chat_system_context_is_framed_as_grounding_only():
+    """A supplied system_context is wrapped in explicit grounding-only
+    framing in the prompt actually sent to the LLM (spec item 12) -- not
+    forwarded verbatim, which would let the model just state those facts
+    to the student outright."""
+    user = _fake_user(age_group="adult")
+    async with _client_for(user) as (client, db):
+        with patch(
+            "routes.inference._call_llm_inference",
+            new=AsyncMock(return_value={"question": "A reply", "resources": [], "confidence": 0.9}),
+        ) as mock_llm:
+            resp = await client.post(
+                "/api/v1/inference/chat",
+                json=_chat_payload(system_context="Place: Sather Tower, built in 1914."),
+            )
+
+    assert resp.status_code == 200
+    prompt = mock_llm.call_args.kwargs["explicit_prompt"]
+    assert "Place: Sather Tower, built in 1914." in prompt
+    assert "never state these facts directly" in prompt
+    assert "never reveal or hint at an answer" in prompt
+
+
+@pytest.mark.asyncio
+async def test_chat_system_context_is_capped():
+    """An oversized system_context (e.g. a full cached place description)
+    is truncated before reaching the LLM rather than growing the prompt
+    (and cost) without bound."""
+    user = _fake_user(age_group="adult")
+    huge_context = "A" * 5000
+    async with _client_for(user) as (client, db):
+        with patch(
+            "routes.inference._call_llm_inference",
+            new=AsyncMock(return_value={"question": "A reply", "resources": [], "confidence": 0.9}),
+        ) as mock_llm:
+            resp = await client.post(
+                "/api/v1/inference/chat",
+                json=_chat_payload(system_context=huge_context),
+            )
+
+    assert resp.status_code == 200
+    prompt = mock_llm.call_args.kwargs["explicit_prompt"]
+    assert "A" * 1000 in prompt
+    assert "A" * 1001 not in prompt
+
+
+@pytest.mark.asyncio
+async def test_chat_with_no_system_context_has_no_grounding_framing():
+    """No system_context supplied -> no framing boilerplate injected either
+    (keeps the prompt for context-free chat exactly as lean as before)."""
+    user = _fake_user(age_group="adult")
+    async with _client_for(user) as (client, db):
+        with patch(
+            "routes.inference._call_llm_inference",
+            new=AsyncMock(return_value={"question": "A reply", "resources": [], "confidence": 0.9}),
+        ) as mock_llm:
+            resp = await client.post("/api/v1/inference/chat", json=_chat_payload())
+
+    assert resp.status_code == 200
+    prompt = mock_llm.call_args.kwargs["explicit_prompt"]
+    assert "grounding only" not in prompt
+
+
+@pytest.mark.asyncio
 async def test_inquiry_blocks_llm_for_under_13_student_real_observation_text():
     """process_inquiry's real-student-observation branch (payload carries
     `text`, not `input_text` -- InquiryInterface.tsx's shape) skips the LLM

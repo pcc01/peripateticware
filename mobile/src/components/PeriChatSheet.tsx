@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import {
   createPeriEngineState, next as nextPeriTurn, PeriEngineState, PeriScript,
 } from '@/src/lib/peri/engine';
+import type { LocationWikiData } from '@/src/api/activities';
 
 interface Props {
   visible: boolean;
@@ -29,6 +30,10 @@ interface Props {
   activitySubject?: string;
   currentPrompt?: string;
   sessionId?: string | null;
+  // Same place-grounding source as the offline script (item 12) — passed
+  // to the LIVE chat too, so both paths are grounded in the same facts.
+  locationName?: string;
+  locationWikiData?: LocationWikiData | null;
   // Teacher-approved Peri script for this activity (PERI_OFFLINE_SPEC_v2.md)
   // — only ever present when approved, per
   // routes/student_activities.py::_approved_peri_script(). Drives the
@@ -57,7 +62,7 @@ interface DisplayMessage {
 export default function PeriChatSheet({
   visible, onClose, theme,
   activityId, activityTitle, activitySubject, currentPrompt, sessionId,
-  periScript, aiInteractionMode,
+  periScript, aiInteractionMode, locationName, locationWikiData,
   onCaptured,
 }: Props) {
   const { t } = useTranslation();
@@ -201,6 +206,9 @@ export default function PeriChatSheet({
             activityTitle,
             activitySubject,
             currentPrompt,
+            locationName,
+            locationDescription: locationWikiData?.description,
+            locationAiGenerated: locationWikiData?.aiGenerated,
           });
           replyText = res.response;
         } catch {

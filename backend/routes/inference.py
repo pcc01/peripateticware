@@ -480,7 +480,23 @@ async def chat_with_peri(
         f"{'Student' if turn.role == 'user' else 'Peri'}: {turn.content}"
         for turn in request.history[-10:]
     ]
-    context_block = f"{request.system_context}\n\n" if request.system_context else ""
+    # Cap + frame the client-supplied context (spec item 12): an
+    # activity's cached place description could otherwise make this
+    # prompt arbitrarily large, and nothing previously told the model
+    # this text is background only -- an LLM handed "Location: X, built
+    # in 1923 by..." with no framing will readily just state those facts
+    # to the student outright, which defeats the point of Aristotelian
+    # inquiry (the student is supposed to find things out, not be told).
+    _SYSTEM_CONTEXT_MAX_CHARS = 1000
+    context_block = ""
+    if request.system_context:
+        truncated = request.system_context[:_SYSTEM_CONTEXT_MAX_CHARS]
+        context_block = (
+            "Background for grounding only -- never state these facts directly "
+            "to the student, never reveal or hint at an answer, and never quote "
+            "this verbatim:\n"
+            f"{truncated}\n\n"
+        )
     prompt = (
         f"{context_block}"
         + ("\n".join(transcript_lines) + "\n" if transcript_lines else "")

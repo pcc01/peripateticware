@@ -23,10 +23,27 @@ export async function chatWithPeri(params: {
   activityTitle?: string;
   activitySubject?: string;
   currentPrompt?: string;
+  // Place grounding (PERI_OFFLINE_SPEC_v2.md item 12) -- same source as
+  // the on-device script (location_wiki_data), so live chat and the
+  // offline engine are grounded in the same facts. The backend caps and
+  // frames this as background-only context, never something to state
+  // directly to the student.
+  locationName?: string;
+  locationDescription?: string;
+  locationAiGenerated?: boolean;
 }): Promise<ChatResponse> {
+  const placeNote = params.locationName
+    ? `Place: ${params.locationName}` +
+      (params.locationDescription ? ` — ${params.locationDescription.slice(0, 400)}` : '') +
+      (params.locationAiGenerated
+        ? ' (this description came from the AI\'s general knowledge, not a verified source -- treat specifics with caution)'
+        : '')
+    : undefined;
+
   const systemContext = [
     params.activityTitle && `Activity: ${params.activityTitle}`,
     params.activitySubject && `Subject: ${params.activitySubject}`,
+    placeNote,
     params.currentPrompt && `Current prompt: ${params.currentPrompt}`,
   ].filter(Boolean).join('\n');
 

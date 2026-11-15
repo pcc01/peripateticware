@@ -517,6 +517,8 @@ export default function ActivityScreen() {
           sessionId={sessionId}
           periScript={activity.peri_script}
           aiInteractionMode={activity.ai_interaction_mode}
+          locationName={activity.location_name}
+          locationWikiData={activity.location_wiki_data}
           onCaptured={upsertCapture}
         />
         <CaptureSheet
