@@ -16,6 +16,11 @@ interface User {
   id: string;
   email: string;
   role: string;
+  // Coarse grade band only (PERI_OFFLINE_SPEC_v2.md item 21) — read by the
+  // Peri engine for mixed-age wording selection. Stored here (the app's
+  // key-value store), never in SQLite, and never included in any request
+  // body or log. Absent/null is normal (not every account has one on file).
+  gradeBand?: string | null;
 }
 
 interface AuthContextValue {
@@ -58,7 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const me = await getCurrentUser();
-        const fresh: User = { id: me.user_id, email: me.email, role: me.role.toUpperCase() };
+        const fresh: User = {
+          id: me.user_id, email: me.email, role: me.role.toUpperCase(),
+          gradeBand: me.grade_band ?? null,
+        };
         setUser(fresh);
         await setStoredUser(fresh);
       } catch (err) {

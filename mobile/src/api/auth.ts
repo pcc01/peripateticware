@@ -16,6 +16,10 @@ export interface MeResponse {
   email: string;
   role: string;
   org_id: string | null;
+  // Coarse band only (k-2/3-5/6-8/9-12), never an exact grade/birth date/age
+  // (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups"). null when not derivable
+  // (no homeschool or classroom grade on file), which is normal, not an error.
+  grade_band?: string | null;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {

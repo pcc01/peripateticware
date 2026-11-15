@@ -657,6 +657,42 @@ class MeResponse(BaseModel):
     first_name: Optional[str] = None
     full_name: Optional[str] = None
     state_code: Optional[str] = None
+    # Coarse band only (k-2/3-5/6-8/9-12), never an exact grade, birth date,
+    # or age (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups" -- minimal, no new
+    # personal data). Derived from data already on file; None when neither
+    # source below has anything for this user, including every non-student
+    # role.
+    grade_band: Optional[str] = None
+
+
+async def _resolve_student_grade_band(db: AsyncSession, user_id: uuid.UUID) -> Optional[str]:
+    """Resolution order (spec): homeschool_children.grade_level first, then
+    the student's classroom's grade_level. Never asks for or stores a new
+    field -- purely reads what's already there and converts to a band."""
+    from sqlalchemy import text as _text
+    from services.grade_band import grade_to_band
+
+    hs_row = (await db.execute(
+        _text("SELECT grade_level FROM homeschool_children WHERE child_id = :uid LIMIT 1"),
+        {"uid": str(user_id)},
+    )).first()
+    if hs_row and hs_row[0] is not None:
+        return grade_to_band(hs_row[0])
+
+    cls_row = (await db.execute(_text("""
+        SELECT c.grade_level FROM classroom_students cs
+        JOIN classrooms c ON c.id = cs.classroom_id
+        WHERE cs.student_id = :uid AND c.grade_level IS NOT NULL AND c.grade_level != ''
+        ORDER BY cs.enrolled_at DESC
+        LIMIT 1
+    """), {"uid": str(user_id)})).first()
+    if cls_row and cls_row[0]:
+        try:
+            return grade_to_band(int(cls_row[0]))
+        except (ValueError, TypeError):
+            return None
+    return None
+
 
 @router.get("/me", response_model=MeResponse)
 async def get_current_user(
@@ -691,6 +727,13 @@ async def get_current_user(
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found or inactive")
 
+    try:
+        grade_band = await _resolve_student_grade_band(db, user.id)
+    except Exception as e:
+        # Best-effort -- never fail the whole /me call over this.
+        logger.warning(f"grade_band resolution skipped: {e}")
+        grade_band = None
+
     return MeResponse(
         user_id=str(user.id),
         email=user.email,
@@ -699,6 +742,7 @@ async def get_current_user(
         first_name=getattr(user, "first_name", None),
         full_name=getattr(user, "full_name", None),
         state_code=getattr(user, "state_code", None),
+        grade_band=grade_band,
     )
 
 
