@@ -27,7 +27,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { createDiscoveryActivity, publishActivity, DiscoveryMode } from '@/src/api/discoveryActivities';
 
 const SUBJECTS = ['General', 'Science', 'Math', 'History', 'Art', 'Language', 'Biology'];
-const GRADES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const GRADES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // 0 = kindergarten
 const DURATIONS = [15, 30, 45, 60, 90];
 const BLOOM_LABELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
 const DIFFICULTIES = [1, 2, 3, 4];
@@ -366,7 +366,7 @@ export default function CreateScavengerHuntScreen() {
           )}
 
           <Text style={labelStyle}>{t('createScavengerHunt.gradeLabel', 'GRADE LEVEL')}</Text>
-          <ChipRow options={GRADES} value={grade} onChange={setGrade} render={(v) => String(v)} />
+          <ChipRow options={GRADES} value={grade} onChange={setGrade} render={(v) => (v === 0 ? 'K' : String(v))} />
 
           <Text style={labelStyle}>{t('createScavengerHunt.subjectLabel', 'SUBJECT')}</Text>
           <ChipRow options={SUBJECTS} value={subject} onChange={setSubject} render={(v) => v} />

@@ -192,8 +192,8 @@ const SharedLibraryPage: React.FC = () => {
             <select value={gradeLevel} onChange={e => setGradeLevel(e.target.value)}
               style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', fontSize: '0.84rem' }}>
               <option value="">{t('pages_teacher_sharedlibrarypage.any', 'Any')}</option>
-              {Array.from({ length: 10 }, (_, i) => i + 3).map(g => (
-                <option key={g} value={g}>Grade {g}</option>
+              {Array.from({ length: 13 }, (_, i) => i).map(g => (
+                <option key={g} value={g}>Grade {g === 0 ? 'K' : g}</option>
               ))}
             </select>
           </div>

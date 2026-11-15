@@ -120,7 +120,7 @@ class ActivityGenerationRequest(BaseModel):
     # required unless standard_ids is given" since pydantic alone can't
     # express that either/or.
     subject: Optional[str] = Field(None, min_length=1, max_length=100)
-    grade_level: Optional[int] = Field(None, ge=3, le=12)
+    grade_level: Optional[int] = Field(None, ge=0, le=12)
     taxonomy_framework: TaxonomyFramework = TaxonomyFramework.BLOOMS
     desired_taxonomy_level: Optional[int] = Field(None, ge=1, le=6)
     activity_count: int = Field(default=3, ge=1, le=5,

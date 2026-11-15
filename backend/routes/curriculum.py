@@ -97,7 +97,7 @@ class ActivityGenerationRequest(BaseModel):
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
     subject: str = Field(..., min_length=1, max_length=100)
-    grade_level: int = Field(..., ge=3, le=12)
+    grade_level: int = Field(..., ge=0, le=12)
     
     # Optional taxonomy specifications
     bloom_level: Optional[int] = Field(None, ge=1, le=6)

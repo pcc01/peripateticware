@@ -1568,8 +1568,10 @@ async def generate_peri_script_endpoint(
             detail="AI inference service is temporarily unavailable — please try again shortly.",
         )
 
+    from services.grade_band import grade_to_band
     issues = validate_peri_script(
-        script, location_description=(activity.location_wiki_data or {}).get("description", "")
+        script, location_description=(activity.location_wiki_data or {}).get("description", ""),
+        grade_band=grade_to_band(activity.grade_level),
     )
 
     activity.peri_script = script
@@ -1594,9 +1596,13 @@ async def get_peri_script(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only view your own activities")
 
     from services.peri_script_validator import validate_peri_script
+    from services.grade_band import grade_to_band
     script = activity.peri_script or {}
     issues = (
-        validate_peri_script(script, location_description=(activity.location_wiki_data or {}).get("description", ""))
+        validate_peri_script(
+            script, location_description=(activity.location_wiki_data or {}).get("description", ""),
+            grade_band=grade_to_band(activity.grade_level),
+        )
         if script else []
     )
     return PeriScriptResponse(
@@ -1626,8 +1632,10 @@ async def update_peri_script(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
 
     from services.peri_script_validator import validate_peri_script
+    from services.grade_band import grade_to_band
     issues = validate_peri_script(
-        body.script, location_description=(activity.location_wiki_data or {}).get("description", "")
+        body.script, location_description=(activity.location_wiki_data or {}).get("description", ""),
+        grade_band=grade_to_band(activity.grade_level),
     )
     if body.script.get("approved") and issues:
         raise HTTPException(

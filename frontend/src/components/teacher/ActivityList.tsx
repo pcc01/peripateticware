@@ -119,8 +119,8 @@ export function ActivityList() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
               
               <option value="">{t("landing:all_grades", "All Grades")}</option>
-              {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) =>
-              <option key={grade} value={grade}>{t("landing:activitylist.grade", "Grade")}{grade}</option>
+              {Array.from({ length: 13 }, (_, i) => i).map((grade) =>
+              <option key={grade} value={grade}>{t("landing:activitylist.grade", "Grade")}{grade === 0 ? 'K' : grade}</option>
               )}
             </select>
           </div>

@@ -160,7 +160,7 @@ class ActivityBase(BaseModel):
     location_longitude: float
     location_radius_meters: int = Field(default=100, ge=10, le=10000)
     location_name: str = Field(..., min_length=1, max_length=255)
-    grade_level: int = Field(..., ge=3, le=12)
+    grade_level: int = Field(..., ge=0, le=12)
     subject: str = Field(..., min_length=1, max_length=100)
     difficulty_level: int = Field(default=3, ge=1, le=5)
     estimated_duration_minutes: int = Field(..., ge=5, le=480)
@@ -297,7 +297,7 @@ class ActivityUpdate(BaseModel):
     location_longitude: Optional[float] = None
     location_radius_meters: Optional[int] = Field(None, ge=10, le=10000)
     location_name: Optional[str] = Field(None, min_length=1, max_length=255)
-    grade_level: Optional[int] = Field(None, ge=3, le=12)
+    grade_level: Optional[int] = Field(None, ge=0, le=12)
     subject: Optional[str] = Field(None, min_length=1, max_length=100)
     difficulty_level: Optional[int] = Field(None, ge=1, le=5)
     estimated_duration_minutes: Optional[int] = Field(None, ge=5, le=480)
@@ -475,7 +475,7 @@ class ProjectBase(BaseModel):
     """Base project schema"""
     title: str = Field(..., min_length=3, max_length=255)
     description: str = Field(..., min_length=10, max_length=5000)
-    grade_level: int = Field(..., ge=3, le=12)
+    grade_level: int = Field(..., ge=0, le=12)
     subject: str = Field(..., min_length=1, max_length=100)
     duration_weeks: int = Field(..., ge=1, le=52)
     start_date: datetime
@@ -498,7 +498,7 @@ class ProjectUpdate(BaseModel):
     """Update project request"""
     title: Optional[str] = Field(None, min_length=3, max_length=255)
     description: Optional[str] = Field(None, min_length=10, max_length=5000)
-    grade_level: Optional[int] = Field(None, ge=3, le=12)
+    grade_level: Optional[int] = Field(None, ge=0, le=12)
     subject: Optional[str] = Field(None, min_length=1, max_length=100)
     duration_weeks: Optional[int] = Field(None, ge=1, le=52)
     start_date: Optional[datetime] = None

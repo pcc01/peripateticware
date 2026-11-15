@@ -160,7 +160,7 @@ def _activity_to_summary(a: Activity) -> dict:
 @router.get("/activities", response_model=StudentPaginatedActivityResponse)
 async def list_student_activities(
     subject:      Optional[str] = Query(None, description="Filter by subject"),
-    grade_level:  Optional[int] = Query(None, ge=3, le=12),
+    grade_level:  Optional[int] = Query(None, ge=0, le=12),
     # Geofence filter — return only activities near this point
     lat:          Optional[float] = Query(None, description="Student latitude for proximity filter"),
     lon:          Optional[float] = Query(None, description="Student longitude for proximity filter"),

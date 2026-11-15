@@ -87,7 +87,15 @@ def _starts_with_yes_no(text: str) -> bool:
     return any(t.startswith(opener) for opener in _YES_NO_OPENERS)
 
 
-def validate_question_text(text: str, *, leakage_runs: set[str] | None = None) -> list[str]:
+# K-2 readability ceiling (spec "Adding the K-2 band": "target 12 words or
+# fewer, one idea" -- pre-readers need short, plain, spoken-style questions
+# that the existing speaker button can read aloud in one breath).
+K2_MAX_WORDS = 12
+
+
+def validate_question_text(
+    text: str, *, leakage_runs: set[str] | None = None, grade_band: str | None = None,
+) -> list[str]:
     """Rules that apply to one question's text in isolation. Returns a list
     of human-readable problem strings (empty = clean)."""
     problems: list[str] = []
@@ -103,11 +111,23 @@ def validate_question_text(text: str, *, leakage_runs: set[str] | None = None) -
         problems.append("must not be a yes/no question")
     if leakage_runs and (_word_runs(stripped) & leakage_runs):
         problems.append("copies a long run of words verbatim from the place description")
+    if grade_band == "k-2":
+        word_count = len(stripped.split())
+        if word_count > K2_MAX_WORDS:
+            problems.append(f"K-2 questions must be {K2_MAX_WORDS} words or fewer (found {word_count})")
     return problems
 
 
-def validate_peri_script(script: dict, *, location_description: str = "") -> list[PeriScriptIssue]:
-    """Validate a full peri_script dict. Returns [] if clean."""
+def validate_peri_script(
+    script: dict, *, location_description: str = "", grade_band: str | None = None,
+) -> list[PeriScriptIssue]:
+    """Validate a full peri_script dict. Returns [] if clean.
+
+    `grade_band` (spec "Adding the K-2 band" / "Grade level"): pass the
+    ACTIVITY's own band (services.grade_band.grade_to_band(activity.grade_level))
+    so the K-2 word-count ceiling applies only when it should — a per-wording
+    ceiling for mixed-age lo/hi scripts isn't implemented yet (item 16).
+    """
     issues: list[PeriScriptIssue] = []
 
     raw = json.dumps(script or {}, ensure_ascii=False)
@@ -140,7 +160,7 @@ def validate_peri_script(script: dict, *, location_description: str = "") -> lis
                 ))
             else:
                 seen_ids[qid] = stage
-            for problem in validate_question_text(text, leakage_runs=leakage_runs):
+            for problem in validate_question_text(text, leakage_runs=leakage_runs, grade_band=grade_band):
                 issues.append(PeriScriptIssue(stage, qid, "question_text", problem))
 
     if not any_questions:
@@ -149,5 +169,5 @@ def validate_peri_script(script: dict, *, location_description: str = "") -> lis
     return issues
 
 
-def is_valid(script: dict, *, location_description: str = "") -> bool:
-    return len(validate_peri_script(script, location_description=location_description)) == 0
+def is_valid(script: dict, *, location_description: str = "", grade_band: str | None = None) -> bool:
+    return len(validate_peri_script(script, location_description=location_description, grade_band=grade_band)) == 0

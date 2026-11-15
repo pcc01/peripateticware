@@ -274,7 +274,7 @@ class Activity(Base):
     # =========================================================================
     # METADATA
     # =========================================================================
-    grade_level = Column(Integer, nullable=False)   # 3-12
+    grade_level = Column(Integer, nullable=False)   # 0-12 (0 = kindergarten, PERI_OFFLINE_SPEC_v2.md "Adding the K-2 band")
     subject = Column(String(100), index=True, nullable=False)
     difficulty_level = Column(Integer, default=3)   # 1-5
     estimated_duration_minutes = Column(Integer, nullable=False)

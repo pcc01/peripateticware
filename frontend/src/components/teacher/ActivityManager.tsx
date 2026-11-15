@@ -512,8 +512,8 @@ const ActivityManager = () => {
       newErrors.subject = 'Subject is required';
     }
 
-    if (!formData.grade_level || formData.grade_level < 3 || formData.grade_level > 12) {
-      newErrors.grade_level = 'Grade must be between 3 and 12';
+    if (formData.grade_level === undefined || formData.grade_level === null || formData.grade_level < 0 || formData.grade_level > 12) {
+      newErrors.grade_level = 'Grade must be between K (0) and 12';
     }
 
     if (formData.difficulty_level && (formData.difficulty_level < 1 || formData.difficulty_level > 5)) {
@@ -739,7 +739,7 @@ const ActivityManager = () => {
   const fieldErr = (id: string, err?: string) =>
     err ? <p id={id} role="alert" className={wizardStyles.fieldError}>{t('components_teacher_activitywizard.error_prefix', 'Error')}: {err}</p> : null;
   const hasCoords = !!(formData.location_latitude && formData.location_longitude);
-  const gradeLabel = (g: number) => `${t('landing:activitymanager.grade', 'Grade')} ${g}`;
+  const gradeLabel = (g: number) => `${t('landing:activitymanager.grade', 'Grade')} ${g === 0 ? 'K' : g}`;
   const isWayfaring = wayfinding.discovery_wayfinding_enabled;
   const seedIds = isEditing ? [] : Array.from(new Set([...seedStandardIds, ...Object.keys(pickedStandards)]));
   const standardsCount = isEditing ? appliedStandardsCount : seedIds.length;
@@ -797,7 +797,7 @@ const ActivityManager = () => {
             onChange={(e) => setFormData({ ...formData, grade_level: parseInt(e.target.value) })}
             className={fieldCls(errors.grade_level)} aria-invalid={!!errors.grade_level}
             aria-describedby={errors.grade_level ? 'err-grade' : undefined}>
-            {Array.from({ length: 10 }, (_, i) => i + 3).map((grade) => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
+            {Array.from({ length: 13 }, (_, i) => i).map((grade) => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
           </select>
           {fieldErr('err-grade', errors.grade_level)}
         </div>
@@ -1583,7 +1583,7 @@ const ActivityManager = () => {
               {/* Activity header */}
               <div style={{ background: '#2e7d32', borderRadius: 8, padding: '10px 14px', marginBottom: 14 }}>
                 <div style={{ color: '#a5d6a7', fontSize: 10, letterSpacing: 1, marginBottom: 3 }}>
-                  {(formData.subject || 'SUBJECT').toUpperCase()} · GRADE {formData.grade_level} · {formData.estimated_duration_minutes} MIN
+                  {(formData.subject || 'SUBJECT').toUpperCase()} · GRADE {formData.grade_level === 0 ? 'K' : formData.grade_level} · {formData.estimated_duration_minutes} MIN
                 </div>
                 <div style={{ color: 'white', fontSize: 18, fontWeight: 700, lineHeight: 1.2 }}>
                   {formData.title || 'Activity Title'}

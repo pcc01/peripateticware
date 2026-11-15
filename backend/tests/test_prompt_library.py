@@ -161,6 +161,28 @@ class TestBuildPeriPrompt:
         assert "RESPOND WITH THE QUESTION ONLY." in prompt
         assert "Uses evidence" in prompt
 
+    def test_grade_zero_renders_as_kindergarten(self):
+        """0 = kindergarten (PERI_OFFLINE_SPEC_v2.md's K-2 convention) --
+        printing a bare '0' would read as a typo/placeholder to the model."""
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=0,
+        )
+        assert "Grade level: Kindergarten" in prompt
+        assert "Grade level: 0" not in prompt
+
+    def test_k2_grade_level_adds_the_short_wording_rule(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=0,
+        )
+        assert "This student is in K-2" in prompt
+        assert "12 words or fewer" in prompt
+
+    def test_grade_3_does_not_add_the_k2_rule(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=3,
+        )
+        assert "This student is in K-2" not in prompt
+
     def test_unchanged_bloom_only_call_matches_legacy_text_exactly(self):
         """A caller that never passes framework/level/rubric_criteria must get
         byte-identical cognitive-target phrasing to before this change."""

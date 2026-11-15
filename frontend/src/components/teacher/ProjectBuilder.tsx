@@ -30,7 +30,7 @@ import Button from '../common/Button';
 const projectSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(255),
   description: z.string().min(10, 'Description must be at least 10 characters').max(5000),
-  grade_level: z.number().min(3).max(12),
+  grade_level: z.number().min(0).max(12),
   subject: z.string().min(1, 'Subject is required'),
   duration_weeks: z.number().min(1).max(52),
   start_date: z.string(),
@@ -64,7 +64,7 @@ const SUBJECTS = [
 'Other'];
 
 
-const GRADES = Array.from({ length: 10 }, (_, i) => i + 3); // 3-12
+const GRADES = Array.from({ length: 13 }, (_, i) => i); // 0-12 (0 = kindergarten)
 
 export const ProjectBuilder: React.FC<ProjectBuilderProps> = ({
   project,
@@ -271,7 +271,7 @@ export const ProjectBuilder: React.FC<ProjectBuilderProps> = ({
             
             {GRADES.map((grade) =>
             <option key={grade} value={grade}>{t("landing:projectbuilder.grade", "Grade")}
-              {grade}
+              {grade === 0 ? 'K' : grade}
               </option>
             )}
           </select>

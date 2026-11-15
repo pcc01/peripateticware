@@ -10,6 +10,7 @@ import json
 
 from services.peri_script_validator import (
     HARD_CAP_BYTES,
+    K2_MAX_WORDS,
     validate_peri_script,
     validate_question_text,
 )
@@ -40,6 +41,22 @@ def _full_script(**stage_overrides) -> dict:
 class TestValidateQuestionText:
     def test_clean_question_has_no_problems(self):
         assert validate_question_text("How many rooms can you count?") == []
+
+    def test_k2_rejects_a_question_over_the_word_ceiling(self):
+        long_q = "What do you notice about the way the stones are stacked up near the base of this very old wall?"
+        assert len(long_q.split()) > K2_MAX_WORDS
+        problems = validate_question_text(long_q, grade_band="k-2")
+        assert any("K-2" in p and "12 words" in p for p in problems)
+
+    def test_k2_accepts_a_question_at_or_under_the_word_ceiling(self):
+        short_q = "What color is the wall?"
+        assert len(short_q.split()) <= K2_MAX_WORDS
+        assert validate_question_text(short_q, grade_band="k-2") == []
+
+    def test_non_k2_band_does_not_apply_the_word_ceiling(self):
+        long_q = "What do you notice about the way the stones are stacked up near the base of this very old wall?"
+        assert validate_question_text(long_q, grade_band="3-5") == []
+        assert validate_question_text(long_q, grade_band=None) == []
 
     def test_empty_text_is_rejected(self):
         assert validate_question_text("") != []

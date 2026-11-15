@@ -24,6 +24,17 @@ Pass temperature=0.1 for extraction tasks, 0.7 for generative tasks.
 from __future__ import annotations
 from typing import Optional
 
+
+def _grade_level_display(grade_level: int | None) -> str:
+    """Render a grade level for a prompt. 0 = kindergarten
+    (PERI_OFFLINE_SPEC_v2.md "Adding the K-2 band") -- printing the bare
+    integer "0" there reads as a typo/placeholder to the model, not a
+    real grade."""
+    if grade_level == 0:
+        return "Kindergarten"
+    return str(grade_level)
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # SHARED SYSTEM MESSAGES
 # (Pass as the "system" field in Claude messages or prefix for Ollama)
@@ -170,11 +181,26 @@ def build_peri_prompt(
     if student_observation:
         observation_text = f'\nThe student just wrote or said: "{student_observation.strip()}"'
 
+    # K-2 (kindergarten = grade 0): pre-readers rely on the existing
+    # speaker button reading the question aloud, so it must be short
+    # enough to say in one breath, plain spoken words, and name places
+    # a text-to-speech voice can actually pronounce (spec "Adding the
+    # K-2 band"). peri_script_validator.py's K2_MAX_WORDS=12 enforces the
+    # length side of this after generation; this rule is what gets the
+    # model to produce that in the first place.
+    k2_rule = (
+        "• This student is in K-2. Keep the question to 12 words or fewer, "
+        "one simple idea, plain spoken words, no abbreviations or symbols, "
+        "and avoid long or unfamiliar place names a child might stumble "
+        "reading aloud.\n"
+        if grade_level is not None and grade_level <= 2 else ""
+    )
+
     return f"""CONTEXT
 Location: {location_name}
 {("Place description: " + location_description) if location_description else ""}
 Subject area: {subject}
-Grade level: {grade_level}
+Grade level: {_grade_level_display(grade_level)}
 {cognitive_line}
 Inquiry stage: {inquiry_stage.upper()}
 {objectives_text}
@@ -193,7 +219,7 @@ RULES (follow all of them)
 • Do not ask a yes/no question.
 • Do not repeat any prior question.
 • Maximum 2 sentences.
-
+{k2_rule}
 RESPOND WITH THE QUESTION ONLY."""
 
 
@@ -306,7 +332,7 @@ def build_activity_prompt(
 Title: {title}
 Description: {description}
 Subject: {subject}
-Grade level: {grade_level}
+Grade level: {_grade_level_display(grade_level)}
 Location: {location_name}
 {coords_text}{("Place notes: " + location_description + chr(10)) if location_description else ""}Activity type: {activity_type}
 Planned duration: {duration_minutes} minutes
@@ -386,7 +412,7 @@ def build_activity_generation_prompt(
 Name: {location_name}
 {desc_line}{wiki_line}CURRICULUM
 Subject: {subject}
-Grade level: {grade_level}
+Grade level: {_grade_level_display(grade_level)}
 {objectives_block}
 {standards_block}
 {notes_block}
@@ -582,7 +608,7 @@ def build_rubric_alignment_prompt(
 Title: {activity_title}
 Description: {activity_description}
 Subject: {subject}
-Grade level: {grade_level}
+Grade level: {_grade_level_display(grade_level)}
 Cognitive level — {taxonomy_type.upper()}: {taxonomy_desc}
 
 LEARNING OBJECTIVES
