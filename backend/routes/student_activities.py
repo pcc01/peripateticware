@@ -103,6 +103,20 @@ def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
+def _approved_peri_script(a: Activity) -> Optional[dict]:
+    """Return the activity's peri_script only if the teacher has approved it.
+
+    A draft the teacher hasn't reviewed yet (approved missing/false) must
+    never reach the student — the approval step is the whole point of
+    PERI_OFFLINE_SPEC_v2.md's authoring-time design, mirroring how LLM
+    output elsewhere in this app never reaches a learner unreviewed.
+    """
+    script = getattr(a, "peri_script", None)
+    if isinstance(script, dict) and script.get("approved") is True:
+        return script
+    return None
+
+
 def _activity_to_summary(a: Activity) -> dict:
     """Convert ORM Activity to a summary dict matching StudentActivitySummary.
     All nullable fields use safe defaults so NULL DB values don't cause 500s."""
@@ -356,6 +370,7 @@ async def get_student_activity(
         wayfinding=wayfinding,
         location_info=activity.location_info,
         location_wiki_data=getattr(activity, "location_wiki_data", None),
+        peri_script=_approved_peri_script(activity),
         resources=activity.resources or [],
         suggested_lessons=activity.suggested_lessons or [],
         marzano_level=activity.marzano_level,

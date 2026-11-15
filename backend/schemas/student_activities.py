@@ -138,6 +138,13 @@ class StudentActivityDetail(StudentActivitySummary):
     # "Background Info" link works with no network call, even with no signal
     # at the field location. See models/database.py Activity.location_wiki_data.
     location_wiki_data: Optional[dict]          = None
+    # On-device Peri dialogue script (PERI_OFFLINE_SPEC_v2.md), walked with
+    # no network call by mobile's peri/engine.ts. The route below only ever
+    # passes this through when the stored script's own "approved" flag is
+    # true — a draft a teacher hasn't reviewed yet must never reach a
+    # student (spec section B.5), so this field is simply None otherwise,
+    # not an error.
+    peri_script:       Optional[dict]          = None
     due_date:          Optional[str]           = None   # ISO string
     teacher:           Optional[ActivityTeacher] = None
     phases:            Optional[ActivityPhases]  = None

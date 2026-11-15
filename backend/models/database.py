@@ -358,6 +358,19 @@ class Activity(Base):
     route_geometry = Column(JSONB, nullable=True)
 
     # =========================================================================
+    # PERI SCRIPT (offline-first Peri dialogue — PERI_OFFLINE_SPEC_v2.md)
+    # =========================================================================
+    # Place-grounded Peri questions per inquiry stage, authored at teacher-
+    # review time by POST /activities/{id}/peri-script/generate and walked on
+    # the device with no network call by mobile/src/lib/peri/engine.ts. Only
+    # the student-facing shape (see peri_script_validator.py); never student
+    # data. JSONB, hard cap 8 KB (12 KB with mixed-age wordings), enforced by
+    # the validator, not a DB constraint. Includes its own "approved": bool —
+    # the student detail payload must omit this column unless that is true
+    # (schemas/student_activities.py).
+    peri_script = Column(JSONB, nullable=True)
+
+    # =========================================================================
     # STUDENT MOBILE PHASE CONTENT (teacher-authored)
     # =========================================================================
     orient_phase = Column(Text, nullable=True)    # Shown before activity starts

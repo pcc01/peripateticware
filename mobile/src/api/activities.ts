@@ -8,6 +8,7 @@ import {
 
 import { apiFetch } from './client';
 import { prefetchTilesForRoute } from '@/src/lib/tileCache';
+import type { PeriScript } from '@/src/lib/peri/engine';
 
 export interface ActivityPhaseDetail {
   title: string;
@@ -65,6 +66,34 @@ export interface WayfindingDetail {
   waypoints: Waypoint[];
 }
 
+// Structured Wikidata/Wikipedia place enrichment the teacher captured while
+// building this activity (backend models/database.py Activity.location_wiki_data,
+// schemas/student_activities.py's ActivityStudentDetail.location_wiki_data).
+// Shipped in the detail payload so the student app's background-info link
+// and the on-device Peri engine (peri/engine.ts) work with no network call,
+// even with no signal at the field location.
+export interface LocationWikiData {
+  name?: string;
+  description?: string;
+  wikiId?: string;
+  wikidataId?: string;
+  type?: string;
+  features?: string[];
+  historicalContext?: string;
+  educationalValue?: string;
+  architectOrArtist?: string;
+  constructionDate?: string;
+  historicalSignificance?: string;
+  keywords?: string[];
+  learningOpportunities?: string[];
+  nearbyPoints?: { name: string; type: string }[];
+  // True when `description` came from the LLM's general knowledge rather than
+  // a real Wikipedia/Wikidata match — must stay visibly distinguished and
+  // never asserted as fact by the Peri engine (PERI_OFFLINE_SPEC_v2.md B.6).
+  aiGenerated?: boolean;
+  contentLanguage?: string;
+}
+
 export interface Activity {
   id: string;
   title: string;
@@ -90,6 +119,16 @@ export interface Activity {
   // the backend for every existing activity, so treat a missing value the
   // same way here.
   ai_interaction_mode?: 'ai_chat' | 'curated_only';
+  // Structured Wikidata/Wikipedia place enrichment, cached offline (see
+  // LocationWikiData above). Absent for older activities or ones with no
+  // enrichment.
+  location_wiki_data?: LocationWikiData | null;
+  // Teacher-approved, place-grounded dialogue script for the on-device Peri
+  // engine (PERI_OFFLINE_SPEC_v2.md section A). Only present once a teacher
+  // has generated AND approved one — the backend omits it otherwise, so a
+  // missing value means "fall back to the curated question bank," not an
+  // error.
+  peri_script?: PeriScript | null;
 }
 
 export interface ActivitiesResponse {

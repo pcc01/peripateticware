@@ -100,6 +100,7 @@ async def lifespan(app: FastAPI):
         apply_billing_column_migrations,
         apply_student_phase7_migrations,
         apply_wayfinding_migrations,
+        apply_peri_script_migrations,
         apply_rag_documents_table,
         seed_sample_activities,
         seed_wayfinding_demo,
@@ -164,6 +165,7 @@ async def lifespan(app: FastAPI):
         await apply_billing_column_migrations(engine)
         await apply_student_phase7_migrations(engine)
         await apply_wayfinding_migrations(engine)
+        await apply_peri_script_migrations(engine)
         await apply_rag_documents_table(engine)
 
         if not db_ready:

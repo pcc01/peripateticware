@@ -1487,6 +1487,142 @@ async def remove_activity_standard(
         await db.commit()
 
 
+class PeriScriptIssueResponse(_BaseModel):
+    stage: Optional[str] = None
+    question_id: Optional[str] = None
+    code: str
+    message: str
+
+
+class PeriScriptResponse(_BaseModel):
+    script: Dict[str, Any]
+    validation_issues: List[PeriScriptIssueResponse] = []
+
+
+class PeriScriptUpdateRequest(_BaseModel):
+    script: Dict[str, Any]
+
+
+def _peri_issues_to_response(issues) -> List[PeriScriptIssueResponse]:
+    return [
+        PeriScriptIssueResponse(stage=i.stage, question_id=i.question_id, code=i.code, message=i.message)
+        for i in issues
+    ]
+
+
+@router.post("/{activity_id}/peri-script/generate", response_model=PeriScriptResponse)
+async def generate_peri_script_endpoint(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),   # per-org RPM cap; a real, metered LLM call (one per question)
+):
+    """Generate a draft, place-grounded Peri dialogue script for this
+    activity (PERI_OFFLINE_SPEC_v2.md) -- the authoring-time half of the
+    offline-first redesign: Peri's questions are written now, reviewed by
+    the teacher, and walked on-device later with no network call
+    (mobile/src/lib/peri/engine.ts).
+
+    Saved as a draft (script["approved"] = False) and never auto-published
+    -- the student detail payload omits it until a teacher explicitly
+    approves it via PATCH .../peri-script below (see
+    routes/student_activities.py::_approved_peri_script()).
+    """
+    _require_teacher(current_user, "Only teachers can generate Peri questions")
+
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+    if not activity.location_name:
+        raise HTTPException(
+            status_code=422,
+            detail="Set a location for this activity before generating Peri questions",
+        )
+
+    from agents.provider import ProviderUnavailableError
+    from services.peri_script_generator import generate_peri_script
+    from services.peri_script_validator import validate_peri_script
+
+    try:
+        script = await generate_peri_script(db, activity)
+    except ProviderUnavailableError as e:
+        logger.error(f"AI provider unavailable while generating Peri script for {activity_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI inference service is temporarily unavailable — please try again shortly.",
+        )
+
+    issues = validate_peri_script(
+        script, location_description=(activity.location_wiki_data or {}).get("description", "")
+    )
+
+    activity.peri_script = script
+    await db.commit()
+
+    return PeriScriptResponse(script=script, validation_issues=_peri_issues_to_response(issues))
+
+
+@router.get("/{activity_id}/peri-script", response_model=PeriScriptResponse)
+async def get_peri_script(
+    activity_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fetch the activity's current Peri script (draft or approved) for the
+    teacher builder UI to edit. Student-facing exposure is handled
+    separately and only once approved."""
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only view your own activities")
+
+    from services.peri_script_validator import validate_peri_script
+    script = activity.peri_script or {}
+    issues = (
+        validate_peri_script(script, location_description=(activity.location_wiki_data or {}).get("description", ""))
+        if script else []
+    )
+    return PeriScriptResponse(script=script, validation_issues=_peri_issues_to_response(issues))
+
+
+@router.patch("/{activity_id}/peri-script", response_model=PeriScriptResponse)
+async def update_peri_script(
+    activity_id: UUID,
+    body: PeriScriptUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Save a teacher's edits to a Peri script, including approving it
+    (script["approved"] = true). Re-runs the same validator used at
+    generate time (spec section B.3) -- approving a script that still
+    fails validation is rejected outright, since approval is what makes
+    the student detail payload start shipping it."""
+    _require_teacher(current_user, "Only teachers can edit Peri scripts")
+
+    activity = (await db.execute(select(Activity).where(Activity.id == activity_id))).scalar_one_or_none()
+    if not activity:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+    if activity.teacher_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own activities")
+
+    from services.peri_script_validator import validate_peri_script
+    issues = validate_peri_script(
+        body.script, location_description=(activity.location_wiki_data or {}).get("description", "")
+    )
+    if body.script.get("approved") and issues:
+        raise HTTPException(
+            status_code=422,
+            detail="Cannot approve a script that still fails validation — fix the flagged questions first.",
+        )
+
+    activity.peri_script = body.script
+    await db.commit()
+    return PeriScriptResponse(script=activity.peri_script, validation_issues=_peri_issues_to_response(issues))
+
+
 @router.get("/{activity_id}/taxonomy-alignment")
 async def get_activity_taxonomy_alignment(
     activity_id: UUID,

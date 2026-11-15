@@ -105,6 +105,71 @@ class TestBuildPeriPrompt:
         assert "Q1" not in prompt
         assert "Q2" not in prompt
 
+    # -- framework/level/rubric resolution (PERI_OFFLINE_SPEC_v2.md) --------
+
+    def test_marzano_integer_level_selects_right_descriptor(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            framework="marzano", level=3,
+        )
+        assert "Cognitive target (MARZANO): Level 3 — Analysis" in prompt
+
+    def test_dok_integer_level_selects_right_descriptor(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            framework="dok", level=4,
+        )
+        assert "Level 4 — Extended Thinking" in prompt
+
+    def test_solo_integer_level_selects_right_descriptor(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            framework="solo", level=5,
+        )
+        assert "Extended Abstract" in prompt
+
+    def test_null_level_falls_back_to_bloom_level(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            framework="marzano", level=None, bloom_level="evaluate",
+        )
+        assert "Cognitive target (Bloom's): evaluate" in prompt
+
+    def test_no_rubric_means_no_crit_text(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+        )
+        assert "Evidence the teacher wants to see" not in prompt
+
+    def test_rubric_criteria_rendered_and_capped_at_six(self):
+        criteria = [{"id": f"c{i}", "name": f"Criterion {i}"} for i in range(10)]
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            rubric_criteria=criteria,
+        )
+        assert "Evidence the teacher wants to see" in prompt
+        assert "Criterion 5" in prompt
+        assert "Criterion 6" not in prompt
+
+    def test_unknown_framework_with_rubric_still_generates(self):
+        prompt = build_peri_prompt(
+            location_name="Beach", subject="Geology", grade_level=7,
+            framework="not-a-real-framework", level=2,
+            rubric_criteria=[{"id": "c1", "name": "Uses evidence"}],
+        )
+        assert isinstance(prompt, str)
+        assert "RESPOND WITH THE QUESTION ONLY." in prompt
+        assert "Uses evidence" in prompt
+
+    def test_unchanged_bloom_only_call_matches_legacy_text_exactly(self):
+        """A caller that never passes framework/level/rubric_criteria must get
+        byte-identical cognitive-target phrasing to before this change."""
+        prompt = build_peri_prompt(
+            location_name="Forest Park", subject="Biology", grade_level=5,
+            bloom_level="analyze",
+        )
+        assert "Cognitive target (Bloom's): analyze — the question should require the student to analyse, compare, or break down" in prompt
+
 
 # ===========================================================================
 # build_standards_extraction_prompt

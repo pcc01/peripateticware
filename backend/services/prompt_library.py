@@ -108,6 +108,14 @@ def build_peri_prompt(
     subject: str,
     grade_level: int,
     bloom_level: str = "analyze",
+    # Teacher-selected framework/level/rubric (PERI_OFFLINE_SPEC_v2.md
+    # "Taxonomy and rubric"). All optional and additive: a caller that only
+    # ever passed bloom_level gets byte-identical output to before -- the
+    # cognitive-target line only switches to the framework/level-aware form
+    # once one of these is actually supplied.
+    framework: str = "blooms",
+    level: str | int | None = None,
+    rubric_criteria: list[dict] | None = None,
     inquiry_stage: str = "observe",
     student_observation: str = "",
     learning_objectives: list[str] | None = None,
@@ -122,6 +130,33 @@ def build_peri_prompt(
     """
     bloom_plain = _BLOOM_PLAIN.get(bloom_level, "analyse and explain")
     stage_instruction = _INQUIRY_STAGE.get(inquiry_stage, _INQUIRY_STAGE["observe"])
+
+    if level is not None or (framework or "blooms").strip().lower() != "blooms":
+        fw, level_key = _resolve_taxonomy_key(framework, level)
+        descriptor = _TAXONOMY_DESCRIPTORS.get(fw, {}).get(level_key)
+        cognitive_line = (
+            f"Cognitive target ({fw.upper()}): {descriptor}"
+            if descriptor
+            else f"Cognitive target (Bloom's): {bloom_level} — the question should require the student to {bloom_plain}"
+        )
+    else:
+        cognitive_line = f"Cognitive target (Bloom's): {bloom_level} — the question should require the student to {bloom_plain}"
+
+    rubric_text = ""
+    if rubric_criteria:
+        # Up to 6, already pre-selected by the caller (prefer required, then
+        # weight -- see the activity peri-script generator). Plain-language
+        # instruction only: the model must never quote rubric wording at the
+        # student (spec "Taxonomy and rubric", point on rubric criteria).
+        lines = "\n".join(
+            f"  • {c.get('name') or c.get('id')}" for c in rubric_criteria[:6]
+        )
+        rubric_text = (
+            "\nEvidence the teacher wants to see — write a plain-language, "
+            "grade-appropriate question that would draw this out. Never quote "
+            "this wording to the student:\n" + lines + "\n"
+        )
+
     objectives_text = ""
     if learning_objectives:
         objectives_text = "Learning objectives for this activity:\n" + \
@@ -140,9 +175,10 @@ Location: {location_name}
 {("Place description: " + location_description) if location_description else ""}
 Subject area: {subject}
 Grade level: {grade_level}
-Cognitive target (Bloom's): {bloom_level} — the question should require the student to {bloom_plain}
+{cognitive_line}
 Inquiry stage: {inquiry_stage.upper()}
 {objectives_text}
+{rubric_text}
 {prior_text}
 {observation_text}
 
@@ -194,6 +230,40 @@ _TAXONOMY_DESCRIPTORS = {
         "knowledge_utilization":  "Level 4 — Knowledge Utilization: decision making, investigation, experimental inquiry",
     },
 }
+
+# Integer level -> _TAXONOMY_DESCRIPTORS key, per framework. The DB stores a
+# plain integer per framework (models/database.py Activity.bloom_level/
+# marzano_level/dok_level/solo_level); descriptors above are keyed by string.
+# SOLO's integer scale is 1-5 (schemas/activities.py: `ge=1, le=5`), matching
+# the 5 keys below in order.
+_FRAMEWORK_INT_TO_KEY = {
+    "blooms":  {1: "remember", 2: "understand", 3: "apply", 4: "analyze", 5: "evaluate", 6: "create"},
+    "marzano": {1: "retrieval", 2: "comprehension", 3: "analysis", 4: "knowledge_utilization"},
+    "dok":     {1: "dok1", 2: "dok2", 3: "dok3", 4: "dok4"},
+    "solo":    {1: "prestructural", 2: "unistructural", 3: "multistructural", 4: "relational", 5: "extended"},
+}
+
+
+def _resolve_taxonomy_key(framework: str | None, level: str | int | None) -> tuple[str, str | None]:
+    """Normalize a (framework, level) pair to a _TAXONOMY_DESCRIPTORS lookup key.
+
+    `level` may be the DB's plain integer, a numeric string, or already one
+    of the descriptor keys (e.g. "analyze", "dok3"). Unknown frameworks fall
+    back to "blooms" (PERI_OFFLINE_SPEC_v2.md "Taxonomy and rubric" step 1).
+    Returns (resolved_framework, level_key_or_None).
+    """
+    fw = (framework or "blooms").strip().lower()
+    if fw not in _TAXONOMY_DESCRIPTORS:
+        fw = "blooms"
+    if level is None:
+        return fw, None
+    int_map = _FRAMEWORK_INT_TO_KEY.get(fw, {})
+    if isinstance(level, int):
+        return fw, int_map.get(level)
+    level_str = str(level).strip().lower()
+    if level_str.isdigit():
+        return fw, int_map.get(int(level_str))
+    return fw, level_str or None
 
 
 def build_activity_prompt(

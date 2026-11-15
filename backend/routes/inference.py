@@ -34,20 +34,37 @@ from sqlalchemy import select as _select, func as _func
 from models.database import CachedLocation, EnrichedLocation
 
 
-def _cache_key(location_name: str, subject: str, grade_level: int, bloom_level: str) -> str:
-    """Deterministic hash used as place_id for inference cache entries."""
+def _cache_key(
+    location_name: str, subject: str, grade_level: int, bloom_level: str,
+    framework: str = "blooms", level: str | int | None = None,
+) -> str:
+    """Deterministic hash used as place_id for inference cache entries.
+
+    framework/level added (PERI_OFFLINE_SPEC_v2.md 12b) so a Marzano-level-3
+    activity never receives a cached Bloom-level-3 question — previously the
+    key was bloom_level-only, so two activities sharing a location/subject/
+    grade but different frameworks could collide. This changes every
+    existing key (framework/level now always included, even at their
+    defaults): old cached rows simply miss once and get regenerated, which
+    is an accepted, documented behavior change.
+    """
     raw = _json.dumps({
         "loc": (location_name or "").strip().lower(),
         "sub": (subject or "").strip().lower(),
         "grade": grade_level,
         "bloom": (bloom_level or "").strip().lower(),
+        "framework": (framework or "blooms").strip().lower(),
+        "level": str(level).strip().lower() if level is not None else "",
     }, sort_keys=True)
     return "infer:" + hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
-async def _get_cached_inference(db, location_name: str, subject: str, grade_level: int, bloom_level: str):
+async def _get_cached_inference(
+    db, location_name: str, subject: str, grade_level: int, bloom_level: str,
+    framework: str = "blooms", level: str | int | None = None,
+):
     """Return EnrichedLocation if a prior inference result is cached."""
-    key = _cache_key(location_name, subject, grade_level, bloom_level)
+    key = _cache_key(location_name, subject, grade_level, bloom_level, framework, level)
     result = await db.execute(
         _select(CachedLocation).where(CachedLocation.place_id == key)
     )
@@ -62,10 +79,11 @@ async def _get_cached_inference(db, location_name: str, subject: str, grade_leve
 
 async def _write_inference_cache(
     db, location_name: str, subject: str, grade_level: int, bloom_level: str,
-    question: str, resources: list, confidence: float
+    question: str, resources: list, confidence: float,
+    framework: str = "blooms", level: str | int | None = None,
 ):
     """Persist inference result so the next identical request is instant."""
-    key = _cache_key(location_name, subject, grade_level, bloom_level)
+    key = _cache_key(location_name, subject, grade_level, bloom_level, framework, level)
     result = await db.execute(
         _select(CachedLocation).where(CachedLocation.place_id == key)
     )
@@ -202,12 +220,17 @@ async def process_inquiry(
         subject       = cur_ctx.get("subject") or cur_ctx.get("topic", "")
         grade_level   = int(cur_ctx.get("grade_level") or per_ctx.get("grade_level") or 0)
         bloom_level   = cur_ctx.get("bloom_level") or per_ctx.get("bloom_level") or str(request.bloom_level or "")
+        # Teacher-selected framework/level (PERI_OFFLINE_SPEC_v2.md 12b) — not
+        # on InquiryRequest as top-level fields yet, so read them the same
+        # way bloom_level already is: from the free-form context dicts.
+        framework     = cur_ctx.get("framework") or per_ctx.get("framework") or "blooms"
+        level         = cur_ctx.get("level") or per_ctx.get("level")
 
         # Cache lookup — wrapped so schema mismatches (missing columns) fall
         # through to the LLM rather than returning 500.
         cached = None
         try:
-            cached = await _get_cached_inference(db, location_name, subject, grade_level, bloom_level)
+            cached = await _get_cached_inference(db, location_name, subject, grade_level, bloom_level, framework, level)
         except Exception as cache_err:
             logger.warning(f"Cache lookup skipped (schema issue?): {cache_err}")
 
@@ -273,6 +296,9 @@ async def process_inquiry(
                 subject=subject,
                 grade_level=grade_level,
                 bloom_level=bloom_level,
+                framework=framework,
+                level=level,
+                rubric_criteria=cur_ctx.get("rubric_criteria"),
                 inquiry_stage=cur_ctx.get("inquiry_stage", "observe"),
                 student_observation=normalized_text,
                 learning_objectives=cur_ctx.get("learning_objectives", []),
@@ -300,6 +326,8 @@ async def process_inquiry(
                     question=response.get("question", ""),
                     resources=response.get("resources", []),
                     confidence=response.get("confidence", 0.8),
+                    framework=framework,
+                    level=level,
                 )
             except Exception as cache_err:
                 logger.warning(f"Cache write failed (non-fatal): {cache_err}")
@@ -757,6 +785,12 @@ async def rag_retrieve(
             "AND (metadata->>'jurisdiction_id' IS NULL OR metadata->>'jurisdiction_id' = :jid)"
             if jurisdiction_id else ""
         )
+        # current_user is a required Depends() for every real HTTP call; this guards
+        # only the eval harness's in-process calls with current_user=None (see
+        # eval/standards_eval/retrieval.py), where owner_id = NULL already resolves the
+        # clause below correctly -- without this, str(current_user.id) crashes before
+        # the query ever runs.
+        uid_param = str(current_user.id) if current_user else None
         # Visibility gate, independent of the state filter above: a personal
         # (is_global=false) upload is only searchable by anyone other than
         # its owner once it's tagged with a real jurisdiction -- i.e. the
@@ -813,7 +847,7 @@ async def rag_retrieve(
                 {retired_filter}
                 ORDER BY rd.embedding <=> CAST(:emb AS vector)
                 LIMIT :k
-            """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
+            """), {"emb": vec_literal, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": uid_param})).fetchall()
         except Exception as e:
             logger.warning(f"rag_documents vector query failed (table may not exist yet): {e}")
 
@@ -883,7 +917,7 @@ async def rag_retrieve(
                     {retired_filter}
                     ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
                     LIMIT :k
-                """), {"q": lex_tsquery_and, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
+                """), {"q": lex_tsquery_and, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": uid_param})).fetchall()
             except Exception as e:
                 logger.warning(f"rag_documents lexical AND query failed (FTS index may not exist yet): {e}")
 
@@ -900,7 +934,7 @@ async def rag_retrieve(
                         {retired_filter}
                         ORDER BY ts_rank(to_tsvector('simple', rd.content), to_tsquery('simple', :q)) DESC
                         LIMIT :k
-                    """), {"q": lex_tsquery_or, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": str(current_user.id)})).fetchall()
+                    """), {"q": lex_tsquery_or, "k": seed_k, "stype": source_type, "jid": jurisdiction_id, "uid": uid_param})).fetchall()
                 except Exception as e:
                     logger.warning(f"rag_documents lexical OR fallback failed: {e}")
         db_ms = int((_time.monotonic() - _t_db0) * 1000)

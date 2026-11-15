@@ -13,6 +13,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { fetchActivity, startActivitySession, Activity, ActivityDiscoveryDetail } from '@/src/api/activities';
 import { fetchQuestion, ObservationQuestion } from '@/src/api/questions';
+import { periOpeningPrompt } from '@/src/lib/peri/engine';
 import PeriSpeech from '@/src/components/PeriSpeech';
 import SpeakerButton from '@/src/components/SpeakerButton';
 import PeriChatSheet from '@/src/components/PeriChatSheet';
@@ -181,9 +182,26 @@ export default function ActivityScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Load a contextual question when entering Inquiry phase
+  // Load a contextual question when entering Inquiry phase. A teacher-
+  // approved Peri script (PERI_OFFLINE_SPEC_v2.md) takes priority over the
+  // generic curated bank — its orient-stage question is place-specific,
+  // where the bank's random pick never is. Falls back to the bank exactly
+  // as before when no script is on this activity.
   useEffect(() => {
     if (phase !== 'inquiry' || !activity) return;
+    const opening = periOpeningPrompt(activity.peri_script);
+    if (opening) {
+      setQuestion({
+        id: -1,
+        subject: activity.subject,
+        grade_band: '',
+        bloom_level: '',
+        observation_type: '',
+        question_text: opening.question_text,
+        follow_up: opening.follow_up,
+      });
+      return;
+    }
     fetchQuestion({ subject: activity.subject }).then(setQuestion).catch(() => {});
   }, [phase, activity]);
 
@@ -490,6 +508,8 @@ export default function ActivityScreen() {
           activitySubject={activity.subject}
           currentPrompt={question?.question_text}
           sessionId={sessionId}
+          periScript={activity.peri_script}
+          aiInteractionMode={activity.ai_interaction_mode}
           onCaptured={upsertCapture}
         />
         <CaptureSheet

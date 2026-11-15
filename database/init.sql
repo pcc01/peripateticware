@@ -280,7 +280,11 @@ CREATE TABLE IF NOT EXISTS activities (
     discovery_wayfinding_enabled   BOOLEAN     NOT NULL DEFAULT FALSE,
     wayfinding_mode                VARCHAR(20),
     wayfinding_capability_ceiling  VARCHAR(1),
-    route_geometry                 JSONB
+    route_geometry                 JSONB,
+    -- On-device Peri dialogue script (PERI_OFFLINE_SPEC_v2.md). Also ships
+    -- here so a fresh install has it without waiting on startup's
+    -- apply_peri_script_migrations().
+    peri_script                    JSONB
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);

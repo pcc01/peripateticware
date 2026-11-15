@@ -13,6 +13,9 @@ import { chatWithPeri, ChatMessage } from '@/src/api/inference';
 import { Capture } from '@/src/api/captures';
 import { queueCapture, updateQueuedCaptureUri } from '@/src/db/offlineQueue';
 import { useTranslation } from 'react-i18next';
+import {
+  createPeriEngineState, next as nextPeriTurn, PeriEngineState, PeriScript,
+} from '@/src/lib/peri/engine';
 
 interface Props {
   visible: boolean;
@@ -26,6 +29,16 @@ interface Props {
   activitySubject?: string;
   currentPrompt?: string;
   sessionId?: string | null;
+  // Teacher-approved Peri script for this activity (PERI_OFFLINE_SPEC_v2.md)
+  // — only ever present when approved, per
+  // routes/student_activities.py::_approved_peri_script(). Drives the
+  // on-device dialogue engine fallback below; absent means "no script,"
+  // not an error.
+  periScript?: PeriScript | null;
+  // backend/schemas/activities.py's AIInteractionModeEnum. 'curated_only'
+  // skips the live /chat call entirely and goes straight to the engine —
+  // matching what the hidden "Ask Peri" button already enforces server-side.
+  aiInteractionMode?: 'ai_chat' | 'curated_only';
   // Fires when the transcript is (re-)saved to the local capture queue —
   // same contract as CaptureSheet.tsx's onCaptured, so the activity screen
   // can track/link it alongside every other evidence type. Called with the
@@ -44,6 +57,7 @@ interface DisplayMessage {
 export default function PeriChatSheet({
   visible, onClose, theme,
   activityId, activityTitle, activitySubject, currentPrompt, sessionId,
+  periScript, aiInteractionMode,
   onCaptured,
 }: Props) {
   const { t } = useTranslation();
@@ -51,6 +65,27 @@ export default function PeriChatSheet({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const listRef = useRef<FlatList>(null);
+
+  // On-device dialogue engine state for this chat session — in memory
+  // only, never persisted (PERI_OFFLINE_SPEC_v2.md section C.1). Reset
+  // whenever the underlying activity changes so a reopened sheet for a
+  // different activity doesn't carry over another one's stage/progress.
+  const engineStateRef = useRef<PeriEngineState | null>(null);
+  useEffect(() => {
+    engineStateRef.current = null;
+  }, [activityId]);
+
+  /** Advance the offline engine by one turn and return Peri's reply. Safe
+   * to call even with no script — the engine itself handles that case
+   * without crashing (engine.ts's empty/missing-stage tests). */
+  const engineReply = (studentText: string): string => {
+    if (!engineStateRef.current) {
+      engineStateRef.current = createPeriEngineState();
+    }
+    const result = nextPeriTurn(periScript ?? { v: 1, stages: {} }, engineStateRef.current, studentText);
+    engineStateRef.current = result.state;
+    return result.periText;
+  };
 
   useEffect(() => {
     if (visible && messages.length === 0) {
@@ -139,31 +174,44 @@ export default function PeriChatSheet({
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
-    try {
-      const history: ChatMessage[] = messages
-        .filter((m) => m.id !== 'greeting')
-        .map((m) => ({ role: m.role, content: m.content }));
+    // curated_only skips the live call entirely — matches what the hidden
+    // "Ask Peri" button already enforces server-side (routes/inference.py's
+    // /chat), so this is just not pretending a call will ever succeed.
+    const skipLiveCall = aiInteractionMode === 'curated_only';
 
-      const res = await chatWithPeri({
-        message: text,
-        history,
-        activityId,
-        activityTitle,
-        activitySubject,
-        currentPrompt,
-      });
+    try {
+      let replyText: string;
+      if (skipLiveCall) {
+        replyText = engineReply(text);
+      } else {
+        try {
+          const history: ChatMessage[] = messages
+            .filter((m) => m.id !== 'greeting')
+            .map((m) => ({ role: m.role, content: m.content }));
+          const res = await chatWithPeri({
+            message: text,
+            history,
+            activityId,
+            activityTitle,
+            activitySubject,
+            currentPrompt,
+          });
+          replyText = res.response;
+        } catch {
+          // No network and no @react-native-community/netinfo dependency to
+          // check beforehand — a failed request IS "offline" for this
+          // purpose (PERI_OFFLINE_SPEC_v2.md section C.2). Fall back to the
+          // engine instead of the old dead-end "couldn't connect" message.
+          replyText = engineReply(text);
+        }
+      }
 
       const assistantMsg: DisplayMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: res.response,
+        content: replyText,
       };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { id: 'err', role: 'assistant', content: t('perichat.connectError', "I couldn't connect right now. Try again in a moment.") },
-      ]);
     } finally {
       setLoading(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
