@@ -11,6 +11,7 @@ import { Activity, ActivityType, CreateActivityInput } from '@/types/teacher';
 import { OllamaLessonSuggestions, AcceptedSuggestion } from './OllamaLessonSuggestions';
 import AppliedStandardsPanel, { triggerStandardsSuggestion } from '@/components/shared/AppliedStandardsPanel';
 import WayfindingBuilder, { WayfindingValue } from './WayfindingBuilder';
+import PeriScriptBuilder from './PeriScriptBuilder';
 import wizardStyles from './wizard/ActivityWizard.module.css';
 import { WizardShell, StepKey, WizardApi } from './wizard/WizardShell';
 import { StartPicker } from './wizard/StartPicker';
@@ -894,6 +895,15 @@ const ActivityManager = () => {
           />
         </div>
       </Chapter>
+
+      {isEditing && (
+        <Chapter
+          title={t('components_teacher_activitywizard.peri_offline_questions', '🔌 Offline Peri questions')}
+          badge={t('components_teacher_activitywizard.optional', 'Optional')}
+        >
+          <PeriScriptBuilder activityId={id} />
+        </Chapter>
+      )}
     </>
   );
 

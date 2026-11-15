@@ -14,6 +14,7 @@ import pytest
 
 from services.peri_script_generator import (
     _question_count,
+    compute_source_hash,
     derive_focus_terms,
     resolve_framework_and_level,
     select_rubric_criteria,
@@ -123,6 +124,35 @@ class TestDeriveFocusTerms:
     def test_caps_at_limit(self):
         terms = derive_focus_terms({"features": [f"term{i}" for i in range(10)]}, limit=4)
         assert len(terms) == 4
+
+
+class TestComputeSourceHash:
+    def test_same_inputs_produce_same_hash(self):
+        a1 = _activity()
+        a2 = _activity()
+        assert compute_source_hash(a1, "blooms", 4) == compute_source_hash(a2, "blooms", 4)
+
+    def test_changing_location_changes_hash(self):
+        base = compute_source_hash(_activity(), "blooms", 4)
+        changed = compute_source_hash(_activity(location_name="Somewhere Else"), "blooms", 4)
+        assert base != changed
+
+    def test_changing_grade_changes_hash(self):
+        base = compute_source_hash(_activity(), "blooms", 4)
+        changed = compute_source_hash(_activity(grade_level=6), "blooms", 4)
+        assert base != changed
+
+    def test_changing_framework_or_level_changes_hash(self):
+        base = compute_source_hash(_activity(), "blooms", 4)
+        assert base != compute_source_hash(_activity(), "marzano", 4)
+        assert base != compute_source_hash(_activity(), "blooms", 5)
+
+    def test_changing_rubric_id_changes_hash(self):
+        base = compute_source_hash(_activity(), "blooms", 4)
+        changed = compute_source_hash(
+            _activity(rubric_id="33333333-3333-3333-3333-333333333333"), "blooms", 4
+        )
+        assert base != changed
 
 
 @pytest.mark.asyncio

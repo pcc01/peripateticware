@@ -1497,6 +1497,12 @@ class PeriScriptIssueResponse(_BaseModel):
 class PeriScriptResponse(_BaseModel):
     script: Dict[str, Any]
     validation_issues: List[PeriScriptIssueResponse] = []
+    # True when the activity's location/subject/grade/framework/level/rubric
+    # changed since this script's source_hash was computed (spec section
+    # B.4: "Mark the script stale when ... changes"). False for an empty
+    # script (nothing to be stale) — the builder UI uses this to prompt a
+    # regenerate rather than silently serving outdated questions.
+    is_stale: bool = False
 
 
 class PeriScriptUpdateRequest(_BaseModel):
@@ -1508,6 +1514,14 @@ def _peri_issues_to_response(issues) -> List[PeriScriptIssueResponse]:
         PeriScriptIssueResponse(stage=i.stage, question_id=i.question_id, code=i.code, message=i.message)
         for i in issues
     ]
+
+
+def _peri_is_stale(activity: Activity, script: Dict[str, Any]) -> bool:
+    if not script or not script.get("source_hash"):
+        return False
+    from services.peri_script_generator import compute_source_hash, resolve_framework_and_level
+    framework, level, _ = resolve_framework_and_level(activity)
+    return compute_source_hash(activity, framework, level) != script.get("source_hash")
 
 
 @router.post("/{activity_id}/peri-script/generate", response_model=PeriScriptResponse)
@@ -1561,7 +1575,7 @@ async def generate_peri_script_endpoint(
     activity.peri_script = script
     await db.commit()
 
-    return PeriScriptResponse(script=script, validation_issues=_peri_issues_to_response(issues))
+    return PeriScriptResponse(script=script, validation_issues=_peri_issues_to_response(issues), is_stale=False)
 
 
 @router.get("/{activity_id}/peri-script", response_model=PeriScriptResponse)
@@ -1585,7 +1599,10 @@ async def get_peri_script(
         validate_peri_script(script, location_description=(activity.location_wiki_data or {}).get("description", ""))
         if script else []
     )
-    return PeriScriptResponse(script=script, validation_issues=_peri_issues_to_response(issues))
+    return PeriScriptResponse(
+        script=script, validation_issues=_peri_issues_to_response(issues),
+        is_stale=_peri_is_stale(activity, script),
+    )
 
 
 @router.patch("/{activity_id}/peri-script", response_model=PeriScriptResponse)
@@ -1620,7 +1637,10 @@ async def update_peri_script(
 
     activity.peri_script = body.script
     await db.commit()
-    return PeriScriptResponse(script=activity.peri_script, validation_issues=_peri_issues_to_response(issues))
+    return PeriScriptResponse(
+        script=activity.peri_script, validation_issues=_peri_issues_to_response(issues),
+        is_stale=_peri_is_stale(activity, activity.peri_script),
+    )
 
 
 @router.get("/{activity_id}/taxonomy-alignment")

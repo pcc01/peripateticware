@@ -141,7 +141,12 @@ def derive_focus_terms(location_wiki_data: dict, limit: int = 6) -> list[str]:
     return terms[:limit]
 
 
-def _source_hash(activity: Activity, framework: str, level: Optional[int]) -> str:
+def compute_source_hash(activity: Activity, framework: str, level: Optional[int]) -> str:
+    """Hash of everything that should invalidate a generated script if it
+    changes (spec: "hash of place + subject + grade + framework + level +
+    rubric id/checksum"). Public so routes/activities.py can recompute it
+    against the activity's CURRENT state and compare to the stored script's
+    source_hash to detect staleness, without regenerating."""
     raw = json.dumps({
         "place": activity.location_name,
         "subject": activity.subject,
@@ -233,7 +238,7 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
             "Can you describe it with a number, a colour, or a shape?",
         ],
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "source_hash": _source_hash(activity, framework, level),
+        "source_hash": compute_source_hash(activity, framework, level),
         "approved": False,
     }
     if level_was_fallback:
