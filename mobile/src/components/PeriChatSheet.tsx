@@ -139,8 +139,17 @@ export default function PeriChatSheet({
   // for a different activity/stop doesn't carry over another one's
   // stage/progress.
   const engineStateRef = useRef<PeriEngineState | null>(null);
+  // Shown once per sheet session, the first time a live /chat call fails and
+  // this chat falls back to the on-device engine (PERI_OFFLINE_SPEC_v2.md
+  // section C.2's dead-end fix, extended here): without this, a student who
+  // loses signal mid-conversation gets a reply from a fundamentally
+  // different system -- a rule-based question-sequencer with no memory of
+  // what was just said, not a conversational AI -- with nothing explaining
+  // why Peri suddenly seems to have ignored them.
+  const offlineNoticeShownRef = useRef(false);
   useEffect(() => {
     engineStateRef.current = null;
+    offlineNoticeShownRef.current = false;
   }, [activityId, waypointId]);
 
   /** Advance the offline engine by one turn and return Peri's reply. Safe
@@ -285,6 +294,17 @@ export default function PeriChatSheet({
           // check beforehand — a failed request IS "offline" for this
           // purpose (PERI_OFFLINE_SPEC_v2.md section C.2). Fall back to the
           // engine instead of the old dead-end "couldn't connect" message.
+          if (!offlineNoticeShownRef.current) {
+            offlineNoticeShownRef.current = true;
+            setMessages((prev) => [...prev, {
+              id: `offline-notice-${Date.now()}`,
+              role: 'assistant',
+              content: t(
+                'perichat.offlineNotice',
+                "Looks like we lost connection — I'll keep going with what I can ask offline."
+              ),
+            }]);
+          }
           replyText = engineReply(text);
         }
       }
