@@ -128,7 +128,10 @@ async def reload_privacy_config(db: AsyncSession = Depends(get_db)):
 @router.post("/locations/geocode", response_model=GeocodeResponse)
 async def geocode_location(
     request: GeocodeRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    # Same prerequisite gate as search_nearby_locations()/enrich_location()
+    # below -- this endpoint had no auth either.
+    current_user: User = Depends(get_current_user),
 ):
     """
     Forward-geocode free text — a landmark name ("Eiffel Tower") or a full

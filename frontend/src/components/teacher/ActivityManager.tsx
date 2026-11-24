@@ -92,9 +92,17 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
 // resolves instantly instead of re-hitting Nominatim every time.
 async function forwardGeocode(name: string): Promise<{ lat: number; lng: number; isApproximate: boolean } | null> {
   try {
+    // This endpoint now requires auth (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md
+    // Design D) -- attach the token by hand rather than switching to the
+    // shared apiClient, so the existing fetch-based mock in
+    // ActivityManager.wizard.test.tsx keeps working.
+    const token = localStorage.getItem('auth_token');
     const res = await fetch('/api/v1/locations/geocode', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ query: name }),
     });
     if (!res.ok) return null;
