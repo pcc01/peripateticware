@@ -665,19 +665,21 @@ class MeResponse(BaseModel):
     grade_band: Optional[str] = None
 
 
-async def _resolve_student_grade_band(db: AsyncSession, user_id: uuid.UUID) -> Optional[str]:
+async def _resolve_student_grade_level(db: AsyncSession, user_id: uuid.UUID) -> Optional[int]:
     """Resolution order (spec): homeschool_children.grade_level first, then
     the student's classroom's grade_level. Never asks for or stores a new
-    field -- purely reads what's already there and converts to a band."""
+    field -- purely reads what's already there. Returns the raw numeric
+    grade (0-12); see _resolve_student_grade_band() for the coarse-band
+    version this also backs, and PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md
+    Design B for the other caller that needs the number, not just the band."""
     from sqlalchemy import text as _text
-    from services.grade_band import grade_to_band
 
     hs_row = (await db.execute(
         _text("SELECT grade_level FROM homeschool_children WHERE child_id = :uid LIMIT 1"),
         {"uid": str(user_id)},
     )).first()
     if hs_row and hs_row[0] is not None:
-        return grade_to_band(hs_row[0])
+        return int(hs_row[0])
 
     cls_row = (await db.execute(_text("""
         SELECT c.grade_level FROM classroom_students cs
@@ -688,10 +690,19 @@ async def _resolve_student_grade_band(db: AsyncSession, user_id: uuid.UUID) -> O
     """), {"uid": str(user_id)})).first()
     if cls_row and cls_row[0]:
         try:
-            return grade_to_band(int(cls_row[0]))
+            return int(cls_row[0])
         except (ValueError, TypeError):
             return None
     return None
+
+
+async def _resolve_student_grade_band(db: AsyncSession, user_id: uuid.UUID) -> Optional[str]:
+    """Coarse band (k-2/3-5/6-8/9-12) for the same resolution order as
+    _resolve_student_grade_level() above -- see that function's docstring."""
+    from services.grade_band import grade_to_band
+
+    grade = await _resolve_student_grade_level(db, user_id)
+    return grade_to_band(grade) if grade is not None else None
 
 
 @router.get("/me", response_model=MeResponse)

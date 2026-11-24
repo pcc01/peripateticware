@@ -270,6 +270,9 @@ class Activity(Base):
     last_compliance_check = Column(DateTime, nullable=True)
     # Phase 7: track which student's field note promoted this activity
     originator_student_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    # Who authored this row (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md) -- see
+    # startup.py's apply_peri_script_migrations() for the full rationale.
+    origin = Column(String(20), nullable=False, default='teacher', server_default='teacher')
 
     # =========================================================================
     # METADATA

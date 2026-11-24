@@ -41,6 +41,7 @@ import math
 
 from core.database import get_db
 from core.dependencies import get_current_user
+from core.rate_limit import ai_rate_limit
 from models.database import (
     User, UserRole, Activity, LearningSession,
 )
@@ -178,9 +179,20 @@ async def list_student_activities(
     """
     _require_student(current_user)
 
-    # Base query: only published, active activities
+    # Base query: only published, active activities. Excludes
+    # origin='spontaneous' -- a student's own spontaneous-discovery
+    # activity (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md) is real and
+    # auto-approved, but never a teacher-reviewed activity, so it must not
+    # surface to classmates browsing this feed. The creating student still
+    # reaches it directly (returned activity_id from the create call), and
+    # their own session history/progress views are unaffected since those
+    # are session-scoped, not filtered by this listing.
     q = select(Activity).where(
-        and_(Activity.status == "published", Activity.is_active == True)
+        and_(
+            Activity.status == "published",
+            Activity.is_active == True,
+            Activity.origin != "spontaneous",
+        )
     )
 
     if subject:
@@ -1636,3 +1648,133 @@ async def activity_leaderboard(
         e["rank"] = i
 
     return {"activity_id": activity_id, "entries": ranked}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Spontaneous discovery (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md)
+#
+# A student standing at an unplanned place taps one button and gets a real,
+# place-grounded Peri question within seconds -- no teacher has to have
+# authored an Activity for that exact spot first. Reuses the same generator/
+# validator item 14/16 already built; what's new here is a fast, auto-filled
+# path onto Activity that a student can trigger themselves.
+#
+# Decided (not this code's call -- product decision): the resulting script
+# auto-approves (no teacher review gate before the student sees it -- the
+# one place this bends the "no unreviewed LLM content reaches a learner"
+# invariant everywhere else), but stays scoped to the creating student, their
+# parent and their teacher (via existing session-scoped progress views, which
+# need no change) -- never surfaced to other students. Enforced by setting
+# origin='spontaneous' and excluding that origin from the broad discovery
+# feed below (list_student_activities already filters on it); the student
+# reaches their own by navigating straight to the returned activity_id.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SPONTANEOUS_DAILY_CAP = 5  # placeholder per spec Design E, not a researched number
+
+
+class SpontaneousActivityRequest(_BaseModel):
+    location_name: str
+    subject: str
+    # Both optional: the "type where you are" path (no GPS) never sends
+    # these; the Activity's lat/lng fall back to 0.0/0.0 (schema requires
+    # real floats, not null) -- same convention as any teacher activity
+    # with no fixed location.
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    # From the student's own prior call to (now auth-gated)
+    # POST /locations/search + GET /locations/{id}/enrich -- this endpoint
+    # does not re-fetch it, just uses whatever the client already resolved.
+    location_wiki_data: Optional[dict] = None
+
+
+class SpontaneousActivityResponse(_BaseModel):
+    activity_id: str
+    validation_issue_count: int
+
+
+@router.post("/activities/spontaneous", response_model=SpontaneousActivityResponse, status_code=201)
+async def create_spontaneous_activity(
+    body: SpontaneousActivityRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    org_id: Optional[str] = Depends(ai_rate_limit),  # per-org RPM cap; real metered LLM calls
+):
+    """Auto-fill a new Activity from a student-confirmed place and
+    synchronously generate + validate + auto-approve its Peri script. See
+    module docstring above for the scoping/approval rationale."""
+    _require_student(current_user)
+
+    from datetime import timedelta
+    since = datetime.utcnow() - timedelta(hours=24)
+    recent_count = (await db.execute(
+        select(func.count()).select_from(Activity).where(
+            and_(
+                Activity.originator_student_id == current_user.id,
+                Activity.origin == "spontaneous",
+                Activity.created_at >= since,
+            )
+        )
+    )).scalar() or 0
+    if recent_count >= _SPONTANEOUS_DAILY_CAP:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"You've reached today's limit of {_SPONTANEOUS_DAILY_CAP} spontaneous discoveries. Try again tomorrow.",
+        )
+
+    from routes.auth import _resolve_student_grade_level
+    grade_level = await _resolve_student_grade_level(db, current_user.id)
+    if grade_level is None:
+        grade_level = 5  # spec Design B fallback -- neither homeschool nor classroom record resolved one
+
+    place_name = body.location_name.strip() or "This place"
+    activity = Activity(
+        title=f"{place_name} Discovery",
+        description=f"A spontaneous Peri discovery activity at {place_name}.",
+        location_name=place_name,
+        location_latitude=body.latitude if body.latitude is not None else 0.0,
+        location_longitude=body.longitude if body.longitude is not None else 0.0,
+        location_wiki_data=body.location_wiki_data,
+        grade_level=grade_level,
+        subject=body.subject,
+        estimated_duration_minutes=20,
+        learning_objectives=[f"Observe and describe {place_name}"],
+        bloom_level=3,  # Bloom "apply" -- spec Design B default
+        ai_interaction_mode="curated_only",  # no live AI chat by default -- no author reviewed this
+        origin="spontaneous",
+        originator_student_id=current_user.id,
+        status="published",
+        is_active=True,
+        is_shareable=False,  # never surfaced via shared-library discovery
+    )
+    db.add(activity)
+    await db.flush()  # need activity.id before generating (rubric lookup, though none is set here)
+
+    from agents.provider import ProviderUnavailableError
+    from services.peri_script_generator import generate_peri_script
+    from services.peri_script_validator import validate_peri_script
+    from services.grade_band import grade_to_band
+
+    try:
+        script = await generate_peri_script(db, activity)
+    except ProviderUnavailableError as e:
+        logger.error(f"AI provider unavailable generating spontaneous Peri script: {e}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI inference service is temporarily unavailable — please try again shortly.",
+        )
+
+    issues = validate_peri_script(
+        script,
+        location_description=(activity.location_wiki_data or {}).get("description", ""),
+        grade_band=grade_to_band(grade_level),
+    )
+    # Auto-approve (decided, see module docstring) -- scoped narrowly to this
+    # student's own use by origin='spontaneous' being excluded from the
+    # discovery feed, never by withholding approval.
+    script["approved"] = True
+    activity.peri_script = script
+    await db.commit()
+
+    return SpontaneousActivityResponse(activity_id=str(activity.id), validation_issue_count=len(issues))

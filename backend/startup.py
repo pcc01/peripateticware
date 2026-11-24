@@ -1606,6 +1606,12 @@ async def apply_peri_script_migrations(engine) -> None:
         # nullable; absent means "behave exactly like a single grade_level".
         "ALTER TABLE activities ADD COLUMN IF NOT EXISTS grade_span_min INTEGER",
         "ALTER TABLE activities ADD COLUMN IF NOT EXISTS grade_span_max INTEGER",
+        # Who authored this row (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md) --
+        # 'teacher' (default, matches every pre-existing row) | 'spontaneous'
+        # (student-triggered, auto-approved, auto-filled, excluded from the
+        # main student discovery feed) | 'student_proposed' (reserved for
+        # the existing proposals.py approve flow, not yet set by it).
+        "ALTER TABLE activities ADD COLUMN IF NOT EXISTS origin VARCHAR(20) NOT NULL DEFAULT 'teacher'",
     ]
     for _s in _stmts:
         try:

@@ -288,7 +288,10 @@ CREATE TABLE IF NOT EXISTS activities (
     -- Optional mixed-age span ("Mixed-age groups") — nullable; absent means
     -- "behave exactly like a single grade_level".
     grade_span_min                 INTEGER,
-    grade_span_max                 INTEGER
+    grade_span_max                 INTEGER,
+    -- Who authored this row (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md) -- see
+    -- startup.py's apply_peri_script_migrations() for the full rationale.
+    origin                         VARCHAR(20) NOT NULL DEFAULT 'teacher'
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_teacher    ON activities(teacher_id);
