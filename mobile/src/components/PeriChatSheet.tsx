@@ -12,12 +12,14 @@ import CrowAvatar from '@/src/components/CrowAvatar';
 import { chatWithPeri, ChatMessage } from '@/src/api/inference';
 import { Capture } from '@/src/api/captures';
 import { queueCapture, updateQueuedCaptureUri } from '@/src/db/offlineQueue';
+import { getLocalArrivedIds } from '@/src/db/wayfindingStore';
+import { isHuntComplete } from '@/src/lib/wayfindingProgress';
 import { useTranslation } from 'react-i18next';
 import {
   createPeriEngineState, next as nextPeriTurn, resolvePeriScriptForBand, scriptForStop,
   PeriEngineState, PeriScript,
 } from '@/src/lib/peri/engine';
-import type { LocationWikiData } from '@/src/api/activities';
+import type { LocationWikiData, WayfindingDetail } from '@/src/api/activities';
 import { useAuth } from '@/src/stores/AuthContext';
 
 interface Props {
@@ -48,6 +50,15 @@ interface Props {
   // mini-dialogue instead of the activity-level script. null/absent means
   // the ordinary activity-level chat, same as before this existed.
   waypointId?: string | null;
+  // Only used to gate the ACTIVITY-level chat's connect/reflect questions
+  // behind hunt completion (point 10: "connect and reflect questions
+  // appear when the last required stop is reached") -- for a hunt, those
+  // two are the only activity-level stages left (observe/classify/explain
+  // moved to each stop), so without this gate the engine would jump
+  // straight from orient to them the moment this chat opens, before any
+  // stop was ever reached. Irrelevant for the per-stop chat (waypointId
+  // set) or a non-hunt activity (wayfinding omitted/disabled).
+  wayfinding?: WayfindingDetail | null;
   // backend/schemas/activities.py's AIInteractionModeEnum. 'curated_only'
   // skips the live /chat call entirely and goes straight to the engine —
   // matching what the hidden "Ask Peri" button already enforces server-side.
@@ -70,7 +81,7 @@ interface DisplayMessage {
 export default function PeriChatSheet({
   visible, onClose, theme,
   activityId, activityTitle, activitySubject, currentPrompt, sessionId,
-  periScript, waypointId, aiInteractionMode, locationName, locationWikiData,
+  periScript, waypointId, wayfinding, aiInteractionMode, locationName, locationWikiData,
   onCaptured,
 }: Props) {
   const { t } = useTranslation();
@@ -79,6 +90,24 @@ export default function PeriChatSheet({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const listRef = useRef<FlatList>(null);
+
+  // Defaults to true (unrestricted) for a non-hunt activity, or until the
+  // local-mirror check below resolves -- never blocks connect/reflect for
+  // anything but a hunt that's genuinely still in progress.
+  const [huntComplete, setHuntComplete] = useState(true);
+  useEffect(() => {
+    const waypoints = wayfinding?.waypoints ?? [];
+    if (!wayfinding?.enabled || waypoints.length === 0) {
+      setHuntComplete(true);
+      return;
+    }
+    let cancelled = false;
+    getLocalArrivedIds(activityId ?? '').then((arrivedIds) => {
+      if (cancelled) return;
+      setHuntComplete(isHuntComplete(waypoints, arrivedIds));
+    });
+    return () => { cancelled = true; };
+  }, [visible, activityId, wayfinding]);
 
   // Resolved ONCE per script/band, not per turn — resolvePeriScriptForBand
   // is pure but there's no reason to redo its work on every keystroke.
@@ -91,9 +120,17 @@ export default function PeriChatSheet({
   // instead of the activity-level one (falls back to the activity-level
   // script if the stop has none generated -- e.g. past the per-hunt cap).
   const activeScript = useMemo(() => {
-    if (!waypointId) return resolvedScript;
-    return scriptForStop(resolvedScript, waypointId) ?? resolvedScript;
-  }, [resolvedScript, waypointId]);
+    if (waypointId) return scriptForStop(resolvedScript, waypointId) ?? resolvedScript;
+    // General chat during an incomplete hunt (point 10): hide connect/
+    // reflect -- the only activity-level stages a hunt script has besides
+    // orient -- so the engine doesn't jump straight to them with nothing
+    // in between to walk through.
+    if (resolvedScript.stops && !huntComplete) {
+      const { connect, reflect, ...rest } = resolvedScript.stages;
+      return { ...resolvedScript, stages: rest };
+    }
+    return resolvedScript;
+  }, [resolvedScript, waypointId, huntComplete]);
   const isStopChat = !!waypointId && activeScript !== resolvedScript;
 
   // On-device dialogue engine state for this chat session — in memory

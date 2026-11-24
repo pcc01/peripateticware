@@ -35,6 +35,7 @@ import {
   TILE_CACHE_MAX_AGE_SEC,
 } from '@/src/lib/tileCache';
 import type { PeriScript } from '@/src/lib/peri/engine';
+import { isHuntComplete } from '@/src/lib/wayfindingProgress';
 
 // Was tile.openstreetmap.org directly -- their shared servers started
 // 403ing ("App is not following the tile usage policy") since direct
@@ -237,10 +238,7 @@ export default function WayfindingPanel({
     () => waypoints.filter((w) => w.required).map((w) => w.id),
     [waypoints]
   );
-  const localComplete =
-    requiredIds.length > 0
-      ? requiredIds.every((id) => arrivedIds.has(id))
-      : total > 0 && arrivedIds.size >= total;
+  const localComplete = isHuntComplete(waypoints, arrivedIds);
   const complete = (progress?.complete ?? false) || localComplete;
 
   const routeCoords = useMemo(

@@ -527,6 +527,7 @@ export default function ActivityScreen() {
           sessionId={sessionId}
           periScript={activity.peri_script}
           waypointId={chatWaypointId}
+          wayfinding={activity.wayfinding}
           aiInteractionMode={activity.ai_interaction_mode}
           locationName={activity.location_name}
           locationWikiData={activity.location_wiki_data}
