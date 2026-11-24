@@ -11,7 +11,9 @@ Strategy
 --------
 - Mirrors tests/test_parent_portal.py's no-real-DB pattern: minimal FastAPI
   app with just the privacy_locations router, AsyncMock for get_db.
-  This endpoint has no auth dependency, so get_current_user is not overridden.
+- PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md Design D added an auth gate to both
+  endpoints (pre-existing gap -- they took zero auth before), so get_db is
+  mocked.
 """
 
 from __future__ import annotations
@@ -40,6 +42,7 @@ def _make_app() -> FastAPI:
 @pytest_asyncio.fixture
 async def ctx():
     from core.database import get_db
+    from core.dependencies import get_current_user
 
     app = _make_app()
     db = AsyncMock()
@@ -52,7 +55,12 @@ async def ctx():
     db.add = MagicMock()
     db.flush = AsyncMock()
 
+    fake_user = MagicMock()
+    fake_user.id = uuid4()
+    fake_user.role = "STUDENT"
+
     app.dependency_overrides[get_db] = lambda: db
+    app.dependency_overrides[get_current_user] = lambda: fake_user
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -332,6 +340,30 @@ async def test_search_nearby_locations_normalizes_and_passes_lang(ctx):
     fake_service.search_nearby.assert_awaited_once()
     _, call_kwargs = fake_service.search_nearby.call_args
     assert call_kwargs["lang"] == "pt"
+
+
+@pytest.mark.asyncio
+async def test_search_and_enrich_reject_unauthenticated_request():
+    """Regression test for the Design D auth gate itself -- without the
+    get_current_user override, a request with no token must 401, not fall
+    through to the handler."""
+    from core.database import get_db
+
+    app = _make_app()
+    db = AsyncMock()
+    app.dependency_overrides[get_db] = lambda: db
+    # Deliberately NOT overriding get_current_user here.
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        search_resp = await client.post(
+            "/api/v1/locations/search",
+            json={"latitude": 48.8584, "longitude": 2.2945, "radius_meters": 500},
+        )
+        enrich_resp = await client.get("/api/v1/locations/some-place-id/enrich")
+
+    assert search_resp.status_code in (401, 403)
+    assert enrich_resp.status_code in (401, 403)
 
 
 # ===========================================================================

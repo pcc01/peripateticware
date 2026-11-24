@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import styles from './WikiLocationInfo.module.css';
+import apiClient from '@/config/api';
 
 interface LocationInfo {
   name: string;
@@ -115,15 +116,12 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
    * fall through to the client-side Nominatim/Wikipedia fallback below.
    */
   const fetchSearchMatch = async (): Promise<{ target: any; nearbyPoints: LocationInfo['nearbyPoints'] } | null> => {
-    const searchResponse = await fetch('/api/v1/locations/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ latitude, longitude, radius_meters: 500, lang: wikiLang }),
-    });
-    if (!searchResponse.ok) {
-      throw new Error(`locations/search failed (${searchResponse.status})`);
-    }
-    const searchResults = await searchResponse.json();
+    // apiClient (not a raw fetch) -- this endpoint now requires auth
+    // (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md Design D), and apiClient's
+    // interceptor is what attaches the Bearer token; a plain fetch() here
+    // would 401.
+    const searchResponse = await apiClient.post('/locations/search', { latitude, longitude, radius_meters: 500, lang: wikiLang });
+    const searchResults = searchResponse.data;
     if (!Array.isArray(searchResults) || searchResults.length === 0) {
       return null;
     }
@@ -158,13 +156,10 @@ export const WikiLocationInfo = ({ latitude, longitude, subject, locationName, o
     // there was no way to actually force a fresh Wikidata/Wikipedia fetch.
     if (forceRefresh) params.set('refresh', 'true');
     const qs = params.toString();
-    const enrichResponse = await fetch(
-      `/api/v1/locations/${encodeURIComponent(placeId)}/enrich${qs ? `?${qs}` : ''}`
+    const enrichResponse = await apiClient.get(
+      `/locations/${encodeURIComponent(placeId)}/enrich${qs ? `?${qs}` : ''}`
     );
-    if (!enrichResponse.ok) {
-      throw new Error(`locations/${placeId}/enrich failed (${enrichResponse.status})`);
-    }
-    return enrichResponse.json();
+    return enrichResponse.data;
   };
 
   const fetchLocationInfo = async (forceRefresh: boolean = false) => {

@@ -15,6 +15,8 @@ import logging
 
 from core.database import get_db
 from core.config import settings
+from core.dependencies import get_current_user
+from models.user import User
 from services.privacy_engine import get_privacy_checker
 from services.privacy_config_loader import PrivacyConfigurationLoader
 from services.multi_backend_location_service import (
@@ -281,7 +283,12 @@ async def _prewarm_enrichment(place_ids: List[str], lang: str = WIKIMEDIA_FALLBA
 async def search_nearby_locations(
     request: LocationSearchRequest,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    # PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md Design D -- this endpoint had no
+    # auth at all (pre-existing gap). Spontaneous discovery is what finally
+    # puts real student mobile traffic through it, so closing the gap is a
+    # prerequisite, not a relaxation of anything.
+    current_user: User = Depends(get_current_user),
 ):
     """
     Search for educational locations near coordinates
@@ -388,7 +395,9 @@ async def enrich_location(
     subject: Optional[str] = None,
     refresh: bool = False,
     lang: Optional[str] = Query(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    # See search_nearby_locations() above -- same prerequisite auth gate.
+    current_user: User = Depends(get_current_user),
 ):
     """
     Get educational enrichment for a specific location
