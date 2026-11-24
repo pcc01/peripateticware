@@ -125,9 +125,9 @@ export default function JoinClassroomPage() {
             <div className="mt-3">
               <p className="text-lg font-semibold text-green-800">{preview.classroom_name}</p>
               <p className="text-sm text-gray-500">{preview.org_name}</p>
-              {preview.grade_level && (
+              {preview.grade_level != null && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Grade {preview.grade_level}{preview.subject ? ` - ${preview.subject}` : ''}
+                  {preview.grade_level === 0 ? 'Kindergarten' : `Grade ${preview.grade_level}`}{preview.subject ? ` - ${preview.subject}` : ''}
                 </p>
               )}
             </div>

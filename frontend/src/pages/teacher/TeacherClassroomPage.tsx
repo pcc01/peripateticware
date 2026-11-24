@@ -179,9 +179,19 @@ export default function TeacherClassroomPage() {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-xs text-gray-500 block mb-1">{t('pages_teacher_teacherclassroompage.grade_level', 'Grade level')}</label>
-                <input type="number" min={1} max={12} value={editGrade}
-                  onChange={e => setEditGrade(e.target.value ? Number(e.target.value) : '')}
+                <input type="number" min={0} max={12} value={editGrade}
+                  onChange={e => setEditGrade(e.target.value !== '' ? Number(e.target.value) : '')}
+                  placeholder={t('pages_teacher_teacherclassroompage.grade_level_placeholder', '0 = Kindergarten')}
                   className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                {/* Nudge, not a requirement (PERI_OFFLINE_SPEC_v2.md grade-band
+                   gap: classroom grade_level stays optional -- some classes
+                   are genuinely mixed/ungraded -- but a teacher should know
+                   what leaving it blank costs their students). */}
+                <p className="text-xs text-gray-400 mt-1">
+                  {editGrade === ''
+                    ? t('pages_teacher_teacherclassroompage.grade_level_nudge', "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.")
+                    : t('pages_teacher_teacherclassroompage.grade_level_k_hint', '0 = Kindergarten')}
+                </p>
               </div>
               <div className="flex-1">
                 <label className="text-xs text-gray-500 block mb-1">{t('pages_teacher_teacherclassroompage.subject', 'Subject')}</label>
@@ -206,9 +216,14 @@ export default function TeacherClassroomPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{classroom.name}</h1>
               <p className="text-gray-500 text-sm mt-1">
-                {[classroom.grade_level ? `Grade ${classroom.grade_level}` : null, classroom.subject]
+                {[classroom.grade_level != null ? (classroom.grade_level === 0 ? 'Kindergarten' : `Grade ${classroom.grade_level}`) : null, classroom.subject]
                   .filter(Boolean).join(' · ') || 'No grade or subject set'}
               </p>
+              {classroom.grade_level == null && (
+                <p className="text-xs text-amber-600 mt-0.5">
+                  {t('pages_teacher_teacherclassroompage.grade_level_nudge_short', "No grade set -- students get generic Peri wording, not tailored to their age.")}
+                </p>
+              )}
             </div>
             <button onClick={() => setEditing(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 border rounded-lg text-sm text-gray-500 hover:bg-gray-50">

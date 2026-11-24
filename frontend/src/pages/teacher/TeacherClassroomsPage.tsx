@@ -34,6 +34,7 @@ const TeacherClassroomsPage: React.FC = () => {
   const [error, setError]           = useState<string | null>(null);
   const [creating, setCreating]     = useState(false);
   const [newName, setNewName]       = useState('');
+  const [newGrade, setNewGrade]     = useState<number | ''>('');
   const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,7 +48,10 @@ const TeacherClassroomsPage: React.FC = () => {
     if (!newName.trim()) return;
     setCreateError(null);
     try {
-      const r = await apiClient.post(`/classrooms`, { name: newName.trim() });
+      const r = await apiClient.post(`/classrooms`, {
+        name: newName.trim(),
+        grade_level: newGrade !== '' ? newGrade : null,
+      });
       navigate(`/teacher/classrooms/${r.data.id}`);
     } catch (e: any) {
       // e.response.data.detail can be a plain string OR a structured
@@ -115,6 +119,20 @@ const TeacherClassroomsPage: React.FC = () => {
               }}
               autoFocus
             />
+            <input
+              type="number"
+              min={0}
+              max={12}
+              value={newGrade}
+              onChange={e => setNewGrade(e.target.value !== '' ? Number(e.target.value) : '')}
+              onKeyDown={e => e.key === 'Enter' && createClassroom()}
+              placeholder={t('pages_teacher_teacherclassroomspage.placeholder_grade_optional', 'Grade (0 = K, optional)')}
+              style={{
+                flex: '0 1 180px', padding: '0.5rem 0.75rem',
+                border: '1px solid var(--border)', borderRadius: '0.35rem',
+                background: 'var(--bg)', color: 'var(--text)', fontSize: '0.875rem',
+              }}
+            />
             <button
               onClick={createClassroom}
               disabled={!newName.trim()}
@@ -126,12 +144,19 @@ const TeacherClassroomsPage: React.FC = () => {
               }}
             >{t('pages_teacher_teacherclassroomspage.create', 'Create')}</button>
             <button
-              onClick={() => { setCreating(false); setNewName(''); setCreateError(null); }}
+              onClick={() => { setCreating(false); setNewName(''); setNewGrade(''); setCreateError(null); }}
               style={{ padding: '0.5rem 0.75rem', borderRadius: '0.35rem', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.875rem' }}
             >
               Cancel
             </button>
           </div>
+          {/* Nudge, not a requirement -- grade is left optional (some classes
+             are genuinely mixed/ungraded), but leaving it blank has a real
+             cost worth surfacing: Peri can't tailor question wording to the
+             class's age without it. */}
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+            {t('pages_teacher_teacherclassroomspage.grade_nudge', "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class.")}
+          </p>
           {createError && (
             <p style={{ color: '#b91c1c', fontSize: '0.8rem', marginTop: '0.5rem' }}>{createError}</p>
           )}
@@ -184,9 +209,9 @@ const TeacherClassroomsPage: React.FC = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                {c.grade_level && (
+                {c.grade_level != null && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <BookOpen size={13} /> Year {c.grade_level}
+                    <BookOpen size={13} /> {c.grade_level === 0 ? 'Kindergarten' : `Year ${c.grade_level}`}
                   </span>
                 )}
                 {c.subject && <span>{c.subject}</span>}

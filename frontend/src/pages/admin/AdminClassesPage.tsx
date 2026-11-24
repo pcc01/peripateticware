@@ -110,7 +110,7 @@ export const AdminClassesPage: React.FC = () => {
               <div style={{ fontWeight: 600 }}>{c.name}</div>
               {c.description && <div style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 2 }}>{c.description}</div>}
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 6, display: 'flex', gap: 16 }}>
-                {c.grade_level > 0 && <span>Grade {c.grade_level}</span>}
+                {c.grade_level != null && <span>{c.grade_level === 0 ? 'Kindergarten' : `Grade ${c.grade_level}`}</span>}
                 {c.school_year && <span>{c.school_year}</span>}
                 {c.teacher_name && <span>Teacher: {c.teacher_name}</span>}
                 {c.student_count != null && <span>{c.student_count} students</span>}
