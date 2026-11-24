@@ -44,6 +44,14 @@ export interface PeriScriptQuestion {
   crit?: string;
 }
 
+// One hunt stop's own section (PERI_OFFLINE_SPEC_v2.md "Impact on
+// wayfinding" point 1) -- only observe/classify/explain ever appear here;
+// orient/connect/reflect stay at the activity level in `stages` above.
+export interface PeriStopScript {
+  focus?: string[];
+  stages: Partial<Record<PeriStageName, PeriScriptQuestion[]>>;
+}
+
 export interface PeriScript {
   v: number;
   framework?: string;
@@ -62,6 +70,9 @@ export interface PeriScript {
   // Present only when the activity has a mixed-age span set.
   grade_span?: { min: number; max: number } | null;
   mixed_age_cutoff_grade?: number | null;
+  // Per-waypoint-id sections for a multi-step hunt (point 1). Absent for a
+  // non-hunt activity.
+  stops?: Record<string, PeriStopScript>;
 }
 
 export type GradeBand = 'k-2' | '3-5' | '6-8' | '9-12';
@@ -73,12 +84,18 @@ export interface ResolvedPeriScriptQuestion {
   crit?: string;
 }
 
+export interface ResolvedPeriStopScript {
+  focus?: string[];
+  stages: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>>;
+}
+
 // Every question's wording resolved to a single plain string for one
 // student — see resolvePeriScriptForBand(). This is the shape next() and
 // periOpeningPrompt() actually consume; nothing past this point ever sees
 // a {lo, hi} object.
-export type ResolvedPeriScript = Omit<PeriScript, 'stages'> & {
+export type ResolvedPeriScript = Omit<PeriScript, 'stages' | 'stops'> & {
   stages: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>>;
+  stops?: Record<string, ResolvedPeriStopScript>;
 };
 
 export interface PeriEngineState {
@@ -145,18 +162,61 @@ export function resolvePeriScriptForBand(
     useHi = false; // last-resort default when nothing else is known
   }
 
-  const resolvedStages: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>> = {};
-  for (const stage of PERI_STAGE_ORDER) {
-    const questions = script.stages?.[stage];
-    if (!questions) continue;
-    resolvedStages[stage] = questions.map((q) => ({
-      id: q.id,
-      q: resolveOneWording(q.q, useHi),
-      on: q.on,
-      crit: q.crit,
-    }));
+  const resolveStageMap = (
+    stages: Partial<Record<PeriStageName, PeriScriptQuestion[]>> | undefined
+  ): Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>> => {
+    const out: Partial<Record<PeriStageName, ResolvedPeriScriptQuestion[]>> = {};
+    for (const stage of PERI_STAGE_ORDER) {
+      const questions = stages?.[stage];
+      if (!questions) continue;
+      out[stage] = questions.map((q) => ({
+        id: q.id,
+        q: resolveOneWording(q.q, useHi),
+        on: q.on,
+        crit: q.crit,
+      }));
+    }
+    return out;
+  };
+
+  const resolvedStages = resolveStageMap(script.stages);
+
+  let resolvedStops: Record<string, ResolvedPeriStopScript> | undefined;
+  if (script.stops) {
+    resolvedStops = {};
+    for (const [waypointId, stop] of Object.entries(script.stops)) {
+      resolvedStops[waypointId] = { focus: stop.focus, stages: resolveStageMap(stop.stages) };
+    }
   }
-  return { ...script, stages: resolvedStages };
+
+  return { ...script, stages: resolvedStages, stops: resolvedStops };
+}
+
+/**
+ * Build a self-contained mini-script for ONE hunt stop's observe/classify/
+ * explain dialogue (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding" point
+ * 1 & 3) -- reuses the exact same next()/advanceStage() engine logic as
+ * the activity-level script by shaping the stop's section the same way:
+ * only observe/classify/explain populated, orient/connect/reflect empty
+ * (the engine already treats a stage with no questions as a no-op to skip
+ * past, same as any other script with gaps). Call createPeriEngineState
+ * ('observe') for the matching starting stage. Returns null when the
+ * script has no section for this waypoint (e.g. it was past the
+ * generated-stops cap, or the hunt predates this feature) -- callers fall
+ * back to the activity-level script, same as the "no script at all" case.
+ */
+export function scriptForStop(
+  resolved: ResolvedPeriScript,
+  waypointId: string
+): ResolvedPeriScript | null {
+  const stop = resolved.stops?.[waypointId];
+  if (!stop) return null;
+  return {
+    ...resolved,
+    focus: stop.focus ?? resolved.focus,
+    stages: stop.stages,
+    stops: undefined,
+  };
 }
 
 const VAGUE_PHRASES = new Set([

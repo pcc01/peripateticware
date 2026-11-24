@@ -6,7 +6,10 @@ import {
   next,
   periOpeningPrompt,
   fillPeriTemplate,
+  resolvePeriScriptForBand,
+  scriptForStop,
   ResolvedPeriScript,
+  PeriScript,
   PERI_WRAP_UP_TEXT,
 } from '../engine';
 
@@ -205,5 +208,99 @@ describe('fillPeriTemplate', () => {
   it('falls back to generic wording when place/focus are missing', () => {
     const script = makeScript({ place: undefined, focus: undefined });
     expect(fillPeriTemplate('{place}: {focus}', script)).toBe('this place: what you see');
+  });
+});
+
+// Hunt stops (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding" points 1, 11).
+function makeHuntScript(): PeriScript {
+  return {
+    v: 1,
+    place: 'Test Park',
+    grade: 5,
+    stages: {
+      orient: [{ id: 'o1', q: 'What do you notice when you arrive?' }],
+      connect: [{ id: 'n1', q: 'How do these stops relate?' }],
+      reflect: [{ id: 'r1', q: 'What will you remember?' }],
+    },
+    stops: {
+      'wp-1': {
+        focus: ['oak tree'],
+        stages: {
+          observe: [{ id: 'b1_wp-1', q: 'How many rings can you count?', on: ['oak tree'] }],
+          classify: [{ id: 'c1_wp-1', q: 'What group does this bark belong to?' }],
+          explain: [{ id: 'e1_wp-1', q: 'Why might the rings vary in width?' }],
+        },
+      },
+      'wp-2': {
+        focus: [],
+        stages: {
+          observe: [{ id: 'b1_wp-2', q: { lo: 'What do you see?', hi: 'What evidence do you see?' } }],
+        },
+      },
+    },
+  };
+}
+
+describe('resolvePeriScriptForBand with hunt stops', () => {
+  it('resolves plain-string stop questions unchanged', () => {
+    const resolved = resolvePeriScriptForBand(makeHuntScript(), null);
+    expect(resolved.stops?.['wp-1'].stages.observe?.[0].q).toBe('How many rings can you count?');
+  });
+
+  it('resolves a mixed-age stop wording using the same band decision as the activity level', () => {
+    const script = makeHuntScript();
+    script.mixed_age_cutoff_grade = 5;
+    const resolvedLo = resolvePeriScriptForBand(script, 'k-2'); // midpoint 1 < cutoff 5
+    expect(resolvedLo.stops?.['wp-2'].stages.observe?.[0].q).toBe('What do you see?');
+    const resolvedHi = resolvePeriScriptForBand(script, '9-12'); // midpoint 10 >= cutoff 5
+    expect(resolvedHi.stops?.['wp-2'].stages.observe?.[0].q).toBe('What evidence do you see?');
+  });
+
+  it('carries no stops through when the script has none', () => {
+    const resolved = resolvePeriScriptForBand(makeScript(), null);
+    expect(resolved.stops).toBeUndefined();
+  });
+});
+
+describe('scriptForStop', () => {
+  it('builds a mini-script with only the stop\'s own observe/classify/explain questions', () => {
+    const resolved = resolvePeriScriptForBand(makeHuntScript(), null);
+    const stop = scriptForStop(resolved, 'wp-1');
+    expect(stop).not.toBeNull();
+    expect(stop!.stages.orient).toBeUndefined();
+    expect(stop!.stages.connect).toBeUndefined();
+    expect(stop!.stages.observe?.[0].id).toBe('b1_wp-1');
+    expect(stop!.focus).toEqual(['oak tree']);
+  });
+
+  it('returns null for a waypoint with no generated stop', () => {
+    const resolved = resolvePeriScriptForBand(makeHuntScript(), null);
+    expect(scriptForStop(resolved, 'wp-unknown')).toBeNull();
+  });
+
+  it('drives a full stop dialogue through the real engine, starting at observe', () => {
+    const resolved = resolvePeriScriptForBand(makeHuntScript(), null);
+    const stopScript = scriptForStop(resolved, 'wp-1')!;
+    let state = createPeriEngineState('observe');
+
+    const opening = next(stopScript, state);
+    expect(opening.periText).toBe('How many rings can you count?');
+    state = opening.state;
+
+    // A number advances past observe -> classify.
+    const afterObserve = next(stopScript, state, '12 rings');
+    expect(afterObserve.periText).toBe('What group does this bark belong to?');
+    state = afterObserve.state;
+
+    const afterClassify = next(stopScript, state, '3 groups');
+    expect(afterClassify.periText).toBe('Why might the rings vary in width?');
+    state = afterClassify.state;
+
+    // explain is the last stage this stop has -- advancing past it closes
+    // the stop-chat cleanly (same "end of script" behavior as the
+    // activity-level engine, just scoped to this stop's own stages).
+    const afterExplain = next(stopScript, state, '2 seasons');
+    expect(afterExplain.state.closed).toBe(true);
+    expect(afterExplain.periText).toBe(PERI_WRAP_UP_TEXT);
   });
 });
