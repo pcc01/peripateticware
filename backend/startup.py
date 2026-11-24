@@ -755,7 +755,16 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS subscription_ends_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE organizations ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE")
-        await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS grade_level VARCHAR(50) DEFAULT ''")
+        # Type fix (found via live-testing PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md):
+        # this used to say VARCHAR(50) DEFAULT '', mismatched against both
+        # the CREATE TABLE above (grade_level INTEGER) and database/init.sql's
+        # canonical definition -- always a silent no-op on any install that
+        # already has the column (every real deployment, since the CREATE
+        # TABLE just above already creates it as INTEGER), but would have
+        # added the WRONG type on a legacy install missing the column
+        # entirely. routes/auth.py's classroom-grade_level query assumed
+        # INTEGER and broke on the mismatch (see its own fix comment).
+        await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS grade_level INTEGER")
         await _exec_safepoint(conn, "ALTER TABLE classrooms ADD COLUMN IF NOT EXISTS subject VARCHAR(100) DEFAULT ''")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS source_checksum VARCHAR(64)")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'complete'")

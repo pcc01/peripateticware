@@ -663,6 +663,15 @@ class MeResponse(BaseModel):
     # source below has anything for this user, including every non-student
     # role.
     grade_band: Optional[str] = None
+    # Derived, not stored -- same predicate routes/inference.py's chat
+    # already gates third-party AI sharing with
+    # (_is_third_party_ai_sharing_permitted: False for an under-13/
+    # parental-consent-flagged student). PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md
+    # Design C reuses it for a different third-party send (a live GPS
+    # coordinate to the geocoding/Wikidata pipeline) -- the mobile "Use my
+    # location" button checks this and falls back to "Type where you are"
+    # when False, rather than duplicating the age/consent logic on-device.
+    can_use_location_gps: bool = True
 
 
 async def _resolve_student_grade_level(db: AsyncSession, user_id: uuid.UUID) -> Optional[int]:
@@ -681,10 +690,21 @@ async def _resolve_student_grade_level(db: AsyncSession, user_id: uuid.UUID) -> 
     if hs_row and hs_row[0] is not None:
         return int(hs_row[0])
 
+    # BUG FIX (found via live testing the spontaneous-discovery endpoint):
+    # classrooms.grade_level is INTEGER (see database/init.sql's CREATE
+    # TABLE -- confirmed against the live column, not just read off the
+    # schema file), not VARCHAR. Comparing it to the empty string here
+    # made Postgres try to cast '' to integer and raise
+    # InvalidTextRepresentationError for ANY classroom student with a
+    # grade_level set at all -- silently swallowed by /auth/me's
+    # try/except (grade_band quietly came back None for every classroom
+    # student, never a real error), but this function has no such
+    # wrapper and the bug surfaced as a hard 500 instead. IS NOT NULL
+    # alone is the correct "unset" check for an integer column.
     cls_row = (await db.execute(_text("""
         SELECT c.grade_level FROM classroom_students cs
         JOIN classrooms c ON c.id = cs.classroom_id
-        WHERE cs.student_id = :uid AND c.grade_level IS NOT NULL AND c.grade_level != ''
+        WHERE cs.student_id = :uid AND c.grade_level IS NOT NULL
         ORDER BY cs.enrolled_at DESC
         LIMIT 1
     """), {"uid": str(user_id)})).first()
@@ -745,6 +765,8 @@ async def get_current_user(
         logger.warning(f"grade_band resolution skipped: {e}")
         grade_band = None
 
+    from routes.inference import _is_third_party_ai_sharing_permitted
+
     return MeResponse(
         user_id=str(user.id),
         email=user.email,
@@ -754,6 +776,7 @@ async def get_current_user(
         full_name=getattr(user, "full_name", None),
         state_code=getattr(user, "state_code", None),
         grade_band=grade_band,
+        can_use_location_gps=_is_third_party_ai_sharing_permitted(user),
     )
 
 
