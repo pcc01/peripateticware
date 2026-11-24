@@ -73,6 +73,19 @@ export async function recordLocalArrival(
       WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?`,
     [now, inSeq, cap, skip, ownerUserId, activityId, waypoint.id]
   );
+  // BUG FIX (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding" -- "verify
+  // whether duplicates occur in practice; if they do, de-duplicate"):
+  // confirmed by reading the code -- every repeat tap on the same stop
+  // (e.g. walking back and forth near an arrival radius boundary) inserted
+  // a brand-new row here with a fresh uuid(), growing wp_arrival_queue
+  // without bound for a hunt the student revisits. At most one pending
+  // row per (owner_user_id, activity_id, waypoint_id): clear any existing
+  // one first rather than adding a unique constraint (avoids a schema
+  // migration for this).
+  await db.runAsync(
+    'DELETE FROM wp_arrival_queue WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?',
+    [ownerUserId, activityId, waypoint.id]
+  );
   await db.runAsync(
     `INSERT INTO wp_arrival_queue
        (id, owner_user_id, activity_id, waypoint_id, in_sequence, captured, skipped)

@@ -98,6 +98,18 @@ describe('wayfinding isolation', () => {
     }
   });
 
+  it('clears any existing wp_arrival_queue row for the same stop before inserting, so a repeat arrival does not grow the queue', async () => {
+    asUser('user-a');
+    await recordLocalArrival('activity-1', { id: 'wp-1', sequence_index: 0 });
+    const deleteCall = mockRunAsync.mock.calls.find(([sql]) => sql.startsWith('DELETE FROM wp_arrival_queue'));
+    const insertCall = mockRunAsync.mock.calls.find(([sql]) => sql.startsWith('INSERT INTO wp_arrival_queue'));
+    expect(deleteCall).toBeDefined();
+    expect(insertCall).toBeDefined();
+    // The delete must run before the insert, and against the same key.
+    expect(mockRunAsync.mock.calls.indexOf(deleteCall)).toBeLessThan(mockRunAsync.mock.calls.indexOf(insertCall));
+    expect(deleteCall![1]).toEqual(['user-a', 'activity-1', 'wp-1']);
+  });
+
   it('getLocalProgress scopes to the current user only', async () => {
     asUser('user-b');
     await getLocalProgress('activity-1');
