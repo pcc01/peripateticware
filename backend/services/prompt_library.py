@@ -131,6 +131,12 @@ def build_peri_prompt(
     student_observation: str = "",
     learning_objectives: list[str] | None = None,
     prior_questions: list[str] | None = None,
+    # Hunt stop generation (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding"
+    # point 5, "No spoilers"): clue text and waypoint names the question
+    # must never reveal, answer, or hint at -- a stop's own clue plus every
+    # OTHER stop's name (never just the next one; a free-choice hunt has no
+    # fixed "next"). Empty/omitted for a non-hunt activity.
+    avoid_revealing: list[str] | None = None,
 ) -> str:
     """
     Build a Peri guiding-question prompt.
@@ -196,6 +202,15 @@ def build_peri_prompt(
         if grade_level is not None and grade_level <= 2 else ""
     )
 
+    no_spoiler_rule = ""
+    if avoid_revealing:
+        items = "\n".join(f"  • {r}" for r in avoid_revealing if r)
+        no_spoiler_rule = (
+            "• This is one stop in a multi-stop hunt. Never reveal, answer, "
+            "or hint at any of the following -- they are clues or other "
+            "stops the student hasn't necessarily reached yet:\n" + items + "\n"
+        )
+
     return f"""CONTEXT
 Location: {location_name}
 {("Place description: " + location_description) if location_description else ""}
@@ -219,7 +234,7 @@ RULES (follow all of them)
 • Do not ask a yes/no question.
 • Do not repeat any prior question.
 • Maximum 2 sentences.
-{k2_rule}
+{k2_rule}{no_spoiler_rule}
 RESPOND WITH THE QUESTION ONLY."""
 
 

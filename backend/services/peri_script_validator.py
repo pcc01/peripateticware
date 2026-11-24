@@ -126,10 +126,27 @@ def validate_question_text(
     return problems
 
 
+def _mentions_other_stop(text: str, own_name: str | None, all_names: list[str]) -> list[str]:
+    """Other waypoints' names found inside `text` (case-insensitive
+    substring) -- spec "No spoilers": a stop question must never name or
+    hint at another stop, in ANY route mode (ordered hunts have no fixed
+    "next" either once compare_prev is in play, and free-choice has no
+    fixed next at all)."""
+    lowered = (text or "").lower()
+    return [n for n in all_names if n and n != own_name and n.lower() in lowered]
+
+
 def validate_peri_script(
     script: dict, *, location_description: str = "",
     grade_band: str | None = None,
     lo_band: str | None = None, hi_band: str | None = None,
+    # Hunt stops (spec "Impact on wayfinding"). `waypoints`: this activity's
+    # own waypoints as [{"id": str, "name": str, "clue_text": str|None}],
+    # for the no-spoiler check against every OTHER stop's name/clue and
+    # (when wayfinding_mode == 'free_choice') a stricter cross-stop-
+    # reference rejection. Omit for a non-hunt activity.
+    waypoints: list[dict] | None = None,
+    wayfinding_mode: str | None = None,
 ) -> list[PeriScriptIssue]:
     """Validate a full peri_script dict. Returns [] if clean.
 
@@ -156,12 +173,20 @@ def validate_peri_script(
 
     leakage_runs = _word_runs(location_description) if location_description else set()
     stages = (script or {}).get("stages") or {}
+    has_stops = bool((script or {}).get("stops"))
     seen_ids: dict[str, str] = {}  # id -> first stage it appeared in
     any_questions = False
 
     for stage in STAGE_ORDER:
         questions = stages.get(stage) or []
         if not questions:
+            # Impact on wayfinding" point 1: for a hunt, observe/classify/
+            # explain intentionally move to the per-stop level -- the
+            # activity-level stage is SUPPOSED to be empty, not missing
+            # content. orient/connect/reflect stay activity-level
+            # regardless and are still required.
+            if has_stops and stage in ("observe", "classify", "explain"):
+                continue
             issues.append(PeriScriptIssue(stage, None, "empty_stage", f"stage '{stage}' has no questions"))
             continue
         any_questions = True
@@ -190,14 +215,50 @@ def validate_peri_script(
     if not any_questions:
         issues.append(PeriScriptIssue(None, None, "no_questions", "script has no questions in any stage"))
 
+    stops = (script or {}).get("stops") or {}
+    if stops and waypoints:
+        by_id = {str(w.get("id")): w for w in waypoints}
+        all_names = [w.get("name") for w in waypoints if w.get("name")]
+        for wp_id, stop in stops.items():
+            waypoint = by_id.get(str(wp_id))
+            own_name = waypoint.get("name") if waypoint else None
+            clue_runs = _word_runs(waypoint.get("clue_text") or "") if waypoint else set()
+            stop_stages = stop.get("stages") or {}
+            for stage_name, questions in stop_stages.items():
+                for q in questions:
+                    qid = q.get("id")
+                    qtext = q.get("q", "")
+                    texts = (
+                        [("lo", qtext.get("lo", "")), ("hi", qtext.get("hi", ""))]
+                        if isinstance(qtext, dict) else [(None, qtext)]
+                    )
+                    for key, text in texts:
+                        prefix = f"[{key}] " if key else ""
+                        for problem in validate_question_text(text, leakage_runs=clue_runs):
+                            issues.append(PeriScriptIssue(f"stop:{stage_name}", qid, "question_text", f"{prefix}{problem}"))
+                        if len(text) > 140:
+                            issues.append(PeriScriptIssue(
+                                f"stop:{stage_name}", qid, "size_exceeded",
+                                f"{prefix}stop question is {len(text)} characters, over the 140-character cap",
+                            ))
+                        mentioned = _mentions_other_stop(text, own_name, all_names)
+                        if mentioned:
+                            issues.append(PeriScriptIssue(
+                                f"stop:{stage_name}", qid, "spoiler",
+                                f"{prefix}question names another stop ({', '.join(mentioned)}) -- "
+                                + ("not allowed in a free-choice hunt" if wayfinding_mode == "free_choice" else "must never name or hint at another stop"),
+                            ))
+
     return issues
 
 
 def is_valid(
     script: dict, *, location_description: str = "",
     grade_band: str | None = None, lo_band: str | None = None, hi_band: str | None = None,
+    waypoints: list[dict] | None = None, wayfinding_mode: str | None = None,
 ) -> bool:
     return len(validate_peri_script(
         script, location_description=location_description,
         grade_band=grade_band, lo_band=lo_band, hi_band=hi_band,
+        waypoints=waypoints, wayfinding_mode=wayfinding_mode,
     )) == 0

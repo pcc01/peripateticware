@@ -229,6 +229,11 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
     rubric_criteria = await select_rubric_criteria(db, activity)
     focus_terms = derive_focus_terms(location_wiki)
     is_mixed_age, cutoff_grade = resolve_mixed_age(activity)
+    # spec "Impact on wayfinding" point 1: for a hunt, observe/classify/
+    # explain move to the per-stop level below -- generating them here too
+    # would be redundant LLM calls for content the per-stop section already
+    # covers. orient/connect/reflect stay activity-level regardless.
+    is_hunt = bool(activity.discovery_wayfinding_enabled and getattr(activity, "waypoints", None))
 
     async def _generate_one(stage: str, grade_level: int, prior: list[str]) -> str:
         prompt = build_peri_prompt(
@@ -249,6 +254,9 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
     stages: dict[str, list[dict]] = {}
     prior_questions: list[str] = []
     for stage in STAGE_ORDER:
+        if is_hunt and stage in ("observe", "classify", "explain"):
+            stages[stage] = []
+            continue
         count = _question_count(stage, framework, level)
         stage_questions: list[dict] = []
         for i in range(count):
@@ -320,4 +328,117 @@ async def generate_peri_script(db: AsyncSession, activity: Activity) -> dict[str
         # when the place description itself came from the LLM's general
         # knowledge rather than a real Wikipedia/Wikidata match.
         script["place_ai_generated"] = True
+
+    if is_hunt:
+        stops, stop_hashes = await generate_stop_scripts(
+            db, activity, activity.waypoints,
+            framework=framework, level=level, rubric_criteria=rubric_criteria,
+            is_mixed_age=is_mixed_age,
+        )
+        if stops:
+            script["stops"] = stops
+            script["stop_hashes"] = stop_hashes
+
     return script
+
+
+# Per-stop stage order (spec "Impact on wayfinding" point 1): orient/
+# connect/reflect stay at the ACTIVITY level (before the first stop, after
+# the last required one) -- only these three run per stop.
+STOP_STAGE_ORDER = ("observe", "classify", "explain")
+MAX_GENERATED_STOPS = 12          # spec "Size and SQLite impact on hunts"
+MAX_QUESTIONS_PER_STOP = 3
+MAX_CHARS_PER_STOP_QUESTION = 140
+
+
+def compute_stop_hash(waypoint: Any) -> str:
+    """Hash of everything that invalidates ONE stop's generated questions
+    if it changes (spec point 8, "Staleness per stop"): name, clue, capture
+    requirements. Reordering is handled separately by the caller (only
+    matters for compare_prev questions in ordered/guided_path mode)."""
+    raw = json.dumps({
+        "name": waypoint.name,
+        "clue_text": waypoint.clue_text,
+        "capture_requirements": waypoint.capture_requirements,
+    }, sort_keys=True, default=str)
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+async def generate_stop_scripts(
+    db: AsyncSession,
+    activity: Activity,
+    waypoints: list[Any],
+    *,
+    framework: str,
+    level: Optional[int],
+    rubric_criteria: Optional[list[dict]],
+    is_mixed_age: bool,
+) -> tuple[dict[str, Any], dict[str, str]]:
+    """Generate per-stop {focus, stages} sections for a multi-step hunt
+    (spec "Impact on wayfinding" points 1-5, 11). Returns (stops, stop_hashes)
+    keyed by waypoint id (str). Caps at MAX_GENERATED_STOPS -- an import with
+    more stops than that just doesn't get stop-level questions for the
+    overflow, which fall back to the activity-level script on-device
+    (spec point 9); this function never raises for that, it just generates
+    fewer stops.
+    """
+    ordered = sorted(waypoints, key=lambda w: w.sequence_index)[:MAX_GENERATED_STOPS]
+    all_names = [w.name for w in waypoints if w.name]
+    location_description = ((activity.location_wiki_data or {}).get("description") or "")[:800]
+    is_free_choice = activity.wayfinding_mode == "free_choice"
+
+    async def _generate_stop_one(stage: str, waypoint: Any, grade_level: int, prior: list[str]) -> str:
+        # Never a fixed "next" stop to avoid -- ALL other stop names, in
+        # every mode (spec point 5: "must never name or hint at the next
+        # stop", and free-choice has no fixed next at all). compare_prev
+        # is the one place ordered/guided_path explicitly may reference the
+        # PREVIOUS stop (point 4) -- that's additive context, not something
+        # this avoid-list would block since it only lists OTHER names.
+        avoid = [n for n in all_names if n != waypoint.name]
+        if waypoint.clue_text:
+            avoid.append(waypoint.clue_text)
+        prompt = build_peri_prompt(
+            location_name=waypoint.name,
+            location_description=location_description,
+            subject=activity.subject or "",
+            grade_level=grade_level,
+            bloom_level=str(activity.bloom_level or "analyze"),
+            framework=framework,
+            level=level,
+            rubric_criteria=rubric_criteria,
+            inquiry_stage=stage,
+            learning_objectives=activity.learning_objectives or [],
+            prior_questions=prior[-3:],
+            avoid_revealing=avoid,
+        )
+        text = (await _call_llm(prompt, system=SYSTEM_PERI)).strip()
+        return text[:MAX_CHARS_PER_STOP_QUESTION]
+
+    stops: dict[str, Any] = {}
+    stop_hashes: dict[str, str] = {}
+    for waypoint in ordered:
+        focus = [waypoint.name.lower()] if waypoint.name else []
+        if waypoint.capture_requirements:
+            focus.extend(k for k, v in waypoint.capture_requirements.items() if v)
+
+        stage_questions: dict[str, list[dict]] = {}
+        prior_questions: list[str] = []
+        for i, stage in enumerate(STOP_STAGE_ORDER[:MAX_QUESTIONS_PER_STOP]):
+            qid = f"{_STAGE_ID_PREFIX[stage]}{i + 1}_{waypoint.id}"
+            item: dict[str, Any] = {"id": qid}
+            if is_mixed_age:
+                lo_text = await _generate_stop_one(stage, waypoint, activity.grade_span_min, prior_questions)
+                prior_questions.append(lo_text)
+                hi_text = await _generate_stop_one(stage, waypoint, activity.grade_span_max, prior_questions)
+                prior_questions.append(hi_text)
+                item["q"] = {"lo": lo_text, "hi": hi_text}
+            else:
+                text = await _generate_stop_one(stage, waypoint, activity.grade_level or 0, prior_questions)
+                prior_questions.append(text)
+                item["q"] = text
+            stage_questions[stage] = [item]
+
+        stops[str(waypoint.id)] = {"focus": focus, "stages": stage_questions}
+        stop_hashes[str(waypoint.id)] = compute_stop_hash(waypoint)
+
+    return stops, stop_hashes

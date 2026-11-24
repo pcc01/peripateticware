@@ -1505,6 +1505,11 @@ class PeriScriptResponse(_BaseModel):
     # script (nothing to be stale) — the builder UI uses this to prompt a
     # regenerate rather than silently serving outdated questions.
     is_stale: bool = False
+    # Which hunt stops (waypoint ids) are stale, independent of is_stale
+    # above (spec "Impact on wayfinding" point 8, "Staleness per stop" --
+    # "only affected stops are marked stale"). Empty for a non-hunt
+    # activity or one with no stop-level changes.
+    stale_stop_ids: List[str] = []
 
 
 class PeriScriptUpdateRequest(_BaseModel):
@@ -1534,6 +1539,41 @@ def _peri_validator_bands(activity: Activity) -> dict:
         "grade_band": grade_to_band(activity.grade_level),
         "lo_band": grade_to_band(activity.grade_span_min),
         "hi_band": grade_to_band(activity.grade_span_max),
+    }
+
+
+def _peri_stale_stop_ids(activity: Activity, script: Dict[str, Any]) -> List[str]:
+    """Which waypoint ids have a stale (or missing) generated stop (spec
+    point 8, "Staleness per stop"): a current waypoint whose
+    compute_stop_hash() no longer matches what's stored in
+    script['stop_hashes'], plus any current waypoint with no entry there at
+    all (added since the script was generated). A removed waypoint's old
+    hash entry is irrelevant -- it has nothing left to regenerate -- so
+    this only looks at CURRENT waypoints, never the stored hash dict's own
+    keys."""
+    if not activity.discovery_wayfinding_enabled or not activity.waypoints:
+        return []
+    from services.peri_script_generator import compute_stop_hash
+    stored_hashes = (script or {}).get("stop_hashes") or {}
+    return [
+        str(wp.id) for wp in activity.waypoints
+        if stored_hashes.get(str(wp.id)) != compute_stop_hash(wp)
+    ]
+
+
+def _peri_waypoint_kwargs(activity: Activity) -> dict:
+    """waypoints/wayfinding_mode kwargs for validate_peri_script()'s
+    per-stop no-spoiler check (PERI_OFFLINE_SPEC_v2.md "Impact on
+    wayfinding"). Empty for a non-hunt activity -- the stops-validation
+    loop is skipped entirely when `waypoints` is falsy."""
+    if not activity.discovery_wayfinding_enabled or not activity.waypoints:
+        return {}
+    return {
+        "waypoints": [
+            {"id": str(wp.id), "name": wp.name, "clue_text": wp.clue_text}
+            for wp in activity.waypoints
+        ],
+        "wayfinding_mode": activity.wayfinding_mode,
     }
 
 
@@ -1583,7 +1623,7 @@ async def generate_peri_script_endpoint(
 
     issues = validate_peri_script(
         script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-        **_peri_validator_bands(activity),
+        **_peri_validator_bands(activity), **_peri_waypoint_kwargs(activity),
     )
 
     activity.peri_script = script
@@ -1612,13 +1652,14 @@ async def get_peri_script(
     issues = (
         validate_peri_script(
             script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-            **_peri_validator_bands(activity),
+            **_peri_validator_bands(activity), **_peri_waypoint_kwargs(activity),
         )
         if script else []
     )
     return PeriScriptResponse(
         script=script, validation_issues=_peri_issues_to_response(issues),
         is_stale=_peri_is_stale(activity, script),
+        stale_stop_ids=_peri_stale_stop_ids(activity, script),
     )
 
 
@@ -1645,7 +1686,7 @@ async def update_peri_script(
     from services.peri_script_validator import validate_peri_script
     issues = validate_peri_script(
         body.script, location_description=(activity.location_wiki_data or {}).get("description", ""),
-        **_peri_validator_bands(activity),
+        **_peri_validator_bands(activity), **_peri_waypoint_kwargs(activity),
     )
     if body.script.get("approved") and issues:
         raise HTTPException(

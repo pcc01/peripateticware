@@ -210,3 +210,76 @@ class TestMixedAgeWordings:
         script = _full_script()
         script["grade_span"] = {"min": 1, "max": 6}
         assert validate_peri_script(script) == []
+
+
+_WAYPOINTS = [
+    {"id": "wp-1", "name": "Oak Tree", "clue_text": "Look for the biggest trunk."},
+    {"id": "wp-2", "name": "Stone Bridge", "clue_text": "It crosses the creek."},
+]
+
+
+def _hunt_script(stop_question: dict, **stop_overrides) -> dict:
+    """A clean activity-level script (orient/connect/reflect only -- stop
+    questions live in 'stops', not the activity stages) plus one stop for
+    wp-1 with a single overridable question."""
+    script = _full_script(
+        observe=[], classify=[], explain=[],
+    )
+    script["stops"] = {
+        "wp-1": {"focus": ["oak tree"], "stages": {"observe": [stop_question]}},
+        **stop_overrides,
+    }
+    return script
+
+
+class TestHuntStops:
+    """PERI_OFFLINE_SPEC_v2.md 'Impact on wayfinding' points 2, 5: per-stop
+    questions get the same text-quality checks as activity-level ones, plus
+    a no-spoiler check against the stop's own clue and every OTHER stop's
+    name."""
+
+    def test_clean_stop_question_has_no_issues(self):
+        script = _hunt_script(_question("b1_wp-1", "What pattern do you see in the bark?"))
+        issues = validate_peri_script(script, waypoints=_WAYPOINTS)
+        assert issues == []
+
+    def test_stop_question_naming_another_stop_is_rejected(self):
+        script = _hunt_script(_question("b1_wp-1", "Is this taller than the Stone Bridge?"))
+        issues = validate_peri_script(script, waypoints=_WAYPOINTS)
+        assert any(i.code == "spoiler" for i in issues)
+
+    def test_stop_question_leaking_its_own_clue_is_rejected(self):
+        # LEAKAGE_RUN_LENGTH is 6 words -- _WAYPOINTS's 5-word clue can never
+        # trigger it, so this test uses its own longer clue.
+        waypoints = [{"id": "wp-1", "name": "Oak Tree", "clue_text": "Look for the biggest trunk you can find here"}]
+        script = _hunt_script(_question("b1_wp-1", "Can you look for the biggest trunk you can find?"))
+        issues = validate_peri_script(script, waypoints=waypoints)
+        assert any(i.code == "question_text" and "copies a long run" in i.message for i in issues)
+
+    def test_stop_question_over_140_chars_is_rejected(self):
+        long_q = "What " + ("very " * 30) + "long question is this one here right now?"
+        script = _hunt_script(_question("b1_wp-1", long_q))
+        issues = validate_peri_script(script, waypoints=_WAYPOINTS)
+        assert any(i.code == "size_exceeded" and i.stage == "stop:observe" for i in issues)
+
+    def test_free_choice_mode_still_rejects_naming_another_stop(self):
+        # The check itself doesn't vary by mode (every mode rejects naming
+        # another stop -- see _mentions_other_stop's docstring) but the
+        # message should say so for a free-choice hunt specifically.
+        script = _hunt_script(_question("b1_wp-1", "Is the Stone Bridge visible from here?"))
+        issues = validate_peri_script(script, waypoints=_WAYPOINTS, wayfinding_mode="free_choice")
+        spoiler_issues = [i for i in issues if i.code == "spoiler"]
+        assert spoiler_issues
+        assert "free-choice" in spoiler_issues[0].message
+
+    def test_mixed_age_stop_wording_checked_on_both_sides(self):
+        script = _hunt_script(_question("b1_wp-1", {"lo": "Is the Stone Bridge visible?", "hi": "What do you see?"}))
+        issues = validate_peri_script(script, waypoints=_WAYPOINTS)
+        assert any(i.code == "spoiler" and "[lo]" in i.message for i in issues)
+
+    def test_stops_ignored_when_no_waypoints_passed(self):
+        # Caller omits waypoints for a non-hunt activity -- the whole
+        # stops-validation block is skipped, not an error.
+        script = _hunt_script(_question("b1_wp-1", "Is the Stone Bridge visible from here?"))
+        issues = validate_peri_script(script)
+        assert not any(i.code == "spoiler" for i in issues)

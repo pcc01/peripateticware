@@ -16,12 +16,43 @@ from services.peri_script_generator import (
     _question_count,
     _STAGE_ID_PREFIX,
     compute_source_hash,
+    compute_stop_hash,
     derive_focus_terms,
     resolve_framework_and_level,
     resolve_mixed_age,
     select_rubric_criteria,
 )
 from services.peri_script_validator import STAGE_ORDER
+
+
+def _waypoint(**overrides) -> SimpleNamespace:
+    base = dict(id="wp-1", name="Oak Tree", clue_text="Look for the biggest trunk.", capture_requirements={"photo": True})
+    base.update(overrides)
+    return SimpleNamespace(**base)
+
+
+class TestComputeStopHash:
+    """PERI_OFFLINE_SPEC_v2.md 'Impact on wayfinding' point 8, 'Staleness
+    per stop': hash of name/clue/capture_requirements only -- nothing else
+    about the waypoint (coordinates, arrival radius, sequence_index)
+    should affect it, since none of those feed the generated question."""
+
+    def test_same_fields_produce_the_same_hash(self):
+        assert compute_stop_hash(_waypoint()) == compute_stop_hash(_waypoint())
+
+    def test_changing_name_changes_the_hash(self):
+        assert compute_stop_hash(_waypoint()) != compute_stop_hash(_waypoint(name="Pine Tree"))
+
+    def test_changing_clue_text_changes_the_hash(self):
+        assert compute_stop_hash(_waypoint()) != compute_stop_hash(_waypoint(clue_text="A different clue."))
+
+    def test_changing_capture_requirements_changes_the_hash(self):
+        assert compute_stop_hash(_waypoint()) != compute_stop_hash(_waypoint(capture_requirements={"note": True}))
+
+    def test_coordinates_and_sequence_do_not_affect_the_hash(self):
+        a = _waypoint(latitude=1.0, longitude=2.0, sequence_index=0)
+        b = _waypoint(latitude=99.0, longitude=-99.0, sequence_index=5)
+        assert compute_stop_hash(a) == compute_stop_hash(b)
 
 
 class TestStageIdPrefixes:
