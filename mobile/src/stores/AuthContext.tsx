@@ -12,6 +12,7 @@ import {
 } from '@/src/api/client';
 import { login as apiLogin, logout as apiLogout, getCurrentUser, LoginResponse } from '@/src/api/auth';
 import type { GradeBand } from '@/src/lib/peri/engine';
+import { flushQueue } from '@/src/db/offlineQueue';
 
 interface User {
   id: string;
@@ -99,6 +100,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    // Best-effort: try to sync this user's still-queued captures/notes/
+    // arrivals before their session is cleared (PERI_OFFLINE_SPEC_v2.md
+    // "Shared-device data isolation" -- "on logout, try to flush that
+    // user's queues"). getCurrentUserId() reads the cached user this flush
+    // needs to scope to, so this must run BEFORE clearStoredUser() below,
+    // not after. Never blocks logout: offline or a server error just
+    // leaves the rows tagged to this user, picked up by the same flush
+    // next time they log back in.
+    try {
+      await flushQueue();
+    } catch {
+      // offline/server error — fine, see above
+    }
     await apiLogout();
     await clearStoredUser();
     setToken_(null);

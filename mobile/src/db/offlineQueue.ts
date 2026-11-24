@@ -7,6 +7,7 @@ import { getDb } from './database';
 import { uploadCapture } from '@/src/api/captures';
 import { apiFetch, ApiError } from '@/src/api/client';
 import { flushArrivals } from './wayfindingStore';
+import { getCurrentUserId } from './ownerUser';
 
 function uuid(): string {
   // Simple RFC-4122 v4 UUID without crypto dependency
@@ -43,12 +44,14 @@ export interface QueuedCapture {
 export async function queueCapture(capture: Omit<QueuedCapture, 'id'>): Promise<string> {
   const db = await getDb();
   const id = uuid();
+  const ownerUserId = await getCurrentUserId();
   await db.runAsync(
     `INSERT INTO capture_queue
-     (id, local_uri, capture_type, session_id, activity_id, title, description, latitude, longitude, transcript)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (id, owner_user_id, local_uri, capture_type, session_id, activity_id, title, description, latitude, longitude, transcript)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
+      ownerUserId,
       capture.local_uri,
       capture.capture_type,
       capture.session_id ?? null,
@@ -63,10 +66,14 @@ export async function queueCapture(capture: Omit<QueuedCapture, 'id'>): Promise<
   return id;
 }
 
+/** Only the CURRENT user's queued captures — a shared device never reads
+ * (or later flushes) another logged-in account's unsynced work. */
 export async function getPendingCaptures(): Promise<QueuedCapture[]> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   return db.getAllAsync<QueuedCapture>(
-    'SELECT * FROM capture_queue WHERE retry_count < 5 ORDER BY created_at ASC'
+    'SELECT * FROM capture_queue WHERE retry_count < 5 AND owner_user_id = ? ORDER BY created_at ASC',
+    [ownerUserId]
   );
 }
 
@@ -107,17 +114,21 @@ export interface QueuedNote {
 export async function queueNote(note: Omit<QueuedNote, 'id'>): Promise<string> {
   const db = await getDb();
   const id = uuid();
+  const ownerUserId = await getCurrentUserId();
   await db.runAsync(
-    'INSERT INTO note_queue (id, type, activity_id, content) VALUES (?, ?, ?, ?)',
-    [id, note.type, note.activity_id ?? null, note.content]
+    'INSERT INTO note_queue (id, owner_user_id, type, activity_id, content) VALUES (?, ?, ?, ?, ?)',
+    [id, ownerUserId, note.type, note.activity_id ?? null, note.content]
   );
   return id;
 }
 
+/** Only the CURRENT user's queued notes — see getPendingCaptures(). */
 export async function getPendingNotes(): Promise<QueuedNote[]> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   return db.getAllAsync<QueuedNote>(
-    'SELECT * FROM note_queue WHERE retry_count < 5 ORDER BY created_at ASC'
+    'SELECT * FROM note_queue WHERE retry_count < 5 AND owner_user_id = ? ORDER BY created_at ASC',
+    [ownerUserId]
   );
 }
 
@@ -252,10 +263,13 @@ export async function flushQueue(): Promise<{ uploaded: number; failed: number; 
 
 /** Captures currently stuck on a permanent consent block, for the UI to
  * surface (badge/message) and for a "retry after consent granted" action to
- * check without re-running a full flush. */
+ * check without re-running a full flush. Only the CURRENT user's — see
+ * getPendingCaptures(). */
 export async function getConsentBlockedCaptures(): Promise<QueuedCapture[]> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   return db.getAllAsync<QueuedCapture>(
-    "SELECT * FROM capture_queue WHERE blocked_reason = 'consent_required' ORDER BY created_at ASC"
+    "SELECT * FROM capture_queue WHERE blocked_reason = 'consent_required' AND owner_user_id = ? ORDER BY created_at ASC",
+    [ownerUserId]
   );
 }

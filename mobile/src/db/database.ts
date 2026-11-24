@@ -57,8 +57,15 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
     );
 
     -- Capture upload queue (offline captures waiting to sync)
+    -- owner_user_id: which logged-in account queued this (PERI_OFFLINE_SPEC_v2.md
+    -- "Shared-device data isolation" -- siblings can share a phone, each
+    -- logging in separately; every read/flush filters by the CURRENT user so
+    -- one child's queued work is never visible to, or sent under, another's
+    -- login). '' (empty string, not NULL) for rows from before this column
+    -- existed, so comparisons stay a simple equality check with no NULL-handling.
     CREATE TABLE IF NOT EXISTS capture_queue (
       id            TEXT PRIMARY KEY,
+      owner_user_id TEXT NOT NULL DEFAULT '',
       local_uri     TEXT NOT NULL,
       capture_type  TEXT NOT NULL,
       session_id    TEXT,
@@ -84,19 +91,25 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
 
     -- Field note / reflection queue
     CREATE TABLE IF NOT EXISTS note_queue (
-      id           TEXT PRIMARY KEY,
-      type         TEXT NOT NULL,  -- 'reflection' | 'field_note'
-      activity_id  TEXT,
-      content      TEXT NOT NULL,
-      created_at   INTEGER DEFAULT (strftime('%s','now')),
-      retry_count  INTEGER DEFAULT 0,
-      last_error   TEXT
+      id            TEXT PRIMARY KEY,
+      owner_user_id TEXT NOT NULL DEFAULT '',
+      type          TEXT NOT NULL,  -- 'reflection' | 'field_note'
+      activity_id   TEXT,
+      content       TEXT NOT NULL,
+      created_at    INTEGER DEFAULT (strftime('%s','now')),
+      retry_count   INTEGER DEFAULT 0,
+      last_error    TEXT
     );
 
     -- Wayfinding: local mirror of per-waypoint progress so a multi-step
     -- scavenger hunt advances ("2 of 5 stops") with no connection. Synced
-    -- to the server by flushArrivals() when back online.
+    -- to the server by flushArrivals() when back online. owner_user_id is
+    -- part of the PRIMARY KEY (not just a column) -- two different students
+    -- sharing a device could otherwise both reach the SAME waypoint on the
+    -- SAME activity and collide on the old (activity_id, waypoint_id) key,
+    -- silently dropping the second student's arrival.
     CREATE TABLE IF NOT EXISTS wp_progress (
+      owner_user_id   TEXT NOT NULL DEFAULT '',
       activity_id     TEXT NOT NULL,
       waypoint_id     TEXT NOT NULL,
       waypoint_index  INTEGER,
@@ -105,12 +118,13 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
       captured        INTEGER DEFAULT 0,
       skipped         INTEGER DEFAULT 0,
       synced          INTEGER DEFAULT 0, -- 1 once the server has this arrival
-      PRIMARY KEY (activity_id, waypoint_id)
+      PRIMARY KEY (owner_user_id, activity_id, waypoint_id)
     );
 
     -- Pending "I reached this stop" reports, replayed on reconnect.
     CREATE TABLE IF NOT EXISTS wp_arrival_queue (
       id            TEXT PRIMARY KEY,
+      owner_user_id TEXT NOT NULL DEFAULT '',
       activity_id   TEXT NOT NULL,
       waypoint_id   TEXT NOT NULL,
       in_sequence   INTEGER DEFAULT 1,
@@ -176,5 +190,56 @@ async function initSchema(db: SQLite.SQLiteDatabase) {
     await db.execAsync('ALTER TABLE capture_queue ADD COLUMN blocked_reason TEXT');
   } catch {
     // column already exists — fine
+  }
+
+  // Shared-device data isolation (PERI_OFFLINE_SPEC_v2.md) — older installs
+  // predate owner_user_id on these three. wp_progress is handled separately
+  // below since owner_user_id needs to join its PRIMARY KEY, not just be an
+  // added column.
+  for (const stmt of [
+    "ALTER TABLE capture_queue ADD COLUMN owner_user_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE note_queue ADD COLUMN owner_user_id TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE wp_arrival_queue ADD COLUMN owner_user_id TEXT NOT NULL DEFAULT ''",
+  ]) {
+    try {
+      await db.execAsync(stmt);
+    } catch {
+      // column already exists — fine
+    }
+  }
+
+  // wp_progress: SQLite can't ALTER a PRIMARY KEY in place, so an older
+  // install's table (PK = activity_id, waypoint_id, no owner_user_id at
+  // all) needs a real rename-recreate-copy-drop migration, not just an
+  // added column. CREATE TABLE IF NOT EXISTS above already gives a FRESH
+  // install the right schema immediately, so this only ever runs once per
+  // existing device, on the one app version that ships this change.
+  try {
+    const cols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(wp_progress)');
+    const hasOwnerCol = cols.some((c) => c.name === 'owner_user_id');
+    if (cols.length > 0 && !hasOwnerCol) {
+      await db.execAsync(`
+        ALTER TABLE wp_progress RENAME TO wp_progress_pre_isolation;
+        CREATE TABLE wp_progress (
+          owner_user_id   TEXT NOT NULL DEFAULT '',
+          activity_id     TEXT NOT NULL,
+          waypoint_id     TEXT NOT NULL,
+          waypoint_index  INTEGER,
+          arrived_at      INTEGER,
+          in_sequence     INTEGER DEFAULT 1,
+          captured        INTEGER DEFAULT 0,
+          skipped         INTEGER DEFAULT 0,
+          synced          INTEGER DEFAULT 0,
+          PRIMARY KEY (owner_user_id, activity_id, waypoint_id)
+        );
+        INSERT INTO wp_progress
+            (owner_user_id, activity_id, waypoint_id, waypoint_index, arrived_at, in_sequence, captured, skipped, synced)
+          SELECT '', activity_id, waypoint_id, waypoint_index, arrived_at, in_sequence, captured, skipped, synced
+          FROM wp_progress_pre_isolation;
+        DROP TABLE wp_progress_pre_isolation;
+      `);
+    }
+  } catch {
+    // Already migrated (or a fresh install that never had the old shape) — fine.
   }
 }

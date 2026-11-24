@@ -28,4 +28,11 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   clearMocks: true,
+  // Mirrors tsconfig.json's "@/*": ["./*"] -- source files use that alias
+  // for cross-directory imports (e.g. src/db importing src/api). Scoped to
+  // this standalone config only, so it has no effect on Metro's bundling of
+  // the real app (see the file-level comment above).
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1',
+  },
 };

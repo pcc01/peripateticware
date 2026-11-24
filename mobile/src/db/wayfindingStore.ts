@@ -10,6 +10,7 @@ import 'react-native-get-random-values';
 import { getDb } from './database';
 import { recordWaypointArrival } from '@/src/api/wayfinding';
 import { startActivitySession } from '@/src/api/activities';
+import { getCurrentUserId } from './ownerUser';
 
 function uuid(): string {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -50,6 +51,7 @@ export async function recordLocalArrival(
   opts: { inSequence?: boolean; captured?: boolean; skipped?: boolean } = {}
 ): Promise<void> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   const inSeq = opts.inSequence === false ? 0 : 1;
   const cap = opts.captured ? 1 : 0;
   const skip = opts.skipped ? 1 : 0;
@@ -57,9 +59,9 @@ export async function recordLocalArrival(
 
   await db.runAsync(
     `INSERT OR IGNORE INTO wp_progress
-       (activity_id, waypoint_id, waypoint_index, arrived_at, in_sequence, captured, skipped, synced)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-    [activityId, waypoint.id, waypoint.sequence_index, now, inSeq, cap, skip]
+       (owner_user_id, activity_id, waypoint_id, waypoint_index, arrived_at, in_sequence, captured, skipped, synced)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+    [ownerUserId, activityId, waypoint.id, waypoint.sequence_index, now, inSeq, cap, skip]
   );
   await db.runAsync(
     `UPDATE wp_progress
@@ -68,14 +70,14 @@ export async function recordLocalArrival(
             captured    = MAX(captured, ?),
             skipped     = ?,
             synced      = 0
-      WHERE activity_id = ? AND waypoint_id = ?`,
-    [now, inSeq, cap, skip, activityId, waypoint.id]
+      WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?`,
+    [now, inSeq, cap, skip, ownerUserId, activityId, waypoint.id]
   );
   await db.runAsync(
     `INSERT INTO wp_arrival_queue
-       (id, activity_id, waypoint_id, in_sequence, captured, skipped)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [uuid(), activityId, waypoint.id, inSeq, cap, skip]
+       (id, owner_user_id, activity_id, waypoint_id, in_sequence, captured, skipped)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [uuid(), ownerUserId, activityId, waypoint.id, inSeq, cap, skip]
   );
 }
 
@@ -90,22 +92,26 @@ export async function markLocalArrivalSynced(
   waypointId: string
 ): Promise<void> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   await db.runAsync(
-    'DELETE FROM wp_arrival_queue WHERE activity_id = ? AND waypoint_id = ?',
-    [activityId, waypointId]
+    'DELETE FROM wp_arrival_queue WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?',
+    [ownerUserId, activityId, waypointId]
   );
   await db.runAsync(
-    'UPDATE wp_progress SET synced = 1 WHERE activity_id = ? AND waypoint_id = ?',
-    [activityId, waypointId]
+    'UPDATE wp_progress SET synced = 1 WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?',
+    [ownerUserId, activityId, waypointId]
   );
 }
 
-/** Waypoint ids reached (per this device) for an activity. */
+/** Waypoint ids reached (per this device, by the CURRENT user only — a
+ * shared device never shows one child's hunt progress under another's
+ * login) for an activity. */
 export async function getLocalProgress(activityId: string): Promise<LocalArrival[]> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   return db.getAllAsync<LocalArrival>(
-    'SELECT * FROM wp_progress WHERE activity_id = ? AND arrived_at IS NOT NULL',
-    [activityId]
+    'SELECT * FROM wp_progress WHERE owner_user_id = ? AND activity_id = ? AND arrived_at IS NOT NULL',
+    [ownerUserId, activityId]
   );
 }
 
@@ -123,8 +129,10 @@ export async function getLocalArrivedIds(activityId: string): Promise<Set<string
  */
 export async function flushArrivals(): Promise<{ synced: number; failed: number }> {
   const db = await getDb();
+  const ownerUserId = await getCurrentUserId();
   const rows = await db.getAllAsync<QueuedArrival>(
-    'SELECT * FROM wp_arrival_queue WHERE retry_count < 5 ORDER BY created_at ASC'
+    'SELECT * FROM wp_arrival_queue WHERE retry_count < 5 AND owner_user_id = ? ORDER BY created_at ASC',
+    [ownerUserId]
   );
   if (rows.length === 0) return { synced: 0, failed: 0 };
 
@@ -156,8 +164,8 @@ export async function flushArrivals(): Promise<{ synced: number; failed: number 
       if (ok) {
         await db.runAsync('DELETE FROM wp_arrival_queue WHERE id = ?', [it.id]);
         await db.runAsync(
-          'UPDATE wp_progress SET synced = 1 WHERE activity_id = ? AND waypoint_id = ?',
-          [activityId, it.waypoint_id]
+          'UPDATE wp_progress SET synced = 1 WHERE owner_user_id = ? AND activity_id = ? AND waypoint_id = ?',
+          [ownerUserId, activityId, it.waypoint_id]
         );
         synced++;
       } else {
