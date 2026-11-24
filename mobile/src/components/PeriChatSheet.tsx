@@ -14,7 +14,7 @@ import { Capture } from '@/src/api/captures';
 import { queueCapture, updateQueuedCaptureUri } from '@/src/db/offlineQueue';
 import { useTranslation } from 'react-i18next';
 import {
-  createPeriEngineState, next as nextPeriTurn, resolvePeriScriptForBand,
+  createPeriEngineState, next as nextPeriTurn, resolvePeriScriptForBand, scriptForStop,
   PeriEngineState, PeriScript,
 } from '@/src/lib/peri/engine';
 import type { LocationWikiData } from '@/src/api/activities';
@@ -42,6 +42,12 @@ interface Props {
   // on-device dialogue engine fallback below; absent means "no script,"
   // not an error.
   periScript?: PeriScript | null;
+  // Set when opened via WayfindingPanel's "Peri has a question" button for
+  // a specific hunt stop (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding"
+  // point 3) -- the engine runs that stop's own observe/classify/explain
+  // mini-dialogue instead of the activity-level script. null/absent means
+  // the ordinary activity-level chat, same as before this existed.
+  waypointId?: string | null;
   // backend/schemas/activities.py's AIInteractionModeEnum. 'curated_only'
   // skips the live /chat call entirely and goes straight to the engine —
   // matching what the hidden "Ask Peri" button already enforces server-side.
@@ -64,7 +70,7 @@ interface DisplayMessage {
 export default function PeriChatSheet({
   visible, onClose, theme,
   activityId, activityTitle, activitySubject, currentPrompt, sessionId,
-  periScript, aiInteractionMode, locationName, locationWikiData,
+  periScript, waypointId, aiInteractionMode, locationName, locationWikiData,
   onCaptured,
 }: Props) {
   const { t } = useTranslation();
@@ -81,29 +87,45 @@ export default function PeriChatSheet({
     [periScript, user?.gradeBand]
   );
 
+  // When opened for a specific hunt stop, run that stop's own mini-script
+  // instead of the activity-level one (falls back to the activity-level
+  // script if the stop has none generated -- e.g. past the per-hunt cap).
+  const activeScript = useMemo(() => {
+    if (!waypointId) return resolvedScript;
+    return scriptForStop(resolvedScript, waypointId) ?? resolvedScript;
+  }, [resolvedScript, waypointId]);
+  const isStopChat = !!waypointId && activeScript !== resolvedScript;
+
   // On-device dialogue engine state for this chat session — in memory
   // only, never persisted (PERI_OFFLINE_SPEC_v2.md section C.1). Reset
-  // whenever the underlying activity changes so a reopened sheet for a
-  // different activity doesn't carry over another one's stage/progress.
+  // whenever the underlying activity OR stop changes so a reopened sheet
+  // for a different activity/stop doesn't carry over another one's
+  // stage/progress.
   const engineStateRef = useRef<PeriEngineState | null>(null);
   useEffect(() => {
     engineStateRef.current = null;
-  }, [activityId]);
+  }, [activityId, waypointId]);
 
   /** Advance the offline engine by one turn and return Peri's reply. Safe
    * to call even with no script — the engine itself handles that case
    * without crashing (engine.ts's empty/missing-stage tests). */
   const engineReply = (studentText: string): string => {
     if (!engineStateRef.current) {
-      // The activity screen's static Inquiry prompt already showed the
-      // orient stage's first question (and its follow-up, if any) BEFORE
-      // the student ever opened this chat (periOpeningPrompt() in
-      // engine.ts). Pre-mark those same ids as asked so the chat's first
-      // reply doesn't repeat a question the student already saw on screen.
-      const alreadyShown = (resolvedScript.stages?.orient ?? []).slice(0, 2).map((q) => q.id);
-      engineStateRef.current = { ...createPeriEngineState(), askedIds: alreadyShown };
+      if (isStopChat) {
+        // A stop-chat has no prior on-screen question to dedupe against —
+        // it starts fresh at observe (point 1: orient doesn't apply per stop).
+        engineStateRef.current = createPeriEngineState('observe');
+      } else {
+        // The activity screen's static Inquiry prompt already showed the
+        // orient stage's first question (and its follow-up, if any) BEFORE
+        // the student ever opened this chat (periOpeningPrompt() in
+        // engine.ts). Pre-mark those same ids as asked so the chat's first
+        // reply doesn't repeat a question the student already saw on screen.
+        const alreadyShown = (resolvedScript.stages?.orient ?? []).slice(0, 2).map((q) => q.id);
+        engineStateRef.current = { ...createPeriEngineState(), askedIds: alreadyShown };
+      }
     }
-    const result = nextPeriTurn(resolvedScript, engineStateRef.current, studentText);
+    const result = nextPeriTurn(activeScript, engineStateRef.current, studentText);
     engineStateRef.current = result.state;
     return result.periText;
   };

@@ -34,6 +34,7 @@ import {
   TILE_CACHE_PATH,
   TILE_CACHE_MAX_AGE_SEC,
 } from '@/src/lib/tileCache';
+import type { PeriScript } from '@/src/lib/peri/engine';
 
 // Was tile.openstreetmap.org directly -- their shared servers started
 // 403ing ("App is not following the tile usage policy") since direct
@@ -55,6 +56,15 @@ interface Props {
   /** Called when the reached stop asks for a photo/note so the parent can
    *  open the existing CaptureSheet. */
   onCaptureRequested?: (mode: 'photo' | 'note') => void;
+  /** Activity's peri_script (PERI_OFFLINE_SPEC_v2.md "Impact on
+   *  wayfinding") -- only used to decide whether a just-reached stop has a
+   *  generated question worth surfacing a button for. Omit entirely for a
+   *  hunt that predates this feature; the button just never appears. */
+  periScript?: PeriScript | null;
+  /** Fires when the student taps "Peri has a question" for the given
+   *  waypoint id -- the parent opens PeriChatSheet scoped to that stop
+   *  (point 3: "button only, no automatic popup"). */
+  onAskPeriAtStop?: (waypointId: string) => void;
 }
 
 function regionForWaypoints(wps: Waypoint[]) {
@@ -77,6 +87,8 @@ export default function WayfindingPanel({
   wayfinding,
   sessionId,
   onCaptureRequested,
+  periScript,
+  onAskPeriAtStop,
 }: Props) {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -87,6 +99,12 @@ export default function WayfindingPanel({
   const [localArrivedIds, setLocalArrivedIds] = useState<Set<string>>(new Set());
   const [busyWaypointId, setBusyWaypointId] = useState<string | null>(null);
   const [capability, setCapability] = useState<WayfindingCapability | null>(null);
+  // Most recently reached stop with a question worth surfacing a button
+  // for -- NOT the same as activeWaypoint (useWayfinding advances that to
+  // the NEXT target immediately on arrival, so by the time this renders
+  // there'd be no "just reached" moment to show the button at all).
+  // Cleared the moment it's tapped or a different stop is reached.
+  const [arrivedQuestionWaypointId, setArrivedQuestionWaypointId] = useState<string | null>(null);
 
   const refreshCapability = useCallback(async () => {
     const c = await fetchMyCapability(activityId);
@@ -165,12 +183,15 @@ export default function WayfindingPanel({
         }
       }
       setBusyWaypointId(null);
+      if (periScript?.stops?.[wp.id]) {
+        setArrivedQuestionWaypointId(wp.id);
+      }
 
       const reqs = wp.capture_requirements || {};
       if (reqs.photo) onCaptureRequested?.('photo');
       else if (reqs.note) onCaptureRequested?.('note');
     },
-    [activityId, sessionId, refreshProgress, onCaptureRequested]
+    [activityId, sessionId, refreshProgress, onCaptureRequested, periScript]
   );
 
   const handleLiveFix = useCallback(
@@ -394,6 +415,26 @@ export default function WayfindingPanel({
           )}
         </View>
       ) : null}
+
+      {arrivedQuestionWaypointId && (() => {
+        const reachedWp = waypoints.find((w) => w.id === arrivedQuestionWaypointId);
+        if (!reachedWp) return null;
+        return (
+          <TouchableOpacity
+            testID="wayfinding-ask-peri-stop"
+            onPress={() => {
+              onAskPeriAtStop?.(arrivedQuestionWaypointId);
+              setArrivedQuestionWaypointId(null);
+            }}
+            style={[styles.periStopBtn, { backgroundColor: theme.accentMuted, borderColor: theme.accent }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.periStopText, { fontFamily: theme.fontBody, color: theme.accent }]}>
+              💬 {t('wayfinding.periHasQuestion', 'Peri has a question about {{name}}', { name: reachedWp.name })}
+            </Text>
+          </TouchableOpacity>
+        );
+      })()}
     </View>
   );
 }
@@ -423,4 +464,6 @@ const styles = StyleSheet.create({
   doneText: { fontSize: 16, fontWeight: '700', textAlign: 'center' },
   skipBtn: { borderWidth: 1, borderRadius: 8, padding: 10, alignItems: 'center' },
   skipText: { fontSize: 13 },
+  periStopBtn: { margin: 14, marginTop: 0, padding: 14, borderWidth: 1.5, borderRadius: 10, alignItems: 'center' },
+  periStopText: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
 });

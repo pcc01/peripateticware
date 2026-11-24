@@ -94,6 +94,11 @@ export default function ActivityScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [showChat, setShowChat] = useState(false);
+  // Set only when "Peri has a question" was tapped for a specific hunt
+  // stop (PERI_OFFLINE_SPEC_v2.md "Impact on wayfinding" point 3) --
+  // null for the ordinary "Ask Peri" button, which uses the
+  // activity-level script same as always.
+  const [chatWaypointId, setChatWaypointId] = useState<string | null>(null);
   const [showCapture, setShowCapture] = useState(false);
   const [captureMode, setCaptureMode] = useState<'photo' | 'audio' | 'note' | 'video' | 'sketch' | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
@@ -497,7 +502,7 @@ export default function ActivityScreen() {
             theme={theme}
             sessionId={sessionId}
             onNext={advancePhase}
-            onAskPeri={() => setShowChat(true)}
+            onAskPeri={(waypointId?: string) => { setChatWaypointId(waypointId ?? null); setShowChat(true); }}
             onCapture={(mode: 'photo' | 'audio' | 'note' | 'video' | 'sketch') => {
               setCaptureMode(mode);
               setShowCapture(true);
@@ -513,7 +518,7 @@ export default function ActivityScreen() {
         )}
         <PeriChatSheet
           visible={showChat}
-          onClose={() => setShowChat(false)}
+          onClose={() => { setShowChat(false); setChatWaypointId(null); }}
           theme={theme}
           activityId={activity.id}
           activityTitle={activity.title}
@@ -521,6 +526,7 @@ export default function ActivityScreen() {
           currentPrompt={question?.question_text}
           sessionId={sessionId}
           periScript={activity.peri_script}
+          waypointId={chatWaypointId}
           aiInteractionMode={activity.ai_interaction_mode}
           locationName={activity.location_name}
           locationWikiData={activity.location_wiki_data}
@@ -755,6 +761,8 @@ function InquiryPhase({
           wayfinding={wayfinding}
           sessionId={sessionId ?? null}
           onCaptureRequested={(mode: 'photo' | 'note') => onCapture(mode)}
+          periScript={activity.peri_script}
+          onAskPeriAtStop={(waypointId: string) => onAskPeri(waypointId)}
         />
       )}
 
