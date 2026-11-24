@@ -422,6 +422,8 @@ const ActivityManager = () => {
           title: activity.title,
           description: activity.description,
           grade_level: activity.grade_level,
+          grade_span_min: activity.grade_span_min ?? null,
+          grade_span_max: activity.grade_span_max ?? null,
           subject: activity.subject,
           difficulty_level: activity.difficulty_level,
           location_latitude: activity.location_latitude,
@@ -820,6 +822,48 @@ const ActivityManager = () => {
           </select>
           {fieldErr('err-subject', errors.subject)}
         </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="flex items-center gap-2 text-sm font-semibold mb-2" style={{ cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={formData.grade_span_min != null && formData.grade_span_max != null}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setFormData({ ...formData, grade_span_min: formData.grade_level, grade_span_max: formData.grade_level });
+              } else {
+                setFormData({ ...formData, grade_span_min: null, grade_span_max: null });
+              }
+            }}
+          />
+          {t('landing:activitymanager.mixed_age_toggle', 'This activity has students across multiple grades')}
+        </label>
+        {formData.grade_span_min != null && formData.grade_span_max != null && (
+          <div className="grid grid-cols-2 gap-4" style={{ maxWidth: 400 }}>
+            <div>
+              <label htmlFor="grade-span-min" className="block text-xs text-[var(--w-muted)] mb-1">{t('landing:activitymanager.youngest_grade', 'Youngest grade')}</label>
+              <select
+                id="grade-span-min" value={formData.grade_span_min}
+                onChange={(e) => setFormData({ ...formData, grade_span_min: parseInt(e.target.value) })}
+                className={fieldCls(undefined)}>
+                {Array.from({ length: 13 }, (_, i) => i).map((grade) => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="grade-span-max" className="block text-xs text-[var(--w-muted)] mb-1">{t('landing:activitymanager.oldest_grade', 'Oldest grade')}</label>
+              <select
+                id="grade-span-max" value={formData.grade_span_max}
+                onChange={(e) => setFormData({ ...formData, grade_span_max: parseInt(e.target.value) })}
+                className={fieldCls(undefined)}>
+                {Array.from({ length: 13 }, (_, i) => i).map((grade) => <option key={grade} value={grade}>{gradeLabel(grade)}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+        <p className="text-xs text-[var(--w-muted)] mt-1">
+          {t('landing:activitymanager.mixed_age_hint', "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically.")}
+        </p>
       </div>
 
       <div className="mb-4">

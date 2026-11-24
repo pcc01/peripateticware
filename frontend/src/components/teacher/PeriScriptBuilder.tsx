@@ -10,9 +10,15 @@ import styles from './OllamaLessonSuggestions.module.css';
 const STAGE_ORDER = ['orient', 'observe', 'classify', 'explain', 'connect', 'reflect'] as const;
 type PeriStage = typeof STAGE_ORDER[number];
 
+// Mixed-age wording (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups") — a plain
+// string means one wording for everyone; {lo, hi} is only generated when
+// the activity has a grade_span_min/max span wide enough to warrant it
+// (see services/peri_script_generator.py's resolve_mixed_age()).
+type PeriWording = string | { lo: string; hi: string };
+
 interface PeriQuestion {
   id: string;
-  q: string;
+  q: PeriWording;
   on?: string[];
   crit?: string;
 }
@@ -31,6 +37,8 @@ interface PeriScript {
   approved?: boolean;
   level_fallback_from_bloom?: boolean;
   place_ai_generated?: boolean;
+  grade_span?: { min: number; max: number } | null;
+  mixed_age_cutoff_grade?: number | null;
 }
 
 interface ValidationIssue {
@@ -143,13 +151,23 @@ export default function PeriScriptBuilder({ activityId }: Props) {
     }
   };
 
-  const updateQuestionText = (stage: PeriStage, index: number, text: string) => {
+  // An edit un-approves the in-memory draft until the teacher explicitly
+  // saves/approves again — editing an already-approved script shouldn't
+  // silently keep shipping the OLD (pre-edit) wording to students between
+  // keystrokes and the next save. Shared by both wording shapes below.
+  const updatePlainWording = (stage: PeriStage, index: number, text: string) => {
     if (!script) return;
     const stageQuestions = (script.stages[stage] || []).map((q, i) => (i === index ? { ...q, q: text } : q));
-    // An edit un-approves the in-memory draft until the teacher explicitly
-    // saves/approves again — editing an already-approved script shouldn't
-    // silently keep shipping the OLD (pre-edit) wording to students between
-    // keystrokes and the next save.
+    setScript({ ...script, stages: { ...script.stages, [stage]: stageQuestions }, approved: false });
+  };
+
+  const updateSplitWording = (stage: PeriStage, index: number, key: 'lo' | 'hi', text: string) => {
+    if (!script) return;
+    const stageQuestions = (script.stages[stage] || []).map((q, i) => {
+      if (i !== index) return q;
+      const current = typeof q.q === 'string' ? { lo: q.q, hi: q.q } : q.q;
+      return { ...q, q: { ...current, [key]: text } };
+    });
     setScript({ ...script, stages: { ...script.stages, [stage]: stageQuestions }, approved: false });
   };
 
@@ -205,6 +223,16 @@ export default function PeriScriptBuilder({ activityId }: Props) {
         </p>
       )}
 
+      {script?.grade_span && (
+        <div style={{ background: 'var(--surface-alt, #f3f4f6)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          {t(
+            `${K}.mixed_age_banner`,
+            'Mixed-age group: grades {{min}}-{{max}}. Questions below grade {{cutoff}} use the "Younger" wording; grade {{cutoff}} and up use "Older". The cognitive demand is the same for both — only the wording differs.',
+            { min: script.grade_span.min, max: script.grade_span.max, cutoff: script.mixed_age_cutoff_grade }
+          )}
+        </div>
+      )}
+
       {isStale && (
         <div className={styles.errorBanner} style={{ background: '#fffbeb', borderColor: '#fde68a', color: '#92610e' }}>
           ⚠️ {t(
@@ -255,16 +283,51 @@ export default function PeriScriptBuilder({ activityId }: Props) {
                   )}
                   {questions.map((q, i) => (
                     <div key={q.id} style={{ marginBottom: '0.5rem' }}>
-                      <textarea
-                        value={q.q}
-                        onChange={(e) => updateQuestionText(stage, i, e.target.value)}
-                        rows={2}
-                        style={{
-                          width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 6,
-                          fontSize: '0.875rem', border: '1px solid var(--border)', background: 'var(--surface)',
-                          color: 'var(--text)', fontFamily: 'inherit', resize: 'vertical',
-                        }}
-                      />
+                      {typeof q.q === 'string' ? (
+                        <textarea
+                          value={q.q}
+                          onChange={(e) => updatePlainWording(stage, i, e.target.value)}
+                          rows={2}
+                          style={{
+                            width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 6,
+                            fontSize: '0.875rem', border: '1px solid var(--border)', background: 'var(--surface)',
+                            color: 'var(--text)', fontFamily: 'inherit', resize: 'vertical',
+                          }}
+                        />
+                      ) : (
+                        <div style={{ display: 'flex', gap: '0.6rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-faint)', display: 'block', marginBottom: 2 }}>
+                              {t(`${K}.wording_lo`, 'Younger (grade {{min}}+)', { min: script.grade_span?.min })}
+                            </label>
+                            <textarea
+                              value={q.q.lo}
+                              onChange={(e) => updateSplitWording(stage, i, 'lo', e.target.value)}
+                              rows={2}
+                              style={{
+                                width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 6,
+                                fontSize: '0.875rem', border: '1px solid var(--border)', background: 'var(--surface)',
+                                color: 'var(--text)', fontFamily: 'inherit', resize: 'vertical',
+                              }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text-faint)', display: 'block', marginBottom: 2 }}>
+                              {t(`${K}.wording_hi`, 'Older (grade {{cutoff}}+)', { cutoff: script.mixed_age_cutoff_grade })}
+                            </label>
+                            <textarea
+                              value={q.q.hi}
+                              onChange={(e) => updateSplitWording(stage, i, 'hi', e.target.value)}
+                              rows={2}
+                              style={{
+                                width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 6,
+                                fontSize: '0.875rem', border: '1px solid var(--border)', background: 'var(--surface)',
+                                color: 'var(--text)', fontFamily: 'inherit', resize: 'vertical',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
                       {q.crit && (
                         <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>
                           {t(`${K}.draws_evidence_for`, 'Draws evidence for: {{crit}}', { crit: q.crit })}

@@ -183,6 +183,12 @@ export interface CreateActivityInput {
   state_standard?: string
   discipline?: string
   curriculum_unit_ids?: string[]
+  // Optional mixed-age span (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups") --
+  // both optional; absent means "behave exactly like a single grade_level".
+  // A span of 3 or fewer grades still gets a single wording -- the
+  // generator decides that server-side, nothing to configure here for it.
+  grade_span_min?: number | null
+  grade_span_max?: number | null
   // Author's choice: 'ai_chat' = students can open-ended chat with AI-backed
   // Peri during this activity, on top of the curated question bank;
   // 'curated_only' = curated bank only, no live AI call. Defaults to

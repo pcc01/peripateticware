@@ -62,6 +62,10 @@ export interface Activity {
   description: string
   subject: string
   grade_level?: number
+  // Optional mixed-age span (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups") --
+  // both optional; absent means "behave exactly like a single grade_level".
+  grade_span_min?: number | null
+  grade_span_max?: number | null
   location?: string
   // Teacher-domain activities use lat/lng/radius/name instead of a free-text location.
   location_latitude?: number
