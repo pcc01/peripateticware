@@ -107,6 +107,17 @@ export default function DiscoverScreen() {
 
       <PeriSpeech text={periText} theme={theme} size={36} />
 
+      <TouchableOpacity
+        testID="discover-spontaneous-entry"
+        onPress={() => router.push('/spontaneous-discovery' as any)}
+        style={[styles.spontaneousBtn, { borderColor: theme.accent, backgroundColor: theme.accentMuted, borderRadius: theme.radius }]}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.spontaneousBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+          📍 {t('discover.spontaneousEntry', "I'm somewhere new — ask Peri about it")}
+        </Text>
+      </TouchableOpacity>
+
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator color={theme.accent} size="large" />
@@ -190,6 +201,8 @@ function ActivityCard({ activity, theme, onPress }: { activity: Activity; theme:
 
 const styles = StyleSheet.create({
   root:         { flex: 1 },
+  spontaneousBtn:     { marginHorizontal: 16, marginBottom: 4, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1.5, alignItems: 'center' },
+  spontaneousBtnText: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
   header:       { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
   headerRow:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },

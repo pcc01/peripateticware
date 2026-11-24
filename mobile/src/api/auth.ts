@@ -20,6 +20,11 @@ export interface MeResponse {
   // (PERI_OFFLINE_SPEC_v2.md "Mixed-age groups"). null when not derivable
   // (no homeschool or classroom grade on file), which is normal, not an error.
   grade_band?: string | null;
+  // Reuses the same age/consent check chat's AI-sharing gate already runs
+  // server-side (_is_third_party_ai_sharing_permitted) --
+  // PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md Design C's gate for "Use my
+  // location". Defaults true when absent (older server/cached response).
+  can_use_location_gps?: boolean;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {

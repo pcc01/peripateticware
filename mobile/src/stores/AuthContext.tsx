@@ -23,6 +23,12 @@ interface User {
   // key-value store), never in SQLite, and never included in any request
   // body or log. Absent/null is normal (not every account has one on file).
   gradeBand?: GradeBand | null;
+  // Same age/consent predicate chat's AI-sharing gate already uses
+  // (PERI_SPONTANEOUS_DISCOVERY_SPEC_v1.md Design C) -- gates the "Use my
+  // location" button for spontaneous discovery. Defaults true (server also
+  // defaults true) so an older cached profile from before this field
+  // existed never wrongly blocks the button.
+  canUseLocationGps: boolean;
 }
 
 interface AuthContextValue {
@@ -71,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // (services/grade_band.py); this cast reflects that trust
           // boundary rather than re-validating it on-device.
           gradeBand: (me.grade_band ?? null) as GradeBand | null,
+          canUseLocationGps: me.can_use_location_gps ?? true,
         };
         setUser(fresh);
         await setStoredUser(fresh);
@@ -93,7 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const data: LoginResponse = await apiLogin(email, password);
-    const u: User = { id: data.user_id, email: data.email, role: data.role.toUpperCase() };
+    // canUseLocationGps defaults true until the next /auth/me refresh
+    // corrects it -- LoginResponse doesn't carry it (only /me does).
+    const u: User = { id: data.user_id, email: data.email, role: data.role.toUpperCase(), canUseLocationGps: true };
     setToken_(data.access_token);
     setUser(u);
     await setStoredUser(u);
