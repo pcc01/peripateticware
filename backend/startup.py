@@ -348,10 +348,26 @@ async def apply_location_table_migrations(engine) -> None:
         # element-by-element, scalars become a single-element array, and
         # anything else (object, or a value jsonb_typeof can't make sense
         # of) falls back to empty rather than aborting the whole ALTER.
+        #
+        # 2026-11-25: the ALTER COLUMN ... TYPE ... USING form above (still
+        # visible in git history) never actually worked in prod — Postgres
+        # rejects a correlated subquery (ARRAY(SELECT jsonb_array_elements_text(...)))
+        # inside a USING expression with "cannot use subquery in transform
+        # expression", a hard per-row-rewrite restriction, not something the
+        # CASE/jsonb_typeof guarding above could route around. That failure
+        # was only ever logged at WARNING (added in the same change that
+        # added this comment block) and silently left `subjects`/
+        # `grade_levels`/`learning_opportunities` on jsonb forever, so every
+        # enrichment write in routes/privacy_locations.py's cache-write-back
+        # hit `DatatypeMismatchError` on every single request. Rewritten
+        # below as add-new-column / backfill-via-UPDATE / drop-old / rename,
+        # since a plain UPDATE's SET expression has no such subquery
+        # restriction — only ALTER ... TYPE ... USING does.
         """DO $$ BEGIN
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'subjects' AND data_type = 'jsonb') THEN
-                ALTER TABLE enriched_locations ALTER COLUMN subjects TYPE TEXT[] USING (
+                ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS subjects_new TEXT[];
+                UPDATE enriched_locations SET subjects_new = (
                     CASE
                         WHEN subjects IS NULL THEN '{}'::TEXT[]
                         WHEN jsonb_typeof(subjects) = 'array' THEN ARRAY(SELECT jsonb_array_elements_text(subjects))
@@ -359,12 +375,16 @@ async def apply_location_table_migrations(engine) -> None:
                         ELSE '{}'::TEXT[]
                     END
                 );
+                ALTER TABLE enriched_locations DROP COLUMN subjects;
+                ALTER TABLE enriched_locations RENAME COLUMN subjects_new TO subjects;
+                ALTER TABLE enriched_locations ALTER COLUMN subjects SET DEFAULT '{}';
             END IF;
         END $$;""",
         """DO $$ BEGIN
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'grade_levels' AND data_type = 'jsonb') THEN
-                ALTER TABLE enriched_locations ALTER COLUMN grade_levels TYPE INTEGER[] USING (
+                ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS grade_levels_new INTEGER[];
+                UPDATE enriched_locations SET grade_levels_new = (
                     CASE
                         WHEN grade_levels IS NULL THEN '{}'::INTEGER[]
                         WHEN jsonb_typeof(grade_levels) = 'array' THEN ARRAY(
@@ -375,12 +395,16 @@ async def apply_location_table_migrations(engine) -> None:
                         ELSE '{}'::INTEGER[]
                     END
                 );
+                ALTER TABLE enriched_locations DROP COLUMN grade_levels;
+                ALTER TABLE enriched_locations RENAME COLUMN grade_levels_new TO grade_levels;
+                ALTER TABLE enriched_locations ALTER COLUMN grade_levels SET DEFAULT '{}';
             END IF;
         END $$;""",
         """DO $$ BEGIN
             IF EXISTS (SELECT 1 FROM information_schema.columns
                        WHERE table_name = 'enriched_locations' AND column_name = 'learning_opportunities' AND data_type = 'jsonb') THEN
-                ALTER TABLE enriched_locations ALTER COLUMN learning_opportunities TYPE TEXT[] USING (
+                ALTER TABLE enriched_locations ADD COLUMN IF NOT EXISTS learning_opportunities_new TEXT[];
+                UPDATE enriched_locations SET learning_opportunities_new = (
                     CASE
                         WHEN learning_opportunities IS NULL THEN '{}'::TEXT[]
                         WHEN jsonb_typeof(learning_opportunities) = 'array' THEN ARRAY(SELECT jsonb_array_elements_text(learning_opportunities))
@@ -388,6 +412,9 @@ async def apply_location_table_migrations(engine) -> None:
                         ELSE '{}'::TEXT[]
                     END
                 );
+                ALTER TABLE enriched_locations DROP COLUMN learning_opportunities;
+                ALTER TABLE enriched_locations RENAME COLUMN learning_opportunities_new TO learning_opportunities;
+                ALTER TABLE enriched_locations ALTER COLUMN learning_opportunities SET DEFAULT '{}';
             END IF;
         END $$;""",
         "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS captured_at TIMESTAMP DEFAULT NOW()",
@@ -436,7 +463,7 @@ async def apply_location_table_migrations(engine) -> None:
             # `_e`, so that failure mode was completely invisible in prod
             # logs. Surface those specifically at WARNING with the real
             # exception text.
-            if "ALTER COLUMN" in _stmt and " TYPE " in _stmt:
+            if "jsonb_typeof" in _stmt:
                 logger.warning(f"Location column type-conversion migration failed: {_e}\nStatement: {_stmt[:300]}")
             else:
                 logger.debug(f"Migration skipped (already applied): {_stmt[:60]}… ({_e})")

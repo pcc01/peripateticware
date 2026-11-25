@@ -248,9 +248,15 @@ class OpenStreetMapBackend(LocationBackend):
                 return []
 
         except Exception as e:
-            logger.error(f"Error querying Overpass API: {e}")
+            # Several of httpx's own connect/timeout exceptions stringify to
+            # "" (no args on the exception instance) -- this used to log as
+            # the useless "Error querying Overpass API: " with nothing after
+            # the colon, making it impossible to tell a DNS failure from a
+            # timeout from a TLS error after the fact. type(e).__name__ is
+            # always populated even when str(e) isn't.
+            logger.error(f"Error querying Overpass API: {type(e).__name__}: {e}")
             return []
-    
+
     async def enrich_location(
         self,
         location: LocationData,
