@@ -825,6 +825,163 @@ class NominatimBackend(LocationBackend):
         return location
 
 
+# Wikidata's own SPARQL endpoint -- Wikimedia Foundation infrastructure,
+# same trust/availability tier as the Wikipedia/Wikidata REST APIs already
+# used throughout this module, not a third-party service.
+WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
+
+# Root classes a real-world "place you can stand at" is commonly a direct
+# instance of, or one wdt:P279 (subclass-of) hop below. Deliberately NOT a
+# single broad root checked via a transitive wdt:P279* closure ("geographic
+# entity", Q27096213, would have covered all of these in one query) --
+# measured live: a transitive P279* query timed out at 10s even for a
+# single QID (`ASK { wd:Q44440 wdt:P31/wdt:P279* wd:Q27096213 }`), while a
+# trivial non-transitive query on the same endpoint returned in 166ms. This
+# is a known WDQS (Blazegraph) characteristic -- property-path Kleene-star
+# traversal over a hierarchy as large as Wikidata's class tree is
+# expensive regardless of query shape, not something a timeout tweak or
+# batching fixes. A guaranteed-to-time-out query would add a flat latency
+# tax to every applicable search for zero filtering benefit, which is
+# exactly backwards from the point of this change. This bounded,
+# single-hop version returned correct results for every real candidate
+# tested (Golden Gate Bridge, a lighthouse, Glen Canyon Covered Bridge all
+# pass; the storm-complex article that triggered this still correctly
+# fails) in ~350ms.
+#
+# The real tradeoff versus the transitive version: this list is open-ended
+# and won't catch every legitimate place type that's 2+ levels below one
+# of these roots -- an unrecognized type is KEPT, not dropped (see
+# _filter_to_physical_places), so the failure mode is "doesn't filter out
+# something it should have," never "wrongly drops a real place."
+WIKIDATA_PHYSICAL_PLACE_ROOTS = [
+    "Q12280",   # bridge
+    "Q41176",   # building
+    "Q811979",  # built structure
+    "Q570116",  # tourist attraction
+    "Q33506",   # museum
+    "Q16970",   # church building
+    "Q44613",   # monastery
+    "Q32815",   # mosque
+    "Q34627",   # synagogue
+    "Q8502",    # mountain
+    "Q23397",   # lake
+    "Q4022",    # river
+    "Q15324",   # body of water
+    "Q22698",   # park
+    "Q486972",  # human settlement
+    "Q39614",   # cemetery
+    "Q483453",  # fountain
+    "Q4421",    # forest
+    "Q179700",  # statue
+    "Q23442",   # island
+    "Q34038",   # waterfall
+    "Q35509",   # cave
+    "Q839954",  # archaeological site
+    "Q174782",  # square (plaza)
+    "Q39715",   # lighthouse
+    "Q12518",   # tower
+    "Q12323",   # dam
+    "Q483110",  # stadium
+    "Q1248784", # airport
+    "Q55488",   # railway station
+    "Q43501",   # zoo
+    "Q1107656", # garden
+    "Q4989906", # monument
+    "Q23413",   # castle
+    "Q16560",   # palace
+]
+
+# Kept short and fail-open (see _filter_to_physical_places) so this check
+# can only ever make a slow search end sooner (by skipping the filter),
+# never slower than before it existed. Real queries against this endpoint
+# measured ~350ms -- 3s is generous headroom, not a timeout being relied on.
+WIKIDATA_SPARQL_TIMEOUT_SECONDS = 3.0
+
+
+def _approx_distance_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Cheap local haversine distance -- no network, negligible CPU for the
+    <=20 candidates this ever runs over. Needed because generator=geosearch
+    (see search_nearby below) returns an unordered page dict with no `dist`
+    field, unlike list=geosearch's flat, pre-sorted array."""
+    import math
+    r = 6371000  # Earth radius, meters
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return r * (2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
+
+
+async def _filter_to_physical_places(locations: List["LocationData"]) -> List["LocationData"]:
+    """
+    Drop Wikipedia-geosearch candidates that aren't a physical place at all
+    (events, storms, demographic regions, ...) via one batched, non-
+    transitive Wikidata SPARQL query -- see WIKIDATA_PHYSICAL_PLACE_ROOTS
+    above for the root-class list and why it's single-hop, not transitive.
+
+    Exactly one extra network round trip total, regardless of how many
+    candidates there are (SPARQL's VALUES clause batches all of them into
+    one query) -- not one lookup per candidate. Fails open on infrastructure
+    problems specifically: any HTTP/timeout/parse error, or when no
+    candidate has a resolvable Wikidata QID at all, keeps every candidate
+    exactly as today (never blocks the search, never adds unbounded
+    latency, never turns a working search into a failed one).
+
+    Real tradeoff once the query itself succeeds: a candidate whose QID
+    doesn't match WIKIDATA_PHYSICAL_PLACE_ROOTS gets DROPPED, and that
+    list is inherently incomplete (common categories, not exhaustive --
+    see its own comment) -- a genuine place whose specific Wikidata type
+    is unusual enough to miss every root AND every one-hop parent would be
+    wrongly filtered out here. Accepted because the alternative (keep
+    anything not positively confirmed as non-physical) would let through
+    most of what this filter exists to catch -- the overwhelming majority
+    of Wikidata types aren't in a hand-picked list of ~30 common place
+    categories either, physical or not. A candidate with no QID at all is
+    still kept unconditionally -- there's nothing to check it against.
+    """
+    qid_by_place_id = {
+        loc.place_id: loc.wikidata_id for loc in locations if loc.wikidata_id
+    }
+    if not qid_by_place_id:
+        return locations
+
+    qids = sorted(set(qid_by_place_id.values()))
+    items_clause = " ".join(f"wd:{q}" for q in qids)
+    roots_clause = " ".join(f"wd:{q}" for q in WIKIDATA_PHYSICAL_PLACE_ROOTS)
+    sparql = (
+        "SELECT DISTINCT ?item WHERE { "
+        f"VALUES ?item {{ {items_clause} }} "
+        f"VALUES ?root {{ {roots_clause} }} "
+        "{ ?item wdt:P31 ?root } UNION { ?item wdt:P31/wdt:P279 ?root } "
+        "}"
+    )
+
+    try:
+        client = get_http_client()
+        response = await client.get(
+            WIKIDATA_SPARQL_ENDPOINT,
+            params={"query": sparql, "format": "json"},
+            headers={"User-Agent": WIKIMEDIA_USER_AGENT, "Accept": "application/sparql-results+json"},
+            timeout=WIKIDATA_SPARQL_TIMEOUT_SECONDS,
+        )
+        if response.status_code != 200:
+            logger.warning(f"Wikidata physical-place filter error: {response.status_code} -- keeping candidates unfiltered")
+            return locations
+
+        passing_qids = {
+            b["item"]["value"].rsplit("/", 1)[-1]
+            for b in response.json().get("results", {}).get("bindings", [])
+        }
+    except Exception as e:
+        logger.warning(f"Wikidata physical-place filter failed: {type(e).__name__}: {e} -- keeping candidates unfiltered")
+        return locations
+
+    return [
+        loc for loc in locations
+        if not loc.wikidata_id or loc.wikidata_id in passing_qids
+    ]
+
+
 class WikipediaGeosearchBackend(LocationBackend):
     """
     Uses Wikipedia's own geosearch API to discover nearby places directly —
@@ -862,7 +1019,7 @@ class WikipediaGeosearchBackend(LocationBackend):
         lang: str = WIKIMEDIA_FALLBACK_LANG
     ) -> List[LocationData]:
         """
-        Search using Wikipedia's geosearch API (list=geosearch).
+        Search using Wikipedia's geosearch API (generator=geosearch).
 
         Tries the requested-language edition's geosearch first. If it
         finds zero articles near this coordinate, retries against
@@ -870,6 +1027,16 @@ class WikipediaGeosearchBackend(LocationBackend):
         as a universal fallback — rather than silently falling through to
         the other (non-Wikipedia) backends whenever a smaller-coverage
         edition simply has nothing nearby.
+
+        Geosearch finds the nearest *geotagged* articles, with no concept
+        of "is this a physical place a person can stand at" — an event,
+        a storm, a demographic region, anything with infobox coordinates
+        qualifies just as well as a bridge or a park (reproduced live: a
+        "January 2008 North American storm complex" article surfaced as a
+        candidate near the Golden Gate Bridge). `_filter_to_physical_places`
+        below closes that gap via a single batched Wikidata query — see its
+        docstring for why a single-root-class check instead of a hand-
+        maintained allowlist of place types.
         """
 
         # Wikipedia's geosearch caps gsradius at 10,000 meters.
@@ -881,10 +1048,22 @@ class WikipediaGeosearchBackend(LocationBackend):
                 f"https://{host_lang}.wikipedia.org/w/api.php",
                 params={
                     "action": "query",
-                    "list": "geosearch",
-                    "gscoord": f"{latitude}|{longitude}",
-                    "gsradius": gsradius,
-                    "gslimit": 20,
+                    # Switched from list=geosearch to generator=geosearch +
+                    # prop=pageprops so each result's Wikidata QID (needed by
+                    # the physical-place filter below) comes back in this
+                    # SAME request — not a second lookup per candidate. The
+                    # tradeoff: list=geosearch returns a flat, distance-
+                    # sorted array with an explicit `dist` field; the
+                    # generator form returns an unordered `query.pages` dict
+                    # with no distance field at all, so distance is
+                    # recomputed locally (pure CPU, no extra request) and
+                    # sorted explicitly below instead of trusted from the API.
+                    "generator": "geosearch",
+                    "ggscoord": f"{latitude}|{longitude}",
+                    "ggsradius": gsradius,
+                    "ggslimit": 20,
+                    "prop": "coordinates|pageprops",
+                    "ppprop": "wikibase_item",
                     "format": "json",
                 },
             )
@@ -892,7 +1071,13 @@ class WikipediaGeosearchBackend(LocationBackend):
                 logger.error(f"Wikipedia geosearch error ({host_lang}): {response.status_code}")
                 return []
             data = response.json()
-            return data.get("query", {}).get("geosearch", [])
+            pages = list(data.get("query", {}).get("pages", {}).values())
+            pages.sort(key=lambda p: _approx_distance_meters(
+                latitude, longitude,
+                (p.get("coordinates") or [{}])[0].get("lat", latitude),
+                (p.get("coordinates") or [{}])[0].get("lon", longitude),
+            ))
+            return pages
 
         try:
             used_lang = lang
@@ -906,10 +1091,11 @@ class WikipediaGeosearchBackend(LocationBackend):
                 title = r.get("title")
                 if not title:
                     continue
+                coords = (r.get("coordinates") or [{}])[0]
                 locations.append(LocationData(
                     name=title,
-                    latitude=r.get("lat", latitude),
-                    longitude=r.get("lon", longitude),
+                    latitude=coords.get("lat", latitude),
+                    longitude=coords.get("lon", longitude),
                     location_type="point_of_interest",
                     address="",
                     # pageid is stable and unique — safer than slugifying
@@ -920,11 +1106,19 @@ class WikipediaGeosearchBackend(LocationBackend):
                     # distinct cache entries instead of colliding.
                     place_id=f"wikipedia_{used_lang}_{r.get('pageid')}",
                     wikipedia_url=f"https://{used_lang}.wikipedia.org/wiki/{title.replace(' ', '_')}",
+                    # Free bonus from switching to generator=geosearch above:
+                    # enrich_location()'s "Final fallback" branch only calls
+                    # fetch_wikidata_id_by_name() (its own extra round trip)
+                    # when wikidata_id is still unset -- pre-populating it
+                    # here from pageprops skips that lookup later instead of
+                    # adding a new one.
+                    wikidata_id=r.get("pageprops", {}).get("wikibase_item"),
                     content_language=used_lang,
                     source="wikipedia",
                 ))
 
-            return locations[:20]
+            locations = locations[:20]
+            return await _filter_to_physical_places(locations)
 
         except Exception as e:
             logger.error(f"Error querying Wikipedia geosearch: {e}")
