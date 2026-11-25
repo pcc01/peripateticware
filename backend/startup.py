@@ -145,6 +145,18 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         # separates blog/pages admin access from role=ADMIN -- missing it
         # 500'd the admin-account demo seed upsert too.
         await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_content_admin BOOLEAN NOT NULL DEFAULT FALSE")
+        # Same gap, same discovery method -- found one at a time across
+        # several CI runs (each SELECT * FROM users / ORM select(User) hits
+        # whichever missing column comes first in column order, masking the
+        # next one until that one's fixed too), so cross-checked the full
+        # User model (models/user.py) against a fresh DB's actual \d users
+        # once to get every remaining gap in one pass instead of continuing
+        # one CI round-trip at a time.
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_locale VARCHAR(20)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS created_via VARCHAR(30)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN NOT NULL DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_secret VARCHAR(600)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_backup_codes JSONB")
         # Backfill email_index with plain email for users where encryption is off
         await _exec_safepoint(conn, "UPDATE users SET email_index = LOWER(email) WHERE email_index IS NULL")
         # ── Activities location columns ───────────────────────────────────
