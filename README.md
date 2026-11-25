@@ -165,6 +165,40 @@ Ran against production — primary run on the prod host against loopback `127.0.
 
 ---
 
+## 🐛 Live Prod Testing — Bugs Found & Fixed (Nov 25, 2026)
+
+A real on-device Android test pass against prod (spontaneous discovery, hunts, Peri chat) surfaced four
+bugs — three fixed below, one external-dependency issue tracked as still open.
+
+- **Fixed — `enriched_locations` cache writes 500'd on every spontaneous-discovery/enrichment call.**
+  `subjects`/`grade_levels`/`learning_opportunities` were stuck on `jsonb` in prod (schema drift from
+  the no-Alembic `ADD COLUMN IF NOT EXISTS` bootstrap in `startup.py`) while the ORM model declares them
+  as native Postgres arrays — every write hit `DatatypeMismatchError`. A prior self-healing
+  `ALTER COLUMN ... TYPE ... USING` migration existed for exactly this but silently failed every restart:
+  Postgres rejects a correlated subquery inside a `USING` expression (`cannot use subquery in transform
+  expression`). Rewritten as add-column / backfill-via-`UPDATE` / drop-old / rename, since a plain
+  `UPDATE` has no such restriction. Verified against a simulated copy of prod's broken state (including
+  a deliberately malformed row) — converts cleanly with zero data loss. ([#67](https://github.com/pcc01/peripateticware/issues/67))
+- **Fixed — a TEACHER account could start spontaneous discovery, then hit a generic failure at the last
+  step.** `POST /api/v1/student/activities/spontaneous` already 403s for any non-STUDENT/ADMIN role, but
+  the Discover-tab entry point rendered unconditionally, and the failure showed a generic "couldn't
+  create this right now" instead of the real reason. Entry point now hidden for non-student roles; the
+  403 catch surfaces the backend's own message as a fallback. ([#68](https://github.com/pcc01/peripateticware/issues/68))
+- **Fixed — login screen could get stuck on a dead spinner after sign-out → sign-in** (no relaunch, same
+  app session). `login.tsx` called `router.replace('/(tabs)')` right after `login()` resolved, racing
+  `AuthGuard`'s own role-aware `router.replace()` reacting to the same auth-state change on the same
+  render — two navigations landing in the same tick could leave expo-router's navigator in a broken
+  half-transitioned state, confirmed via backend logs showing the login POST itself had already returned
+  200. `AuthGuard` is the single source of truth for post-auth routing now. ([#69](https://github.com/pcc01/peripateticware/issues/69))
+- **Open — public Overpass instance often unreachable; Wikipedia-geosearch fallback can surface
+  geotagged-but-irrelevant results** (e.g. a weather-event article as a "nearby place" candidate).
+  Overpass failures previously logged a useless empty message for several of httpx's own exception
+  types — now logs the exception type name too, so a future failure is at least diagnosable. The
+  underlying relevance gap (nothing filters non-physical-place article types out of Wikipedia geosearch
+  results) is unresolved. ([#70](https://github.com/pcc01/peripateticware/issues/70))
+
+---
+
 ## 🚀 Quick Start (Docker)
 
 ### Prerequisites
