@@ -190,7 +190,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({
     <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-700">{t("landing:audio_recording", "Audio Recording")}</h4>
-        <span className="text-xs text-gray-400">{t("landing:max", "Max")}{maxSeconds}{t("landing:audiorecorder.s", "s")}</span>
+        <span className="text-xs text-gray-400">{t("landing:max", "Max")} {maxSeconds}{t("landing:audiorecorder.s", "s")}</span>
       </div>
 
       {/* Waveform canvas */}

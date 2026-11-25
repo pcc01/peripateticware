@@ -416,18 +416,26 @@ describe('FieldNoteReview', () => {
     await userEvent.click(screen.getByText('Bridge Study'));
     await waitFor(() => screen.getByText(/Return to Student/));
     await userEvent.click(screen.getByText(/Return to Student/));
-    await waitFor(() => screen.getByText(/Return to Student/i));
-    // Click reject without filling in feedback
-    const rejectBtn = screen.getAllByText(/Return to Student/i).find(el =>
-      el.tagName === 'BUTTON' || el.closest('button')
-    );
-    if (rejectBtn) await userEvent.click(rejectBtn);
-    // Should show error about required feedback
-    await waitFor(() => {
-      // Error will show on submit attempt
-      const errEl = screen.queryByText(/required/i);
-      expect(errEl).toBeTruthy();
+    // Clicking "Return to Student" reveals a feedback form that repeats the
+    // same button text for its own confirm action, so there are now two
+    // matches on screen -- getByText (singular) throws "Found multiple
+    // elements" here.
+    const rejectBtn = await waitFor(() => {
+      const btn = screen.getAllByText(/Return to Student/i).find(el =>
+        el.tagName === 'BUTTON' || el.closest('button')
+      );
+      if (!btn) throw new Error('reject button not found yet');
+      return btn;
     });
+    // The component enforces this preventively, not reactively: the confirm
+    // button stays disabled (components/teacher/FieldNoteReview.tsx's
+    // `disabled={submitting || !feedback.trim()}`) rather than being
+    // clickable and then showing a "feedback required" error afterward --
+    // userEvent.click() on a disabled element is a no-op (matches real
+    // browser behavior), so handleReject() -- and the error message this
+    // test used to wait for -- is never reached via a click at all with
+    // empty feedback. Asserting the actual preventive behavior instead.
+    expect(rejectBtn.closest('button')).toBeDisabled();
   });
 });
 

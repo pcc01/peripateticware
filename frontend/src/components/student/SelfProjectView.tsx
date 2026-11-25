@@ -233,7 +233,7 @@ export const SelfProjectView: React.FC<SelfProjectViewProps> = ({ classId }) => 
                 {proj.description &&
               <p className="text-xs text-gray-500 mt-0.5 truncate">{proj.description}</p>
               }
-                <p className="text-xs text-gray-400 mt-1">{proj.field_note_count}{t("landing:selfprojectview.field_notes", "field notes")}</p>
+                <p className="text-xs text-gray-400 mt-1">{proj.field_note_count} {t("landing:selfprojectview.field_notes", "field notes")}</p>
               </div>
               {proj.status !== 'archived' &&
             <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 mt-0.5" />
@@ -827,8 +827,8 @@ export const PeerProjectAuthorDashboard: React.FC<PeerProjectAuthorDashboardProp
                     <p className="text-sm font-semibold text-gray-800 truncate">{proj.title}</p>
                     <p className="text-xs text-gray-500 mt-0.5 truncate">{proj.description}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                      <span>{proj.response_count}{t("landing:selfprojectview.responses", "responses")}</span>
-                      <span>{proj.completed_response_count}{t("landing:completed", "completed")}</span>
+                      <span>{proj.response_count} {t("landing:selfprojectview.responses", "responses")}</span>
+                      <span>{proj.completed_response_count} {t("landing:completed", "completed")}</span>
                       <span>{proj.allowed_capture_types.join(', ')}</span>
                     </div>
                   </div>
