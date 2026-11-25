@@ -11,6 +11,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # The localization pipeline step below runs successfully (33k+ keys
+    # synced) and then fails trying to push its own translation commit:
+    # "Permission to .../peripateticware.git denied to github-actions[bot]"
+    # -- the default GITHUB_TOKEN this workflow gets is read-only unless a
+    # job explicitly asks for write access, which this one never did.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
