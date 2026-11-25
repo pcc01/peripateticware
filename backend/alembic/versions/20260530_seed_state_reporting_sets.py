@@ -386,7 +386,22 @@ def upgrade() -> None:
         for sc, nm, desc, crit in STATES
     )
     sql = _SEED_SQL_TEMPLATE.format(inserts=inserts)
-    op.execute(text(sql))
+    # Not op.execute(text(sql)) -- text() treats any `:word` as a bind
+    # parameter placeholder, and the JSON criteria blobs here (via
+    # json.dumps -> `"required":true,"weight":1.0` etc.) match that on
+    # every unquoted true/false/number value. Running against a genuinely
+    # fresh database (nothing here short-circuits on IF NOT EXISTS the way
+    # it does on prod, where this already ran successfully once) surfaced
+    # `InvalidRequestError: A value is required for bind parameter 'true'`.
+    # exec_driver_sql looked like the fix but still passes its own internal
+    # (empty) params object through to psycopg2's cursor.execute(), which
+    # psycopg2 rejects outright ("immutabledict is not a sequence") before
+    # even reaching the SQL text. Going straight to the raw DBAPI cursor
+    # (same transaction/connection Alembic is already using) with no params
+    # argument at all sidesteps both that and any psycopg2 `%`-substitution
+    # -- correct here since every dynamic piece is already escaped by
+    # _make_insert() above, not a real bind parameter.
+    op.get_bind().connection.cursor().execute(sql)
 
 
 def downgrade() -> None:

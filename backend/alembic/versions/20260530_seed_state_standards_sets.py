@@ -50,15 +50,15 @@ BEGIN
       uuid_generate_v4(),
       'Common Core State Standards — English Language Arts (K–12)',
       'CCSS ELA defines expectations for reading, writing, speaking, listening, and language for students in kindergarten through 12th grade. Adopted by 41 states. Full strand-level criteria included.',
-      'state_standards',v_admin,NULL,TRUE,NULL,''complete'',NOW(),''2026-07-31''::DATE,
-      ''[
+      'state_standards',v_admin,NULL,TRUE,NULL,'complete',NOW(),'2026-07-31'::DATE,
+      '[
         {"id":"CCSS-ELA-RL","code":"CCSS.ELA-LITERACY.RL","subject":"Reading: Literature","category":"Reading","description":"Key ideas and details, craft and structure, integration of knowledge and ideas in literary texts","required":true,"weight":1.0},
         {"id":"CCSS-ELA-RI","code":"CCSS.ELA-LITERACY.RI","subject":"Reading: Informational Text","category":"Reading","description":"Key ideas and details, craft and structure, integration of knowledge and ideas in informational texts","required":true,"weight":1.0},
         {"id":"CCSS-ELA-RF","code":"CCSS.ELA-LITERACY.RF","subject":"Reading: Foundational Skills","category":"Reading","description":"Print concepts, phonological awareness, phonics, fluency (K–5)","required":true,"weight":1.0},
         {"id":"CCSS-ELA-W","code":"CCSS.ELA-LITERACY.W","subject":"Writing","category":"Writing","description":"Text types and purposes, production and distribution, research and range of writing","required":true,"weight":1.0},
         {"id":"CCSS-ELA-SL","code":"CCSS.ELA-LITERACY.SL","subject":"Speaking & Listening","category":"Speaking","description":"Comprehension and collaboration, presentation of knowledge and ideas","required":true,"weight":1.0},
         {"id":"CCSS-ELA-L","code":"CCSS.ELA-LITERACY.L","subject":"Language","category":"Language","description":"Conventions of standard English, knowledge of language, vocabulary acquisition and use","required":true,"weight":1.0}
-      ]''::jsonb,
+      ]'::jsonb,
       NOW(),NOW()
     );
   END IF;
@@ -69,8 +69,8 @@ BEGIN
       uuid_generate_v4(),
       'Common Core State Standards — Mathematics (K–12)',
       'CCSS Math defines what students should understand and be able to do in mathematics across K–12. Adopted by 41 states. Includes Standards for Mathematical Practice and content domain strands.',
-      'state_standards',v_admin,NULL,TRUE,NULL,''complete'',NOW(),''2026-07-31''::DATE,
-      ''[
+      'state_standards',v_admin,NULL,TRUE,NULL,'complete',NOW(),'2026-07-31'::DATE,
+      '[
         {"id":"CCSS-MATH-PRACTICE","code":"CCSS.MATH.PRACTICE","subject":"Standards for Mathematical Practice","category":"Practice","description":"Make sense of problems, reason abstractly, construct arguments, model, use tools, attend to precision, find structure, express regularity","required":true,"weight":1.0},
         {"id":"CCSS-MATH-OA","code":"CCSS.MATH.OA","subject":"Operations & Algebraic Thinking","category":"Number","description":"Understand and apply properties of operations, solve problems involving the four operations (K–5)","required":true,"weight":1.0},
         {"id":"CCSS-MATH-NBT","code":"CCSS.MATH.NBT","subject":"Number & Operations in Base Ten","category":"Number","description":"Understand place value, perform multi-digit arithmetic (K–5)","required":true,"weight":1.0},
@@ -81,7 +81,7 @@ BEGIN
         {"id":"CCSS-MATH-EE","code":"CCSS.MATH.EE","subject":"Expressions & Equations","category":"Algebra","description":"Apply properties of operations, reason about and solve equations (6–8)","required":true,"weight":1.0},
         {"id":"CCSS-MATH-F","code":"CCSS.MATH.F","subject":"Functions","category":"Algebra","description":"Define, evaluate, and compare functions; model relationships (8–12)","required":true,"weight":1.0},
         {"id":"CCSS-MATH-SP","code":"CCSS.MATH.SP","subject":"Statistics & Probability","category":"Statistics","description":"Develop understanding of statistical variability, summarize and describe distributions (6–12)","required":true,"weight":1.0}
-      ]''::jsonb,
+      ]'::jsonb,
       NOW(),NOW()
     );
   END IF;
@@ -92,15 +92,15 @@ BEGIN
       uuid_generate_v4(),
       'Next Generation Science Standards (NGSS)',
       'NGSS defines science education expectations through three dimensions: disciplinary core ideas, science and engineering practices, and crosscutting concepts. Adopted by 20+ states.',
-      'state_standards',v_admin,NULL,TRUE,NULL,''complete'',NOW(),''2026-07-31''::DATE,
-      ''[
+      'state_standards',v_admin,NULL,TRUE,NULL,'complete',NOW(),'2026-07-31'::DATE,
+      '[
         {"id":"NGSS-PS","code":"NGSS.PS","subject":"Physical Science","category":"Disciplinary Core Ideas","description":"Matter and its interactions, motion and stability, energy, waves and electromagnetic radiation","required":true,"weight":1.0},
         {"id":"NGSS-LS","code":"NGSS.LS","subject":"Life Science","category":"Disciplinary Core Ideas","description":"From molecules to organisms, ecosystems, heredity, biological evolution","required":true,"weight":1.0},
-        {"id":"NGSS-ESS","code":"NGSS.ESS","subject":"Earth & Space Science","category":"Disciplinary Core Ideas","description":"Earth's place in the universe, Earth's systems, Earth and human activity","required":true,"weight":1.0},
+        {"id":"NGSS-ESS","code":"NGSS.ESS","subject":"Earth & Space Science","category":"Disciplinary Core Ideas","description":"Earth''s place in the universe, Earth''s systems, Earth and human activity","required":true,"weight":1.0},
         {"id":"NGSS-ETS","code":"NGSS.ETS","subject":"Engineering, Technology & Applications","category":"Disciplinary Core Ideas","description":"Engineering design, links between engineering, technology, science, and society","required":true,"weight":1.0},
         {"id":"NGSS-SEP","code":"NGSS.SEP","subject":"Science & Engineering Practices","category":"Practices","description":"Asking questions, planning investigations, analyzing data, constructing explanations, communicating information","required":true,"weight":1.0},
         {"id":"NGSS-CCC","code":"NGSS.CCC","subject":"Crosscutting Concepts","category":"Crosscutting","description":"Patterns, cause and effect, scale, systems, energy and matter, structure and function, stability and change","required":true,"weight":1.0}
-      ]''::jsonb,
+      ]'::jsonb,
       NOW(),NOW()
     );
   END IF;
@@ -111,14 +111,14 @@ BEGIN
       uuid_generate_v4(),
       'Texas Essential Knowledge and Skills — Science (TEKS Science)',
       'TEKS Science defines what Texas students should know and be able to do in science. Applies to all Texas public schools and homeschool families using TEKS alignment.',
-      'state_standards',v_admin,''TX'',TRUE,NULL,''complete'',NOW(),''2026-07-31''::DATE,
-      ''[
+      'state_standards',v_admin,'TX',TRUE,NULL,'complete',NOW(),'2026-07-31'::DATE,
+      '[
         {"id":"TEKS-SCI-INQUIRY","code":"TEKS.SCI.1","subject":"Scientific Investigation","category":"Process","description":"Safe practices, tools and equipment, recording and organizing data, communicating results","required":true,"weight":1.0},
         {"id":"TEKS-SCI-LIFE","code":"TEKS.SCI.LIFE","subject":"Life Science","category":"Content","description":"Organisms and environments, heredity, biological evolution, organisms and environments","required":true,"weight":1.0},
-        {"id":"TEKS-SCI-EARTH","code":"TEKS.SCI.EARTH","subject":"Earth & Space Science","category":"Content","description":"Earth's structure, weather and climate, solar system, space exploration","required":true,"weight":1.0},
+        {"id":"TEKS-SCI-EARTH","code":"TEKS.SCI.EARTH","subject":"Earth & Space Science","category":"Content","description":"Earth''s structure, weather and climate, solar system, space exploration","required":true,"weight":1.0},
         {"id":"TEKS-SCI-PHYS","code":"TEKS.SCI.PHYS","subject":"Physical Science","category":"Content","description":"Properties of matter, force and motion, energy, sound and light","required":true,"weight":1.0},
         {"id":"TEKS-SCI-ENV","code":"TEKS.SCI.ENV","subject":"Environmental Systems","category":"Content","description":"Ecosystems, human impact on the environment, conservation (high school)","required":false,"weight":1.0}
-      ]''::jsonb,
+      ]'::jsonb,
       NOW(),NOW()
     );
   END IF;
@@ -129,14 +129,14 @@ BEGIN
       uuid_generate_v4(),
       'Texas Essential Knowledge and Skills — Mathematics (TEKS Math)',
       'TEKS Math defines mathematics learning expectations for Texas students K–12. Revised 2012, with updates through 2024.',
-      'state_standards',v_admin,''TX'',TRUE,NULL,''complete'',NOW(),''2026-07-31''::DATE,
-      ''[
+      'state_standards',v_admin,'TX',TRUE,NULL,'complete',NOW(),'2026-07-31'::DATE,
+      '[
         {"id":"TEKS-MATH-NUM","code":"TEKS.MATH.NUM","subject":"Number & Operations","category":"Number","description":"Number sense, place value, fractions, decimals, rational numbers","required":true,"weight":1.0},
         {"id":"TEKS-MATH-ALG","code":"TEKS.MATH.ALG","subject":"Algebraic Reasoning","category":"Algebra","description":"Patterns, functions, equations, inequalities, systems of equations","required":true,"weight":1.0},
         {"id":"TEKS-MATH-GEO","code":"TEKS.MATH.GEO","subject":"Geometry & Measurement","category":"Geometry","description":"Two- and three-dimensional figures, coordinate geometry, measurement, transformations","required":true,"weight":1.0},
         {"id":"TEKS-MATH-DATA","code":"TEKS.MATH.DATA","subject":"Data Analysis & Statistics","category":"Statistics","description":"Data collection, representation, analysis, probability, statistical reasoning","required":true,"weight":1.0},
         {"id":"TEKS-MATH-FINANCE","code":"TEKS.MATH.FINANCE","subject":"Personal Financial Literacy","category":"Applied","description":"Savings, budgeting, credit, taxes, consumer decisions (introduced 2022)","required":true,"weight":1.0}
-      ]''::jsonb,
+      ]'::jsonb,
       NOW(),NOW()
     );
   END IF;
@@ -146,7 +146,24 @@ END $$;
 
 
 def upgrade() -> None:
-    op.execute(text(_SQL))
+    # Not op.execute(text(_SQL)) -- SQLAlchemy's text() treats any `:word`
+    # as a bind-parameter placeholder (the reason `::jsonb` casts are safe
+    # here but not a problem is that `::` is specifically excluded from
+    # that regex). The JSON blobs in _SQL have un-quoted `:true`/`:false`/
+    # numeric values (e.g. `"required":true,"weight":1.0`) that match it
+    # anyway, and running against a genuinely fresh database (nothing in
+    # this migration's IF NOT EXISTS guards short-circuits it) surfaced
+    # `InvalidRequestError: A value is required for bind parameter 'true'`
+    # -- this migration had apparently never actually run end-to-end
+    # before. exec_driver_sql looked like the fix but turned out to still
+    # pass its own internal (empty) params object through to psycopg2's
+    # cursor.execute(), which psycopg2 rejected outright ("immutabledict is
+    # not a sequence") before even reaching the SQL text. Going straight to
+    # the raw DBAPI cursor (same transaction/connection Alembic is already
+    # using) with no params argument at all sidesteps both that and any
+    # psycopg2 `%`-substitution, since substitution only happens when a
+    # second argument is actually passed to cursor.execute().
+    op.get_bind().connection.cursor().execute(_SQL)
 
 
 def downgrade() -> None:

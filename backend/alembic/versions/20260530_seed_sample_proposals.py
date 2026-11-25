@@ -69,7 +69,7 @@ BEGIN
       'Science',
       'I did this with my family last weekend and thought it would make a great challenge for the class!',
       'approved', '', v_activity_id,
-      NOW() - INTERVAL ''5 days'', NOW() - INTERVAL ''3 days''
+      NOW() - INTERVAL '5 days', NOW() - INTERVAL '3 days'
     );
   END IF;
 
@@ -87,7 +87,7 @@ BEGIN
       'Science',
       'We learned about the sun''s movement in class and I thought this would be a fun way to see it for real.',
       'pending', '', NULL,
-      NOW() - INTERVAL ''1 day'', NOW() - INTERVAL ''1 day''
+      NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'
     );
   END IF;
 
@@ -104,7 +104,7 @@ BEGIN
       'Any sidewalk, pavement crack, or urban surface',
       'Environmental Studies', '',
       'draft', '', NULL,
-      NOW() - INTERVAL ''2 days'', NOW() - INTERVAL ''2 days''
+      NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'
     );
   END IF;
 
@@ -123,7 +123,7 @@ BEGIN
       'rejected',
       'Love the idea! Can you add a more specific observation task — for example, identifying the source plant or describing 3 distinct smells? That would make it more measurable.',
       NULL,
-      NOW() - INTERVAL ''4 days'', NOW() - INTERVAL ''3 days''
+      NOW() - INTERVAL '4 days', NOW() - INTERVAL '3 days'
     );
   END IF;
 

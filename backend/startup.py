@@ -121,6 +121,30 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_index VARCHAR(64)")
         await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS state_code VARCHAR(10)")
+        # is_protected, parent_email, last_consent_request_at: previously only
+        # ever added via backend/alembic/versions/20260819d_org_scoping.py and
+        # 20260914_user_parent_email.py -- real columns the live ORM model
+        # (models/database.py User) has carried for a long time, but neither
+        # database/init.sql nor this file's own bootstrap ever created them,
+        # and nothing in dev/CI ever actually ran that Alembic chain (see the
+        # README's "Live Prod Testing" entry and this file's own module
+        # docstring -- Alembic migrations here are informational/for prod's
+        # own `alembic upgrade head` step, not relied on anywhere else).
+        # Found via a genuinely fresh boot: seed_demo_users()'s upsert 500s on
+        # "column users.is_protected does not exist" and ABORTS ENTIRELY --
+        # every demo account (including the ones every E2E/Detox/Maestro
+        # suite logs in as) silently never gets created or password-reset,
+        # so every single login attempt against a fresh database fails. This
+        # is the actual root cause behind that whole class of CI failure, not
+        # anything specific to any one test or workflow.
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_protected BOOLEAN NOT NULL DEFAULT FALSE")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS parent_email VARCHAR(600)")
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_consent_request_at TIMESTAMP")
+        # Same gap, same discovery method (a genuinely fresh boot): only ever
+        # added via backend/alembic/versions/20260819c_content_admin_flag.py,
+        # separates blog/pages admin access from role=ADMIN -- missing it
+        # 500'd the admin-account demo seed upsert too.
+        await _exec_safepoint(conn, "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_content_admin BOOLEAN NOT NULL DEFAULT FALSE")
         # Backfill email_index with plain email for users where encryption is off
         await _exec_safepoint(conn, "UPDATE users SET email_index = LOWER(email) WHERE email_index IS NULL")
         # ── Activities location columns ───────────────────────────────────
@@ -1036,6 +1060,13 @@ async def apply_core_schema_migrations(engine) -> None:
             # this 500s the same way the missing captured_at column did.
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lat_enc VARCHAR(200)",
             "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_lon_enc VARCHAR(200)",
+            # location_name: in this file's own CREATE TABLE above, but
+            # database/init.sql's student_captures (created first on a fresh
+            # DB) has no such column -- same no-op-CREATE gap as the others
+            # in this list. Found via a genuinely fresh boot: the demo
+            # student-captures seed 500s with "column location_name of
+            # relation student_captures does not exist".
+            "ALTER TABLE student_captures ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)",
         ]:
             await _exec_safepoint(conn, _col)
         # Backfill transcript_status for rows that predate the column: a
@@ -1155,6 +1186,22 @@ async def apply_core_schema_migrations(engine) -> None:
         """, "create student_proposals")
         # ── student_proposals column drift ─────────────────────────────────
         await _exec_safepoint(conn, "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS note_to_teacher TEXT")
+        # teacher_id: in this file's own CREATE TABLE above, but database/
+        # init.sql's student_proposals (created first on a fresh DB) has no
+        # such column, so the CREATE is a no-op there and this needs its own
+        # explicit backfill same as note_to_teacher above. Found via a
+        # genuinely fresh boot: the demo challenge-proposal seed 500s with
+        # "column teacher_id of relation student_proposals does not exist".
+        await _exec_safepoint(conn, "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS teacher_id UUID REFERENCES users(id) ON DELETE SET NULL")
+        # description / location_name: routes/proposals.py already reads
+        # both of these AND init.sql's challenge_description/location_hint
+        # defensively (r.get("description") or r.get("challenge_description"))
+        # -- this file's own CREATE TABLE above uses description/location_name,
+        # but init.sql's (created first on a fresh DB) only has
+        # challenge_description/location_hint, so the demo seed that inserts
+        # into description/location_name 500s the same way teacher_id did.
+        await _exec_safepoint(conn, "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS description TEXT")
+        await _exec_safepoint(conn, "ALTER TABLE student_proposals ADD COLUMN IF NOT EXISTS location_name VARCHAR(255)")
         # ── Align student tables with their ORM models (ADD COLUMN drift fixes) ──
         for _alter in [
             "ALTER TABLE student_self_projects ADD COLUMN IF NOT EXISTS cover_image_url VARCHAR(500)",
@@ -2287,14 +2334,22 @@ async def seed_demo_classroom(engine) -> None:
     # Step 3: notebook entry
     try:
         async with engine.begin() as conn:
+            # `content` was this seed's original column, but neither
+            # database/init.sql nor the current StudentNotebook ORM model
+            # (models/database.py) has ever had one -- the model's actual
+            # free-text field for "what did you find" is where_notes.
+            # Confirmed via a genuinely fresh boot: this always 500'd with
+            # "column content of relation student_notebooks does not
+            # exist" and silently skipped (caught below), never once
+            # seeding real notebook-entry demo data.
             await conn.execute(text("""
-                INSERT INTO student_notebooks (student_id, content)
+                INSERT INTO student_notebooks (student_id, where_notes)
                 SELECT s.id, 'My first field note: the pond ecosystem has frogs, dragonflies, and cattails.'
                 FROM users s
                 WHERE s.username = 'student'
                   AND NOT EXISTS (
                       SELECT 1 FROM student_notebooks n
-                      WHERE n.student_id = s.id AND n.content LIKE 'My first field note%'
+                      WHERE n.student_id = s.id AND n.where_notes LIKE 'My first field note%'
                   )
             """))
         logger.info("✅ Demo notebook entry seeded")
