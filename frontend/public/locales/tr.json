@@ -1,7 +1,7 @@
 {
   "landing": {
     "auth": {
-      "email_placeholder": "you@example.com",
+      "email_placeholder": "you@example.com or username",
       "login_title": "Hoş Geldiniz",
       "login_subtitle": "Giriş yap",
       "demo_accounts_title": "Demo Hesapları",
@@ -9,7 +9,7 @@
       "demo_student": "Student: student@example.com",
       "demo_parent": "Parent: parent@example.com",
       "demo_password": "Parola için tümün: GüvenliParola123",
-      "email_label": "E-posta Adresi",
+      "email_label": "Email or Username",
       "password_label": "Şifre",
       "password_placeholder": "Şifrenizi girin",
       "remember_me": "Hatırla",
@@ -42,55 +42,56 @@
     "footer": {
       "brand_title": "Peripateticware",
       "company_name": "Peripateticware",
-      "product_title": "Ürün",
-      "product_tools": "Araçlar",
+      "product_title": "Product",
+      "product_tools": "Tools",
       "product_demo": "Demo",
-      "company_title": "Şirket",
-      "company_about": "Hakkında",
-      "company_team": "Takım",
-      "company_blog": "Bloğ",
-      "company_careers": "İş Fırsaları",
-      "resources_title": "Kaynaklar",
-      "resources_docs": "Dökümantasyon",
-      "resources_guides": "Rehberler",
+      "company_title": "Company",
+      "company_about": "About",
+      "company_team": "Team",
+      "company_blog": "Blog",
+      "company_careers": "Careers",
+      "resources_title": "Resources",
+      "resources_docs": "Documentation",
+      "resources_guides": "Guides",
       "resources_api": "API",
-      "resources_support": "Destek",
+      "resources_support": "Support",
       "company_contact": "İletişim",
-      "brand_desc": "Çevresel, sahada öğrenme öğrencileri, öğretmenler ve aileler için.",
-      "all_rights": "Tüm hakları saklıdır.",
-      "product_features": "Özellikler",
-      "product_pricing": "Fiyatlandırma",
-      "legal_title": "legal title",
-      "legal_privacy": "legal privacy",
-      "legal_terms": "legal terms",
-      "legal_cookies": "legal cookies",
-      "legal_contact": "legal contact",
+      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
+      "all_rights": "All rights reserved.",
+      "product_features": "Features",
+      "product_pricing": "Pricing",
+      "legal_title": "Legal",
+      "legal_privacy": "Privacy",
+      "legal_terms": "Terms",
+      "legal_cookies": "Cookies",
+      "legal_contact": "Contact",
       "privacy_protected": "Veriğiniz şu çerçevelerden korunmaktadır",
       "product_privacy_engine": "Gizlilik Motoru",
       "resources_privacy": "Gizlilik Motoru",
-      "legal_do_not_sell": "Satın Alma veya Paylaşma Bilgilerimi",
-      "legal_licensing": "Lisanslama"
+      "legal_do_not_sell": "Do Not Sell or Share My Info",
+      "legal_licensing": "Licensing",
+      "legal_refunds": "Refund Policy"
     },
     "team_1_name": "Paul Cerda",
     "team_2_name": "Lorem Ipsum",
-    "team_2_role": "Lorem Ipsum Dolor",
+    "team_2_role": "Lorem Ipsum",
     "team_2_initial": "L",
-    "team_3_name": "Dolor Sit Amet",
-    "team_3_role": "Consectetur Adipiscing",
-    "team_3_initial": "D",
-    "team_4_name": "Elit Sed Do",
-    "team_4_role": "Eiusmod Tempor",
-    "team_4_initial": "E",
+    "team_3_name": "Lorem Ipsum",
+    "team_3_role": "Lorem Ipsum",
+    "team_3_initial": "L",
+    "team_4_name": "Lorem Ipsum",
+    "team_4_role": "Lorem Ipsum",
+    "team_4_initial": "L",
     "testimonial_1_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "testimonial_1_author": "Lorem Ipsum · Placeholder Title",
+    "testimonial_1_author": "Lorem Ipsum · Field Name, Grade 0",
     "testimonial_2_text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    "testimonial_2_author": "Dolor Sit · Placeholder Title",
+    "testimonial_2_author": "Lorem Ipsum · Field Name",
     "testimonial_3_text": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "testimonial_3_author": "Amet Consectetur · Placeholder Title",
+    "testimonial_3_author": "Lorem Ipsum · Field Name",
     "testimonial_4_text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    "testimonial_4_author": "Adipiscing Elit · Placeholder Title",
-    "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
-    "testimonial_5_author": "Sed Do Eiusmod · Placeholder Title",
+    "testimonial_4_author": "Lorem Ipsum · Field Name",
+    "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam.",
+    "testimonial_5_author": "Lorem Ipsum · Field Name",
     "termspage": {
       "terms_of_service": "Terms of Service",
       "last_updated_may_2026": "Last updated: May 2026",
@@ -102,11 +103,11 @@
       "the_service_is_intended_for_use_by_schoo": "The Service is intended for use by school-age students under the supervision of licensed educators and their guardians. Student accounts must be created by an authorised teacher or institution.",
       "4_privacy_amp_child_safety": "4. Privacy &amp; Child Safety",
       "5_intellectual_property": "5. Intellectual Property",
-      "the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their legal guardian.",
+      "the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their institution.",
       "6_prohibited_uses": "6. Prohibited Uses",
       "you_may_not_use_the_service_to_upload_ha": "You may not use the Service to upload harmful content, circumvent safety controls, share student data with unauthorised parties, or engage in any activity that violates applicable law.",
       "7_limitation_of_liability": "7. Limitation of Liability",
-      "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided “as is.” Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
+      "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided &ldquo;as is.&rdquo; Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
       "8_contact": "8. Contact",
       "back_to_home": "← Back to Home",
       "privacy_compliance_intro": "Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold or used for advertising. See our",
@@ -136,11 +137,14 @@
       "invite_student": "Davet Et",
       "placeholder_search_by_name_or_email": "Ara adı veya e-posta ile...",
       "you_dont_have_any_classes_yet_create_a_c": "Henüz sınıf yok. Önce bir sınıf oluşturun, sonra öğrencilere davet edin.",
-      "invitation_sent_the_student_will_get_an_": "Davetiye gönderildi. Öğrenci bir katılma bağlantısı içeren bir e-posta alacak."
+      "invitation_sent_the_student_will_get_an_": "Davetiye gönderildi. Öğrenci bir katılma bağlantısı içeren bir e-posta alacak.",
+      "add_a_student": "Add a Student",
+      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
+      "student_added": "Student added to the class and notified in-app."
     },
-    "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_4_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "pages_admin_platformadminpage": {
       "adminexamplecom": "admin@example.com",
       "placeholder_search_name_or_email": "Arama adı veya e-posta...",
@@ -289,7 +293,11 @@
       "feature_2_title": "Peri'nin izinden giden",
       "feature_2_desc": "Pembe çakır Peri, sizi derin düşünmek için doğru soruları sorar - fikirler açar, cevapları hiç vermez.",
       "feature_3_title": "Büyünü Takip Et",
-      "feature_3_desc": "Bölünen etkinlikleri tamamlayarak yeteneklerinizi izleyin ve dış ortam öğrenim porfolyoğunuzu inşa edin."
+      "feature_3_desc": "Bölünen etkinlikleri tamamlayarak yeteneklerinizi izleyin ve dış ortam öğrenim porfolyoğunuzu inşa edin.",
+      "feature_4_title": "Follow the Map",
+      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
+      "feature_5_title": "Your Location Stays on Your Phone",
+      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
     },
     "teacher": {
       "cta": "Etkinlik Oluştur",
@@ -303,7 +311,11 @@
       "feature_2_title": "Canlı İlerleme Görünümü",
       "feature_2_desc": "Her yerde görmek için her öğrencinin gerçek zamanlı konumunu – hangi aşamada olduklarını, ne çektiklerini ve kim destek gerektirdiğini.",
       "feature_3_title": "İçten değerlendirme",
-      "feature_3_desc": "Yetenek izleme, portföy incelemesi ve eğitim programı hizalama — ek işaretme zamanı olmadan tüm bunları yapın."
+      "feature_3_desc": "Yetenek izleme, portföy incelemesi ve eğitim programı hizalama — ek işaretme zamanı olmadan tüm bunları yapın.",
+      "feature_4_title": "Build a Route, Not Just a Pin",
+      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
+      "feature_5_title": "Decide What Families Are Asked",
+      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
     },
     "parent": {
       "cta": "Görüntülemek",
@@ -317,7 +329,11 @@
       "feature_2_title": "Haftalık Bültenler",
       "feature_2_desc": "Keşfedikleri, yakaladıkları ve yetenekleri nasıl artıyorları hakkında açık bir özet.",
       "feature_3_title": "Kalada Katıl",
-      "feature_3_desc": "Görevler tamamlandığında ve hedefler elde edildiğinde güncellemeler alın — sınıfın akışını kesmeden."
+      "feature_3_desc": "Görevler tamamlandığında ve hedefler elde edildiğinde güncellemeler alın — sınıfın akışını kesmeden.",
+      "feature_4_title": "You Choose What's Shared",
+      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
+      "feature_5_title": "Kept Only as Long as It's Useful",
+      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
     },
     "team_1_role": "Şirket Kurucusu ve PM",
     "team_1_initial": "P",
@@ -459,7 +475,11 @@
       "grade": "Sınıf",
       "latitude": "Enlem",
       "longitude": "Enlem",
-      "add": "Ekle"
+      "add": "Ekle",
+      "youngest_grade": "Youngest grade",
+      "oldest_grade": "Oldest grade",
+      "mixed_age_toggle": "This activity has students across multiple grades",
+      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
     },
     "difficulty_level": "Zorluk Seviyesi",
     "remember": "Hatırla",
@@ -632,7 +652,10 @@
     "m_accuracy": "Doğruluk",
     "wikilocationinfo": {
       "latitude": "Enlem",
-      "longitude": "Enlem"
+      "longitude": "Enlem",
+      "architect_or_artist": "Architect/Artist:",
+      "construction_date": "Constructed:",
+      "historical_significance": "Historical Significance:"
     },
     "teaching_tip": "Öğretme İpuçları",
     "index": {
@@ -767,7 +790,6 @@
     "your_children": "Çocuklarınız",
     "pending": "Bekliyor",
     "quick_links": "Hızlı Bağlantılar",
-    "calendar": "Takvim",
     "reports": "Raporlar",
     "progress_overview": "İşlem Özeti",
     "overall_progress": "Genel İlerleme",
@@ -1020,7 +1042,14 @@
       "status": "Durum",
       "project_activities": "Proje Etkinlikleri",
       "activity": "Aktivite",
-      "back": "Geri"
+      "back": "Geri",
+      "planning": "Planning",
+      "completed": "Completed",
+      "archived": "Archived",
+      "not_found": "Project not found.",
+      "live_tracking": "Live Tracking",
+      "completion_report": "Completion Report",
+      "no_activities": "No activities linked to this project yet."
     },
     "active": "Aktif",
     "project_description": "Proje Açıklaması",
@@ -1113,7 +1142,10 @@
       "email_confirmed_you_can_now_sign_in": "E-posta doğrulandı! Artık giriş yapabilirsiniz.",
       "that_link_has_expired_please_request_a_n": "Linkin süresi doldu. Lütfen yeni bir isteyin.",
       "that_link_is_invalid_please_try_again": "O bağlantı geçersizdir. Lütfen tekrar deneyin.",
-      "or": "ya da"
+      "or": "ya da",
+      "twofactor_authentication": "Two-factor authentication",
+      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
+      "back_to_login": "← Back to login"
     },
     "nav_homeschool": "Evokulu",
     "cookie_consent_title": "Çerez uyarısı",
@@ -1129,7 +1161,11 @@
       "feature_2_desc": "Şu devreye yükleyeniz eyaletinizin raporlama gereksinimleri ve çocuklarınızın aktiviteleri tamamladıkça otomatik olarak kapsamı takip edin. Tamamen elde ettiğinizi, kısmen elde ettiğinizi ve eksik kaldığını gösterir.",
       "feature_3_title": "Proje Raporları",
       "feature_3_desc": "Oluşturulan PDF portföy raporları ve aktivite günlükleri CSV'ler için devlet bildirimleri veya kişisel kayıtlar için - el yazılı tabloların gerekliliği yoktur.",
-      "features_title": "Evdeki Bir Aile İçin İhtiyacı Geçen Herşey"
+      "features_title": "Evdeki Bir Aile İçin İhtiyacı Geçen Herşey",
+      "feature_4_title": "Turn a Trail Into a Hunt",
+      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
+      "feature_5_title": "You Hold the Consent",
+      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
     },
     "hs_feat_ai_title": "AI Güçlü Araştırma",
     "hs_how_title": "Nasıl Çalışır",
@@ -1153,7 +1189,16 @@
       "add": "Ekle",
       "no_criteria_extracted_try_a_different_fi": "Hiç kriter belirtilmedi. Farklı bir dosya deneyin veya el ile ekleyin.",
       "aria_label_upload_file_pdf_csv_or_excel": "Dosya Yükle (PDF, CSV veya Excel)",
-      "aria_label_criteria_set_name": "Kriter Set Adı"
+      "aria_label_criteria_set_name": "Kriter Set Adı",
+      "country": "Country",
+      "aria_label_country": "Country these standards belong to",
+      "united_states": "United States",
+      "canada": "Canada",
+      "province": "Province",
+      "state": "State",
+      "aria_label_state": "State/province these standards belong to",
+      "select_a_state": "Select…",
+      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "Yükleniyor...",
@@ -1294,7 +1339,10 @@
       "aria_label_childs_email_address": "Çocuğun e-posta adresi",
       "aria_label_childs_password": "Çocuğun şifresi",
       "aria_label_childs_grade_level_012": "Çocuğun sınıf seviyesi (0-12)",
-      "no_children_added_yet_add_your_first_chi": "Henüz çocuk eklenmedi. İlk çocuğunuzı ekleyerek başlayın."
+      "no_children_added_yet_add_your_first_chi": "Henüz çocuk eklenmedi. İlk çocuğunuzı ekleyerek başlayın.",
+      "remove_child": "Remove child",
+      "removing": "Removing…",
+      "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
       "loading": "Yükleniyor...",
@@ -1355,7 +1403,8 @@
       "as_a_homeschool_teacher_you_operate_outs": "Homeschool öğretmen olarak kurumsal FERPA gereksinimlerini dışarıda kullanırsınız, ancak herhangi bir 13 yaşından küçük çocuğa yönelik COPPA hâlâ geçerlidir.",
       "privacy_amp_data": "Gizlilik ve Veri",
       "your_privacy_settings_are_managed_by_you": "🏫 Çoğulunizin veya kuruluşunuzun gizlilik ayarları, yöneticiler tarafından yönetilmektedir. Değişiklikler yapmak için lütfen yöneticinize başvurun.",
-      "youre_using_default_privacy_settings_rev": "Uyarı: Varsayılan gizlilik ayarlarını kullanıyorsunuz. Aşağıda yapılandırmayızı onaylamak için gözden geçirin ve kaydedin."
+      "youre_using_default_privacy_settings_rev": "Uyarı: Varsayılan gizlilik ayarlarını kullanıyorsunuz. Aşağıda yapılandırmayızı onaylamak için gözden geçirin ve kaydedin.",
+      "two_factor_authentication": "Two-Factor Authentication"
     },
     "request_sent": "İsteğim Gönderildi!",
     "link_another": "Başka Çocuk Bağla",
@@ -1488,7 +1537,14 @@
       "no_all_13": "No — all 13+",
       "aria_label_back_to_login": "Girişe dön",
       "helps_us_apply_the_right_privacy_framewo": "Ulaşımın öğrencileriniz için doğru gizlilik çerçeveleri (FERPA, COPPA, GDPR vb.) uygulamasını sağlar.",
-      "this_determines_whether_coppa_applies_": "COPPA uygulanıp uygulanmayacağını belirler."
+      "this_determines_whether_coppa_applies_": "COPPA uygulanıp uygulanmayacağını belirler.",
+      "country_code": "2-letter country code",
+      "country_code_placeholder": "e.g. DE, FR, GB",
+      "state_province": "State / Province",
+      "select_state": "— Select state —",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "password_placeholder": "At least 8 characters",
+      "confirm_password_placeholder": "Re-enter your password"
     },
     "cta_btn": "Başlayın Ücretsiz",
     "components_student_extendedwritingpanel": {
@@ -1532,7 +1588,30 @@
       "location_data_is_used_only_to_verify_stu": "Konum verileri yalnızca etkinlik sitesinde öğrenci varlığının doğrulanması için kullanılır",
       "parental_or_guardian_consent_is_in_place": "Eğer yasa gerektiriyorsa, ebeveyn veya yasal bakımdan sorumlu kişinin izni mevcuttur",
       "student_view_preview": "Öğrenci Görünüm Önizleme",
-      "privacy_settings_confirmed": "Gizlilik ayarları doğrulandı ✓"
+      "privacy_settings_confirmed": "Gizlilik ayarları doğrulandı ✓",
+      "location": "📍 Location",
+      "assessments": "Assessments",
+      "applied": "applied",
+      "attach_rubric": "Attach Rubric",
+      "filter_rubrics": "Filter rubrics…",
+      "ai_suggests": "AI suggests:",
+      "accept": "Accept",
+      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
+      "ai_interaction_label": "Student AI Interaction",
+      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
+      "ai_interaction_curated_label": "Curated Question Bank Only",
+      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
+      "background_context": "📖 Background & Context",
+      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
+      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
+      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
+      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
+      "min_10_characters": "Minimum 10 characters",
+      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
+      "state_curriculum_standards": "State / Curriculum Standards",
+      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
+      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
+      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
     },
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "Konum Adı",
@@ -1577,7 +1656,9 @@
       "title_copy_join_link": "Kopyala katılma bağlantısı",
       "generate_a_link_anyone_can_use_to_join_t": "Oturum açmak için bir bağlantı oluşturun ki herkes kullanabilsin bu sınıfta. Yüz yüze kayıt için faydalı - ekranda göstermek veya QR kod olarak yazdırın.",
       "enter_student_emails_one_per_line_or_com": "Öğrenci e-posta adreslerini girin (her satır için veya virgülle ayrılmış şekilde). Her öğrenciye kendi davet bağlantısı e-postayla gönderilecektir.",
-      "upload_a_csv_or_spreadsheet_with_one_stu": "CSV veya tablo dosyası yükleyin; her satırda bir öğrenci e-postası olsun ve ilk sütunda yer almalı. Adlar, başlıklar ve ek sütunler göz aranıyor."
+      "upload_a_csv_or_spreadsheet_with_one_stu": "CSV veya tablo dosyası yükleyin; her satırda bir öğrenci e-postası olsun ve ilk sütunda yer almalı. Adlar, başlıklar ve ek sütunler göz aranıyor.",
+      "placeholder_studentemailcom": "student@email.com",
+      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "Konu",
@@ -1601,7 +1682,18 @@
       "placeholder_eg_ell_students_stem": "Örneğin ELL öğrencileri, STEM...",
       "aria_label_special_focus_or_differentiation": "Özel Fark veya Ayrım",
       "special_focus_optional": "Özel Fark (isteğe bağlı)",
-      "add_an_activity_title_above_for_better_s": "Uyarı: Etkinlik başlığını ekleyerek daha iyi öneriler alın."
+      "add_an_activity_title_above_for_better_s": "Uyarı: Etkinlik başlığını ekleyerek daha iyi öneriler alın.",
+      "grade": "grade",
+      "at": "at",
+      "generating": "Generating…",
+      "ask_peri": "✨ Ask Peri",
+      "added": "✓ Added to activity",
+      "add_to_activity": "+ Add to activity",
+      "tip": "Tip:",
+      "peri_intro": "Peri will suggest activities for",
+      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
+      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
+      "drafting_from_standards": "Drafting an activity for the standards you selected…"
     },
     "components_upgradecta": {
       "contact_us": "İletişime geç",
@@ -1632,26 +1724,27 @@
       "from_a_white_paper_to_a_working_platform": "Peripatetikware 2007–2026: Beyaz Kağıtdan Çalışma Platformuna",
       "the_insight_aristotle_was_right": "Aristoğlun İşi: Aristoteles'in Doğru Olduğu",
       "the_problem_that_remained_unsolved": "Kesin Çözümlenmeyen Sorun",
-      "the_2007_document_named_one_obstacle_it_": "2007 yılı belgede bir engel çözemediği belirtilmişti:",
-      "the_2026_answer_ai_did_what_spreadsheets": "AI'nin Yaptığıyi Sayfalar Yapamadı (2026 Cevabı)",
+      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
+      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
       "the_assessment_problem_turned_out_to_hav": "Değerlendirme sorunu iki bölümden oluşuyor. İlk bölümü öğrencinin gözlemlediği kanıtları yakalamak ve bu kanıtları göstermek idi. İkincisi ise bunları değerlendirmekti - düşüncelerini derinleştirmişler mi yoksa sadece gördüklerini açıklamışlar mı?",
       "choose_your_own_adventure": "Seçeneklerin Senin Olsun",
       "why_this_took_until_2026": "Bu Neden 2026'e Kadar Alınmadı",
       "the_white_paper_is_still_online": "Beyaz kağıt hâlen çevrimiçi.",
-      "you_can_read_the_original_2007_document_": "iPhone’un henüz bir söylenti olduğu dönemde yazılmış olan 2007 tarihli orijinal belgeyi aşağıdaki bağlantıdan okuyabilirsiniz. Kullanılan terimler günümüzünkinden farklı olsa da, ortaya konan argüman hâlâ geçerliliğini koruyor.",
+      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
       "read_the_original_2007_paper": "Orijinal 2007 Çalışma →",
-      "the_paper_was_written_at_a_moment_when_3": "3G hen tamamen yayılmamış bir zamanda yazılmış, iPhone'un fırlatılmasından aylar önceydi ve 'app' henüz yaygın bir kelime değildi. Tahminleri - öğrencilere herkesin cebine uygun GPS getirmek gibi - hepsi gerçekleşti. Paperdan bahsedilen ürünler de olmadı.",
-      "if_students_follow_their_curiosity_throu": "Eğer öğrenciler merakleri yolunda gerçek yerlerde öğreniyorlar, kemerler, çarklar ve gökbilim navigasyonu hakkında bilgi ediniyorlar çünkü bir katedrale veya limana yakın oldukları için, ne ölçüde öğrendiğini değerlendirebilirsiniz? Kurriculum gereksinimlerini tatmin eden bir şekilde bu işlemi nasıl gerçekleştirirsiniz? Principal'in istediği sayıların tablosu üretirken öğrencinin gerçek anlamladığı kompleksliği de onurlandırırken nasıl yapılır?",
-      "the_document_left_that_question_open_the": "O sorun açık kaldı. Okul sistemi de çözmedi. Yaklaşık iki on yıl boyunca, 'dış öğrenme' ya da bir vurgunlu tutku ya da bir lojistik kötü şakası kaldı - not defteriyle öğretmenler, hiçbir kalıntı bırakmayan aktiviteler, öğrenciler içeri girince anında kaybolan deneyimler.",
-      "the_first_part_was_solved_by_smartphones": "İlk bölüm smartphonelar tarafından çözüldü. Fotoğraf, ses kaydı, GPS koordinatları, zaman damgaları — bir akarsu kenarında olan bir öğrenci, bir günlük gezgin not defterinden tutamayacak kadar daha fazla kanıt elde edebilir. Kalan ikinci bölüm: yapılandırılmış soruşturma, deneyimi sadece belgelerken derinleştirmedi.",
-      "thats_where_peri_comes_in_peri_is_peripa": "Peri, Peripatetiksoft'un AI rehberidir - yazılımın adı gibi Aristoteles yönteminden sonra adlandırılmıştır. Peri soruları cevaplamaz, sormak için kullanılır. Beş aşamalı inceleme dizini izler - Engage, Observe, Analyse, Explain, Apply - bu yöntem Aristoteles'in Lyceum'da kullandığı ve bilişim bilimleri tarafından gerçek anlama yolunun bir parçası olarak doğrulanmıştır. Peri öğrenci gözlemlerini alarak sonraki doğru soruyu sormaktadır. Öğrenci doğru cevap verirken, Peri implicationsını test eder. Öğrenci belirsiz olduğunda kanıtı istemektedir.",
-      "the_result_is_an_artifact_a_field_journa": "Sonuç bir eşya: öğrenci notlarıyla birlikte yakalananlar, genişletilmiş analizler ve soruşturmanın kaydıdır. Öğretmenler öğrencinin sonuca nasıl varınca görebilirler. Bloom taksonomisine ve standart çerçevelere (CCSS, NGSS, TEKS veya kendi) hizalanmış rubrikler herhangi bir öğretim koordinatoru için değerlendirmeye açılabilir. Tablo ve gerçek öğrenme nihayet aynı belgedeki yerini kaplıyor.",
-      "the_2007_paper_described_a_choose_your_o": "Bu 2007 tarihli makale, öğrencilere kendileri için bir macera modeli öğrenme sunuyor - bir modelde öğrenciler etrafında dolaşırlar, ilgilerini takip ederler ve gerçek merak ile karşılaştıkları ana eğitim konuları yerine öğretim yoluyla elde edilirler. Makale bu yaklaşımın \"biçimsel olarak karışık\" olduğunu kabul ediyor ve yeni öğretim tasarımı, yeni değerlendirme araçları ve öğretmenlerin bazı kontrolleri gerçek bir etkileşim için bırakma isteği gerektiğini söylüyor.",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripatetikware tamamen kaos'u çözmez - o gerilim gerçek ve muhtemelen kalıcıdır. Öğretmenlere yeterince yapı sağlarlar ( tasarlanmış aktiviteler, öğrenme hedefleri, tamamlanma aşamaları, öğretmen onay işlemleri) iken öğrencilere yeterince özgürlük bırakırlar (GPS tetikli içerik, öğrenci önerilen aktiviteler, kendiliğinden alan notları, arkadaş projeleri).",
+      "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
+      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
+      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
+      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
+      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
+      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
+      "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
+      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
       "the_reverse_scavenger_hunt_where_student": "Ters scavenger hunt — öğrenciler buldukları şeyler dayalı bir etkinlik önerirler — platformda 2007 görüşüne en yakın şeydir. Bir öğrenci sıra dışı kayalık oluşum bulur. Etkinlik olarak önerirler. Öğretmen onaylar. Diğer öğrenciler giderler. Hiçbir öğretim belgesi beklemediği sorular ortaya çıkar. Öğrenme hareketlenir.",
-      "the_short_answer_is_that_most_of_the_ena": "2007 yılında yaygınlaşan teknolojinin çoğu hazır değildi. Çoklu cep telefonlarında GPS (2010–2015) önce geldi. Ardından yüksek kaliteli mobil kameralar. Ardından okullara uygun fiyata bulabileceğiniz bulut API'leri. Sonra öğretmenin ev sunucusunda çalışacak yerel AI modelleri (Ollama, llama.cpp) ve aylık 10 bin doların ödenmeyeceği işlem maliyetinden kurtuldu. 2007 yazısı hedefine doğruydı; yolun ne kadar uzun olacağını bilmiyordu.",
-      "the_longer_answer_is_that_educational_te": "Uzun cevap şu ki, eğitim teknolojisi o yıllarda yanlış sorunu çözmeye harcadı. EdTech sınıftaki iterasyonlar yaptı - daha iyi LMS, daha iyi video, daha iyi sınav araçları. Var olan modeli daha verimli hale getirdi. Peripateticware ise sınıfı dünyayla değiştirmeye çalışır, en azından bazen.",
-      "thats_a_harder_sell_schools_are_riskaver": "Oturduğunuz yer de öğrenim alanıdır. Okullar riskten kaçınan bir yapıya sahiptir. Çevre öğrenimi sorumluluk açısından bir gözden geçirmeye sahne olabilir. \"Dünya senin sınıfın\" gibi bir pazarlama çizgisinden önce, on yaşında bir öğrenci için akış taşı taşımacılığını açıklayan bir karga şeklinde AI rehberiyle birlikte bir çayırda durmuş ve o akşam yazılan alan notlarını okumuş olmalısınız ki anlayabilsiniz."
+      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
+      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
+      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
+      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "Yükleniyor..."
@@ -1671,7 +1764,9 @@
       "aria_label_close_modal": "Kapat"
     },
     "components_cookieconsentbanner": {
-      "got_it": "Anladım"
+      "got_it": "Anladım",
+      "decline": "Decline",
+      "accept": "Accept"
     },
     "persona_tab": {
       "student": "Öğrenci",
@@ -1701,6 +1796,11 @@
           "title": "Gözden Geçirilen",
           "badge": "Analiz",
           "prompt": "Harika gözlem! Şimdi - bu taraftaki yaprakların renkini değiştiren şey ne olduğunu ne düşünüyorsunuz?"
+        },
+        "4": {
+          "badge": "Multi-Stop",
+          "title": "Scavenger Hunt — 2 of 5 stops",
+          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
         }
       },
       "teacher": {
@@ -1718,6 +1818,35 @@
           "title": "AI Önerileri",
           "badge": "İstek",
           "prompt": "Konu ve konumunuz göz önüne alındığında, aşağıda Bloom'un esinlenmiş 4 aktivite önerisi bulunmaktadır..."
+        },
+        "4": {
+          "badge": "Route Builder",
+          "title": "Multi-Step Hunt — 6 stops",
+          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+        },
+        "dashboard": {
+          "title": "Teacher Dashboard",
+          "subtitle": "This week",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Students"
+            },
+            "2": {
+              "label": "Classes"
+            },
+            "3": {
+              "label": "Active"
+            }
+          }
+        },
+        "proposal": {
+          "title": "Review a Proposal",
+          "badge": "Proposal",
+          "location": "Proposals Queue",
+          "subtitle": "From Jordan M. · Submitted today",
+          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
         }
       },
       "parent": {
@@ -1877,6 +2006,61 @@
           },
           "subtitle": "İlkbahar 2026 · Emma Rivera",
           "prompt": "PDF portföy hazır. Tüm gerekli TX eyalet raporlama alanlarını içerir."
+        },
+        "4": {
+          "badge": "● On the trail",
+          "title": "Greenbelt Trail Hunt",
+          "subtitle": "5 stops · Emma & Lucas",
+          "task": {
+            "1": {
+              "text": "The Old Oak — reached ✓"
+            },
+            "2": {
+              "text": "Stone Bridge — reached ✓"
+            },
+            "3": {
+              "text": "The Overlook — 120 m ahead"
+            },
+            "4": {
+              "text": "Navigation on-device — no tracking"
+            }
+          }
+        },
+        "children": {
+          "title": "Emma — Grade 4",
+          "badge": "68% Progress",
+          "stat": {
+            "1": {
+              "label": "Sessions"
+            },
+            "2": {
+              "label": "Completed"
+            }
+          },
+          "subtitle": "Children · This term",
+          "location": "Barton Creek Greenbelt"
+        },
+        "dashboard": {
+          "title": "Dashboard",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Active"
+            },
+            "2": {
+              "label": "Pending"
+            }
+          },
+          "subtitle": "This week · Emma & Lucas",
+          "task": {
+            "1": {
+              "text": "River Ecosystem Study — published"
+            },
+            "2": {
+              "text": "Capitol Field Trip — draft"
+            }
+          }
         }
       }
     },
@@ -1922,8 +2106,7 @@
       "transcribing": "Tranşribe ediliyor...",
       "recording_saved": "Kaydedildi",
       "mic_denied": "Ses kaydı için mikrofon erişimine ihtiyacımız var. Lütfen izni verin ve tekrar deneyin.",
-      "uploading": "Yükleme kaydı...",
-      "download": "İndir"
+      "uploading": "Yükleme kaydı..."
     },
     "components_student_capture_audiorecorder": {
       "aria_label_start_recording": "Başlat kaydetme",
@@ -1944,14 +2127,12 @@
       "save_your_note_first_to_attach_photos_au": "Not kaydedilmiş bir notu fotoğraf, ses ve video yakalamak için ilk olarak kaydetmeniz gerekir."
     },
     "pendingReflectionQueue": {
-      "awaiting_approval": "Bekliyor onay",
-      "teacher_commented": "Öğretmen yorum yaptı",
+      "awaiting_approval": "Awaiting approval",
+      "teacher_commented": "Teacher commented",
       "ready_to_reflect": "Hazır",
-      "section_title": "Bekleyen Gerçekler",
-      "teacher_label": "Öğretmen",
-      "reflection_in_progress": "Gözlem devam ediyor",
-      "field_work_date": "Saha çalışması {{tarih}}",
-      "see_all": "Tümünü gör {{count}}"
+      "section_title": "Pending Reflections",
+      "teacher_label": "Teacher",
+      "reflection_in_progress": "Gözlem devam ediyor"
     },
     "components_student_selfprojectview": {
       "aria_label_project_title": "Proje başlığı",
@@ -1987,7 +2168,9 @@
       "students": "Öğrenciler",
       "ai_config": "AI Yönlendirme ve Anahtarlar",
       "privacy": "Gizlilik Yapılandırması",
-      "audit": "Gözden Geçirilen Günlükler"
+      "audit": "Gözden Geçirilen Günlükler",
+      "blog": "Blog",
+      "pages": "Pages"
     },
     "layouts_platformshell": {
       "placeholder_platform_secret": "Platform gizli",
@@ -2015,7 +2198,13 @@
       "select_your_state_optional": "Şehir seçiniz (isteğe bağlı)",
       "35_us_states_require_homeschool_parents_": "35 eyalet ABD'de ev okulu ebeveynleri öğrenim kayıtlarını tutma zorunluluğu vardır. Peripateticware, aktivite günlüğünden otomatik olarak raporlar oluşturur.",
       "ready_to_create_your_first_outdoor_activ": "Hazır mısınız ilk dış etkinliğinizi oluşturmak için? Peri, konumunuz ve konuğunuz için özelleştirilmiş Aristoteles soruları önerir.",
-      "create_first_activity": "Oluştur ilk aktivite →"
+      "create_first_activity": "Oluştur ilk aktivite →",
+      "login_label": "Login",
+      "password_label": "Password",
+      "copied": "Copied ✓",
+      "copy_all": "Copy all",
+      "childrens_logins": "Your children\\'s logins",
+      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
     },
     "pages_licensingpage": {
       "licensing": "Lisanslama",
@@ -2045,7 +2234,9 @@
       "pending": "bekliyor",
       "link_a_child_from_the_dashboard_to_see_t": "Başka bir kullanıcının takvimini görüntülemek için Dashboard'dan bağlantı kurun.",
       "no_activities_found_for_this_child": "Bu çocuğun için hiç aktivite bulunamadı.",
-      "activities_assigned_by_teachers_will_app": "Öğretmenler tarafından atanan etkinlikler burada görüntülenecektir."
+      "activities_assigned_by_teachers_will_app": "Öğretmenler tarafından atanan etkinlikler burada görüntülenecektir.",
+      "loading": "Loading…",
+      "refresh": "Refresh"
     },
     "pages_parentmessagespage": {
       "messages": "İleti",
@@ -2060,7 +2251,8 @@
       "sending": "Gönderiliyor...",
       "send": "Gönder",
       "subtitle": "Mesajlar çocukun öğretmenlerinden. Yanıt vermek için temasını koru.",
-      "empty": "Henüz mesaj yok. Bir öğretmen size iletişime geçtiğinde burada görünecektir."
+      "empty": "Henüz mesaj yok. Bir öğretmen size iletişime geçtiğinde burada görünecektir.",
+      "announcements_title": "Classroom Announcements"
     },
     "notifications": "Bildirimler",
     "pages_parentnotificationspage": {
@@ -2071,7 +2263,7 @@
       "link_a_child": "Çocuğu Bağla",
       "teacher_note": "Öğretmen Notu",
       "no_children_linked_yet": "Henüz çocuk bağlantısı yok",
-      "link_your_childs_account_to_start_tracki": "Başlangıç için çocuk hesabınızı bağlayın.",
+      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
       "no_progress_data_yet_for_this_child": "Henüz bu çocuğun için herhangi bir ilerleme verisi yok."
     },
     "progress_reports": "İşlem Raporları",
@@ -2107,7 +2299,12 @@
       "tokens": "Jetons",
       "cost": "Ücret",
       "admin_actions": "Yönetici eylemleri",
-      "all_actions_are_recorded_in_the_audit_lo": "Tüm eylemler izleme günlüğünde kaydedilir."
+      "all_actions_are_recorded_in_the_audit_lo": "Tüm eylemler izleme günlüğünde kaydedilir.",
+      "license": "License",
+      "change_tier_to": "Change tier to…",
+      "placeholder_days": "days",
+      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
     },
     "pages_platform_platformorgspage": {
       "organisations": "Organizasyonlar",
@@ -2120,7 +2317,10 @@
       "users": "Kullanıcılar",
       "status": "Durum",
       "suspended": "Askıya Alınmış",
-      "no_organisations_found": "Organizasyon bulunamadı"
+      "no_organisations_found": "Organizasyon bulunamadı",
+      "expired": "Expired",
+      "all_tiers": "All tiers",
+      "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
       "platform_admin": "Platform Yöneticisi",
@@ -2171,14 +2371,28 @@
       "could_not_load_activity": "Etkinliği yükleyemedik",
       "write_your_reflection": "Yazın yorumunuz",
       "what_did_you_observe_what_did_you_learn_": "Neyi gözlemlediniz? Ne öğrendiniz? Önceki bilgilerinizinle nasıl bağlantı kurduğunu söyleyin?",
-      "great_work_your_teacher_will_review_your": "Harika iş. Öğretmeninçevirenk ve yorumunuzu inceleyecek."
+      "great_work_your_teacher_will_review_your": "Harika iş. Öğretmeninçevirenk ve yorumunuzu inceleyecek.",
+      "location_sharing": "Location Sharing",
+      "architectartist": "Architect/Artist:",
+      "constructed": "Constructed:",
+      "yes_submit": "Yes, submit",
+      "cancel": "Cancel",
+      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
+      "historical_significance": "Historical Significance:",
+      "learning_opportunities": "Learning Opportunities",
+      "nearby_points_of_interest": "Nearby Points of Interest",
+      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
+      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
+      "notable_features": "Notable Features"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "Yükleniyor aktiviteler...",
       "placeholder_search_activities": "Ara aktiviteler...",
       "title_preview_as_student": "Öğrenci Olarak Ön İzle",
       "make_sure_the_backend_is_running_and_you": "Arka uç çalışıyor ve giriş yapmış olduğunuzdan emin olun.",
-      "title_fieldwork_map": "Öğrenci Tarafından Gönderilen GPS Konumları Haritası"
+      "title_fieldwork_map": "Öğrenci Tarafından Gönderilen GPS Konumları Haritası",
+      "tracking_settings": "Tracking Settings",
+      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
     },
     "professorFieldworkPage": {
       "back": "geri",
@@ -2215,7 +2429,11 @@
       "class_full_upgrade_to_add_more": "Sınıf dolu — daha fazla eklemek için yükseltin",
       "no_students_enrolled_yet_use_the_invite_": "Henüz öğrenci kaydı yok. Aşağıdaki davet paneli kullanarak onları ekleyebilirsiniz.",
       "title_remove_from_classroom": "Çalışma alanından çıkar",
-      "larger_classrooms_are_a_paid_feature_upg": "Daha büyük sınıflar ödüllü bir özellikdir. Daha fazla öğrenci kaydetmek için yükseltin."
+      "larger_classrooms_are_a_paid_feature_upg": "Daha büyük sınıflar ödüllü bir özellikdir. Daha fazla öğrenci kaydetmek için yükseltin.",
+      "grade_level_placeholder": "0 = Kindergarten",
+      "grade_level_k_hint": "0 = Kindergarten",
+      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
+      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "Yüklüyor sınıflar...",
@@ -2224,7 +2442,9 @@
       "placeholder_eg_year_6_science_period_2": "Yıl 6 Bilim — Dönem 2",
       "create": "Oluştur",
       "archived": "Arşivlenmiş",
-      "you_dont_have_any_classrooms_yet": "Henimde henüz sınıf yok."
+      "you_dont_have_any_classrooms_yet": "Henimde henüz sınıf yok.",
+      "placeholder_grade_optional": "Grade (0 = K, optional)",
+      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
     },
     "live_sessions": "Canlı Oturumlar",
     "started": "Başladı",
@@ -2234,7 +2454,11 @@
       "reviewed": "Onaylandı",
       "approved": "Onaylandı",
       "placeholder_comment_on_the_field_observations_eviden": "Alan gözlemleri, kanıt kalitesi veya refleksyonu odaklamak üzere yorum yapın...",
-      "your_feedback": "Yorumunuz:"
+      "your_feedback": "Yorumunuz:",
+      "saved": "✓ Saved",
+      "placeholder_feedback_for_the_student": "Feedback for the student...",
+      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
+      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
     },
     "activity_builder_stub": "Aktiflik Oluşturucu",
     "activity_preview_stub": "Aktiflik Önizleme Kırpma",
@@ -2250,7 +2474,7 @@
     "field_journal_title": "Saha Defteri: Kalıcı Öğrenme",
     "s_choose_peripateticware": "Seçim yapın",
     "your_data_is_yours_we_collect_minimal_in": "Veri sizinizdir. Minimum bilgi toplayarak ve hiçbir zaman satmazız. Peripateticware şifreli bağlantılar, anonim agregasyon ve şeffaf veri uygulamaları kullanır. Paylaşılacak veri, kimle ve ne kadar süre için bu konu üzerinde kontrolünüz vardır.",
-    "team_title": "Eğitmenler tarafından eğitmenler için inşa edildi",
+    "team_title": "Built by an educator, for educators",
     "loading_portfolio": "Yükleniyor...",
     "what_did_you_observe": "Neyi gözlemlediniz?",
     "describe_what_you_observed_noticed_or_wo": "Gözlemlediğiniz, fark ettiğiniz veya hayal kırıklığına uğradığınızı anlatın...",
@@ -2332,7 +2556,7 @@
     "using_basic_fallback_information": "Kısa yedek bilgi kullanılıyor",
     "educational_opportunities": "Eğitim Fırsatları",
     "view_on_google_maps": "Harita'da Google Haritalarınızda görüntüleyin",
-    "use_this_location_information_to_create_": "Oluşturulan yer bilgisi ile öğrenci soruşturma işlevselliğini gerçek dünyaya bağlayan yer tabanlı öğrenme aktiviteleri oluşturun.",
+    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
     "refresh_information": "Yenile",
     "observing_native_plants_in_field_session": "Gözlemlerimizi doğal bitkileri Riverside State Park'taki alanda yapıyoruz",
     "great_observation_notes_today_your_detai": "Bugün harika gözlem notları yaptınız! Yaprak morfolojik detaylarınızda gerçek botanik düşüncesi görüyoruz. — Ms. Santos",
@@ -2724,7 +2948,8 @@
       "free_for_one_classroom_no_credit_card_re": "Ücretsiz bir sınıfta. Kredi kartı gerekmeden başlayın.",
       "homeschool_families": "Evli aileler",
       "aria_label_close": "Kapat",
-      "peripateticware_began_as_a_white_paper_w": "PeripatetikWare, McGraw-Hill Eğitim tarafından yazılan bir beyaz kağıt olarak başlayarak, mobil cihazların yerleşik GPS'yi öğrenmenin gerçek yerleri dolaşan öğrencilere nasıl dönüştüreceğini savunuyordu - bu şekilde öğrenciler, metinler gibi öğrenebilirdi."
+      "peripateticware_began_as_a_white_paper_w": "PeripatetikWare, McGraw-Hill Eğitim tarafından yazılan bir beyaz kağıt olarak başlayarak, mobil cihazların yerleşik GPS'yi öğrenmenin gerçek yerleri dolaşan öğrencilere nasıl dönüştüreceğini savunuyordu - bu şekilde öğrenciler, metinler gibi öğrenebilirdi.",
+      "title_learning_in_motion": "Learning in Motion"
     },
     "components_landing_storysection": {
       "alt_a_student_walking_through_the_forest_wit": "Ormanı bir mobil cihazla gezen bir öğrenci"
@@ -2737,8 +2962,13 @@
           "2": "Etkinlik türleri",
           "3": "Peri İA",
           "4": "Bilgileri Toplama",
-          "5": "Profil görünümü"
-        }
+          "5": "Profil görünümü",
+          "6": "Multi-step map hunts"
+        },
+        "price": "$11.99",
+        "price_unit": "/mo",
+        "price_note": "or $99.99/year — save 30% · 30-day free trial",
+        "cta": "Start free trial"
       },
       "school": {
         "name": "Okul",
@@ -2764,8 +2994,13 @@
           "1": "Aile Hesapları",
           "2": "Dosya Portföyü",
           "3": "Durum uyumu raporları",
-          "4": "Standartlar haritası"
-        }
+          "4": "Standartlar haritası",
+          "5": "Trail hunts with GPX import & export"
+        },
+        "price": "$11.99",
+        "price_unit": "/mo",
+        "price_note": "or $99.99/year — save 30% · 30-day free trial",
+        "cta": "Start free trial"
       },
       "contact_for_pricing": "Ucretler için bize ulaşın",
       "contact_team": "Takımla İletişime Geç",
@@ -2789,31 +3024,33 @@
       "loading": "Yükleniyor...",
       "no_active_jurisdictions_found_run_the_se": "Etkin yargı bölgeleri bulunamadı. Varsayılanları eklemek için tohum göçü çalıştırın.",
       "loading_rule_details": "Yüklüyor...",
-      "add_update_jurisdiction": "Görev Ekle/Güncelle"
+      "add_update_jurisdiction": "Görev Ekle/Güncelle",
+      "quick_setup_by_location": "Quick Setup by Location",
+      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
     },
     "audit_logs_enabled": "Audit Logları Etkin",
     "cookiepolicypage": {
       "cookie_policy": "Cookie Policy",
-      "last_updated_may_2026": "May 2026 itibarıyla son güncelleme",
-      "what_are_cookies": "Çerezler Nedir?",
-      "cookies_are_small_text_files_placed_on_y": "Çerezler, bir web sitesi tarafından cihaza yerleştirilen küçük metin dosyalarıdır. Peripateticware, platformu işlemek için gereken minimum çerez setini kullanır.",
-      "cookies_we_use": "Çerezlerimiz",
-      "strictly_necessary": "Mutatakip Zorunlu",
-      "these_cookies_are_essential_for_the_serv": "Bu çerezler hizmetin işlemesi için gereklidırlar. Devre dışı bırakılmazlar.",
-      "analytics_amp_performance": "Analitikler ve Performans",
-      "peripateticware_does_not_currently_use_t": "PeripatetikWare şu anda üçüncü taraf analitik çerezleri kullanmaz. Sunucu tarafı metrikler etkinleştirildiğinde, herhangi bir çerez ayarlamadan işlenir.",
-      "advertising": "Reklam",
-      "peripateticware_is_adfree_we_do_not_plac": "PeripatetikWare reklamsızdır. Herhangi bir reklam çerezini yerleştirmemiz yoktur.",
-      "managing_cookies": "Çerez Yönetimi",
-      "you_can_clear_cookies_at_any_time_throug": "Çerezleri, tarayıcı ayarlarınız aracılığıyla istediğiniz zaman silebilirsiniz. Oturum açma çerezlerini silmeniz durumunda Hizmetten oturumunuz kapatılacaktır.",
+      "last_updated_may_2026": "Last updated: May 2026",
+      "what_are_cookies": "What Are Cookies?",
+      "cookies_are_small_text_files_placed_on_y": "Cookies are small text files placed on your device by a website. Peripateticware uses a minimal set of cookies strictly necessary to operate the platform.",
+      "cookies_we_use": "Cookies We Use",
+      "strictly_necessary": "Strictly Necessary",
+      "these_cookies_are_essential_for_the_serv": "These cookies are essential for the Service to function. They cannot be disabled.",
+      "analytics_amp_performance": "Analytics &amp; Performance",
+      "peripateticware_does_not_currently_use_t": "Peripateticware does not currently use third-party analytics cookies. When server-side metrics are enabled they are processed without setting any cookies.",
+      "advertising": "Advertising",
+      "peripateticware_is_adfree_we_do_not_plac": "Peripateticware is ad-free. We do not place any advertising cookies.",
+      "managing_cookies": "Managing Cookies",
+      "you_can_clear_cookies_at_any_time_throug": "You can clear cookies at any time through your browser settings. Clearing auth cookies will log you out of the Service.",
       "changes_to_this_policy": "Changes to This Policy",
       "we_may_update_this_policy_as_the_service": "We may update this policy as the Service evolves. Significant changes will be communicated via in-app notification.",
-      "contact": "İletişim",
-      "back_to_home": "geri ev",
-      "auth_token_desc": "Oturum JWT'nizi saklar. 24 saat sonra sona erer.",
-      "auth_user_desc": "Kullanıcı profiliniz (adınız, rolünüz) saklanır. Çıkış yaparken temizlenir.",
-      "i18nextlng_desc": "Seçtiğiniz dil tercihini hatırlar.",
-      "questions": "Sorular?"
+      "contact": "Contact",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Stores your session JWT. Expires after 24 hours.",
+      "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
+      "i18nextlng_desc": "Remembers your chosen language preference.",
+      "questions": "Questions?"
     },
     "view_photos_videos_and_notes_from_your_c": "Fotoğraf ve videoları, çocukun dış etkinlikleri ve altyapı çalışmaları hakkında notlar görüntüleyin.",
     "photos_videos_captured": "Foto ve video yakalandı",
@@ -2822,7 +3059,58 @@
     "built_with_privacy_first": "İlkesi Öncelikle Geliştirildi",
     "coppa_gdpr_ccpa_compliant": "COPPA, GDPR, CCPA uyumlu",
     "privacypage": {
-      "back_to_home": "geri ev sayfasına"
+      "back_to_home": "← Back to Home",
+      "title": "Privacy Policy",
+      "jurisdictions_enforced": "jurisdictions enforced",
+      "jurisdictions_monitored": "jurisdictions monitored (violations logged, not yet blocked)",
+      "rules_last_updated": "Rules last updated",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Information We Collect",
+      "1a_title": "Account information",
+      "1a_body": "When a teacher, parent, or homeschool educator signs up, we collect a name, email address, username, and password (stored as a salted hash, never in plain text). Student accounts are created only through a teacher’s classroom invite, never by public sign-up, and collect the same basic account fields plus, where provided, a date of birth used solely for the age-appropriate handling described in Section 3.",
+      "1b_title": "Location information",
+      "1b_body": "Field activities can use device GPS to detect arrival at a mapped stop (wayfinding) or confirm a student is within an activity’s boundary (geofencing). Location is requested only while an activity is active, only with the device’s own permission prompt, and — for students under 13 — only after a parent has separately consented to GPS use.",
+      "1c_title": "Field evidence & reflections",
+      "1c_body": "Photos, video, audio recordings, and written notebook/journal entries that a student captures as part of an activity are stored so the student, their teacher, and (where linked) their parent can review them and so the student’s portfolio persists across sessions.",
+      "1d_title": "Conversations with Peri",
+      "1d_body": "The optional &ldquo;Ask Peri&rdquo; assistant sends a student’s typed question, and enough recent conversation for context, to a language-model provider (which may be a model we run ourselves or a third-party API such as Anthropic’s Claude) in order to generate a reply. Teachers can disable free-form AI chat for a specific activity, and it is automatically unavailable — regardless of that setting — for students under 13: their messages are answered from the curated, on-device question bank only and never leave the platform.",
+      "1e_title": "Billing information",
+      "1e_body": "Paid subscriptions (available to teacher, parent, and homeschool accounts, never required for students) are processed by Paddle.com, our Merchant of Record. Paddle collects and processes your payment details directly — we never see or store full card numbers.",
+      "1f_title": "Usage & technical information",
+      "1f_body": "Like most online services, our servers log standard technical information (IP address, browser/device type, timestamps, pages or screens viewed) to operate, secure, and troubleshoot the Service.",
+      "2_title": "2. How We Use Information",
+      "2_body": "We use the information above to: provide and operate the Service (running activities, saving progress, generating Peri’s replies); let teachers and, where linked, parents monitor and support a student’s work; process payments for paid accounts; secure the Service and prevent abuse; comply with legal obligations; and communicate with you about your account. We do not use student data for advertising, and we do not build advertising profiles of students.",
+      "3_title": "3. Children’s Privacy (COPPA)",
+      "3_body_2": "For students under 13, we collect only what is needed for the activities their teacher has assigned: an account identifier, field evidence and reflections the student creates, and (only with the separate consent described above) GPS location while an activity is active. We do not knowingly collect more than this, do not show advertising to students, and do not sell or share student information for cross-context behavioral advertising.",
+      "3_body_3": "A parent or guardian who has approved a child’s account may at any time: review the personal information we have collected from their child; request that it be corrected or deleted; and refuse to allow any further collection or use of their child’s information (which will deactivate the account). Contact privacy@peripateticware.com to exercise any of these rights — see Section 8 for how we handle the request.",
+      "4_title": "4. Schools, Teachers & FERPA",
+      "5_title": "5. How We Share Information",
+      "5_body_intro": "We do not sell personal information, and we never have. We share information only in these limited circumstances:",
+      "5_item_1": "With the student’s own teacher and, where a parent-child link has been approved, their parent — this is the core of how the Service works.",
+      "5_item_2": "With service providers who process data on our behalf under contract, and only for the purpose we hired them for: Paddle.com (payment processing), an email delivery provider (transactional email such as verification links and classroom invites), and AI language-model providers (to generate Peri’s replies, as described in Section 1).",
+      "5_item_3": "If required by law, subpoena, or a good-faith belief that disclosure is necessary to protect the safety of a student or the public.",
+      "5_item_4": "In connection with a merger, acquisition, or sale of assets — in which case we would require the successor to honor the commitments in this policy.",
+      "6_title": "6. Data Retention",
+      "6_body": "We keep account and activity data for as long as the account is active, plus a limited period afterward to allow reactivation, meet legal/record-keeping obligations, and resolve disputes. When a teacher, parent, or platform administrator deletes a student’s account, or a parent exercises the deletion right described in Section 3, we delete or de-identify the associated personal data within a reasonable period, except where we are legally required to retain it.",
+      "7_title": "7. Your Rights & Regional Disclosures",
+      "7_body_intro": "Wherever you or your child are located, you can ask us to: tell you what personal information we hold; correct it; delete it; or provide a copy of it. Email privacy@peripateticware.com, or use the",
+      "do_not_sell_link": "Do Not Sell or Share My Personal Information",
+      "7_body_intro_end": "form for a California opt-out request specifically. We will verify the request and respond within the time required by applicable law.",
+      "7_gdpr": "EEA/UK (GDPR): our legal bases for processing are performance of a contract (running the Service you or your school signed up for), legitimate interests (security, service improvement), consent (GPS location, Peri chat where applicable), and legal obligation. You additionally have the right to restrict or object to processing, to data portability, and to lodge a complaint with your local supervisory authority.",
+      "7_ccpa": "California (CCPA/CPRA): in the preceding 12 months we have not sold or shared personal information for cross-context behavioral advertising. California residents have the right to know, delete, correct, and opt out of sale/sharing (which, again, we do not do), and to not be discriminated against for exercising these rights.",
+      "7_other": "Canada (PIPEDA), Brazil (LGPD), and Singapore/APAC (PDPA) residents have equivalent access, correction, and deletion rights under those frameworks, which we honor through the same request channel above.",
+      "8_title": "8. Security",
+      "8_body": "We use industry-standard safeguards to protect your information, including encryption of sensitive fields such as email addresses at rest, encrypted connections in transit, and access controls that limit who can see student data to that student’s own teacher and linked parent(s). No method of storage or transmission is 100% secure, and we work continuously to find and fix gaps rather than claim perfection.",
+      "9_title": "9. International Data Transfers",
+      "9_body": "Our servers and service providers are located in the United States. If you are accessing the Service from outside the United States, your information will be transferred to, stored, and processed in the United States, which may have different data protection laws than your own country.",
+      "10_title": "10. Changes to This Policy",
+      "10_body": "We’ll update the &ldquo;Last updated&rdquo; date above when we make changes to this policy, and will notify account holders by email of any change that materially reduces your rights.",
+      "11_title": "11. Contact Us",
+      "11_body": "Questions about this policy, or a request under Sections 3 or 7?",
+      "see_also": "See also our",
+      "see_also_engine": "Privacy Engine",
+      "see_also_mid": "(a closer look at how we technically enforce the rules in this policy) and our",
+      "see_also_terms": "Terms of Service"
     },
     "peripateticware_privacy_engine": "GeçiciWare Gizlilik Motoru",
     "privacy": {
@@ -2834,33 +3122,29 @@
       "summary_title": "Gizlilik tasarım",
       "summary_subtitle": "Okul için tasarlanmış, ebeveynler tarafından güvenilmektedir",
       "summary_desc": "Peripatetiksofta COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD ve PDPA çerçevesiyle ihtiyaç duyulan tüm şartları yerine getirmektedir. Öğrenci verileri hiçbir zaman satılmaz, reklam amaçlı kullanılmaz ve izni olmaksızın paylaşılmaz.",
-      "summary_cta": "Görünce çalışır",
-      "engine_core_title": "İşlem motoru nasıl çalışır",
-      "engine_core_desc": "Her öğrenci kanıtı, o öğrencinin yargısal bölgesi için etkin olan uyum kurallarıyla karşılaştırılmeden önce asla saklanmaz.",
-      "jurisdiction_aware_title": "Yargı Alanı Bilinçli",
-      "jurisdiction_aware_desc": "Otomatik olarak öğrencinin bulunduğu yerdeki gizlilik kanunlarını tespit eder ve o bölge için uygun kuralları uygular.",
-      "auto_updates_title": "Otomatik Güncellemeler",
-      "auto_updates_desc": "Yönetim değişiklikleri nedeniyle merkezi olarak güncellenen uyumlu kuralların her sınıfta el işlemi olmadan en son halde kalması sağlanır.",
+      "summary_cta": "See how it works",
+      "engine_core_title": "How the Privacy Engine works",
+      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
+      "jurisdiction_aware_title": "Jurisdiction Aware",
+      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
+      "auto_updates_title": "Auto Updates",
+      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
       "versioned_rules_title": "Sürümli Kurallar",
-      "versioned_rules_desc": "Herşeyden önce, her kural değişikliği versiyonlanmış ve izlenebilir hale getirilmiştir. Böylece, herhangi bir veriye hangi politikanın uygulanıp uygulandığı her zaman görülebilir.",
-      "extensible_title": "Uygulanabilir",
-      "extensible_desc": "Yeni bölgeler ve çerçeveler eklenebilirken uygulamanın çalışma şekli değiştirilmeden de kalır — motor adaptasyon yapar, kod değil.",
+      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
+      "extensible_title": "Extensible",
+      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
       "encrypted_by_default_title": "Şifrelenmiş Olarak Açılış",
-      "encrypted_by_default_desc": "Öğrenci verileri dinlenme ve iletişim sırasında şifreli tutulur ve etkinleştirmek için herhangi bir yapılandırma gerektirmez.",
+      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
       "on_device_first_title": "Çevrimiçi İlk",
-      "on_device_first_desc": "Mümkün olduğunca hassas işlemler öğrencinin kendi cihazında yapılırken, sunucumuzla hiçbirşey gönderilmeden önce gerçekleşir.",
+      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
       "consent_framework_title": "iziniz",
-      "consent_framework_desc": "Ebe ve yasal bakımdan yetkilendirilenler toplanan verileri kontrol eder ve istediğinde izni gözden geçirebilir veya geri alabilir.",
-      "cta_section_title": "Güveninizin kazanılmak için inşa edildiğiiz, sadece uyum işaretlerinizi elde etmek için değil.",
-      "cta_section_subtitle": "Öğrenci verileri her adımda nasıl işleniyorunu görün",
-      "cta_section_desc": "Peripateticware’in Gizlilik Motoru ilk günden itibaren aktiftir. Standart çerçeveler için herhangi bir yapılandırma gerekmez — FERPA, COPPA, GDPR ve CCPA, öğrencinin tespit edilen yargı bölgesine göre otomatik olarak etkinleştirilir.",
+      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
+      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
+      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
+      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
       "loading_status": "Yükleniyor uyumluluk durumu...",
       "coppa_family_title": "Çocukların 13 yaşından küçük olduğu aileler için",
-      "do_not_sell_link": "Satın alma veya kişisel bilgilerimi paylaşma",
-      "gdpr_card_desc": "Genel Veri Koruma Yönetmeliği. Avrupa Birliği’ndeki okullar ve öğrenciler için geçerlidir. Veriler yalnızca yasal dayanaklar çerçevesinde işlenir; öğrenciler ve veliler tam erişim ve silme haklarına sahiptir.",
-      "ferpa_card_desc": "Aile Eğitim Hakları ve Gizlilik Yasası. ABD’deki okullarda öğrenci eğitim kayıtlarına erişimi düzenler. Öğrenci verileri, okulun veya velinin yazılı onayı olmadan asla paylaşılmaz.",
-      "ccpa_card_desc": "Kaliforniya Tüketici Gizliliği Yasası. Kaliforniya’da ikamet eden kişiler için geçerlidir. Öğrenciler ve veliler, istedikleri zaman kişisel bilgilerinin açıklanmasını, silinmesini veya bu bilgilerin satışından vazgeçilmesini talep edebilirler.",
-      "coppa_card_desc": "Çocukların Çevrimiçi Gizliliğinin Korunmasına İlişkin Yasa. Amerika Birleşik Devletleri’nde 13 yaşın altındaki kullanıcılar için geçerlidir. Reşit olmayanlardan herhangi bir kişisel veri toplanmadan önce ebeveyn onayı alınır."
+      "do_not_sell_link": "Satın alma veya kişisel bilgilerimi paylaşma"
     },
     "capture_photosvideo": "Foto/Video Çek",
     "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",
@@ -2900,7 +3184,17 @@
       "no_specific_frameworks_are_preselected_b": "Cevabınızın temelına göre önceden seçilmiş hiçbir çerçeve yok. Her zaman Ayarlar bölümünden etkinleştirebilirsiniz.",
       "select_your_state": "Seçmek istediğiniz eyalet",
       "student_data_is_never_sold_or_shared_wit": "🔒 Öğrenci verileri asla reklamcılarıyla satılmaz veya paylaşılmaz. Tüm veriyi her zaman Admin > Gizlilik Yapılandırması sayfasından dışarı aktarabilir veya silebilirsiniz.",
-      "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR, GB"
+      "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR, GB",
+      "state_province": "State / Province",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "region_optional": "Region (optional)",
+      "region_placeholder": "A specific district or local law, if you know of one",
+      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
+      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
+      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
+      "something_not_right": "Something not right? Let us know",
+      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
+      "review_submitted": "Thanks — sent for review."
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "Seçim görevi başına sağlayıcı. Değişiklikler hemen etkin olacak — yeniden başlatma gerekmez.",
@@ -2946,7 +3240,15 @@
       "change_log": "Değişiklik Günlüğü",
       "unique_identifier_stored_in_the_database": "Oturum açma kimliği veritabanında saklanır — otomatik olarak oluşturulur.",
       "title_generate_a_new_uuid": "Oluşturun bir yeni UUID",
-      "placeholder_what_changed_in_this_version": "Bu sürümde ne değişti?"
+      "placeholder_what_changed_in_this_version": "Bu sürümde ne değişti?",
+      "select": "— Select —",
+      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
+      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
+      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
+      "pending_review": "pending review",
+      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
+      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
+      "placeholder_district_or_local_law": "District or local law"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "Kendi Anahtarınızı Getirin — Güncelleme Gerekiyor",
@@ -2974,7 +3276,7 @@
       "title_remove": "Sil"
     },
     "cta_privacy_note": "FERPA ve COPPA uyumlu. Öğrenci verileri hiçbir zaman satılmaz veya paylaşılmaz.",
-    "team_1_bio": "Paul on bir decade öğretmen olarak çalıştı, dörder yıl edtech şirketlerinde işledi ve okullardan ve kitaplardan öğrenmeyi nasıl kırarak mümkün kılabileceğini iki decade boyunca deniyor. Peripateticware LLM gelişimlerinden yararlanıyor ve mobil teknolojileri kullanıyor ki öğrenciler herhangi bir yerde öğrenebilsinler de öğretmenleri tarafından rehberlik görseler.",
+    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
     "pages_adminauditlogpage": {
       "export_csv": "İndirle CSV",
       "all": "Tüm",
@@ -3024,14 +3326,428 @@
       "contact_us": "İletişime geçin"
     },
     "pages_privacypage": {
-      "live": "Canlı"
+      "live": "Canlı",
+      "privacyperipateticwarecom": "privacy@peripateticware.com"
     },
     "privacy_data": "Gizlilik ve Veri",
-    "extractionWizard": {
-      "step_review": "İnceleme",
-      "step_upload": "Yükle",
-      "step_parse": "Ayrıştır",
-      "step_save": "Kaydet"
+    "components_billing_plancard": {
+      "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
+      "refund_policy": "refund policy",
+      "plan": "Plan",
+      "current_plan": "Current plan",
+      "save_30": "save 30%"
+    },
+    "pages_refundpolicypage": {
+      "helloperipateticwarecom": "hello@peripateticware.com"
+    },
+    "calendar": {
+      "prev_month": "Previous month",
+      "next_month": "Next month",
+      "today": "Today",
+      "no_events_this_day": "Nothing scheduled for this day."
+    },
+    "cookie_preferences": "Cookie preferences",
+    "cookie_status_on": "Currently: analytics cookies enabled. ",
+    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "components_errorboundary": {
+      "something_went_wrong": "Something went wrong",
+      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
+      "try_again": "Try again",
+      "reload_page": "Reload page"
+    },
+    "components_teacher_projectcompletionreport": {
+      "status_completed": "Completed",
+      "status_in_progress": "In progress",
+      "status_not_started": "Not started",
+      "col_activity": "Activity",
+      "col_completed": "Completed",
+      "col_participants": "Participants",
+      "col_evidence": "Evidence",
+      "col_student": "Student",
+      "col_last_activity": "Last Activity",
+      "empty": "No activities linked to this project yet.",
+      "title_by_activity": "Completion by Activity",
+      "title_by_participant": "Completion by Participant",
+      "no_participants": "No one has started this project yet."
+    },
+    "components_teacher_projectlivetracker": {
+      "title_live_map": "Live Map",
+      "show_all": "Show everyone",
+      "active_now": "Active Now",
+      "live": "LIVE",
+      "empty": "No one is currently active in this project.",
+      "empty_hint": "This updates automatically once a student starts a field session.",
+      "not_configured": "No activities in this project have location tracking enabled.",
+      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
+    },
+    "generate_with_ai": "Generate with AI",
+    "activity_title": "Activity title",
+    "grade_level": "Grade level",
+    "taxonomy_type": "Taxonomy type",
+    "taxonomy_level": "Taxonomy level",
+    "generating": "Generating…",
+    "generate_criteria": "Generate Criteria",
+    "components_teacher_rubricbuilder": {
+      "blooms_revised": "Bloom's Revised",
+      "dok_webbs": "DOK (Webb's)",
+      "solo": "SOLO",
+      "marzanos": "Marzano's",
+      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+    },
+    "view_on_wikidata": "View on Wikidata",
+    "pages_student_studentmessagespage": {
+      "title": "Messages",
+      "messages_title": "Messages",
+      "loading": "Loading…",
+      "placeholder_write_a_reply": "Write a reply…",
+      "back_to_messages": "Back to messages",
+      "you": "You",
+      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
+      "announcements_title": "Classroom Announcements",
+      "no_announcements_yet": "No announcements yet.",
+      "no_messages_yet": "No messages from teachers yet."
+    },
+    "announcements": "Announcements",
+    "projectCompletionReportPage": {
+      "back": "← Back to Project",
+      "title": "Completion Report",
+      "no_project_selected": "No project selected."
+    },
+    "projectLiveTrackingPage": {
+      "back": "← Back to Project",
+      "title": "Live Tracking",
+      "no_project_selected": "No project selected."
+    },
+    "projectnewpage": {
+      "new_project": "New Project",
+      "subtitle": "Set up a new learning project for your students."
+    },
+    "pages_teacher_teachercalendarpage": {
+      "title": "Calendar",
+      "date": "Date",
+      "type": "Type",
+      "placeholder_eg_river_study_field_trip": "e.g. River study field trip",
+      "subtitle": "Planned and completed activities for your class, plus any events you add.",
+      "description_optional": "Description (optional)"
+    },
+    "pages_teacher_teachermessagespage": {
+      "title": "Messages",
+      "classroom": "Classroom",
+      "message": "Message",
+      "loading": "Loading…",
+      "send_to": "Send to",
+      "a_specific_student": "A specific student",
+      "student": "Student",
+      "choose_a_student": "Choose a student…",
+      "subject": "Subject",
+      "placeholder_write_a_reply": "Write a reply…",
+      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
+      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder",
+      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
+      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
+      "a_specific_students_parent": "A specific student's parent",
+      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
+      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
+      "students": "Students (choose one or more)",
+      "no_students_in_this_classroom": "No students in this classroom yet.",
+      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
+      "no_linked_parent_found_for_some_students_": "No linked parent found yet for one or more of the selected students.",
+      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
+    },
+    "pages_teacher_trackingsettings": {
+      "tier_trip": "Trip (fast)",
+      "tier_long_running": "Long-running (slow)",
+      "title": "Tracking Settings",
+      "empty": "No activities yet.",
+      "select_all": "Select all",
+      "enable_selected": "Enable tracking",
+      "disable_selected": "Disable tracking",
+      "col_activity": "Activity",
+      "col_project": "Project",
+      "col_tracking": "Tracking",
+      "on": "On",
+      "off": "Off",
+      "back": "← Back to Activities",
+      "subtitle": "GPS live-tracking status across every activity in your account.",
+      "col_tier": "Poll cadence if live"
+    },
+    "app": {
+      "loading": "Loading…"
+    },
+    "components_imagecaptionmodal": {
+      "cancel": "Cancel",
+      "placeholder_describe_the_image": "Describe the image",
+      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "for_screen_readers": "(for screen readers)",
+      "optional_shown_under_the_image": "(optional -- shown under the image)",
+      "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
+    },
+    "blog": "Blog",
+    "components_seo": {
+      "title_origin_story": "Origin Story"
+    },
+    "components_trialexpirybanner": {
+      "see_plans": "See plans",
+      "aria_label_dismiss": "Dismiss"
+    },
+    "components_account_mfasettings": {
+      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
+      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "done": "Done",
+      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
+      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
+      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
+      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
+      "confirm_your_password_to_disable": "Confirm your password to disable:",
+      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+    },
+    "components_applied_standards": {
+      "loading": "Checking standards…",
+      "approve": "Approve",
+      "dismiss": "Dismiss",
+      "remove": "Remove",
+      "restore": "Restore",
+      "add_standard": "+ Add a standard",
+      "search_placeholder": "Search standards…",
+      "search": "Search",
+      "cancel": "Cancel",
+      "no_results": "No matches.",
+      "added": "Added",
+      "add": "Add",
+      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
+      "none_yet": "No standards matched this activity's content yet — you can add one manually below."
+    },
+    "components_standards_explorer": {
+      "title": "Explore Standards",
+      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
+      "searching": "Searching…",
+      "search": "Search",
+      "clear": "Clear",
+      "search_failed": "Search failed. Try again in a moment.",
+      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
+      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
+      "no_results": "No matching standards found.",
+      "generate_activity": "✨ Generate activity from these standards"
+    },
+    "components_teacher_activitywizard": {
+      "error_prefix": "Error",
+      "step_basics": "Basics",
+      "step_experience": "Experience",
+      "step_assessment": "Assessment",
+      "step_outcomes": "Outcomes",
+      "step_review": "Review",
+      "basics_title": "The basics",
+      "about_place": "About this place",
+      "coordinates": "Coordinates",
+      "optional": "Optional",
+      "kind_group": "Activity kind",
+      "wayfaring": "Wayfaring",
+      "investigative": "Investigative",
+      "setting_title": "Setting and timing",
+      "tracking_title": "Live tracking",
+      "on": "On",
+      "off": "Off",
+      "prompts_title": "Student prompts",
+      "ai_chat": "Ask Peri (AI chat)",
+      "recommended": "Recommended",
+      "attached": "1 attached",
+      "none": "None",
+      "edit": "Edit",
+      "review_title": "Review and create",
+      "not_set": "Not set yet",
+      "grade_subject": "Grade and subject",
+      "none_yet": "None yet",
+      "quick_preview": "Quick Preview",
+      "this_place": "This place",
+      "close_dialog": "Close dialog",
+      "close": "Close",
+      "last_step": "Last step",
+      "library": "Outcome library",
+      "saved": "saved",
+      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "loading": "Loading…",
+      "added": "Added",
+      "add": "Add",
+      "written": "written",
+      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
+      "thinking_level": "Thinking level",
+      "evidence": "Evidence",
+      "in_library": "In my library",
+      "save_to_library": "Save to my library",
+      "remove": "Remove",
+      "write_new": "Write a new outcome",
+      "cov_outcomes": "Outcomes",
+      "cov_levels": "Thinking levels",
+      "cov_standards": "Standards matched",
+      "start_location": "A location",
+      "start_type": "An activity type",
+      "start_assessment": "An assessment",
+      "start_outcomes": "Learning outcomes",
+      "lets_begin": "Let's begin",
+      "start_group": "Start from",
+      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "state": "State",
+      "any_state": "Any state",
+      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "search": "Search",
+      "no_results": "No matches.",
+      "search_results": "Search results",
+      "suggested_standards": "Suggested standards",
+      "suggested": "Suggested",
+      "progress": "Progress",
+      "change_start": "Change start point",
+      "back": "Back",
+      "next": "Next",
+      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
+      "place_ready": "Background, features and nearby places are ready.",
+      "peri_suggestions": "✨ Peri AI suggestions",
+      "peri_offline_questions": "🔌 Offline Peri questions",
+      "experience_title": "How will students experience it?",
+      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
+      "kind_title": "Wayfaring or investigative",
+      "wayfaring_note": "Students move through a route and respond at stops along the way.",
+      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
+      "assessment_title": "How will you assess it?",
+      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
+      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
+      "outcome_added": "Outcome added from your library.",
+      "outcome_saved": "Outcome saved to your library for reuse.",
+      "outcomes_title": "What should students be able to do?",
+      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
+      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
+      "this_activity_outcomes": "This activity's outcomes",
+      "start_location_note": "I know where students will be. Peri suggests what to do there.",
+      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
+      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
+      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
+      "start_title": "What do you want to start from?",
+      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
+      "state_not_set": "Not set by your administrator",
+      "search_standards": "Search for a standard",
+      "standards_loading": "Peri is matching standards…",
+      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
+      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
+      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
+      "start_pane": "Choose where to start"
+    },
+    "components_teacher_activitymanagerwizardtest": {
+      "peri_suggestions": "peri suggestions",
+      "activities_list": "activities list"
+    },
+    "components_teacher_wizard_activitywizardtest": {
+      "title_pond_study": "Pond study",
+      "title_pond": "Pond"
+    },
+    "two_factor_authentication": "Two-Factor Authentication",
+    "pages_bloglistpage": {
+      "blog": "Blog",
+      "loading": "Loading…",
+      "title_blog": "Blog",
+      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
+      "no_posts_yet_check_back_soon": "No posts yet — check back soon."
+    },
+    "pages_blogpostpage": {
+      "loading": "Loading…",
+      "post_not_found": "Post not found",
+      "title_post_not_found": "Post Not Found",
+      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
+    },
+    "parent_requests": "Parent Requests",
+    "requested_on": "Requested",
+    "deny": "Deny",
+    "pages_admin_adminblogeditorpage": {
+      "loading": "Loading…",
+      "restore": "Restore",
+      "discard": "Discard",
+      "title": "Title",
+      "commaseparated": "(comma-separated)",
+      "content": "Content",
+      "placeholder_post_title": "Post title",
+      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
+      "title_remove_cover_image": "Remove cover image",
+      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "placeholder_product_homeschool_standards": "product, homeschool, standards",
+      "title_replace_this_image": "Replace this image",
+      "title_remove_this_image": "Remove this image",
+      "placeholder_write_in_markdown": "Write in Markdown…",
+      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
+      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
+      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
+      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
+      "nothing_to_preview_yet": "Nothing to preview yet.",
+      "title_edit_captionattribution": "Edit caption/attribution"
+    },
+    "pages_admin_adminblogpage": {
+      "blog": "Blog",
+      "loading": "Loading…",
+      "placeholder_search_by_title_or_slug": "Search by title or slug…",
+      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
+    },
+    "pages_admin_adminpageblockeditorpage": {
+      "loading": "Loading…",
+      "format": "Format",
+      "plain_text": "Plain text",
+      "markdown": "Markdown",
+      "content": "Content",
+      "status": "Status",
+      "history": "History",
+      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
+      "published_live_on_the_site": "Published (live on the site)",
+      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
+      "no_saved_versions_yet": "No saved versions yet.",
+      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "placeholder_landing": "landing",
+      "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
+    },
+    "pages_admin_adminpagespage": {
+      "pages": "Pages",
+      "loading": "Loading…",
+      "placeholder_search_by_block_key_or_content": "Search by block key or content…",
+      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
+    },
+    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
+    "activity_description": "Activity description",
+    "learning_objectives_one_per_line": "Learning objectives (one per line)",
+    "ai_generated_overview": "🤖 AI-generated overview — verify details",
+    "looking_up_more_about_this_place": "Looking up more about this place…",
+    "learn_about_this_place": "Learn about this place",
+    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "pages_homeschool_homeschoolcalendarpage": {
+      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+    },
+    "pages_student_studentcalendarpage": {
+      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+    },
+    "components_blogpostview": {
+      "nothing_to_preview_yet": "Nothing to preview yet."
+    },
+    "try_demo_account": "Or try a demo account — no signup required →",
+    "early_access_title": "We're just getting started",
+    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
+    "early_access_cta": "Create your free account",
+    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
+    "no_pending_parent_requests": "No pending parent requests right now.",
+    "pricing_nav_label": "Pricing",
+    "refundpolicypage": {
+      "back_to_home": "← Back to Home",
+      "title": "Refund &amp; Cancellation Policy",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Free Trial",
+      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
+      "2_title": "2. Subscriptions & Billing",
+      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
+      "3_title": "3. 14-Day Money-Back Guarantee",
+      "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
+      "4_title": "4. Renewal Charges",
+      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
+      "5_title": "5. How to Cancel",
+      "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
+      "6_title": "6. Exceptional Circumstances",
+      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "7_title": "7. Contact",
+      "7_body": "Questions about billing, cancellations, or refunds?"
     }
   }
 }
