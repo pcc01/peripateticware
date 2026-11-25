@@ -1,7 +1,7 @@
 {
   "landing": {
     "auth": {
-      "email_placeholder": "you@example.com",
+      "email_placeholder": "you@example.com or username",
       "login_title": "歡迎回來",
       "login_subtitle": "登录您的Peripateticware账号",
       "demo_accounts_title": "示例账号",
@@ -9,7 +9,7 @@
       "demo_student": "学生：student@example.com",
       "demo_parent": "父：parent@example.com",
       "demo_password": "密码：SecurePassword123",
-      "email_label": "邮件地址",
+      "email_label": "Email or Username",
       "password_label": "密码",
       "password_placeholder": "密码",
       "remember_me": "记录密码",
@@ -42,55 +42,56 @@
     "footer": {
       "brand_title": "Peripateticware",
       "company_name": "Peripateticware",
-      "product_title": "产品",
-      "product_tools": "工具",
-      "product_demo": "示例",
-      "company_title": "公司",
-      "company_about": "关于",
-      "company_team": "队",
-      "company_blog": "博客",
-      "company_careers": "职业",
-      "resources_title": "资源",
-      "resources_docs": "文档",
-      "resources_guides": "指南",
-      "resources_api": "接口",
-      "resources_support": "支持",
+      "product_title": "Product",
+      "product_tools": "Tools",
+      "product_demo": "Demo",
+      "company_title": "Company",
+      "company_about": "About",
+      "company_team": "Team",
+      "company_blog": "Blog",
+      "company_careers": "Careers",
+      "resources_title": "Resources",
+      "resources_docs": "Documentation",
+      "resources_guides": "Guides",
+      "resources_api": "API",
+      "resources_support": "Support",
       "company_contact": "联系",
-      "brand_desc": "户外、基于场地的学习，适用于学生、教师和家庭。",
-      "all_rights": "所有权保留。",
-      "product_features": "特色",
-      "product_pricing": "定价",
-      "legal_title": "legal title",
-      "legal_privacy": "legal privacy",
-      "legal_terms": "legal terms",
-      "legal_cookies": "legal cookies",
-      "legal_contact": "legal contact",
+      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
+      "all_rights": "All rights reserved.",
+      "product_features": "Features",
+      "product_pricing": "Pricing",
+      "legal_title": "Legal",
+      "legal_privacy": "Privacy",
+      "legal_terms": "Terms",
+      "legal_cookies": "Cookies",
+      "legal_contact": "Contact",
       "privacy_protected": "数据受到以下框架保护",
       "product_privacy_engine": "隐私引擎",
       "resources_privacy": "隐私引擎",
-      "legal_do_not_sell": "不得出售或分享我的信息",
-      "legal_licensing": "授权"
+      "legal_do_not_sell": "Do Not Sell or Share My Info",
+      "legal_licensing": "Licensing",
+      "legal_refunds": "Refund Policy"
     },
     "team_1_name": "Paul Cerda",
     "team_2_name": "Lorem Ipsum",
-    "team_2_role": "Lorem Ipsum Dolor",
+    "team_2_role": "Lorem Ipsum",
     "team_2_initial": "L",
-    "team_3_name": "Dolor Sit Amet",
-    "team_3_role": "Consectetur Adipiscing",
-    "team_3_initial": "D",
-    "team_4_name": "Elit Sed Do",
-    "team_4_role": "Eiusmod Tempor",
-    "team_4_initial": "E",
+    "team_3_name": "Lorem Ipsum",
+    "team_3_role": "Lorem Ipsum",
+    "team_3_initial": "L",
+    "team_4_name": "Lorem Ipsum",
+    "team_4_role": "Lorem Ipsum",
+    "team_4_initial": "L",
     "testimonial_1_text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "testimonial_1_author": "Lorem Ipsum · Placeholder Title",
+    "testimonial_1_author": "Lorem Ipsum · Field Name, Grade 0",
     "testimonial_2_text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    "testimonial_2_author": "Dolor Sit · Placeholder Title",
+    "testimonial_2_author": "Lorem Ipsum · Field Name",
     "testimonial_3_text": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    "testimonial_3_author": "Amet Consectetur · Placeholder Title",
+    "testimonial_3_author": "Lorem Ipsum · Field Name",
     "testimonial_4_text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-    "testimonial_4_author": "Adipiscing Elit · Placeholder Title",
-    "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
-    "testimonial_5_author": "Sed Do Eiusmod · Placeholder Title",
+    "testimonial_4_author": "Lorem Ipsum · Field Name",
+    "testimonial_5_text": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam.",
+    "testimonial_5_author": "Lorem Ipsum · Field Name",
     "termspage": {
       "terms_of_service": "Terms of Service",
       "last_updated_may_2026": "Last updated: May 2026",
@@ -102,11 +103,11 @@
       "the_service_is_intended_for_use_by_schoo": "The Service is intended for use by school-age students under the supervision of licensed educators and their guardians. Student accounts must be created by an authorised teacher or institution.",
       "4_privacy_amp_child_safety": "4. Privacy &amp; Child Safety",
       "5_intellectual_property": "5. Intellectual Property",
-      "the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their legal guardian.",
+      "the_peripateticware_platform_is_licensed": "The Peripateticware platform is licensed under the Business Source License 1.1, converting to Apache 2.0 on May 1, 2030. Copyright &copy; 2026 Paul Christopher Cerda. Student-created content remains the property of the student and their institution.",
       "6_prohibited_uses": "6. Prohibited Uses",
       "you_may_not_use_the_service_to_upload_ha": "You may not use the Service to upload harmful content, circumvent safety controls, share student data with unauthorised parties, or engage in any activity that violates applicable law.",
       "7_limitation_of_liability": "7. Limitation of Liability",
-      "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided “as is.” Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
+      "the_service_is_provided_ldquoas_isrdquo_": "The Service is provided &ldquo;as is.&rdquo; Peripateticware shall not be liable for any indirect, incidental, or consequential damages arising from use of the Service.",
       "8_contact": "8. Contact",
       "back_to_home": "← Back to Home",
       "privacy_compliance_intro": "Peripateticware complies with COPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD, and PDPA. Student data is never sold or used for advertising. See our",
@@ -136,11 +137,14 @@
       "invite_student": "邀请学生",
       "placeholder_search_by_name_or_email": "搜索姓名或电子邮件...",
       "you_dont_have_any_classes_yet_create_a_c": "没有任何课程。首先创建一个课程，然后邀请学生参加。",
-      "invitation_sent_the_student_will_get_an_": "邀请已发送。学生将收到包含加入链接的电子邮件。"
+      "invitation_sent_the_student_will_get_an_": "邀请已发送。学生将收到包含加入链接的电子邮件。",
+      "add_a_student": "Add a Student",
+      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
+      "student_added": "Student added to the class and notified in-app."
     },
-    "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    "team_3_bio": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-    "team_4_bio": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "team_4_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "pages_admin_platformadminpage": {
       "adminexamplecom": "admin@example.com",
       "placeholder_search_name_or_email": "搜索名称或电子邮件",
@@ -289,7 +293,11 @@
       "feature_2_title": "导航由珀里指引",
       "feature_2_desc": "每隻烏鴉佩里都會提出正確的問題，幫助您思考更深入，引發靈感，從不直接提供答案。",
       "feature_3_title": "跟踪您的成长",
-      "feature_3_desc": "增长您的能力，完成活动并构建户外学习组合。"
+      "feature_3_desc": "增长您的能力，完成活动并构建户外学习组合。",
+      "feature_4_title": "Follow the Map",
+      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
+      "feature_5_title": "Your Location Stays on Your Phone",
+      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
     },
     "teacher": {
       "cta": "构建活动",
@@ -303,7 +311,11 @@
       "feature_2_title": "实时进度查看",
       "feature_2_desc": "实时查看每个学生的进度，了解他们当前处于哪一阶段，已完成什么任务，以及谁需要帮助。",
       "feature_3_title": "评估内置",
-      "feature_3_desc": "技能跟踪、作品评审和课程对齐，无需额外的评分时间。"
+      "feature_3_desc": "技能跟踪、作品评审和课程对齐，无需额外的评分时间。",
+      "feature_4_title": "Build a Route, Not Just a Pin",
+      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
+      "feature_5_title": "Decide What Families Are Asked",
+      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
     },
     "parent": {
       "cta": "查看进度",
@@ -317,7 +329,11 @@
       "feature_2_title": "周报",
       "feature_2_desc": "探索了什么，记录了什么，能力提升了多少的清晰总结。",
       "feature_3_title": "在圈内",
-      "feature_3_desc": "及时收到活动完成和里程碑达成的通知，不会打断课堂。"
+      "feature_3_desc": "及时收到活动完成和里程碑达成的通知，不会打断课堂。",
+      "feature_4_title": "You Choose What's Shared",
+      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
+      "feature_5_title": "Kept Only as Long as It's Useful",
+      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
     },
     "team_1_role": "创始人&PM",
     "team_1_initial": "“P”",
@@ -459,7 +475,11 @@
       "grade": "等级",
       "latitude": "纬度",
       "longitude": "经度",
-      "add": "添加"
+      "add": "添加",
+      "youngest_grade": "Youngest grade",
+      "oldest_grade": "Oldest grade",
+      "mixed_age_toggle": "This activity has students across multiple grades",
+      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
     },
     "difficulty_level": "困难等级",
     "remember": "记",
@@ -632,7 +652,10 @@
     "m_accuracy": "准确度",
     "wikilocationinfo": {
       "latitude": "纬度",
-      "longitude": "经度"
+      "longitude": "经度",
+      "architect_or_artist": "Architect/Artist:",
+      "construction_date": "Constructed:",
+      "historical_significance": "Historical Significance:"
     },
     "teaching_tip": "教学提示：",
     "index": {
@@ -767,7 +790,6 @@
     "your_children": "儿童（{count}）",
     "pending": "待处理",
     "quick_links": "快速链接",
-    "calendar": "日历",
     "reports": "报表",
     "progress_overview": "进度概览",
     "overall_progress": "整体进度",
@@ -1020,7 +1042,14 @@
       "status": "状态",
       "project_activities": "项目活动",
       "activity": "活动",
-      "back": "返回"
+      "back": "返回",
+      "planning": "Planning",
+      "completed": "Completed",
+      "archived": "Archived",
+      "not_found": "Project not found.",
+      "live_tracking": "Live Tracking",
+      "completion_report": "Completion Report",
+      "no_activities": "No activities linked to this project yet."
     },
     "active": "活动中",
     "project_description": "项目描述",
@@ -1113,7 +1142,10 @@
       "email_confirmed_you_can_now_sign_in": "邮件已确认！现在可以登录。",
       "that_link_has_expired_please_request_a_n": "链接已过期。请申请新的链接。",
       "that_link_is_invalid_please_try_again": "无效链接。请重试。",
-      "or": "或"
+      "or": "或",
+      "twofactor_authentication": "Two-factor authentication",
+      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
+      "back_to_login": "← Back to login"
     },
     "nav_homeschool": "学习在家",
     "cookie_consent_title": "饼干通知",
@@ -1129,7 +1161,11 @@
       "feature_2_desc": "上传您州的报告要求，自动跟踪覆盖情况，随着子女完成活动而进行。准确知道已达标、部分达标和未达标项。",
       "feature_3_title": "项目报告",
       "feature_3_desc": "自动生成PDF投资组合报告和活动日志CSV，用于州档案或您自己的记录，无需手动电子表格。",
-      "features_title": "一切家庭教学需求"
+      "features_title": "一切家庭教学需求",
+      "feature_4_title": "Turn a Trail Into a Hunt",
+      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
+      "feature_5_title": "You Hold the Consent",
+      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
     },
     "hs_feat_ai_title": "人工智能查询",
     "hs_how_title": "如何运作",
@@ -1153,7 +1189,16 @@
       "add": "添加",
       "no_criteria_extracted_try_a_different_fi": "无法提取标准。请尝试不同的文件或手动添加。",
       "aria_label_upload_file_pdf_csv_or_excel": "上传文件（PDF、CSV或Excel）",
-      "aria_label_criteria_set_name": "标准名称"
+      "aria_label_criteria_set_name": "标准名称",
+      "country": "Country",
+      "aria_label_country": "Country these standards belong to",
+      "united_states": "United States",
+      "canada": "Canada",
+      "province": "Province",
+      "state": "State",
+      "aria_label_state": "State/province these standards belong to",
+      "select_a_state": "Select…",
+      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "加载中...",
@@ -1294,7 +1339,10 @@
       "aria_label_childs_email_address": "儿童的电子邮件地址",
       "aria_label_childs_password": "儿童密码",
       "aria_label_childs_grade_level_012": "儿童年级（0-12）",
-      "no_children_added_yet_add_your_first_chi": "没有添加任何子女。请添加您的第一个子女开始。"
+      "no_children_added_yet_add_your_first_chi": "没有添加任何子女。请添加您的第一个子女开始。",
+      "remove_child": "Remove child",
+      "removing": "Removing…",
+      "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
       "loading": "加载中",
@@ -1355,7 +1403,8 @@
       "as_a_homeschool_teacher_you_operate_outs": "作为一名在家教师，您不受机构FERPA要求的约束，但对任何未满13岁的儿童仍然适用COPPA。",
       "privacy_amp_data": "隐私与数据",
       "your_privacy_settings_are_managed_by_you": "您的隐私设置由您的合作社或组织管理。请联系管理员进行更改。",
-      "youre_using_default_privacy_settings_rev": "警告：您正在使用默认隐私设置。请查看并保存以下内容以确认您的配置。"
+      "youre_using_default_privacy_settings_rev": "警告：您正在使用默认隐私设置。请查看并保存以下内容以确认您的配置。",
+      "two_factor_authentication": "Two-Factor Authentication"
     },
     "request_sent": "发送请求",
     "link_another": "连接另一个子项",
@@ -1488,7 +1537,14 @@
       "no_all_13": "No — all 13+",
       "aria_label_back_to_login": "返回登录",
       "helps_us_apply_the_right_privacy_framewo": "帮助我们为您的学生应用正确的隐私框架（FERPA、COPPA、GDPR等）。",
-      "this_determines_whether_coppa_applies_": "适用于您的帐户的COPPA是否生效。"
+      "this_determines_whether_coppa_applies_": "适用于您的帐户的COPPA是否生效。",
+      "country_code": "2-letter country code",
+      "country_code_placeholder": "e.g. DE, FR, GB",
+      "state_province": "State / Province",
+      "select_state": "— Select state —",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "password_placeholder": "At least 8 characters",
+      "confirm_password_placeholder": "Re-enter your password"
     },
     "cta_btn": "开始",
     "components_student_extendedwritingpanel": {
@@ -1532,7 +1588,30 @@
       "location_data_is_used_only_to_verify_stu": "位置数据仅用于验证学生在活动地点的出席",
       "parental_or_guardian_consent_is_in_place": "法定要求时已获监护人同意",
       "student_view_preview": "学生预览",
-      "privacy_settings_confirmed": "隐私设置已确认 ✓"
+      "privacy_settings_confirmed": "隐私设置已确认 ✓",
+      "location": "📍 Location",
+      "assessments": "Assessments",
+      "applied": "applied",
+      "attach_rubric": "Attach Rubric",
+      "filter_rubrics": "Filter rubrics…",
+      "ai_suggests": "AI suggests:",
+      "accept": "Accept",
+      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
+      "ai_interaction_label": "Student AI Interaction",
+      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
+      "ai_interaction_curated_label": "Curated Question Bank Only",
+      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
+      "background_context": "📖 Background & Context",
+      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
+      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
+      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
+      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
+      "min_10_characters": "Minimum 10 characters",
+      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
+      "state_curriculum_standards": "State / Curriculum Standards",
+      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
+      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
+      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
     },
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "地点名称",
@@ -1577,7 +1656,9 @@
       "title_copy_join_link": "复制加入链接",
       "generate_a_link_anyone_can_use_to_join_t": "生成一个任何人都可以使用的链接，加入这个课堂。适合现场报名——在屏幕上显示或打印为二维码。",
       "enter_student_emails_one_per_line_or_com": "输入学生邮箱（每行一个，或逗号分隔）。每位学生都会收到邀请链接的电子邮件。",
-      "upload_a_csv_or_spreadsheet_with_one_stu": "上传一个包含每行一个学生邮箱的CSV或电子表格。名称、标题和额外列将被忽略。"
+      "upload_a_csv_or_spreadsheet_with_one_stu": "上传一个包含每行一个学生邮箱的CSV或电子表格。名称、标题和额外列将被忽略。",
+      "placeholder_studentemailcom": "student@email.com",
+      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "主题",
@@ -1601,7 +1682,18 @@
       "placeholder_eg_ell_students_stem": "ELL学生，STEM...",
       "aria_label_special_focus_or_differentiation": "特殊关注或区分",
       "special_focus_optional": "特别关注（可选）",
-      "add_an_activity_title_above_for_better_s": "警告：请在上方添加活动标题以获取更好的建议。"
+      "add_an_activity_title_above_for_better_s": "警告：请在上方添加活动标题以获取更好的建议。",
+      "grade": "grade",
+      "at": "at",
+      "generating": "Generating…",
+      "ask_peri": "✨ Ask Peri",
+      "added": "✓ Added to activity",
+      "add_to_activity": "+ Add to activity",
+      "tip": "Tip:",
+      "peri_intro": "Peri will suggest activities for",
+      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
+      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
+      "drafting_from_standards": "Drafting an activity for the standards you selected…"
     },
     "components_upgradecta": {
       "contact_us": "联系我们",
@@ -1632,26 +1724,27 @@
       "from_a_white_paper_to_a_working_platform": "从白皮书到工作平台：Peripateticware 2007–2026",
       "the_insight_aristotle_was_right": "智慧之见：亚里士多德是对的",
       "the_problem_that_remained_unsolved": "未解决的问题",
-      "the_2007_document_named_one_obstacle_it_": "“2007年文件命名的一个无法解决的障碍是：”",
-      "the_2026_answer_ai_did_what_spreadsheets": "人工智能在2026年做到了电子表格无法完成的事情",
+      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
+      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
       "the_assessment_problem_turned_out_to_hav": "该评估问题分为两部分。第一部分是收集证据——学生实际观察到了什么，能否证明？第二部分是评估它——他们的思维是否加深了，还是只是描述了他们看到的东西？\n\n(保留了模板变量，仅提供翻译后的值字符串文本)",
       "choose_your_own_adventure": "选择你的冒险",
       "why_this_took_until_2026": "为何要等到2026年",
       "the_white_paper_is_still_online": "白皮书仍然在线。",
-      "you_can_read_the_original_2007_document_": "您可以在下面的链接阅读原始的2007文档，那时iPhone还只是传闻。词汇已经过时了，但论点仍然成立。",
+      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
       "read_the_original_2007_paper": "阅读原始2007论文→",
-      "the_paper_was_written_at_a_moment_when_3": "该文章是在那个3G还未完全铺开、iPhone尚未发布，而“app”也不是常用词汇的时刻写成的。它的预测——手机将成为1对1的 classroom 设备，移动网络将覆盖偏远地区，GPS将变得足够便宜以放入每位学生口袋里——全都实现了。该文章呼吁的产品并未出现。",
-      "if_students_follow_their_curiosity_throu": "如果学生在现实地点遵循自己的好奇心，学习拱门、圆柱和天文导航，因为他们正站在教堂或港口附近，如何评估他们学到了什么，以满足课程要求？如何同时生成校长想要的数字表格，又尊重学生实际理解的复杂性？",
-      "the_document_left_that_question_open_the": "学术界对“户外学习”长期缺乏明确的定义或可行的计划，这种情况持续了近二十年。",
-      "the_first_part_was_solved_by_smartphones": "第一部分由智能手机解决。照片、音频、GPS坐标、时间戳——一个学生在溪流边可以在十分钟内记录的证据，比一日游笔记本能容纳的多。剩下的是第二部分：结构化询问，不仅记录经验，还深化了它。",
-      "thats_where_peri_comes_in_peri_is_peripa": "Peri是Peripateticware的AI指南，名称源自亚里士多德方法。它不回答问题，而是提出问题。它遵循五阶段询问序列——吸引、观察、分析、解释、应用，这是亚里士多德在吕克昂使用的方法，也是认知科学以来被证明通向真正理解而不是简单记忆的路径。Peri会就学生的观察提出下一个合适的问题。当学生回答正确时，Peri会检测 Implications。当学生模糊不清时，Peri会要求提供证据。",
-      "the_result_is_an_artifact_a_field_journa": "“结果是一件艺术品：包含捕获、扩展分析和询问记录的日志条目。教师可以看到学生得出的结论，也能看到他们是如何得出的。与布卢姆税率表对齐的评分标准，以及CCSS、NGSS、TEKS或自定义标准，使任何课程协调员都能阅读该评估。电子表格和真实学习终于占据同一份文档。”",
-      "the_2007_paper_described_a_choose_your_o": "该2007年论文描述了一个“自选冒险”式学习模型，其中学生跟随岔路，追求自己的兴趣，通过真正好奇心的侧门而不是指令的前门遇到核心课程概念。该论文承认这“有些混乱”，并需要新的教学设计、新的评估工具和愿意放弃一些控制权换取真实参与的老师。",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware並不能完全解決混亂，那種張力是真實的，可能是永久性的。它做的是為老師提供足夠的結構以保持理智（設計活動、學習目標、完成階段、老師批准工作流程），同時又給予學生足夠的自由去真正地前進（GPS觸發內容、學生提議活動、自主田野筆記、同伴項目）。",
+      "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
+      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
+      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
+      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
+      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
+      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
+      "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
+      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
       "the_reverse_scavenger_hunt_where_student": "“反向寻宝游戏”——即学生根据自己发现的事物提出一项活动——是该平台中与2007年那番愿景最为接近的功能。一名学生发现了一处奇特的岩层，便将其作为活动提案提交。教师批准后，其他学生便去实地考察。由此引发了一系列连课程大纲都未曾预料到的问题。学习由此展开。",
-      "the_short_answer_is_that_most_of_the_ena": "2007年，大部分支持技术还未准备好。首先是口袋里的GPS（2010-2015年），然后是高质量的移动摄像头，接着是云API，价格便宜到足以供学校使用，最后是可以在教师家服务器上运行、无需每月支付1万美元费用的本地AI模型（如Ollama、llama.cpp）。2007年的论文对目的地判断正确；它不可能预知通往那里的道路有多长。",
-      "the_longer_answer_is_that_educational_te": "教育技术在过去几年里解决了错误的问题。它迭代了教室——更好的LMS，更好的视频，更好的测试工具。它使现有模型更高效。但Peripateticware不试图使教室更高效。它尝试偶尔用世界替换教室。",
-      "thats_a_harder_sell_schools_are_riskaver": "那可不是件容易的事。学校都很谨慎，户外学习有风险。直到你亲眼看到一个十岁的孩子在溪床上向一只鸦形AI导游解释沉积物运输，并阅读了他们当天写的野外日志，才能真正理解他们已经明白了。“世界是你的课堂”听起来像是一句营销用语。"
+      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
+      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
+      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
+      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "加载中"
@@ -1671,7 +1764,9 @@
       "aria_label_close_modal": "关闭对话框"
     },
     "components_cookieconsentbanner": {
-      "got_it": "得到了"
+      "got_it": "得到了",
+      "decline": "Decline",
+      "accept": "Accept"
     },
     "persona_tab": {
       "student": "学生",
@@ -1701,6 +1796,11 @@
           "title": "证据已捕获",
           "badge": "分析",
           "prompt": "伟大的观察！现在——你认为是什么导致这边树叶变色的？"
+        },
+        "4": {
+          "badge": "Multi-Stop",
+          "title": "Scavenger Hunt — 2 of 5 stops",
+          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
         }
       },
       "teacher": {
@@ -1718,6 +1818,35 @@
           "title": "人工智能建议",
           "badge": "人工智能助手",
           "prompt": "根据您的话题和位置，以下是4个符合布卢姆的活动想法..."
+        },
+        "4": {
+          "badge": "Route Builder",
+          "title": "Multi-Step Hunt — 6 stops",
+          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+        },
+        "dashboard": {
+          "title": "Teacher Dashboard",
+          "subtitle": "This week",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Students"
+            },
+            "2": {
+              "label": "Classes"
+            },
+            "3": {
+              "label": "Active"
+            }
+          }
+        },
+        "proposal": {
+          "title": "Review a Proposal",
+          "badge": "Proposal",
+          "location": "Proposals Queue",
+          "subtitle": "From Jordan M. · Submitted today",
+          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
         }
       },
       "parent": {
@@ -1877,6 +2006,61 @@
           },
           "subtitle": "春季2026 · 埃玛·里维拉",
           "prompt": "PDF 文件夹已准备就绪。包含所有必需的TX州报表字段。"
+        },
+        "4": {
+          "badge": "● On the trail",
+          "title": "Greenbelt Trail Hunt",
+          "subtitle": "5 stops · Emma & Lucas",
+          "task": {
+            "1": {
+              "text": "The Old Oak — reached ✓"
+            },
+            "2": {
+              "text": "Stone Bridge — reached ✓"
+            },
+            "3": {
+              "text": "The Overlook — 120 m ahead"
+            },
+            "4": {
+              "text": "Navigation on-device — no tracking"
+            }
+          }
+        },
+        "children": {
+          "title": "Emma — Grade 4",
+          "badge": "68% Progress",
+          "stat": {
+            "1": {
+              "label": "Sessions"
+            },
+            "2": {
+              "label": "Completed"
+            }
+          },
+          "subtitle": "Children · This term",
+          "location": "Barton Creek Greenbelt"
+        },
+        "dashboard": {
+          "title": "Dashboard",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Active"
+            },
+            "2": {
+              "label": "Pending"
+            }
+          },
+          "subtitle": "This week · Emma & Lucas",
+          "task": {
+            "1": {
+              "text": "River Ecosystem Study — published"
+            },
+            "2": {
+              "text": "Capitol Field Trip — draft"
+            }
+          }
         }
       }
     },
@@ -1922,8 +2106,7 @@
       "transcribing": "传输中",
       "recording_saved": "录像已保存",
       "mic_denied": "麦克风访问权限需要录制音频。请授予权限并重试。",
-      "uploading": "上传录音中…",
-      "download": "下载"
+      "uploading": "上传录音中…"
     },
     "components_student_capture_audiorecorder": {
       "aria_label_start_recording": "录制开始",
@@ -1944,14 +2127,12 @@
       "save_your_note_first_to_attach_photos_au": "保存笔记后再添加照片、音频和视频。"
     },
     "pendingReflectionQueue": {
-      "awaiting_approval": "待批准",
-      "teacher_commented": "评论",
+      "awaiting_approval": "Awaiting approval",
+      "teacher_commented": "Teacher commented",
       "ready_to_reflect": "准备好反射",
-      "section_title": "待反射",
-      "teacher_label": "老師",
-      "reflection_in_progress": "反射中",
-      "field_work_date": "实地工作 {{date}}",
-      "see_all": "查看全部 {{count}}"
+      "section_title": "Pending Reflections",
+      "teacher_label": "Teacher",
+      "reflection_in_progress": "反射中"
     },
     "components_student_selfprojectview": {
       "aria_label_project_title": "项目标题",
@@ -1987,7 +2168,9 @@
       "students": "学生",
       "ai_config": "人工智能路由与密钥",
       "privacy": "隐私配置",
-      "audit": "审计日志"
+      "audit": "审计日志",
+      "blog": "Blog",
+      "pages": "Pages"
     },
     "layouts_platformshell": {
       "placeholder_platform_secret": "平台密钥",
@@ -2015,7 +2198,13 @@
       "select_your_state_optional": "选择您的州（可选）",
       "35_us_states_require_homeschool_parents_": "35个州要求家庭教师保留学习记录。Peripateticware会自动从您的活动日志中生成报告。",
       "ready_to_create_your_first_outdoor_activ": "准备创建您的第一项户外活动了吗？Peri将为您提供定制的亚里士多德式提问，根据地点和主题进行调整。",
-      "create_first_activity": "创建第一个活动"
+      "create_first_activity": "创建第一个活动",
+      "login_label": "Login",
+      "password_label": "Password",
+      "copied": "Copied ✓",
+      "copy_all": "Copy all",
+      "childrens_logins": "Your children\\'s logins",
+      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
     },
     "pages_licensingpage": {
       "licensing": "授权",
@@ -2045,7 +2234,9 @@
       "pending": "待处理",
       "link_a_child_from_the_dashboard_to_see_t": "连接仪表盘中的子项以查看其日历。",
       "no_activities_found_for_this_child": "找不到与此儿童相关的活动。",
-      "activities_assigned_by_teachers_will_app": "教師指派的活動將顯示在此。"
+      "activities_assigned_by_teachers_will_app": "教師指派的活動將顯示在此。",
+      "loading": "Loading…",
+      "refresh": "Refresh"
     },
     "pages_parentmessagespage": {
       "messages": "消息",
@@ -2060,7 +2251,8 @@
       "sending": "发送中",
       "send": "发送回复",
       "subtitle": "消息来自您孩子的老师。回复以保持联系。",
-      "empty": "还没有消息。当老师联系时，它会出现这里。"
+      "empty": "还没有消息。当老师联系时，它会出现这里。",
+      "announcements_title": "Classroom Announcements"
     },
     "notifications": "通知",
     "pages_parentnotificationspage": {
@@ -2071,7 +2263,7 @@
       "link_a_child": "儿童链接",
       "teacher_note": "教师备注",
       "no_children_linked_yet": "无关联儿童",
-      "link_your_childs_account_to_start_tracki": "连接儿童账号以开始跟踪其学习进度。",
+      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
       "no_progress_data_yet_for_this_child": "还没有进度数据，该儿童。"
     },
     "progress_reports": "进度报告",
@@ -2107,7 +2299,12 @@
       "tokens": "令牌",
       "cost": "成本",
       "admin_actions": "管理操作",
-      "all_actions_are_recorded_in_the_audit_lo": "审计日志记录所有操作。"
+      "all_actions_are_recorded_in_the_audit_lo": "审计日志记录所有操作。",
+      "license": "License",
+      "change_tier_to": "Change tier to…",
+      "placeholder_days": "days",
+      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
     },
     "pages_platform_platformorgspage": {
       "organisations": "组织",
@@ -2120,7 +2317,10 @@
       "users": "用户",
       "status": "状态",
       "suspended": "悬挂",
-      "no_organisations_found": "无组织找到。"
+      "no_organisations_found": "无组织找到。",
+      "expired": "Expired",
+      "all_tiers": "All tiers",
+      "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
       "platform_admin": "平台管理员",
@@ -2171,14 +2371,28 @@
       "could_not_load_activity": "无法加载活动",
       "write_your_reflection": "写下你的反思",
       "what_did_you_observe_what_did_you_learn_": "什么是你观察到的？什么是你学习到的？它如何与你之前的知识相连接？",
-      "great_work_your_teacher_will_review_your": "优秀的工作。您的老师将审阅您的证据和反思。"
+      "great_work_your_teacher_will_review_your": "优秀的工作。您的老师将审阅您的证据和反思。",
+      "location_sharing": "Location Sharing",
+      "architectartist": "Architect/Artist:",
+      "constructed": "Constructed:",
+      "yes_submit": "Yes, submit",
+      "cancel": "Cancel",
+      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
+      "historical_significance": "Historical Significance:",
+      "learning_opportunities": "Learning Opportunities",
+      "nearby_points_of_interest": "Nearby Points of Interest",
+      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
+      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
+      "notable_features": "Notable Features"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "加载活动中...",
       "placeholder_search_activities": "搜索活动…",
       "title_preview_as_student": "预览为学生",
       "make_sure_the_backend_is_running_and_you": "后台运行并已登录",
-      "title_fieldwork_map": "地图字段工作 — 学生提交的GPS位置"
+      "title_fieldwork_map": "地图字段工作 — 学生提交的GPS位置",
+      "tracking_settings": "Tracking Settings",
+      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
     },
     "professorFieldworkPage": {
       "back": "返回",
@@ -2215,7 +2429,11 @@
       "class_full_upgrade_to_add_more": "类已满 — 升级添加更多",
       "no_students_enrolled_yet_use_the_invite_": "还没有学生报名。请使用下面的邀请面板添加他们。",
       "title_remove_from_classroom": "移出教室",
-      "larger_classrooms_are_a_paid_feature_upg": "更大的教室是付费功能。升级以容纳更多学生。"
+      "larger_classrooms_are_a_paid_feature_upg": "更大的教室是付费功能。升级以容纳更多学生。",
+      "grade_level_placeholder": "0 = Kindergarten",
+      "grade_level_k_hint": "0 = Kindergarten",
+      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
+      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "加载教室中...",
@@ -2224,7 +2442,9 @@
       "placeholder_eg_year_6_science_period_2": "年级6科学 — 课时2",
       "create": "创建",
       "archived": "已归档",
-      "you_dont_have_any_classrooms_yet": "没有任何教室。"
+      "you_dont_have_any_classrooms_yet": "没有任何教室。",
+      "placeholder_grade_optional": "Grade (0 = K, optional)",
+      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
     },
     "live_sessions": "直播会话",
     "started": "开始",
@@ -2234,7 +2454,11 @@
       "reviewed": "已审阅",
       "approved": "已批准",
       "placeholder_comment_on_the_field_observations_eviden": "评论字段观察、证据质量或反思时关注的内容",
-      "your_feedback": "您的反馈："
+      "your_feedback": "您的反馈：",
+      "saved": "✓ Saved",
+      "placeholder_feedback_for_the_student": "Feedback for the student...",
+      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
+      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
     },
     "activity_builder_stub": "活动构建器占位符",
     "activity_preview_stub": "活动预览",
@@ -2250,7 +2474,7 @@
     "field_journal_title": "学习常驻的田野日志",
     "s_choose_peripateticware": "选择Peripateticware",
     "your_data_is_yours_we_collect_minimal_in": "您的数据归您所有。我们收集最少信息，从不出售。Peripateticware使用加密连接、匿名聚合和透明数据实践。您控制共享哪些数据，与谁共享，以及共享多长时间。",
-    "team_title": "教师打造，为教师而用",
+    "team_title": "Built by an educator, for educators",
     "loading_portfolio": "加载投资组合...",
     "what_did_you_observe": "你观察到了什么？",
     "describe_what_you_observed_noticed_or_wo": "观察到或好奇的事情",
@@ -2332,7 +2556,7 @@
     "using_basic_fallback_information": "使用基本备用信息",
     "educational_opportunities": "教育机会",
     "view_on_google_maps": "地图上查看",
-    "use_this_location_information_to_create_": "利用这些位置信息，设计\\n基于地点的学习活动，将学生的探究与现实世界的情境联系起来。",
+    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
     "refresh_information": "刷新信息",
     "observing_native_plants_in_field_session": "观察本地植物野外实习活动于里维尔河州立公园",
     "great_observation_notes_today_your_detai": "今天的观察笔记真棒！您对叶子形态的细节展示了真正的植物学思维。 —— 圣蒂亚戈女士",
@@ -2724,7 +2948,8 @@
       "free_for_one_classroom_no_credit_card_re": "免费提供给一间教室使用，无需信用卡即可开始。",
       "homeschool_families": "学习在家的家庭",
       "aria_label_close": "关闭",
-      "peripateticware_began_as_a_white_paper_w": "“McGraw-Hill Education内部起草的《漫游软件》白皮书，主张GPS启用的移动设备将改变学习方式——学生在真实场所行走，受结构化询问指导，能以教科书无法做到的方式学习。”"
+      "peripateticware_began_as_a_white_paper_w": "“McGraw-Hill Education内部起草的《漫游软件》白皮书，主张GPS启用的移动设备将改变学习方式——学生在真实场所行走，受结构化询问指导，能以教科书无法做到的方式学习。”",
+      "title_learning_in_motion": "Learning in Motion"
     },
     "components_landing_storysection": {
       "alt_a_student_walking_through_the_forest_wit": "森林里的学生正在使用移动设备。"
@@ -2737,8 +2962,13 @@
           "2": "核心活动类型",
           "3": "人工智能 Peri",
           "4": "证据采集",
-          "5": "视图"
-        }
+          "5": "视图",
+          "6": "Multi-step map hunts"
+        },
+        "price": "$11.99",
+        "price_unit": "/mo",
+        "price_note": "or $99.99/year — save 30% · 30-day free trial",
+        "cta": "Start free trial"
       },
       "school": {
         "name": "学校",
@@ -2764,8 +2994,13 @@
           "1": "家庭账号",
           "2": "“导出PDF文件夹”",
           "3": "报告",
-          "4": "标准映射"
-        }
+          "4": "标准映射",
+          "5": "Trail hunts with GPX import & export"
+        },
+        "price": "$11.99",
+        "price_unit": "/mo",
+        "price_note": "or $99.99/year — save 30% · 30-day free trial",
+        "cta": "Start free trial"
       },
       "contact_for_pricing": "联系我们获取报价",
       "contact_team": "联系团队",
@@ -2789,31 +3024,33 @@
       "loading": "加载中",
       "no_active_jurisdictions_found_run_the_se": "无活动管辖区域找到。运行种子迁移以添加默认值。",
       "loading_rule_details": "加载规则详情中...",
-      "add_update_jurisdiction": "更新/添加管辖权"
+      "add_update_jurisdiction": "更新/添加管辖权",
+      "quick_setup_by_location": "Quick Setup by Location",
+      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
     },
     "audit_logs_enabled": "审计日志已启用",
     "cookiepolicypage": {
       "cookie_policy": "Cookie Policy",
-      "last_updated_may_2026": "五月更新",
-      "what_are_cookies": "“什么是 cookie ？”",
-      "cookies_are_small_text_files_placed_on_y": "小型文本文件“cookies”存储在您的设备上，由网站创建。Peripateticware仅使用少量必需的cookie来运行平台。",
-      "cookies_we_use": "“我们使用的cookie”",
-      "strictly_necessary": "严格必要",
-      "these_cookies_are_essential_for_the_serv": "必须使用这些 cookie 来运行服务。它们无法被禁用。",
-      "analytics_amp_performance": "分析与性能",
-      "peripateticware_does_not_currently_use_t": "当前，Peripateticware未使用第三方分析cookie。启用服务器端指标时，它们会被处理而不设置任何cookie。",
-      "advertising": "广告",
-      "peripateticware_is_adfree_we_do_not_plac": "无广告。我们不会放置任何广告cookie。",
-      "managing_cookies": "管理cookie",
-      "you_can_clear_cookies_at_any_time_throug": "清除Cookies可随时通过浏览器设置完成。清除auth Cookies将使您退出服务。",
+      "last_updated_may_2026": "Last updated: May 2026",
+      "what_are_cookies": "What Are Cookies?",
+      "cookies_are_small_text_files_placed_on_y": "Cookies are small text files placed on your device by a website. Peripateticware uses a minimal set of cookies strictly necessary to operate the platform.",
+      "cookies_we_use": "Cookies We Use",
+      "strictly_necessary": "Strictly Necessary",
+      "these_cookies_are_essential_for_the_serv": "These cookies are essential for the Service to function. They cannot be disabled.",
+      "analytics_amp_performance": "Analytics &amp; Performance",
+      "peripateticware_does_not_currently_use_t": "Peripateticware does not currently use third-party analytics cookies. When server-side metrics are enabled they are processed without setting any cookies.",
+      "advertising": "Advertising",
+      "peripateticware_is_adfree_we_do_not_plac": "Peripateticware is ad-free. We do not place any advertising cookies.",
+      "managing_cookies": "Managing Cookies",
+      "you_can_clear_cookies_at_any_time_throug": "You can clear cookies at any time through your browser settings. Clearing auth cookies will log you out of the Service.",
       "changes_to_this_policy": "Changes to This Policy",
       "we_may_update_this_policy_as_the_service": "We may update this policy as the Service evolves. Significant changes will be communicated via in-app notification.",
-      "contact": "联系",
-      "back_to_home": "返回首页",
-      "auth_token_desc": "存储您的会话 JWT。在 24 小时后过期。",
-      "auth_user_desc": "存储您的基本用户资料（名称，角色）。登出时清除。",
-      "i18nextlng_desc": "记忆您选择的语言偏好。",
-      "questions": "问号"
+      "contact": "Contact",
+      "back_to_home": "← Back to Home",
+      "auth_token_desc": "Stores your session JWT. Expires after 24 hours.",
+      "auth_user_desc": "Stores your basic user profile (name, role). Cleared on logout.",
+      "i18nextlng_desc": "Remembers your chosen language preference.",
+      "questions": "Questions?"
     },
     "view_photos_videos_and_notes_from_your_c": "查看您孩子户外学习活动和野外作业的照片、视频和笔记。",
     "photos_videos_captured": "照片和视频已录制",
@@ -2822,7 +3059,58 @@
     "built_with_privacy_first": "隐私优先构建",
     "coppa_gdpr_ccpa_compliant": "合规COPPA、GDPR、CCPA",
     "privacypage": {
-      "back_to_home": "返回首页"
+      "back_to_home": "← Back to Home",
+      "title": "Privacy Policy",
+      "jurisdictions_enforced": "jurisdictions enforced",
+      "jurisdictions_monitored": "jurisdictions monitored (violations logged, not yet blocked)",
+      "rules_last_updated": "Rules last updated",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Information We Collect",
+      "1a_title": "Account information",
+      "1a_body": "When a teacher, parent, or homeschool educator signs up, we collect a name, email address, username, and password (stored as a salted hash, never in plain text). Student accounts are created only through a teacher’s classroom invite, never by public sign-up, and collect the same basic account fields plus, where provided, a date of birth used solely for the age-appropriate handling described in Section 3.",
+      "1b_title": "Location information",
+      "1b_body": "Field activities can use device GPS to detect arrival at a mapped stop (wayfinding) or confirm a student is within an activity’s boundary (geofencing). Location is requested only while an activity is active, only with the device’s own permission prompt, and — for students under 13 — only after a parent has separately consented to GPS use.",
+      "1c_title": "Field evidence & reflections",
+      "1c_body": "Photos, video, audio recordings, and written notebook/journal entries that a student captures as part of an activity are stored so the student, their teacher, and (where linked) their parent can review them and so the student’s portfolio persists across sessions.",
+      "1d_title": "Conversations with Peri",
+      "1d_body": "The optional &ldquo;Ask Peri&rdquo; assistant sends a student’s typed question, and enough recent conversation for context, to a language-model provider (which may be a model we run ourselves or a third-party API such as Anthropic’s Claude) in order to generate a reply. Teachers can disable free-form AI chat for a specific activity, and it is automatically unavailable — regardless of that setting — for students under 13: their messages are answered from the curated, on-device question bank only and never leave the platform.",
+      "1e_title": "Billing information",
+      "1e_body": "Paid subscriptions (available to teacher, parent, and homeschool accounts, never required for students) are processed by Paddle.com, our Merchant of Record. Paddle collects and processes your payment details directly — we never see or store full card numbers.",
+      "1f_title": "Usage & technical information",
+      "1f_body": "Like most online services, our servers log standard technical information (IP address, browser/device type, timestamps, pages or screens viewed) to operate, secure, and troubleshoot the Service.",
+      "2_title": "2. How We Use Information",
+      "2_body": "We use the information above to: provide and operate the Service (running activities, saving progress, generating Peri’s replies); let teachers and, where linked, parents monitor and support a student’s work; process payments for paid accounts; secure the Service and prevent abuse; comply with legal obligations; and communicate with you about your account. We do not use student data for advertising, and we do not build advertising profiles of students.",
+      "3_title": "3. Children’s Privacy (COPPA)",
+      "3_body_2": "For students under 13, we collect only what is needed for the activities their teacher has assigned: an account identifier, field evidence and reflections the student creates, and (only with the separate consent described above) GPS location while an activity is active. We do not knowingly collect more than this, do not show advertising to students, and do not sell or share student information for cross-context behavioral advertising.",
+      "3_body_3": "A parent or guardian who has approved a child’s account may at any time: review the personal information we have collected from their child; request that it be corrected or deleted; and refuse to allow any further collection or use of their child’s information (which will deactivate the account). Contact privacy@peripateticware.com to exercise any of these rights — see Section 8 for how we handle the request.",
+      "4_title": "4. Schools, Teachers & FERPA",
+      "5_title": "5. How We Share Information",
+      "5_body_intro": "We do not sell personal information, and we never have. We share information only in these limited circumstances:",
+      "5_item_1": "With the student’s own teacher and, where a parent-child link has been approved, their parent — this is the core of how the Service works.",
+      "5_item_2": "With service providers who process data on our behalf under contract, and only for the purpose we hired them for: Paddle.com (payment processing), an email delivery provider (transactional email such as verification links and classroom invites), and AI language-model providers (to generate Peri’s replies, as described in Section 1).",
+      "5_item_3": "If required by law, subpoena, or a good-faith belief that disclosure is necessary to protect the safety of a student or the public.",
+      "5_item_4": "In connection with a merger, acquisition, or sale of assets — in which case we would require the successor to honor the commitments in this policy.",
+      "6_title": "6. Data Retention",
+      "6_body": "We keep account and activity data for as long as the account is active, plus a limited period afterward to allow reactivation, meet legal/record-keeping obligations, and resolve disputes. When a teacher, parent, or platform administrator deletes a student’s account, or a parent exercises the deletion right described in Section 3, we delete or de-identify the associated personal data within a reasonable period, except where we are legally required to retain it.",
+      "7_title": "7. Your Rights & Regional Disclosures",
+      "7_body_intro": "Wherever you or your child are located, you can ask us to: tell you what personal information we hold; correct it; delete it; or provide a copy of it. Email privacy@peripateticware.com, or use the",
+      "do_not_sell_link": "Do Not Sell or Share My Personal Information",
+      "7_body_intro_end": "form for a California opt-out request specifically. We will verify the request and respond within the time required by applicable law.",
+      "7_gdpr": "EEA/UK (GDPR): our legal bases for processing are performance of a contract (running the Service you or your school signed up for), legitimate interests (security, service improvement), consent (GPS location, Peri chat where applicable), and legal obligation. You additionally have the right to restrict or object to processing, to data portability, and to lodge a complaint with your local supervisory authority.",
+      "7_ccpa": "California (CCPA/CPRA): in the preceding 12 months we have not sold or shared personal information for cross-context behavioral advertising. California residents have the right to know, delete, correct, and opt out of sale/sharing (which, again, we do not do), and to not be discriminated against for exercising these rights.",
+      "7_other": "Canada (PIPEDA), Brazil (LGPD), and Singapore/APAC (PDPA) residents have equivalent access, correction, and deletion rights under those frameworks, which we honor through the same request channel above.",
+      "8_title": "8. Security",
+      "8_body": "We use industry-standard safeguards to protect your information, including encryption of sensitive fields such as email addresses at rest, encrypted connections in transit, and access controls that limit who can see student data to that student’s own teacher and linked parent(s). No method of storage or transmission is 100% secure, and we work continuously to find and fix gaps rather than claim perfection.",
+      "9_title": "9. International Data Transfers",
+      "9_body": "Our servers and service providers are located in the United States. If you are accessing the Service from outside the United States, your information will be transferred to, stored, and processed in the United States, which may have different data protection laws than your own country.",
+      "10_title": "10. Changes to This Policy",
+      "10_body": "We’ll update the &ldquo;Last updated&rdquo; date above when we make changes to this policy, and will notify account holders by email of any change that materially reduces your rights.",
+      "11_title": "11. Contact Us",
+      "11_body": "Questions about this policy, or a request under Sections 3 or 7?",
+      "see_also": "See also our",
+      "see_also_engine": "Privacy Engine",
+      "see_also_mid": "(a closer look at how we technically enforce the rules in this policy) and our",
+      "see_also_terms": "Terms of Service"
     },
     "peripateticware_privacy_engine": "流浪软件隐私引擎",
     "privacy": {
@@ -2834,33 +3122,29 @@
       "summary_title": "隐私设计",
       "summary_subtitle": "学校为主，家长信任",
       "summary_desc": "Peripateticware 遵循 COPPA、GDPR、FERPA、CCPA、PIPEDA、LGPD 和 PDPA。学生数据从不出售，也不会用于广告，除非获得同意后才会分享。",
-      "summary_cta": "看它如何运作",
-      "engine_core_title": "隐私引擎的工作原理",
-      "engine_core_desc": "当学生提交证据时，系统会自动识别其所属司法管辖区，加载有效的合规规则集，应用数据保留和加密策略，并据此存储数据——这一切均由系统自动完成。",
-      "jurisdiction_aware_title": "法域感知",
-      "jurisdiction_aware_desc": "引擎会检测学生的所在地，并自动启用相应的合规规则。欧盟学生适用 GDPR，美国学生适用 FERPA 和 COPPA，加拿大学生适用 PIPEDA——无需手动配置。",
-      "auto_updates_title": "自动更新",
-      "auto_updates_desc": "每当法规发生变化时，合规规则会集中更新，因此每个教室都能自动保持最新状态，无需手动操作。",
+      "summary_cta": "See how it works",
+      "engine_core_title": "How the Privacy Engine works",
+      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
+      "jurisdiction_aware_title": "Jurisdiction Aware",
+      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
+      "auto_updates_title": "Auto Updates",
+      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
       "versioned_rules_title": "规则版本",
-      "versioned_rules_desc": "每次规则更改都会进行版本控制和审计，这样您可以随时查看任何数据片段所应用的政策及其时间。",
-      "extensible_title": "可扩展的",
-      "extensible_desc": "新的管辖区和框架可以在不改变应用程序工作方式的情况下添加——引擎适应，而不是代码。",
+      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
+      "extensible_title": "Extensible",
+      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
       "encrypted_by_default_title": "加密默认",
-      "encrypted_by_default_desc": "學生數據在休眠和傳輸中都進行加密，無需任何配置即可啟用。",
+      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
       "on_device_first_title": "在设备上首先",
-      "on_device_first_desc": "敏感数据尽可能在设备端进行处理。GPS坐标在传输前会进行哈希处理。音频和图像会保存在本地，直到学生明确提交为止。",
+      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
       "consent_framework_title": "同意框架",
-      "consent_framework_desc": "家长和监护人控制收集的内容，并可以随时查看或撤回同意。",
-      "cta_section_title": "信任而非简单的合规复选框",
-      "cta_section_subtitle": "每一步都看到学生数据是如何处理的",
-      "cta_section_desc": "Peripateticware 的隐私引擎自启用之日起即处于激活状态。对于标准框架，无需进行任何配置——系统会根据检测到的学生所在司法管辖区，自动启用 FERPA、COPPA、GDPR 和 CCPA。",
+      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
+      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
+      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
+      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
       "loading_status": "加载合规状态...",
       "coppa_family_title": "适用于13岁以下儿童的家庭",
-      "do_not_sell_link": "不得出售或分享我的个人信息",
-      "gdpr_card_desc": "《通用数据保护条例》。适用于欧盟境内的学校和学生。数据处理仅在合法依据下进行；学生和家长享有完全的访问权和删除权。",
-      "ferpa_card_desc": "《家庭教育权利与隐私法》。该法案规范了美国学校中学生教育记录的查阅权限。未经学校或家长书面同意，绝不会共享学生数据。",
-      "ccpa_card_desc": "《加利福尼亚州消费者隐私法》。适用于加利福尼亚州居民。学生和家长可随时要求披露、删除个人信息，或选择不允许出售其个人信息。",
-      "coppa_card_desc": "《儿童在线隐私保护法》。适用于美国境内13岁以下的用户。在收集未成年人的任何个人数据之前，均须征得家长同意。"
+      "do_not_sell_link": "不得出售或分享我的个人信息"
     },
     "capture_photosvideo": "拍照/录像",
     "take_photos_record_videos_and_capture_au": "拍照、录像和录音以记录您的观察和发现。",
@@ -2900,7 +3184,17 @@
       "no_specific_frameworks_are_preselected_b": "无根据您的回答预先选择任何框架。您可以随时在设置中启用它们。",
       "select_your_state": "选择您的州",
       "student_data_is_never_sold_or_shared_wit": "从不将学生数据出售或共享给广告商。您可以在任何时间导出或删除所有数据，方法是转到管理员&gt;隐私配置。",
-      "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR, GB"
+      "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR, GB",
+      "state_province": "State / Province",
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "region_optional": "Region (optional)",
+      "region_placeholder": "A specific district or local law, if you know of one",
+      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
+      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
+      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
+      "something_not_right": "Something not right? Let us know",
+      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
+      "review_submitted": "Thanks — sent for review."
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "选择任务的提供者。更改立即生效，无需重新启动。",
@@ -2946,7 +3240,15 @@
       "change_log": "变更日志",
       "unique_identifier_stored_in_the_database": "唯一标识符，存储在数据库中——自动生成。",
       "title_generate_a_new_uuid": "生成新的UUID",
-      "placeholder_what_changed_in_this_version": "什么改变了这个版本？"
+      "placeholder_what_changed_in_this_version": "什么改变了这个版本？",
+      "select": "— Select —",
+      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
+      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
+      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
+      "pending_review": "pending review",
+      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
+      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
+      "placeholder_district_or_local_law": "District or local law"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "自带密钥 — 需要升级",
@@ -2974,7 +3276,7 @@
       "title_remove": "删除"
     },
     "cta_privacy_note": "「符合FERPA和COPPA法规。从不出售或共享学生数据。」",
-    "team_1_bio": "保罗从事教师工作长达十年，在教育科技公司工作了四年，并且二十年来一直致力于探索如何让学习摆脱书籍和课堂的束缚。",
+    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
     "pages_adminauditlogpage": {
       "export_csv": "导出CSV",
       "all": "所有",
@@ -3024,14 +3326,428 @@
       "contact_us": "联系我们"
     },
     "pages_privacypage": {
-      "live": "活动中"
+      "live": "活动中",
+      "privacyperipateticwarecom": "privacy@peripateticware.com"
     },
     "privacy_data": "隐私与数据",
-    "extractionWizard": {
-      "step_review": "评论",
-      "step_upload": "上传",
-      "step_parse": "解析",
-      "step_save": "保存"
+    "components_billing_plancard": {
+      "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
+      "refund_policy": "refund policy",
+      "plan": "Plan",
+      "current_plan": "Current plan",
+      "save_30": "save 30%"
+    },
+    "pages_refundpolicypage": {
+      "helloperipateticwarecom": "hello@peripateticware.com"
+    },
+    "calendar": {
+      "prev_month": "Previous month",
+      "next_month": "Next month",
+      "today": "Today",
+      "no_events_this_day": "Nothing scheduled for this day."
+    },
+    "cookie_preferences": "Cookie preferences",
+    "cookie_status_on": "Currently: analytics cookies enabled. ",
+    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "components_errorboundary": {
+      "something_went_wrong": "Something went wrong",
+      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
+      "try_again": "Try again",
+      "reload_page": "Reload page"
+    },
+    "components_teacher_projectcompletionreport": {
+      "status_completed": "Completed",
+      "status_in_progress": "In progress",
+      "status_not_started": "Not started",
+      "col_activity": "Activity",
+      "col_completed": "Completed",
+      "col_participants": "Participants",
+      "col_evidence": "Evidence",
+      "col_student": "Student",
+      "col_last_activity": "Last Activity",
+      "empty": "No activities linked to this project yet.",
+      "title_by_activity": "Completion by Activity",
+      "title_by_participant": "Completion by Participant",
+      "no_participants": "No one has started this project yet."
+    },
+    "components_teacher_projectlivetracker": {
+      "title_live_map": "Live Map",
+      "show_all": "Show everyone",
+      "active_now": "Active Now",
+      "live": "LIVE",
+      "empty": "No one is currently active in this project.",
+      "empty_hint": "This updates automatically once a student starts a field session.",
+      "not_configured": "No activities in this project have location tracking enabled.",
+      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
+    },
+    "generate_with_ai": "Generate with AI",
+    "activity_title": "Activity title",
+    "grade_level": "Grade level",
+    "taxonomy_type": "Taxonomy type",
+    "taxonomy_level": "Taxonomy level",
+    "generating": "Generating…",
+    "generate_criteria": "Generate Criteria",
+    "components_teacher_rubricbuilder": {
+      "blooms_revised": "Bloom's Revised",
+      "dok_webbs": "DOK (Webb's)",
+      "solo": "SOLO",
+      "marzanos": "Marzano's",
+      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+    },
+    "view_on_wikidata": "View on Wikidata",
+    "pages_student_studentmessagespage": {
+      "title": "Messages",
+      "messages_title": "Messages",
+      "loading": "Loading…",
+      "placeholder_write_a_reply": "Write a reply…",
+      "back_to_messages": "Back to messages",
+      "you": "You",
+      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
+      "announcements_title": "Classroom Announcements",
+      "no_announcements_yet": "No announcements yet.",
+      "no_messages_yet": "No messages from teachers yet."
+    },
+    "announcements": "Announcements",
+    "projectCompletionReportPage": {
+      "back": "← Back to Project",
+      "title": "Completion Report",
+      "no_project_selected": "No project selected."
+    },
+    "projectLiveTrackingPage": {
+      "back": "← Back to Project",
+      "title": "Live Tracking",
+      "no_project_selected": "No project selected."
+    },
+    "projectnewpage": {
+      "new_project": "New Project",
+      "subtitle": "Set up a new learning project for your students."
+    },
+    "pages_teacher_teachercalendarpage": {
+      "title": "Calendar",
+      "date": "Date",
+      "type": "Type",
+      "placeholder_eg_river_study_field_trip": "e.g. River study field trip",
+      "subtitle": "Planned and completed activities for your class, plus any events you add.",
+      "description_optional": "Description (optional)"
+    },
+    "pages_teacher_teachermessagespage": {
+      "title": "Messages",
+      "classroom": "Classroom",
+      "message": "Message",
+      "loading": "Loading…",
+      "send_to": "Send to",
+      "a_specific_student": "A specific student",
+      "student": "Student",
+      "choose_a_student": "Choose a student…",
+      "subject": "Subject",
+      "placeholder_write_a_reply": "Write a reply…",
+      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
+      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder",
+      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
+      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
+      "a_specific_students_parent": "A specific student's parent",
+      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
+      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
+      "students": "Students (choose one or more)",
+      "no_students_in_this_classroom": "No students in this classroom yet.",
+      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
+      "no_linked_parent_found_for_some_students_": "No linked parent found yet for one or more of the selected students.",
+      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
+    },
+    "pages_teacher_trackingsettings": {
+      "tier_trip": "Trip (fast)",
+      "tier_long_running": "Long-running (slow)",
+      "title": "Tracking Settings",
+      "empty": "No activities yet.",
+      "select_all": "Select all",
+      "enable_selected": "Enable tracking",
+      "disable_selected": "Disable tracking",
+      "col_activity": "Activity",
+      "col_project": "Project",
+      "col_tracking": "Tracking",
+      "on": "On",
+      "off": "Off",
+      "back": "← Back to Activities",
+      "subtitle": "GPS live-tracking status across every activity in your account.",
+      "col_tier": "Poll cadence if live"
+    },
+    "app": {
+      "loading": "Loading…"
+    },
+    "components_imagecaptionmodal": {
+      "cancel": "Cancel",
+      "placeholder_describe_the_image": "Describe the image",
+      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "for_screen_readers": "(for screen readers)",
+      "optional_shown_under_the_image": "(optional -- shown under the image)",
+      "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
+    },
+    "blog": "Blog",
+    "components_seo": {
+      "title_origin_story": "Origin Story"
+    },
+    "components_trialexpirybanner": {
+      "see_plans": "See plans",
+      "aria_label_dismiss": "Dismiss"
+    },
+    "components_account_mfasettings": {
+      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
+      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "done": "Done",
+      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
+      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
+      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
+      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
+      "confirm_your_password_to_disable": "Confirm your password to disable:",
+      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+    },
+    "components_applied_standards": {
+      "loading": "Checking standards…",
+      "approve": "Approve",
+      "dismiss": "Dismiss",
+      "remove": "Remove",
+      "restore": "Restore",
+      "add_standard": "+ Add a standard",
+      "search_placeholder": "Search standards…",
+      "search": "Search",
+      "cancel": "Cancel",
+      "no_results": "No matches.",
+      "added": "Added",
+      "add": "Add",
+      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
+      "none_yet": "No standards matched this activity's content yet — you can add one manually below."
+    },
+    "components_standards_explorer": {
+      "title": "Explore Standards",
+      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
+      "searching": "Searching…",
+      "search": "Search",
+      "clear": "Clear",
+      "search_failed": "Search failed. Try again in a moment.",
+      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
+      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
+      "no_results": "No matching standards found.",
+      "generate_activity": "✨ Generate activity from these standards"
+    },
+    "components_teacher_activitywizard": {
+      "error_prefix": "Error",
+      "step_basics": "Basics",
+      "step_experience": "Experience",
+      "step_assessment": "Assessment",
+      "step_outcomes": "Outcomes",
+      "step_review": "Review",
+      "basics_title": "The basics",
+      "about_place": "About this place",
+      "coordinates": "Coordinates",
+      "optional": "Optional",
+      "kind_group": "Activity kind",
+      "wayfaring": "Wayfaring",
+      "investigative": "Investigative",
+      "setting_title": "Setting and timing",
+      "tracking_title": "Live tracking",
+      "on": "On",
+      "off": "Off",
+      "prompts_title": "Student prompts",
+      "ai_chat": "Ask Peri (AI chat)",
+      "recommended": "Recommended",
+      "attached": "1 attached",
+      "none": "None",
+      "edit": "Edit",
+      "review_title": "Review and create",
+      "not_set": "Not set yet",
+      "grade_subject": "Grade and subject",
+      "none_yet": "None yet",
+      "quick_preview": "Quick Preview",
+      "this_place": "This place",
+      "close_dialog": "Close dialog",
+      "close": "Close",
+      "last_step": "Last step",
+      "library": "Outcome library",
+      "saved": "saved",
+      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "loading": "Loading…",
+      "added": "Added",
+      "add": "Add",
+      "written": "written",
+      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
+      "thinking_level": "Thinking level",
+      "evidence": "Evidence",
+      "in_library": "In my library",
+      "save_to_library": "Save to my library",
+      "remove": "Remove",
+      "write_new": "Write a new outcome",
+      "cov_outcomes": "Outcomes",
+      "cov_levels": "Thinking levels",
+      "cov_standards": "Standards matched",
+      "start_location": "A location",
+      "start_type": "An activity type",
+      "start_assessment": "An assessment",
+      "start_outcomes": "Learning outcomes",
+      "lets_begin": "Let's begin",
+      "start_group": "Start from",
+      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "state": "State",
+      "any_state": "Any state",
+      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "search": "Search",
+      "no_results": "No matches.",
+      "search_results": "Search results",
+      "suggested_standards": "Suggested standards",
+      "suggested": "Suggested",
+      "progress": "Progress",
+      "change_start": "Change start point",
+      "back": "Back",
+      "next": "Next",
+      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
+      "place_ready": "Background, features and nearby places are ready.",
+      "peri_suggestions": "✨ Peri AI suggestions",
+      "peri_offline_questions": "🔌 Offline Peri questions",
+      "experience_title": "How will students experience it?",
+      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
+      "kind_title": "Wayfaring or investigative",
+      "wayfaring_note": "Students move through a route and respond at stops along the way.",
+      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
+      "assessment_title": "How will you assess it?",
+      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
+      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
+      "outcome_added": "Outcome added from your library.",
+      "outcome_saved": "Outcome saved to your library for reuse.",
+      "outcomes_title": "What should students be able to do?",
+      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
+      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
+      "this_activity_outcomes": "This activity's outcomes",
+      "start_location_note": "I know where students will be. Peri suggests what to do there.",
+      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
+      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
+      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
+      "start_title": "What do you want to start from?",
+      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
+      "state_not_set": "Not set by your administrator",
+      "search_standards": "Search for a standard",
+      "standards_loading": "Peri is matching standards…",
+      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
+      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
+      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
+      "start_pane": "Choose where to start"
+    },
+    "components_teacher_activitymanagerwizardtest": {
+      "peri_suggestions": "peri suggestions",
+      "activities_list": "activities list"
+    },
+    "components_teacher_wizard_activitywizardtest": {
+      "title_pond_study": "Pond study",
+      "title_pond": "Pond"
+    },
+    "two_factor_authentication": "Two-Factor Authentication",
+    "pages_bloglistpage": {
+      "blog": "Blog",
+      "loading": "Loading…",
+      "title_blog": "Blog",
+      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
+      "no_posts_yet_check_back_soon": "No posts yet — check back soon."
+    },
+    "pages_blogpostpage": {
+      "loading": "Loading…",
+      "post_not_found": "Post not found",
+      "title_post_not_found": "Post Not Found",
+      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
+    },
+    "parent_requests": "Parent Requests",
+    "requested_on": "Requested",
+    "deny": "Deny",
+    "pages_admin_adminblogeditorpage": {
+      "loading": "Loading…",
+      "restore": "Restore",
+      "discard": "Discard",
+      "title": "Title",
+      "commaseparated": "(comma-separated)",
+      "content": "Content",
+      "placeholder_post_title": "Post title",
+      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
+      "title_remove_cover_image": "Remove cover image",
+      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "placeholder_product_homeschool_standards": "product, homeschool, standards",
+      "title_replace_this_image": "Replace this image",
+      "title_remove_this_image": "Remove this image",
+      "placeholder_write_in_markdown": "Write in Markdown…",
+      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
+      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
+      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
+      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
+      "nothing_to_preview_yet": "Nothing to preview yet.",
+      "title_edit_captionattribution": "Edit caption/attribution"
+    },
+    "pages_admin_adminblogpage": {
+      "blog": "Blog",
+      "loading": "Loading…",
+      "placeholder_search_by_title_or_slug": "Search by title or slug…",
+      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
+    },
+    "pages_admin_adminpageblockeditorpage": {
+      "loading": "Loading…",
+      "format": "Format",
+      "plain_text": "Plain text",
+      "markdown": "Markdown",
+      "content": "Content",
+      "status": "Status",
+      "history": "History",
+      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
+      "published_live_on_the_site": "Published (live on the site)",
+      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
+      "no_saved_versions_yet": "No saved versions yet.",
+      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "placeholder_landing": "landing",
+      "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
+    },
+    "pages_admin_adminpagespage": {
+      "pages": "Pages",
+      "loading": "Loading…",
+      "placeholder_search_by_block_key_or_content": "Search by block key or content…",
+      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
+    },
+    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
+    "activity_description": "Activity description",
+    "learning_objectives_one_per_line": "Learning objectives (one per line)",
+    "ai_generated_overview": "🤖 AI-generated overview — verify details",
+    "looking_up_more_about_this_place": "Looking up more about this place…",
+    "learn_about_this_place": "Learn about this place",
+    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "pages_homeschool_homeschoolcalendarpage": {
+      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+    },
+    "pages_student_studentcalendarpage": {
+      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+    },
+    "components_blogpostview": {
+      "nothing_to_preview_yet": "Nothing to preview yet."
+    },
+    "try_demo_account": "Or try a demo account — no signup required →",
+    "early_access_title": "We're just getting started",
+    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
+    "early_access_cta": "Create your free account",
+    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
+    "no_pending_parent_requests": "No pending parent requests right now.",
+    "pricing_nav_label": "Pricing",
+    "refundpolicypage": {
+      "back_to_home": "← Back to Home",
+      "title": "Refund &amp; Cancellation Policy",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Free Trial",
+      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
+      "2_title": "2. Subscriptions & Billing",
+      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
+      "3_title": "3. 14-Day Money-Back Guarantee",
+      "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
+      "4_title": "4. Renewal Charges",
+      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
+      "5_title": "5. How to Cancel",
+      "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
+      "6_title": "6. Exceptional Circumstances",
+      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "7_title": "7. Contact",
+      "7_body": "Questions about billing, cancellations, or refunds?"
     }
   }
 }

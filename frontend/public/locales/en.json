@@ -147,7 +147,8 @@
       "company_contact": "Contact",
       "resources_privacy": "Privacy Engine",
       "legal_do_not_sell": "Do Not Sell or Share My Info",
-      "legal_licensing": "Licensing"
+      "legal_licensing": "Licensing",
+      "legal_refunds": "Refund Policy"
     },
     "johndoe": "johndoe",
     "landing": {
@@ -454,7 +455,11 @@
       "grade": "Grade",
       "latitude": "Latitude",
       "longitude": "Longitude",
-      "add": "Add"
+      "add": "Add",
+      "mixed_age_toggle": "This activity has students across multiple grades",
+      "youngest_grade": "Youngest grade",
+      "oldest_grade": "Oldest grade",
+      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
     },
     "enter_activity_title": "Enter activity title",
     "enter_activity_description": "Enter activity description",
@@ -1081,7 +1086,58 @@
     "enable_all_notifications": "Enable All Notifications",
     "email_parentexamplecom": "Email: parent@example.com",
     "privacypage": {
-      "back_to_home": "← Back to Home"
+      "back_to_home": "← Back to Home",
+      "title": "Privacy Policy",
+      "jurisdictions_enforced": "jurisdictions enforced",
+      "jurisdictions_monitored": "jurisdictions monitored (violations logged, not yet blocked)",
+      "rules_last_updated": "Rules last updated",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Information We Collect",
+      "1a_title": "Account information",
+      "1a_body": "When a teacher, parent, or homeschool educator signs up, we collect a name, email address, username, and password (stored as a salted hash, never in plain text). Student accounts are created only through a teacher’s classroom invite, never by public sign-up, and collect the same basic account fields plus, where provided, a date of birth used solely for the age-appropriate handling described in Section 3.",
+      "1b_title": "Location information",
+      "1b_body": "Field activities can use device GPS to detect arrival at a mapped stop (wayfinding) or confirm a student is within an activity’s boundary (geofencing). Location is requested only while an activity is active, only with the device’s own permission prompt, and — for students under 13 — only after a parent has separately consented to GPS use.",
+      "1c_title": "Field evidence & reflections",
+      "1c_body": "Photos, video, audio recordings, and written notebook/journal entries that a student captures as part of an activity are stored so the student, their teacher, and (where linked) their parent can review them and so the student’s portfolio persists across sessions.",
+      "1d_title": "Conversations with Peri",
+      "1d_body": "The optional &ldquo;Ask Peri&rdquo; assistant sends a student’s typed question, and enough recent conversation for context, to a language-model provider (which may be a model we run ourselves or a third-party API such as Anthropic’s Claude) in order to generate a reply. Teachers can disable free-form AI chat for a specific activity, and it is automatically unavailable — regardless of that setting — for students under 13: their messages are answered from the curated, on-device question bank only and never leave the platform.",
+      "1e_title": "Billing information",
+      "1e_body": "Paid subscriptions (available to teacher, parent, and homeschool accounts, never required for students) are processed by Paddle.com, our Merchant of Record. Paddle collects and processes your payment details directly — we never see or store full card numbers.",
+      "1f_title": "Usage & technical information",
+      "1f_body": "Like most online services, our servers log standard technical information (IP address, browser/device type, timestamps, pages or screens viewed) to operate, secure, and troubleshoot the Service.",
+      "2_title": "2. How We Use Information",
+      "2_body": "We use the information above to: provide and operate the Service (running activities, saving progress, generating Peri’s replies); let teachers and, where linked, parents monitor and support a student’s work; process payments for paid accounts; secure the Service and prevent abuse; comply with legal obligations; and communicate with you about your account. We do not use student data for advertising, and we do not build advertising profiles of students.",
+      "3_title": "3. Children’s Privacy (COPPA)",
+      "3_body_2": "For students under 13, we collect only what is needed for the activities their teacher has assigned: an account identifier, field evidence and reflections the student creates, and (only with the separate consent described above) GPS location while an activity is active. We do not knowingly collect more than this, do not show advertising to students, and do not sell or share student information for cross-context behavioral advertising.",
+      "3_body_3": "A parent or guardian who has approved a child’s account may at any time: review the personal information we have collected from their child; request that it be corrected or deleted; and refuse to allow any further collection or use of their child’s information (which will deactivate the account). Contact privacy@peripateticware.com to exercise any of these rights — see Section 8 for how we handle the request.",
+      "4_title": "4. Schools, Teachers & FERPA",
+      "5_title": "5. How We Share Information",
+      "5_body_intro": "We do not sell personal information, and we never have. We share information only in these limited circumstances:",
+      "5_item_1": "With the student’s own teacher and, where a parent-child link has been approved, their parent — this is the core of how the Service works.",
+      "5_item_2": "With service providers who process data on our behalf under contract, and only for the purpose we hired them for: Paddle.com (payment processing), an email delivery provider (transactional email such as verification links and classroom invites), and AI language-model providers (to generate Peri’s replies, as described in Section 1).",
+      "5_item_3": "If required by law, subpoena, or a good-faith belief that disclosure is necessary to protect the safety of a student or the public.",
+      "5_item_4": "In connection with a merger, acquisition, or sale of assets — in which case we would require the successor to honor the commitments in this policy.",
+      "6_title": "6. Data Retention",
+      "6_body": "We keep account and activity data for as long as the account is active, plus a limited period afterward to allow reactivation, meet legal/record-keeping obligations, and resolve disputes. When a teacher, parent, or platform administrator deletes a student’s account, or a parent exercises the deletion right described in Section 3, we delete or de-identify the associated personal data within a reasonable period, except where we are legally required to retain it.",
+      "7_title": "7. Your Rights & Regional Disclosures",
+      "7_body_intro": "Wherever you or your child are located, you can ask us to: tell you what personal information we hold; correct it; delete it; or provide a copy of it. Email privacy@peripateticware.com, or use the",
+      "do_not_sell_link": "Do Not Sell or Share My Personal Information",
+      "7_body_intro_end": "form for a California opt-out request specifically. We will verify the request and respond within the time required by applicable law.",
+      "7_gdpr": "EEA/UK (GDPR): our legal bases for processing are performance of a contract (running the Service you or your school signed up for), legitimate interests (security, service improvement), consent (GPS location, Peri chat where applicable), and legal obligation. You additionally have the right to restrict or object to processing, to data portability, and to lodge a complaint with your local supervisory authority.",
+      "7_ccpa": "California (CCPA/CPRA): in the preceding 12 months we have not sold or shared personal information for cross-context behavioral advertising. California residents have the right to know, delete, correct, and opt out of sale/sharing (which, again, we do not do), and to not be discriminated against for exercising these rights.",
+      "7_other": "Canada (PIPEDA), Brazil (LGPD), and Singapore/APAC (PDPA) residents have equivalent access, correction, and deletion rights under those frameworks, which we honor through the same request channel above.",
+      "8_title": "8. Security",
+      "8_body": "We use industry-standard safeguards to protect your information, including encryption of sensitive fields such as email addresses at rest, encrypted connections in transit, and access controls that limit who can see student data to that student’s own teacher and linked parent(s). No method of storage or transmission is 100% secure, and we work continuously to find and fix gaps rather than claim perfection.",
+      "9_title": "9. International Data Transfers",
+      "9_body": "Our servers and service providers are located in the United States. If you are accessing the Service from outside the United States, your information will be transferred to, stored, and processed in the United States, which may have different data protection laws than your own country.",
+      "10_title": "10. Changes to This Policy",
+      "10_body": "We’ll update the &ldquo;Last updated&rdquo; date above when we make changes to this policy, and will notify account holders by email of any change that materially reduces your rights.",
+      "11_title": "11. Contact Us",
+      "11_body": "Questions about this policy, or a request under Sections 3 or 7?",
+      "see_also": "See also our",
+      "see_also_engine": "Privacy Engine",
+      "see_also_mid": "(a closer look at how we technically enforce the rules in this policy) and our",
+      "see_also_terms": "Terms of Service"
     },
     "peripateticware_privacy_engine": "Peripateticware Privacy Engine",
     "privacy": {
@@ -1543,7 +1599,10 @@
       "email_confirmed_you_can_now_sign_in": "Email confirmed! You can now sign in.",
       "that_link_has_expired_please_request_a_n": "That link has expired. Please request a new one.",
       "that_link_is_invalid_please_try_again": "That link is invalid. Please try again.",
-      "or": "or"
+      "or": "or",
+      "twofactor_authentication": "Two-factor authentication",
+      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
+      "back_to_login": "← Back to login"
     },
     "nav_homeschool": "Homeschool",
     "age_confirmation": "I confirm that I am 13 years of age or older, or that I have parental consent to create this account.",
@@ -1621,7 +1680,16 @@
       "add": "+ Add",
       "no_criteria_extracted_try_a_different_fi": "No criteria extracted. Try a different file or add them manually.",
       "aria_label_upload_file_pdf_csv_or_excel": "Upload file (PDF, CSV, or Excel)",
-      "aria_label_criteria_set_name": "Criteria set name"
+      "aria_label_criteria_set_name": "Criteria set name",
+      "country": "Country",
+      "aria_label_country": "Country these standards belong to",
+      "united_states": "United States",
+      "canada": "Canada",
+      "province": "Province",
+      "state": "State",
+      "aria_label_state": "State/province these standards belong to",
+      "select_a_state": "Select…",
+      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "Loading prompt…",
@@ -1851,7 +1919,8 @@
       "name": "Name",
       "email": "Email",
       "your_privacy_settings_are_managed_by_you": "🏫 Your privacy settings are managed by your co-op or organisation. Contact your administrator to make changes.",
-      "youre_using_default_privacy_settings_rev": "⚠ You're using default privacy settings. Review and save below to confirm your configuration."
+      "youre_using_default_privacy_settings_rev": "⚠ You're using default privacy settings. Review and save below to confirm your configuration.",
+      "two_factor_authentication": "Two-Factor Authentication"
     },
     "link_child_description": "Enter your child's Peripateticware email address. We'll send them a verification request — once they accept, their progress and activities will appear in your dashboard.",
     "request_sent": "Request Sent!",
@@ -2025,7 +2094,9 @@
       "country_code_placeholder": "e.g. DE, FR, GB",
       "state_province": "State / Province",
       "select_state": "— Select state —",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria"
+      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
+      "password_placeholder": "At least 8 characters",
+      "confirm_password_placeholder": "Re-enter your password"
     },
     "choose_peripateticware": "Choose Peripateticware",
     "cta_title": "Ready to take learning outside?",
@@ -2042,7 +2113,8 @@
       "simple_honest_pricing": "Simple, honest pricing",
       "free_for_one_classroom_no_credit_card_re": "Free for one classroom. No credit card required to start.",
       "homeschool_families": "Homeschool families",
-      "aria_label_close": "Close"
+      "aria_label_close": "Close",
+      "title_learning_in_motion": "Learning in Motion"
     },
     "components_privacysetupwizard": {
       "where_are_you_teaching": "Where are you teaching?",
@@ -2129,7 +2201,14 @@
       "filter_rubrics": "Filter rubrics…",
       "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
       "ai_suggests": "AI suggests:",
-      "accept": "Accept"
+      "accept": "Accept",
+      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
+      "ai_interaction_label": "Student AI Interaction",
+      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
+      "ai_interaction_curated_label": "Curated Question Bank Only",
+      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
+      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
+      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
     },
     "components_teacher_enhancedactivitybuilder": {
       "locationbased_learning": "📍 Location-Based Learning",
@@ -2210,7 +2289,8 @@
       "added": "✓ Added to activity",
       "add_to_activity": "+ Add to activity",
       "tip": "Tip:",
-      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click."
+      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
+      "drafting_from_standards": "Drafting an activity for the standards you selected…"
     },
     "components_upgradecta": {
       "upgrade_to_unlock_this_feature_and_more": "Upgrade to unlock this feature and more.",
@@ -2339,7 +2419,8 @@
       "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
       "the_white_paper_is_still_online": "The white paper is still online.",
       "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
-      "read_the_original_2007_paper": "Read the Original 2007 Paper →"
+      "read_the_original_2007_paper": "Read the Original 2007 Paper →",
+      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "Loading…"
@@ -2421,6 +2502,30 @@
           "title": "Multi-Step Hunt — 6 stops",
           "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt.",
           "badge": "Route Builder"
+        },
+        "dashboard": {
+          "title": "Teacher Dashboard",
+          "subtitle": "This week",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Students"
+            },
+            "2": {
+              "label": "Classes"
+            },
+            "3": {
+              "label": "Active"
+            }
+          }
+        },
+        "proposal": {
+          "title": "Review a Proposal",
+          "subtitle": "From Jordan M. · Submitted today",
+          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval.",
+          "badge": "Proposal",
+          "location": "Proposals Queue"
         }
       },
       "parent": {
@@ -2599,6 +2704,42 @@
               "text": "Navigation on-device — no tracking"
             }
           }
+        },
+        "children": {
+          "title": "Emma — Grade 4",
+          "subtitle": "Children · This term",
+          "badge": "68% Progress",
+          "location": "Barton Creek Greenbelt",
+          "stat": {
+            "1": {
+              "label": "Sessions"
+            },
+            "2": {
+              "label": "Completed"
+            }
+          }
+        },
+        "dashboard": {
+          "title": "Dashboard",
+          "subtitle": "This week · Emma & Lucas",
+          "badge": "Overview",
+          "location": "Recent Activities",
+          "stat": {
+            "1": {
+              "label": "Active"
+            },
+            "2": {
+              "label": "Pending"
+            }
+          },
+          "task": {
+            "1": {
+              "text": "River Ecosystem Study — published"
+            },
+            "2": {
+              "text": "Capitol Field Trip — draft"
+            }
+          }
         }
       }
     },
@@ -2765,7 +2906,9 @@
       "new_activity": "New Activity",
       "library": "Shared Library",
       "submissions": "Submissions",
-      "students": "Students"
+      "students": "Students",
+      "blog": "Blog",
+      "pages": "Pages"
     },
     "layouts_platformshell": {
       "platform_operator_secret": "Platform operator secret",
@@ -2859,7 +3002,13 @@
       "youre_all_set": "You\\'re all set!",
       "ready_to_create_your_first_outdoor_activ": "Ready to create your first outdoor activity? Peri will suggest Aristotelian inquiry questions tailored to your location and subject.",
       "create_first_activity": "Create first activity →",
-      "go_to_dashboard": "Go to dashboard"
+      "go_to_dashboard": "Go to dashboard",
+      "childrens_logins": "Your children\\'s logins",
+      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page.",
+      "login_label": "Login",
+      "password_label": "Password",
+      "copied": "Copied ✓",
+      "copy_all": "Copy all"
     },
     "pages_licensingpage": {
       "licensing": "Licensing",
@@ -2979,7 +3128,12 @@
       "tokens": "Tokens",
       "cost": "Cost",
       "admin_actions": "Admin actions",
-      "all_actions_are_recorded_in_the_audit_lo": "All actions are recorded in the audit log."
+      "all_actions_are_recorded_in_the_audit_lo": "All actions are recorded in the audit log.",
+      "license": "License",
+      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
+      "change_tier_to": "Change tier to…",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand.",
+      "placeholder_days": "days"
     },
     "pages_platform_platformorgspage": {
       "organisations": "Organisations",
@@ -2992,7 +3146,10 @@
       "users": "Users",
       "status": "Status",
       "suspended": "Suspended",
-      "no_organisations_found": "No organisations found."
+      "no_organisations_found": "No organisations found.",
+      "expired": "Expired",
+      "all_tiers": "All tiers",
+      "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
       "platform_admin": "Platform Admin",
@@ -3029,7 +3186,8 @@
       "contact_us": "Contact us"
     },
     "pages_privacypage": {
-      "live": "LIVE"
+      "live": "LIVE",
+      "privacyperipateticwarecom": "privacy@peripateticware.com"
     },
     "pages_sessionpage": {
       "10003": "&#10003;",
@@ -3076,7 +3234,10 @@
       "historical_significance": "Historical Significance:",
       "learning_opportunities": "Learning Opportunities",
       "nearby_points_of_interest": "Nearby Points of Interest",
-      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location."
+      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
+      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
+      "yes_submit": "Yes, submit",
+      "cancel": "Cancel"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "Loading activities…",
@@ -3126,7 +3287,11 @@
       "enrolled_students": "Enrolled Students",
       "no_students_enrolled_yet_use_the_invite_": "No students enrolled yet. Use the invite panel below to add them.",
       "title_remove_from_classroom": "Remove from classroom",
-      "title_revoke": "Revoke"
+      "title_revoke": "Revoke",
+      "grade_level_placeholder": "0 = Kindergarten",
+      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
+      "grade_level_k_hint": "0 = Kindergarten",
+      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "Loading classrooms…",
@@ -3135,7 +3300,9 @@
       "placeholder_eg_year_6_science_period_2": "e.g. Year 6 Science — Period 2",
       "create": "Create",
       "you_dont_have_any_classrooms_yet": "You don\\'t have any classrooms yet.",
-      "archived": "Archived"
+      "archived": "Archived",
+      "placeholder_grade_optional": "Grade (0 = K, optional)",
+      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
     },
     "pages_teacher_teacherwelcomepage": {
       "title_skip_setup": "Skip setup",
@@ -3161,7 +3328,10 @@
       "approved": "✓ Approved",
       "placeholder_comment_on_the_field_observations_eviden": "Comment on the field observations, evidence quality, or what to focus on in the reflection...",
       "your_feedback": "Your feedback:",
-      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet."
+      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
+      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?",
+      "saved": "✓ Saved",
+      "placeholder_feedback_for_the_student": "Feedback for the student..."
     },
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
@@ -3304,6 +3474,280 @@
       "col_tracking": "Tracking",
       "on": "On",
       "off": "Off"
+    },
+    "app": {
+      "loading": "Loading…"
+    },
+    "components_blogpostview": {
+      "nothing_to_preview_yet": "Nothing to preview yet."
+    },
+    "components_imagecaptionmodal": {
+      "for_screen_readers": "(for screen readers)",
+      "optional_shown_under_the_image": "(optional -- shown under the image)",
+      "optional_eg_photo_credit": "(optional -- e.g. photo credit)",
+      "cancel": "Cancel",
+      "placeholder_describe_the_image": "Describe the image",
+      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe"
+    },
+    "blog": "Blog",
+    "try_demo_account": "Or try a demo account — no signup required →",
+    "early_access_title": "We're just getting started",
+    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
+    "early_access_cta": "Create your free account",
+    "components_seo": {
+      "title_origin_story": "Origin Story"
+    },
+    "components_trialexpirybanner": {
+      "see_plans": "See plans",
+      "aria_label_dismiss": "Dismiss"
+    },
+    "components_account_mfasettings": {
+      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
+      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
+      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
+      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
+      "done": "Done",
+      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
+      "confirm_your_password_to_disable": "Confirm your password to disable:",
+      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+    },
+    "components_billing_plancard": {
+      "plan": "Plan",
+      "current_plan": "Current plan",
+      "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
+      "save_30": "save 30%",
+      "refund_policy": "refund policy"
+    },
+    "components_applied_standards": {
+      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
+      "loading": "Checking standards…",
+      "none_yet": "No standards matched this activity's content yet — you can add one manually below.",
+      "approve": "Approve",
+      "dismiss": "Dismiss",
+      "remove": "Remove",
+      "restore": "Restore",
+      "add_standard": "+ Add a standard",
+      "search_placeholder": "Search standards…",
+      "search": "Search",
+      "cancel": "Cancel",
+      "no_results": "No matches.",
+      "added": "Added",
+      "add": "Add"
+    },
+    "components_standards_explorer": {
+      "search_failed": "Search failed. Try again in a moment.",
+      "title": "Explore Standards",
+      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
+      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
+      "searching": "Searching…",
+      "search": "Search",
+      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
+      "no_results": "No matching standards found.",
+      "clear": "Clear",
+      "generate_activity": "✨ Generate activity from these standards"
+    },
+    "components_teacher_activitywizard": {
+      "error_prefix": "Error",
+      "step_basics": "Basics",
+      "step_experience": "Experience",
+      "step_assessment": "Assessment",
+      "step_outcomes": "Outcomes",
+      "step_review": "Review",
+      "basics_title": "The basics",
+      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
+      "place_ready": "Background, features and nearby places are ready.",
+      "about_place": "About this place",
+      "coordinates": "Coordinates",
+      "optional": "Optional",
+      "peri_suggestions": "✨ Peri AI suggestions",
+      "peri_offline_questions": "🔌 Offline Peri questions",
+      "experience_title": "How will students experience it?",
+      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
+      "kind_title": "Wayfaring or investigative",
+      "kind_group": "Activity kind",
+      "wayfaring": "Wayfaring",
+      "wayfaring_note": "Students move through a route and respond at stops along the way.",
+      "investigative": "Investigative",
+      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
+      "setting_title": "Setting and timing",
+      "tracking_title": "Live tracking",
+      "on": "On",
+      "off": "Off",
+      "prompts_title": "Student prompts",
+      "ai_chat": "Ask Peri (AI chat)",
+      "recommended": "Recommended",
+      "assessment_title": "How will you assess it?",
+      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
+      "attached": "1 attached",
+      "none": "None",
+      "edit": "Edit",
+      "review_title": "Review and create",
+      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
+      "not_set": "Not set yet",
+      "grade_subject": "Grade and subject",
+      "none_yet": "None yet",
+      "quick_preview": "Quick Preview",
+      "this_place": "This place",
+      "close_dialog": "Close dialog",
+      "close": "Close",
+      "last_step": "Last step",
+      "outcome_added": "Outcome added from your library.",
+      "outcome_saved": "Outcome saved to your library for reuse.",
+      "outcomes_title": "What should students be able to do?",
+      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
+      "library": "Outcome library",
+      "saved": "saved",
+      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "loading": "Loading…",
+      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
+      "added": "Added",
+      "add": "Add",
+      "this_activity_outcomes": "This activity's outcomes",
+      "written": "written",
+      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
+      "thinking_level": "Thinking level",
+      "evidence": "Evidence",
+      "in_library": "In my library",
+      "save_to_library": "Save to my library",
+      "remove": "Remove",
+      "write_new": "Write a new outcome",
+      "cov_outcomes": "Outcomes",
+      "cov_levels": "Thinking levels",
+      "cov_standards": "Standards matched",
+      "start_location": "A location",
+      "start_location_note": "I know where students will be. Peri suggests what to do there.",
+      "start_type": "An activity type",
+      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
+      "start_assessment": "An assessment",
+      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
+      "start_outcomes": "Learning outcomes",
+      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
+      "lets_begin": "Let's begin",
+      "start_title": "What do you want to start from?",
+      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
+      "start_group": "Start from",
+      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "state": "State",
+      "state_not_set": "Not set by your administrator",
+      "any_state": "Any state",
+      "search_standards": "Search for a standard",
+      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "search": "Search",
+      "no_results": "No matches.",
+      "search_results": "Search results",
+      "standards_loading": "Peri is matching standards…",
+      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
+      "suggested_standards": "Suggested standards",
+      "suggested": "Suggested",
+      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
+      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
+      "progress": "Progress",
+      "start_pane": "Choose where to start",
+      "change_start": "Change start point",
+      "back": "Back",
+      "next": "Next"
+    },
+    "components_teacher_activitymanagerwizardtest": {
+      "peri_suggestions": "peri suggestions",
+      "activities_list": "activities list"
+    },
+    "components_teacher_wizard_activitywizardtest": {
+      "title_pond_study": "Pond study",
+      "title_pond": "Pond"
+    },
+    "two_factor_authentication": "Two-Factor Authentication",
+    "pages_bloglistpage": {
+      "blog": "Blog",
+      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
+      "loading": "Loading…",
+      "no_posts_yet_check_back_soon": "No posts yet — check back soon.",
+      "title_blog": "Blog"
+    },
+    "pages_blogpostpage": {
+      "loading": "Loading…",
+      "post_not_found": "Post not found",
+      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved.",
+      "title_post_not_found": "Post Not Found"
+    },
+    "refundpolicypage": {
+      "back_to_home": "← Back to Home",
+      "title": "Refund &amp; Cancellation Policy",
+      "last_updated": "Last updated: September 2026",
+      "1_title": "1. Free Trial",
+      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
+      "2_title": "2. Subscriptions & Billing",
+      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
+      "3_title": "3. 14-Day Money-Back Guarantee",
+      "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
+      "4_title": "4. Renewal Charges",
+      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
+      "5_title": "5. How to Cancel",
+      "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
+      "6_title": "6. Exceptional Circumstances",
+      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "7_title": "7. Contact",
+      "7_body": "Questions about billing, cancellations, or refunds?"
+    },
+    "pages_refundpolicypage": {
+      "helloperipateticwarecom": "hello@peripateticware.com"
+    },
+    "parent_requests": "Parent Requests",
+    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
+    "no_pending_parent_requests": "No pending parent requests right now.",
+    "requested_on": "Requested",
+    "deny": "Deny",
+    "pages_admin_adminblogeditorpage": {
+      "loading": "Loading…",
+      "restore": "Restore",
+      "discard": "Discard",
+      "title": "Title",
+      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
+      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
+      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
+      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
+      "commaseparated": "(comma-separated)",
+      "content": "Content",
+      "nothing_to_preview_yet": "Nothing to preview yet.",
+      "placeholder_post_title": "Post title",
+      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
+      "title_remove_cover_image": "Remove cover image",
+      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
+      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "placeholder_product_homeschool_standards": "product, homeschool, standards",
+      "title_edit_captionattribution": "Edit caption/attribution",
+      "title_replace_this_image": "Replace this image",
+      "title_remove_this_image": "Remove this image",
+      "placeholder_write_in_markdown": "Write in Markdown…"
+    },
+    "pages_admin_adminblogpage": {
+      "blog": "Blog",
+      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header.",
+      "loading": "Loading…",
+      "placeholder_search_by_title_or_slug": "Search by title or slug…"
+    },
+    "pages_admin_adminpageblockeditorpage": {
+      "loading": "Loading…",
+      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
+      "format": "Format",
+      "plain_text": "Plain text",
+      "markdown": "Markdown",
+      "content": "Content",
+      "status": "Status",
+      "published_live_on_the_site": "Published (live on the site)",
+      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
+      "history": "History",
+      "no_saved_versions_yet": "No saved versions yet.",
+      "placeholder_landing": "landing",
+      "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
+    },
+    "pages_admin_adminpagespage": {
+      "pages": "Pages",
+      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here.",
+      "loading": "Loading…",
+      "placeholder_search_by_block_key_or_content": "Search by block key or content…"
     }
   }
 }

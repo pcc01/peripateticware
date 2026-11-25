@@ -1108,6 +1108,7 @@
       "name": "District"
     },
     "homeschool": {
+      "cta": "Start free trial",
       "feature": {
         "1": "Family accounts",
         "2": "Portfolio PDF export",
@@ -1116,11 +1117,11 @@
       },
       "name": "Homeschool",
       "price": "$11.99",
-      "price_unit": "/mo",
       "price_note": "or $99.99/year — save 30% · 30-day free trial",
-      "cta": "Start free trial"
+      "price_unit": "/mo"
     },
     "personal": {
+      "cta": "Start free trial",
       "feature": {
         "1": "Up to 5 classrooms",
         "2": "Core activity types",
@@ -1130,9 +1131,8 @@
       },
       "name": "Teacher",
       "price": "$11.99",
-      "price_unit": "/mo",
       "price_note": "or $99.99/year — save 30% · 30-day free trial",
-      "cta": "Start free trial"
+      "price_unit": "/mo"
     },
     "school": {
       "feature": {
