@@ -13,6 +13,7 @@ import { fetchActivities, Activity } from '@/src/api/activities';
 import { fetchStudentConversations } from '@/src/api/studentMessages';
 import { useTranslation } from 'react-i18next';
 import { useConnectivity } from '@/src/hooks/useConnectivity';
+import { useAuth } from '@/src/stores/AuthContext';
 import PeriSpeech from '@/src/components/PeriSpeech';
 
 const SUBJECT_EMOJI: Record<string, string> = {
@@ -24,6 +25,15 @@ export default function DiscoverScreen() {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { isOnline } = useConnectivity();
+  const { user } = useAuth();
+  // POST /api/v1/student/activities/spontaneous 403s for anyone but a
+  // STUDENT (or ADMIN, per _require_student in routes/student_activities.py)
+  // -- a TEACHER account could tap through the whole multi-step flow
+  // (geocode, disambiguate, pick a subject, wait for generation) only to
+  // have it fail at the very last step with a generic "couldn't create
+  // this" message. Hide the entry point entirely for roles that would
+  // never be allowed to use it instead.
+  const canUseSpontaneousDiscovery = user?.role === 'STUDENT' || user?.role === 'ADMIN';
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -107,16 +117,18 @@ export default function DiscoverScreen() {
 
       <PeriSpeech text={periText} theme={theme} size={36} />
 
-      <TouchableOpacity
-        testID="discover-spontaneous-entry"
-        onPress={() => router.push('/spontaneous-discovery' as any)}
-        style={[styles.spontaneousBtn, { borderColor: theme.accent, backgroundColor: theme.accentMuted, borderRadius: theme.radius }]}
-        accessibilityRole="button"
-      >
-        <Text style={[styles.spontaneousBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
-          📍 {t('discover.spontaneousEntry', "I'm somewhere new — ask Peri about it")}
-        </Text>
-      </TouchableOpacity>
+      {canUseSpontaneousDiscovery && (
+        <TouchableOpacity
+          testID="discover-spontaneous-entry"
+          onPress={() => router.push('/spontaneous-discovery' as any)}
+          style={[styles.spontaneousBtn, { borderColor: theme.accent, backgroundColor: theme.accentMuted, borderRadius: theme.radius }]}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.spontaneousBtnText, { color: theme.accent, fontFamily: theme.fontBody }]}>
+            📍 {t('discover.spontaneousEntry', "I'm somewhere new — ask Peri about it")}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {loading ? (
         <View style={styles.center}>

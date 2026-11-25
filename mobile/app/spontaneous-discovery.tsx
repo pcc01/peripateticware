@@ -142,6 +142,12 @@ export default function SpontaneousDiscoveryScreen() {
       setError(
         e?.status === 429
           ? String(e?.message || t('spontaneous.dailyCapReached', "You've reached today's discovery limit. Try again tomorrow."))
+          : e?.status === 403
+          // Discover screen already hides the entry point for non-student
+          // roles -- this only fires for someone who reached this screen
+          // some other way (deep link, stale role cache). Surface the
+          // backend's own reason instead of a generic "try again".
+          ? String(e?.message || t('spontaneous.studentOnly', 'This is only available for students.'))
           : String(t('spontaneous.createFailed', "Couldn't create this right now. Try again in a moment."))
       );
       setCreating(false);

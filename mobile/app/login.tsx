@@ -14,7 +14,6 @@ import {
 // not the start of a wider icon-library migration.
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { useAuth } from '@/src/stores/AuthContext';
 import PeriSpeech from '@/src/components/PeriSpeech';
@@ -55,7 +54,22 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(email.trim().toLowerCase(), password);
-      router.replace('/(tabs)');
+      // No router.replace() here on purpose. AuthGuard (app/_layout.tsx)
+      // already reacts to `user` going from null -> set on every render --
+      // including this one -- and replaces to the role-aware destination
+      // (teacher-dashboard / parent-dashboard / tabs). A second, unconditional
+      // replace('/(tabs)') fired from here raced it: two router.replace()
+      // calls landing in the same tick sent expo-router's navigator into a
+      // broken half-transitioned state (a login screen stuck on its loading
+      // spinner forever with no Sign In button left in the tree, even though
+      // the login POST itself had already returned 200) -- reproduced after
+      // sign-out -> sign-in-again. Observed only intermittently, since it
+      // depends on exactly how the two replace() calls interleave with
+      // AuthGuard's effect, but a force-stop/relaunch always "fixed" it --
+      // consistent with corrupted in-memory navigator state, not a bad
+      // server response. AuthGuard is the single place that should ever
+      // decide where a freshly-authenticated session lands; see its own
+      // comments for why a bare '/(tabs)' is wrong for non-STUDENT roles.
     } catch (err) {
       Alert.alert(
         t('login.failed.title', 'Login failed'),
