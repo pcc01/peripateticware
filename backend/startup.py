@@ -184,6 +184,7 @@ async def apply_enum_and_core_column_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS dok_level INTEGER")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS solo_level INTEGER")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS primary_framework VARCHAR(50) DEFAULT 'blooms'")
+        await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS ai_interaction_mode VARCHAR(20) NOT NULL DEFAULT 'ai_chat'")
         # ── Shared library columns ─────────────────────────────────────────
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS share_scope VARCHAR(20) DEFAULT 'org'")
         await _exec_safepoint(conn, "ALTER TABLE activities ADD COLUMN IF NOT EXISTS language VARCHAR(50)")
@@ -833,6 +834,7 @@ async def apply_core_schema_migrations(engine) -> None:
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS processing_status VARCHAR(20) DEFAULT 'complete'")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS last_processed_at TIMESTAMP")
         await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS valid_until DATE")
+        await _exec_safepoint(conn, "ALTER TABLE standards_sets ADD COLUMN IF NOT EXISTS country_code VARCHAR(4) NOT NULL DEFAULT 'US'")
         # ai_api_keys — platform-level provider keys (routes/platform_admin.py
         # PUT/GET /ai-keys). Defined in migrations/20260602_ai_routing_tables.py
         # but that file lives outside alembic/versions/ and was never actually
@@ -1272,6 +1274,14 @@ async def apply_core_schema_migrations(engine) -> None:
             "ALTER TABLE student_peer_projects ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
             "ALTER TABLE student_peer_projects ALTER COLUMN audience TYPE VARCHAR(30) USING audience::VARCHAR",
             "ALTER TABLE peer_project_responses ALTER COLUMN status TYPE VARCHAR(30) USING status::VARCHAR",
+            # Same bug, student_captures.capture_type: init.sql declares a
+            # native capture_type_enum ('photo','video','audio','sketch',
+            # 'text','document'), but the ORM's Column(Enum(...,
+            # native_enum=False)) writes a plain string -- "column
+            # capture_type is of type capture_type_enum but expression is
+            # of type text" on any capture upload against an init.sql-
+            # bootstrapped DB.
+            "ALTER TABLE student_captures ALTER COLUMN capture_type TYPE VARCHAR(50) USING capture_type::VARCHAR",
         ]:
             await _exec_safepoint(conn, _enum_col, "enum -> VARCHAR")
         # ── Phase 6: evidence_captures + notebook_entries ──────────────────
@@ -1317,6 +1327,80 @@ async def apply_core_schema_migrations(engine) -> None:
         """, "create notebook_entries")
         await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_notebook_entries_session ON notebook_entries (session_id)")
         await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_notebook_entries_student ON notebook_entries (student_id)")
+        # ── page_blocks + page_block_versions (models/page_content.py) ─────
+        # Only ever created by alembic/versions/20260819b_page_blocks.py,
+        # which (like every other alembic-only migration) never runs outside
+        # prod's docker-compose.prod.yml override. Missing entirely on any
+        # init.sql-bootstrapped DB -- every page-content fetch (landing page
+        # included, GET /api/v1/pages/{page_key}/blocks) 500s with
+        # "relation page_blocks does not exist" until this table exists, even
+        # though the frontend's usePageBlocks() hook has its own hardcoded
+        # fallback copy for when a specific row is missing -- that fallback
+        # only helps once the query itself stops throwing.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS page_blocks (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                page_key VARCHAR(100) NOT NULL,
+                block_key VARCHAR(200) NOT NULL,
+                locale VARCHAR(10) NOT NULL DEFAULT 'en',
+                format VARCHAR(20) NOT NULL DEFAULT 'text',
+                content TEXT NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'published',
+                updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+                updated_by_name VARCHAR(150),
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                UNIQUE (block_key, locale)
+            )
+        """, "create page_blocks")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_page_blocks_page_key ON page_blocks (page_key)")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_page_blocks_block_key ON page_blocks (block_key)")
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS page_block_versions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                block_id UUID NOT NULL REFERENCES page_blocks(id) ON DELETE CASCADE,
+                content TEXT NOT NULL,
+                status VARCHAR(20) NOT NULL,
+                source VARCHAR(20) NOT NULL DEFAULT 'human',
+                edited_by UUID REFERENCES users(id) ON DELETE SET NULL,
+                edited_by_name VARCHAR(150),
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            )
+        """, "create page_block_versions")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS ix_page_block_versions_block_id ON page_block_versions (block_id)")
+        # ── breach_incidents (GDPR Art. 33/34 notification log) ────────────
+        # Only ever created by migrations/add_breach_incidents_table.py,
+        # which is a standalone script nothing imports or calls -- never run
+        # by anything, in any environment. Same class of bug as the other
+        # alembic-only tables above.
+        await _exec_safepoint(conn, """
+            CREATE TABLE IF NOT EXISTS breach_incidents (
+                id                         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                discovered_at              TIMESTAMP NOT NULL DEFAULT NOW(),
+                reported_by                VARCHAR(256) NOT NULL,
+                description                TEXT NOT NULL,
+                root_cause                 TEXT,
+                severity                   VARCHAR(20) NOT NULL DEFAULT 'medium',
+                status                     VARCHAR(20) NOT NULL DEFAULT 'discovered',
+                affected_user_count        INTEGER,
+                data_categories            JSONB NOT NULL DEFAULT '[]'::jsonb,
+                jurisdictions              JSONB NOT NULL DEFAULT '[]'::jsonb,
+                dpa_notification_required  BOOLEAN NOT NULL DEFAULT TRUE,
+                dpa_deadline               TIMESTAMP,
+                dpa_notified_at            TIMESTAMP,
+                dpa_reference_number       VARCHAR(100),
+                user_notification_required BOOLEAN NOT NULL DEFAULT FALSE,
+                users_notified_at          TIMESTAMP,
+                users_notified_count       INTEGER,
+                containment_actions        TEXT,
+                internal_notes             TEXT,
+                created_at                 TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at                 TIMESTAMP NOT NULL DEFAULT NOW(),
+                closed_at                  TIMESTAMP
+            )
+        """, "create breach_incidents")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS idx_breach_status ON breach_incidents (status)")
+        await _exec_safepoint(conn, "CREATE INDEX IF NOT EXISTS idx_breach_dpa_deadline ON breach_incidents (dpa_deadline) WHERE dpa_notified_at IS NULL")
         # ── student_competencies + student_profiles ────────────────────────
         await _exec_safepoint(conn, """
             CREATE TABLE IF NOT EXISTS student_competencies (
@@ -2413,7 +2497,7 @@ async def seed_demo_classroom(engine) -> None:
     try:
         async with engine.begin() as conn:
             await conn.execute(text("""
-                INSERT INTO student_proposals (student_id, teacher_id, title, description, location_name, subject, status)
+                INSERT INTO student_proposals (student_id, teacher_id, title, challenge_description, location_hint, subject, status)
                 SELECT s.id, t.id, 'Build a Weather Station',
                        'I want to measure rainfall and temperature in the schoolyard for a month.',
                        'Schoolyard', 'Science', 'pending'
