@@ -66,6 +66,14 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path,
       },
+      // Mirrors frontend/nginx.prod.conf's `location = /health` passthrough
+      // — AdminSystemPage.tsx calls bare /health (not under /api/v1, since
+      // backend/routes/health.py's router has its own prefix="/health"),
+      // which only worked in prod; dev had no matching proxy rule.
+      '/health': {
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
   build: {

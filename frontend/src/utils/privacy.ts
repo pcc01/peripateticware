@@ -126,7 +126,7 @@ export async function getActiveJurisdictions(): Promise<JurisdictionSummary[]> {
  */
 export async function getPrivacyStatus(): Promise<PrivacyStatusResult> {
   try {
-    const res = await axios.get(`${API_BASE}/api/v1/privacy/status`)
+    const res = await axios.get(`${API_BASE}/privacy/status`)
     return res.data
   } catch (err) {
     console.warn('[privacy] getPrivacyStatus failed', err)

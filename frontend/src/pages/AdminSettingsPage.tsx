@@ -31,7 +31,7 @@ export const AdminSettingsPage = () => {
     if (!newKeyName.trim()) return;
     setNewKeyStatus('saving');
     try {
-      await apiClient.post(`/api/v1/admin/env/${newKeyName.trim()}`, { value: newKeyValue });
+      await apiClient.post(`/admin/env/${newKeyName.trim()}`, { value: newKeyValue });
       setNewKeyStatus('saved');
       setNewKeyName('');
       setNewKeyValue('');
@@ -67,7 +67,7 @@ export const AdminSettingsPage = () => {
   const loadEnvVars = async () => {
     setEnvLoading(true);
     try {
-      const res = await apiClient.get('/api/v1/admin/env');
+      const res = await apiClient.get('/admin/env');
       setEnvCategories(Array.isArray(res.data) ? res.data : []);
     } catch {
       setEnvCategories([]);
@@ -85,7 +85,7 @@ export const AdminSettingsPage = () => {
     if (value === undefined) return;
     setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saving' }));
     try {
-      await apiClient.post(`/api/v1/admin/env/${key}`, { value });
+      await apiClient.post(`/admin/env/${key}`, { value });
       setEnvSaveStatus((prev) => ({ ...prev, [key]: 'saved' }));
       setTimeout(() => setEnvSaveStatus((prev) => ({ ...prev, [key]: '' })), 2000);
       setEditingEnv((prev) => { const n = { ...prev }; delete n[key]; return n; });

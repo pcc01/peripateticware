@@ -39,7 +39,7 @@ export const AdminSystemPage: React.FC = () => {
     if (!newKey.trim()) return;
     setAddingKey(true);
     try {
-      await apiClient.post(`/api/v1/admin/env/${newKey.trim()}`, { value: newVal });
+      await apiClient.post(`/admin/env/${newKey.trim()}`, { value: newVal });
       setAddStatus('✓ Added — restart backend to apply');
       setNewKey(''); setNewVal(''); setNewDesc('');
       setTimeout(() => setAddStatus(''), 5000);
@@ -49,8 +49,10 @@ export const AdminSystemPage: React.FC = () => {
 
   useEffect(() => {
     Promise.allSettled([
-      apiClient.get('/api/v1/admin/env').then(r => r.data).catch(() => []),
-      apiClient.get('/api/v1/health').then(r => r.data).catch(() => null),
+      apiClient.get('/admin/env').then(r => r.data).catch(() => []),
+      // Bare /health, not apiClient (baseURL '/api/v1') -- backend/routes/health.py
+      // mounts this router with its own prefix="/health", outside /api/v1.
+      fetch('/health').then(r => r.ok ? r.json() : null).catch(() => null),
     ]).then(([envRes, healthRes]) => {
       if (envRes.status === 'fulfilled') setEnvData(Array.isArray(envRes.value) ? envRes.value : []);
       if (healthRes.status === 'fulfilled') setHealth(healthRes.value);
