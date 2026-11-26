@@ -2126,6 +2126,14 @@ async def seed_demo_admin_account(engine) -> None:
     so it can be gated separately (development only; never on the
     ENABLE_DEMO_SEED_ACCOUNTS production opt-in). A published-password ADMIN
     account has no place on a live, public site.
+
+    is_platform_admin=TRUE: this is the account frontend/tests/e2e/auth.setup.ts
+    logs in as "platform admin" (TEST_PLATFORM_EMAIL defaults to this address),
+    and PlatformShell.tsx gates every /platform/* route behind the JWT's
+    is_platform_admin claim. Missing here meant every platform-flows.spec.ts
+    test got silently redirected to "/" instead of the page it was testing —
+    role=ADMIN alone was never sufficient; is_platform_admin is a separate
+    flag routes/auth.py's token encodes independently of role.
     """
     try:
         async with engine.begin() as conn:
@@ -2143,17 +2151,19 @@ async def seed_demo_admin_account(engine) -> None:
             # this account by testing something that flips it mid-session.
             await conn.execute(text("""
                 INSERT INTO users (email, email_index, username, first_name, last_name, full_name,
-                                   hashed_password, role, is_active, is_protected, is_content_admin)
+                                   hashed_password, role, is_active, is_protected, is_content_admin,
+                                   is_platform_admin)
                 VALUES (:email,:ei,'admin','Paul','Admin',:full,
-                        :pw,'ADMIN',TRUE,TRUE,FALSE)
+                        :pw,'ADMIN',TRUE,TRUE,FALSE,TRUE)
                 ON CONFLICT (username) DO UPDATE SET
-                    email            = EXCLUDED.email,
-                    full_name        = EXCLUDED.full_name,
-                    hashed_password  = EXCLUDED.hashed_password,
-                    email_index      = EXCLUDED.email_index,
-                    is_active        = TRUE,
-                    is_protected     = TRUE,
-                    is_content_admin = FALSE
+                    email             = EXCLUDED.email,
+                    full_name         = EXCLUDED.full_name,
+                    hashed_password   = EXCLUDED.hashed_password,
+                    email_index       = EXCLUDED.email_index,
+                    is_active         = TRUE,
+                    is_protected      = TRUE,
+                    is_content_admin  = FALSE,
+                    is_platform_admin = TRUE
             """), {
                 "pw": _PW,
                 "email": encrypt("admin@example.com"),
