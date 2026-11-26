@@ -13,7 +13,14 @@ jobs:
   e2e:
     name: Playwright E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Was 30: that cap predates this suite's login actually working against
+    # CI's database (see the "Fix CI" commits) -- every prior run failed at
+    # the very first test (~4 min total) regardless of the cap, so 30 min
+    # was never really tested against a full, passing run. Once login
+    # started succeeding, a real run hit this cap mid-suite and got killed
+    # by GitHub, not by a hang. 60 is a guess at headroom, not a measured
+    # full-suite duration -- revisit if a clean run still needs more.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
