@@ -2824,7 +2824,7 @@
       }
     }
   },
-  "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+  "localization_notice": "מוסדר באמצעות Mistral LLM לשימוש נוח של המשתמש. צור קשר עם המנהל לגבי תרגומים גרועים באדרס localization@peripateticware.com.",
   "origin_story": {
     "read_full_link": "קרא את הסיפור המקורי המלא →",
     "badge": "סיפור מקור"

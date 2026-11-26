@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "Sélectionner Peripateticware",
     "cta_title": "Prêt à apprendre en dehors ?",
     "cta_desc": "Gratuit pour les enseignants individuels. Pas de carte de crédit requise.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "Traduit à l'aide de Mistral LLM pour votre commodité. Contactez l'administrateur au sujet des traductions insuffisantes à l'adresse localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "Importer les normes académiques de l'État",
       "description": "Téléchargez un PDF ou un CSV des normes académiques officielles de l'État (TEKS, NGSS, Common Core, etc.). Ollama extrait chaque norme pour examen. Une fois enregistré en tant qu'ensemble global, tous les enseignants et parents qui instruisent à domicile peuvent mapper leurs activités par rapport à ces normes. Réécharger le même fichier saute le traitement (mémoire cache de somme de contrôle)."

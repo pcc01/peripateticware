@@ -31,8 +31,21 @@
     <!-- Cloudflare Zaraz (server-side tag manager, proxies Google Analytics
          through our own domain). Loaded manually because automatic HTML
          injection wasn't taking effect on this zone; see Cloudflare's docs
-         on manual loading: https://developers.cloudflare.com/zaraz/advanced/load-zaraz-manually/ -->
-    <script src="/cdn-cgi/zaraz/i.js" referrerpolicy="origin"></script>
+         on manual loading: https://developers.cloudflare.com/zaraz/advanced/load-zaraz-manually/
+         Gated to the real prod hostname: /cdn-cgi/zaraz/i.js only exists on
+         Cloudflare's edge in front of peripateticware.com -- an unconditional
+         <script src> 404/503s on every single page load anywhere else (local
+         dev, CI's Playwright/Detox/Maestro runs, any preview/staging host),
+         which is exactly the console error "X loads without console errors"
+         E2E/Detox/Maestro tests were catching on literally every route. -->
+    <script>
+      if (location.hostname === 'peripateticware.com') {
+        var zarazScript = document.createElement('script');
+        zarazScript.src = '/cdn-cgi/zaraz/i.js';
+        zarazScript.referrerPolicy = 'origin';
+        document.head.appendChild(zarazScript);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

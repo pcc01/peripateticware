@@ -3016,7 +3016,7 @@
     "reviewed": "مراجعة",
     "approved": "موافق"
   },
-  "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+  "localization_notice": "تمت ترجمة هذا باستخدام Mistral LLM من أجل مصلحة المستخدم. اتصلوا بمديرنا حول الترجمات السيئة في localization@peripateticware.com.",
   "origin_story": {
     "read_full_link": "قرأ القصة الأصلية الكاملة →",
     "badge": "أصل القصة"

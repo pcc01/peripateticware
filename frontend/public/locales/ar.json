@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "اختر Peripateticware",
     "cta_title": "مُعدٍ للتدريس خارجيًا؟",
     "cta_desc": "مجاني للمعلمين الفردية. لا يوجد حاجة إلى بطاقة ائتمان.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "تمت ترجمة هذا باستخدام Mistral LLM من أجل مصلحة المستخدم. اتصلوا بمديرنا حول الترجمات السيئة في localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "استيراد حالة معايير أكاديمية",
       "description": "أرفق ملف PDF أو CSV يحتوي على معايير أكاديمية رسمية للولاية (TEKS، NGSS، Common Core، إلخ.). يفرز Ollama كل معيار للمشاهدات. بعد الحفظ كمنهج عالمي، يمكن всех المعلمين والوالدين الذين يعلمون في المنزل أن يربطوا أنشطةهم ضد هذه المعايير. إعادة الرفع نفس الملف يتخطى المعالجة (حالة checksum)."

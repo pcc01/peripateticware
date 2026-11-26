@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "Escolha Peripateticware",
     "cta_title": "Pront@ para levar o aprendizado para fora?",
     "cta_desc": "Grátis para professores individuais. Não é necessário cartão de crédito.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "Localizado usando o Mistral LLM para conveniência do usuário. Entre em contato com o administrador sobre traduções ruins em localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "Importar Padrões Acadêmicos do Estado",
       "description": "Enviar um PDF ou CSV dos padrões acadêmicos oficiais do estado (TEKS, NGSS, Common Core, etc.). O Ollama extrai cada padrão para revisão. Após serem salvos como um conjunto global, todos os professores e pais que ensinam em casa podem mapear suas atividades contra esses padrões. A reenviar o mesmo arquivo, o processamento é pulado (cache de soma de verificação)."

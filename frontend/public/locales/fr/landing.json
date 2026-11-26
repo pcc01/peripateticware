@@ -3091,7 +3091,7 @@
   "pages_cookiepolicypage": {
     "helloperipateticwarecom": "hello@peripateticware.com"
   },
-  "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+  "localization_notice": "Traduit à l'aide de Mistral LLM pour votre commodité. Contactez l'administrateur au sujet des traductions insuffisantes à l'adresse localization@peripateticware.com.",
   "pricing_nav_label": "Tarifs",
   "auth.email_placeholder": "you@example.com or username",
   "auth.login_title": "Bienvenue",

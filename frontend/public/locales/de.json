@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "Wähle Peripateticware",
     "cta_title": "Bereit für Lernen außerhalb?",
     "cta_desc": "Kostenlos für einzelne Lehrer. Keine Kreditkarte erforderlich.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "Kontaktieren Sie den Admin bezüglich schlechter Übersetzungen unter localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "Einfuhrstatus akademische Standards",
       "description": "Laden Sie eine PDF- oder CSV-Datei mit offiziellen landeseigenen akademischen Standards (TEKS, NGSS, Common Core usw.) hoch. Ollama extrahiert jeden Standard zur Überprüfung. Sobald sie als globale Menge gespeichert sind, können alle Lehrer und Homeschool-Eltern ihre Aktivitäten darauf abbilden. Das Hochladen der gleichen Datei überspringt die Verarbeitung (Checksumme-Cache)."

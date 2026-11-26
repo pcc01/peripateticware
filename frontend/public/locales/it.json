@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "Scegli Peripateticware",
     "cta_title": "Pronta a portare l'apprendimento all'esterno?",
     "cta_desc": "Gratuito per insegnanti individuali. Non è richiesta la carta di credito.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "Tradotto utilizzando il modello linguistico di Mistral per la comodità dell'utente. Contatta l'amministratore riguardo alle traduzioni scadenti all'indirizzo localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "Imposta Stato Standard Accademici",
       "description": "Carica un PDF o CSV degli standard accademici ufficiali dello stato (TEKS, NGSS, Common Core, ecc.). Ollama estrae ogni standard per la revisione. Una volta salvato come set globale, tutti gli insegnanti e i genitori che homeschool possono mappare le loro attività rispetto a questi standard. Il caricamento dello stesso file consente di saltare il processo (cache checksum)."

@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "Elige Peripateticware",
     "cta_title": "Listo para llevar el aprendizaje al exterior?",
     "cta_desc": "Gratis para profesores individuales. No se requiere tarjeta de crédito.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "Traducido utilizando Mistral LLM para la comodidad del usuario. Póngase en contacto con el administrador sobre traducciones pobres en localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "Ingresar Estado Estándares Académicos",
       "description": "Subir un PDF o CSV de estándares académicos oficiales del estado (TEKS, NGSS, Common Core, etc.). Ollama extrae cada estándar para su revisión. Una vez guardado como conjunto global, todos los maestros y padres de familia que enseñan en casa pueden mapear sus actividades contra estos estándares. Volver a subir el mismo archivo omite el procesamiento (caché de suma de verificación)."

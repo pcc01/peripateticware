@@ -2832,7 +2832,7 @@
     "choose_peripateticware": "בחר Peripateticware",
     "cta_title": "מוכן להעביר את הלימוד החוץ?",
     "cta_desc": "חינם עבור מורים פרטיים. אין צורך בקרת כרטיס אשראי.",
-    "localization_notice": "Localized using Mistral LLM for user convenience. Contact admin about poor translations at localization@peripateticware.com.",
+    "localization_notice": "מוסדר באמצעות Mistral LLM לשימוש נוח של המשתמש. צור קשר עם המנהל לגבי תרגומים גרועים באדרס localization@peripateticware.com.",
     "curriculumImportPage": {
       "title": "ייבוא סטטוס סטנדרטים אקדמיים",
       "description": "העלה PDF או CSV של תקנים אקדמיים רשמיים של מדינה (TEKS, NGSS, Common Core וכו'). Ollama מפרק כל תקן לבדיקה. לאחר שמירת הקבוצה הגלובלית, כל מורים ואנשי הוראה בבית יכולים להחזיק את פעולותיהם נגד התקנים אלה. העלאה מחדש של אותו קובץ בוזה את תהליך הביצוע (checksum cache)."
