@@ -1363,7 +1363,7 @@
   "capture_photosvideo": "Foto/Video Çek",
   "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",
   "eg_butterfly_photos": "Kelebek fotoğrafları",
-  "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.",
+  "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.\n\n(Preserved template variables: {count}, %s, $t(...))",
   "what_does_photosynthesis_do": "Fotosentez ne yapar?",
   "this_comprehensive_project_guides_studen": "Bu kapsamlı proje öğrencilere bir semestr boyunca yerel ekosistemleri keşfetmeye yönelik bir araştırma yolculuğu sunar. Öğrenciler alan gözlemleri yapacaklar, verileri toplayacaklar ve elden gelen deneyimler aracılığıyla ekolojik ilkeleri anlayacaklar.",
   "standardsaligned_auditready": "Standartlara Uygun, Denetim Hazır",
