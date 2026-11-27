@@ -180,7 +180,10 @@ test.describe('Teacher — AI Taxonomy Auto-classify (ActivityManager)', () => {
     // Never auto-applies until the teacher explicitly accepts.
     await expect(levelSelect).toHaveValue('understand');
 
-    await page.getByRole('button', { name: /^accept$/i }).click();
+    // Scoped to the Assessment pane -- a bare getByRole('button', { name:
+    // /^accept$/i }) also matches the cookie-consent banner's own Accept
+    // button (never dismissed in this test), a second strict-mode violation.
+    await page.locator('section[aria-label="Assessment"]').getByRole('button', { name: /^accept$/i }).click();
     await expect(levelSelect).toHaveValue('analyze');
     await expect(page.getByText(/ai suggests:/i)).toHaveCount(0);
   });

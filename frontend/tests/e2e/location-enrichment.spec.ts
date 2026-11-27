@@ -19,6 +19,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startWizard } from './helpers/activity-wizard';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,8 +60,10 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
   }
 
   async function openLocationPanel(page: Page, opts: { locationName?: string } = {}) {
-    await page.goto('/teacher/activities/new');
-    await expect(page).not.toHaveURL(/\/login/);
+    // Picking a start point is required before Basics (where #title and the
+    // lat/lng inputs live) becomes interactive -- it's mounted from the
+    // start, but `inert` until the wizard leaves its start-picker chooser.
+    await startWizard(page);
     await page.locator('#title').fill('Location Enrichment Test Activity');
 
     // Type the location name FIRST so it's already committed to formData
