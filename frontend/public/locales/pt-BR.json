@@ -1591,7 +1591,7 @@
       "privacy_settings_confirmed": "Configurações de privacidade confirmadas ✓",
       "location": "📍 Location",
       "assessments": "Assessments",
-      "applied": "applied",
+      "applied": "aplicado",
       "attach_rubric": "Attach Rubric",
       "filter_rubrics": "Filter rubrics…",
       "ai_suggests": "AI suggests:",
@@ -1683,8 +1683,8 @@
       "aria_label_special_focus_or_differentiation": "Destaque especial ou diferenciação",
       "special_focus_optional": "Foco especial (opcional)",
       "add_an_activity_title_above_for_better_s": "Adicione um título de atividade acima para obter melhores sugestões.",
-      "grade": "grade",
-      "at": "at",
+      "grade": "Grau",
+      "at": "em",
       "generating": "Generating…",
       "ask_peri": "✨ Ask Peri",
       "added": "✓ Added to activity",
@@ -3245,7 +3245,7 @@
       "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
       "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
       "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
-      "pending_review": "pending review",
+      "pending_review": "Revisão pendente",
       "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
       "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
       "placeholder_district_or_local_law": "District or local law"
@@ -3552,7 +3552,7 @@
       "ai_chat": "Ask Peri (AI chat)",
       "recommended": "Recommended",
       "attached": "1 attached",
-      "none": "None",
+      "none": "Nenhum",
       "edit": "Edit",
       "review_title": "Review and create",
       "not_set": "Not set yet",
@@ -3564,12 +3564,12 @@
       "close": "Close",
       "last_step": "Last step",
       "library": "Outcome library",
-      "saved": "saved",
+      "saved": "salvo",
       "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
       "loading": "Loading…",
       "added": "Added",
       "add": "Add",
-      "written": "written",
+      "written": "escrito",
       "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
       "thinking_level": "Thinking level",
       "evidence": "Evidence",
@@ -3632,8 +3632,8 @@
       "start_pane": "Choose where to start"
     },
     "components_teacher_activitymanagerwizardtest": {
-      "peri_suggestions": "peri suggestions",
-      "activities_list": "activities list"
+      "peri_suggestions": "Sugestões de Peri",
+      "activities_list": "Lista de atividades"
     },
     "components_teacher_wizard_activitywizardtest": {
       "title_pond_study": "Pond study",

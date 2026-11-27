@@ -56,9 +56,9 @@
       "resources_api": "API",
       "resources_support": "Support",
       "company_contact": "קשר",
-      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
-      "all_rights": "All rights reserved.",
-      "product_features": "Features",
+      "brand_desc": "למידה חיצונית, מבוססת שטח, עבור תלמידים, מורים ומשפחות.",
+      "all_rights": "כל הזכויות שמורות.",
+      "product_features": "תכונות",
       "product_pricing": "Pricing",
       "legal_title": "Legal",
       "legal_privacy": "Privacy",
@@ -139,8 +139,8 @@
       "you_dont_have_any_classes_yet_create_a_c": "עדיין אין לך שום קורסים. צור קורס ראשון, ואז הזמינו סטודנטים אליו.",
       "invitation_sent_the_student_will_get_an_": "הזמנה נשלחה. הסטודנט יקבל מייל עם קישור ליצירה",
       "add_a_student": "הוסף תלמיד",
-      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
-      "student_added": "Student added to the class and notified in-app."
+      "add_by_email_hint": "אם כבר יש להם חשבון, הם מתווספים מיד ומקבלים התראה בתוך האפליקציה. אם לא, נשלח מייל הזמנה במקום.",
+      "student_added": "הסטודנט נוסף לכיתה וקיבל התראה בתוך האפליקציה."
     },
     "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -294,10 +294,10 @@
       "feature_2_desc": "פרי הקרן שואלת את השאלים הנכונים כדי לעזור לך לחשוב עמוק - מעלה רעיונות, אינה מוודאת את התשובות.",
       "feature_3_title": "גַּדֵר צְמַחְתְּךָ",
       "feature_3_desc": "הסתכל על יכולותיך שגדלות כמושלים פעילויות ובנית פורטפוליו של לימוד חוץ.",
-      "feature_4_title": "Follow the Map",
-      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
-      "feature_5_title": "Your Location Stays on Your Phone",
-      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
+      "feature_4_title": "עקבו אחרי המפה",
+      "feature_4_desc": "ציד מטמון רב-שלבי נותן לך מפה חיה עם חץ לתחנה הבאה וכמה רחוקה. הטלפון שלך עובד כשאתה מגיע — אתה פשוט הולך ומסתכל.",
+      "feature_5_title": "המיקום שלך נשאר בטלפון שלך",
+      "feature_5_desc": "בציד, שום דבר לגבי המקום שבו אתה נמצא לא יוצא מהמכשיר שלך — הוא רק רושם איזו עצירה הגעת אליה. כל דבר מעבר לכך הוא בחירת המשפחה שלך, ועדיין יש לך ציד עובד בכל מקרה."
     },
     "teacher": {
       "cta": "בנה פעילות",
@@ -312,10 +312,10 @@
       "feature_2_desc": "“ראה איפה כל סטודנט נמצא בזמן אמת — מהו שלב בו הם נמצאים, מה צילמו והאם הם זקוקים לתמיכה.”",
       "feature_3_title": "בנוי באיינספציית",
       "feature_3_desc": "עקיבה על כישורים, תסקיר ארכיון וצירוף תוכנית - הכל ללא זמן צימוד נוסף.",
-      "feature_4_title": "Build a Route, Not Just a Pin",
-      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
-      "feature_5_title": "Decide What Families Are Asked",
-      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
+      "feature_4_title": "בנה מסלול, לא רק סיכה",
+      "feature_4_desc": "שחרר עצירות על המפה או ייבא GPX מ-Gaia GPS, AllTrails או CalTopo. תן לכל עצירה רמז, רדיוס הגעה, ותמונה או הנחיית הערה — ואז ייצא את הציד המוגמר כ-GPX. בנה אחת בטלפון שלך בשטח, או בבונה האינטרנט.",
+      "feature_5_title": "החליטו אילו משפחות מתבקשות",
+      "feature_5_desc": "לכל ציד יש תקרת יכולות שאתה בוחר — ניווט במכשיר בלבד, עד לראיות מתויגות גיאוגרפית — כל שלב הוא הסכמה נפרדת בשפה פשוטה שמוצגת למשפחות לפני תחילת הפעילות."
     },
     "parent": {
       "cta": "הצג את התקדמותם",
@@ -330,10 +330,10 @@
       "feature_2_desc": "מדויקת טקסטים על מה שלמדו, מה ציירו, ומה התקדמו בשמירה על היכולות שלהם.",
       "feature_3_title": "היה מעודכן",
       "feature_3_desc": "\"קבלו עדכונים כאשר פעילויות מתבצעות ומטרות מושגות — ללא הפרעה לסוגיית הקלס\".",
-      "feature_4_title": "You Choose What's Shared",
-      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
-      "feature_5_title": "Kept Only as Long as It's Useful",
-      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
+      "feature_4_title": "אתה בוחר מה משותף",
+      "feature_4_desc": "כל הגדרת מיקום היא ברירת מחדל כברירת מחדל, מתוארת במילים פשוטות, עם כמה זמן היא מוצגת לפני שתחליט. כבה הכל והילד שלך עדיין מקבל חיפוש מפה עובד במלואו — הניווט מתבצע במכשיר שלו.",
+      "feature_5_title": "נשמר רק כל עוד הוא שימושי",
+      "feature_5_desc": "נקודה מדויקת בתמונה שהוגשה מטושטשת לכ-בלוק עירוני אחרי 30 יום. מיקום חי בטיול נמחק שבוע לאחר סיום הטיסה. מסלול מתועד נעלם תוך 30 יום — או ברגע שתשאל."
     },
     "team_1_role": "מייסד & מנכ\"ל",
     "team_1_initial": "פ",
@@ -478,8 +478,8 @@
       "add": "הוסף",
       "youngest_grade": "הכיתה הצעירה ביותר",
       "oldest_grade": "הכיתה הוותיקה ביותר",
-      "mixed_age_toggle": "This activity has students across multiple grades",
-      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
+      "mixed_age_toggle": "הפעילות כוללת תלמידים בכיתות שונות",
+      "mixed_age_hint": "פרי יכתוב ניסוח פשוט ומתקדם יותר לכל שאלה – אותו עומק חשיבה בכל מקרה. טווח של 3 ציונים או פחות משתמש אוטומטית בניסוח אחד."
     },
     "difficulty_level": "שלב קושי:",
     "remember": "זכור",
@@ -655,7 +655,7 @@
       "longitude": "אורך גאוגרפי:",
       "architect_or_artist": "אדריכל/אמן:",
       "construction_date": "נבנה:",
-      "historical_significance": "Historical Significance:"
+      "historical_significance": "חשיבות היסטורית:"
     },
     "teaching_tip": "עצות הוראה:",
     "index": {
@@ -1049,7 +1049,7 @@
       "not_found": "הפרויקט לא נמצא.",
       "live_tracking": "מעקב חי",
       "completion_report": "דוח סיום",
-      "no_activities": "No activities linked to this project yet."
+      "no_activities": "עדיין אין פעילויות הקשורות לפרויקט זה."
     },
     "active": "פעיל",
     "project_description": "פרויקט תיאור",
@@ -1162,10 +1162,10 @@
       "feature_3_title": "דוחים של הקובץ",
       "feature_3_desc": "“צור דו”חי PDF ונתונים CSV של פעילויות עבור הגשת מדינות או קובצי רישומים אישיים - ללא צורך בשרטוטים ידניים.”",
       "features_title": "כל מה שמשפחה הבית תזקוק לו",
-      "feature_4_title": "Turn a Trail Into a Hunt",
-      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
-      "feature_5_title": "You Hold the Consent",
-      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
+      "feature_4_title": "הפוך שביל לציד",
+      "feature_4_desc": "הלך במסלול שלך והורד כל תחנה במקום שבו אתה עומד, ישר מהטלפון שלך — או ייבא מסלול GPX מאפליקציית טיולים רגליים. הלומדים שלך עוקבים אחרי מפה עם מרחק חי לתחנה הבאה, שנפתרה במכשיר.",
+      "feature_5_title": "יש לך את ההסכמה",
+      "feature_5_desc": "אתה גם האפוטרופוס וגם המורה, ולכן אתה מאשר כל שיתוף מיקום בעצמך, לפי פעילות — אין הסכמת ההורים נפרדת הלוך ושוב, והכל מוגדר כברירת מחדל לאפשרות פרטית במכשיר."
     },
     "hs_feat_ai_title": "חיפוש מופע AI",
     "hs_how_title": "העבודה",
@@ -1601,17 +1601,17 @@
       "ai_interaction_chat_note": "התלמידים יכולים לשאול בחופשיות שאלות המשך לפרי במהלך הפעילות, מופעלות על ידי בינה מלאכותית — טוב לחקירה פתוחה. פרי עדיין אף פעם לא נותן תשובה ישירה, הוא שואל רק את השאלה המנחית הבאה. דורש חיבור לאינטרנט.",
       "ai_interaction_curated_label": "בנק שאלות מובחר בלבד",
       "ai_interaction_footnote": "הערה: מאגר השאלות המובחר גם עוזר לבנות את ההנחיות של פרי אפילו במצב צ'אט מבוסס בינה מלאכותית — הגדרה זו שולטת רק אם יש שיחה חופשית עם בינה מלאכותית בנוסף.",
-      "background_context": "📖 Background & Context",
-      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
-      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
-      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
-      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
-      "min_10_characters": "Minimum 10 characters",
-      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
-      "state_curriculum_standards": "State / Curriculum Standards",
-      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
-      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
-      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
+      "background_context": "📖 רקע והקשר",
+      "add_a_location_to_see_background": "הוסף מיקום למעלה כדי לראות מידע רקע עליו כאן.",
+      "enable_live_gps_tracking_during_this_act": "📍 הפעל מעקב GPS חי במהלך פעילות זו",
+      "students_locations_are_shared_with_you_i": "מיקומי התלמידים משותפים איתך בזמן אמת במוניטור המפגש. הסכמת ההורים מתבקשת אוטומטית עבור תלמידים מתחת לגיל 13.",
+      "i_consent_to_gps_location_capture_for_my": "אני מסכים ללכידת מיקום GPS עבור ילדי במהלך פעילות זו",
+      "min_10_characters": "מינימום 10 תווים",
+      "assessments_intro": "הגיש עד שלושה: סטנדרטים מדינתיים/תכנית לימודים, טקסונומיה קוגניטיבית, ורובריקה משלך.",
+      "state_curriculum_standards": "סטנדרטים מדינתיים / תכנית לימודים",
+      "share_publish_note": "פעילות זו צריכה גם להיות מפורסמת (מרשימת הפעילויות) לפני שהיא מופיעה בספרייה המשותפת.",
+      "ai_interaction_curated_note": "התלמידים מקבלים הנחיות רק מבנק שאלות קבוע וכתוב מראש המאוחסן במכשיר — אין שיחת AI חיה, אין צ'אט \"שאל פרי\". עובד במלואו במצב לא מקוון ונותן לכל תלמיד ניסוח זהה, מה שיכול להשפיע על עקביות, או אם פשוט תרצו שהבינה המלאכותית לא תהיה חלק מהפעילות הזו.",
+      "ai_interaction_privacy_note": "פרטיות: במצב צ'אט מבוסס בינה מלאכותית, הודעת תלמיד נשלחת לספק בינה מלאכותית צד שלישי (Claude של Anthropic) כדי לייצר את תשובת פרי. ההודעה הזו אינה זמינה אוטומטית לתלמידים מתחת לגיל 13 ללא קשר להגדרה זו — הם תמיד מקבלים את מאגר השאלות המאושר."
     },
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "שם מיקום",
@@ -1658,7 +1658,7 @@
       "enter_student_emails_one_per_line_or_com": "הכנס אימיילים של סטודנטים (אחד לשורה, או מופרדות בcoma). כל סטודנט יקבל קישור להזמנה מיוחד בדואר האלקטרוני שלו.",
       "upload_a_csv_or_spreadsheet_with_one_stu": "העלה קובץ CSV או טבלה עם כתובת אימייל של סטודנט אחד בכל שורה בעמוד ראשון. שם, כותרות וcolmns נוספות מופרדות",
       "placeholder_studentemailcom": "student@email.com",
-      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
+      "already_know_the_students_email_enter_it": "כבר מכירים את האימייל של התלמיד? הזינו אותו כאן. אם כבר יש להם חשבון, הם מתווספים לכיתה הזו מיד ומקבלים הודעה בתוך האפליקציה — לא נשלח מייל. אם עדיין אין חשבון, יועבר מייל הזמנה במקום."
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "נושא",
@@ -1690,10 +1690,10 @@
       "added": "✓ נוסף לפעילות",
       "add_to_activity": "+ הוסף לפעילות",
       "tip": "Tip:",
-      "peri_intro": "Peri will suggest activities for",
-      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
-      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
-      "drafting_from_standards": "Drafting an activity for the standards you selected…"
+      "peri_intro": "פרי יציע פעילויות ל",
+      "need_subject_grade": "הוסף מקצוע ורמת כיתה מעל כדי לקבל הצעות מפרי.",
+      "click_a_card_tip": "לחץ על כרטיס כדי להוסיף אותו לפעילות שלך. שום דבר לא מתווסף עד שתלחץ.",
+      "drafting_from_standards": "ניסוח פעילות לסטנדרטים שבחרת..."
     },
     "components_upgradecta": {
       "contact_us": "צור קשר",
@@ -1724,27 +1724,27 @@
       "from_a_white_paper_to_a_working_platform": "מִפֶּרֶק אֶל יַד עָשָׂה: פֵּירִיפַטֶיקְוֵיי 2007–2026",
       "the_insight_aristotle_was_right": "האינסाइट: אריסטו היה צודק",
       "the_problem_that_remained_unsolved": "הבעיה שלא נפתרה",
-      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
-      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
+      "the_2007_document_named_one_obstacle_it_": "המסמך מ-2007 ציין מכשול אחד שלא הצליח לפתור:",
+      "the_2026_answer_ai_did_what_spreadsheets": "התשובה לשנת 2026: הבינה המלאכותית עשתה את מה שגיליונות אלקטרוניים לא יכלו",
       "the_assessment_problem_turned_out_to_hav": "הפתרון לשאלה התברר כשהוא מורכב משני חלקים. החלק הראשון היה איסוף ראיות – מה צפה הסטודנט בפועל, ואפשר להוכיח את זה? החלק השני היה הערכת הראיות – האם חשיבתו שלהם הוסיפה עומק, או שרק תיארו מה ראו?",
       "choose_your_own_adventure": "בחר את הרפתקאה שלך",
       "why_this_took_until_2026": "מדוע זה לקח עד 2026",
       "the_white_paper_is_still_online": "הספר הלבן עדיין אונליין",
-      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
+      "you_can_read_the_original_2007_document_": "אתם יכולים לקרוא את המסמך המקורי מ-2007, שנכתב כשהאייפון עדיין היה שמועה, בקישור למטה. אוצר המילים מיושן. הטיעון לא.",
       "read_the_original_2007_paper": "קרא את המאמר המקורי מ-2007 →",
-      "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
-      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
-      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
-      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
-      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
-      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
-      "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
+      "the_paper_was_written_at_a_moment_when_3": "המאמר נכתב ברגע שבו 3G עדיין לא הושק במלואו, האייפון היה חודשים לפני ההשקה, ו\"אפליקציה\" עדיין לא הייתה מילה נפוצה. התחזיות שלה — שטלפונים סלולריים יהפכו למכשירים 1-ל-1 בכיתה, שרשתות סלולריות יגיעו לאזורים מרוחקים, שה-GPS יהפוך לזול מספיק כדי לשים בכיס של כל תלמיד — הכל התגשמו. המוצרים שהמאמר דרש לא התגשמו.",
+      "if_students_follow_their_curiosity_throu": "אם תלמידים עוקבים אחרי סקרנותם דרך מקומות אמיתיים, לומדים על קשתות, חביות וניווט שמימי כי הם עומדים ליד קתדרלה או נמל, איך מעריכים את מה שלמדו בצורה שמספקת את דרישות התכנית? איך מייצרים את גיליון הנתונים שהמנהל רוצה תוך שמירה על המורכבות של מה שהתלמיד באמת הבין?",
+      "the_document_left_that_question_open_the": "המסמך השאיר את השאלה הזו פתוחה. גם מערכת החינוך לא פתרה אותה. כמעט שני עשורים, \"למידה בחוץ\" נותרה או שאיפה מעורפלת או סיוט לוגיסטי — מורים עם לוחות כתיבה, פעילויות שלא הניבו חפצים, חוויות שנעלמו ברגע שהתלמידים חזרו פנימה.",
+      "the_first_part_was_solved_by_smartphones": "החלק הראשון נפתר על ידי סמארטפונים. תמונה, אודיו, קואורדינטות GPS, חותמות זמן — סטודנט בגדת נחל יכול ללכוד יותר ראיות בעשר דקות ממה שלוח סיור יכול להכיל ביום. מה שנשאר היה החלק השני: חקירה מובנית שלא רק מתעדת את החוויה אלא גם העמיקה אותה.",
+      "thats_where_peri_comes_in_peri_is_peripa": "כאן נכנס פרי לתמונה. פרי הוא מדריך הבינה המלאכותית של Peripateticware — נקרא, כמו התוכנה, על שם השיטה האריסטוטלית. פרי לא עונה על שאלות. הוא שואל אותן. הוא עוקב אחרי רצף החקירה בן חמישה שלבים — מעורב, התבונן, ניתוח, הסבר, יישום — שאליו השתמש אריסטו בליסאום, ומאז מדעי הקוגניציה אושרו כדרך להבנה אמיתית, לא רק לשימור. פרי לוקח את התצפית של תלמיד ושואל את השאלה הנכונה הבאה. כשהתלמיד עונה נכון, פרי בודק את המשמעות. כשהתלמיד מעורפל, פרי מבקש ראיות.",
+      "the_result_is_an_artifact_a_field_journa": "התוצאה היא ארטיפקט: רשומת יומן שטח עם תכונות, ניתוח מורחב ורשומה של החקירה עצמה. המורים יכולים לראות לא רק מה התלמיד הגיע למסקנה אלא גם כיצד הגיע לשם. הרובריקות המותאמות למסגרות הטקסונומיה והסטנדרטים של בלום — CCSS, NGSS, TEKS או שלך — הופכות את ההערכה לקריאה לכל רכז תוכנית לימודים. הגיליון האלקטרוני והלמידה האמיתית תופסים סוף סוף את אותו מסמך.",
+      "the_2007_paper_described_a_choose_your_o": "המאמר מ-2007 תיאר מודל למידה של \"בחר את ההרפתקה שלך\" — מודל שבו תלמידים עוקבים אחרי סטיות, רודפים אחרי מה שמעניין אותם, ופוגשים מושגי ליבה של תכנית דרך דלתות צדדיות של סקרנות אמיתית במקום דרך דלת ההוראה הקדמית. המאמר הכיר בכך שזה \"קצת כאוטי\" ושזה ידרוש סוגים חדשים של עיצוב הוראה, כלי הערכה חדשים, ומורים שמוכנים להחליף שליטה במעורבות אותנטית.",
+      "peripateticware_doesnt_fully_solve_the_c": "התוכנה הפריפטית לא פותרת לגמרי את הכאוס — המתח הזה אמיתי וכנראה קבוע. מה שהיא עושה זה לתת למורים מספיק מבנה כדי להישאר שפוי (פעילויות מעוצבות, יעדי למידה, שלבי השלמה, תהליכי אישור מורים) תוך מתן חופש מסלל לתלמידים להתקדם למקום כלשהו (תוכן שמופעל על ידי GPS, פעילויות שהוצעו על ידי התלמידים, הערות שטח עצמאיות, פרויקטים של עמיתים).",
       "the_reverse_scavenger_hunt_where_student": "החיפוש אחר-הסדר — שבו התלמידים מציעים פעילות על סמך מה שמצאו — הוא הדבר הקרוב ביותר בפלטפורמה לראיית 2007. תלמיד מוצא צורה של סלע מוזרה. הם מציעים אותה כפעילות. המורה מאשר אותה. תלמידים אחרים הולכים לבדוק. שאלות עולות שאף מסמך תוכנית לא צפה בהן. הלמידה מתקדמת.",
-      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
-      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
-      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
-      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
+      "the_short_answer_is_that_most_of_the_ena": "התשובה הקצרה היא שרוב הטכנולוגיה המאפשרת לא הייתה מוכנה ב-2007. GPS בכל כיס הגיע קודם (2010–2015). אחר כך מצלמות ניידות איכותיות. אחר כך ממשקי API בענן זולים מספיק לבתי ספר. ואז מודלים מקומיים של בינה מלאכותית (Ollama, llama.cpp) שיכולים לפעול על שרת הבית של המורה בלי חשבון הסקה של 10,000 דולר לחודש. המאמר מ-2007 צדק לגבי היעד; הוא לא יכול היה לדעת כמה ארוך הכביש יהיה.",
+      "the_longer_answer_is_that_educational_te": "התשובה הארוכה היא שטכנולוגיה חינוכית בילתה את השנים האלה בפתרון הבעיה הלא נכונה. EdTech שיפרה את הכיתה — LMS משופר, וידאו טוב יותר, כלי חידונים טובים יותר. היא הפכה את המודל הקיים ליעיל יותר. Peripateticware לא מנסה להפוך את הכיתה ליעילה יותר. היא מנסה להחליף את הכיתה, לפחות מדי פעם, בעולם.",
+      "thats_a_harder_sell_schools_are_riskaver": "קשה יותר למכור את זה. בתי ספר נמנעים מסיכונים. למידה חיצונית יש אופטיקה של סיכון. \"העולם הוא הכיתה שלך\" נשמע כמו משפט שיווקי עד שצפית בילד בן עשר מסביר את הובלת המשקעים למדריך בינה מלאכותית בצורת עורב בזמן שעומדים בקרקעית נחל, ואז קוראים את יומן השדה שכתבו באותו אחר הצהריים, ומבינים שהם מבינים.",
+      "title_from_a_white_paper_to_a_working_platform": "מנייר לבן לפלטפורמת עבודה: 2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "טוען..."
@@ -1799,8 +1799,8 @@
         },
         "4": {
           "badge": "ריבוי עצירות",
-          "title": "Scavenger Hunt — 2 of 5 stops",
-          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
+          "title": "ציד מטמון — 2 מתוך 5 עצירות",
+          "prompt": "פנו צפונה-מזרחה, 40 מטר לגשר האבן. החץ מצביע על הדרך — המיקום שלכם לעולם לא עוזב את הטלפון."
         }
       },
       "teacher": {
@@ -1821,8 +1821,8 @@
         },
         "4": {
           "badge": "בונה מסלולים",
-          "title": "Multi-Step Hunt — 6 stops",
-          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+          "title": "ציד רב-שלבי — 6 עצירות",
+          "prompt": "ייבא GPX או סיכות שחררו. הגדר רמז ורדיוס הגעה לכל עצירה, בחר למה משפחות מסכימות, ואז ייצא את הציד המוגמר."
         },
         "dashboard": {
           "title": "לוח מחוונים למורה",
@@ -1845,8 +1845,8 @@
           "title": "סקירת הצעה",
           "badge": "הצעה",
           "location": "תור הצעות",
-          "subtitle": "From Jordan M. · Submitted today",
-          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
+          "subtitle": "מג'ורדן מ. · הוגש היום",
+          "prompt": "\"מצאו וצילמו 5 צמחים מקומיים לאורך שביל הנחל.\" — אתגר שג'ורדן עיצב והגיש לאישורכם."
         }
       },
       "parent": {
@@ -2009,20 +2009,20 @@
         },
         "4": {
           "badge": "● בשביל",
-          "title": "Greenbelt Trail Hunt",
-          "subtitle": "5 stops · Emma & Lucas",
+          "title": "ציד שביל גרינבלט",
+          "subtitle": "5 תחנות · אמה ולוקאס",
           "task": {
             "1": {
-              "text": "The Old Oak — reached ✓"
+              "text": "האלון הישן — הושג ✓"
             },
             "2": {
-              "text": "Stone Bridge — reached ✓"
+              "text": "גשר האבן — ניתן להגיע ✓"
             },
             "3": {
-              "text": "The Overlook — 120 m ahead"
+              "text": "התצפית — 120 מטר קדימה"
             },
             "4": {
-              "text": "Navigation on-device — no tracking"
+              "text": "ניווט במכשיר — ללא מעקב"
             }
           }
         },
@@ -2037,8 +2037,8 @@
               "label": "הושלם"
             }
           },
-          "subtitle": "Children · This term",
-          "location": "Barton Creek Greenbelt"
+          "subtitle": "ילדים · מונח זה",
+          "location": "חגורת הירוק של נחל ברטון"
         },
         "dashboard": {
           "title": "לוח מחוונים",
@@ -2052,13 +2052,13 @@
               "label": "Pending"
             }
           },
-          "subtitle": "This week · Emma & Lucas",
+          "subtitle": "השבוע · אמה ולוקאס",
           "task": {
             "1": {
-              "text": "River Ecosystem Study — published"
+              "text": "מחקר מערכת אקולוגית של הנהר — פורסם"
             },
             "2": {
-              "text": "Capitol Field Trip — draft"
+              "text": "טיול שדה לקפיטול — טיוטה"
             }
           }
         }
@@ -2203,8 +2203,8 @@
       "password_label": "סיסמה",
       "copied": "Copied ✓",
       "copy_all": "Copy all",
-      "childrens_logins": "Your children\\'s logins",
-      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
+      "childrens_logins": "כניסות ההתחברות של ילדיך",
+      "save_these_now": "שמור או הדפס אותם עכשיו — למען פרטיות ילדך איננו יכולים להציג את הסיסמה שוב. אתה יכול לאפס אותה בכל עת מדף הילדים."
     },
     "pages_licensingpage": {
       "licensing": "רישוי",
@@ -2252,7 +2252,7 @@
       "send": "שלח תגובה",
       "subtitle": "הודעות מרבות ילדך. הגיב כדי להישאר בקשר.",
       "empty": "עדיין אין הודעות. כאשר מורה יצר קשר, היא תופיע כאן.",
-      "announcements_title": "Classroom Announcements"
+      "announcements_title": "הודעות בכיתה"
     },
     "notifications": "התראות",
     "pages_parentnotificationspage": {
@@ -2263,7 +2263,7 @@
       "link_a_child": "קישור ילד",
       "teacher_note": "הערה של מורה",
       "no_children_linked_yet": "עדיין אין ילדים קשורים",
-      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
+      "link_your_childs_account_to_start_tracki": "קשר את חשבון ילדך כדי להתחיל לעקוב אחרי התקדמות הלמידה שלו.",
       "no_progress_data_yet_for_this_child": "עדיין אין נתוני התקדמות לילד זה."
     },
     "progress_reports": "דוחות התקדמות",
@@ -2303,8 +2303,8 @@
       "license": "License",
       "change_tier_to": "שנה דרגה ל...",
       "placeholder_days": "days",
-      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
-      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
+      "sets_license_valid_until_directly_overri": "מגדיר license_valid_until ישירות, ומבטל כל מתמטיקה של הארכת ימים",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "למשל, לעבור לשכבה בתשלום אחרי שחתמו על חוזה, או להעניק/לסיים 'בטא' ידנית."
     },
     "pages_platform_platformorgspage": {
       "organisations": "Organisations",
@@ -2377,13 +2377,13 @@
       "constructed": "נבנה:",
       "yes_submit": "כן, שלח",
       "cancel": "Cancel",
-      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
-      "historical_significance": "Historical Significance:",
-      "learning_opportunities": "Learning Opportunities",
-      "nearby_points_of_interest": "Nearby Points of Interest",
-      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
-      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
-      "notable_features": "Notable Features"
+      "your_teacher_wants_to_see_your_location_": "המורה שלך רוצה לראות את המיקום שלך במהלך הפעילות כדי לעקוב אחרי התקדמות העבודה בשטח. המיקום שלך משותף רק בזמן שהמפגש פעיל.",
+      "historical_significance": "חשיבות היסטורית:",
+      "learning_opportunities": "הזדמנויות למידה",
+      "nearby_points_of_interest": "נקודות עניין סמוכות",
+      "no_background_info_was_saved_for_this_lo": "לא נשמר מידע רקע על המיקום הזה.",
+      "submit_confirm": "להגיש את הפעילות הזו לסקירה? לא תוכל להוסיף ראיות נוספות לאחר מכן.",
+      "notable_features": "מאפיינים בולטים"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "טוען פעילויות...",
@@ -2392,7 +2392,7 @@
       "make_sure_the_backend_is_running_and_you": "אבטח שהסרבר הוא פעיל ושהיית מחובר.",
       "title_fieldwork_map": "מפת שטח - מיקומים GPS שהוגשו על ידי סטודנטים",
       "tracking_settings": "הגדרות מעקב",
-      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
+      "title_publish_makes_this_activity_visible_to_s": "פרסם — הופך פעילות זו לגלויה לסטודנטים ולזכאים לספרייה המשותפת"
     },
     "professorFieldworkPage": {
       "back": "<- חזור",
@@ -2432,8 +2432,8 @@
       "larger_classrooms_are_a_paid_feature_upg": "מחדרות גדולות הן תכונה מוגדרת בתשלום. עודכן כדי להוסיף יותר תלמידים.",
       "grade_level_placeholder": "0 = גן ילדים",
       "grade_level_k_hint": "0 = גן ילדים",
-      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
-      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
+      "grade_level_nudge": "אם השאלה נשארת ריקה, פרי לא יכולה להתאים את ניסוח השאלות לגיל הכיתה הזו – התלמידים מקבלים את הגרסה הגנרית.",
+      "grade_level_nudge_short": "אין קביעת ציונים -- התלמידים מקבלים ניסוח פרי כללי, לא מותאם לגילם."
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "טוען כיתות...",
@@ -2444,7 +2444,7 @@
       "archived": "ארכיון",
       "you_dont_have_any_classrooms_yet": "עדיין אין לך חדרות.",
       "placeholder_grade_optional": "ציון (0 = K, אופציונלי)",
-      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
+      "grade_nudge": "קביעת ציון מאפשרת לפרי להתאים את ניסוח השאלות לגיל הכיתה הזו. להשאיר אותה ריקה רק לכיתה מעורבת או לא מדורגת."
     },
     "live_sessions": "חיי סשנסים (",
     "started": "התחלה",
@@ -2457,8 +2457,8 @@
       "your_feedback": "הפידבק שלך:",
       "saved": "✓ Saved",
       "placeholder_feedback_for_the_student": "משוב לתלמיד...",
-      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
-      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
+      "evidence_detail_isnt_available_for_this_": "פירוט ראיות עדיין לא זמין להגשה זו.",
+      "mapped_standards_did_this_submission_mee": "סטנדרטים ממופים — האם ההגשה הזו עמדה בהם?"
     },
     "activity_builder_stub": "בנאי פעילות",
     "activity_preview_stub": "תצוגה מקדימה של פעילות",
@@ -2474,7 +2474,7 @@
     "field_journal_title": "יומן השדה: לימוד שמתמשך",
     "s_choose_peripateticware": "בחר Peripateticware",
     "your_data_is_yours_we_collect_minimal_in": "המידע שלך שייך לך. אנו מצטטים מידע מינימלי ואינו מכרו. Peripateticware משתמש בקonnections מוצפנות, אגרגציה אנונימית ומערכי מידע שקופים. אתה מחליט מה המידע יועבר, לאיזו מיין ואזכר כמה זמן.",
-    "team_title": "Built by an educator, for educators",
+    "team_title": "נבנה על ידי מחנך, עבור מחנכים",
     "loading_portfolio": "טוען את הקובץ...",
     "what_did_you_observe": "\"מה ראית/ראית?",
     "describe_what_you_observed_noticed_or_wo": "תיאור מה שצברת, הבחנת או שאלת...",
@@ -2556,7 +2556,7 @@
     "using_basic_fallback_information": "עושה שימוש במידע בסיסי כפול",
     "educational_opportunities": "הזדמנויות חינוכיות",
     "view_on_google_maps": "🗺️ צפה בגוגל מפות",
-    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
+    "use_this_location_information_to_create_": "השתמש במידע מיקום זה כדי ליצור פעילויות למידה מבוססות מקום שמחברות את חקירת התלמידים להקשרים מהעולם האמיתי.",
     "refresh_information": "רענון מידע",
     "observing_native_plants_in_field_session": "צפייה בתנאים טבעיים של צמחים מקומיים בסשן בשדה ברחבי פארק מדינת ריברסייד",
     "great_observation_notes_today_your_detai": "עצמאות טובה היום! הרשומות שלך על צורת העלים מראות מחשבה אמיתית בבוטניקה.",
@@ -2949,7 +2949,7 @@
       "homeschool_families": "משפחות של לימוד בבית",
       "aria_label_close": "עLOSE",
       "peripateticware_began_as_a_white_paper_w": "החלה כמאמר לבן של מקראו-הילד, שטען כי מכשירי ניידים מצוידים ב-GPS יהפכו את הלמידה - שאנשים הולכים דרך מקומות אמיתיים, מודרכים על ידי חקירה מסודרת, יכולים ללמוד בדרך שלא מאפשרת ספרי טקסט.",
-      "title_learning_in_motion": "Learning in Motion"
+      "title_learning_in_motion": "למידה בתנועה"
     },
     "components_landing_storysection": {
       "alt_a_student_walking_through_the_forest_wit": "סטודנט צועד ביער עם מכשיר מובייל"
@@ -2963,12 +2963,12 @@
           "3": "פארי האי איי",
           "4": "איסוף ראיות",
           "5": "הצגתPORTFOLIO",
-          "6": "Multi-step map hunts"
+          "6": "ציד מפות רב-שלבי"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "או 99.99$ לשנה — חסוך 30% · ניסיון חינם ל-30 יום",
+        "cta": "התחל ניסיון חינם"
       },
       "school": {
         "name": "בית ספר",
@@ -2995,12 +2995,12 @@
           "2": "פורטפוליו PDF",
           "3": "דוחי ציות למדינה",
           "4": "שונות מיפוי",
-          "5": "Trail hunts with GPX import & export"
+          "5": "ציד שבילים עם ייבוא וייצוא GPX"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "או 99.99$ לשנה — חסוך 30% · ניסיון חינם ל-30 יום",
+        "cta": "התחל ניסיון חינם"
       },
       "contact_for_pricing": "צור קשר על מנת לקבל מחיר",
       "contact_team": "צור קשר לéquipe",
@@ -3025,8 +3025,8 @@
       "no_active_jurisdictions_found_run_the_se": "אין שיפוטים פעילים מצויים. רוץ על ההזרמה כדי להוסיף ערכי ברירת מחדל.",
       "loading_rule_details": "טוען פרטי חוק...",
       "add_update_jurisdiction": "עדכן/הוסף סמכות",
-      "quick_setup_by_location": "Quick Setup by Location",
-      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
+      "quick_setup_by_location": "הגדרה מהירה לפי מיקום",
+      "quick_setup_desc": "לגבי תחומי שיפוט נפוצים, ספר לנו היכן הארגון שלך נמצא במקום לכתוב JSON ידנית למטה — המערכת פותרת חוקים ידועים (פדרליים, מדינתיים או שהתגלו בעבר) ומיישמת אותם על הארגון שלך באופן אוטומטי."
     },
     "audit_logs_enabled": "אודיט לוגס מופעלים",
     "cookiepolicypage": {
@@ -3122,26 +3122,26 @@
       "summary_title": "פרטיות על ידי עיצוב",
       "summary_subtitle": "בנויים עבור בתי ספר, מובטחים על ידי הורים",
       "summary_desc": "פריפטטיקוור מתאים לCOPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD ו-PDPA. נתוני תלמידים jamais sold, never used for advertising, ו-never shared without consent.",
-      "summary_cta": "See how it works",
-      "engine_core_title": "How the Privacy Engine works",
-      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
-      "jurisdiction_aware_title": "Jurisdiction Aware",
-      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
-      "auto_updates_title": "Auto Updates",
-      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
+      "summary_cta": "ראה איך זה עובד",
+      "engine_core_title": "כיצד פועל מנוע הפרטיות",
+      "engine_core_desc": "כל ראיה של הסטודנט נבדקת מול כללי הציות הפעילים בתחום השיפוט של אותו סטודנט לפני שהיא נשמרת.",
+      "jurisdiction_aware_title": "מודעות לסמכות שיפוט",
+      "jurisdiction_aware_desc": "מזהה אוטומטית אילו חוקי פרטיות חלים בהתאם למיקום הסטודנט, ומיישם את הכללים הנכונים לאזור זה.",
+      "auto_updates_title": "עדכונים אוטומטיים",
+      "auto_updates_desc": "כללי הציות מתעדכנים באופן מרכזי ככל שהתקנות משתנות, כך שכל כיתה נשארת מעודכנת ללא כל עבודה ידנית.",
       "versioned_rules_title": "חוקים מוּסדרים",
-      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
-      "extensible_title": "Extensible",
-      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
+      "versioned_rules_desc": "כל שינוי כלל הוא גרסה וניתן לביקורת, כך שתמיד תוכל לראות בדיוק איזו מדיניות חלה על כל נתון ומתי.",
+      "extensible_title": "ניתן להרחבה",
+      "extensible_desc": "ניתן להוסיף תחומי שיפוט ומסגרות עבודה חדשות מבלי לשנות את אופן פעולת האפליקציה — המנוע מסתגל, לא הקוד.",
       "encrypted_by_default_title": "מוצפן מראש",
-      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
+      "encrypted_by_default_desc": "נתוני הסטודנטים מוצפנים במנוחה ובהעברה, ללא צורך בקונפיגורציה להפעלתם.",
       "on_device_first_title": "על המכשיר ראשון",
-      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
+      "on_device_first_desc": "כאשר ניתן, עיבוד רגיש מתבצע במכשיר של התלמיד לפני שמשהו נשלח לשרתים שלנו.",
       "consent_framework_title": "Consent Framework",
-      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
-      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
-      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
-      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
+      "consent_framework_desc": "ההורים והאפוטרופוסים שולטים במה שנאסף ויכולים לבדוק או לבטל את ההסכמה בכל עת.",
+      "cta_section_title": "נבנה כדי לזכות באמון שלך, לא רק בתיבת הסימון של הציות שלך",
+      "cta_section_subtitle": "ראו בדיוק כיצד מטופלים נתוני התלמידים, בכל שלב בדרך.",
+      "cta_section_desc": "קראו את התיעוד הטכני המלא או פנו לכל שאלה לגבי האופן שבו Peripateticware מגנה על פרטיות התלמידים.",
       "loading_status": "טעקול סטטוס ציות",
       "coppa_family_title": "עבור משפחות של ילדים מתחת לגיל 13",
       "do_not_sell_link": "אל תמכור או שתף מידע אישי שלי"
@@ -3185,16 +3185,16 @@
       "select_your_state": "— בחר את מדינתך —",
       "student_data_is_never_sold_or_shared_wit": "🔒 מידע של סטודנטים אינו נמכר או מחולק jamais עם מפרסמים. אתה יכול לייצא או למחוק את כל המידע בכל עת תחת מנהל > תצורת פרטיות.",
       "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR, GB",
-      "state_province": "State / Province",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "region_optional": "Region (optional)",
-      "region_placeholder": "A specific district or local law, if you know of one",
-      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
-      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
-      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
-      "something_not_right": "Something not right? Let us know",
-      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
-      "review_submitted": "Thanks — sent for review."
+      "state_province": "מדינה / מחוז",
+      "province_placeholder": "לדוגמה, אונטריו, סאו פאולו, בוואריה",
+      "region_optional": "אזור (אופציונלי)",
+      "region_placeholder": "חוק מחוזי או מקומי מסוים, אם אתה מכיר אחד כזה",
+      "frameworks_likely_to_apply": "מסגרות עבודה שסביר שיחולו (מאושרות לאחר שתיישם את ההגדרות שלך):",
+      "auto_discovered_pending_review": "Auto-discovered — ממתין לבדיקה משפטית, מיושם באופן שמרני בינתיים.",
+      "no_specific_frameworks_found": "לא נמצאה מסגרת ספציפית למיקומך — חלים ברירות מחדל כלליות המודעות לבטיחות ילדים.",
+      "something_not_right": "משהו לא בסדר? תעדכנו אותנו",
+      "review_reason_placeholder": "מה נראה לא בסדר? נעביר את זה לאדם הנכון לסקירה.",
+      "review_submitted": "תודה — נשלח לסקירה."
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "בחר ספק לפי משימה. השינויים ייכנסו לתוקף מיד - אין צורך בהפעלה מחדש.",
@@ -3242,13 +3242,13 @@
       "title_generate_a_new_uuid": "הכין מזהי UUID חדש",
       "placeholder_what_changed_in_this_version": "מה השתנה בגרסה זו?",
       "select": "— Select —",
-      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
-      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
-      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
-      "pending_review": "pending review",
-      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
-      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
-      "placeholder_district_or_local_law": "District or local law"
+      "other_enter_2letter_code_below": "אחר (הזן קוד בן שתי אותיות למטה)",
+      "applied_to_your_organization_admins_can_": "מיושם על הארגון שלך (מנהלים יכולים להסיר כל אחד מהם למטה ב\"תחומי שיפוט פעילים\", או לעקוף עם כלל מותאם אישית דרך הטופס בהמשך הדרך):",
+      "no_jurisdiction_found_for_that_location_": "עדיין לא נמצא סמכות שיפוט למיקום הזה — המערכת תציין זאת לגילוי עתידי.",
+      "pending_review": "בדיקה ממתינה",
+      "placeholder_eg_de_fr_gb": "לדוגמה: DE, FR, GB",
+      "placeholder_eg_ontario_bavaria": "לדוגמה, אונטריו, בוואריה",
+      "placeholder_district_or_local_law": "חוק מחוזי או מקומי"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "הזהי את מפתחך — עידכון נדרש",
@@ -3276,7 +3276,7 @@
       "title_remove": "הסר"
     },
     "cta_privacy_note": "מושג FERPA ו-COPPA. מידע על סטודנטים אינו נמכר או משותף לעולם.",
-    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
+    "team_1_bio": "פול בילה עשור כמורה, ארבע שנים בעבודה בטכנולוגיות חינוך, וכבר שני עשורים מתנסה כיצד לשבור למידה מתוך ספרים וכיתות. Peripateticware מנצלת את התקדמות ה-LLM ומנצלת טכנולוגיות ניידות כדי לאפשר לתלמידים ללמוד מהעולם בהכוונה מהמורים שלהם בכל מקום שירצו להסתובב.",
     "pages_adminauditlogpage": {
       "export_csv": "“יצא CSV”",
       "all": "הכל",
@@ -3344,7 +3344,7 @@
       "prev_month": "חודש קודם",
       "next_month": "בחודש הבא",
       "today": "Today",
-      "no_events_this_day": "Nothing scheduled for this day."
+      "no_events_this_day": "אין שום דבר מתוכנן ליום הזה."
     },
     "cookie_preferences": "העדפות עוגיות",
     "cookie_status_on": "כרגע: עוגיות אנליטיקה מופעלות.",
@@ -3365,20 +3365,20 @@
       "col_evidence": "ראיות",
       "col_student": "Student",
       "col_last_activity": "פעילות אחרונה",
-      "empty": "No activities linked to this project yet.",
-      "title_by_activity": "Completion by Activity",
-      "title_by_participant": "Completion by Participant",
-      "no_participants": "No one has started this project yet."
+      "empty": "עדיין אין פעילויות הקשורות לפרויקט זה.",
+      "title_by_activity": "השלמה לפי פעילות",
+      "title_by_participant": "השלמה על ידי משתתף",
+      "no_participants": "אף אחד עדיין לא התחיל את הפרויקט הזה."
     },
     "components_teacher_projectlivetracker": {
       "title_live_map": "Live Map",
       "show_all": "הראה לכולם",
       "active_now": "פעיל עכשיו",
       "live": "LIVE",
-      "empty": "No one is currently active in this project.",
-      "empty_hint": "This updates automatically once a student starts a field session.",
-      "not_configured": "No activities in this project have location tracking enabled.",
-      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
+      "empty": "אף אחד אינו פעיל כרגע בפרויקט זה.",
+      "empty_hint": "זה מתעדכן אוטומטית ברגע שהתלמיד מתחיל מושב שטח.",
+      "not_configured": "אין פעילות בפרויקט זה עם הפעלת מעקב מיקום.",
+      "not_configured_hint": "הפעל אותו לפי פעילות בלשונית המיקום של הפעילות."
     },
     "generate_with_ai": "יצור עם בינה מלאכותית",
     "activity_title": "כותרת הפעילות",
@@ -3402,33 +3402,33 @@
       "placeholder_write_a_reply": "כתוב תגובה...",
       "back_to_messages": "חזרה להודעות",
       "you": "You",
-      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
-      "announcements_title": "Classroom Announcements",
-      "no_announcements_yet": "No announcements yet.",
-      "no_messages_yet": "No messages from teachers yet."
+      "subtitle": "צפה בהודעות מהמורים שלך וענה להודעות שנשלחו אליך.",
+      "announcements_title": "הודעות בכיתה",
+      "no_announcements_yet": "עדיין אין הודעות.",
+      "no_messages_yet": "עדיין אין הודעות מהמורים."
     },
     "announcements": "הודעות",
     "projectCompletionReportPage": {
       "back": "← חזרה לפרויקט",
       "title": "דוח סיום",
-      "no_project_selected": "No project selected."
+      "no_project_selected": "לא נבחר פרויקט."
     },
     "projectLiveTrackingPage": {
       "back": "← חזרה לפרויקט",
       "title": "מעקב חי",
-      "no_project_selected": "No project selected."
+      "no_project_selected": "לא נבחר פרויקט."
     },
     "projectnewpage": {
       "new_project": "פרויקט חדש",
-      "subtitle": "Set up a new learning project for your students."
+      "subtitle": "הגדר פרויקט למידה חדש עבור התלמידים שלך."
     },
     "pages_teacher_teachercalendarpage": {
       "title": "לוח שנה",
       "date": "Date",
       "type": "Type",
       "placeholder_eg_river_study_field_trip": "לדוגמה, טיול שטח למחקר נהר",
-      "subtitle": "Planned and completed activities for your class, plus any events you add.",
-      "description_optional": "Description (optional)"
+      "subtitle": "פעילויות מתוכננות והשלמו לכיתה שלך, בנוסף לכל אירוע שתוסיף.",
+      "description_optional": "תיאור (אופציונלי)"
     },
     "pages_teacher_teachermessagespage": {
       "title": "הודעות",
@@ -3443,16 +3443,16 @@
       "placeholder_write_a_reply": "כתוב תגובה...",
       "placeholder_eg_field_trip_friday": "למשל, טיול שדה ביום שישי",
       "placeholder_eg_field_trip_reminder": "לדוגמה, תזכורת לטיול שדה",
-      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
-      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
-      "a_specific_students_parent": "A specific student's parent",
-      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
-      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
-      "students": "Students (choose one or more)",
-      "no_students_in_this_classroom": "No students in this classroom yet.",
-      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
-      "no_linked_parent_found_for_some_students_": "No linked parent found yet for one or more of the selected students.",
-      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
+      "subtitle": "פרסמו הודעות לכל הכיתה, או שלחו הודעה ישירה לתלמידים ולהורים.",
+      "no_announcements_yet_for_this_classroom": "עדיין אין הודעות לכיתה הזו.",
+      "a_specific_students_parent": "הורה של תלמיד מסוים",
+      "all_parents_bulk_message": "👨 👩 👧 כל ההורים (הודעה בכמות גדולה)",
+      "all_students_bulk_message": "🧑 🎓 כל הסטודנטים (הודעה בכמויות גדולות)",
+      "students": "סטודנטים (בחרו אחד או יותר)",
+      "no_students_in_this_classroom": "עדיין אין תלמידים בכיתה הזו.",
+      "no_linked_parent_found_for_this_student_": "עדיין לא נמצא הורה מקושר לתלמיד הזה.",
+      "no_linked_parent_found_for_some_students_": "עדיין לא נמצא הורה מקושר עבור אחד או יותר מהתלמידים שנבחרו.",
+      "no_messages_yet_use_new_message_to_reach": "עדיין אין הודעות. השתמש ב\"הודעה חדשה\" כדי להגיע לתלמיד, להורה או לכל הכיתה."
     },
     "pages_teacher_trackingsettings": {
       "tier_trip": "טריפ (מהיר)",
@@ -3467,9 +3467,9 @@
       "col_tracking": "מעקב",
       "on": "On",
       "off": "Off",
-      "back": "← Back to Activities",
-      "subtitle": "GPS live-tracking status across every activity in your account.",
-      "col_tier": "Poll cadence if live"
+      "back": "← חזרה לפעילויות",
+      "subtitle": "סטטוס מעקב חי אחר GPS בכל פעילות בחשבון שלך.",
+      "col_tier": "קצב הסקר אם בשידור חי"
     },
     "app": {
       "loading": "Loading…"
@@ -3479,9 +3479,9 @@
       "placeholder_describe_the_image": "תאר את התמונה",
       "placeholder_a_trail_marker_on_the_ridge": "סימון שביל על הרכס",
       "placeholder_photo_jane_doe": "צילום: ג'יין דו",
-      "for_screen_readers": "(for screen readers)",
-      "optional_shown_under_the_image": "(optional -- shown under the image)",
-      "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
+      "for_screen_readers": "(לקוראי מסך)",
+      "optional_shown_under_the_image": "(אופציונלי -- מוצג מתחת לתמונה)",
+      "optional_eg_photo_credit": "(אופציונלי -- למשל קרדיט בתמונה)"
     },
     "blog": "Blog",
     "components_seo": {
@@ -3496,11 +3496,11 @@
       "1_scan_this_qr_code_with_your_authentica": "1. סרוק את קוד ה-QR הזה עם אפליקציית האימות שלך (או הזן את המפתח ידנית).",
       "done": "Done",
       "twofactor_authentication_is_enabled": "✓ אימות דו-שלבי מופעל",
-      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
-      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
-      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
-      "confirm_your_password_to_disable": "Confirm your password to disable:",
-      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+      "2_enter_the_6digit_code_it_shows": "2. הזן את הקוד בן 6 הספרות שמוצג:",
+      "save_these_backup_codes_now_they_wont_be": "שמרו את קודי הגיבוי האלה עכשיו — הם לא יוצגו שוב.",
+      "each_code_works_once_if_you_ever_lose_ac": "כל קוד עובד פעם אחת, אם אי פעם תאבד גישה לאפליקציית האימות שלך.",
+      "confirm_your_password_to_disable": "אשר את הסיסמה שלך כדי להשבית:",
+      "enter_a_current_6digit_code_to_invalidat": "הזן קוד עדכני בן 6 ספרות כדי לבטל את קודי הגיבוי הישנים שלך וליצור חדשים."
     },
     "components_applied_standards": {
       "loading": "בודק תקנים...",
@@ -3515,8 +3515,8 @@
       "no_results": "אין גפרורים.",
       "added": "Added",
       "add": "Add",
-      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
-      "none_yet": "No standards matched this activity's content yet — you can add one manually below."
+      "save_first": "שמור פעילות זו כדי לראות תקנים מוחלים אוטומטית על התוכן שלה — תוכל גם להוסיף תקנים משלך ברגע שהיא קיימת.",
+      "none_yet": "עדיין לא התאימו תקנים לתוכן הפעילות הזו — ניתן להוסיף אחד ידנית למטה."
     },
     "components_standards_explorer": {
       "title": "חקור תקנים",
@@ -3524,11 +3524,11 @@
       "searching": "מחפש...",
       "search": "Search",
       "clear": "Clear",
-      "search_failed": "Search failed. Try again in a moment.",
-      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
-      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
-      "no_results": "No matching standards found.",
-      "generate_activity": "✨ Generate activity from these standards"
+      "search_failed": "החיפוש נכשל. נסה שוב בעוד רגע.",
+      "subtitle": "חפש בכל תקן, רובריקה ודרישה — התוצאות כוללות תקנים מבניים (אבות, הפניות צולבות, דרישות מוקדמות), ולא רק התאמה טקסטית קרובה ביותר.",
+      "include_related": "כלול תקנים קשורים (אבות, הפניות צולבות, דרישות קדם)",
+      "no_results": "לא נמצאו תקנים תואמים.",
+      "generate_activity": "✨ יצר פעילות מתוך תקנים אלה"
     },
     "components_teacher_activitywizard": {
       "error_prefix": "Error",
@@ -3599,37 +3599,37 @@
       "change_start": "שנה נקודת התחלה",
       "back": "Back",
       "next": "Next",
-      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
-      "place_ready": "Background, features and nearby places are ready.",
-      "peri_suggestions": "✨ Peri AI suggestions",
-      "peri_offline_questions": "🔌 Offline Peri questions",
-      "experience_title": "How will students experience it?",
-      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
-      "kind_title": "Wayfaring or investigative",
-      "wayfaring_note": "Students move through a route and respond at stops along the way.",
-      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
-      "assessment_title": "How will you assess it?",
-      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
-      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
-      "outcome_added": "Outcome added from your library.",
-      "outcome_saved": "Outcome saved to your library for reuse.",
-      "outcomes_title": "What should students be able to do?",
-      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
-      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
-      "this_activity_outcomes": "This activity's outcomes",
-      "start_location_note": "I know where students will be. Peri suggests what to do there.",
-      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
-      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
-      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
-      "start_title": "What do you want to start from?",
-      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
-      "state_not_set": "Not set by your administrator",
-      "search_standards": "Search for a standard",
-      "standards_loading": "Peri is matching standards…",
-      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
-      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
-      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
-      "start_pane": "Choose where to start"
+      "basics_lede": "כותרת, דרגה, מקצוע ומקום. פרי משתמש בהם כדי להציע פעילויות וסטנדרטים.",
+      "place_ready": "הרקע, התכונות והמקומות הסמוכים מוכנים.",
+      "peri_suggestions": "✨ הצעות ל-Peri AI",
+      "peri_offline_questions": "🔌 שאלות על פרי לא מקוון",
+      "experience_title": "איך התלמידים יחוו זאת?",
+      "experience_lede": "בחרו את סוג הפעילות, האם אתם יכולים לראות תלמידים על המפה, ואיך הם מקבלים הבקשה.",
+      "kind_title": "נסיעות או חקירות",
+      "wayfaring_note": "התלמידים עוברים דרך מסלול ומגיבים בתחנות בדרך.",
+      "investigative_note": "תלמידים אוספים ראיות בתחום אחד כדי לענות על שאלה או לבדוק רעיון.",
+      "assessment_title": "איך תעריך את זה?",
+      "assessment_lede": "הגיש עד שלושה: סטנדרטים מדינתיים, טקסונומיה קוגניטיבית, ורובריקה משלך. פרי מציעה סטנדרטים מהדרגה, המדינה, המקצוע והתוצאות.",
+      "review_lede": "בדוק את הסיכום. בחר עריכה בכל שורה כדי לחזור לשלב הזה; התשובות שלך נשמרות.",
+      "outcome_added": "התוצאה נוספה מהספרייה שלך.",
+      "outcome_saved": "התוצאה נשמרה בספרייה שלך לשימוש חוזר.",
+      "outcomes_title": "מה התלמידים צריכים להיות מסוגלים לעשות?",
+      "outcomes_lede": "כתוב כל תוצאה כמשהו שניתן לצפות, או השתמש מחדש באחת מהספרייה שלך. תוצאות הזנות התאמת תקנים והרובריקה.",
+      "library_empty": "עדיין אין תוצאות שמורות תואמות. כתוב אחד למטה ובחר \"שמור לספרייה שלי\".",
+      "this_activity_outcomes": "תוצאות פעילות זו",
+      "start_location_note": "אני יודע איפה יהיו התלמידים. פרי מציעה מה לעשות שם.",
+      "start_type_note": "טיול או חקירה. אני אבחר את המקום הבא.",
+      "start_assessment_note": "תתחיל מרמת טקסונומיה סטנדרטית או רובריקה, ואז תבנה לאחור.",
+      "start_outcomes_note": "אני יודע מה התלמידים צריכים להיות מסוגלים לעשות. פרי מציעה להתאים לסטנדרטים.",
+      "start_title": "מאיפה אתה רוצה להתחיל?",
+      "start_lede": "בחר את החלק בפעילות שכבר יש לך בראש. פרי יבקש את המנוחה, בסדר שיהיה הגיוני משם. אתה יכול לשנות כל דבר אחר כך.",
+      "state_not_set": "לא מוגדר על ידי המנהל שלך",
+      "search_standards": "חפש תקן",
+      "standards_loading": "פרי עומדת בסטנדרטים...",
+      "standards_add_outcomes": "הוסיפו תוצאות כדי לחדד את ההתאמות הללו.",
+      "standards_none": "עדיין אין התאמות. הוסף תוצאות או שנה את הציון והנושא.",
+      "standards_hint": "Peri בוחר מראש את ההתאמות החזקות ביותר. בטל את הסימון מכל התאמה שאינה מתאימה. תקנים שנבחרו מוחלים בעת יצירת הפעילות.",
+      "start_pane": "בחר היכן להתחיל"
     },
     "components_teacher_activitymanagerwizardtest": {
       "peri_suggestions": "הצעות פרי",
@@ -3644,14 +3644,14 @@
       "blog": "Blog",
       "loading": "Loading…",
       "title_blog": "Blog",
-      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
-      "no_posts_yet_check_back_soon": "No posts yet — check back soon."
+      "updates_and_field_notes_from_the_team_bu": "עדכונים והערות שטח מצוות בניית Peripateticware.",
+      "no_posts_yet_check_back_soon": "עדיין אין פוסטים — חזרו בקרוב."
     },
     "pages_blogpostpage": {
       "loading": "Loading…",
       "post_not_found": "פוסט לא נמצא",
       "title_post_not_found": "פוסט לא נמצא",
-      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
+      "this_post_may_have_been_unpublished_or_m": "ייתכן שהפוסט הזה לא פורסם או הועבר."
     },
     "parent_requests": "בקשות הורים",
     "requested_on": "ביקש",
@@ -3672,18 +3672,18 @@
       "title_replace_this_image": "החלף תמונה זו",
       "title_remove_this_image": "הסר תמונה זו",
       "placeholder_write_in_markdown": "כתוב ב-Markdown...",
-      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
-      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
-      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
-      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
-      "nothing_to_preview_yet": "Nothing to preview yet.",
-      "title_edit_captionattribution": "Edit caption/attribution"
+      "optional_shown_on_the_blog_list_and_in_l": "(אופציונלי — מוצג ברשימת הבלוגים ובתצוגות מקדימות של קישורים; נוצר אוטומטית מהתוכן אם נשאר ריק)",
+      "optional_upload_a_file_or_paste_a_url_if": "(אופציונלי — העלה קובץ, או הדבק כתובת URL אם הוא כבר מתארח במקום כלשהו)",
+      "optional_shown_under_the_cover_image": "(אופציונלי — מוצג מתחת לתמונת השער)",
+      "optional_eg_photo_credit": "(אופציונלי — למשל קרדיט לתמונה)",
+      "nothing_to_preview_yet": "עדיין אין מה לצפות בה.",
+      "title_edit_captionattribution": "עריכת כיתוב/ייחוס"
     },
     "pages_admin_adminblogpage": {
       "blog": "Blog",
       "loading": "Loading…",
       "placeholder_search_by_title_or_slug": "חפש לפי כותרת או לפי חלזון...",
-      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
+      "write_and_publish_posts_published_posts_": "כתוב ופרסם פוסטים. פוסטים שפורסמו מופיעים ב-/blog ומקושרים מכותרת האתר."
     },
     "pages_admin_adminpageblockeditorpage": {
       "loading": "Loading…",
@@ -3693,11 +3693,11 @@
       "content": "Content",
       "status": "Status",
       "history": "History",
-      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
-      "published_live_on_the_site": "Published (live on the site)",
-      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
-      "no_saved_versions_yet": "No saved versions yet.",
-      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "must_match_the_key_hardcoded_in_the_page": "(חייב להתאים למפתח המקודד ב-JSX של הדף)",
+      "published_live_on_the_site": "פורסם (בשידור חי באתר)",
+      "draft_hidden_page_shows_its_builtin_defa": "טיוטה (מוסתר — הדף מציג את ברירת המחדל המובנית שלו)",
+      "no_saved_versions_yet": "עדיין אין גרסאות שמורות.",
+      "groups_blocks_in_the_list_eg_landing": "(מקבץ בלוקים ברשימה, למשל \"נחיתה\")",
       "placeholder_landing": "landing",
       "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
     },
@@ -3705,49 +3705,49 @@
       "pages": "Pages",
       "loading": "Loading…",
       "placeholder_search_by_block_key_or_content": "חיפוש לפי מפתח בלוק או תוכן...",
-      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
+      "edit_copy_directly_on_live_pages_without": "ערוך עותק ישירות בדפים חיים ללא פריסת קוד. רק שדות שהמפתח חיבר מופיעים כאן."
     },
-    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
-    "activity_description": "Activity description",
-    "learning_objectives_one_per_line": "Learning objectives (one per line)",
-    "ai_generated_overview": "🤖 AI-generated overview — verify details",
-    "looking_up_more_about_this_place": "Looking up more about this place…",
-    "learn_about_this_place": "Learn about this place",
-    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "generate_with_ai_help": "תאר את הפעילות למטה והבינה המלאכותית תנסח קריטריוני רובריקה עם תיאורים של 4 רמות. הקריטריונים שנוצרו מצורפים למטה — שום דבר שכבר הזנת לא יוסר.",
+    "activity_description": "תיאור פעילות",
+    "learning_objectives_one_per_line": "מטרות למידה (אחת לכל שורה)",
+    "ai_generated_overview": "🤖 סקירה כללית שנוצרה על ידי בינה מלאכותית — אימות פרטים",
+    "looking_up_more_about_this_place": "מחפש עוד על המקום הזה...",
+    "learn_about_this_place": "למד על המקום הזה",
+    "nearby_points_of_interest": "🗺️ נקודות עניין סמוכות",
     "pages_homeschool_homeschoolcalendarpage": {
-      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+      "add_a_child_to_see_their_calendar": "הוסף ילד מ\"ילדים\" כדי לראות את היומן שלו."
     },
     "pages_student_studentcalendarpage": {
-      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+      "subtitle": "הפעילויות המתוכננות והמושלמות שלך, וכל מה שהמורה שלך קבע."
     },
     "components_blogpostview": {
-      "nothing_to_preview_yet": "Nothing to preview yet."
+      "nothing_to_preview_yet": "עדיין אין מה לצפות בה."
     },
-    "try_demo_account": "Or try a demo account — no signup required →",
-    "early_access_title": "We're just getting started",
-    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
-    "early_access_cta": "Create your free account",
-    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
-    "no_pending_parent_requests": "No pending parent requests right now.",
+    "try_demo_account": "או נסו חשבון דמו — אין צורך בהרשמה →",
+    "early_access_title": "אנחנו רק מתחילים",
+    "early_access_desc": "פריפטיקוור נמצאת בגישה מוקדמת — אנחנו עובדים עם המשפחות הראשונות שלנו כדי לעצב את מה שיבוא בהמשך. היו אחד מהם, ועזרו להחליט לאן זה הולך.",
+    "early_access_cta": "צור חשבון חינמי",
+    "parent_requests_description": "הורה או אפוטרופוס יכולים לבקש לעקוב אחר ההתקדמות שלך. אישור מאפשר להם לראות את הפעילויות והדיווחים שלך — אתה יכול לבטל גישה מהפרופיל שלהם בכל עת. דחייה דוחה את הבקשה.",
+    "no_pending_parent_requests": "אין בקשות הורים ממתינות כרגע.",
     "pricing_nav_label": "Pricing",
     "refundpolicypage": {
-      "back_to_home": "← Back to Home",
-      "title": "Refund &amp; Cancellation Policy",
-      "last_updated": "Last updated: September 2026",
-      "1_title": "1. Free Trial",
-      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
-      "2_title": "2. Subscriptions & Billing",
-      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
-      "3_title": "3. 14-Day Money-Back Guarantee",
-      "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
-      "4_title": "4. Renewal Charges",
-      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
-      "5_title": "5. How to Cancel",
+      "back_to_home": "← חזרה הביתה",
+      "title": "מדיניות החזר וביטול",
+      "last_updated": "עודכן לאחרונה: ספטמבר 2026",
+      "1_title": "1. ניסיון חינם",
+      "1_body": "כל חשבון חדש כולל תקופת ניסיון חינם של 30 יום עם גישה מלאה לכל התכונות. אין צורך באמצעי תשלום כדי להתחיל או להשתמש בניסיון הניסיון. לעולם לא תחויב בתשלום אלא אם תבחר להירשם באופן פעיל.",
+      "2_title": "2. מנויים וחיוב",
+      "2_body": "בעת המנוי, התשלום מתבצע באותו זמן עבור התוכנית שבחרת (חודשי או שנתי). המנויים מתחדשים אוטומטית בסוף כל תקופת חיוב עד לביטול. התשלומים והחיוב שלנו מטופלים על ידי Paddle.com, סוחר הרשומות שלנו.",
+      "3_title": "3. אחריות להחזר כספי ל-14 יום",
+      "3_body": "אם אינך מרוצה ממנוי בתשלום, תוכל לבקש החזר מלא תוך 14 ימים מהתשלום הראשון באמצעות שליחת hello@peripateticware.com בדוא\"ל. החזרים ניתנים לשיטת התשלום המקורית, בדרך כלל בתוך 5–10 ימי עסקים.",
+      "4_title": "4. חיובי חידוש",
+      "4_body": "תשלומי חידוש (לאחר תקופת החיוב הראשונה שלך) בדרך כלל אינם ניתנים להחזר. כדי להימנע מחיוב חידוש, בטל לפני תאריך החידוש — תישאר עם הגישה עד סוף התקופה שכבר שילמת.",
+      "5_title": "5. כיצד לבטל",
       "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
-      "6_title": "6. Exceptional Circumstances",
-      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "6_title": "6. נסיבות יוצאות דופן",
+      "6_body": "אנו בוחנים בקשות החזר מחוץ לחלונות אלו על בסיס מקרה-מקרה — לדוגמה חיובים כפולים, הפסקות שירות ממושכות או טעויות חיוב. צרו קשר ואנו נתקן זאת.",
       "7_title": "7. Contact",
-      "7_body": "Questions about billing, cancellations, or refunds?"
+      "7_body": "שאלות לגבי חיוב, ביטולים או החזרים?"
     }
   }
 }
