@@ -492,7 +492,7 @@ export default function ActivityScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView testID="activity-content-scroll" contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {phase === 'brief' && <BriefPhase activity={activity} theme={theme} onStart={advancePhase} />}
         {phase === 'orient' && <OrientPhase activity={activity} theme={theme} onReady={advancePhase} />}
         {phase === 'inquiry' && (

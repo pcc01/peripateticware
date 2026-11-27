@@ -10,6 +10,25 @@
 # at the top of any flow that needs to reach /login or beyond.
 appId: com.peripateticware.app
 ---
+# `when: visible:` checks the screen ONCE, synchronously, with no polling or
+# configurable wait of its own (a long-open, unresolved Maestro limitation —
+# https://docs.maestro.dev/advanced/wait, mobile-dev-inc/maestro#684). Right
+# after `launchApp: clearState: true`, the JS bundle/splash hasn't
+# necessarily rendered onboarding-splash yet, so this check could see
+# "not visible" and skip the whole block even on a genuinely fresh,
+# never-onboarded device -- the run then falls straight through to
+# login-student.yaml's `assertVisible: id: login-screen`, which fails
+# because the app is still showing (or about to show) onboarding, not
+# login. A real CI run showed this as a 100%-reproducible "login-screen not
+# visible" failure on literally every flow, since every flow clears state.
+# Let the screen settle first so the `when` check reflects reality; this
+# wait itself is best-effort (optional) since an already-onboarded device
+# (no clearState) would never show onboarding-splash at all.
+- extendedWaitUntil:
+    visible:
+      id: "onboarding-splash"
+    timeout: 10000
+    optional: true
 - runFlow:
     when:
       visible:

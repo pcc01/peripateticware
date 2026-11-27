@@ -21,7 +21,14 @@ describe('Discover Screen', () => {
 
   it('3.4 — activity cards show title, subject/duration, and location', async () => {
     await waitFor(element(by.text('Creek Habitat Study'))).toBeVisible().withTimeout(15000);
-    await expect(element(by.text('Local creek or drainage channel'))).toBeVisible();
+    // app/(tabs)/index.tsx renders the card's location as a single Text node
+    // — `📍 {activity.location_name}`, pin emoji and a space baked into the
+    // same string — so by.text() needs the exact '📍 ' prefix too. Matching
+    // the dedicated activity-location testID instead avoids that brittleness
+    // and the (unrelated) emoji-regex astral-character gotcha this session
+    // already hit elsewhere in the web E2E suite.
+    await expect(element(by.id('activity-location'))).toBeVisible();
+    await expect(element(by.id('activity-location'))).toHaveText('📍 Local creek or drainage channel');
   });
 
   it('3.1 — pull to refresh reloads the activity list', async () => {
@@ -36,7 +43,10 @@ describe('Discover Screen', () => {
     await expect(element(by.text("I'm ready — let's go"))).toBeVisible();
 
     // Back out so later test files start from a known (Discover) state.
-    await element(by.text('‹ Back')).tap();
+    // The rendered Text is just the bare '‹' glyph -- "Back" only exists in
+    // accessibilityLabel, never in on-screen text -- so by.text('‹ Back')
+    // could never match anything. Use the dedicated testID instead.
+    await element(by.id('activity-back-btn')).tap();
     await expect(element(by.id('discover-screen'))).toBeVisible();
   });
 });

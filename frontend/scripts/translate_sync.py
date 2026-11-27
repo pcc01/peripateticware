@@ -51,7 +51,7 @@ _CONTROL_CHAR_RE = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
 # surfaced this bug — every match it found in committed locale files was a
 # string this regex would have caught before it was ever written to disk.
 META_COMMENTARY_RE = re.compile(
-    r'\n\n\((?:preserv|translation|translated|note:|please note|as an ai|i cannot|i\'m unable)',
+    r'\n{1,2}\((?:preserv|translation|translated|note:|please note|as an ai|i cannot|i\'m unable)',
     re.IGNORECASE)
 
 
@@ -629,10 +629,11 @@ def classify_key_and_get_config(key: str, text: str) -> tuple[str, str, float]:
 
 
 class UniversalOrchestrator:
-    def __init__(self, provider: str, content_type: str, style: str):
+    def __init__(self, provider: str, content_type: str, style: str, model: str | None = None):
         self.provider = provider.upper()
         self.content_type = content_type
         self.style = style
+        self._model_override = model or None
         self.last_llm_call_time = 0.0  # Tracks global pacing timeline
         
         # Safe default values which can be dynamically overriden in Scalpel Mode
@@ -696,6 +697,24 @@ class UniversalOrchestrator:
             
         elif self.provider == "OLLAMA":
             self.active_model = os.getenv("OLLAMA_MODEL_TEXT", "mistral")
+
+        # An explicit model choice (review_pipeline / --model) wins over the
+        # env default for the LLM providers. The fixed-engine NMT providers
+        # (DEEPL/GOOGLE_TRANSLATE/MICROSOFT) ignore it — one engine, nothing
+        # to pick.
+        if self._model_override and self.provider in ("OLLAMA", "CLAUDE", "GEMINI"):
+            self.active_model = self._model_override
+
+    def as_actor(self):
+        """This engine as a structured provenance Actor (see
+        localization_provenance.build_prov_graph) — the MODEL that produced a
+        translation, written into the .xlf."""
+        return Actor.ai(
+            self.provider, self.active_model, role="translator",
+            organization=PROVIDER_ORG.get(self.provider),
+            parameters={"profile": self.content_type, "temperature": self.temperature,
+                        "mode": getattr(self, "style", None)},
+        )
 
     def _get_style_instruction(self, style: str) -> str:
         if "Concise & Accurate" in style:
@@ -782,7 +801,12 @@ class UniversalOrchestrator:
         # alterations)' — so text no longer ends with a quote character until
         # this runs first. Found via looks_like_garbage()/clean_llm_chatter()
         # both missing this shape in production (see META_COMMENTARY_RE).
-        text = re.sub(r'\n\n\([\s\S]*\)\s*$', '', text).strip()
+        # \n{1,2} (not just \n\n) -- validate_locales.cjs's 2026-11 cleanup
+        # found a surviving leak from this exact regex requiring exactly two
+        # newlines (frontend/public/locales/ar/landing.json ::
+        # pricing_tier.district.feature.3 had only one: '"..."\n(Preserved
+        # template variables exactly)').
+        text = re.sub(r'\n{1,2}\([\s\S]*\)\s*$', '', text).strip()
         if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
             text = text[1:-1].strip()
         chatter_prefixes = [
@@ -1040,129 +1064,27 @@ def save_json(path: Path, data: dict):
         os.fsync(f.fileno())
     os.replace(tmp_path, path)
 
-def get_timestamp() -> str: return datetime.now(timezone.utc).isoformat()
-
-# The real JSON-LD context for the provenance graph. Was previously inlined
-# as literal Markdown link syntax — "[http://...](http://...)" instead of a
-# bare URI — which would have made @context unresolvable even on the one
-# code path that used to reach it (see the guard fix below).
-_PROV_CONTEXT = {
-    "prov": "http://www.w3.org/ns/prov#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "actor": "prov:wasAssociatedWith",
-    "generated_by": "prov:wasGeneratedBy",
-    "used_source": "prov:used",
-    "derived_from": "prov:wasDerivedFrom",
-}
-
-def build_or_update_prov_graph(key: str, src: str, tgt: str, actor: str, ts: str, version: int, existing_graph: dict = None) -> dict:
-    # BUG (found across the last 3 i18n-pipeline sessions): this used to only
-    # populate @context when "@graph" was entirely absent from existing_graph.
-    # But parse_existing_xliff_with_prov's not-found-file default — and the
-    # --reset default below — both hand back {"@context": {}, "@graph": []}:
-    # "@graph" IS present (as an empty list), so that branch never ran, on
-    # any run, ever. Every .xlf's provenance graph shipped with @context: {}
-    # while @graph entries kept referencing prov:Agent / actor / generated_by
-    # / used_source / derived_from — undefined terms in an empty context, so
-    # none of it was resolvable JSON-LD despite looking structurally right.
-    # Fix: check whether @context itself is actually populated, independent
-    # of whether @graph exists, and backfill it in place either way — this
-    # self-heals existing .xlf files (with real prov entries in @graph
-    # already) the next time they're parsed and re-synced, no reset needed.
-    if not existing_graph or not isinstance(existing_graph, dict):
-        existing_graph = {"@context": dict(_PROV_CONTEXT), "@graph": []}
-    else:
-        if not existing_graph.get("@context"):
-            existing_graph["@context"] = dict(_PROV_CONTEXT)
-        existing_graph.setdefault("@graph", [])
-    g_list = existing_graph["@graph"]
-    agent_id = f"agent:{actor.replace(' ', '_').replace(':', '_').replace('[', '').replace(']', '')}"
-    if not any(isinstance(node, dict) and node.get("@id") == agent_id for node in g_list):
-        g_list.append({"@id": agent_id, "@type": "prov:Agent", "prov:label": f"Translation Engine Profile: {actor}"})
-    activity_id = f"activity:translation-{key}-{ts}"
-    g_list.append({"@id": activity_id, "@type": "prov:Activity", "prov:startTime": ts, "actor": {"@id": agent_id}})
-    source_entity_id = f"entity:source-{key}"
-    if not any(isinstance(node, dict) and node.get("@id") == source_entity_id for node in g_list):
-        g_list.append({"@id": source_entity_id, "@type": "prov:Entity", "prov:value": str(src)})
-    target_entity_id = f"entity:target-{key}-v{version}"
-    target_node = {"@id": target_entity_id, "@type": "prov:Entity", "prov:value": str(tgt), "generated_by": {"@id": activity_id}, "used_source": {"@id": source_entity_id}}
-    if version > 1: target_node["derived_from"] = {"@id": f"entity:target-{key}-v{version-1}"}
-    g_list.append(target_node)
-    return existing_graph
-
-def parse_existing_xliff_with_prov(path: Path) -> dict:
-    res = {"strings": {}, "global_prov": {"@context": {}, "@graph": []}}
-    if not path.exists(): return res
-    try:
-        tree = ET.parse(path)
-        root = tree.getroot()
-        ns = {'xliff': 'urn:oasis:names:tc:xliff:document:1.2'}
-        for tu in root.findall('.//xliff:trans-unit', ns):
-            k = tu.get('id')
-            note_el = tu.find('xliff:note', ns)
-            n_txt = note_el.text if note_el is not None else ""
-            v = 1
-            if "Version: " in n_txt:
-                try: v = int(n_txt.split("Version: ")[1].split()[0])
-                except: pass
-            # The actual status string (e.g. "needs_manual_translation"),
-            # not just the "approved" yes/no attribute — write_xliff_prov_file
-            # collapses every non-"approved" status to approved="no", so
-            # "needs_manual_translation" and ordinary "pending_review" were
-            # otherwise indistinguishable on the next run. Without this, a key
-            # that got the English fallback saved after a failed retry looked
-            # identical to a normal successful translation next run (its
-            # saved value matches its source, same as any do-not-translate or
-            # coincidentally-identical key) — is_new/text_changed both came
-            # back False, so it was silently never retried again.
-            status_txt = None
-            if "Status: " in n_txt:
-                try: status_txt = n_txt.split("Status: ")[1].split(" |")[0].strip()
-                except: pass
-            # Source text as of the last time this key was translated — used
-            # to detect real English-text changes (see sync_pipeline) instead
-            # of comparing the translation's current value to today's source.
-            source_el = tu.find('xliff:source', ns)
-            src_txt = source_el.text if source_el is not None and source_el.text is not None else None
-            res["strings"][k] = {
-                "version": v,
-                "approved": tu.get("approved") == "yes",
-                "source": src_txt,
-                "status": status_txt,
-            }
-        m_el = root.find('.//xliff:meta[@type="provenance-graph"]', ns)
-        if m_el is not None and m_el.text and m_el.text.strip():
-            try:
-                parsed_prov = json.loads(m_el.text.strip())
-                if isinstance(parsed_prov, dict): res["global_prov"] = parsed_prov
-            except json.JSONDecodeError: pass
-    except Exception as e: print(f"⚠️  Parsing warning for XLIFF: {e}")
-    return res
-
-def write_xliff_prov_file(path: Path, lang: str, en_flat_strings: dict, target_flat_strings: dict, meta_tracking: dict, prov_graph: dict):
-    # FIX (Bug 2): Register namespace so ElementTree uses it properly and
-    # parse_existing_xliff_with_prov can find elements via the ns prefix.
-    ET.register_namespace('', 'urn:oasis:names:tc:xliff:document:1.2')
-    root = ET.Element("{urn:oasis:names:tc:xliff:document:1.2}xliff", version="1.2")
-    file_el = ET.SubElement(root, "{urn:oasis:names:tc:xliff:document:1.2}file", {"source-language": SOURCE_LANG_CODE, "target-language": lang.lower(), "datatype": "plaintext", "original": f"{lang.lower()}.json"})
-    header_el = ET.SubElement(file_el, "header")
-    meta_group = ET.SubElement(header_el, "meta-group", category="w3c-prov-jsonld")
-    meta_prov_node = ET.SubElement(meta_group, "meta", type="provenance-graph")
-    meta_prov_node.text = str(json.dumps(prov_graph, ensure_ascii=False, indent=2)) if isinstance(prov_graph, dict) else "{}"
-    body_el = ET.SubElement(file_el, "body")
-    for k, src in en_flat_strings.items():
-        tgt = target_flat_strings.get(k, "")
-        m = meta_tracking.get(k, {"version": 1, "status": "new_translation"})
-        tu = ET.SubElement(body_el, "trans-unit", {"id": k, "approved": "yes" if m["status"] == "approved" else "no"})
-        ET.SubElement(tu, "source").text = str(src)
-        ET.SubElement(tu, "target").text = str(tgt)
-        ET.SubElement(tu, "note").text = str(f"Status: {m['status']} | Version: {m['version']}")
-    raw_xml_bytes = ET.tostring(root, encoding="utf-8")
-    try:
-        parsed = minidom.parseString(raw_xml_bytes)
-        with open(path, "w", encoding="utf-8") as f: f.write(parsed.toprettyxml(indent="  "))
-    except Exception:
-        with open(path, "wb") as f: f.write(b'<?xml version="1.0" encoding="utf-8"?>\n' + raw_xml_bytes)
+# The W3C-PROV / XLIFF toolkit moved to localization_provenance.py (plan
+# decision 7) so translate_sync.py, qa_review_llamacpp.py, retranslate_mt.py
+# and retranslate_flagged.py all build the same graph shape — including named
+# human actors as first-class nodes. Re-exported here so existing
+# `from translate_sync import build_or_update_prov_graph, ...` keeps working.
+from localization_provenance import (  # noqa: E402  (re-export)
+    Actor,
+    QualityAssessment,
+    PROVIDER_ORG,
+    LEGACY_PROV_CONTEXT,
+    EXTENDED_PROV_CONTEXT,
+    _PROV_CONTEXT,
+    build_prov_graph,
+    build_or_update_prov_graph,
+    parse_existing_xliff_with_prov,
+    write_xliff_prov_file,
+    upgrade_legacy_graph,
+    get_timestamp,
+    parse_operator,
+    default_operator_name,
+)
 
 # Directories under public/locales/ that exist but aren't real target locales.
 SKIP_LOCALE_DIRS = {"en", "tu", "_tu_backup"}
@@ -1232,19 +1154,29 @@ def get_target_languages() -> list[str]:
 # =====================================================================
 # INTERACTIVE SETUP WIZARD
 # =====================================================================
-def run_interactive_wizard() -> tuple[str, str, str, str, bool]:
+def run_interactive_wizard() -> tuple[str, str, str, str, bool, str | None]:
     print("=" * 60)
     print("🌐  Peripateticware Advanced Localization Wizard")
     print("=" * 60)
-    
+
     print("🤖  Select your active Translation Provider engine:")
     engines = ["OLLAMA", "CLAUDE", "GEMINI", "DEEPL", "GOOGLE_TRANSLATE", "MICROSOFT"]
     for idx, eng in enumerate(engines, start=1):
         label = eng + " (Classic Translation Engine)" if "DEEPL" in eng or "GOOGLE" in eng or "MICROSOFT" in eng else eng + " (Generative LLM Model)"
         print(f"  [{idx}] {label}")
-        
+
     eng_choice = input("👉 Enter provider number (1-6) [default: OLLAMA]: ").strip()
     provider = engines[int(eng_choice) - 1] if (eng_choice.isdigit() and 1 <= int(eng_choice) <= 6) else "OLLAMA"
+
+    # Model selection — live discovery for the LLM providers (Ollama's pulled
+    # models, whatever the Claude/Gemini API key can reach), falling back to
+    # presets + free text. The fixed-engine NMT providers have nothing to pick.
+    model = None
+    try:
+        from model_registry import choose_model as _choose_model
+        model = _choose_model("translation", provider)
+    except Exception as e:
+        print(f"(model discovery unavailable: {e} — using the provider's env/default model)")
 
     print("\n🔄  Select translation execution mode:")
     print("  [1] Incremental Sync (Skip already translated keys) [Recommended]")
@@ -1302,6 +1234,14 @@ def sync_pipeline():
     parser.add_argument("--content-type", type=str, help="Content type for Machete mode")
     parser.add_argument("--style", type=str, help="Style configuration for Machete mode")
     parser.add_argument("--non-interactive", action="store_true", help="Skip the interactive setup wizard")
+    parser.add_argument("--model", type=str, default=None,
+                         help="Model id for OLLAMA/CLAUDE/GEMINI (overrides the env default; "
+                              "ignored by the fixed-engine NMT providers). The wizard asks for "
+                              "this interactively with live model discovery.")
+    parser.add_argument("--operator", type=str, default=None,
+                         help="Human running this translation run — 'Name', 'Name <role>', or "
+                              "'Name | Org'. Recorded as a prov:Person in every .xlf. "
+                              "Default: LOCALIZATION_OPERATOR / git user.name / $USERNAME.")
     parser.add_argument("--languages", type=str, default=None,
                          help="Comma-separated locale codes to restrict this run to (e.g. "
                               "'ja,pt-BR,tr,zh'). Matched case-insensitively against the "
@@ -1311,6 +1251,7 @@ def sync_pipeline():
     args, unknown = parser.parse_known_args()
     
     # Determine if we open the interactive menu or use command-line defaults
+    model = args.model
     if args.non_interactive or (args.reset and (args.provider or args.mode)):
         provider = args.provider or "OLLAMA"
         mode = args.mode or "SCALPEL"
@@ -1319,10 +1260,16 @@ def sync_pipeline():
         reset_languages = args.reset
     else:
         # Open the interactive menu
-        provider, content_type, style, mode, reset_languages = run_interactive_wizard()
+        provider, content_type, style, mode, reset_languages, wiz_model = run_interactive_wizard()
+        model = model or wiz_model
+
+    # Who is running this — recorded as a prov:Person on every translation
+    # activity written to the .xlf (parity with content-provenance).
+    operator_actor = parse_operator(args.operator, role="operator")
+    print(f"🧑  Operator: {operator_actor.name} ({operator_actor.role})")
 
     try:
-        engine = UniversalOrchestrator(provider, content_type, style)
+        engine = UniversalOrchestrator(provider, content_type, style, model=model)
     except Exception as e:
         print(f"❌ Core engine initialization error: {e}")
         return
@@ -1572,7 +1519,15 @@ def sync_pipeline():
                             if idx < len(batch_translations):
                                 tgt = batch_translations[idx]
                                 v = meta_tracking[key]["version"]
-                                global_prov = build_or_update_prov_graph(key, batch_texts[idx], tgt, engine.get_method_string(), ts, v, global_prov)
+                                global_prov = build_prov_graph(
+                                    key, batch_texts[idx], tgt,
+                                    version=v, ts=ts,
+                                    translator=engine.as_actor(),
+                                    operators=[operator_actor] if operator_actor else (),
+                                    activity_type="Translation",
+                                    source_event="initial" if v == 1 else None,
+                                    existing_graph=global_prov,
+                                )
                     except Exception as e:
                         print(f"   ❌ Batch translation error: {e}")
                         # Fill failed translations with fallback empty text so alignment doesn't break

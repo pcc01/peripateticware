@@ -82,7 +82,13 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     // brief recording.
     await element(by.id('capture-record-btn')).tap();
 
-    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
+    // stopRecording() (CaptureSheet.tsx) waits up to 1.5s for the on-device
+    // speech recognizer's "end" event, then up to 8s for expo-av's own
+    // stopAndUnloadAsync() timeout, before upload() ever runs -- ~9.5s of
+    // legitimate worst-case latency on a slow CI emulator, before any of the
+    // instant-local-save confirmation logic even starts. 5s was tighter than
+    // that floor and could fail even on the success path.
+    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(15000);
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(15000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -96,7 +102,18 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await openInquiryPhase();
 
     await element(by.id('capture-btn-photo')).tap();
-    await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
+    // CaptureSheet.tsx renders InAppCamera as a CHILD that opens its OWN,
+    // separate <Modal> (InAppCamera.tsx:123) whenever mode is 'photo' or
+    // 'video' — a Modal nested inside CaptureSheet's own outer <Modal>.
+    // Because `mode` is already set to 'photo' before CaptureSheet's modal
+    // ever paints its first frame (the useEffect syncing it to initialMode
+    // runs on the same `visible` transition), both modals open in the same
+    // instant for this mode: in-app-camera's full-screen native window
+    // immediately covers capture-sheet's own view, so it never clears
+    // Espresso's 75%-visible-area bar. toExist() (not toBeVisible()) is the
+    // correct check here — the root view is legitimately present, just
+    // intentionally obscured by the camera UI on top of it.
+    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(10000);
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
 
     // camera-shutter only renders once InAppCamera's onCameraReady fires
@@ -122,7 +139,11 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await openInquiryPhase();
 
     await element(by.id('capture-btn-video')).tap();
-    await waitFor(element(by.id('capture-sheet'))).toBeVisible().withTimeout(10000);
+    // Same nested-Modal reasoning as 12.3 above — video mode also opens
+    // InAppCamera's own full-screen Modal in the same instant as
+    // CaptureSheet's, so capture-sheet is only ever toExist(), not
+    // toBeVisible(), while in-app-camera is up.
+    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(10000);
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('camera-record'))).toBeVisible().withTimeout(15000);
 

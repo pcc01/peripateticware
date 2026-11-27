@@ -62,6 +62,11 @@ describe('Settings Screen', () => {
   });
 
   it('9.3 — selecting a language chip updates the picker\'s selected state', async () => {
+    // LanguagePicker.tsx: the locale rows (and their checkmarks) only exist
+    // inside the modal sheet, opened via the collapsed "language-picker-
+    // trigger" button — not an always-visible inline list. Open it first.
+    await element(by.id('language-picker-trigger')).tap();
+
     // Default locale is DEFAULT_LOCALE ('en' — see src/i18n/locales.ts),
     // so on this freshly-launched-and-deleted device (beforeEach above)
     // the "English" row should already carry the checkmark before any
@@ -71,6 +76,11 @@ describe('Settings Screen', () => {
     ).toBeVisible();
 
     await element(by.label('Español language')).tap();
+
+    // Selecting a row calls handleSelect(), which closes the modal before
+    // onSelect() -- reopen it to check the selection actually stuck, rather
+    // than asserting against a sheet that's no longer rendered.
+    await element(by.id('language-picker-trigger')).tap();
 
     // Selection moved: checkmark now renders under Español's row, not
     // English's. Scoped with withAncestor() (rather than a bare
@@ -86,14 +96,13 @@ describe('Settings Screen', () => {
 
     // Screen survives the re-render — same "doesn't crash" bar as 9.2's
     // theme-switch assertion above.
+    await element(by.id('language-picker-close')).tap();
     await expect(element(by.id('settings-screen'))).toBeVisible();
   });
 
   it('9.3b — language selection persists across app relaunch', async () => {
+    await element(by.id('language-picker-trigger')).tap();
     await element(by.label('Español language')).tap();
-    await expect(
-      element(by.text('✓').withAncestor(by.label('Español language')))
-    ).toBeVisible();
 
     // Relaunch without deleting state. AuthContext persists the session
     // token via AsyncStorage too (src/stores/AuthContext.tsx), so this
@@ -107,7 +116,8 @@ describe('Settings Screen', () => {
     // '@ppw_language' survived the relaunch and settings.tsx's useEffect
     // read it back out of AsyncStorage on mount (see handleSelectLocale's
     // sibling effect in settings.tsx) — Español should still be checked
-    // without the user reselecting it.
+    // without the user reselecting it. Reopen the modal to see the row.
+    await element(by.id('language-picker-trigger')).tap();
     await expect(
       element(by.text('✓').withAncestor(by.label('Español language')))
     ).toBeVisible();
@@ -164,10 +174,8 @@ describe('Settings Screen', () => {
     // once real per-locale translations land.
     await expect(element(by.id('theme-option-fieldGuide-en'))).toExist();
 
+    await element(by.id('language-picker-trigger')).tap();
     await element(by.label('Español language')).tap();
-    await expect(
-      element(by.text('✓').withAncestor(by.label('Español language')))
-    ).toBeVisible();
 
     // THEMES recomputed for the new language: same row (same key/name),
     // new renderLang suffix. Under the pre-fix bug this testID would still

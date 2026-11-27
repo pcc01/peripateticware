@@ -98,7 +98,16 @@ jobs:
 
           - api-level: 35
             android-version: '15 VanillaIceCream'
-            target: google_apis
+            # google_apis (used here until now) ships a STUB Google Play
+            # Services with no real FusedLocationProviderClient resolution
+            # behind it — expo-location's Android module calls
+            # LocationServices.getFusedLocationProviderClient() unconditionally
+            # (no LocationManager/GPS-provider fallback exists in its source),
+            # so watchPositionAsync() never delivered a callback for
+            # geofence.test.js's device.setLocation() mock on any API level,
+            # even though the test itself (and its own setup comment) assumed
+            # it would. google_apis_playstore ships the real Play Services APK.
+            target: google_apis_playstore
             arch: x86_64
             # avdmanager's built-in device list uses id-style names for Pixel
             # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
@@ -115,7 +124,9 @@ jobs:
 
           - api-level: 33
             android-version: '13 Tiramisu'
-            target: google_apis
+            # See the API 35 leg's comment above re: google_apis_playstore —
+            # needed for real FusedLocationProviderClient / geofence support.
+            target: google_apis_playstore
             arch: x86_64
             # avdmanager's built-in device list uses id-style names for Pixel
             # devices ("pixel_6"), not the display name ("Pixel 6") — unlike
@@ -132,7 +143,9 @@ jobs:
 
           - api-level: 30
             android-version: '11 R'
-            target: google_apis
+            # See the API 35 leg's comment above re: google_apis_playstore —
+            # needed for real FusedLocationProviderClient / geofence support.
+            target: google_apis_playstore
             arch: x86_64
             # Same id-style-name fix as the pixel_6 entries above.
             profile: pixel_4
@@ -141,7 +154,12 @@ jobs:
 
           - api-level: 24
             android-version: '7.0 Nougat'
-            target: default       # google_apis x86_64 not available for API 24
+            # google_apis/_playstore x86_64 not available for API 24, and
+            # `default` has no Play Services at all -- geofence.test.js is
+            # expected to keep failing on just this one legacy leg even after
+            # the google_apis_playstore fix above (see that comment), since
+            # expo-location's Android module has no non-Fused fallback.
+            target: default
             arch: x86
             profile: Nexus 5X
             avd-name: Nexus_5X_API_24

@@ -66,6 +66,14 @@ describe('Activity Flow (Brief -> Orient -> Inquiry -> Reflect -> Submit)', () =
     await expect(element(by.text('Make Meaning'))).toBeVisible();
 
     await element(by.id('reflection-input')).typeText('The creek water was clearer than I expected.');
+    // reflection-input is multiline, so there's no return key to blur it and
+    // dismiss the keyboard (see app/activity/[id].tsx's own comment above
+    // ReflectPhase) -- on Android the window resizes (adjustResize) rather
+    // than overlaying, but that still leaves the Submit button sitting right
+    // at the new, shorter viewport edge, under Espresso's 75%-visible-area
+    // bar. Scroll it fully into view first, same idiom progress.test.js
+    // already uses for its own scroll testID.
+    await element(by.id('activity-content-scroll')).scrollTo('bottom');
     await element(by.text('Submit field work')).tap();
 
     await waitFor(element(by.text('Submitted! 🎉'))).toBeVisible().withTimeout(10000);

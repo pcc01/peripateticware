@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import { Theme } from '@/src/theme/tokens';
 import { Capture } from '@/src/api/captures';
@@ -553,10 +553,21 @@ export default function CaptureSheet({
   // ── Note ──────────────────────────────────────────────────────────────────
   const submitNote = async () => {
     if (!noteText.trim()) return;
-    // Notes are uploaded as text files
+    // Notes are uploaded as text files. NOT `data:text/plain;base64,${btoa(text)}`
+    // -- btoa is a browser global, not a Hermes/React Native one (confirmed
+    // absent from both the react-native and expo packages for this RN 0.81 /
+    // Expo 54 setup), so that call threw a ReferenceError inside this async
+    // function on every real device and in CI alike. Since submitNote() is
+    // invoked bare from the Save button's onPress with no try/catch at either
+    // site, the rejection was simply unhandled: upload() never ran, no error
+    // ever surfaced to the student, and the note was silently lost. Writing
+    // to a real temp file via expo-file-system sidesteps the missing global
+    // entirely.
     const text = noteText.trim();
-    const uri = `data:text/plain;base64,${btoa(text)}`;
-    await upload({ uri, name: 'note.txt', type: 'text/plain' }, 'text', text);
+    const file = new File(Paths.cache, `note-${Date.now()}.txt`);
+    file.create();
+    file.write(text);
+    await upload({ uri: file.uri, name: 'note.txt', type: 'text/plain' }, 'text', text);
     setNoteText('');
   };
 
@@ -589,8 +600,12 @@ export default function CaptureSheet({
   const submitSketch = async () => {
     const svg = sketchRef.current?.exportSvg();
     if (!svg) return;
-    const uri = `data:image/svg+xml;base64,${btoa(svg)}`;
-    await upload({ uri, name: 'sketch.svg', type: 'image/svg+xml' }, 'sketch');
+    // Same missing-btoa issue as submitNote() above -- write the real SVG
+    // text to a temp file instead of building a base64 data: URI.
+    const file = new File(Paths.cache, `sketch-${Date.now()}.svg`);
+    file.create();
+    file.write(svg);
+    await upload({ uri: file.uri, name: 'sketch.svg', type: 'image/svg+xml' }, 'sketch');
   };
 
   return (
