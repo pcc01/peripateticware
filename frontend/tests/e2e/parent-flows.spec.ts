@@ -69,8 +69,10 @@ test.describe('Parent — Progress', () => {
   test('shows progress content or empty state (no child linked)', async ({ page }) => {
     await page.goto('/parent/progress');
     await page.waitForLoadState('load');
-    // Either shows progress data or an empty/link-child prompt
-    const hasContent = await page.locator('main').isVisible({ timeout: 5_000 }).catch(() => false);
+    // Either shows progress data or an empty/link-child prompt. 10s to match
+    // the sibling "page loads without redirect" test's wait on the same
+    // locator -- this page's content can take a few seconds under CI load.
+    const hasContent = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false);
     expect(hasContent, 'Progress page has content').toBe(true);
   });
 
@@ -110,10 +112,12 @@ test.describe('Parent — Link Child', () => {
   test('shows a code input or join form', async ({ page }) => {
     await page.goto('/parent/link-child');
     await page.waitForLoadState('load');
-    // LinkChildPage should have an input for a class/join code
-    const hasInput = await page.locator('input').first().isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasForm = await page.locator('form').isVisible({ timeout: 3_000 }).catch(() => false);
-    const hasHeading = await page.locator('h1, h2').first().isVisible({ timeout: 3_000 }).catch(() => false);
+    // LinkChildPage should have an input for a class/join code. 10s/5s/5s to
+    // match the sibling "page loads without redirect" test's wait on the
+    // same page -- content can take a few seconds under CI load.
+    const hasInput = await page.locator('input').first().isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasForm = await page.locator('form').isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasHeading = await page.locator('h1, h2').first().isVisible({ timeout: 5_000 }).catch(() => false);
     expect(hasInput || hasForm || hasHeading, 'Page has form or heading').toBe(true);
   });
 });
@@ -217,7 +221,12 @@ test.describe('Parent — Messages', () => {
     });
 
     await page.goto('/parent/messages');
-    await expect(page.getByText(/could not load messages/i)).toBeVisible({ timeout: 10_000 });
+    // ParentMessagesPage.tsx's getErrorMessage() surfaces the backend's own
+    // `detail` string when present (better UX than a generic message) --
+    // since this mock sends one, that's what actually renders, not the
+    // "Could not load messages" fallback (which only applies when the
+    // response has no detail at all).
+    await expect(page.getByText(/server error/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test('reply form submits and posts to the reply endpoint, showing a success state', async ({ page }) => {
@@ -265,7 +274,8 @@ test.describe('Parent — Messages', () => {
     await page.getByPlaceholder(/write your reply/i).fill('This will fail to send.');
     await page.getByRole('button', { name: /send reply/i }).click();
 
-    await expect(page.getByText(/could not send reply/i)).toBeVisible({ timeout: 10_000 });
+    // Same detail-surfacing behavior as the GET-failure test above.
+    await expect(page.getByText(/server error/i)).toBeVisible({ timeout: 10_000 });
     // Dialog stays open with a "Cancel" (not "Done") action since the reply did not succeed
     await expect(page.getByRole('button', { name: /^cancel$/i })).toBeVisible();
   });

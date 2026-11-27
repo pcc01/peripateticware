@@ -19,7 +19,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { startWizard } from './helpers/activity-wizard';
+import { startWizard, openChapter } from './helpers/activity-wizard';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,8 +74,13 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
     if (opts.locationName) {
       await page.locator('input[placeholder*="Lincoln Park" i]').fill(opts.locationName);
     }
-    await page.locator('input[aria-label="Location latitude"]').fill(String(LAT));
-    await page.locator('input[aria-label="Location longitude"]').fill(String(LNG));
+    // The lat/lng inputs (ActivityManager.tsx: #lat / #lng, each with a
+    // plain <label htmlFor>, not an aria-label) live inside the collapsible
+    // "Coordinates" chapter, closed by default -- open it first or fill()
+    // times out on a hidden input.
+    await openChapter(page, /coordinates/i);
+    await page.locator('#lat').fill(String(LAT));
+    await page.locator('#lng').fill(String(LNG));
 
     await page.getByRole('button', { name: /background info about this location/i }).click();
   }

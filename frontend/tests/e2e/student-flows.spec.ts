@@ -300,11 +300,13 @@ test.describe('Student — How It Works', () => {
 
   test('phase descriptions (Orient / Inquiry / Reflect) are present', async ({ page }) => {
     await page.goto('/student/how-it-works');
-    // At least one of the phase names should be visible
+    // At least one of the phase names should be visible. 10s to match the
+    // sibling "heading is visible" test's wait on the same page -- content
+    // can take a few seconds under CI load.
     const phases = ['orient', 'inquiry', 'reflect'];
     let anyVisible = false;
     for (const phase of phases) {
-      const visible = await page.getByText(new RegExp(phase, 'i')).isVisible({ timeout: 3_000 }).catch(() => false);
+      const visible = await page.getByText(new RegExp(phase, 'i')).isVisible({ timeout: 10_000 }).catch(() => false);
       if (visible) { anyVisible = true; break; }
     }
     expect(anyVisible, 'At least one phase heading (Orient/Inquiry/Reflect) visible').toBe(true);
@@ -327,8 +329,9 @@ test.describe('Student — Settings', () => {
 
   test('theme / appearance options are present', async ({ page }) => {
     await page.goto('/student/settings');
-    // Either a theme select, radio buttons, or color chips
-    const hasTheme = await page.getByText(/theme|appearance|color/i).first().isVisible({ timeout: 5_000 }).catch(() => false);
+    // Either a theme select, radio buttons, or color chips. 10s to match the
+    // sibling "heading is visible" test's wait on the same page.
+    const hasTheme = await page.getByText(/theme|appearance|color/i).first().isVisible({ timeout: 10_000 }).catch(() => false);
     expect(hasTheme, 'Theme section visible').toBe(true);
   });
 

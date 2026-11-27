@@ -655,8 +655,10 @@ test.describe('Teacher — Projects', () => {
   test('"New Project" button or empty state is present', async ({ page }) => {
     await page.goto('/teacher/projects');
     await page.waitForLoadState('load');
-    const hasBtn = await page.getByRole('button', { name: /new project/i }).isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasContent = await page.locator('main').isVisible({ timeout: 3_000 }).catch(() => false);
+    // 10s/5s to match the sibling "page loads with heading" test's wait on
+    // the same page -- content can take a few seconds under CI load.
+    const hasBtn = await page.getByRole('button', { name: /new project/i }).isVisible({ timeout: 10_000 }).catch(() => false);
+    const hasContent = await page.locator('main').isVisible({ timeout: 5_000 }).catch(() => false);
     expect(hasBtn || hasContent).toBe(true);
   });
 });

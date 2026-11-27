@@ -1492,7 +1492,12 @@ const ActivityManager = () => {
             {compliance.issues.length > 0 && (
               <span className="ml-1 text-xs opacity-75">({compliance.issues.slice(0,2).join('; ')})</span>
             )}
-            {compliance.status === 'review' && privacyConfirmed && (
+            {/* Not gated on compliance.status === 'review': the Confirm
+                button below sets privacyConfirmed AND flips status to
+                'compliant' in the same click, so requiring status to still
+                be 'review' here meant this badge could never actually
+                render. */}
+            {privacyConfirmed && (
               <span className="ml-auto text-xs font-semibold text-green-700">{t('components_teacher_activitymanager.privacy_settings_confirmed', 'Privacy settings confirmed ✓')}</span>
             )}
           </div>
