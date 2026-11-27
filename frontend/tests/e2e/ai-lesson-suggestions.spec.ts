@@ -3,14 +3,12 @@
  *
  * OllamaLessonSuggestions is mounted inside ActivityManager.tsx — the
  * component actually routed at /teacher/activities/new and
- * /teacher/activities/:id (see App.tsx) — behind the "Ask Peri" toggle in
- * the "Peri AI Activity Suggestions" section. It calls:
- *   - GET  /api/v1/inference/models   (populate the model picker)
- *   - GET  /api/v1/inference/health   (background diagnostics only)
- *   - POST /api/v1/inference/inquiry  (generate suggestions)
- *
- * These tests mock all three with page.route() rather than requiring a real
- * Ollama-backed backend, following the pattern in gps-fieldwork-map.spec.ts.
+ * /teacher/activities/:id (see App.tsx) — behind the "Peri AI suggestions"
+ * chapter. It no longer talks to a model-picker or health endpoint at all;
+ * the single "✨ Ask Peri" button both opens and generates. It calls:
+ *   - POST /api/v1/activities/generate-suggestions/stream  (SSE-framed:
+ *     one or more `data: {"type":"delta",...}` frames, ignored by the UI,
+ *     then a terminal `data: {"type":"done","result":{"suggestions":[...]}}`)
  */
 import { test, expect, type Page } from '@playwright/test';
 import { startWizard, next, openChapter, activePane } from './helpers/activity-wizard';
@@ -22,28 +20,47 @@ const __dirname = path.dirname(__filename);
 
 test.use({ storageState: path.join(__dirname, '.auth/teacher.json') });
 
-const INQUIRY_RESPONSE_TEXT = [
-  "1. Map the Park's Microhabitats (level: understand) — You will identify and sketch three distinct microhabitats, noting soil, light, and moisture differences.",
-  '2. Classify Leaf Shapes by Function (level: analyze) — You will collect ten leaves, sort them by shape, and hypothesize how shape relates to sun exposure.',
-  '3. Measure Canopy Cover with a Densiometer (level: apply) — You will take five canopy-cover readings and calculate the average percentage cover.',
-  '4. Design a Follow-Up Investigation (level: create) — You will pose a testable question about the site and outline a method to answer it.',
-].join('\n');
+// bloom_level: BLOOM_LABEL in OllamaLessonSuggestions.tsx — 2=understand, 4=analyze.
+const SUGGESTIONS = [
+  {
+    title: "Map the Park's Microhabitats",
+    description: 'Identify and sketch three distinct microhabitats, noting soil, light, and moisture differences.',
+    learning_objectives: ['Identify microhabitat boundaries'], estimated_duration_minutes: 45, bloom_level: 2,
+    materials_needed: ['clipboard', 'pencil'],
+  },
+  {
+    title: 'Classify Leaf Shapes by Function',
+    description: 'Collect ten leaves, sort them by shape, and hypothesize how shape relates to sun exposure.',
+    learning_objectives: ['Classify leaves by shape'], estimated_duration_minutes: 40, bloom_level: 4,
+    materials_needed: ['leaf samples'],
+  },
+  {
+    title: 'Design a Follow-Up Investigation',
+    description: 'Pose a testable question about the site and outline a method to answer it.',
+    learning_objectives: ['Design a testable question'], estimated_duration_minutes: 30, bloom_level: 6,
+    materials_needed: ['notebook'],
+  },
+];
 
-async function mockModels(page: Page, models: string[] = ['llama3.1', 'mistral']) {
-  await page.route('**/api/v1/inference/models', (route) =>
-    route.fulfill({ json: { models, default: models[0] } }));
+function sseFrame(payload: unknown): string {
+  return `data: ${JSON.stringify(payload)}\n\n`;
 }
 
-async function mockHealth(page: Page, status: 'available' | 'unavailable' = 'available') {
-  await page.route('**/api/v1/inference/health', (route) =>
-    route.fulfill({ json: { llm_status: status, llm_provider: 'ollama' } }));
+async function mockGenerateSuggestions(page: Page, opts: { delayMs?: number; suggestions?: typeof SUGGESTIONS } = {}) {
+  await page.route('**/api/v1/activities/generate-suggestions/stream', async (route) => {
+    expect(route.request().method()).toBe('POST');
+    if (opts.delayMs) await new Promise((r) => setTimeout(r, opts.delayMs));
+    await route.fulfill({
+      contentType: 'text/event-stream',
+      body: sseFrame({ type: 'done', result: { suggestions: opts.suggestions ?? SUGGESTIONS } }),
+    });
+  });
 }
 
 async function openPeriPanel(page: Page) {
   await startWizard(page);
   await page.locator('#title').fill('Forest Ecosystem Field Study');
   await openChapter(page, /peri ai suggestions/i);
-  await page.getByRole('button', { name: /ask peri/i }).click();
 }
 
 // Auto-classify lives in the Assessment step's "Cognitive Taxonomy" chapter.
@@ -62,15 +79,9 @@ async function openTaxonomy(page: Page, title: string) {
 
 test.describe('Teacher — Peri AI Activity Suggestions (Ollama)', () => {
   test('generates and renders suggestion cards from the mocked inference response', async ({ page }) => {
-    await mockModels(page);
-    await mockHealth(page, 'available');
-    await page.route('**/api/v1/inference/inquiry', async (route) => {
-      expect(route.request().method()).toBe('POST');
-      await route.fulfill({ json: { response: INQUIRY_RESPONSE_TEXT } });
-    });
-
+    await mockGenerateSuggestions(page);
     await openPeriPanel(page);
-    await page.getByRole('button', { name: /generate suggestions/i }).click();
+    await page.getByRole('button', { name: /ask peri/i }).click();
 
     await expect(page.getByText(/map the park's microhabitats/i)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText(/classify leaf shapes by function/i)).toBeVisible();
@@ -80,55 +91,38 @@ test.describe('Teacher — Peri AI Activity Suggestions (Ollama)', () => {
 
     // Selecting a card adds it and flips the select indicator
     await page.getByText(/map the park's microhabitats/i).click();
-    await expect(page.getByText(/added to description/i)).toBeVisible();
+    await expect(page.getByText(/added to activity/i)).toBeVisible();
   });
 
   test('shows a loading state while suggestions are being generated', async ({ page }) => {
-    await mockModels(page);
-    await mockHealth(page, 'available');
-    await page.route('**/api/v1/inference/inquiry', async (route) => {
-      await new Promise((r) => setTimeout(r, 800));
-      await route.fulfill({ json: { response: INQUIRY_RESPONSE_TEXT } });
-    });
-
+    await mockGenerateSuggestions(page, { delayMs: 800 });
     await openPeriPanel(page);
-    await page.getByRole('button', { name: /generate suggestions/i }).click();
+    await page.getByRole('button', { name: /ask peri/i }).click();
 
     await expect(page.getByText(/peri is thinking/i)).toBeVisible({ timeout: 5_000 });
     await expect(page.getByText(/map the park's microhabitats/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test('shows a sane error message (not a blank screen) when the AI provider is down (503)', async ({ page }) => {
-    await mockModels(page);
-    await mockHealth(page, 'unavailable');
-    await page.route('**/api/v1/inference/inquiry', async (route) => {
-      await route.fulfill({
+    await page.route('**/api/v1/activities/generate-suggestions/stream', (route) =>
+      route.fulfill({
         status: 503,
         json: { detail: 'LLM provider unavailable: ollama connection refused' },
-      });
-    });
+      }));
 
     await openPeriPanel(page);
-    await page.getByRole('button', { name: /generate suggestions/i }).click();
+    await page.getByRole('button', { name: /ask peri/i }).click();
 
-    // Error banner surfaces the failure — never a blank/crashed panel.
-    await expect(page.getByText(/ai unavailable/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/503/)).toBeVisible();
+    // Error banner surfaces the failure as the backend's own detail text —
+    // never a blank/crashed panel. OllamaLessonSuggestions.tsx deliberately
+    // shows no canned fallback suggestions on a real failure ("showing
+    // generic suggestions as if they were AI output when generation
+    // actually failed would be its own small dishonesty").
+    await expect(page.getByText(/503.*ollama connection refused/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/map the park's microhabitats/i)).toHaveCount(0);
 
-    // The component still falls back to curated suggestions rather than
-    // leaving the teacher with nothing to work with.
-    await expect(page.getByText(/observe and document/i)).toBeVisible();
-    await expect(page.getByText(/design an investigation/i)).toBeVisible();
-  });
-
-  test('disables "Generate Suggestions" and shows a hint when no Ollama models are available', async ({ page }) => {
-    await mockModels(page, []);
-    await mockHealth(page, 'unavailable');
-
-    await openPeriPanel(page);
-
-    await expect(page.getByText(/no ollama models found/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole('button', { name: /generate suggestions/i })).toBeDisabled();
+    // The button recovers (not stuck disabled) so the teacher can retry.
+    await expect(page.getByRole('button', { name: /ask peri/i })).toBeEnabled();
   });
 });
 
