@@ -7,6 +7,9 @@ name: Deploy
 on:
   push:
     branches: [main]
+  # Lets this be re-run on demand (e.g. to verify a secrets/config change
+  # like MS_TRANSLATOR_KEY) without needing a new commit to main.
+  workflow_dispatch: {}
 
 jobs:
   deploy:
