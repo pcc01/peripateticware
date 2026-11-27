@@ -10,7 +10,28 @@
     &quot;actor&quot;: &quot;prov:wasAssociatedWith&quot;,
     &quot;generated_by&quot;: &quot;prov:wasGeneratedBy&quot;,
     &quot;used_source&quot;: &quot;prov:used&quot;,
-    &quot;derived_from&quot;: &quot;prov:wasDerivedFrom&quot;
+    &quot;derived_from&quot;: &quot;prov:wasDerivedFrom&quot;,
+    &quot;schema&quot;: &quot;http://schema.org/&quot;,
+    &quot;provx&quot;: &quot;urn:peripateticware:provenance:&quot;,
+    &quot;softwareVersion&quot;: &quot;schema:softwareVersion&quot;,
+    &quot;wasAssociatedWith&quot;: &quot;prov:wasAssociatedWith&quot;,
+    &quot;wasGeneratedBy&quot;: &quot;prov:wasGeneratedBy&quot;,
+    &quot;wasAttributedTo&quot;: &quot;prov:wasAttributedTo&quot;,
+    &quot;wasRevisionOf&quot;: &quot;prov:wasRevisionOf&quot;,
+    &quot;wasInformedBy&quot;: &quot;prov:wasInformedBy&quot;,
+    &quot;used&quot;: &quot;prov:used&quot;,
+    &quot;activityType&quot;: &quot;provx:activityType&quot;,
+    &quot;provider&quot;: &quot;provx:provider&quot;,
+    &quot;model&quot;: &quot;provx:model&quot;,
+    &quot;organization&quot;: &quot;provx:organization&quot;,
+    &quot;role&quot;: &quot;provx:role&quot;,
+    &quot;parameters&quot;: &quot;provx:parameters&quot;,
+    &quot;qualityScore&quot;: &quot;provx:qualityScore&quot;,
+    &quot;qaReasons&quot;: &quot;provx:qaReasons&quot;,
+    &quot;qaEvaluatorNote&quot;: &quot;provx:qaEvaluatorNote&quot;,
+    &quot;overwroteTranslationBy&quot;: &quot;provx:overwroteTranslationBy&quot;,
+    &quot;overwriteReason&quot;: &quot;provx:overwriteReason&quot;,
+    &quot;sourceEvent&quot;: &quot;provx:sourceEvent&quot;
   },
   &quot;@graph&quot;: [
     {
@@ -232145,6 +232166,321 @@
       &quot;derived_from&quot;: {
         &quot;@id&quot;: &quot;entity:target-refundpolicypage.7_body-v14&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;,
+      &quot;@type&quot;: &quot;prov:SoftwareAgent&quot;,
+      &quot;prov:label&quot;: &quot;Azure-Cognitive-v3&quot;,
+      &quot;provx:role&quot;: &quot;translator&quot;,
+      &quot;provx:provider&quot;: &quot;MICROSOFT&quot;,
+      &quot;provx:model&quot;: &quot;Azure-Cognitive-v3&quot;,
+      &quot;provx:organization&quot;: &quot;Microsoft&quot;,
+      &quot;provx:parameters&quot;: {
+        &quot;profile&quot;: &quot;Marketing/Creative Content&quot;,
+        &quot;temperature&quot;: 0.6,
+        &quot;mode&quot;: &quot;Dynamic Pacing&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:person:runner&quot;,
+      &quot;@type&quot;: &quot;prov:Person&quot;,
+      &quot;prov:label&quot;: &quot;runner&quot;,
+      &quot;provx:role&quot;: &quot;operator&quot;,
+      &quot;provx:organization&quot;: &quot;Peripateticware&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v17&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v16&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v16&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;student@email.com&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_invitestudentspanel.placeholder_studentemailcom&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v15&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.at-2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.at-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;at&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.at-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.at-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_ollamalessonsuggestions.at&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.at-v15&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.at-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.139930+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Markdown&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-27T21:22:56.139930+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.markdown&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v15&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-privacy.jurisdiction_aware_title-2026-11-27T21:22:56.218362+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.218362+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.218362+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-privacy.jurisdiction_aware_title-v17&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Jurisdiction Aware&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-privacy.jurisdiction_aware_title-2026-11-27T21:22:56.218362+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-privacy.jurisdiction_aware_title-2026-11-27T21:22:56.218362+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-privacy.jurisdiction_aware_title&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-privacy.jurisdiction_aware_title-v16&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-privacy.jurisdiction_aware_title-v16&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_landingpage.title_learning_in_motion-2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_landingpage.title_learning_in_motion-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Learning in Motion&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_landingpage.title_learning_in_motion-2026-11-27T21:22:56.274176+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_landingpage.title_learning_in_motion-2026-11-27T21:22:56.274176+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_landingpage.title_learning_in_motion&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_landingpage.title_learning_in_motion-v15&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_landingpage.title_learning_in_motion-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-27T21:22:56.274176+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;landing.hero.homeschool.headline&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-27T21:22:56.274176+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-27T21:22:56.274176+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v15&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v15&quot;
+      }
     }
   ]
 }</meta>
@@ -232154,7 +232490,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 16</note>
+        <note>Status: new_translation | Version: 17</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -237249,7 +237585,7 @@
       <trans-unit id="privacy.jurisdiction_aware_title" approved="no">
         <source>Jurisdiction Aware</source>
         <target>Jurisdiction Aware</target>
-        <note>Status: needs_manual_translation | Version: 16</note>
+        <note>Status: needs_manual_translation | Version: 17</note>
       </trans-unit>
       <trans-unit id="privacy.jurisdiction_aware_desc" approved="no">
         <source>Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.</source>
@@ -241429,7 +241765,7 @@
       <trans-unit id="components_landingpage.title_learning_in_motion" approved="no">
         <source>Learning in Motion</source>
         <target>Learning in Motion</target>
-        <note>Status: needs_manual_translation | Version: 15</note>
+        <note>Status: needs_manual_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="components_privacysetupwizard.where_are_you_teaching" approved="no">
         <source>Where are you teaching?</source>
@@ -241799,7 +242135,7 @@
       <trans-unit id="components_teacher_activitymanager.applied" approved="no">
         <source>applied</source>
         <target>適用済み</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanager.assessments_intro" approved="no">
         <source>Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.</source>
@@ -242084,7 +242420,7 @@
       <trans-unit id="components_teacher_invitestudentspanel.placeholder_studentemailcom" approved="no">
         <source>student@email.com</source>
         <target>student@email.com</target>
-        <note>Status: needs_manual_translation | Version: 15</note>
+        <note>Status: needs_manual_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.subject" approved="no">
         <source>Subject</source>
@@ -242204,12 +242540,12 @@
       <trans-unit id="components_teacher_ollamalessonsuggestions.grade" approved="no">
         <source>grade</source>
         <target>グレード</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.at" approved="no">
         <source>at</source>
         <target>at</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: new_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.need_subject_grade" approved="no">
         <source>Add a subject and grade level above to get suggestions from Peri.</source>
@@ -242509,7 +242845,7 @@
       <trans-unit id="pages_adminprivacyconfigpage.pending_review" approved="no">
         <source>pending review</source>
         <target>審査待ち</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="pages_adminprivacyconfigpage.placeholder_eg_de_fr_gb" approved="no">
         <source>e.g. DE, FR, GB</source>
@@ -246889,7 +247225,7 @@
       <trans-unit id="components_teacher_activitywizard.saved" approved="no">
         <source>saved</source>
         <target>保存済み</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.library_unavailable" approved="no">
         <source>Your outcome library could not be loaded. You can still write outcomes below.</source>
@@ -246924,7 +247260,7 @@
       <trans-unit id="components_teacher_activitywizard.written" approved="no">
         <source>written</source>
         <target>書かれた</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.outcome_placeholder" approved="no">
         <source>Students will be able to… e.g. classify three plant species by leaf shape</source>
@@ -247139,12 +247475,12 @@
       <trans-unit id="components_teacher_activitymanagerwizardtest.peri_suggestions" approved="no">
         <source>peri suggestions</source>
         <target>PERIの提案</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanagerwizardtest.activities_list" approved="no">
         <source>activities list</source>
         <target>活動一覧</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_wizard_activitywizardtest.title_pond_study" approved="no">
         <source>Pond study</source>
@@ -247474,7 +247810,7 @@
       <trans-unit id="pages_admin_adminpageblockeditorpage.markdown" approved="no">
         <source>Markdown</source>
         <target>Markdown</target>
-        <note>Status: needs_manual_translation | Version: 15</note>
+        <note>Status: needs_manual_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpageblockeditorpage.content" approved="no">
         <source>Content</source>
@@ -247514,7 +247850,7 @@
       <trans-unit id="pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline" approved="no">
         <source>landing.hero.homeschool.headline</source>
         <target>landing.hero.homeschool.headline</target>
-        <note>Status: needs_manual_translation | Version: 15</note>
+        <note>Status: needs_manual_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpagespage.pages" approved="no">
         <source>Pages</source>

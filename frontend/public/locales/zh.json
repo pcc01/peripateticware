@@ -1,7 +1,7 @@
 {
   "landing": {
     "auth": {
-      "email_placeholder": "you@example.com or username",
+      "email_placeholder": "you@example.com 或用户名",
       "login_title": "歡迎回來",
       "login_subtitle": "登录您的Peripateticware账号",
       "demo_accounts_title": "示例账号",
@@ -9,7 +9,7 @@
       "demo_student": "学生：student@example.com",
       "demo_parent": "父：parent@example.com",
       "demo_password": "密码：SecurePassword123",
-      "email_label": "Email or Username",
+      "email_label": "电子邮件或用户名",
       "password_label": "密码",
       "password_placeholder": "密码",
       "remember_me": "记录密码",
@@ -50,14 +50,14 @@
       "company_team": "Team",
       "company_blog": "Blog",
       "company_careers": "Careers",
-      "resources_title": "Resources",
-      "resources_docs": "Documentation",
+      "resources_title": "资源",
+      "resources_docs": "文档",
       "resources_guides": "Guides",
       "resources_api": "API",
       "resources_support": "Support",
       "company_contact": "联系",
-      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
-      "all_rights": "All rights reserved.",
+      "brand_desc": "为学生、教师和家庭提供户外、实地学习。",
+      "all_rights": "保留所有权利。",
       "product_features": "Features",
       "product_pricing": "Pricing",
       "legal_title": "Legal",
@@ -138,9 +138,9 @@
       "placeholder_search_by_name_or_email": "搜索姓名或电子邮件...",
       "you_dont_have_any_classes_yet_create_a_c": "没有任何课程。首先创建一个课程，然后邀请学生参加。",
       "invitation_sent_the_student_will_get_an_": "邀请已发送。学生将收到包含加入链接的电子邮件。",
-      "add_a_student": "Add a Student",
-      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
-      "student_added": "Student added to the class and notified in-app."
+      "add_a_student": "添加学生",
+      "add_by_email_hint": "如果他们已经有账号，会立即添加并通过应用内通知。如果没有，我们会发送邀请邮件。",
+      "student_added": "学生加入了课程并通过应用通知。"
     },
     "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -476,10 +476,10 @@
       "latitude": "纬度",
       "longitude": "经度",
       "add": "添加",
-      "youngest_grade": "Youngest grade",
-      "oldest_grade": "Oldest grade",
-      "mixed_age_toggle": "This activity has students across multiple grades",
-      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
+      "youngest_grade": "最低年级",
+      "oldest_grade": "最古老的等级",
+      "mixed_age_toggle": "该活动涵盖多个年级的学生",
+      "mixed_age_hint": "Peri会为每个问题写出更简单、更高级的措辞——无论哪种方式，思考深度都一样。跨度在3个年级或更少的阶段，会自动使用同一个措辞。"
     },
     "difficulty_level": "困难等级",
     "remember": "记",
@@ -653,9 +653,9 @@
     "wikilocationinfo": {
       "latitude": "纬度",
       "longitude": "经度",
-      "architect_or_artist": "Architect/Artist:",
-      "construction_date": "Constructed:",
-      "historical_significance": "Historical Significance:"
+      "architect_or_artist": "建筑师/艺术家：",
+      "construction_date": "已构造：",
+      "historical_significance": "历史意义："
     },
     "teaching_tip": "教学提示：",
     "index": {
@@ -1043,13 +1043,13 @@
       "project_activities": "项目活动",
       "activity": "活动",
       "back": "返回",
-      "planning": "Planning",
-      "completed": "Completed",
-      "archived": "Archived",
-      "not_found": "Project not found.",
-      "live_tracking": "Live Tracking",
-      "completion_report": "Completion Report",
-      "no_activities": "No activities linked to this project yet."
+      "planning": "规划",
+      "completed": "完成",
+      "archived": "已存档",
+      "not_found": "未找到项目。",
+      "live_tracking": "实时追踪",
+      "completion_report": "完成报告",
+      "no_activities": "目前还没有与该项目相关的活动。"
     },
     "active": "活动中",
     "project_description": "项目描述",
@@ -1143,9 +1143,9 @@
       "that_link_has_expired_please_request_a_n": "链接已过期。请申请新的链接。",
       "that_link_is_invalid_please_try_again": "无效链接。请重试。",
       "or": "或",
-      "twofactor_authentication": "Two-factor authentication",
-      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
-      "back_to_login": "← Back to login"
+      "twofactor_authentication": "双因素认证",
+      "enter_the_6digit_code_from_your_authenti": "输入你认证器应用中的 6 位数验证码，或其中一个备份代码。",
+      "back_to_login": "← 返回登录"
     },
     "nav_homeschool": "学习在家",
     "cookie_consent_title": "饼干通知",
@@ -1191,14 +1191,14 @@
       "aria_label_upload_file_pdf_csv_or_excel": "上传文件（PDF、CSV或Excel）",
       "aria_label_criteria_set_name": "标准名称",
       "country": "Country",
-      "aria_label_country": "Country these standards belong to",
-      "united_states": "United States",
+      "aria_label_country": "这些标准所属国家",
+      "united_states": "美国",
       "canada": "Canada",
-      "province": "Province",
+      "province": "省份",
       "state": "State",
-      "aria_label_state": "State/province these standards belong to",
+      "aria_label_state": "这些标准所属的州/省",
       "select_a_state": "Select…",
-      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
+      "state_hint": "这个套装只标记一个州/省，所以只推荐给那里的老师。"
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "加载中...",
@@ -1340,8 +1340,8 @@
       "aria_label_childs_password": "儿童密码",
       "aria_label_childs_grade_level_012": "儿童年级（0-12）",
       "no_children_added_yet_add_your_first_chi": "没有添加任何子女。请添加您的第一个子女开始。",
-      "remove_child": "Remove child",
-      "removing": "Removing…",
+      "remove_child": "移除子项",
+      "removing": "正在移除......",
       "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
@@ -1404,7 +1404,7 @@
       "privacy_amp_data": "隐私与数据",
       "your_privacy_settings_are_managed_by_you": "您的隐私设置由您的合作社或组织管理。请联系管理员进行更改。",
       "youre_using_default_privacy_settings_rev": "警告：您正在使用默认隐私设置。请查看并保存以下内容以确认您的配置。",
-      "two_factor_authentication": "Two-Factor Authentication"
+      "two_factor_authentication": "双因素认证"
     },
     "request_sent": "发送请求",
     "link_another": "连接另一个子项",
@@ -1538,13 +1538,13 @@
       "aria_label_back_to_login": "返回登录",
       "helps_us_apply_the_right_privacy_framewo": "帮助我们为您的学生应用正确的隐私框架（FERPA、COPPA、GDPR等）。",
       "this_determines_whether_coppa_applies_": "适用于您的帐户的COPPA是否生效。",
-      "country_code": "2-letter country code",
-      "country_code_placeholder": "e.g. DE, FR, GB",
-      "state_province": "State / Province",
-      "select_state": "— Select state —",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "password_placeholder": "At least 8 characters",
-      "confirm_password_placeholder": "Re-enter your password"
+      "country_code": "两字母国家代码",
+      "country_code_placeholder": "例如：德、法、英",
+      "state_province": "州 / 省",
+      "select_state": "— 选择州 —",
+      "province_placeholder": "例如：安大略省、圣保罗州、巴伐利亚州",
+      "password_placeholder": "至少8个角色",
+      "confirm_password_placeholder": "重新输入您的密码"
     },
     "cta_btn": "开始",
     "components_student_extendedwritingpanel": {
@@ -1589,27 +1589,27 @@
       "parental_or_guardian_consent_is_in_place": "法定要求时已获监护人同意",
       "student_view_preview": "学生预览",
       "privacy_settings_confirmed": "隐私设置已确认 ✓",
-      "location": "📍 Location",
-      "assessments": "Assessments",
-      "applied": "applied",
-      "attach_rubric": "Attach Rubric",
-      "filter_rubrics": "Filter rubrics…",
-      "ai_suggests": "AI suggests:",
+      "location": "📍 地理位置",
+      "assessments": "评估",
+      "applied": "应用",
+      "attach_rubric": "附加评分标准",
+      "filter_rubrics": "筛选评分标准......",
+      "ai_suggests": "人工智能建议：",
       "accept": "Accept",
-      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
-      "ai_interaction_label": "Student AI Interaction",
-      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
-      "ai_interaction_curated_label": "Curated Question Bank Only",
-      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
-      "background_context": "📖 Background & Context",
-      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
-      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
-      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
-      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
-      "min_10_characters": "Minimum 10 characters",
-      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
-      "state_curriculum_standards": "State / Curriculum Standards",
-      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
+      "ai_interaction_intro": "选择学生在本活动的探究阶段如何被提示。",
+      "ai_interaction_label": "学生AI互动",
+      "ai_interaction_chat_note": "学生可以在活动过程中自由向Peri提问后续问题，由AI驱动——非常适合开放式探索。Peri依然从不直接给出答案，只会问下一个引导性问题。需要网络连接。",
+      "ai_interaction_curated_label": "仅限精选题库",
+      "ai_interaction_footnote": "注意：精心整理的问题库还帮助构建了 Peri 的提示，即使在 AI 聊天模式下——此设置仅控制是否支持自由形式 AI 对话。",
+      "background_context": "📖 背景与背景",
+      "add_a_location_to_see_background": "请在上方添加一个地点，查看其背景信息。",
+      "enable_live_gps_tracking_during_this_act": "📍 在此活动期间启用实时 GPS 追踪",
+      "students_locations_are_shared_with_you_i": "学生的位置会在课程监视器上实时与你共享。13岁以下学生会自动征得家长同意。",
+      "i_consent_to_gps_location_capture_for_my": "我同意在本次活动期间为我的孩子采集GPS位置",
+      "min_10_characters": "至少 10 个字符",
+      "assessments_intro": "最多申请三个：州/课程标准、认知分类法和你自己的评分标准。",
+      "state_curriculum_standards": "州/课程标准",
+      "share_publish_note": "此活动还需要先从活动列表中发布，才能显示在共享库中。",
       "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
       "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
     },
@@ -1658,7 +1658,7 @@
       "enter_student_emails_one_per_line_or_com": "输入学生邮箱（每行一个，或逗号分隔）。每位学生都会收到邀请链接的电子邮件。",
       "upload_a_csv_or_spreadsheet_with_one_stu": "上传一个包含每行一个学生邮箱的CSV或电子表格。名称、标题和额外列将被忽略。",
       "placeholder_studentemailcom": "student@email.com",
-      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
+      "already_know_the_students_email_enter_it": "已经知道学生的邮箱？请在这里输入。如果他们已经有账户，会立即加入该教室并通过应用内通知——不会发送任何邮件。如果还没有账户，则会发送邀请邮件。"
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "主题",
@@ -1683,17 +1683,17 @@
       "aria_label_special_focus_or_differentiation": "特殊关注或区分",
       "special_focus_optional": "特别关注（可选）",
       "add_an_activity_title_above_for_better_s": "警告：请在上方添加活动标题以获取更好的建议。",
-      "grade": "grade",
-      "at": "at",
-      "generating": "Generating…",
+      "grade": "等级",
+      "at": "在",
+      "generating": "正在生成......",
       "ask_peri": "✨ Ask Peri",
-      "added": "✓ Added to activity",
-      "add_to_activity": "+ Add to activity",
+      "added": "✓ 已添加到活动中",
+      "add_to_activity": "+ 添加到活动",
       "tip": "Tip:",
-      "peri_intro": "Peri will suggest activities for",
-      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
-      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
-      "drafting_from_standards": "Drafting an activity for the standards you selected…"
+      "peri_intro": "佩里会建议活动",
+      "need_subject_grade": "在上面添加一个科目和年级，以便从Peri那里获得建议。",
+      "click_a_card_tip": "点击一张卡片将其添加到您的活动中。在点击之前，什么都不会被添加。",
+      "drafting_from_standards": "正在为您选择的标准起草活动......"
     },
     "components_upgradecta": {
       "contact_us": "联系我们",
@@ -1724,13 +1724,13 @@
       "from_a_white_paper_to_a_working_platform": "从白皮书到工作平台：Peripateticware 2007–2026",
       "the_insight_aristotle_was_right": "智慧之见：亚里士多德是对的",
       "the_problem_that_remained_unsolved": "未解决的问题",
-      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
-      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
+      "the_2007_document_named_one_obstacle_it_": "2007年的文件列出了一个它无法解决的障碍：",
+      "the_2026_answer_ai_did_what_spreadsheets": "2026年的答案：人工智能做到了电子表格做不到的事",
       "the_assessment_problem_turned_out_to_hav": "该评估问题分为两部分。第一部分是收集证据——学生实际观察到了什么，能否证明？第二部分是评估它——他们的思维是否加深了，还是只是描述了他们看到的东西？\n\n(保留了模板变量，仅提供翻译后的值字符串文本)",
       "choose_your_own_adventure": "选择你的冒险",
       "why_this_took_until_2026": "为何要等到2026年",
       "the_white_paper_is_still_online": "白皮书仍然在线。",
-      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
+      "you_can_read_the_original_2007_document_": "你可以在下方链接阅读2007年写成的原始文件，那时iPhone还只是个传闻。这些词汇已经过时了。论点则不是。",
       "read_the_original_2007_paper": "阅读原始2007论文→",
       "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
       "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
@@ -1744,7 +1744,7 @@
       "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
       "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
       "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
-      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
+      "title_from_a_white_paper_to_a_working_platform": "从白皮书到工作平台：2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "加载中"
@@ -1798,9 +1798,9 @@
           "prompt": "伟大的观察！现在——你认为是什么导致这边树叶变色的？"
         },
         "4": {
-          "badge": "Multi-Stop",
-          "title": "Scavenger Hunt — 2 of 5 stops",
-          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
+          "badge": "多站",
+          "title": "寻宝游戏——5次中2次",
+          "prompt": "向东北方向走，40米到石桥。箭头指示方向——你的位置永远不会离开手机。"
         }
       },
       "teacher": {
@@ -1820,18 +1820,18 @@
           "prompt": "根据您的话题和位置，以下是4个符合布卢姆的活动想法..."
         },
         "4": {
-          "badge": "Route Builder",
-          "title": "Multi-Step Hunt — 6 stops",
-          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+          "badge": "路线建设器",
+          "title": "多步寻宝——6个站点",
+          "prompt": "导入GPX或投放针。设置每个站点的线索和到达半径，选择家庭同意的内容，然后导出完成的狩猎结果。"
         },
         "dashboard": {
-          "title": "Teacher Dashboard",
-          "subtitle": "This week",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "教师仪表盘",
+          "subtitle": "本周",
+          "badge": "概述",
+          "location": "近期活动",
           "stat": {
             "1": {
-              "label": "Students"
+              "label": "学生"
             },
             "2": {
               "label": "Classes"
@@ -1842,11 +1842,11 @@
           }
         },
         "proposal": {
-          "title": "Review a Proposal",
-          "badge": "Proposal",
-          "location": "Proposals Queue",
-          "subtitle": "From Jordan M. · Submitted today",
-          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
+          "title": "审核提案",
+          "badge": "提案",
+          "location": "提案队列",
+          "subtitle": "来自 Jordan M. ·今日提交",
+          "prompt": "“在溪流小径上寻找并拍摄5种本地植物。”——这是乔丹设计并提交给你批准的挑战。"
         }
       },
       "parent": {
@@ -2008,42 +2008,42 @@
           "prompt": "PDF 文件夹已准备就绪。包含所有必需的TX州报表字段。"
         },
         "4": {
-          "badge": "● On the trail",
-          "title": "Greenbelt Trail Hunt",
-          "subtitle": "5 stops · Emma & Lucas",
+          "badge": "● 在步道上",
+          "title": "绿带步道狩猎",
+          "subtitle": "5 站 ·Emma 和 Lucas",
           "task": {
             "1": {
-              "text": "The Old Oak — reached ✓"
+              "text": "老橡树 — 已到达✓"
             },
             "2": {
-              "text": "Stone Bridge — reached ✓"
+              "text": "石桥 — 已访问✓"
             },
             "3": {
-              "text": "The Overlook — 120 m ahead"
+              "text": "观景点——前方120米"
             },
             "4": {
-              "text": "Navigation on-device — no tracking"
+              "text": "设备内导航——无跟踪"
             }
           }
         },
         "children": {
-          "title": "Emma — Grade 4",
-          "badge": "68% Progress",
+          "title": "艾玛——四年级",
+          "badge": "68% 进展",
           "stat": {
             "1": {
-              "label": "Sessions"
+              "label": "会议"
             },
             "2": {
-              "label": "Completed"
+              "label": "完成"
             }
           },
-          "subtitle": "Children · This term",
-          "location": "Barton Creek Greenbelt"
+          "subtitle": "儿童 ·本学期",
+          "location": "巴顿溪绿带"
         },
         "dashboard": {
-          "title": "Dashboard",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "仪表盘",
+          "badge": "概述",
+          "location": "近期活动",
           "stat": {
             "1": {
               "label": "Active"
@@ -2052,13 +2052,13 @@
               "label": "Pending"
             }
           },
-          "subtitle": "This week · Emma & Lucas",
+          "subtitle": "本周 ·Emma 和 Lucas",
           "task": {
             "1": {
-              "text": "River Ecosystem Study — published"
+              "text": "河流生态系统研究——已发表"
             },
             "2": {
-              "text": "Capitol Field Trip — draft"
+              "text": "国会大厦实地考察——草稿"
             }
           }
         }
@@ -2127,10 +2127,10 @@
       "save_your_note_first_to_attach_photos_au": "保存笔记后再添加照片、音频和视频。"
     },
     "pendingReflectionQueue": {
-      "awaiting_approval": "Awaiting approval",
-      "teacher_commented": "Teacher commented",
+      "awaiting_approval": "等待审批",
+      "teacher_commented": "老师评论道",
       "ready_to_reflect": "准备好反射",
-      "section_title": "Pending Reflections",
+      "section_title": "待审反思",
       "teacher_label": "Teacher",
       "reflection_in_progress": "反射中"
     },
@@ -2200,11 +2200,11 @@
       "ready_to_create_your_first_outdoor_activ": "准备创建您的第一项户外活动了吗？Peri将为您提供定制的亚里士多德式提问，根据地点和主题进行调整。",
       "create_first_activity": "创建第一个活动",
       "login_label": "Login",
-      "password_label": "Password",
+      "password_label": "密码",
       "copied": "Copied ✓",
       "copy_all": "Copy all",
-      "childrens_logins": "Your children\\'s logins",
-      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
+      "childrens_logins": "您孩子的登录信息",
+      "save_these_now": "现在就保存或打印这些信息——为了保护孩子的隐私，我们不能再次显示密码。您可以随时从“子”页面重置密码。"
     },
     "pages_licensingpage": {
       "licensing": "授权",
@@ -2252,7 +2252,7 @@
       "send": "发送回复",
       "subtitle": "消息来自您孩子的老师。回复以保持联系。",
       "empty": "还没有消息。当老师联系时，它会出现这里。",
-      "announcements_title": "Classroom Announcements"
+      "announcements_title": "课堂公告"
     },
     "notifications": "通知",
     "pages_parentnotificationspage": {
@@ -2263,7 +2263,7 @@
       "link_a_child": "儿童链接",
       "teacher_note": "教师备注",
       "no_children_linked_yet": "无关联儿童",
-      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
+      "link_your_childs_account_to_start_tracki": "绑定您孩子的账户，开始跟踪他们的学习进展。",
       "no_progress_data_yet_for_this_child": "还没有进度数据，该儿童。"
     },
     "progress_reports": "进度报告",
@@ -2301,7 +2301,7 @@
       "admin_actions": "管理操作",
       "all_actions_are_recorded_in_the_audit_lo": "审计日志记录所有操作。",
       "license": "License",
-      "change_tier_to": "Change tier to…",
+      "change_tier_to": "升级等级到......",
       "placeholder_days": "days",
       "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
       "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
@@ -2319,7 +2319,7 @@
       "suspended": "悬挂",
       "no_organisations_found": "无组织找到。",
       "expired": "Expired",
-      "all_tiers": "All tiers",
+      "all_tiers": "所有层级",
       "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
@@ -2372,10 +2372,10 @@
       "write_your_reflection": "写下你的反思",
       "what_did_you_observe_what_did_you_learn_": "什么是你观察到的？什么是你学习到的？它如何与你之前的知识相连接？",
       "great_work_your_teacher_will_review_your": "优秀的工作。您的老师将审阅您的证据和反思。",
-      "location_sharing": "Location Sharing",
-      "architectartist": "Architect/Artist:",
-      "constructed": "Constructed:",
-      "yes_submit": "Yes, submit",
+      "location_sharing": "位置共享",
+      "architectartist": "建筑师/艺术家：",
+      "constructed": "已构造：",
+      "yes_submit": "是的，提交",
       "cancel": "Cancel",
       "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
       "historical_significance": "Historical Significance:",
@@ -2391,7 +2391,7 @@
       "title_preview_as_student": "预览为学生",
       "make_sure_the_backend_is_running_and_you": "后台运行并已登录",
       "title_fieldwork_map": "地图字段工作 — 学生提交的GPS位置",
-      "tracking_settings": "Tracking Settings",
+      "tracking_settings": "跟踪设置",
       "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
     },
     "professorFieldworkPage": {
@@ -2430,8 +2430,8 @@
       "no_students_enrolled_yet_use_the_invite_": "还没有学生报名。请使用下面的邀请面板添加他们。",
       "title_remove_from_classroom": "移出教室",
       "larger_classrooms_are_a_paid_feature_upg": "更大的教室是付费功能。升级以容纳更多学生。",
-      "grade_level_placeholder": "0 = Kindergarten",
-      "grade_level_k_hint": "0 = Kindergarten",
+      "grade_level_placeholder": "0 = 幼儿园",
+      "grade_level_k_hint": "0 = 幼儿园",
       "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
       "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
     },
@@ -2443,7 +2443,7 @@
       "create": "创建",
       "archived": "已归档",
       "you_dont_have_any_classrooms_yet": "没有任何教室。",
-      "placeholder_grade_optional": "Grade (0 = K, optional)",
+      "placeholder_grade_optional": "等级（0 = K，可选）",
       "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
     },
     "live_sessions": "直播会话",
@@ -2456,7 +2456,7 @@
       "placeholder_comment_on_the_field_observations_eviden": "评论字段观察、证据质量或反思时关注的内容",
       "your_feedback": "您的反馈：",
       "saved": "✓ Saved",
-      "placeholder_feedback_for_the_student": "Feedback for the student...",
+      "placeholder_feedback_for_the_student": "给学生的反馈......",
       "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
       "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
     },
@@ -2474,7 +2474,7 @@
     "field_journal_title": "学习常驻的田野日志",
     "s_choose_peripateticware": "选择Peripateticware",
     "your_data_is_yours_we_collect_minimal_in": "您的数据归您所有。我们收集最少信息，从不出售。Peripateticware使用加密连接、匿名聚合和透明数据实践。您控制共享哪些数据，与谁共享，以及共享多长时间。",
-    "team_title": "Built by an educator, for educators",
+    "team_title": "由教育者为教育者打造",
     "loading_portfolio": "加载投资组合...",
     "what_did_you_observe": "你观察到了什么？",
     "describe_what_you_observed_noticed_or_wo": "观察到或好奇的事情",
@@ -2556,7 +2556,7 @@
     "using_basic_fallback_information": "使用基本备用信息",
     "educational_opportunities": "教育机会",
     "view_on_google_maps": "地图上查看",
-    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
+    "use_this_location_information_to_create_": "利用这些位置信息创建基于地点的学习活动，将学生的探究与现实世界情境连接起来。",
     "refresh_information": "刷新信息",
     "observing_native_plants_in_field_session": "观察本地植物野外实习活动于里维尔河州立公园",
     "great_observation_notes_today_your_detai": "今天的观察笔记真棒！您对叶子形态的细节展示了真正的植物学思维。 —— 圣蒂亚戈女士",
@@ -3334,37 +3334,37 @@
       "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
       "refund_policy": "refund policy",
       "plan": "Plan",
-      "current_plan": "Current plan",
+      "current_plan": "当前计划",
       "save_30": "save 30%"
     },
     "pages_refundpolicypage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
     "calendar": {
-      "prev_month": "Previous month",
-      "next_month": "Next month",
+      "prev_month": "上个月",
+      "next_month": "下个月",
       "today": "Today",
-      "no_events_this_day": "Nothing scheduled for this day."
+      "no_events_this_day": "这一天没有安排。"
     },
-    "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_preferences": "Cookie偏好设置",
+    "cookie_status_on": "目前：分析 Cookie 已启用。",
+    "cookie_status_off": "目前：分析 Cookie 被拒绝。",
     "components_errorboundary": {
-      "something_went_wrong": "Something went wrong",
-      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
-      "try_again": "Try again",
-      "reload_page": "Reload page"
+      "something_went_wrong": "出了点问题",
+      "an_unexpected_error_occurred_and_this_pa": "发生了意外错误，导致此页面无法显示。您可以重试，或重新加载应用。",
+      "try_again": "再试一次",
+      "reload_page": "重新加载页面"
     },
     "components_teacher_projectcompletionreport": {
-      "status_completed": "Completed",
-      "status_in_progress": "In progress",
-      "status_not_started": "Not started",
-      "col_activity": "Activity",
-      "col_completed": "Completed",
-      "col_participants": "Participants",
-      "col_evidence": "Evidence",
+      "status_completed": "完成",
+      "status_in_progress": "进行中",
+      "status_not_started": "尚未开始",
+      "col_activity": "活动",
+      "col_completed": "完成",
+      "col_participants": "参与者",
+      "col_evidence": "证据",
       "col_student": "Student",
-      "col_last_activity": "Last Activity",
+      "col_last_activity": "最近活动",
       "empty": "No activities linked to this project yet.",
       "title_by_activity": "Completion by Activity",
       "title_by_participant": "Completion by Participant",
@@ -3372,77 +3372,77 @@
     },
     "components_teacher_projectlivetracker": {
       "title_live_map": "Live Map",
-      "show_all": "Show everyone",
-      "active_now": "Active Now",
+      "show_all": "给大家看看",
+      "active_now": "现已活跃",
       "live": "LIVE",
       "empty": "No one is currently active in this project.",
       "empty_hint": "This updates automatically once a student starts a field session.",
       "not_configured": "No activities in this project have location tracking enabled.",
       "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
     },
-    "generate_with_ai": "Generate with AI",
-    "activity_title": "Activity title",
-    "grade_level": "Grade level",
-    "taxonomy_type": "Taxonomy type",
-    "taxonomy_level": "Taxonomy level",
-    "generating": "Generating…",
-    "generate_criteria": "Generate Criteria",
+    "generate_with_ai": "用 AI 生成",
+    "activity_title": "活动名称",
+    "grade_level": "年级",
+    "taxonomy_type": "分类类型",
+    "taxonomy_level": "分类层级",
+    "generating": "正在生成......",
+    "generate_criteria": "生成条件",
     "components_teacher_rubricbuilder": {
-      "blooms_revised": "Bloom's Revised",
-      "dok_webbs": "DOK (Webb's)",
+      "blooms_revised": "布鲁姆修订版",
+      "dok_webbs": "DOK（韦伯氏）",
       "solo": "SOLO",
-      "marzanos": "Marzano's",
-      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+      "marzanos": "马尔扎诺的",
+      "placeholder_eg_analyze_dok3_relational_analysis": "例如：分析、DOK3、关系型、分析"
     },
-    "view_on_wikidata": "View on Wikidata",
+    "view_on_wikidata": "在维基数据上查看",
     "pages_student_studentmessagespage": {
-      "title": "Messages",
-      "messages_title": "Messages",
+      "title": "信息",
+      "messages_title": "信息",
       "loading": "Loading…",
-      "placeholder_write_a_reply": "Write a reply…",
-      "back_to_messages": "Back to messages",
+      "placeholder_write_a_reply": "写回复......",
+      "back_to_messages": "返回消息页面",
       "you": "You",
       "subtitle": "See announcements from your teachers and reply to messages sent to you.",
       "announcements_title": "Classroom Announcements",
       "no_announcements_yet": "No announcements yet.",
       "no_messages_yet": "No messages from teachers yet."
     },
-    "announcements": "Announcements",
+    "announcements": "公告",
     "projectCompletionReportPage": {
-      "back": "← Back to Project",
-      "title": "Completion Report",
+      "back": "← 返回项目",
+      "title": "完成报告",
       "no_project_selected": "No project selected."
     },
     "projectLiveTrackingPage": {
-      "back": "← Back to Project",
-      "title": "Live Tracking",
+      "back": "← 返回项目",
+      "title": "实时追踪",
       "no_project_selected": "No project selected."
     },
     "projectnewpage": {
-      "new_project": "New Project",
+      "new_project": "新项目",
       "subtitle": "Set up a new learning project for your students."
     },
     "pages_teacher_teachercalendarpage": {
-      "title": "Calendar",
+      "title": "日历",
       "date": "Date",
       "type": "Type",
-      "placeholder_eg_river_study_field_trip": "e.g. River study field trip",
+      "placeholder_eg_river_study_field_trip": "例如：河流实地考察",
       "subtitle": "Planned and completed activities for your class, plus any events you add.",
       "description_optional": "Description (optional)"
     },
     "pages_teacher_teachermessagespage": {
-      "title": "Messages",
-      "classroom": "Classroom",
+      "title": "信息",
+      "classroom": "教室",
       "message": "Message",
       "loading": "Loading…",
       "send_to": "Send to",
-      "a_specific_student": "A specific student",
+      "a_specific_student": "一个特定的学生",
       "student": "Student",
-      "choose_a_student": "Choose a student…",
+      "choose_a_student": "选择一名学生......",
       "subject": "Subject",
-      "placeholder_write_a_reply": "Write a reply…",
-      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
-      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder",
+      "placeholder_write_a_reply": "写回复......",
+      "placeholder_eg_field_trip_friday": "例如：周五实地考察",
+      "placeholder_eg_field_trip_reminder": "例如：实地考察提醒",
       "subtitle": "Post announcements to a whole class, or message students and parents directly.",
       "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
       "a_specific_students_parent": "A specific student's parent",
@@ -3455,16 +3455,16 @@
       "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
     },
     "pages_teacher_trackingsettings": {
-      "tier_trip": "Trip (fast)",
-      "tier_long_running": "Long-running (slow)",
-      "title": "Tracking Settings",
-      "empty": "No activities yet.",
-      "select_all": "Select all",
-      "enable_selected": "Enable tracking",
-      "disable_selected": "Disable tracking",
-      "col_activity": "Activity",
+      "tier_trip": "Trip（快速旅行）",
+      "tier_long_running": "长期（慢速）",
+      "title": "跟踪设置",
+      "empty": "还没有活动。",
+      "select_all": "选择全部",
+      "enable_selected": "启用跟踪",
+      "disable_selected": "禁用跟踪",
+      "col_activity": "活动",
       "col_project": "Project",
-      "col_tracking": "Tracking",
+      "col_tracking": "追踪",
       "on": "On",
       "off": "Off",
       "back": "← Back to Activities",
@@ -3476,26 +3476,26 @@
     },
     "components_imagecaptionmodal": {
       "cancel": "Cancel",
-      "placeholder_describe_the_image": "Describe the image",
-      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
+      "placeholder_describe_the_image": "描述这张图片",
+      "placeholder_a_trail_marker_on_the_ridge": "山脊上的步道标志",
+      "placeholder_photo_jane_doe": "照片：Jane Doe",
       "for_screen_readers": "(for screen readers)",
       "optional_shown_under_the_image": "(optional -- shown under the image)",
       "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
     },
     "blog": "Blog",
     "components_seo": {
-      "title_origin_story": "Origin Story"
+      "title_origin_story": "起源故事"
     },
     "components_trialexpirybanner": {
-      "see_plans": "See plans",
+      "see_plans": "查看计划",
       "aria_label_dismiss": "Dismiss"
     },
     "components_account_mfasettings": {
-      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
-      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "twofactor_authentication_adds_a_second_s": "双重身份验证在使用身份验证器应用（Google Authenticator、Authy、1Password 等）登录时增加了第二步。尤其推荐给教师和管理员账户，因为他们可以访问学生数据。",
+      "1_scan_this_qr_code_with_your_authentica": "1. 使用身份验证器应用扫描此二维码（或手动输入密钥）。",
       "done": "Done",
-      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
+      "twofactor_authentication_is_enabled": "✓ 启用双因素认证",
       "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
       "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
       "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
@@ -3503,25 +3503,25 @@
       "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
     },
     "components_applied_standards": {
-      "loading": "Checking standards…",
+      "loading": "检查标准......",
       "approve": "Approve",
       "dismiss": "Dismiss",
       "remove": "Remove",
       "restore": "Restore",
-      "add_standard": "+ Add a standard",
-      "search_placeholder": "Search standards…",
+      "add_standard": "+ 添加标准",
+      "search_placeholder": "搜索标准......",
       "search": "Search",
       "cancel": "Cancel",
-      "no_results": "No matches.",
+      "no_results": "没有匹配。",
       "added": "Added",
       "add": "Add",
       "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
       "none_yet": "No standards matched this activity's content yet — you can add one manually below."
     },
     "components_standards_explorer": {
-      "title": "Explore Standards",
-      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
-      "searching": "Searching…",
+      "title": "探索标准",
+      "placeholder": "例如，“分数等价”或“学习目标的倡导者”......",
+      "searching": "搜索中......",
       "search": "Search",
       "clear": "Clear",
       "search_failed": "Search failed. Try again in a moment.",
@@ -3533,70 +3533,70 @@
     "components_teacher_activitywizard": {
       "error_prefix": "Error",
       "step_basics": "Basics",
-      "step_experience": "Experience",
-      "step_assessment": "Assessment",
-      "step_outcomes": "Outcomes",
+      "step_experience": "经历",
+      "step_assessment": "评估",
+      "step_outcomes": "结果",
       "step_review": "Review",
-      "basics_title": "The basics",
-      "about_place": "About this place",
-      "coordinates": "Coordinates",
-      "optional": "Optional",
-      "kind_group": "Activity kind",
-      "wayfaring": "Wayfaring",
-      "investigative": "Investigative",
-      "setting_title": "Setting and timing",
-      "tracking_title": "Live tracking",
+      "basics_title": "基础知识",
+      "about_place": "关于这个地方",
+      "coordinates": "坐标",
+      "optional": "可选",
+      "kind_group": "活动类型",
+      "wayfaring": "远行",
+      "investigative": "调查性",
+      "setting_title": "设定与时间",
+      "tracking_title": "实时追踪",
       "on": "On",
       "off": "Off",
-      "prompts_title": "Student prompts",
-      "ai_chat": "Ask Peri (AI chat)",
-      "recommended": "Recommended",
-      "attached": "1 attached",
-      "none": "None",
+      "prompts_title": "学生提示",
+      "ai_chat": "问 Peri（AI 聊天）",
+      "recommended": "推荐",
+      "attached": "1 附上",
+      "none": "没有",
       "edit": "Edit",
-      "review_title": "Review and create",
-      "not_set": "Not set yet",
-      "grade_subject": "Grade and subject",
+      "review_title": "审核并创建",
+      "not_set": "还没设定好",
+      "grade_subject": "年级与科目",
       "none_yet": "None yet",
-      "quick_preview": "Quick Preview",
-      "this_place": "This place",
-      "close_dialog": "Close dialog",
+      "quick_preview": "快速预览",
+      "this_place": "这个地方",
+      "close_dialog": "关闭对话框",
       "close": "Close",
-      "last_step": "Last step",
-      "library": "Outcome library",
-      "saved": "saved",
-      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "last_step": "最后一步",
+      "library": "结果库",
+      "saved": "已保存",
+      "library_unavailable": "您的结果库无法加载。您仍然可以在下方写入结果。",
       "loading": "Loading…",
       "added": "Added",
       "add": "Add",
-      "written": "written",
-      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
-      "thinking_level": "Thinking level",
-      "evidence": "Evidence",
-      "in_library": "In my library",
-      "save_to_library": "Save to my library",
+      "written": "已写",
+      "outcome_placeholder": "学生将能够......例如，按叶片形状对三种植物进行分类",
+      "thinking_level": "思维层级",
+      "evidence": "证据",
+      "in_library": "在我的图书馆里",
+      "save_to_library": "保存到我的库",
       "remove": "Remove",
-      "write_new": "Write a new outcome",
-      "cov_outcomes": "Outcomes",
-      "cov_levels": "Thinking levels",
-      "cov_standards": "Standards matched",
-      "start_location": "A location",
-      "start_type": "An activity type",
-      "start_assessment": "An assessment",
-      "start_outcomes": "Learning outcomes",
-      "lets_begin": "Let's begin",
-      "start_group": "Start from",
-      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "write_new": "写一个新的结果",
+      "cov_outcomes": "结果",
+      "cov_levels": "思维层次",
+      "cov_standards": "匹配的标准",
+      "start_location": "地点",
+      "start_type": "一种活动类型",
+      "start_assessment": "评估",
+      "start_outcomes": "学习成果",
+      "lets_begin": "我们开始吧",
+      "start_group": "从开始",
+      "standards_error": "无法加载标准建议。保存后可以添加标准。",
       "state": "State",
-      "any_state": "Any state",
-      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "any_state": "任何州",
+      "search_standards_placeholder": "例如“分数等价”或标准代码......",
       "search": "Search",
-      "no_results": "No matches.",
-      "search_results": "Search results",
-      "suggested_standards": "Suggested standards",
-      "suggested": "Suggested",
-      "progress": "Progress",
-      "change_start": "Change start point",
+      "no_results": "没有匹配。",
+      "search_results": "搜索结果",
+      "suggested_standards": "建议标准",
+      "suggested": "建议",
+      "progress": "进展",
+      "change_start": "更改起始点",
       "back": "Back",
       "next": "Next",
       "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
@@ -3632,14 +3632,14 @@
       "start_pane": "Choose where to start"
     },
     "components_teacher_activitymanagerwizardtest": {
-      "peri_suggestions": "peri suggestions",
-      "activities_list": "activities list"
+      "peri_suggestions": "PERI 建议",
+      "activities_list": "活动列表"
     },
     "components_teacher_wizard_activitywizardtest": {
-      "title_pond_study": "Pond study",
+      "title_pond_study": "池塘研究",
       "title_pond": "Pond"
     },
-    "two_factor_authentication": "Two-Factor Authentication",
+    "two_factor_authentication": "双因素认证",
     "pages_bloglistpage": {
       "blog": "Blog",
       "loading": "Loading…",
@@ -3649,29 +3649,29 @@
     },
     "pages_blogpostpage": {
       "loading": "Loading…",
-      "post_not_found": "Post not found",
-      "title_post_not_found": "Post Not Found",
+      "post_not_found": "未找到帖子",
+      "title_post_not_found": "帖子未找到",
       "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
     },
-    "parent_requests": "Parent Requests",
-    "requested_on": "Requested",
+    "parent_requests": "家长请求",
+    "requested_on": "请求",
     "deny": "Deny",
     "pages_admin_adminblogeditorpage": {
       "loading": "Loading…",
       "restore": "Restore",
       "discard": "Discard",
       "title": "Title",
-      "commaseparated": "(comma-separated)",
+      "commaseparated": "（逗号分隔）",
       "content": "Content",
-      "placeholder_post_title": "Post title",
-      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
-      "title_remove_cover_image": "Remove cover image",
-      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
-      "placeholder_product_homeschool_standards": "product, homeschool, standards",
-      "title_replace_this_image": "Replace this image",
-      "title_remove_this_image": "Remove this image",
-      "placeholder_write_in_markdown": "Write in Markdown…",
+      "placeholder_post_title": "帖子标题",
+      "placeholder_one_or_two_sentence_summary": "一两句话的总结......",
+      "title_remove_cover_image": "移除封面图片",
+      "placeholder_sunrise_over_the_ridge_trail": "日出越过山脊小径",
+      "placeholder_photo_jane_doe": "照片：Jane Doe",
+      "placeholder_product_homeschool_standards": "产品，家庭教育，标准",
+      "title_replace_this_image": "替换此图像",
+      "title_remove_this_image": "删除此图片",
+      "placeholder_write_in_markdown": "输入 Markdown......",
       "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
       "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
       "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
@@ -3682,13 +3682,13 @@
     "pages_admin_adminblogpage": {
       "blog": "Blog",
       "loading": "Loading…",
-      "placeholder_search_by_title_or_slug": "Search by title or slug…",
+      "placeholder_search_by_title_or_slug": "按标题或蛞蝓搜索......",
       "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
     },
     "pages_admin_adminpageblockeditorpage": {
       "loading": "Loading…",
       "format": "Format",
-      "plain_text": "Plain text",
+      "plain_text": "纯文本",
       "markdown": "Markdown",
       "content": "Content",
       "status": "Status",
@@ -3704,7 +3704,7 @@
     "pages_admin_adminpagespage": {
       "pages": "Pages",
       "loading": "Loading…",
-      "placeholder_search_by_block_key_or_content": "Search by block key or content…",
+      "placeholder_search_by_block_key_or_content": "按块密钥或内容进行搜索......",
       "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
     },
     "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
