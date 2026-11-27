@@ -138,7 +138,10 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
     await expect(page.locator('#about-place-title')).toBeVisible({ timeout: 10_000 });
     await expect(dialog.getByText(/discovery park is seattle's largest park/i)).toBeVisible();
     await expect(dialog.getByText(/former fort lawton military site/i)).toBeVisible();
-    await expect(dialog.getByText('old-growth forest')).toBeVisible();
+    // exact: true -- the synopsis paragraph above also contains this phrase
+    // as a substring, so a loose match is a strict-mode violation against
+    // the dedicated keyword tag.
+    await expect(dialog.getByText('old-growth forest', { exact: true })).toBeVisible();
     await expect(dialog.getByRole('link', { name: /view on wikidata/i })).toBeVisible();
 
     // Nearby POI list — /locations/search returned two other real places

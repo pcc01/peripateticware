@@ -94,10 +94,12 @@ test.describe('Auth – Forgot password', () => {
 
     await page.getByRole('button', { name: /send|reset|submit/i }).click();
 
-    // App shows "Check your inbox" after submission
+    // App shows "Check your inbox" after submission. Not .or(getByText(...)):
+    // the confirmation paragraph's own text ("...we've sent a reset link")
+    // also matches that regex, so the combined locator was a strict-mode
+    // violation (2 elements) rather than a genuine ambiguity to tolerate.
     await expect(
-      page.getByRole('heading', { name: /check your inbox/i })
-        .or(page.getByText(/check your inbox|email sent|reset link/i)),
+      page.getByRole('heading', { name: /check your inbox/i }),
     ).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -192,9 +192,19 @@ export const WizardShell: React.FC<WizardShellProps> = ({
             {footerExtra}
             <span className={styles.spacer} />
             {last ? (
-              <button type="submit" className={styles.btn} disabled={submitting}>{submitLabel}</button>
+              // key="submit"/"next" forces React to unmount/remount rather
+              // than patch the existing <button>'s attributes in place --
+              // without it, both branches reconcile to the same DOM node
+              // (same tag, same tree position), so the Next-click that
+              // advances onto this last step can land in the same browser
+              // click event as the type="button" -> type="submit" DOM
+              // mutation, submitting the form instead of just advancing.
+              // Confirmed via a trace: the activity-create POST fired at
+              // the exact millisecond of that Next click, before "Review"
+              // (or its own Create Activity button) ever rendered.
+              <button key="submit" type="submit" className={styles.btn} disabled={submitting}>{submitLabel}</button>
             ) : (
-              <button type="button" className={styles.btn} onClick={onNext}>
+              <button key="next" type="button" className={styles.btn} onClick={onNext}>
                 {t('components_teacher_activitywizard.next', 'Next')}
               </button>
             )}
