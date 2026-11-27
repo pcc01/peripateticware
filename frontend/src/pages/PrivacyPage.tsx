@@ -59,7 +59,10 @@ export const PrivacyPage: React.FC = () => {
             </span>
           )}
           {privacyStatus.last_updated && (
-            <span className="text-gray-400 ml-auto">
+            // gray-400 only gave 2.43:1 against this banner's green-50
+            // background -- failed WCAG AA (needs 4.5:1). gray-600 (already
+            // used by the frameworks span above) gives 7.22:1.
+            <span className="text-gray-600 ml-auto">
               {t('privacypage.rules_last_updated', 'Rules last updated')}: {fmtDate(privacyStatus.last_updated)}
             </span>
           )}

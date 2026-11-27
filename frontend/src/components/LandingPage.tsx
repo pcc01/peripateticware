@@ -244,7 +244,10 @@ export const LandingPage: React.FC = () => {
         title: t('phone_carousel.homeschool.1.title', "Today's Activity"),
         subtitle: t('phone_carousel.homeschool.1.subtitle', 'Earth Science · Emma & Lucas'),
         badge: t('phone_carousel.homeschool.1.badge', '● Active'),
-        badgeColor: '#16a34a',
+        // #16a34a (Tailwind green-600) only gave 3.29:1 against this badge's
+        // white bold 8px text -- failed WCAG AA (needs 4.5:1). green-700
+        // gives 5.01:1.
+        badgeColor: '#15803d',
         location: 'Barton Creek Greenbelt',
         tasks: [
           { text: t('phone_carousel.homeschool.1.task.1.text', 'Identify rock types at outcrop'), done: true },
@@ -263,7 +266,10 @@ export const LandingPage: React.FC = () => {
         title: t('phone_carousel.homeschool.children.title', 'Emma — Grade 4'),
         subtitle: t('phone_carousel.homeschool.children.subtitle', 'Children · This term'),
         badge: t('phone_carousel.homeschool.children.badge', '68% Progress'),
-        badgeColor: '#16a34a',
+        // #16a34a (Tailwind green-600) only gave 3.29:1 against this badge's
+        // white bold 8px text -- failed WCAG AA (needs 4.5:1). green-700
+        // gives 5.01:1.
+        badgeColor: '#15803d',
         location: t('phone_carousel.homeschool.children.location', 'Barton Creek Greenbelt'),
         stats: [
           { label: t('phone_carousel.homeschool.children.stat.1.label', 'Sessions'), value: '24' },
@@ -279,7 +285,10 @@ export const LandingPage: React.FC = () => {
         title: t('phone_carousel.homeschool.dashboard.title', 'Dashboard'),
         subtitle: t('phone_carousel.homeschool.dashboard.subtitle', 'This week · Emma & Lucas'),
         badge: t('phone_carousel.homeschool.dashboard.badge', 'Overview'),
-        badgeColor: '#16a34a',
+        // #16a34a (Tailwind green-600) only gave 3.29:1 against this badge's
+        // white bold 8px text -- failed WCAG AA (needs 4.5:1). green-700
+        // gives 5.01:1.
+        badgeColor: '#15803d',
         location: t('phone_carousel.homeschool.dashboard.location', 'Recent Activities'),
         stats: [
           { label: t('phone_carousel.homeschool.dashboard.stat.1.label', 'Active'), value: '2' },
@@ -296,7 +305,10 @@ export const LandingPage: React.FC = () => {
         title: t('phone_carousel.homeschool.4.title', 'Greenbelt Trail Hunt'),
         subtitle: t('phone_carousel.homeschool.4.subtitle', '5 stops · Emma & Lucas'),
         badge: t('phone_carousel.homeschool.4.badge', '● On the trail'),
-        badgeColor: '#16a34a',
+        // #16a34a (Tailwind green-600) only gave 3.29:1 against this badge's
+        // white bold 8px text -- failed WCAG AA (needs 4.5:1). green-700
+        // gives 5.01:1.
+        badgeColor: '#15803d',
         location: 'Barton Creek Greenbelt',
         tasks: [
           { text: t('phone_carousel.homeschool.4.task.1.text', 'The Old Oak — reached ✓'), done: true },
