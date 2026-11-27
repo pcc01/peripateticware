@@ -12,19 +12,20 @@ import { expect, type Page } from '@playwright/test';
 export type WizardStart = 'location' | 'type' | 'assessment' | 'outcomes';
 export type WizardStep = 'Basics' | 'Experience' | 'Assessment' | 'Outcomes' | 'Review';
 
-// The `u` flag is required here: these emoji (📍🧭📐🎯) are astral characters
-// (surrogate pairs in UTF-16). Without `u`, the `?` after an emoji literal
-// quantifies only the trailing low-surrogate code unit, not the whole
-// character -- turning "emoji optional" into "lone high-surrogate required,
-// low-surrogate optional", which can never match a name that has no emoji at
-// all (StartPicker.tsx's icon span is aria-hidden, so it never is in the
-// accessible name). That silently made getByRole(...) match zero elements,
-// so .click() spun for the full 30s timeout on every one of these.
-const START_CARD: Record<WizardStart, RegExp> = {
-  location: /^📍?\s*A location/u,
-  type: /^🧭?\s*An activity type/u,
-  assessment: /^📐?\s*An assessment/u,
-  outcomes: /^🎯?\s*Learning outcomes/u,
+// StartPicker.tsx's own StartKey values, exposed via a stable data-start-key
+// attribute on each card button -- NOT translated text. A translated-text
+// regex here (the previous approach) broke the instant any test switched
+// the locale before calling startWizard (ja-locale-regression in
+// location-enrichment.spec.ts): the rendered button text is Japanese, not
+// English, so getByRole(..., {name}) matches nothing and .click() spins for
+// the full 30s timeout -- the same underlying failure mode as the astral-
+// emoji regex bug this session already fixed once, just triggered by a
+// locale switch instead of a missing `u` flag.
+const START_CARD: Record<WizardStart, string> = {
+  location: 'basics',
+  type: 'experience',
+  assessment: 'assessment',
+  outcomes: 'outcomes',
 };
 
 /** The pane that is currently showing (the others are `inert`). */
@@ -36,7 +37,7 @@ export const pane = (page: Page, step: WizardStep) => page.locator(`section[aria
 export async function startWizard(page: Page, start: WizardStart = 'location', url = '/teacher/activities/new') {
   await page.goto(url);
   await expect(page).not.toHaveURL(/\/login/);
-  await page.getByRole('button', { name: START_CARD[start] }).click();
+  await page.locator(`button[data-start-key="${START_CARD[start]}"]`).click();
 }
 
 /** The step the progress rail says we are on. */

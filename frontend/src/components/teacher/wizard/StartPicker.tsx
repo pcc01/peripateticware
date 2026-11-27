@@ -53,6 +53,7 @@ export const StartPicker: React.FC<StartPickerProps> = ({ onPick }) => {
           <button
             key={o.key}
             type="button"
+            data-start-key={o.key}
             aria-pressed={value === o.key}
             className={`${styles.card} ${value === o.key ? styles.cardOn : ''}`}
             onClick={() => { setValue(o.key); onPick(o.key); }}
