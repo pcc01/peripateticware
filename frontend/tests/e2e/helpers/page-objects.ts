@@ -273,3 +273,22 @@ export async function waitForPageReady(page: Page): Promise<void> {
   await page.waitForLoadState('load');
   await expect(page.locator('body')).not.toBeEmpty();
 }
+
+// ---------------------------------------------------------------------------
+// visibleSoon
+// ---------------------------------------------------------------------------
+
+/**
+ * locator.isVisible({ timeout }) does NOT poll/retry -- it's an instant,
+ * one-shot check of the current DOM state; the timeout option only affects
+ * internal actionability waits, not "wait for this to eventually appear".
+ * A whole class of "soft OR" checks across this suite
+ * (`isVisible({timeout}).catch(() => false)`) looked like they had generous
+ * timeouts but were actually failing in well under a second whenever content
+ * took even a moment to render -- confirmed via each failing test's own
+ * recorded duration in CI. locator.waitFor() is the one that actually polls,
+ * so use that and treat its rejection as "not visible in time".
+ */
+export async function visibleSoon(locator: Locator, timeout = 10_000): Promise<boolean> {
+  return locator.waitFor({ state: 'visible', timeout }).then(() => true).catch(() => false);
+}

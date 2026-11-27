@@ -18,7 +18,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { openChapter } from './helpers/activity-wizard';
+import { openChapter, fillRequiredBasics, next, advanceTo } from './helpers/activity-wizard';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -301,8 +301,11 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
     await expect(page).not.toHaveURL(/\/login/);
 
     await page.getByRole('button', { name: /location/i }).click();
-    // The GPS toggle lives in the collapsible "Live tracking" chapter,
-    // closed by default.
+    // The GPS toggle lives in the "Live tracking" chapter of the Experience
+    // step (ActivityManager.tsx), not Basics -- fill Basics' required fields
+    // and advance to Experience, then open the (collapsed by default) chapter.
+    await fillRequiredBasics(page, 'GPS Toggle Test Activity');
+    await next(page);
     await openChapter(page, /live tracking/i);
 
     const gpsToggle = page.getByText(/enable live gps tracking/i);
@@ -333,12 +336,16 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
     });
 
     await page.goto('/homeschool/activities/new');
-    await page.locator('#title').fill('E2E GPS Fieldtrip');
 
     await page.getByRole('button', { name: /location/i }).click();
+    // #title (and the rest of Basics) is mounted but inert until a start
+    // point is picked -- fill it after the click, not before.
+    await fillRequiredBasics(page, 'E2E GPS Fieldtrip');
+    await next(page);
     await openChapter(page, /live tracking/i);
     await page.getByText(/enable live gps tracking/i).click();
     await page.getByText(/i consent to gps location capture for my child/i).click();
+    await advanceTo(page, 'Review');
 
     // ActivityManager (the component actually routed at /homeschool/activities/new)
     // labels its submit button "Create Activity", not "Save Draft" — accept either
@@ -383,9 +390,12 @@ test.describe('Teacher — GPS toggle (non-homeschool path)', () => {
     });
 
     await page.goto('/teacher/activities/new');
-    await page.locator('#title').fill('E2E Teacher GPS Fieldtrip');
 
     await page.getByRole('button', { name: /location/i }).click();
+    // #title (and the rest of Basics) is mounted but inert until a start
+    // point is picked -- fill it after the click, not before.
+    await fillRequiredBasics(page, 'E2E Teacher GPS Fieldtrip');
+    await next(page);
     await openChapter(page, /live tracking/i);
     await page.getByText(/enable live gps tracking/i).click();
 
@@ -393,6 +403,7 @@ test.describe('Teacher — GPS toggle (non-homeschool path)', () => {
     // teacher/org account.
     await expect(page.getByText(/i consent to gps location capture for my child/i)).toHaveCount(0);
 
+    await advanceTo(page, 'Review');
     await page.getByRole('button', { name: /^create activity$/i }).click();
 
     await expect.poll(() => createBody, { timeout: 10_000 }).not.toBeNull();

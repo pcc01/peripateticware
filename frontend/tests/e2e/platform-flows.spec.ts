@@ -11,6 +11,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { visibleSoon } from './helpers/page-objects';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,10 +70,8 @@ test.describe('Platform — Overview', () => {
   test('back/logout navigation header is present (PlatformShell)', async ({ page }) => {
     await page.goto('/platform');
     // PlatformShell renders a top bar with back button and logout
-    const hasNav = await page.locator('header, nav, [class*="shell"], [class*="header"]')
-      .first().isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasLogout = await page.getByRole('button', { name: /log.?out|sign.?out/i })
-      .isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasNav = await visibleSoon(page.locator('header, nav, [class*="shell"], [class*="header"]').first(), 5_000);
+    const hasLogout = await visibleSoon(page.getByRole('button', { name: /log.?out|sign.?out/i }), 5_000);
     expect(hasNav || hasLogout, 'PlatformShell header or logout button visible').toBe(true);
   });
 });
@@ -93,12 +92,9 @@ test.describe('Platform — Organisations', () => {
 
   test('org list or empty state renders after load', async ({ page }) => {
     await page.goto('/platform/orgs');
-    await page.waitForLoadState('domcontentloaded');
-    const hasTable = await page.locator('table, ul li, [class*="card"]').first()
-      .isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasEmpty = await page.getByText(/no org|no organisation|empty/i)
-      .isVisible({ timeout: 3_000 }).catch(() => false);
-    const hasContent = await page.locator('main').isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasTable = await visibleSoon(page.locator('table, ul li, [class*="card"]').first(), 5_000);
+    const hasEmpty = await visibleSoon(page.getByText(/no org|no organisation|empty/i), 3_000);
+    const hasContent = await visibleSoon(page.locator('main'), 3_000);
     expect(hasTable || hasEmpty || hasContent, 'Org list or empty state visible').toBe(true);
   });
 
@@ -147,11 +143,8 @@ test.describe('Platform — Audit Log', () => {
 
   test('log table or empty state renders', async ({ page }) => {
     await page.goto('/platform/audit-log');
-    await page.waitForLoadState('domcontentloaded');
-    const hasTable = await page.locator('table, [class*="log"], [class*="entry"]').first()
-      .isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasEmpty = await page.getByText(/no entries|no logs|empty/i)
-      .isVisible({ timeout: 3_000 }).catch(() => false);
+    const hasTable = await visibleSoon(page.locator('table, [class*="log"], [class*="entry"]').first(), 5_000);
+    const hasEmpty = await visibleSoon(page.getByText(/no entries|no logs|empty/i), 3_000);
     expect(hasTable || hasEmpty, 'Audit log table or empty state visible').toBe(true);
   });
 });

@@ -9,6 +9,7 @@ import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { startWizard, createFromBasics, activePane } from './helpers/activity-wizard';
+import { visibleSoon } from './helpers/page-objects';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -655,10 +656,8 @@ test.describe('Teacher — Projects', () => {
   test('"New Project" button or empty state is present', async ({ page }) => {
     await page.goto('/teacher/projects');
     await page.waitForLoadState('load');
-    // 10s/5s to match the sibling "page loads with heading" test's wait on
-    // the same page -- content can take a few seconds under CI load.
-    const hasBtn = await page.getByRole('button', { name: /new project/i }).isVisible({ timeout: 10_000 }).catch(() => false);
-    const hasContent = await page.locator('main').isVisible({ timeout: 5_000 }).catch(() => false);
+    const hasBtn = await visibleSoon(page.getByRole('button', { name: /new project/i }));
+    const hasContent = await visibleSoon(page.locator('main'), 5_000);
     expect(hasBtn || hasContent).toBe(true);
   });
 });

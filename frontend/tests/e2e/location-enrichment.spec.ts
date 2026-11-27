@@ -70,10 +70,15 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
     // before the lat/lng inputs mount WikiLocationInfo — the panel's fetch
     // effect only depends on [latitude, longitude], so locationName must be
     // settled by the time it fires (mirrors real teacher usage: type a name,
-    // then the coordinates get filled in).
-    if (opts.locationName) {
-      await page.locator('input[placeholder*="Lincoln Park" i]').fill(opts.locationName);
-    }
+    // then the coordinates get filled in). Always fill *something*: the
+    // "About this place" button only renders once hasCoords AND a non-empty
+    // location_name are both set (ActivityManager.tsx) -- without this,
+    // tests that didn't care about the specific name never got a button to
+    // click at all.
+    // By id, not the placeholder text: the placeholder is translated (one
+    // test here switches to 'ja' before calling this), so a substring match
+    // against the English "Lincoln Park" placeholder only works in English.
+    await page.locator('#location-name').fill(opts.locationName ?? 'Test Location');
     // The lat/lng inputs (ActivityManager.tsx: #lat / #lng, each with a
     // plain <label htmlFor>, not an aria-label) live inside the collapsible
     // "Coordinates" chapter, closed by default -- open it first or fill()
@@ -123,11 +128,18 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
 
     await openLocationPanel(page, { locationName: 'Discovery Park' });
 
-    await expect(page.getByRole('heading', { name: 'Discovery Park' })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/discovery park is seattle's largest park/i)).toBeVisible();
-    await expect(page.getByText(/former fort lawton military site/i)).toBeVisible();
-    await expect(page.getByText('old-growth forest')).toBeVisible();
-    await expect(page.getByRole('link', { name: /view on wikidata/i })).toBeVisible();
+    // Scoped to the dialog -- AboutPlaceDialog.tsx's docstring explains the
+    // underlying WikiLocationInfo instance "stays mounted (just hidden)"
+    // even before the dialog opens, and its own content repeats the place
+    // name as a heading too, so even a dialog-scoped getByRole('heading',...)
+    // is a strict-mode violation (2 matches). #about-place-title is the
+    // dialog's own title element specifically.
+    const dialog = page.getByRole('dialog');
+    await expect(page.locator('#about-place-title')).toBeVisible({ timeout: 10_000 });
+    await expect(dialog.getByText(/discovery park is seattle's largest park/i)).toBeVisible();
+    await expect(dialog.getByText(/former fort lawton military site/i)).toBeVisible();
+    await expect(dialog.getByText('old-growth forest')).toBeVisible();
+    await expect(dialog.getByRole('link', { name: /view on wikidata/i })).toBeVisible();
 
     // Nearby POI list — /locations/search returned two other real places
     // besides the matched one; WikiLocationInfo surfaces them instead of

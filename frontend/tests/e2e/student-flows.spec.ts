@@ -9,6 +9,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { visibleSoon } from './helpers/page-objects';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -300,13 +301,11 @@ test.describe('Student — How It Works', () => {
 
   test('phase descriptions (Orient / Inquiry / Reflect) are present', async ({ page }) => {
     await page.goto('/student/how-it-works');
-    // At least one of the phase names should be visible. 10s to match the
-    // sibling "heading is visible" test's wait on the same page -- content
-    // can take a few seconds under CI load.
+    // At least one of the phase names should be visible.
     const phases = ['orient', 'inquiry', 'reflect'];
     let anyVisible = false;
     for (const phase of phases) {
-      const visible = await page.getByText(new RegExp(phase, 'i')).isVisible({ timeout: 10_000 }).catch(() => false);
+      const visible = await visibleSoon(page.getByText(new RegExp(phase, 'i')), 4_000);
       if (visible) { anyVisible = true; break; }
     }
     expect(anyVisible, 'At least one phase heading (Orient/Inquiry/Reflect) visible').toBe(true);
@@ -329,9 +328,8 @@ test.describe('Student — Settings', () => {
 
   test('theme / appearance options are present', async ({ page }) => {
     await page.goto('/student/settings');
-    // Either a theme select, radio buttons, or color chips. 10s to match the
-    // sibling "heading is visible" test's wait on the same page.
-    const hasTheme = await page.getByText(/theme|appearance|color/i).first().isVisible({ timeout: 10_000 }).catch(() => false);
+    // Either a theme select, radio buttons, or color chips.
+    const hasTheme = await visibleSoon(page.getByText(/theme|appearance|color/i).first());
     expect(hasTheme, 'Theme section visible').toBe(true);
   });
 

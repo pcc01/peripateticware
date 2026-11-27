@@ -59,6 +59,18 @@ async function loginAs(
   await page.evaluate(({ tok, usr }) => {
     localStorage.setItem('auth_token', tok);
     if (usr) localStorage.setItem('auth_user', JSON.stringify(usr));
+    // Also pre-accept the cookie-consent banner (CookieConsentBanner.tsx /
+    // utils/analytics.ts's ppw_cookie_consent key) in every persona's saved
+    // storageState. Left unset, the banner appears ~800ms into every page
+    // and sits at the bottom of the viewport -- its own Accept/Decline
+    // buttons repeatedly collided (strict-mode violations) with
+    // identically-named Accept/Decline buttons elsewhere in these flows
+    // (a taxonomy-suggestion Accept, a GPS-consent-modal Decline, ...), and
+    // very likely absorbed some "Next"/footer-button clicks outright on
+    // viewports short enough for the two to overlap. Tests that actually
+    // exercise the banner itself (public-pages.spec.ts) use a fresh,
+    // un-authenticated context and are unaffected.
+    localStorage.setItem('ppw_cookie_consent', JSON.stringify({ choice: 'accepted', ts: Date.now() }));
   }, {
     tok: token,
     usr: {

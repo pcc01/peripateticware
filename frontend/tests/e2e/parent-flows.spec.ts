@@ -5,6 +5,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { visibleSoon } from './helpers/page-objects';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,10 +70,8 @@ test.describe('Parent — Progress', () => {
   test('shows progress content or empty state (no child linked)', async ({ page }) => {
     await page.goto('/parent/progress');
     await page.waitForLoadState('load');
-    // Either shows progress data or an empty/link-child prompt. 10s to match
-    // the sibling "page loads without redirect" test's wait on the same
-    // locator -- this page's content can take a few seconds under CI load.
-    const hasContent = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false);
+    // Either shows progress data or an empty/link-child prompt.
+    const hasContent = await visibleSoon(page.locator('main'));
     expect(hasContent, 'Progress page has content').toBe(true);
   });
 
@@ -112,12 +111,10 @@ test.describe('Parent — Link Child', () => {
   test('shows a code input or join form', async ({ page }) => {
     await page.goto('/parent/link-child');
     await page.waitForLoadState('load');
-    // LinkChildPage should have an input for a class/join code. 10s/5s/5s to
-    // match the sibling "page loads without redirect" test's wait on the
-    // same page -- content can take a few seconds under CI load.
-    const hasInput = await page.locator('input').first().isVisible({ timeout: 10_000 }).catch(() => false);
-    const hasForm = await page.locator('form').isVisible({ timeout: 5_000 }).catch(() => false);
-    const hasHeading = await page.locator('h1, h2').first().isVisible({ timeout: 5_000 }).catch(() => false);
+    // LinkChildPage should have an input for a class/join code.
+    const hasInput = await visibleSoon(page.locator('input').first());
+    const hasForm = await visibleSoon(page.locator('form'), 5_000);
+    const hasHeading = await visibleSoon(page.locator('h1, h2').first(), 5_000);
     expect(hasInput || hasForm || hasHeading, 'Page has form or heading').toBe(true);
   });
 });
