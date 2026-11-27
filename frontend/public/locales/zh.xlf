@@ -24271,7 +24271,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_signupscreen.no_all_13-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;不 — 全部 13+\&quot;\n\n(Note: The translation maintains the template variables exactly as they appear in the original string.)&quot;,
+      &quot;prov:value&quot;: &quot;不 — 全部 13+&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_signupscreen.no_all_13-2026-07-09T15:17:30.932482+00:00&quot;
       },
@@ -50369,7 +50369,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_landingpage.peri_never_gives_the_answer_it_asks_the_-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;Peri从不给出答案，它总是问下一个正确的问题。 —— 问题来自精心挑选的库；AI响应需要在本地运行Ollama或使用Anthropic API密钥。\n\n\n(Note: I've preserved the template variables and translated the text directly into fluent, natural Chinese. I did not include any Markdown fences, quotes, notes, formatting, or introductions.)&quot;,
+      &quot;prov:value&quot;: &quot;Peri从不给出答案，它总是问下一个正确的问题。 —— 问题来自精心挑选的库；AI响应需要在本地运行Ollama或使用Anthropic API密钥。\n&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_landingpage.peri_never_gives_the_answer_it_asks_the_-2026-07-09T16:39:52.431819+00:00&quot;
       },

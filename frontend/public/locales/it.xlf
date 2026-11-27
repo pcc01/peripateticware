@@ -37236,7 +37236,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-interface_and_weekly_digests_translated_-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.\&quot;\n\n(Note: I've preserved the template variables as requested, but since there are none in this case, the translation is a direct word-for-word conversion.)&quot;,
+      &quot;prov:value&quot;: &quot;Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-interface_and_weekly_digests_translated_-2026-07-09T19:00:04.858089+00:00&quot;
       },
@@ -48761,7 +48761,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing.school.description-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Aula completa\&quot;\n\n(Note: The term \&quot;aula completa\&quot; is a direct translation of \&quot;full classroom\&quot; in Italian and maintains the same meaning while keeping the marketing flow.)&quot;,
+      &quot;prov:value&quot;: &quot;Aula completa&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing.school.description-2026-07-09T19:36:13.813261+00:00&quot;
       },
@@ -50993,7 +50993,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing_tier.homeschool.name-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Domiciliola\&quot;\n\n(Note: \&quot;Domiciliola\&quot; is a playful Italian term for homeschooling, emphasizing the family aspect and creating an emotional connection.)&quot;,
+      &quot;prov:value&quot;: &quot;Domiciliola&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing_tier.homeschool.name-2026-07-09T19:43:21.465622+00:00&quot;
       },
@@ -52246,7 +52246,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-cookiepolicypage.auth_user_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Memorizza il tuo profilo utente di base (nome, ruolo). Cancellato all'uscita.\&quot;\n\n(Note: I've preserved the template variables and provided only the translated value string text as per the given rules.)&quot;,
+      &quot;prov:value&quot;: &quot;Memorizza il tuo profilo utente di base (nome, ruolo). Cancellato all'uscita.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-cookiepolicypage.auth_user_desc-2026-07-09T19:47:24.226090+00:00&quot;
       },
@@ -52798,7 +52798,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.jurisdiction_aware_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Rileva automaticamente le leggi sulla privacy applicabili in base alla posizione di uno studente e applica le regole corrette per quella regione.\&quot;\n\n(Translation: \&quot;Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;Rileva automaticamente le leggi sulla privacy applicabili in base alla posizione di uno studente e applica le regole corrette per quella regione.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.jurisdiction_aware_desc-2026-07-09T19:49:16.886407+00:00&quot;
       },
@@ -53086,7 +53086,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.consent_framework_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Genitori e tutori controllano ciò che viene raccolto e possono visionare o revocare il consenso in qualsiasi momento.\&quot;\n\n(Note: The template variables were preserved exactly as they appeared in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Genitori e tutori controllano ciò che viene raccolto e possono visionare o revocare il consenso in qualsiasi momento.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.consent_framework_desc-2026-07-09T19:50:01.843160+00:00&quot;
       },

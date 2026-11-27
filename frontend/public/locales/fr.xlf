@@ -3079,7 +3079,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-audiocapture.s-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;f)\&quot;\n\n(Preserving the template variable \&quot;{count}\&quot; exactly as requested.)&quot;,
+      &quot;prov:value&quot;: &quot;f)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-audiocapture.s-2026-07-08T03:46:02.022536+00:00&quot;
       },
@@ -3439,7 +3439,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-fieldnoteeditor.s-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;f)\&quot;\n\n(Preserving the template variable \&quot;{count}\&quot; exactly as requested.)&quot;,
+      &quot;prov:value&quot;: &quot;f)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-fieldnoteeditor.s-2026-07-08T03:47:09.535859+00:00&quot;
       },
@@ -42732,7 +42732,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_parentdashboard.what_youll_see_after_linking-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Ce que vous verrez après le lien :\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Ce que vous verrez après le lien :&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_parentdashboard.what_youll_see_after_linking-2026-07-08T07:26:11.581240+00:00&quot;
       },
@@ -50009,7 +50009,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-teachertourpage.progress_tracking-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Suivi de progression\&quot;\n\n(Note: The translation maintains the original template variable syntax and focuses on a natural marketing flow.)&quot;,
+      &quot;prov:value&quot;: &quot;Suivi de progression&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-teachertourpage.progress_tracking-2026-07-08T07:49:08.550325+00:00&quot;
       },
@@ -57646,7 +57646,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_privacyenginepage.within_the_bounds_of_the_applicable_law_-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :\&quot;\n\n(Note: I've preserved the template variable exactly as it appears in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_privacyenginepage.within_the_bounds_of_the_applicable_law_-2026-07-08T08:13:17.486630+00:00&quot;
       },

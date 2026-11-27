@@ -24271,7 +24271,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_signupscreen.no_all_13-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Hayır — tüm 13+\&quot;\n\n(Preserved template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Hayır — tüm 13+&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_signupscreen.no_all_13-2026-07-09T06:56:19.385246+00:00&quot;
       },
@@ -53326,7 +53326,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-capture_evidence_take_photos_record_vide-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-capture_evidence_take_photos_record_vide-2026-07-09T13:47:38.249667+00:00&quot;
       },

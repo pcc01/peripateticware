@@ -40356,7 +40356,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-evidence_organized_by_standard_growth_ch-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.\&quot;\n\n(Please note that the template variables have been preserved exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-evidence_organized_by_standard_growth_ch-2026-07-08T02:41:29.639226+00:00&quot;
       },
@@ -43404,7 +43404,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Comentarios del estudiante (obligatorio si se rechaza)\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;Comentarios del estudiante (obligatorio si se rechaza)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti-2026-07-08T02:51:14.369825+00:00&quot;
       },
@@ -51209,7 +51209,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Las clases más grandes son una función de pago. Actualiza para inscribir a más estudiantes.\&quot;\n\n(Note: The template variables were preserved exactly as in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Las clases más grandes son una función de pago. Actualiza para inscribir a más estudiantes.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg-2026-07-08T03:15:46.180843+00:00&quot;
       },

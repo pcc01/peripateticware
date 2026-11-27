@@ -34020,7 +34020,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-upload_a_file_with_multiple_activities_t-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Laden Sie eine Datei mit mehreren Aktivitäten hoch, um sie alle auf einmal zu erstellen.\&quot;\n\n(Preserved template variables: None)&quot;,
+      &quot;prov:value&quot;: &quot;Laden Sie eine Datei mit mehreren Aktivitäten hoch, um sie alle auf einmal zu erstellen.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-upload_a_file_with_multiple_activities_t-2026-07-07T23:20:23.406263+00:00&quot;
       },
@@ -40356,7 +40356,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-evidence_organized_by_standard_growth_ch-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Belege nach Standard sortiert. Wachstumscharts nach Kompetenz. Mit Admin teilen.\&quot;\n\n(Preserved template variables exactly without syntax alterations, provided only the translated value string text in fluent, natural German.)&quot;,
+      &quot;prov:value&quot;: &quot;Belege nach Standard sortiert. Wachstumscharts nach Kompetenz. Mit Admin teilen.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-evidence_organized_by_standard_growth_ch-2026-07-07T23:40:16.216430+00:00&quot;
       },
@@ -41484,7 +41484,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-gdpr_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Vollständige Datenportabilität und Recht auf Löschung für EU-Studierende.\&quot;\n\n(Preserving template variables exactly as given.)&quot;,
+      &quot;prov:value&quot;: &quot;Vollständige Datenportabilität und Recht auf Löschung für EU-Studierende.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-gdpr_desc-2026-07-07T23:44:00.955886+00:00&quot;
       },
@@ -43068,7 +43068,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_student_proposalformpage.a_general_hint_dont_give_away_exact_coor-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Ein allgemeiner Hinweis — verrate keine genauen Koordinaten.\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;Ein allgemeiner Hinweis — verrate keine genauen Koordinaten.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_student_proposalformpage.a_general_hint_dont_give_away_exact_coor-2026-07-07T23:48:53.558297+00:00&quot;
       },
@@ -44892,7 +44892,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-phone_carousel.teacher.1.prompt-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Setze Standort, Ziele und kognitiven Level fest. Peri generiert führende Fragen automatisch.\&quot;\n\n(Translated with preserved template variables)&quot;,
+      &quot;prov:value&quot;: &quot;Setze Standort, Ziele und kognitiven Level fest. Peri generiert führende Fragen automatisch.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-phone_carousel.teacher.1.prompt-2026-07-07T23:54:31.103665+00:00&quot;
       },
@@ -45540,7 +45540,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-phone_carousel.homeschool.3.prompt-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Ihr PDF-Portfolio ist bereit. Enthält alle erforderlichen TX-Staatsberichterstattungsfelder.\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;Ihr PDF-Portfolio ist bereit. Enthält alle erforderlichen TX-Staatsberichterstattungsfelder.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-phone_carousel.homeschool.3.prompt-2026-07-07T23:56:23.494009+00:00&quot;
       },
@@ -46956,7 +46956,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_parentcalendarpage.activities_assigned_by_teachers_will_app-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Aktivitäten, die von Lehrern zugewiesen wurden, erscheinen hier.\&quot;\n\n(Preserved template variables: none)&quot;,
+      &quot;prov:value&quot;: &quot;Aktivitäten, die von Lehrern zugewiesen wurden, erscheinen hier.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_parentcalendarpage.activities_assigned_by_teachers_will_app-2026-07-08T00:00:53.957411+00:00&quot;
       },
@@ -47412,7 +47412,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_platform_platformaisettingspage.saas_orgs_using_platform_key-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;SaaS-Organisationen (mit Plattform-Schlüssel)\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;SaaS-Organisationen (mit Plattform-Schlüssel)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_platform_platformaisettingspage.saas_orgs_using_platform_key-2026-07-08T00:02:23.662785+00:00&quot;
       },
@@ -49625,7 +49625,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-notable_features-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Hervorgehobene Funktionen\&quot;\n\n(Preserving template variables and providing only the translated value string.)&quot;,
+      &quot;prov:value&quot;: &quot;Hervorgehobene Funktionen&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-notable_features-2026-07-08T00:09:35.571674+00:00&quot;
       },
@@ -51958,7 +51958,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-cookiepolicypage.these_cookies_are_essential_for_the_serv-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Diese Cookies sind für die Funktionsweise des Dienstes erforderlich und können nicht deaktiviert werden.\&quot;\n\n(Preserved template variables exactly without syntax alterations, provided only the translated value string text in fluent German.)&quot;,
+      &quot;prov:value&quot;: &quot;Diese Cookies sind für die Funktionsweise des Dienstes erforderlich und können nicht deaktiviert werden.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-cookiepolicypage.these_cookies_are_essential_for_the_serv-2026-07-08T00:16:56.791495+00:00&quot;
       },
@@ -52846,7 +52846,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.auto_updates_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Die Compliance-Regeln werden zentral aktualisiert, wenn sich die Vorschriften ändern, damit jeder Klassenraum auf dem neuesten Stand bleibt, ohne dass manuelle Arbeit erforderlich ist.\&quot;\n\n(Translation notes: \&quot;Compliance rules\&quot; translates to \&quot;Compliance-Regeln\&quot;, \&quot;centrally updated\&quot; translates to \&quot;zentral aktualisiert\&quot;, \&quot;every classroom stays current\&quot; translates to \&quot;jeder Klassenraum auf dem neuesten Stand bleibt\&quot;, and \&quot;without any manual work\&quot; translates to \&quot;ohne dass manuelle Arbeit erforderlich ist\&quot;.)&quot;,
+      &quot;prov:value&quot;: &quot;Die Compliance-Regeln werden zentral aktualisiert, wenn sich die Vorschriften ändern, damit jeder Klassenraum auf dem neuesten Stand bleibt, ohne dass manuelle Arbeit erforderlich ist.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.auto_updates_desc-2026-07-08T00:19:34.421662+00:00&quot;
       },
@@ -53950,7 +53950,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_homeschool_homeschoolsettingspage.youre_using_default_privacy_settings_rev-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;🛑 Sie verwenden die Standard-Einstellungen für den Datenschutz. Überprüfen und speichern Sie unten, um Ihre Konfiguration zu bestätigen.\&quot;\n\n(Note: The warning symbol \&quot;⚠\&quot; is preserved as it's not a text that needs translation.)&quot;,
+      &quot;prov:value&quot;: &quot;🛑 Sie verwenden die Standard-Einstellungen für den Datenschutz. Überprüfen und speichern Sie unten, um Ihre Konfiguration zu bestätigen.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_homeschool_homeschoolsettingspage.youre_using_default_privacy_settings_rev-2026-07-08T00:22:56.963797+00:00&quot;
       },
@@ -54022,7 +54022,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_signupscreen.this_determines_whether_coppa_applies_-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Dies legt fest, ob COPPA für Ihr Konto gilt.\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;Dies legt fest, ob COPPA für Ihr Konto gilt.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_signupscreen.this_determines_whether_coppa_applies_-2026-07-08T00:23:19.929568+00:00&quot;
       },
@@ -54910,7 +54910,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_adminaiconfigpage.choose_which_provider_handles_each_ai_ta-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Wählen Sie den Anbieter aus, der jede KI-Aufgabe bearbeitet. Grau bedeutet, dass der Anbieter nicht konfiguriert ist.\&quot;\n\n(Translation notes: I've preserved the template variables and used official industry standard terms for data architectures. The translated text maintains technical accuracy and engineering syntax clarity.)&quot;,
+      &quot;prov:value&quot;: &quot;Wählen Sie den Anbieter aus, der jede KI-Aufgabe bearbeitet. Grau bedeutet, dass der Anbieter nicht konfiguriert ist.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_adminaiconfigpage.choose_which_provider_handles_each_ai_ta-2026-07-08T00:25:57.397405+00:00&quot;
       },
@@ -57310,7 +57310,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Alle Aktionen werden im Protokollbuch aufgezeichnet.\&quot;\n\n(Preserved template variables exactly without syntax alterations.)&quot;,
+      &quot;prov:value&quot;: &quot;Alle Aktionen werden im Protokollbuch aufgezeichnet.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo-2026-07-08T00:33:29.870067+00:00&quot;
       },
@@ -57478,7 +57478,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_privacyenginepage.peripateticwares_privacy_engine_enforces-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Der Privacy-Engine von Peripateticware setzt FERPA, COPPA, GDPR und SOC 2 durch ein konfigurierbares Regelwerk um – damit jeder Datenvorgang standardmäßig compliant ist, unabhängig davon, in welchem Rechtgebiet Ihre Schule tätig ist.\&quot;\n\n(Translation notes:\n- 'Peripateticware\\'s' was translated to 'der Privacy-Engine von Peripateticware'\n- 'enforces' was translated to 'setzt um'\n- 'through a configurable rule system' was translated to 'durch ein konfigurierbares Regelwerk'\n- 'every data operation is compliant by default' was translated to 'jeder Datenvorgang standardmäßig compliant ist'\n- 'regardless of which jurisdiction your school operates in' was translated to 'unabhängig davon, in welchem Rechtgebiet Ihre Schule tätig ist')&quot;,
+      &quot;prov:value&quot;: &quot;Der Privacy-Engine von Peripateticware setzt FERPA, COPPA, GDPR und SOC 2 durch ein konfigurierbares Regelwerk um – damit jeder Datenvorgang standardmäßig compliant ist, unabhängig davon, in welchem Rechtgebiet Ihre Schule tätig ist.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_privacyenginepage.peripateticwares_privacy_engine_enforces-2026-07-08T00:34:14.982486+00:00&quot;
       },
@@ -57814,7 +57814,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teachersettingspage.youre_using_default_privacy_settings_rev-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;🛑 Sie verwenden die Standard-Einstellungen für den Datenschutz. Überprüfen und speichern Sie Ihre Präferenzen unten, um Ihre Konfiguration zu bestätigen.\&quot;\n\n(Translation notes:\n- \&quot;⚠ You're using default privacy settings.\&quot; translates to \&quot;🛑 Sie verwenden die Standard-Einstellungen für den Datenschutz.\&quot;\n- \&quot;Review and save your preferences below\&quot; translates to \&quot;Überprüfen und speichern Sie Ihre Präferenzen unten\&quot;\n- \&quot;to confirm your configuration\&quot; translates to \&quot;um Ihre Konfiguration zu bestätigen\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;🛑 Sie verwenden die Standard-Einstellungen für den Datenschutz. Überprüfen und speichern Sie Ihre Präferenzen unten, um Ihre Konfiguration zu bestätigen.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teachersettingspage.youre_using_default_privacy_settings_rev-2026-07-08T00:35:01.474222+00:00&quot;
       },

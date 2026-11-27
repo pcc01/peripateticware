@@ -1759,7 +1759,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-ghost-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;غُوْس\&quot;\n\n(Preserved template variables exactly without syntax alterations)&quot;,
+      &quot;prov:value&quot;: &quot;غُوْس&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-ghost-2026-07-07T18:34:38.322982+00:00&quot;
       },
@@ -2023,7 +2023,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-polygon-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مُثَنى\&quot;\n\n(Translation of \&quot;Polygon\&quot; to Arabic)&quot;,
+      &quot;prov:value&quot;: &quot;مُثَنى&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-polygon-2026-07-07T18:35:23.302747+00:00&quot;
       },
@@ -3943,7 +3943,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-streak-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;سِتْرِيك\&quot;\n\n(Note: The translation is direct and literal, preserving the original word order and maintaining the brief structure of UI buttons or labels.)&quot;,
+      &quot;prov:value&quot;: &quot;سِتْرِيك&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-streak-2026-07-07T18:41:23.204169+00:00&quot;
       },
@@ -7111,7 +7111,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-enhancedactivitybuilder.activity_title-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;عنوان النشاط *\&quot;\n\n(Preserved template variable \&quot;*\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;عنوان النشاط *&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-enhancedactivitybuilder.activity_title-2026-07-07T18:51:08.377557+00:00&quot;
       },
@@ -9031,7 +9031,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-duration_weeks-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مدة (أسبوع)\&quot;\n\n(Preserving template variables exactly as they are.)&quot;,
+      &quot;prov:value&quot;: &quot;مدة (أسبوع)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-duration_weeks-2026-07-07T18:57:08.272105+00:00&quot;
       },
@@ -16471,7 +16471,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-maps_to_common_core-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تسوق إلى كور\&quot;\n\n(Preserving template variables exactly as they are.)&quot;,
+      &quot;prov:value&quot;: &quot;تسوق إلى كور&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-maps_to_common_core-2026-07-07T19:20:23.580468+00:00&quot;
       },
@@ -17983,7 +17983,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_loginscreen.that_link_is_invalid_please_try_again-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.\&quot;\n\n(Translation: \&quot;That link is invalid. Please try again.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_loginscreen.that_link_is_invalid_please_try_again-2026-07-07T19:25:16.220146+00:00&quot;
       },
@@ -19375,7 +19375,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_adminclassespage.class_name-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;اسم الكلاس *\&quot;\n\n(Preserved template variable: \&quot;*\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;اسم الكلاس *&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_adminclassespage.class_name-2026-07-07T19:29:45.972885+00:00&quot;
       },
@@ -23743,7 +23743,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_signupscreen.my_students_include_children_under_13_en-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;أطفال أقل من 13 سنة (ينشئ حماية COPPA)\&quot;\n\n(Preserved template variables exactly as given.)&quot;,
+      &quot;prov:value&quot;: &quot;أطفال أقل من 13 سنة (ينشئ حماية COPPA)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_signupscreen.my_students_include_children_under_13_en-2026-07-07T19:43:16.175627+00:00&quot;
       },
@@ -25519,7 +25519,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.duration_minutes-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مدة (دقيقة)\&quot;\n\n(Preserved template variables exactly without syntax alterations.)&quot;,
+      &quot;prov:value&quot;: &quot;مدة (دقيقة)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.duration_minutes-2026-07-07T19:48:53.445101+00:00&quot;
       },
@@ -29719,7 +29719,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_licensingpage.faq-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;أADER\&quot;\n\n(Note: The translation of \&quot;FAQ\&quot; in Arabic is \&quot;أADER\&quot;, which stands for \&quot;أدوات الأسئلة الشائعة\&quot;. However, since the style guide requires extreme conciseness and directness, we only provide the acronym.)&quot;,
+      &quot;prov:value&quot;: &quot;أADER&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_licensingpage.faq-2026-07-07T20:02:01.056617+00:00&quot;
       },
@@ -31591,7 +31591,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teacher_sharedlibrarypage.clear-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;أزح\&quot;\n\n(Translated literally as \&quot;clear\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;أزح&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teacher_sharedlibrarypage.clear-2026-07-07T20:07:38.668767+00:00&quot;
       },
@@ -32364,7 +32364,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-activitybuilderupdated.estimated_duration_minutes-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مدة المقدرة (دقائق)\&quot;\n\n(Please note that the template variables are preserved as instructed.)&quot;,
+      &quot;prov:value&quot;: &quot;مدة المقدرة (دقائق)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-activitybuilderupdated.estimated_duration_minutes-2026-07-07T20:12:32.067524+00:00&quot;
       },
@@ -33396,7 +33396,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-what_are_you_investigating_optional-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;ما الذي تفحصه؟ (اختياري)\&quot;\n\n(Preserving template variables as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;ما الذي تفحصه؟ (اختياري)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-what_are_you_investigating_optional-2026-07-07T20:15:31.196117+00:00&quot;
       },
@@ -33780,7 +33780,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-estimated_duration_minutes-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مدة المقدرة (دقائق)\&quot;\n\n(Please note that the translation is a direct conversion and might not capture all cultural nuances.)&quot;,
+      &quot;prov:value&quot;: &quot;مدة المقدرة (دقائق)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-estimated_duration_minutes-2026-07-07T20:16:38.665593+00:00&quot;
       },
@@ -34788,7 +34788,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-showing_fallback_suggestions_instead-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;يعرض اقتراحات بديلة.\&quot;\n\n(Preserving template variables exactly as they appear.)&quot;,
+      &quot;prov:value&quot;: &quot;يعرض اقتراحات بديلة.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-showing_fallback_suggestions_instead-2026-07-07T20:20:01.523586+00:00&quot;
       },
@@ -35460,7 +35460,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-she_advanced_in_3_competencies_this_week-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تقدم في 3 مهارات هذا الأسبوع.\&quot;\n\n(Preserved template variable {count} exactly as it is.)&quot;,
+      &quot;prov:value&quot;: &quot;تقدم في 3 مهارات هذا الأسبوع.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-she_advanced_in_3_competencies_this_week-2026-07-07T20:21:53.768494+00:00&quot;
       },
@@ -35916,7 +35916,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-comingsoonpage.this_page_is_coming_soon-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;هذه الصفحة قادمة قريبًا.\&quot;\n\n(Preserved template variables exactly with no syntax alterations.)&quot;,
+      &quot;prov:value&quot;: &quot;هذه الصفحة قادمة قريبًا.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-comingsoonpage.this_page_is_coming_soon-2026-07-07T20:23:23.717191+00:00&quot;
       },
@@ -38940,7 +38940,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-meet_peri.step.2.desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا.\&quot;\n\n(Translation: \&quot;The child records what he sees or hears or measures. Peri asks for details if the answer is vague.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-meet_peri.step.2.desc-2026-07-07T20:32:46.562814+00:00&quot;
       },
@@ -40356,7 +40356,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-evidence_organized_by_standard_growth_ch-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.\&quot;\n\n(Translation:\n\&quot;Evidence organized according to standards. Growth charts by competencies. Share with the admin.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-evidence_organized_by_standard_growth_ch-2026-07-07T20:37:16.664504+00:00&quot;
       },
@@ -43404,7 +43404,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تعليقات حول الطالب (مطلوبة إذا رفض)\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;تعليقات حول الطالب (مطلوبة إذا رفض)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti-2026-07-07T20:47:01.332593+00:00&quot;
       },
@@ -45996,7 +45996,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_platformadminpage.spend_by_tier_this_month-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;مصروفات حسب المستوى (هذا الشهر)\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;مصروفات حسب المستوى (هذا الشهر)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_platformadminpage.spend_by_tier_this_month-2026-07-07T20:54:54.235934+00:00&quot;
       },
@@ -46020,7 +46020,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_platformadminpage.no_spend_recorded_yet-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;لم يتم تسجيل أي نفقات حتى الآن.\&quot;\n\n(Note: The template variables are preserved exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;لم يتم تسجيل أي نفقات حتى الآن.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_platformadminpage.no_spend_recorded_yet-2026-07-07T20:54:54.235934+00:00&quot;
       },
@@ -46356,7 +46356,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_homeschool_homeschoolwelcomepage.ready_to_create_your_first_outdoor_activ-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.\&quot;\n\n(Translation: \&quot;Are you ready to create your first outdoor activity? Peri will suggest Socrates-style questions tailored to your location and subject.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_homeschool_homeschoolwelcomepage.ready_to_create_your_first_outdoor_activ-2026-07-07T20:56:01.603922+00:00&quot;
       },
@@ -46956,7 +46956,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_parentcalendarpage.activities_assigned_by_teachers_will_app-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;الأنشطة الموكلة من قبل المعلمين ستظهر هنا.\&quot;\n\n(Note: The template variables are preserved as they are.)&quot;,
+      &quot;prov:value&quot;: &quot;الأنشطة الموكلة من قبل المعلمين ستظهر هنا.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_parentcalendarpage.activities_assigned_by_teachers_will_app-2026-07-07T20:57:54.381522+00:00&quot;
       },
@@ -47076,7 +47076,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-gps_expires-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-gps_expires-2026-07-07T20:58:16.531058+00:00&quot;
       },
@@ -47244,7 +47244,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_parentprogresspage.no_progress_data_yet_for_this_child-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;لا يوجد بيانات تقدم حتى الآن لهذا الطفل.\&quot;\n\n(Preserving template variables exactly as they appear in the original string)&quot;,
+      &quot;prov:value&quot;: &quot;لا يوجد بيانات تقدم حتى الآن لهذا الطفل.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_parentprogresspage.no_progress_data_yet_for_this_child-2026-07-07T20:59:01.604270+00:00&quot;
       },
@@ -49193,7 +49193,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-student.feature_1_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.\&quot;\n\n(Translation: \&quot;Photos, sounds, sketches, and field notes — everything in one place, synchronized to your portfolio.\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-student.feature_1_desc-2026-07-07T21:06:08.896106+00:00&quot;
       },
@@ -50825,7 +50825,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing_tier.school.feature.3-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تحليلات المنظمة\&quot;\n\n(Translation note: The phrase \&quot;Org analytics\&quot; is translated literally as \&quot;تحليلات المنظمة\&quot;, which means \&quot;Organization Analysis\&quot;. This maintains the same meaning while sounding more natural in Arabic.)&quot;,
+      &quot;prov:value&quot;: &quot;تحليلات المنظمة&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing_tier.school.feature.3-2026-07-07T21:11:23.992719+00:00&quot;
       },
@@ -50945,7 +50945,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing_tier.district.feature.3-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;تجربة على مستوى\&quot;\n(Preserved template variables exactly)&quot;,
+      &quot;prov:value&quot;: &quot;تجربة على مستوى&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing_tier.district.feature.3-2026-07-07T21:11:46.498676+00:00&quot;
       },
@@ -51209,7 +51209,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;الاقسام الأكبر هي ميزة مدفوعة. قم بالتحديث لحجز المزيد من الطلاب.\&quot;\n\n(Translation: \&quot;Bigger classrooms are a paid feature. Upgrade to enroll more students.\&quot;)\nI preserved the template variables and provided only the translated value string text without any additional formatting or explanations.&quot;,
+      &quot;prov:value&quot;: &quot;الاقسام الأكبر هي ميزة مدفوعة. قم بالتحديث لحجز المزيد من الطلاب.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg-2026-07-07T21:12:31.652473+00:00&quot;
       },
@@ -51502,7 +51502,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy_first.badge-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;الخصوصية والتزام\&quot;\n\n(Note: The translation maintains the ampersand (&amp;) between \&quot;Privacy\&quot; and \&quot;Compliance\&quot; as it is common in English to use this symbol for combining words, and Arabic does not have a direct equivalent.)&quot;,
+      &quot;prov:value&quot;: &quot;الخصوصية والتزام&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy_first.badge-2026-07-07T21:13:47.904765+00:00&quot;
       },
@@ -51550,7 +51550,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-manage_district_and_school_configuration-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;إدارة تكوينات المنطقة والمدرسة.\&quot;\n\n(Translated literally as \&quot;Manage area and school configurations\&quot;, but using more natural Arabic phrasing.)&quot;,
+      &quot;prov:value&quot;: &quot;إدارة تكوينات المنطقة والمدرسة.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-manage_district_and_school_configuration-2026-07-07T21:13:47.904765+00:00&quot;
       },
@@ -51958,7 +51958,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-cookiepolicypage.these_cookies_are_essential_for_the_serv-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;هذه الكوكيز ضرورية لعملية الخدمة. ولا يمكن تعطيلها.\&quot;\n\n(Translation notes: \&quot;Cookies\&quot; is translated as \&quot;الكوكيز\&quot;, \&quot;essential\&quot; as \&quot;ضرورية\&quot;, \&quot;function\&quot; as \&quot;عملية\&quot;, \&quot;disabled\&quot; as \&quot;ممنوعة\&quot;.)&quot;,
+      &quot;prov:value&quot;: &quot;هذه الكوكيز ضرورية لعملية الخدمة. ولا يمكن تعطيلها.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-cookiepolicypage.these_cookies_are_essential_for_the_serv-2026-07-07T21:15:18.027006+00:00&quot;
       },
@@ -53974,7 +53974,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-collect_photos-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-collect_photos-2026-07-07T21:21:18.056667+00:00&quot;
       },
@@ -54814,7 +54814,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_adminaiconfigpage.recent_queue_items_last_100-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;العناصر الأخيرة في قائمة (آخر 100)\&quot;\n\n(Preserving template variables exactly as they are.)&quot;,
+      &quot;prov:value&quot;: &quot;العناصر الأخيرة في قائمة (آخر 100)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_adminaiconfigpage.recent_queue_items_last_100-2026-07-07T21:23:55.689346+00:00&quot;
       },
@@ -57310,7 +57310,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;جميع الأفعال مسجلة في سجل التدقيق.\&quot;\n\n(Preserved template variables exactly as they appear.)&quot;,
+      &quot;prov:value&quot;: &quot;جميع الأفعال مسجلة في سجل التدقيق.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo-2026-07-07T21:31:51.328860+00:00&quot;
       },

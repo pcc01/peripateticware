@@ -40356,7 +40356,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-evidence_organized_by_standard_growth_ch-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.\&quot;\n\n(Preserving template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-evidence_organized_by_standard_growth_ch-2026-07-09T04:45:52.208292+00:00&quot;
       },

@@ -7375,7 +7375,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-discussion-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;הסטור\&quot;\n\n(Note: The translation is literal and concise as per the style guide. The template variables are preserved exactly.)&quot;,
+      &quot;prov:value&quot;: &quot;הסטור&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-discussion-2026-07-08T08:43:58.119975+00:00&quot;
       },
@@ -18919,7 +18919,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-level_label-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;תאור\&quot;\n\n(Translated literally as \&quot;Label\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;תאור&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-level_label-2026-07-08T12:36:46.167673+00:00&quot;
       },
@@ -20911,7 +20911,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_homeschool_homeschoolchildrenpage.full_name-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;שם מלא *\&quot;\n\n(Note: The asterisk (*) is preserved as it is part of the original string.)&quot;,
+      &quot;prov:value&quot;: &quot;שם מלא *&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_homeschool_homeschoolchildrenpage.full_name-2026-07-08T12:42:46.352441+00:00&quot;
       },
@@ -24271,7 +24271,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_auth_signupscreen.no_all_13-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;לא — כל 13+\&quot;\n\n(Preserved template variables exactly as given.)&quot;,
+      &quot;prov:value&quot;: &quot;לא — כל 13+&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_auth_signupscreen.no_all_13-2026-07-08T12:53:16.028782+00:00&quot;
       },
@@ -24583,7 +24583,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanager.discipline-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;תעוד\&quot;\n\n(Translated literally as \&quot;discipline\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;תעוד&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanager.discipline-2026-07-08T12:54:23.633632+00:00&quot;
       },
@@ -35412,7 +35412,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-create_edit_and_assign_activities-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot; zuhr, l'hitkitzur ve-l'hakim et ha-peulot.\&quot;\n\n(Note: The template variables are preserved exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot; zuhr, l'hitkitzur ve-l'hakim et ha-peulot.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-create_edit_and_assign_activities-2026-07-08T13:30:28.644038+00:00&quot;
       },
@@ -35556,7 +35556,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-view_evidence_and_reflections_here-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;ראה ראיות ורגשות כאן.\&quot;\n\n(Preserving template variables exactly as they appear in the original string.)&quot;,
+      &quot;prov:value&quot;: &quot;ראה ראיות ורגשות כאן.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-view_evidence_and_reflections_here-2026-07-08T13:30:51.281646+00:00&quot;
       },
@@ -35604,7 +35604,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-manage_your_preferences_here-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;הסדר את העדפותיך כאן.\&quot;\n\n(Preserving template variables exactly as they appear in the original string.)&quot;,
+      &quot;prov:value&quot;: &quot;הסדר את העדפותיך כאן.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-manage_your_preferences_here-2026-07-08T13:31:13.706434+00:00&quot;
       },
@@ -35652,7 +35652,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-manage_activities_standards_and_resource-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;נהל פעילויות, סטנדרטים ומשאבים.\&quot;\n\n(Preserved template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;נהל פעילויות, סטנדרטים ומשאבים.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-manage_activities_standards_and_resource-2026-07-08T13:31:13.706434+00:00&quot;
       },
@@ -38460,7 +38460,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-png_jpg_mp4_mp3_or_txt_max_50mb_each-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)\&quot;\n\n(Preserving template variables exactly and providing only the translated value string text.)&quot;,
+      &quot;prov:value&quot;: &quot;PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-png_jpg_mp4_mp3_or_txt_max_50mb_each-2026-07-08T13:39:51.562977+00:00&quot;
       },
@@ -46740,7 +46740,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_licensingpage.opensource_components-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;רכיבים פתוחים מקור\&quot;\n\n(Note: I've preserved the template variable exactly as it appears in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;רכיבים פתוחים מקור&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_licensingpage.opensource_components-2026-07-08T14:05:44.074950+00:00&quot;
       },
@@ -47052,7 +47052,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-gps_stored-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)\&quot;\n\n(Preserved template variables: {count}, %s, $t(...))&quot;,
+      &quot;prov:value&quot;: &quot;צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-gps_stored-2026-07-08T14:06:51.293511+00:00&quot;
       },
@@ -47076,7 +47076,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-gps_expires-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)\&quot;\n\n(Preserving template variables exactly as they are.)&quot;,
+      &quot;prov:value&quot;: &quot;הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-gps_expires-2026-07-08T14:06:51.293511+00:00&quot;
       },
@@ -50729,7 +50729,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing_tier.personal.feature.5-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;נוף תיק\&quot;\n\n(Note: The translation maintains the idiomatic flow and emotional connection while preserving the template variables.)&quot;,
+      &quot;prov:value&quot;: &quot;נוף תיק&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing_tier.personal.feature.5-2026-07-08T14:19:18.370805+00:00&quot;
       },
@@ -51041,7 +51041,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pricing_tier.homeschool.feature.2-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;ייצא PDF תיק\&quot;\n\n(Note: The translation preserves the template variable exactly as it is.)&quot;,
+      &quot;prov:value&quot;: &quot;ייצא PDF תיק&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pricing_tier.homeschool.feature.2-2026-07-08T14:20:03.314640+00:00&quot;
       },
@@ -52246,7 +52246,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-cookiepolicypage.auth_user_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;חוסם פרופיל משתמש בסיסי (שם, תפקיד). נקייה בעת יציאה.\&quot;\n\n(Translation notes:\n- \&quot;stores\&quot; -&gt; \&quot;חוסם\&quot;\n- \&quot;basic user profile\&quot; -&gt; \&quot;פרופיל משתמש בסיסי\&quot;\n- \&quot;cleared on logout\&quot; -&gt; \&quot;נקייה בעת יציאה\&quot;)&quot;,
+      &quot;prov:value&quot;: &quot;חוסם פרופיל משתמש בסיסי (שם, תפקיד). נקייה בעת יציאה.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-cookiepolicypage.auth_user_desc-2026-07-08T14:24:20.148790+00:00&quot;
       },
@@ -52606,7 +52606,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.tagline-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;המידע שלך נשאר שלך.\&quot;\n\n(Preserved template variables exactly as given.)&quot;,
+      &quot;prov:value&quot;: &quot;המידע שלך נשאר שלך.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.tagline-2026-07-08T14:25:27.677339+00:00&quot;
       },
@@ -52750,7 +52750,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.engine_core_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;כל פרט של ראיות של סטודנטים מוודא מול הכללים של התאמה פעילים עבור אזור הסטודנט לפני שמוחזק.\&quot;\n\n(Note: The template variables were preserved exactly, and no additional text was appended.)&quot;,
+      &quot;prov:value&quot;: &quot;כל פרט של ראיות של סטודנטים מוודא מול הכללים של התאמה פעילים עבור אזור הסטודנט לפני שמוחזק.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.engine_core_desc-2026-07-08T14:25:50.359757+00:00&quot;
       },
@@ -53062,7 +53062,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.consent_framework_title-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;ramez-it\&quot;\n\n(Note: The translation \&quot;ramez-it\&quot; is a direct translation of \&quot;Consent Framework\&quot; into Hebrew. It maintains the technical accuracy and engineering syntax clarity as required.)&quot;,
+      &quot;prov:value&quot;: &quot;ramez-it&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.consent_framework_title-2026-07-08T14:26:57.672885+00:00&quot;
       },
@@ -53086,7 +53086,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-privacy.consent_framework_desc-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;האנשים שמעורבים בקבלת החלטות שליליים ומשפחות של הילדים הם אלה שגוזרים מהי מידע שנאסף ומכירים או ביטלים את הסכמתם בכל עת.\&quot;\n\n(Note: The translation maintains the template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;האנשים שמעורבים בקבלת החלטות שליליים ומשפחות של הילדים הם אלה שגוזרים מהי מידע שנאסף ומכירים או ביטלים את הסכמתם בכל עת.&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-privacy.consent_framework_desc-2026-07-08T14:26:57.672885+00:00&quot;
       },
@@ -53974,7 +53974,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-collect_photos-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)\&quot;\n\n(Preserved template variables exactly as they appear in the input string.)&quot;,
+      &quot;prov:value&quot;: &quot;תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-collect_photos-2026-07-08T14:29:35.189787+00:00&quot;
       },
@@ -54814,7 +54814,7 @@
     {
       &quot;@id&quot;: &quot;entity:target-pages_admin_adminaiconfigpage.recent_queue_items_last_100-v1&quot;,
       &quot;@type&quot;: &quot;prov:Entity&quot;,
-      &quot;prov:value&quot;: &quot;\&quot;התורים האחרונים (100 אחרונים)\&quot;\n\n(Note: I've preserved the template variable {count} as it is and translated the rest of the string into Hebrew.)&quot;,
+      &quot;prov:value&quot;: &quot;התורים האחרונים (100 אחרונים)&quot;,
       &quot;generated_by&quot;: {
         &quot;@id&quot;: &quot;activity:translation-pages_admin_adminaiconfigpage.recent_queue_items_last_100-2026-07-08T14:32:14.645822+00:00&quot;
       },
