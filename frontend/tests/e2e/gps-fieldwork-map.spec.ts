@@ -18,6 +18,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { openChapter } from './helpers/activity-wizard';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -300,6 +301,9 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
     await expect(page).not.toHaveURL(/\/login/);
 
     await page.getByRole('button', { name: /location/i }).click();
+    // The GPS toggle lives in the collapsible "Live tracking" chapter,
+    // closed by default.
+    await openChapter(page, /live tracking/i);
 
     const gpsToggle = page.getByText(/enable live gps tracking/i);
     await expect(gpsToggle).toBeVisible({ timeout: 10_000 });
@@ -332,6 +336,7 @@ test.describe('Homeschool — GPS toggle and self-consent on activity creation',
     await page.locator('#title').fill('E2E GPS Fieldtrip');
 
     await page.getByRole('button', { name: /location/i }).click();
+    await openChapter(page, /live tracking/i);
     await page.getByText(/enable live gps tracking/i).click();
     await page.getByText(/i consent to gps location capture for my child/i).click();
 
@@ -381,6 +386,7 @@ test.describe('Teacher — GPS toggle (non-homeschool path)', () => {
     await page.locator('#title').fill('E2E Teacher GPS Fieldtrip');
 
     await page.getByRole('button', { name: /location/i }).click();
+    await openChapter(page, /live tracking/i);
     await page.getByText(/enable live gps tracking/i).click();
 
     // The homeschool self-consent checkbox must never appear for a plain

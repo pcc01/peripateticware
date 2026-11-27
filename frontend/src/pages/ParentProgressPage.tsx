@@ -115,7 +115,11 @@ export const ParentProgressPage: React.FC = () => {
           </div>
         ) : progress ?
         <div className="space-y-6">
-            {/* This Week Overview */}
+            {/* This Week Overview -- progress.this_week can be absent on the
+                backend response (e.g. a child with no activity yet); reading
+                .activities/.hours/.engagement_score straight off it crashed
+                this whole page with "Cannot read properties of undefined",
+                caught only by the top-level error boundary. */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Activities */}
               <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
@@ -125,7 +129,7 @@ export const ParentProgressPage: React.FC = () => {
                       {t('metrics.activities_this_week', 'Activities This Week')}
                     </p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                      {progress.this_week.activities}
+                      {progress.this_week?.activities ?? 0}
                     </p>
                   </div>
                   <BookOpen className="w-8 h-8 text-blue-500 opacity-50" />
@@ -140,7 +144,7 @@ export const ParentProgressPage: React.FC = () => {
                       {t('metrics.hours_engaged', 'Hours Engaged')}
                     </p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                      {progress.this_week.hours}
+                      {progress.this_week?.hours ?? 0}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-green-500 opacity-50" />
@@ -155,7 +159,7 @@ export const ParentProgressPage: React.FC = () => {
                       {t('metrics.engagement_score', 'Engagement Score')}
                     </p>
                     <p className="text-3xl font-bold text-gray-900 mt-2">
-                      {progress.this_week.engagement_score}%
+                      {progress.this_week?.engagement_score ?? 0}%
                     </p>
                   </div>
                   <Zap className="w-8 h-8 text-purple-500 opacity-50" />

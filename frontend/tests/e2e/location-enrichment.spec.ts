@@ -82,7 +82,10 @@ test.describe('Teacher — Location Enrichment (WikiLocationInfo panel)', () => 
     await page.locator('#lat').fill(String(LAT));
     await page.locator('#lng').fill(String(LNG));
 
-    await page.getByRole('button', { name: /background info about this location/i }).click();
+    // Renamed from "Background Info About This Location" to "About this
+    // place" (ActivityManager.tsx: the placeBar button that opens
+    // AboutPlaceDialog, shown once both location name and coordinates are set).
+    await page.getByRole('button', { name: /about this place/i }).click();
   }
 
   test('renders synopsis, learn-about-this-place fields, and the nearby POI list from a successful /enrich response', async ({ page }) => {
