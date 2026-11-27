@@ -178,9 +178,13 @@ test.describe('Teacher — Rubric Builder', () => {
 
   test('Add Criterion appends a new criterion row', async ({ page }) => {
     await page.goto('/teacher/rubrics/new');
-    await page.waitForLoadState('domcontentloaded');
 
     const criterionInputs = () => page.locator('input[placeholder*="Criterion name"]');
+    // waitForLoadState('domcontentloaded') fires on the initial HTML parse,
+    // before React mounts -- counting here can read 0 before the default
+    // criterion row renders, so "before + 1" never matches the eventual
+    // (default + added) total. Wait for the real content first.
+    await expect(criterionInputs().first()).toBeVisible({ timeout: 10_000 });
     const before = await criterionInputs().count();
     await page.getByRole('button', { name: /add criterion/i }).click();
     // Should have one more criterion input

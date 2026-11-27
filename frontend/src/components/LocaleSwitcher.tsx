@@ -51,6 +51,7 @@ export const LocaleSwitcher: React.FC<LocaleSwitcherProps> = ({ className = '', 
     <select
       value={activeCode}
       onChange={handleChange}
+      data-testid="locale-switcher"
       aria-label={t('components_localeswitcher.aria_label_select_language', 'Select language')}
       className={`rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-800 min-w-[8rem] max-w-[12rem] flex-shrink-0
         focus:outline-none focus:ring-2 focus:ring-green-500

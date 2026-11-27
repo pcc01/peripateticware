@@ -62,6 +62,10 @@ test('Footer links resolve (no 404s)', async ({ page }) => {
   await page.goto('/');
   // Collect all footer hrefs
   const footerLinks = page.locator('footer a[href]');
+  // locator.count() takes an immediate snapshot -- it does not auto-wait
+  // like expect(...).toBeVisible() does, so calling it right after goto()
+  // can read 0 while the landing page is still mounting.
+  await expect(footerLinks.first()).toBeVisible({ timeout: 10_000 });
   const count = await footerLinks.count();
   expect(count, 'Footer should have links').toBeGreaterThan(0);
 
@@ -257,7 +261,12 @@ test.describe('Public — Parent Consent', () => {
 test.describe('Public — Locale Switcher', () => {
   test('landing page language dropdown includes Korean and switching loads Korean copy', async ({ page }) => {
     await page.goto('/');
-    const switcher = page.getByLabel(/select language/i);
+    // Not getByLabel(/select language/i): its own aria-label is translated
+    // (LocaleSwitcher.tsx's t('...aria_label_select_language')), so once the
+    // switch actually changes the language to Korean, that locator re-query
+    // on the next expect() stops matching -- "element(s) not found" even
+    // though the switch itself worked.
+    const switcher = page.getByTestId('locale-switcher');
     await expect(switcher).toBeVisible();
 
     // Korean option is present with its autonym label.

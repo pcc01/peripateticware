@@ -13,6 +13,18 @@ const __dirname = path.dirname(__filename);
 
 test.use({ storageState: path.join(__dirname, '.auth/homeschool.json') });
 
+// Saving a child (Step 0's "Continue") shows a one-time credentials panel
+// first -- the generated login/password the parent must copy before moving
+// on (HomeschoolWelcomePage.tsx: created.length -> setCreatedCredentials
+// instead of setStep(1)). The same button relabels to "I've saved these" to
+// dismiss it and actually advance to the state picker.
+async function acknowledgeChildCredentialsIfShown(page: import('@playwright/test').Page) {
+  const savedBtn = page.getByRole('button', { name: /i.ve saved these/i });
+  if (await savedBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await savedBtn.click();
+  }
+}
+
 // ---------------------------------------------------------------------------
 // 1. Dashboard
 // ---------------------------------------------------------------------------
@@ -73,6 +85,7 @@ test.describe('Homeschool – Welcome', () => {
     // instead of blocking on the "add at least one child" validation error.
     await page.locator('input[placeholder="Child 1 name"]').fill('Ada');
     await page.getByRole('button', { name: /^continue$/i }).click();
+    await acknowledgeChildCredentialsIfShown(page);
 
     // Step 1: the state picker.
     await expect(page.getByRole('heading', { name: /which state do you homeschool in/i }))
@@ -98,6 +111,7 @@ test.describe('Homeschool – Welcome', () => {
     await page.goto('/homeschool/welcome');
     await page.locator('input[placeholder="Child 1 name"]').fill('Grace');
     await page.getByRole('button', { name: /^continue$/i }).click();
+    await acknowledgeChildCredentialsIfShown(page);
 
     await expect(page.getByRole('heading', { name: /which state do you homeschool in/i }))
       .toBeVisible({ timeout: 10_000 });

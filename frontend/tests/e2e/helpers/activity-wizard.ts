@@ -12,11 +12,19 @@ import { expect, type Page } from '@playwright/test';
 export type WizardStart = 'location' | 'type' | 'assessment' | 'outcomes';
 export type WizardStep = 'Basics' | 'Experience' | 'Assessment' | 'Outcomes' | 'Review';
 
+// The `u` flag is required here: these emoji (📍🧭📐🎯) are astral characters
+// (surrogate pairs in UTF-16). Without `u`, the `?` after an emoji literal
+// quantifies only the trailing low-surrogate code unit, not the whole
+// character -- turning "emoji optional" into "lone high-surrogate required,
+// low-surrogate optional", which can never match a name that has no emoji at
+// all (StartPicker.tsx's icon span is aria-hidden, so it never is in the
+// accessible name). That silently made getByRole(...) match zero elements,
+// so .click() spun for the full 30s timeout on every one of these.
 const START_CARD: Record<WizardStart, RegExp> = {
-  location: /^📍?\s*A location/,
-  type: /^🧭?\s*An activity type/,
-  assessment: /^📐?\s*An assessment/,
-  outcomes: /^🎯?\s*Learning outcomes/,
+  location: /^📍?\s*A location/u,
+  type: /^🧭?\s*An activity type/u,
+  assessment: /^📐?\s*An assessment/u,
+  outcomes: /^🎯?\s*Learning outcomes/u,
 };
 
 /** The pane that is currently showing (the others are `inert`). */

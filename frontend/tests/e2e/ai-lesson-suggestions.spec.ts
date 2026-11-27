@@ -166,9 +166,16 @@ test.describe('Teacher — AI Taxonomy Auto-classify (ActivityManager)', () => {
 
     await page.getByRole('button', { name: /auto-classify/i }).click();
 
-    await expect(page.getByText(/ai suggests:/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/analyze — draw connections, break down information/i)).toBeVisible();
-    await expect(page.getByText(/involves comparing and contrasting habitats/i)).toBeVisible();
+    // Scoped to the suggestion banner (ActivityManager.tsx's
+    // p.text-purple-800) -- a plain getByText(/analyze .../) also matches the
+    // taxonomy <select>'s own "Analyze — draw connections..." <option>,
+    // which is a strict-mode violation (2 elements) even though the option
+    // isn't what the test means to assert on.
+    const suggestionBanner = page.locator('p.text-purple-800');
+    await expect(suggestionBanner).toBeVisible({ timeout: 10_000 });
+    await expect(suggestionBanner).toContainText(/ai suggests:/i);
+    await expect(suggestionBanner).toContainText(/analyze — draw connections, break down information/i);
+    await expect(suggestionBanner).toContainText(/involves comparing and contrasting habitats/i);
 
     // Never auto-applies until the teacher explicitly accepts.
     await expect(levelSelect).toHaveValue('understand');

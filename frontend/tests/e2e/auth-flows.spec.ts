@@ -7,8 +7,10 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-// Login form has no htmlFor/id associations on labels — use type-based selectors
-const emailInput   = (page: import('@playwright/test').Page) => page.locator('input[type="email"]');
+// The email field is intentionally type="text" (LoginScreen.tsx), not
+// type="email" -- it doubles as a username field and native type="email"
+// validation would block submitting a plain username. Match by id instead.
+const emailInput   = (page: import('@playwright/test').Page) => page.locator('#login-email-field');
 const passwordInput = (page: import('@playwright/test').Page) => page.locator('input[type="password"]').first();
 const submitBtn    = (page: import('@playwright/test').Page) => page.locator('button[type="submit"]');
 
