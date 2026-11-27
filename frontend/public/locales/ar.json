@@ -1,7 +1,7 @@
 {
   "landing": {
     "auth": {
-      "email_placeholder": "you@example.com or username",
+      "email_placeholder": "you@example.com أو اسم المستخدم",
       "login_title": "مرحبا بعودتك",
       "login_subtitle": "سجل دخول حسابك في Peripateticware",
       "demo_accounts_title": "أكوانت الديمو",
@@ -9,7 +9,7 @@
       "demo_student": "Student: student@example.com",
       "demo_parent": "Parent: parent@example.com",
       "demo_password": "كلمة المرور لجميع: كلمة المرور الآمنة123",
-      "email_label": "Email or Username",
+      "email_label": "البريد الإلكتروني أو اسم المستخدم",
       "password_label": "كلمة المرور",
       "password_placeholder": "أدخل كلمة المرور",
       "remember_me": "تذكرني",
@@ -50,15 +50,15 @@
       "company_team": "Team",
       "company_blog": "Blog",
       "company_careers": "Careers",
-      "resources_title": "Resources",
-      "resources_docs": "Documentation",
+      "resources_title": "الموارد",
+      "resources_docs": "الوثائق",
       "resources_guides": "Guides",
       "resources_api": "API",
       "resources_support": "Support",
       "company_contact": "اتصال",
-      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
-      "all_rights": "All rights reserved.",
-      "product_features": "Features",
+      "brand_desc": "التعلم الخارجي الميداني للطلاب والمعلمين والعائلات.",
+      "all_rights": "جميع الحقوق محفوظة.",
+      "product_features": "الميزات",
       "product_pricing": "Pricing",
       "legal_title": "Legal",
       "legal_privacy": "Privacy",
@@ -138,9 +138,9 @@
       "placeholder_search_by_name_or_email": "ابحث باسم أو بريد إلكتروني...",
       "you_dont_have_any_classes_yet_create_a_c": "لا يوجد أي دروس حتى الآن. قم بإنشاء فئة أولًا، ثم دع طلبة إليها.",
       "invitation_sent_the_student_will_get_an_": "تم إرسال الدعوة. سيحصل الطالب على بريد إلكتروني يحتوي على رابط الانضمام.",
-      "add_a_student": "Add a Student",
-      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
-      "student_added": "Student added to the class and notified in-app."
+      "add_a_student": "إضافة طالب",
+      "add_by_email_hint": "إذا كان لديهم حساب بالفعل، يتم إضافتهم فورا وإشعارهم داخل التطبيق. وإذا لم يكن كذلك، سنرسل بريدا إلكترونيا للدعوة بدلا من ذلك.",
+      "student_added": "تمت إضافة الطالب إلى الصف وتم إخطاره داخل التطبيق."
     },
     "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -294,10 +294,10 @@
       "feature_2_desc": "تسأله القروية الأسئلة Rights لتساعدك على التفكير عميقًا – مشعلاً الأفكار دون أن تبيّن الإجابات.",
       "feature_3_title": "اتتبع نموكم",
       "feature_3_desc": "شاهد قدراتك تتطور مع إكمال النشاطات و بناء مقتنيات تعلمك الخارجية.",
-      "feature_4_title": "Follow the Map",
-      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
-      "feature_5_title": "Your Location Stays on Your Phone",
-      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
+      "feature_4_title": "اتبع الخريطة",
+      "feature_4_desc": "لعبة البحث عن الكنز متعددة الخطوات تعطيك خريطة حية مع سهم للمحطة التالية ومدى بعدها. هاتفك يعمل عند وصولك — فقط تمشي وتنظر.",
+      "feature_5_title": "موقعك يبقى على هاتفك",
+      "feature_5_desc": "في الصيد، لا يخرج أي شيء عن مكانك من جهازك — فقط يسجل أي نقطة تصل إليها. أي شيء أكثر من ذلك يعود لعائلتك، ومع ذلك تحصل على صيد فعال في كلتا الحالتين."
     },
     "teacher": {
       "cta": "بِناء نشاط",
@@ -312,10 +312,10 @@
       "feature_2_desc": "«إحضر مكان كل طالب في الوقت الحقيقي – ما هو عليه من مرحلة، ماذا سجله، ومن يحتاج الدعم.»",
       "feature_3_title": "بنيت في التقييم",
       "feature_3_desc": "تتبع المهارات، مراجعة المحفوظات، والتحسين المنقوص - كل ذلك دون زيادة وقت التقييم.",
-      "feature_4_title": "Build a Route, Not Just a Pin",
-      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
-      "feature_5_title": "Decide What Families Are Asked",
-      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
+      "feature_4_title": "ابن مسارا، وليس مجرد دبوس",
+      "feature_4_desc": "قم بإسقاط نقاط التوقف على الخريطة أو استورد GPX من Gaia GPS أو AllTrails أو CalTopo. أعط كل محطة دليلا، ونصف قطر وصول، وصورة أو رسالة — ثم صدر الصيد النهائي ك GPX. ابن واحدا على هاتفك في الميدان، أو في منشئ الويب.",
+      "feature_5_title": "قرر ما هي العائلات التي يطلب منها",
+      "feature_5_desc": "كل مطاردة لها سقف قدرات تختاره — التنقل على الجهاز فقط، حتى الأدلة الجغرافية — وكل خطوة تمنح موافقة منفصلة بلغة بسيطة للعائلات قبل بدء النشاط."
     },
     "parent": {
       "cta": "شاهد تقدمهم",
@@ -330,10 +330,10 @@
       "feature_2_desc": "وصف واضح لФАعلات التي قاروها، والتقاطاتهم، وتطور قدراتهم.",
       "feature_3_title": "اتبع الخبرات",
       "feature_3_desc": "تلقى التحديثات عندما يتم إكمال الأنشطة وتكريس المعالم - دون مقاطعة الدرس.",
-      "feature_4_title": "You Choose What's Shared",
-      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
-      "feature_5_title": "Kept Only as Long as It's Useful",
-      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
+      "feature_4_title": "أنت تختار ما يتم مشاركته",
+      "feature_4_desc": "كل إعداد موقع يكون اختيارا وإيقافا بشكل افتراضي، موصوفا بكلمات بسيطة، مع مدة بقائها معروضة قبل أن تقرر. إذا أوقف كل شيء، سيحصل طفلك على بحث خريطة يعمل بشكل كامل — التنقل يحدث على جهازه.",
+      "feature_5_title": "يحتفظ به فقط طالما كان مفيدا",
+      "feature_5_desc": "هناك مكان دقيق في صورة مقدمة يتلاشى إلى حوالي كتلة مدينة بعد 30 يوما. يتم حذف موقع مباشر في رحلة ميدانية بعد أسبوع من نهايتها. المسار المسجل يختفي خلال 30 يوما — أو اللحظة التي تسأل فيها."
     },
     "team_1_role": "مؤسس & مدير",
     "team_1_initial": "ب",
@@ -476,10 +476,10 @@
       "latitude": "45.27",
       "longitude": "Longitude",
       "add": "إضافة",
-      "youngest_grade": "Youngest grade",
-      "oldest_grade": "Oldest grade",
-      "mixed_age_toggle": "This activity has students across multiple grades",
-      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
+      "youngest_grade": "أصغر صف",
+      "oldest_grade": "أقدم صف",
+      "mixed_age_toggle": "يشارك هذا النشاط الطلاب من عدة صفوف",
+      "mixed_age_hint": "سيكتب بيري صياغة أبسط وأكثر تقدما لكل سؤال - نفس عمق التفكير في كلتا الحالتين. مدة من 3 درجات أو أقل تستخدم كلمة واحدة تلقائيا."
     },
     "difficulty_level": "مستوى الصعوبة:",
     "remember": "تذكر",
@@ -653,9 +653,9 @@
     "wikilocationinfo": {
       "latitude": "خط الطول:",
       "longitude": "خط الطول:",
-      "architect_or_artist": "Architect/Artist:",
-      "construction_date": "Constructed:",
-      "historical_significance": "Historical Significance:"
+      "architect_or_artist": "مهندس معماري/فنان:",
+      "construction_date": "تم إنشاؤه:",
+      "historical_significance": "الأهمية التاريخية:"
     },
     "teaching_tip": "تلميح التدريس:",
     "index": {
@@ -1043,13 +1043,13 @@
       "project_activities": "أعمال المشروع",
       "activity": "نشاط",
       "back": "الخلف",
-      "planning": "Planning",
-      "completed": "Completed",
-      "archived": "Archived",
-      "not_found": "Project not found.",
-      "live_tracking": "Live Tracking",
-      "completion_report": "Completion Report",
-      "no_activities": "No activities linked to this project yet."
+      "planning": "التخطيط",
+      "completed": "تم الانتهاء",
+      "archived": "مؤرشف",
+      "not_found": "المشروع غير موجود.",
+      "live_tracking": "التتبع المباشر",
+      "completion_report": "تقرير الإكمال",
+      "no_activities": "لا توجد أنشطة مرتبطة بهذا المشروع حتى الآن."
     },
     "active": "مفعّل",
     "project_description": "وصف المشروع",
@@ -1143,9 +1143,9 @@
       "that_link_has_expired_please_request_a_n": "انتهت صلاحية هذا الرابط. يرجى طلب واحد جديد.",
       "that_link_is_invalid_please_try_again": "\"هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.\"\n\n(Translation: \"That link is invalid. Please try again.\")",
       "or": "أَوْ",
-      "twofactor_authentication": "Two-factor authentication",
-      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
-      "back_to_login": "← Back to login"
+      "twofactor_authentication": "المصادقة الثنائية",
+      "enter_the_6digit_code_from_your_authenti": "أدخل رمز المكون من 6 أرقام من تطبيق المصادقة الخاص بك، أو أحد رموز النسخ الاحتياطي.",
+      "back_to_login": "← العودة إلى تسجيل الدخول"
     },
     "nav_homeschool": "منزلية",
     "cookie_consent_title": "إخطار الكوكيز",
@@ -1162,10 +1162,10 @@
       "feature_3_title": "تقرير الميزان",
       "feature_3_desc": "إلغاء إنشاء تقارير ملفات PDF وتسجيلات CSV للتماثل أو سجلات شخصية - بدون الحاجة إلى شائكات إحصائية يدوية.",
       "features_title": "كل ما تحتاجه الأسرة التي تدرس في المنزل",
-      "feature_4_title": "Turn a Trail Into a Hunt",
-      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
-      "feature_5_title": "You Hold the Consent",
-      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
+      "feature_4_title": "حول المسار إلى صيد",
+      "feature_4_desc": "امش مسارك وأسقط كل محطة حيث تقف، مباشرة من هاتفك — أو استورد مسار GPX من تطبيق مشي. يتبع المتعلمون خريطة مع مسافة مباشرة إلى المحطة التالية، محسومة على الجهاز.",
+      "feature_5_title": "أنت تحمل الموافقة",
+      "feature_5_desc": "أنت الوصي والمعلم في آن واحد، لذا توافق على أي مشاركة موقع بنفسك لكل نشاط — لا توجد رحلة ذهابا وإيابا منفصلة بموافقة الوالدين، وكل شيء يكون افتراضيا الخيار الخاص على الجهاز."
     },
     "hs_feat_ai_title": "استفسار مدعّم بالذكاء الاصطناعي",
     "hs_how_title": "كيف يعمل",
@@ -1191,14 +1191,14 @@
       "aria_label_upload_file_pdf_csv_or_excel": "أرفق ملف (PDF، CSV أو إكسل)",
       "aria_label_criteria_set_name": "اسم مجموعة التصفية",
       "country": "Country",
-      "aria_label_country": "Country these standards belong to",
-      "united_states": "United States",
+      "aria_label_country": "الدولة التي تنتمي إليها هذه المعايير",
+      "united_states": "الولايات المتحدة الأمريكية",
       "canada": "Canada",
-      "province": "Province",
+      "province": "المقاطعة",
       "state": "State",
-      "aria_label_state": "State/province these standards belong to",
+      "aria_label_state": "الولاية/المقاطعة التي تنتمي إليها هذه المعايير",
       "select_a_state": "Select…",
-      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
+      "state_hint": "ضع علامة على هذه المجموعة في ولاية أو مقاطعة واحدة، لذا ينصح بها فقط للمعلمين هناك."
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "جاري التحميل...",
@@ -1340,8 +1340,8 @@
       "aria_label_childs_password": "أبن",
       "aria_label_childs_grade_level_012": "مرحلة الطفل (0-12)",
       "no_children_added_yet_add_your_first_chi": "لم يتم إضافة أطفال بعد. أضف طفلك الأول للبدء.",
-      "remove_child": "Remove child",
-      "removing": "Removing…",
+      "remove_child": "إزالة الطفل",
+      "removing": "جار الإزالة...",
       "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
@@ -1404,7 +1404,7 @@
       "privacy_amp_data": "الخصوصية والبيانات",
       "your_privacy_settings_are_managed_by_you": "تختصّيمات الخصوصية الخاصّة بك يتم إدارتها بواسطة تعاونيّة أو منظمة. اتصلوا بمدرّك لتغييراته.",
       "youre_using_default_privacy_settings_rev": "⚠ أنت تستخدم الإعدادات الافتراضية للخصوصية. المراجعة والاحتفاظ أدناه لتأكيد تكوينك.",
-      "two_factor_authentication": "Two-Factor Authentication"
+      "two_factor_authentication": "المصادقة الثنائية"
     },
     "request_sent": "تم إرسال الطلب!",
     "link_another": "إضافة طفل آخر",
@@ -1538,13 +1538,13 @@
       "aria_label_back_to_login": "العودة إلى تسجيل الدخول",
       "helps_us_apply_the_right_privacy_framewo": "يساعدنا على تطبيق الإطارات المناسبة لحماية خصوصية (FERPA، COPPA، GDPR، إلخ) لطلابكم.",
       "this_determines_whether_coppa_applies_": "هذا يحدد ما إذا كان قانون حماية خصوصية الأطفال (COPPA) ينطبق على حسابك.",
-      "country_code": "2-letter country code",
-      "country_code_placeholder": "e.g. DE, FR, GB",
-      "state_province": "State / Province",
-      "select_state": "— Select state —",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "password_placeholder": "At least 8 characters",
-      "confirm_password_placeholder": "Re-enter your password"
+      "country_code": "رمز الدولة المكون من حرفين",
+      "country_code_placeholder": "مثل ألمانيا، فرنسا، بريطانيا",
+      "state_province": "الولاية / المقاطعة",
+      "select_state": "— اختر الولاية —",
+      "province_placeholder": "مثل أونتاريو، ساو باولو، بافاريا",
+      "password_placeholder": "على الأقل 8 أحرف",
+      "confirm_password_placeholder": "أعد إدخال كلمة المرور الخاصة بك"
     },
     "cta_btn": "ابدأ بالمجان",
     "components_student_extendedwritingpanel": {
@@ -1589,29 +1589,29 @@
       "parental_or_guardian_consent_is_in_place": "الرضا عن الوالد أو الحارس موجود حيث يتم طلبه حسب القانون",
       "student_view_preview": "معرض نظر الطالب 👁️",
       "privacy_settings_confirmed": "Privacy settings confirmed ✓",
-      "location": "📍 Location",
-      "assessments": "Assessments",
-      "applied": "applied",
-      "attach_rubric": "Attach Rubric",
-      "filter_rubrics": "Filter rubrics…",
-      "ai_suggests": "AI suggests:",
+      "location": "📍 الموقع",
+      "assessments": "التقييمات",
+      "applied": "مطبق",
+      "attach_rubric": "إرفاق معيار التقييم",
+      "filter_rubrics": "معايير الفلاتر...",
+      "ai_suggests": "يقترح الذكاء الاصطناعي:",
       "accept": "Accept",
-      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
-      "ai_interaction_label": "Student AI Interaction",
-      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
-      "ai_interaction_curated_label": "Curated Question Bank Only",
-      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
-      "background_context": "📖 Background & Context",
-      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
-      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
-      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
-      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
-      "min_10_characters": "Minimum 10 characters",
-      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
-      "state_curriculum_standards": "State / Curriculum Standards",
-      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
-      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
-      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
+      "ai_interaction_intro": "اختر كيف يتم المطالبة بالطلاب خلال مرحلة الاستفسار في هذا النشاط.",
+      "ai_interaction_label": "تفاعل الطلاب مع الذكاء الاصطناعي",
+      "ai_interaction_chat_note": "يمكن للطلاب طرح أسئلة متابعة بحرية على بيري أثناء النشاط، مدعومة بالذكاء الاصطناعي — جيدة للاستكشاف المفتوح. بيري لا تزال لا تعطي الإجابة بشكل مباشر، بل تطرح فقط السؤال الموجه التالي. تتطلب اتصالا بالإنترنت.",
+      "ai_interaction_curated_label": "بنك الأسئلة المنسق فقط",
+      "ai_interaction_footnote": "ملاحظة: يساعد بنك الأسئلة المنسق أيضا في هيكلة مطالبات بيري حتى في وضع الدردشة بالذكاء الاصطناعي — هذا الإعداد يتحكم فقط فيما إذا كانت محادثات الذكاء الاصطناعي حرة متاحة بالإضافة إلى ذلك.",
+      "background_context": "📖 الخلفية والسياق",
+      "add_a_location_to_see_background": "أضف موقعا أعلاه لرؤية معلومات خلفية عنه هنا.",
+      "enable_live_gps_tracking_during_this_act": "📍 تمكين التتبع المباشر GPS أثناء هذا النشاط",
+      "students_locations_are_shared_with_you_i": "يتم مشاركة مواقع الطلاب معك في الوقت الحقيقي على شاشة الجلسة. يتم طلب موافقة الوالدين تلقائيا للطلاب دون سن 13.",
+      "i_consent_to_gps_location_capture_for_my": "أوافق على التقاط الموقع عبر GPS لطفلي أثناء هذا النشاط",
+      "min_10_characters": "الحد الأدنى 10 أحرف",
+      "assessments_intro": "قدم طلبا حتى ثلاثة: معايير الولاية/المناهج، تصنيف معرفي، ومعيار معيارك الخاص.",
+      "state_curriculum_standards": "معايير الدولة / المناهج",
+      "share_publish_note": "يجب أيضا نشر هذا النشاط (من قائمة الأنشطة) قبل ظهوره في المكتبة المشتركة.",
+      "ai_interaction_curated_note": "يحصل الطلاب فقط على المطالبات من بنك أسئلة ثابت ومكتوب مسبقا مخزن على الجهاز — لا مكالمة ذكاء اصطناعي مباشرة، ولا دردشة \"اسأل بيري\". يعمل بالكامل دون اتصال ويمنح كل طالب نفس العبارة، وهذا قد يؤثر على الاتساق، أو إذا كنت ببساطة تفضل ألا يكون الذكاء الاصطناعي جزءا من هذا النشاط.",
+      "ai_interaction_privacy_note": "الخصوصية: في وضع الدردشة بالذكاء الاصطناعي، يتم إرسال رسالة الطالب إلى مزود ذكاء اصطناعي طرف ثالث (كلود من Anthropic) لتوليد رد بيري. هذا غير متاح تلقائيا للطلاب تحت سن 13 بغض النظر عن هذا الإعداد — فهم دائما يحصلون على بنك الأسئلة المختار."
     },
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "موقع",
@@ -1658,7 +1658,7 @@
       "enter_student_emails_one_per_line_or_com": "أدخل بريد الطلاب (واحد لكل سطر، أو مفصولة بالعلامة المنقوطة). يتم إرسال رابط الدعوة الخاص بكل طالب إلى بريدهم الإلكتروني.",
       "upload_a_csv_or_spreadsheet_with_one_stu": "أضف ملف CSV أو جدول مع بريد إلكتروني للطلاب في كل صف في عمود واحد. الأسماء، العناوين، والعمود الإضافي يتم تجاهلها.",
       "placeholder_studentemailcom": "student@email.com",
-      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
+      "already_know_the_students_email_enter_it": "هل تعرف بالفعل بريد الطالب؟ أدخله هنا. إذا كان لديه حساب بالفعل، يتم إضافته إلى هذا الفصل فورا ويتم إبلاغه داخل التطبيق — ولا يتم إرسال أي بريد إلكتروني. إذا لم يكن هناك حساب بعد، يتم إرسال بريد دعوة بدلا منه."
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "موضوع",
@@ -1683,17 +1683,17 @@
       "aria_label_special_focus_or_differentiation": "تخصيص أو تمييز خاص",
       "special_focus_optional": "تخصيص خاص (اختياري)",
       "add_an_activity_title_above_for_better_s": "تحذير: أضف عنوان نشاط فوق للحصول على اقتراحات أفضل.",
-      "grade": "grade",
-      "at": "at",
-      "generating": "Generating…",
+      "grade": "درجة",
+      "at": "عند",
+      "generating": "يولد...",
       "ask_peri": "✨ Ask Peri",
-      "added": "✓ Added to activity",
-      "add_to_activity": "+ Add to activity",
+      "added": "✓ إضافة إلى النشاط",
+      "add_to_activity": "+ أضف إلى النشاط",
       "tip": "Tip:",
-      "peri_intro": "Peri will suggest activities for",
-      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
-      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
-      "drafting_from_standards": "Drafting an activity for the standards you selected…"
+      "peri_intro": "سيقترح بيري أنشطة ل",
+      "need_subject_grade": "أضف مادة ومستوى صف أعلى للحصول على اقتراحات من بيري.",
+      "click_a_card_tip": "انقر على بطاقة لإضافتها إلى نشاطك. لا يضاف شيء حتى تنقر.",
+      "drafting_from_standards": "إعداد نشاط للمعايير التي اخترتها..."
     },
     "components_upgradecta": {
       "contact_us": "اتصل بنا",
@@ -1724,27 +1724,27 @@
       "from_a_white_paper_to_a_working_platform": "من ورقة بيضاء إلى منصة عمل: بيريباتيكوير 2007-2026",
       "the_insight_aristotle_was_right": "الإنسانية: أرستوطة كانت على حق",
       "the_problem_that_remained_unsolved": "المشكلة التي لم يتم حلها",
-      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
-      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
+      "the_2007_document_named_one_obstacle_it_": "ذكرت وثيقة 2007 عقبة واحدة لم تستطع حلها:",
+      "the_2026_answer_ai_did_what_spreadsheets": "إجابة 2026: الذكاء الاصطناعي فعل ما لم تستطع جداول البيانات فعله",
       "the_assessment_problem_turned_out_to_hav": "تم اكتشاف أن المشكلة المحاكية تتكون من جزأين. الأول كان جمع الأدلة - ما هو ما لاحظه الطالب بالفعل، ويمكن إثباته؟ والثاني كان تقييمها - هل عمقت تفكيرهم أم مجرد وصف لما رأوه؟",
       "choose_your_own_adventure": "اختر مغامرتك الخاصة",
       "why_this_took_until_2026": "لماذا استغرق هذا حتى 2026؟",
       "the_white_paper_is_still_online": "الورقة البيضاء لا تزال على الإنترنت.",
-      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
+      "you_can_read_the_original_2007_document_": "يمكنك قراءة الوثيقة الأصلية لعام 2007، التي كتبت بينما كان الآيفون لا يزال شائعة، في الرابط أدناه. المفردات قديمة. الحجة ليست قديمة.",
       "read_the_original_2007_paper": "اقرأ الورقة الأصلية عام 2007 ←",
-      "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
-      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
-      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
-      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
-      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
-      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
-      "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
+      "the_paper_was_written_at_a_moment_when_3": "كتبت الورقة في وقت لم يكن فيه الجيل الثالث قد طرح بالكامل بعد، وكان الآيفون على بعد أشهر من الإطلاق، ولم تكن كلمة \"تطبيق\" شائعة بعد. توقعاته — بأن تصبح الهواتف المحمولة أجهزة صفية فردية لكل واحد، وأن الشبكات المحمولة ستصل إلى المناطق النائية، وأن GPS سيصبح رخيصا بما يكفي ليضعه في جيب كل طالب — كلها تحققت. أما المنتجات التي طالبت بها الورقة فلم تتحقق ذلك.",
+      "if_students_follow_their_curiosity_throu": "إذا كان الطلاب يتبعون فضولهم عبر أماكن حقيقية، ويتعلمون عن الأقواس، والبراميل، والملاحة السماوية لأنهم يقفون بالقرب من كاتدرائية أو ميناء، كيف تقيم ما تعلموه بطريقة تلبي متطلبات المنهج؟ كيف تنتج جدول بيانات الأرقام الذي يريده المدير مع احترام تعقيد ما فهمه الطالب فعليا؟",
+      "the_document_left_that_question_open_the": "ترك الوثيقة هذا السؤال مفتوحا. النظام المدرسي لم يحله أيضا. لما يقرب من عقدين، ظل \"التعلم في الهواء الطلق\" إما طموحا غامضا أو كابوسا لوجستيا — معلمون لديهم لوحات ملاحظات، أنشطة لا تنتج أي قطعة أثرية، تجارب تختفي بمجرد عودة الطلاب إلى الداخل.",
+      "the_first_part_was_solved_by_smartphones": "تم حل الجزء الأول بواسطة الهواتف الذكية. صورة، صوت، إحداثيات GPS، طوابع زمنية — يمكن لطالب في ضفة جدول يمكنه التقاط أدلة أكثر في عشر دقائق مما يمكن أن يحتويه لوحة الرحلات الميدانية في يوم واحد. ما تبقى هو الجزء الثاني: تحقيق منظم لا يوثق التجربة فقط بل عمقها.",
+      "thats_where_peri_comes_in_peri_is_peripa": "هنا يأتي دور بيري. بيري هو دليل الذكاء الاصطناعي في برنامج بيريباتيكوير — سمي، مثل البرنامج، نسبة إلى الطريقة الأرسطية. بيري لا يجيب على الأسئلة. بل يطرحها. يتبع تسلسل الاستقصاء المكون من خمس مراحل — الانخراج، الملاحظة، التحليل، الشرح، التطبيق — الذي استخدمه أرسطو في الليسيوم والذي تم تأكيده لاحقا كطريق نحو فهم حقيقي، وليس فقط الاحتفاظ به. يأخذ بيري ملاحظة الطالب ويطرح السؤال الصحيح التالي. عندما يجيب الطالب بشكل صحيح، يختبر بيري الدلالة. وعندما يكون الطالب غامضا في الموضوع، يطلب بيري دليل.",
+      "the_result_is_an_artifact_a_field_journa": "النتيجة هي قطعة أثرية: مدخل ميداني يحتوي على التسجيلات، وتحليل موسع، وسجل للاستفسار نفسه. يمكن للمعلمين رؤية ليس فقط ما استنتج به الطالب بل كيف وصل إلى هناك. المعايير المتوافقة مع أطر التصنيف والمعايير لبلوم — مثل CCSS، NGSS، TEKS، أو أطر التقييم الخاصة بك — تجعل التقييم مقروءا لأي منسق منهج. الجدول والتعلم الحقيقي يشغلان في النهاية نفس المستند.",
+      "the_2007_paper_described_a_choose_your_o": "وصفت ورقة 2007 نموذج التعلم \"اختر مغامرتك الخاصة\" — نموذج يتبع فيه الطلاب انحرافات جانبية، ويتابعون ما يهمهم، ويواجهون مفاهيم المنهج الأساسية من خلال أبواب جانبية للفضول الحقيقي بدلا من باب التدريس الأمامي. أقرت الورقة بأن هذا كان \"فوضويا إلى حد ما\" وأنه سيتطلب أنواعا جديدة من تصميم التعليم، وأدوات تقييم جديدة، ومعلمين مستعدين للتضحية ببعض السيطرة مقابل تفاعل حقيقي.",
+      "peripateticware_doesnt_fully_solve_the_c": "البرمجيات المشوشة لا تحل الفوضى بالكامل — ذلك التوتر حقيقي وربما دائم. ما تفعله هو منح المعلمين هيكلا كافيا للبقاء عاقلين (أنشطة مصممة، أهداف تعلم، مراحل الإنهاء، سير عمل موافقة المعلم) مع منح الطلاب حرية كافية للذهاب فعليا إلى مكان ما (محتوى يفعل GPS، أنشطة مقترحة من الطلاب، ملاحظات ميدانية ذاتية الإدارة، مشاريع الأقران).",
       "the_reverse_scavenger_hunt_where_student": "البحث العكسي - حيث يطرح الطلاب نشاطًا بناءً على شيء وجدوه - هو أقرب ما يكون في المنصة إلى تلك الرؤية عام 2007. يجد طالب تشكيلات صخرية غريبة. يطرحها كمشروع.وافق المعلم عليه. يذهب الطلاب الآخرون للبحث. تثار أسئلة لم يتوقعها أي وثيقة من المنهج. تتحرك التعلم.",
-      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
-      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
-      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
-      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
+      "the_short_answer_is_that_most_of_the_ena": "الإجابة المختصرة هي أن معظم تقنيات التمكين لم تكن جاهزة في عام 2007. جاء نظام تحديد المواقع GPS في كل جيب أولا (2010–2015). ثم كاميرات محمولة عالية الجودة. ثم واجهات برمجة التطبيقات السحابية الرخيصة للمدارس. ثم نماذج الذكاء الاصطناعي المحلية (أولاما، llama.cpp) التي يمكنها العمل على خادم المعلم المنزلي دون فاتورة استنتاج شهرية قدرها 10,000 دولار. كانت ورقة 2007 محقة بشأن الوجهة؛ لم يكن بإمكانها أن تعرف كم سيكون طول الطريق.",
+      "the_longer_answer_is_that_educational_te": "الإجابة الأطول هي أن التكنولوجيا التعليمية قضت تلك السنوات في حل المشكلة الخاطئة. التقنية التعليمية كررت الفصل الدراسي — نظام إدارة تعلم أفضل، فيديو أفضل، أدوات اختبارات أفضل. جعلت النموذج الحالي أكثر كفاءة. البرمجيات التمشية لا تحاول جعل الفصل أكثر كفاءة. تحاول استبدال الفصل الدراسي، على الأقل أحيانا، بالعالم.",
+      "thats_a_harder_sell_schools_are_riskaver": "هذا صعب القبول. المدارس متحفظة المخاطر. التعلم الخارجي له نظرة على المسؤولية. \"العالم هو صفك الدراسي\" يبدو كجملة تسويقية حتى تشاهد طفلا في العاشرة يشرح نقل الرواسب لدليل ذكاء اصطناعي على شكل غراب وأنت واقف في مجرى جدال، ثم تقرأ المذكرة الميدانية التي كتبها في ذلك العصر، وتفهم أنه فهم.",
+      "title_from_a_white_paper_to_a_working_platform": "من ورقة بيضاء إلى منصة عمل: 2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "جاري التحميل..."
@@ -1798,9 +1798,9 @@
           "prompt": "Great observation! الآن ــ ما هو رأيك في سبب تغيير لون الأوراق من هذا الجانب من الشجرة؟"
         },
         "4": {
-          "badge": "Multi-Stop",
-          "title": "Scavenger Hunt — 2 of 5 stops",
-          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
+          "badge": "متعدد التوقفات",
+          "title": "البحث عن الكنز — 2 من 5 محطات",
+          "prompt": "اتجه شمال شرق، 40 مترا إلى جسر ستون. السهم يشير إلى الطريق — موقعك لا يغادر هاتفك أبدا."
         }
       },
       "teacher": {
@@ -1820,18 +1820,18 @@
           "prompt": "بناءً على موضوعك وموقعك، voici 4 أفكار نشاطات منسقة حسب بلم"
         },
         "4": {
-          "badge": "Route Builder",
-          "title": "Multi-Step Hunt — 6 stops",
-          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+          "badge": "منشئ الطرق",
+          "title": "الصيد متعدد الخطوات — 6 محطات",
+          "prompt": "استيراد GPX أو دبابيس إسقاط. حدد مؤشر ونصف قطر وصول لكل محطة، اختر ما توافق عليه العائلات، ثم صدر الصيد النهائي."
         },
         "dashboard": {
-          "title": "Teacher Dashboard",
-          "subtitle": "This week",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "لوحة تحكم المعلم",
+          "subtitle": "هذا الأسبوع",
+          "badge": "نظرة عامة",
+          "location": "الأنشطة الأخيرة",
           "stat": {
             "1": {
-              "label": "Students"
+              "label": "الطلاب"
             },
             "2": {
               "label": "Classes"
@@ -1842,11 +1842,11 @@
           }
         },
         "proposal": {
-          "title": "Review a Proposal",
-          "badge": "Proposal",
-          "location": "Proposals Queue",
-          "subtitle": "From Jordan M. · Submitted today",
-          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
+          "title": "مراجعة اقتراح",
+          "badge": "الاقتراح",
+          "location": "قائمة الاقتراحات",
+          "subtitle": "من جوردان م. · تم التقديم اليوم",
+          "prompt": "\"اعثر على 5 نباتات محلية وصورها على طول مسار الجدول.\" — تحد صممه جوردان وقدمه للموافقة عليك."
         }
       },
       "parent": {
@@ -2008,42 +2008,42 @@
           "prompt": "تم تجميع ملف PDF. يحتوي على جميع الحقول المطلوبة لإعدادات تقرير ولاية TX."
         },
         "4": {
-          "badge": "● On the trail",
-          "title": "Greenbelt Trail Hunt",
-          "subtitle": "5 stops · Emma & Lucas",
+          "badge": "● على المسار",
+          "title": "صيد مسار الحزام الأخضر",
+          "subtitle": "5 محطات · إيما ولوكاس",
           "task": {
             "1": {
-              "text": "The Old Oak — reached ✓"
+              "text": "البلوط القديم — تم الوصول ✓"
             },
             "2": {
-              "text": "Stone Bridge — reached ✓"
+              "text": "جسر الحجر — تم الوصول ✓"
             },
             "3": {
-              "text": "The Overlook — 120 m ahead"
+              "text": "ذا أوفرلوك — على بعد 120 مترا أمامنا"
             },
             "4": {
-              "text": "Navigation on-device — no tracking"
+              "text": "التنقل على الجهاز — لا يوجد تتبع"
             }
           }
         },
         "children": {
-          "title": "Emma — Grade 4",
-          "badge": "68% Progress",
+          "title": "إيما — الصف الرابع",
+          "badge": "تقدم 68٪",
           "stat": {
             "1": {
-              "label": "Sessions"
+              "label": "الجلسات"
             },
             "2": {
-              "label": "Completed"
+              "label": "تم الانتهاء"
             }
           },
-          "subtitle": "Children · This term",
-          "location": "Barton Creek Greenbelt"
+          "subtitle": "الأطفال · هذا المصطلح",
+          "location": "حزام بارتون كريك الأخضر"
         },
         "dashboard": {
-          "title": "Dashboard",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "لوحة التحكم",
+          "badge": "نظرة عامة",
+          "location": "الأنشطة الأخيرة",
           "stat": {
             "1": {
               "label": "Active"
@@ -2052,13 +2052,13 @@
               "label": "Pending"
             }
           },
-          "subtitle": "This week · Emma & Lucas",
+          "subtitle": "هذا الأسبوع · إيما ولوكاس",
           "task": {
             "1": {
-              "text": "River Ecosystem Study — published"
+              "text": "دراسة النظام البيئي للنهر — منشورة"
             },
             "2": {
-              "text": "Capitol Field Trip — draft"
+              "text": "رحلة الكابيتول الميدانية — مسودة"
             }
           }
         }
@@ -2127,10 +2127,10 @@
       "save_your_note_first_to_attach_photos_au": "💡 احفظ ملاحظةً أولًا لإرفاق الصور، الصوت، والفيديو."
     },
     "pendingReflectionQueue": {
-      "awaiting_approval": "Awaiting approval",
-      "teacher_commented": "Teacher commented",
+      "awaiting_approval": "في انتظار الموافقة",
+      "teacher_commented": "علق المعلم",
       "ready_to_reflect": "مستعد للانعكاس",
-      "section_title": "Pending Reflections",
+      "section_title": "تأملات معلقة",
       "teacher_label": "Teacher",
       "reflection_in_progress": "تنفيذ المرآة في تقدم"
     },
@@ -2200,11 +2200,11 @@
       "ready_to_create_your_first_outdoor_activ": "\"هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.\"\n\n(Translation: \"Are you ready to create your first outdoor activity? Peri will suggest Socrates-style questions tailored to your location and subject.\")",
       "create_first_activity": "أضف نشاطًا أوليًا →",
       "login_label": "Login",
-      "password_label": "Password",
+      "password_label": "كلمة المرور",
       "copied": "Copied ✓",
       "copy_all": "Copy all",
-      "childrens_logins": "Your children\\'s logins",
-      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
+      "childrens_logins": "تسجيل دخول أطفالك",
+      "save_these_now": "احفظ هذه أو اطبعها الآن — حفاظا على خصوصية طفلك لا يمكننا عرض كلمة المرور مرة أخرى. يمكنك إعادة تعيينها في أي وقت من صفحة الأطفال."
     },
     "pages_licensingpage": {
       "licensing": "ترخيص",
@@ -2252,7 +2252,7 @@
       "send": "إرسال الرد",
       "subtitle": "رسائل من معلم أطفالك. الرد للبقاء على تواصل.",
       "empty": "لا توجد رسائل بعد. عندما يتصل مدرس، سيظهر هنا.",
-      "announcements_title": "Classroom Announcements"
+      "announcements_title": "إعلانات الفصول الدراسية"
     },
     "notifications": "إشعارات",
     "pages_parentnotificationspage": {
@@ -2263,7 +2263,7 @@
       "link_a_child": "إرفق طفل",
       "teacher_note": "ملاحظة المدرس",
       "no_children_linked_yet": "لا يوجد أطفال مرتبطون حتى الآن",
-      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
+      "link_your_childs_account_to_start_tracki": "اربط حساب طفلك لبدء تتبع تقدمه في التعلم.",
       "no_progress_data_yet_for_this_child": "\"لا يوجد بيانات تقدم حتى الآن لهذا الطفل.\"\n\n(Preserving template variables exactly as they appear in the original string)"
     },
     "progress_reports": "تقرير التقدم",
@@ -2301,10 +2301,10 @@
       "admin_actions": "أفعال الإداريين",
       "all_actions_are_recorded_in_the_audit_lo": "\"جميع الأفعال مسجلة في سجل التدقيق.\"\n\n(Preserved template variables exactly as they appear.)",
       "license": "License",
-      "change_tier_to": "Change tier to…",
+      "change_tier_to": "غير المستوى إلى...",
       "placeholder_days": "days",
-      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
-      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
+      "sets_license_valid_until_directly_overri": "يحدد license_valid_until مباشرة، متجاوزة أي حسابات تمديد بالأيام",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "مثلا الانتقال إلى مستوى مدفوع بمجرد توقيع العقد، أو منح/إنهاء 'بيتا' يدويا."
     },
     "pages_platform_platformorgspage": {
       "organisations": "أحزاب",
@@ -2319,7 +2319,7 @@
       "suspended": "موقوف",
       "no_organisations_found": "لم يتم العثور على أي منظمات.",
       "expired": "Expired",
-      "all_tiers": "All tiers",
+      "all_tiers": "جميع المستويات",
       "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
@@ -2372,18 +2372,18 @@
       "write_your_reflection": "أكتب تعليقك",
       "what_did_you_observe_what_did_you_learn_": "ما الملاحظات؟ ما التعلم؟ كيف يربط مع المعرفة السابقة؟",
       "great_work_your_teacher_will_review_your": "جيد. سيقع مدرسكم على أدلتك و تعليقاتك.",
-      "location_sharing": "Location Sharing",
-      "architectartist": "Architect/Artist:",
-      "constructed": "Constructed:",
-      "yes_submit": "Yes, submit",
+      "location_sharing": "مشاركة الموقع",
+      "architectartist": "مهندس معماري/فنان:",
+      "constructed": "تم إنشاؤه:",
+      "yes_submit": "نعم، قدم",
       "cancel": "Cancel",
-      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
-      "historical_significance": "Historical Significance:",
-      "learning_opportunities": "Learning Opportunities",
-      "nearby_points_of_interest": "Nearby Points of Interest",
-      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
-      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
-      "notable_features": "Notable Features"
+      "your_teacher_wants_to_see_your_location_": "يريد معلمك رؤية موقعك أثناء هذا النشاط ليتمكن من تتبع تقدم العمل الميداني. يتم مشاركة موقعك فقط أثناء تفعيل الجلسة.",
+      "historical_significance": "الأهمية التاريخية:",
+      "learning_opportunities": "فرص التعلم",
+      "nearby_points_of_interest": "نقاط الاهتمام القريبة",
+      "no_background_info_was_saved_for_this_lo": "لم يتم حفظ أي معلومات خلفية لهذا الموقع.",
+      "submit_confirm": "هل ترسل هذا النشاط للمراجعة؟ لن تتمكن من إضافة المزيد من الأدلة بعد ذلك.",
+      "notable_features": "الميزات البارزة"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "جاري التحميل...",
@@ -2391,8 +2391,8 @@
       "title_preview_as_student": "معاينة كمطالب",
       "make_sure_the_backend_is_running_and_you": "تأكد من تشغيل الخلفية وإن كنت مسجل دخول.",
       "title_fieldwork_map": "خريطة الميدان — مواقع جي بي إس المقدمة من الطلبة",
-      "tracking_settings": "Tracking Settings",
-      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
+      "tracking_settings": "إعدادات التتبع",
+      "title_publish_makes_this_activity_visible_to_s": "النشر — يجعل هذا النشاط مرئيا للطلاب ومؤهلا للمكتبة المشتركة"
     },
     "professorFieldworkPage": {
       "back": "أعكس",
@@ -2430,10 +2430,10 @@
       "no_students_enrolled_yet_use_the_invite_": "لا يوجد طلاب مسجلين حتى الآن. استخدم لوحة الدعوة أدناه لإضافتهم.",
       "title_remove_from_classroom": "إزالة من الفصل",
       "larger_classrooms_are_a_paid_feature_upg": "\"الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.\"\n\n*(Preserving template variables exactly)*",
-      "grade_level_placeholder": "0 = Kindergarten",
-      "grade_level_k_hint": "0 = Kindergarten",
-      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
-      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
+      "grade_level_placeholder": "0 = روضة الأطفال",
+      "grade_level_k_hint": "0 = روضة الأطفال",
+      "grade_level_nudge": "إذا تركت بيري فارغة، لا يستطيع بيري تخصيص صياغة الأسئلة لتناسب عمر هذا الصف — الطلاب يحصلون على النسخة العامة.",
+      "grade_level_nudge_short": "لا توجد درجات محددة -- الطلاب يحصلون على صياغة بيريدية عامة غير مخصصة لأعمارهم."
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "جاري التحميل...",
@@ -2443,8 +2443,8 @@
       "create": "إلْحَضِير",
       "archived": "أرشيف",
       "you_dont_have_any_classrooms_yet": "لا يوجد لديك أي صالاتٍ حتى الآن.",
-      "placeholder_grade_optional": "Grade (0 = K, optional)",
-      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
+      "placeholder_grade_optional": "الدرجة (0 = K، اختياري)",
+      "grade_nudge": "تحديد الدرجة يسمح ل Peri بتخصيص صياغة الأسئلة حسب عمر هذا المادة. اتركها فارغة فقط للصف المختلط أو غير المدرج."
     },
     "live_sessions": "\"جلسات حية ({count})\")",
     "started": "بدأ:",
@@ -2456,9 +2456,9 @@
       "placeholder_comment_on_the_field_observations_eviden": "أعرب عن رأيك حول الملاحظات الميدانية، جودة الأدلة أو ما يجب التركيز عليه في التقييم...",
       "your_feedback": "feedbackك:",
       "saved": "✓ Saved",
-      "placeholder_feedback_for_the_student": "Feedback for the student...",
-      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
-      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
+      "placeholder_feedback_for_the_student": "ملاحظات للطالب...",
+      "evidence_detail_isnt_available_for_this_": "تفاصيل الأدلة غير متوفرة لهذا التقديم بعد.",
+      "mapped_standards_did_this_submission_mee": "المعايير المبرمجة — هل استوفت هذه الطلبات هذه الطلبات؟"
     },
     "activity_builder_stub": "\"بناء أنشطة",
     "activity_preview_stub": "معاينة النشاط",
@@ -2474,7 +2474,7 @@
     "field_journal_title": "سجل الحقول: التعلم الذي يبقى",
     "s_choose_peripateticware": "اختر Peripateticware",
     "your_data_is_yours_we_collect_minimal_in": "بياناتك ملكتك. نجمع معلومات معدودة ولا نبيعها أبداً. يستخدم Peripateticware اتصالات مشفرة، تجميع مجهول الهوية، وتدابير بيانات شفافة. أنت تتحكم بما يتم شريده، مع من، ومدة كم.",
-    "team_title": "Built by an educator, for educators",
+    "team_title": "مصنوع بواسطة معلم، للمعلمين",
     "loading_portfolio": "جاري تحميل المحفظة...",
     "what_did_you_observe": "ما هو ما لاحظته؟",
     "describe_what_you_observed_noticed_or_wo": "أكتب ما لاحظته أو تساءل عنه...",
@@ -2556,7 +2556,7 @@
     "using_basic_fallback_information": "استخدام معلومات الإخفاق الأساسية",
     "educational_opportunities": "فرص تعليمية",
     "view_on_google_maps": "🗺️ عرض على خرائط جوجل",
-    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
+    "use_this_location_information_to_create_": "استخدم هذه المعلومات الموقعية لإنشاء أنشطة تعلم قائمة على المكان تربط استكشاف الطلاب بسياقات العالم الحقيقي.",
     "refresh_information": "تحديث المعلومات",
     "observing_native_plants_in_field_session": "تأمل النباتات المحلية في جلسة ميدانية في متنزه ريفرسايد ستيت",
     "great_observation_notes_today_your_detai": "شكرًا على ملاحظاتك الرائعة اليوم! التفاصيل حول مورفولوجيا الورقة تدل على تفكير نباتي حقيقي.",
@@ -2949,7 +2949,7 @@
       "homeschool_families": "هومس쿨",
       "aria_label_close": "أغلق",
       "peripateticware_began_as_a_white_paper_w": "بدأ \"Peripateticware\" كمقترح مكتوب داخل شركة \"McGraw-Hill Education\". وقد أيد أن الأجهزة المحمولة المسموح بها GPS ستتحول إلى التعلم - حيث يمكن للطلاب الذين يسيرون في أماكن حقيقية، مدعومين بالتحقيقات المنظمة، تعلم بطريقة لم يسمح بها الكتب المدرسية.",
-      "title_learning_in_motion": "Learning in Motion"
+      "title_learning_in_motion": "التعلم في الحركة"
     },
     "components_landing_storysection": {
       "alt_a_student_walking_through_the_forest_wit": "طالب يمشي في الغابة مع جهاز موبايلي"
@@ -2963,12 +2963,12 @@
           "3": "بي آي بيري",
           "4": "التسجيل الإحترافي",
           "5": "ملف المشاريع",
-          "6": "Multi-step map hunts"
+          "6": "البحث متعدد الخطوات عن الخرائط"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "أو 99.99 دولار سنويا — وفر 30٪ · تجربة مجانية لمدة 30 يوما",
+        "cta": "ابدأ التجربة المجانية"
       },
       "school": {
         "name": "مدرسة",
@@ -2995,12 +2995,12 @@
           "2": "تصدير ملف بورتفوليو PDF",
           "3": "تقرير الإختصارات",
           "4": "تحويل المواصفات",
-          "5": "Trail hunts with GPX import & export"
+          "5": "البحث عن المسارات باستخدام استيراد وتصدير GPX"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "أو 99.99 دولار سنويا — وفر 30٪ · تجربة مجانية لمدة 30 يوما",
+        "cta": "ابدأ التجربة المجانية"
       },
       "contact_for_pricing": "اتصل بنا للحصول على الأسعار",
       "contact_team": "اتصل بنا",
@@ -3025,8 +3025,8 @@
       "no_active_jurisdictions_found_run_the_se": "لم يتم العثور على أي مناطق قانونية نشطة. قم بتشغيل عملية نقل البذرة لإضافة الإعدادات الافتراضية.",
       "loading_rule_details": "جاري التحميل...",
       "add_update_jurisdiction": "أضف/تحديث المنطقة",
-      "quick_setup_by_location": "Quick Setup by Location",
-      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
+      "quick_setup_by_location": "إعداد سريع حسب الموقع",
+      "quick_setup_desc": "بالنسبة للولايات القضائية الشائعة، أخبرنا أين تقع مؤسستك بدلا من كتابة JSON يدويا أدناه — النظام يحل القوانين المعروفة (الفيدرالية، الولائية، أو المكتشفة سابقا) ويطبقها تلقائيا على مؤسستك."
     },
     "audit_logs_enabled": "تم تفعيل سجلات التدقيق",
     "cookiepolicypage": {
@@ -3122,26 +3122,26 @@
       "summary_title": "تصميم الخصوصية",
       "summary_subtitle": "بنيت للمدارس، موثوقة من قبل الآباء",
       "summary_desc": "تخضع Peripateticware لقانون COPPA، GDPR، FERPA، CCPA، PIPEDA، LGPD و PDPA. ولا يتم بيع بيانات الطلبة أو استخدامها في الإعلانات أو مشاركة دون موافقة.",
-      "summary_cta": "See how it works",
-      "engine_core_title": "How the Privacy Engine works",
-      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
-      "jurisdiction_aware_title": "Jurisdiction Aware",
-      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
-      "auto_updates_title": "Auto Updates",
-      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
+      "summary_cta": "شاهد كيف يعمل",
+      "engine_core_title": "كيف يعمل محرك الخصوصية",
+      "engine_core_desc": "يتم التحقق من كل دليل من الطالب مع قواعد الامتثال السارية في اختصاص ذلك الطالب قبل تخزينه.",
+      "jurisdiction_aware_title": "الوعي بالسلطات القضائية",
+      "jurisdiction_aware_desc": "يكتشف تلقائيا قوانين الخصوصية التي تنطبق بناء على مكان وجود الطالب، ويطبق القواعد الصحيحة لتلك المنطقة.",
+      "auto_updates_title": "التحديثات التلقائية",
+      "auto_updates_desc": "يتم تحديث قواعد الامتثال مركزيا مع تغير اللوائح، لذا يبقى كل فصل دراسي محدثا دون أي عمل يدوي.",
       "versioned_rules_title": "قواعد منسقة",
-      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
-      "extensible_title": "Extensible",
-      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
+      "versioned_rules_desc": "كل تغيير في القاعدة يتم إصداره وقابلا للتدقيق، لذا يمكنك دائما رؤية السياسة المطبقة على أي قطعة بيانات ومتى.",
+      "extensible_title": "قابل للتمدد",
+      "extensible_desc": "يمكن إضافة ولايات قضائية وأطر عمل جديدة دون تغيير طريقة عمل التطبيق — المحرك يتكيف وليس الكود.",
       "encrypted_by_default_title": "مكفوف بواسطة الإعدادات",
-      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
+      "encrypted_by_default_desc": "يتم تشفير بيانات الطلاب أثناء الانتقال وأثناء النقل، دون الحاجة إلى إعداد لتشغيلها.",
       "on_device_first_title": "في الجهاز أولاً",
-      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
+      "on_device_first_desc": "حيثما أمكن، يتم المعالجة الحساسة على جهاز الطالب نفسه قبل إرسال أي شيء إلى خوادمنا.",
       "consent_framework_title": "إطار الموافقة",
-      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
-      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
-      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
-      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
+      "consent_framework_desc": "يتحكم الآباء والأوصياء فيما يتم جمعه ويمكنهم مراجعة أو إلغاء الموافقة في أي وقت.",
+      "cta_section_title": "مصممة لكسب ثقتك، وليس فقط مربع امتثالك",
+      "cta_section_subtitle": "شاهد بالضبط كيف يتم التعامل مع بيانات الطلاب في كل خطوة على الطريق",
+      "cta_section_desc": "اقرأ الوثائق الفنية الكاملة أو تواصل معك إذا كان لديك أي سؤال حول كيفية حماية برنامج Peripateticware لخصوصية الطلاب.",
       "loading_status": "جاري التحميل...",
       "coppa_family_title": "للأسر التي تضم أطفالًا أقل من 13 عامًا",
       "do_not_sell_link": "لا تبيع أو تشارك معلوماتي الشخصية"
@@ -3185,16 +3185,16 @@
       "select_your_state": "— اختر ولايةك —",
       "student_data_is_never_sold_or_shared_wit": "🔒 لا يتم بيع أو مشاركة بيانات الطالب مع المعلنين أبداً. يمكنك تصدير أو حذف جميع البيانات في أي وقت من خلال الإداري > الإعدادات الخاصة بالخصوصية.",
       "placeholder_2letter_country_code_eg_de_fr_gb": "DE, FR",
-      "state_province": "State / Province",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "region_optional": "Region (optional)",
-      "region_placeholder": "A specific district or local law, if you know of one",
-      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
-      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
-      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
-      "something_not_right": "Something not right? Let us know",
-      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
-      "review_submitted": "Thanks — sent for review."
+      "state_province": "الولاية / المقاطعة",
+      "province_placeholder": "مثل أونتاريو، ساو باولو، بافاريا",
+      "region_optional": "المنطقة (اختياري)",
+      "region_placeholder": "قانون معين في منطقة أو محل، إذا كنت تعرف واحدا",
+      "frameworks_likely_to_apply": "الأطر التي من المرجح أن تنطبق (يتم تأكيدها بعد تطبيق الإعدادات):",
+      "auto_discovered_pending_review": "المكتشف التلقائي — في انتظار المراجعة القانونية، وطبق بحذر في هذه الأثناء.",
+      "no_specific_frameworks_found": "لم يتم العثور على إطار عمل محدد لموقعك — هناك متطلبات عامة تتعلق بسلامة الطفل.",
+      "something_not_right": "هل هناك شيء غير صحيح؟ أخبرنا",
+      "review_reason_placeholder": "ما الذي يبدو خاطئا؟ سنوجه هذا إلى الشخص المناسب للمراجعة.",
+      "review_submitted": "شكرا — أرسلت للمراجعة."
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "اختر المزود حسب المهمة. يتغير التغيرات فورًا - لا حاجة إلى إعادة تشغيل.",
@@ -3242,13 +3242,13 @@
       "title_generate_a_new_uuid": "إنشاء UUID جديد",
       "placeholder_what_changed_in_this_version": "ما هو التغيير في هذه النسخة؟",
       "select": "— Select —",
-      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
-      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
-      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
-      "pending_review": "pending review",
-      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
-      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
-      "placeholder_district_or_local_law": "District or local law"
+      "other_enter_2letter_code_below": "أخرى (أدخل رمزا مكون من حرفين أدناه)",
+      "applied_to_your_organization_admins_can_": "مطبق على مؤسستك (يمكن للمسؤولين إزالة أي من هذه القواعد أدناه في \"الولايات القضائية النشطة\"، أو تجاوز القاعدة المخصصة عبر النموذج أدناه):",
+      "no_jurisdiction_found_for_that_location_": "لم يتم العثور على اختصاص قضائي لذلك الموقع حتى الآن — وسيسجل النظام ذلك للكشف المستقبلي.",
+      "pending_review": "مراجعة معلقة",
+      "placeholder_eg_de_fr_gb": "مثل ألمانيا، فرنسا، بريطانيا",
+      "placeholder_eg_ontario_bavaria": "مثل أونتاريو، بافاريا",
+      "placeholder_district_or_local_law": "القانون المحلي أو المنطقي"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "أحضر مفتاحك الخاص — تحديث مطلوب",
@@ -3276,7 +3276,7 @@
       "title_remove": "حذف"
     },
     "cta_privacy_note": "مطابق مع FERPA و COPPA. لا يتم بيع أو مشاركة بيانات الطالب أبداً.",
-    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
+    "team_1_bio": "قضى بول عقدا من الزمن كمعلم، وأربع سنوات عمل في شركات التقنيات التعليمية، وجرب كيفية استخراج التعلم من الكتب والفصول الدراسية منذ عقدين. تستفيد البرمجيات التشابكية من تطورات نماذج اللغة الكبيرة وتستفيد من التقنيات المحمولة لتمكين الطلاب من التعلم من العالم مع إرشاد من معلميهم أينما اختاروا التجول.",
     "pages_adminauditlogpage": {
       "export_csv": "تنزيل CSV",
       "all": "الكل",
@@ -3334,420 +3334,420 @@
       "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
       "refund_policy": "refund policy",
       "plan": "Plan",
-      "current_plan": "Current plan",
+      "current_plan": "الخطة الحالية",
       "save_30": "save 30%"
     },
     "pages_refundpolicypage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
     "calendar": {
-      "prev_month": "Previous month",
-      "next_month": "Next month",
+      "prev_month": "الشهر السابق",
+      "next_month": "الشهر القادم",
       "today": "Today",
-      "no_events_this_day": "Nothing scheduled for this day."
+      "no_events_this_day": "لا يوجد شيء محدد لهذا اليوم."
     },
-    "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_preferences": "تفضيلات ملفات تعريف الارتباط",
+    "cookie_status_on": "حاليا: ملفات تعريف ارتباط التحليلات مفعلة.",
+    "cookie_status_off": "حاليا: تم رفض ملفات تعريف الارتباط الخاصة بالتحليلات.",
     "components_errorboundary": {
-      "something_went_wrong": "Something went wrong",
-      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
-      "try_again": "Try again",
-      "reload_page": "Reload page"
+      "something_went_wrong": "حدث خطأ ما",
+      "an_unexpected_error_occurred_and_this_pa": "حدث خطأ غير متوقع ولم يتمكن من عرض هذه الصفحة. يمكنك المحاولة مرة أخرى، أو إعادة تحميل التطبيق.",
+      "try_again": "حاول مرة أخرى",
+      "reload_page": "إعادة تحميل الصفحة"
     },
     "components_teacher_projectcompletionreport": {
-      "status_completed": "Completed",
-      "status_in_progress": "In progress",
-      "status_not_started": "Not started",
-      "col_activity": "Activity",
-      "col_completed": "Completed",
-      "col_participants": "Participants",
-      "col_evidence": "Evidence",
+      "status_completed": "تم الانتهاء",
+      "status_in_progress": "قيد التنفيذ",
+      "status_not_started": "لم يبدأ بعد",
+      "col_activity": "النشاط",
+      "col_completed": "تم الانتهاء",
+      "col_participants": "المشاركون",
+      "col_evidence": "الأدلة",
       "col_student": "Student",
-      "col_last_activity": "Last Activity",
-      "empty": "No activities linked to this project yet.",
-      "title_by_activity": "Completion by Activity",
-      "title_by_participant": "Completion by Participant",
-      "no_participants": "No one has started this project yet."
+      "col_last_activity": "النشاط الأخير",
+      "empty": "لا توجد أنشطة مرتبطة بهذا المشروع حتى الآن.",
+      "title_by_activity": "الإكمال حسب النشاط",
+      "title_by_participant": "إكمال الدراسة حسب المشاركين",
+      "no_participants": "لم يبدأ أحد هذا المشروع بعد."
     },
     "components_teacher_projectlivetracker": {
       "title_live_map": "Live Map",
-      "show_all": "Show everyone",
-      "active_now": "Active Now",
+      "show_all": "أر الجميع",
+      "active_now": "نشط الآن",
       "live": "LIVE",
-      "empty": "No one is currently active in this project.",
-      "empty_hint": "This updates automatically once a student starts a field session.",
-      "not_configured": "No activities in this project have location tracking enabled.",
-      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
+      "empty": "لا يوجد أحد نشط حاليا في هذا المشروع.",
+      "empty_hint": "يتم تحديث هذا تلقائيا بمجرد بدء الطالب جلسة ميدانية.",
+      "not_configured": "لا توجد أنشطة في هذا المشروع تحتوي على تتبع الموقع مفعل.",
+      "not_configured_hint": "قم بتشغيله لكل نشاط في علامة تبويب الموقع الخاصة بالنشاط."
     },
-    "generate_with_ai": "Generate with AI",
-    "activity_title": "Activity title",
-    "grade_level": "Grade level",
-    "taxonomy_type": "Taxonomy type",
-    "taxonomy_level": "Taxonomy level",
-    "generating": "Generating…",
-    "generate_criteria": "Generate Criteria",
+    "generate_with_ai": "التوليد باستخدام الذكاء الاصطناعي",
+    "activity_title": "عنوان النشاط",
+    "grade_level": "المستوى الدراسي",
+    "taxonomy_type": "نوع التصنيف",
+    "taxonomy_level": "مستوى التصنيف",
+    "generating": "يولد...",
+    "generate_criteria": "إنشاء معايير",
     "components_teacher_rubricbuilder": {
-      "blooms_revised": "Bloom's Revised",
-      "dok_webbs": "DOK (Webb's)",
+      "blooms_revised": "بلوم المراجع",
+      "dok_webbs": "DOK (ويب)",
       "solo": "SOLO",
-      "marzanos": "Marzano's",
-      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+      "marzanos": "مارزانو",
+      "placeholder_eg_analyze_dok3_relational_analysis": "مثلا: تحليل، DOK3، العلاقاتي، التحليل"
     },
-    "view_on_wikidata": "View on Wikidata",
+    "view_on_wikidata": "عرض على ويكيداتا",
     "pages_student_studentmessagespage": {
-      "title": "Messages",
-      "messages_title": "Messages",
+      "title": "الرسائل",
+      "messages_title": "الرسائل",
       "loading": "Loading…",
-      "placeholder_write_a_reply": "Write a reply…",
-      "back_to_messages": "Back to messages",
+      "placeholder_write_a_reply": "اكتب ردا...",
+      "back_to_messages": "العودة إلى الرسائل",
       "you": "You",
-      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
-      "announcements_title": "Classroom Announcements",
-      "no_announcements_yet": "No announcements yet.",
-      "no_messages_yet": "No messages from teachers yet."
+      "subtitle": "شاهد الإعلانات من معلميك ورد على الرسائل المرسلة إليك.",
+      "announcements_title": "إعلانات الفصول الدراسية",
+      "no_announcements_yet": "لا توجد إعلانات حتى الآن.",
+      "no_messages_yet": "لا توجد رسائل من المعلمين حتى الآن."
     },
-    "announcements": "Announcements",
+    "announcements": "الإعلانات",
     "projectCompletionReportPage": {
-      "back": "← Back to Project",
-      "title": "Completion Report",
-      "no_project_selected": "No project selected."
+      "back": "← العودة إلى المشروع",
+      "title": "تقرير الإكمال",
+      "no_project_selected": "لم يتم اختيار أي مشروع."
     },
     "projectLiveTrackingPage": {
-      "back": "← Back to Project",
-      "title": "Live Tracking",
-      "no_project_selected": "No project selected."
+      "back": "← العودة إلى المشروع",
+      "title": "التتبع المباشر",
+      "no_project_selected": "لم يتم اختيار أي مشروع."
     },
     "projectnewpage": {
-      "new_project": "New Project",
-      "subtitle": "Set up a new learning project for your students."
+      "new_project": "مشروع جديد",
+      "subtitle": "قم بإعداد مشروع تعليمي جديد لطلابك."
     },
     "pages_teacher_teachercalendarpage": {
-      "title": "Calendar",
+      "title": "التقويم",
       "date": "Date",
       "type": "Type",
-      "placeholder_eg_river_study_field_trip": "e.g. River study field trip",
-      "subtitle": "Planned and completed activities for your class, plus any events you add.",
-      "description_optional": "Description (optional)"
+      "placeholder_eg_river_study_field_trip": "مثلا: رحلة ميدانية لدراسة النهر",
+      "subtitle": "خطط وأكملت أنشطة لصفك، بالإضافة إلى أي فعاليات تضيفها.",
+      "description_optional": "الوصف (اختياري)"
     },
     "pages_teacher_teachermessagespage": {
-      "title": "Messages",
-      "classroom": "Classroom",
+      "title": "الرسائل",
+      "classroom": "الفصل الدراسي",
       "message": "Message",
       "loading": "Loading…",
       "send_to": "Send to",
-      "a_specific_student": "A specific student",
+      "a_specific_student": "طالب محدد",
       "student": "Student",
-      "choose_a_student": "Choose a student…",
+      "choose_a_student": "اختر طالبا...",
       "subject": "Subject",
-      "placeholder_write_a_reply": "Write a reply…",
-      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
-      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder",
-      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
-      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
-      "a_specific_students_parent": "A specific student's parent",
-      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
-      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
-      "students": "Students (choose one or more)",
-      "no_students_in_this_classroom": "No students in this classroom yet.",
-      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
-      "no_linked_parent_found_for_some_students_": "No linked parent found yet for one or more of the selected students.",
-      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
+      "placeholder_write_a_reply": "اكتب ردا...",
+      "placeholder_eg_field_trip_friday": "مثلا: رحلة ميدانية يوم الجمعة",
+      "placeholder_eg_field_trip_reminder": "مثلا: تذكير برحلة ميدانية",
+      "subtitle": "انشر إعلانات للصف بأكمله، أو راسل الطلاب وأولياء الأمور مباشرة.",
+      "no_announcements_yet_for_this_classroom": "لا توجد إعلانات حتى الآن لهذا الفصل.",
+      "a_specific_students_parent": "ولي أمر طالب محدد",
+      "all_parents_bulk_message": "👨 👩 👧 جميع الآباء (رسالة جماعية)",
+      "all_students_bulk_message": "🧑 🎓 جميع الطلاب (رسالة جماعية)",
+      "students": "الطلاب (اختر واحدا أو أكثر)",
+      "no_students_in_this_classroom": "لا يوجد طلاب في هذا الفصل حتى الآن.",
+      "no_linked_parent_found_for_this_student_": "لم يتم العثور على أي ولي أمر مرتبط لهذا الطالب حتى الآن.",
+      "no_linked_parent_found_for_some_students_": "لم يتم العثور على أي ولي أمر مرتبط بعد لطالب أو أكثر من الطلاب المختارين.",
+      "no_messages_yet_use_new_message_to_reach": "لا توجد رسائل حتى الآن. استخدم \"رسالة جديدة\" للوصول إلى طالب أو أحد أولياء الأمور أو الصف بأكمله."
     },
     "pages_teacher_trackingsettings": {
-      "tier_trip": "Trip (fast)",
-      "tier_long_running": "Long-running (slow)",
-      "title": "Tracking Settings",
-      "empty": "No activities yet.",
-      "select_all": "Select all",
-      "enable_selected": "Enable tracking",
-      "disable_selected": "Disable tracking",
-      "col_activity": "Activity",
+      "tier_trip": "رحلة (سريعة)",
+      "tier_long_running": "طويل الأمد (بطيء)",
+      "title": "إعدادات التتبع",
+      "empty": "لا توجد أنشطة حتى الآن.",
+      "select_all": "اختر الكل",
+      "enable_selected": "تمكين التتبع",
+      "disable_selected": "تعطيل التتبع",
+      "col_activity": "النشاط",
       "col_project": "Project",
-      "col_tracking": "Tracking",
+      "col_tracking": "التتبع",
       "on": "On",
       "off": "Off",
-      "back": "← Back to Activities",
-      "subtitle": "GPS live-tracking status across every activity in your account.",
-      "col_tier": "Poll cadence if live"
+      "back": "← العودة إلى الأنشطة",
+      "subtitle": "حالة تتبع GPS المباشر عبر كل نشاط في حسابك.",
+      "col_tier": "إيقاع الاستطلاع إذا كان مباشرة"
     },
     "app": {
       "loading": "Loading…"
     },
     "components_imagecaptionmodal": {
       "cancel": "Cancel",
-      "placeholder_describe_the_image": "Describe the image",
-      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
-      "for_screen_readers": "(for screen readers)",
-      "optional_shown_under_the_image": "(optional -- shown under the image)",
-      "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
+      "placeholder_describe_the_image": "وصف الصورة",
+      "placeholder_a_trail_marker_on_the_ridge": "علامة مسار على الحافة",
+      "placeholder_photo_jane_doe": "الصورة: جين دو",
+      "for_screen_readers": "(لقارئ الشاشة)",
+      "optional_shown_under_the_image": "(اختياري -- موضح تحت الصورة)",
+      "optional_eg_photo_credit": "(اختياري -- مثل حقوق الصورة)"
     },
     "blog": "Blog",
     "components_seo": {
-      "title_origin_story": "Origin Story"
+      "title_origin_story": "قصة الأصل"
     },
     "components_trialexpirybanner": {
-      "see_plans": "See plans",
+      "see_plans": "شاهد الخطط",
       "aria_label_dismiss": "Dismiss"
     },
     "components_account_mfasettings": {
-      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
-      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "twofactor_authentication_adds_a_second_s": "تضيف المصادقة الثنائية خطوة ثانية في تسجيل الدخول باستخدام تطبيقات المصادقة (Google Authenticator، Authy، 1Password، إلخ). موصى به بشكل خاص لحسابات المعلمين والإداريين، نظرا لوصولهم إلى بيانات الطلاب.",
+      "1_scan_this_qr_code_with_your_authentica": "1. امسح رمز الاستجابة السريعة هذا باستخدام تطبيق المصادقة الخاص بك (أو أدخل المفتاح يدويا).",
       "done": "Done",
-      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
-      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
-      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
-      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
-      "confirm_your_password_to_disable": "Confirm your password to disable:",
-      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+      "twofactor_authentication_is_enabled": "✓ تم تفعيل المصادقة الثنائية",
+      "2_enter_the_6digit_code_it_shows": "2. أدخل الرمز المكون من 6 أرقام الذي يظهره:",
+      "save_these_backup_codes_now_they_wont_be": "احفظ هذه الرموز الاحتياطية الآن — لن تظهر مرة أخرى.",
+      "each_code_works_once_if_you_ever_lose_ac": "كل رمز يعمل مرة واحدة إذا فقدت الوصول إلى تطبيق المصادقة الخاص بك.",
+      "confirm_your_password_to_disable": "أكد كلمة المرور الخاصة بك لتعطيل:",
+      "enter_a_current_6digit_code_to_invalidat": "أدخل رمزا حاليا مكون من 6 أرقام لإبطال رموز النسخ الاحتياطي القديمة وإنشاء رموز جديدة."
     },
     "components_applied_standards": {
-      "loading": "Checking standards…",
+      "loading": "التحقق من المعايير...",
       "approve": "Approve",
       "dismiss": "Dismiss",
       "remove": "Remove",
       "restore": "Restore",
-      "add_standard": "+ Add a standard",
-      "search_placeholder": "Search standards…",
+      "add_standard": "+ إضافة معيار",
+      "search_placeholder": "معايير البحث...",
       "search": "Search",
       "cancel": "Cancel",
-      "no_results": "No matches.",
+      "no_results": "لا توجد أعواد ثقاب.",
       "added": "Added",
       "add": "Add",
-      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
-      "none_yet": "No standards matched this activity's content yet — you can add one manually below."
+      "save_first": "احفظ هذا النشاط لرؤية المعايير المطبقة تلقائيا من محتواه — يمكنك أيضا إضافة المعايير الخاصة بك بمجرد وجوده.",
+      "none_yet": "لم تطابق أي معايير محتوى هذا النشاط حتى الآن — يمكنك إضافة واحدة يدويا أدناه."
     },
     "components_standards_explorer": {
-      "title": "Explore Standards",
-      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
-      "searching": "Searching…",
+      "title": "استكشف المعايير",
+      "placeholder": "مثل \"معادلة الكسور\" أو \"الدفاع عن أهداف التعلم\"...",
+      "searching": "أبحث...",
       "search": "Search",
       "clear": "Clear",
-      "search_failed": "Search failed. Try again in a moment.",
-      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
-      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
-      "no_results": "No matching standards found.",
-      "generate_activity": "✨ Generate activity from these standards"
+      "search_failed": "فشل البحث. حاول مرة أخرى بعد قليل.",
+      "subtitle": "ابحث عبر كل معيار، ومرجع، ومتطلبات — تشمل النتائج معايير ذات صلة هيكلية (الأسلاف، المراجع المتقاطعة، المتطلبات المسبقة)، وليس فقط أقرب تطابق نصي.",
+      "include_related": "تضمين المعايير ذات الصلة (الأسلاف، المراجع المتقاطعة، المتطلبات المسبقة)",
+      "no_results": "لم يتم العثور على معايير مطابقة.",
+      "generate_activity": "✨ توليد نشاط من هذه المعايير"
     },
     "components_teacher_activitywizard": {
       "error_prefix": "Error",
       "step_basics": "Basics",
-      "step_experience": "Experience",
-      "step_assessment": "Assessment",
-      "step_outcomes": "Outcomes",
+      "step_experience": "الخبرة",
+      "step_assessment": "التقييم",
+      "step_outcomes": "النتائج",
       "step_review": "Review",
-      "basics_title": "The basics",
-      "about_place": "About this place",
-      "coordinates": "Coordinates",
-      "optional": "Optional",
-      "kind_group": "Activity kind",
-      "wayfaring": "Wayfaring",
-      "investigative": "Investigative",
-      "setting_title": "Setting and timing",
-      "tracking_title": "Live tracking",
+      "basics_title": "الأساسيات",
+      "about_place": "عن هذا المكان",
+      "coordinates": "الإحداثيات",
+      "optional": "اختياري",
+      "kind_group": "نوع النشاط",
+      "wayfaring": "السفر",
+      "investigative": "تحقيقات",
+      "setting_title": "الإعداد والتوقيت",
+      "tracking_title": "التتبع المباشر",
       "on": "On",
       "off": "Off",
-      "prompts_title": "Student prompts",
-      "ai_chat": "Ask Peri (AI chat)",
-      "recommended": "Recommended",
-      "attached": "1 attached",
-      "none": "None",
+      "prompts_title": "محفزات الطلاب",
+      "ai_chat": "اسأل بيري (دردشة الذكاء الاصطناعي)",
+      "recommended": "موصى به",
+      "attached": "1 مرفق",
+      "none": "لا شيء",
       "edit": "Edit",
-      "review_title": "Review and create",
-      "not_set": "Not set yet",
-      "grade_subject": "Grade and subject",
+      "review_title": "مراجعة وإنشاء",
+      "not_set": "لم يتم تحديد بعد",
+      "grade_subject": "الدرجة والموضوع",
       "none_yet": "None yet",
-      "quick_preview": "Quick Preview",
-      "this_place": "This place",
-      "close_dialog": "Close dialog",
+      "quick_preview": "معاينة سريعة",
+      "this_place": "هذا المكان",
+      "close_dialog": "إغلاق مربع حوار",
       "close": "Close",
-      "last_step": "Last step",
-      "library": "Outcome library",
-      "saved": "saved",
-      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "last_step": "الخطوة الأخيرة",
+      "library": "مكتبة النتائج",
+      "saved": "محفوظ",
+      "library_unavailable": "لم يتم تحميل مكتبة النتائج الخاصة بك. لا يزال بإمكانك كتابة النتائج أدناه.",
       "loading": "Loading…",
       "added": "Added",
       "add": "Add",
-      "written": "written",
-      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
-      "thinking_level": "Thinking level",
-      "evidence": "Evidence",
-      "in_library": "In my library",
-      "save_to_library": "Save to my library",
+      "written": "مكتوب",
+      "outcome_placeholder": "سيتمكن الطلاب من... مثلا تصنيف ثلاثة أنواع نباتية حسب شكل الأوراق",
+      "thinking_level": "مستوى التفكير",
+      "evidence": "الأدلة",
+      "in_library": "في مكتبتي",
+      "save_to_library": "حفظ في مكتبتي",
       "remove": "Remove",
-      "write_new": "Write a new outcome",
-      "cov_outcomes": "Outcomes",
-      "cov_levels": "Thinking levels",
-      "cov_standards": "Standards matched",
-      "start_location": "A location",
-      "start_type": "An activity type",
-      "start_assessment": "An assessment",
-      "start_outcomes": "Learning outcomes",
-      "lets_begin": "Let's begin",
-      "start_group": "Start from",
-      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "write_new": "اكتب نتيجة جديدة",
+      "cov_outcomes": "النتائج",
+      "cov_levels": "مستويات التفكير",
+      "cov_standards": "المعايير المتطابقة",
+      "start_location": "موقع",
+      "start_type": "نوع نشاط",
+      "start_assessment": "تقييم",
+      "start_outcomes": "نتائج التعلم",
+      "lets_begin": "لنبدأ",
+      "start_group": "ابدأ من",
+      "standards_error": "تعذر تحميل الاقتراحات القياسية. يمكنك إضافة المعايير بعد الحفظ.",
       "state": "State",
-      "any_state": "Any state",
-      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "any_state": "أي ولاية",
+      "search_standards_placeholder": "مثل \"تكافؤ الكسور\" أو رمز قياسي...",
       "search": "Search",
-      "no_results": "No matches.",
-      "search_results": "Search results",
-      "suggested_standards": "Suggested standards",
-      "suggested": "Suggested",
-      "progress": "Progress",
-      "change_start": "Change start point",
+      "no_results": "لا توجد أعواد ثقاب.",
+      "search_results": "نتائج البحث",
+      "suggested_standards": "المعايير المقترحة",
+      "suggested": "مقترح",
+      "progress": "التقدم",
+      "change_start": "تغيير نقطة البداية",
       "back": "Back",
       "next": "Next",
-      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
-      "place_ready": "Background, features and nearby places are ready.",
-      "peri_suggestions": "✨ Peri AI suggestions",
-      "peri_offline_questions": "🔌 Offline Peri questions",
-      "experience_title": "How will students experience it?",
-      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
-      "kind_title": "Wayfaring or investigative",
-      "wayfaring_note": "Students move through a route and respond at stops along the way.",
-      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
-      "assessment_title": "How will you assess it?",
-      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
-      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
-      "outcome_added": "Outcome added from your library.",
-      "outcome_saved": "Outcome saved to your library for reuse.",
-      "outcomes_title": "What should students be able to do?",
-      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
-      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
-      "this_activity_outcomes": "This activity's outcomes",
-      "start_location_note": "I know where students will be. Peri suggests what to do there.",
-      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
-      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
-      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
-      "start_title": "What do you want to start from?",
-      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
-      "state_not_set": "Not set by your administrator",
-      "search_standards": "Search for a standard",
-      "standards_loading": "Peri is matching standards…",
-      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
-      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
-      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
-      "start_pane": "Choose where to start"
+      "basics_lede": "العنوان، الدرجة، الموضوع والمكان. يستخدم بيري هذه التوصيات لاقتراح أنشطة ومعايير.",
+      "place_ready": "الخلفية والميزات والأماكن القريبة جاهزة.",
+      "peri_suggestions": "✨ اقتراحات بيري AI",
+      "peri_offline_questions": "🔌 أسئلة حول بيري غير المتصلة",
+      "experience_title": "كيف سيختبر الطلاب ذلك؟",
+      "experience_lede": "اختر نوع النشاط، وما إذا كان بإمكانك رؤية الطلاب على الخريطة، وكيف يتم المطالبة بهم.",
+      "kind_title": "السفر أو التحقيق",
+      "wayfaring_note": "يتحرك الطلاب عبر مسار ويستجيبون في محطات على طول الطريق.",
+      "investigative_note": "يجمع الطلاب الأدلة في منطقة واحدة للإجابة على سؤال أو اختبار فكرة.",
+      "assessment_title": "كيف ستقيمها؟",
+      "assessment_lede": "قدم حتى ثلاث معايير: معايير الولاية، تصنيف معرفي، ومعيار التقييم الخاص بك. يقترح بيري معايير من درجتك، وولايةك، وتخصصك، والنتائج.",
+      "review_lede": "تحقق من الملخص. اختر تحرير في أي صف للعودة إلى تلك الخطوة؛ يتم الاحتفاظ بإجاباتك.",
+      "outcome_added": "تمت إضافة النتيجة من مكتبتك.",
+      "outcome_saved": "تم حفظ النتيجة في مكتبتك لإعادة الاستخدام.",
+      "outcomes_title": "ماذا يجب أن يكون الطلاب قادرين على فعله؟",
+      "outcomes_lede": "اكتب كل نتيجة كشيء قابل للملاحظة، أو أعد استخدام واحدة من مكتبتك. النتائج تغذي مطابقة المعايير والمعيار القياسي.",
+      "library_empty": "لا توجد نتائج محفوظة متطابقة حتى الآن. اكتب واحدا أدناه واختر \"حفظ في مكتبتي\".",
+      "this_activity_outcomes": "نتائج هذا النشاط",
+      "start_location_note": "أعرف أين سيكون الطلاب. بيري يقترح ما يجب فعله هناك.",
+      "start_type_note": "نزهة أو تحقيق. سأختار المكان التالي.",
+      "start_assessment_note": "ابدأ من مستوى قياسي أو تصنيف أو معيار، ثم ابن بالعكس.",
+      "start_outcomes_note": "أعرف ما يجب أن يكون الطلاب قادرين على فعله. بيري يقترح مطابقة المعايير.",
+      "start_title": "من أين تريد أن تبدأ؟",
+      "start_lede": "اختر الجزء من النشاط الذي لديك بالفعل في ذهنك. سيطلب بيري الباقي، بالترتيب الذي يبدو منطقيا من هناك. يمكنك تغيير أي شيء لاحقا.",
+      "state_not_set": "غير محدد من قبل المسؤول",
+      "search_standards": "ابحث عن معيار",
+      "standards_loading": "بيري يطابق المعايير...",
+      "standards_add_outcomes": "أضف نتائج لصقل هذه المباريات.",
+      "standards_none": "لا توجد تطابقات حتى الآن. أضف النتائج أو غير الدرجة والمادة.",
+      "standards_hint": "يقوم Peri بتحديد أقوى التطابقات مسبقا. قم بإلغاء تحديد أي تطابقات لا تناسب. يتم تطبيق المعايير المحددة عند إنشاء النشاط.",
+      "start_pane": "اختر من أين تبدأ"
     },
     "components_teacher_activitymanagerwizardtest": {
-      "peri_suggestions": "peri suggestions",
-      "activities_list": "activities list"
+      "peri_suggestions": "اقتراحات بيري",
+      "activities_list": "قائمة الأنشطة"
     },
     "components_teacher_wizard_activitywizardtest": {
-      "title_pond_study": "Pond study",
+      "title_pond_study": "دراسة البركة",
       "title_pond": "Pond"
     },
-    "two_factor_authentication": "Two-Factor Authentication",
+    "two_factor_authentication": "المصادقة الثنائية",
     "pages_bloglistpage": {
       "blog": "Blog",
       "loading": "Loading…",
       "title_blog": "Blog",
-      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
-      "no_posts_yet_check_back_soon": "No posts yet — check back soon."
+      "updates_and_field_notes_from_the_team_bu": "تحديثات وملاحظات ميدانية من فريق بناء البرمجيات البحرية.",
+      "no_posts_yet_check_back_soon": "لا توجد منشورات حتى الآن — تابعنا قريبا."
     },
     "pages_blogpostpage": {
       "loading": "Loading…",
-      "post_not_found": "Post not found",
-      "title_post_not_found": "Post Not Found",
-      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
+      "post_not_found": "لم يتم العثور على المنشور",
+      "title_post_not_found": "لم يتم العثور على المنشور",
+      "this_post_may_have_been_unpublished_or_m": "قد يكون هذا المنشور غير منشور أو تم نقله."
     },
-    "parent_requests": "Parent Requests",
-    "requested_on": "Requested",
+    "parent_requests": "طلبات الوالدين",
+    "requested_on": "طلب",
     "deny": "Deny",
     "pages_admin_adminblogeditorpage": {
       "loading": "Loading…",
       "restore": "Restore",
       "discard": "Discard",
       "title": "Title",
-      "commaseparated": "(comma-separated)",
+      "commaseparated": "(مفصولة بفاصل)",
       "content": "Content",
-      "placeholder_post_title": "Post title",
-      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
-      "title_remove_cover_image": "Remove cover image",
-      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
-      "placeholder_product_homeschool_standards": "product, homeschool, standards",
-      "title_replace_this_image": "Replace this image",
-      "title_remove_this_image": "Remove this image",
-      "placeholder_write_in_markdown": "Write in Markdown…",
-      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
-      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
-      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
-      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
-      "nothing_to_preview_yet": "Nothing to preview yet.",
-      "title_edit_captionattribution": "Edit caption/attribution"
+      "placeholder_post_title": "عنوان المنشور",
+      "placeholder_one_or_two_sentence_summary": "ملخص جملة أو جملتين...",
+      "title_remove_cover_image": "إزالة صورة الغلاف",
+      "placeholder_sunrise_over_the_ridge_trail": "شروق الشمس فوق مسار الحافة",
+      "placeholder_photo_jane_doe": "الصورة: جين دو",
+      "placeholder_product_homeschool_standards": "المنتج، التعليم المنزلي، المعايير",
+      "title_replace_this_image": "استبدال هذه الصورة",
+      "title_remove_this_image": "إزالة هذه الصورة",
+      "placeholder_write_in_markdown": "اكتب في ماركداون...",
+      "optional_shown_on_the_blog_list_and_in_l": "(اختياري — يظهر في قائمة المدونة وفي معاينات الروابط؛ يتم إنشاؤه تلقائيا من المحتوى إذا ترك فارغا)",
+      "optional_upload_a_file_or_paste_a_url_if": "(اختياري — رفع ملف، أو لصق رابط إذا كان مستضاف بالفعل في مكان ما)",
+      "optional_shown_under_the_cover_image": "(اختياري — موضح تحت صورة الغلاف)",
+      "optional_eg_photo_credit": "(اختياري — مثل حقوق الصورة)",
+      "nothing_to_preview_yet": "لا يوجد شيء لمعاينته بعد.",
+      "title_edit_captionattribution": "تعديل التعليق / النسبة"
     },
     "pages_admin_adminblogpage": {
       "blog": "Blog",
       "loading": "Loading…",
-      "placeholder_search_by_title_or_slug": "Search by title or slug…",
-      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
+      "placeholder_search_by_title_or_slug": "ابحث حسب العنوان أو الرصاص...",
+      "write_and_publish_posts_published_posts_": "كتابة ونشر المنشورات. تظهر المشاركات المنشورة في /blog ويتم ربطها من رأس الموقع."
     },
     "pages_admin_adminpageblockeditorpage": {
       "loading": "Loading…",
       "format": "Format",
-      "plain_text": "Plain text",
-      "markdown": "Markdown",
+      "plain_text": "نص بسيط",
+      "markdown": "ماركداون",
       "content": "Content",
       "status": "Status",
       "history": "History",
-      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
-      "published_live_on_the_site": "Published (live on the site)",
-      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
-      "no_saved_versions_yet": "No saved versions yet.",
-      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "must_match_the_key_hardcoded_in_the_page": "(يجب أن يتطابق مع المفتاح المرمز في JSX الخاص بالصفحة)",
+      "published_live_on_the_site": "نشر (مباشر على الموقع)",
+      "draft_hidden_page_shows_its_builtin_defa": "المسودة (مخفية — الصفحة تعرض الإعداد الافتراضي المدمج)",
+      "no_saved_versions_yet": "لا توجد نسخ محفوظة حتى الآن.",
+      "groups_blocks_in_the_list_eg_landing": "(يجمع الكتل في القائمة، مثل \"الهبوط\")",
       "placeholder_landing": "landing",
       "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
     },
     "pages_admin_adminpagespage": {
       "pages": "Pages",
       "loading": "Loading…",
-      "placeholder_search_by_block_key_or_content": "Search by block key or content…",
-      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
+      "placeholder_search_by_block_key_or_content": "ابحث حسب مفتاح الحظر أو المحتوى...",
+      "edit_copy_directly_on_live_pages_without": "تحرير النسخ مباشرة على الصفحات الحية بدون كود قابل للنشر. تظهر هنا فقط الحقول التي قام المطور بتوصيلها السلكية."
     },
-    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
-    "activity_description": "Activity description",
-    "learning_objectives_one_per_line": "Learning objectives (one per line)",
-    "ai_generated_overview": "🤖 AI-generated overview — verify details",
-    "looking_up_more_about_this_place": "Looking up more about this place…",
-    "learn_about_this_place": "Learn about this place",
-    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "generate_with_ai_help": "صف النشاط أدناه وسيقوم الذكاء الاصطناعي بصياغة معايير التقييم مع أوصاف من 4 مستويات. يتم إضافة المعايير المولدة أدناه — لن يتم إزالة أي شيء أدخلته بالفعل.",
+    "activity_description": "وصف النشاط",
+    "learning_objectives_one_per_line": "أهداف التعلم (هدف واحد لكل سطر)",
+    "ai_generated_overview": "🤖 نظرة عامة مولدة بالذكاء الاصطناعي — التحقق من التفاصيل",
+    "looking_up_more_about_this_place": "البحث عن المزيد عن هذا المكان...",
+    "learn_about_this_place": "تعرف على هذا المكان",
+    "nearby_points_of_interest": "🗺️ نقاط الاهتمام القريبة",
     "pages_homeschool_homeschoolcalendarpage": {
-      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+      "add_a_child_to_see_their_calendar": "أضف طفلا من \"الأطفال\" لرؤية تقويمهم."
     },
     "pages_student_studentcalendarpage": {
-      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+      "subtitle": "أنشطتك المخططة والمكتملة، وأي شيء حدده معلمك."
     },
     "components_blogpostview": {
-      "nothing_to_preview_yet": "Nothing to preview yet."
+      "nothing_to_preview_yet": "لا يوجد شيء لمعاينته بعد."
     },
-    "try_demo_account": "Or try a demo account — no signup required →",
-    "early_access_title": "We're just getting started",
-    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
-    "early_access_cta": "Create your free account",
-    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
-    "no_pending_parent_requests": "No pending parent requests right now.",
+    "try_demo_account": "أو جرب حساب تجريبي — لا حاجة للتسجيل →",
+    "early_access_title": "نحن فقط بدأنا",
+    "early_access_desc": "الأدوات المتحركة في مرحلة الوصول المبكر — نحن نعمل مع عائلاتنا الأولى لتشكيل ما سيأتي بعد ذلك. كن واحدا منهم، وساعد في تحديد إلى أين سيذهب هذا.",
+    "early_access_cta": "أنشئ حسابك المجاني",
+    "parent_requests_description": "يمكن للوالد أو الوصي أن يطلب متابعة تقدمك. الموافقة تتيح لهم رؤية أنشطتك وتقاريرك — يمكنك سحب الوصول من ملفهم الشخصي في أي وقت. رفض الطلب.",
+    "no_pending_parent_requests": "لا توجد طلبات أولياء الأمور المعلقة حاليا.",
     "pricing_nav_label": "Pricing",
     "refundpolicypage": {
-      "back_to_home": "← Back to Home",
-      "title": "Refund &amp; Cancellation Policy",
-      "last_updated": "Last updated: September 2026",
-      "1_title": "1. Free Trial",
-      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
-      "2_title": "2. Subscriptions & Billing",
-      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
-      "3_title": "3. 14-Day Money-Back Guarantee",
+      "back_to_home": "← العودة إلى المنزل",
+      "title": "سياسة الاسترداد والإلغاء",
+      "last_updated": "آخر تحديث: سبتمبر 2026",
+      "1_title": "1. تجربة مجانية",
+      "1_body": "كل حساب جديد يتضمن تجربة مجانية لمدة 30 يوما مع وصول كامل لجميع الميزات. لا يتطلب أي طريقة دفع لبدء أو استخدام النسخة التجريبية. لن يتم تحصيل أي رسوم منك إلا إذا اخترت الاشتراك بنشاط.",
+      "2_title": "2. الاشتراكات والفوترة",
+      "2_body": "عند الاشتراك، يتم أخذ الدفع في ذلك الوقت للخطة التي تختارها (شهرية أو سنوية). يتم تجديد الاشتراكات تلقائيا في نهاية كل فترة فوترة حتى يتم إلغاؤها. تتم المدفوعات والفوترة لدينا من قبل Paddle.com، التاجر الرسمي لدينا.",
+      "3_title": "3. ضمان استرداد الأموال لمدة 14 يوما",
       "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
-      "4_title": "4. Renewal Charges",
-      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
-      "5_title": "5. How to Cancel",
+      "4_title": "4. رسوم التجديد",
+      "4_body": "مدفوعات التجديد (بعد فترة الفوترة الأولى) عادة غير قابلة للاسترداد. لتجنب رسوم التجديد، ألغ قبل تاريخ التجديد — ستحتفظ بالوصول حتى نهاية الفترة التي دفعت ثمنها بالفعل.",
+      "5_title": "5. كيفية الإلغاء",
       "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
-      "6_title": "6. Exceptional Circumstances",
-      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "6_title": "6. الظروف الاستثنائية",
+      "6_body": "نراجع طلبات الاسترداد خارج هذه النوافذ على أساس كل حالة على حدة — مثل الرسوم المكررة، انقطاعات الخدمة الطويلة، أو أخطاء الفوترة. تواصل معنا وسنقوم بتصحيح الأمر.",
       "7_title": "7. Contact",
-      "7_body": "Questions about billing, cancellations, or refunds?"
+      "7_body": "أسئلة حول الفوترة، الإلغاءات، أو الاستردادات؟"
     }
   }
 }

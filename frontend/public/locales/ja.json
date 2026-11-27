@@ -1,7 +1,7 @@
 {
   "landing": {
     "auth": {
-      "email_placeholder": "you@example.com or username",
+      "email_placeholder": "you@example.com またはユーザー名",
       "login_title": "歓迎戻り",
       "login_subtitle": "「Peripateticwareアカウントにサインイン」",
       "demo_accounts_title": "デモアカウント",
@@ -9,7 +9,7 @@
       "demo_student": "生徒：student@example.com",
       "demo_parent": "親：parent@example.com",
       "demo_password": "パスワード（全て）：セキュアパスワード123",
-      "email_label": "Email or Username",
+      "email_label": "メールアドレスまたはユーザー名",
       "password_label": "パスワード",
       "password_placeholder": "パスワードを入力してください",
       "remember_me": "「記憶」",
@@ -50,15 +50,15 @@
       "company_team": "Team",
       "company_blog": "Blog",
       "company_careers": "Careers",
-      "resources_title": "Resources",
-      "resources_docs": "Documentation",
+      "resources_title": "リソース",
+      "resources_docs": "ドキュメント",
       "resources_guides": "Guides",
       "resources_api": "API",
       "resources_support": "Support",
       "company_contact": "連絡",
-      "brand_desc": "Outdoor, field-based learning for students, teachers, and families.",
-      "all_rights": "All rights reserved.",
-      "product_features": "Features",
+      "brand_desc": "生徒、教師、家族のための屋外・フィールドベースの学習。",
+      "all_rights": "無断転載を禁じます。",
+      "product_features": "特徴",
       "product_pricing": "Pricing",
       "legal_title": "Legal",
       "legal_privacy": "Privacy",
@@ -138,9 +138,9 @@
       "placeholder_search_by_name_or_email": "検索（名前またはメール）",
       "you_dont_have_any_classes_yet_create_a_c": "まだクラスを作成していません。 initially create a class and then invite students",
       "invitation_sent_the_student_will_get_an_": "招待状を送信しました。生徒は、参加リンクが含まれたメールを受け取ります。",
-      "add_a_student": "Add a Student",
-      "add_by_email_hint": "If they already have an account, they’re added right away and notified in-app. If not, we’ll send an invite email instead.",
-      "student_added": "Student added to the class and notified in-app."
+      "add_a_student": "学生を追加する",
+      "add_by_email_hint": "すでにアカウントを持っている場合は、すぐに追加され、アプリ内で通知されます。そうでない場合は、代わりに招待メールをお送りします。",
+      "student_added": "生徒がクラスに追加し、アプリ内で通知を送りました。"
     },
     "team_2_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
     "team_3_bio": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
@@ -294,10 +294,10 @@
       "feature_2_desc": "「コロリという烏が、深く考えるためのよい質問をしてくれます。アイデアをきっかけにし、答えを教えてはくれません。」",
       "feature_3_title": "成長を追跡する",
       "feature_3_desc": "「活動を終え、アウトドア・ラーニングポートフォリオを構築するごとに、あなたの能力が向上していく様子をお楽しみください。」",
-      "feature_4_title": "Follow the Map",
-      "feature_4_desc": "A multi-step scavenger hunt gives you a live map with an arrow to the next stop and how far it is. Your phone works out when you have arrived — you just walk and look.",
-      "feature_5_title": "Your Location Stays on Your Phone",
-      "feature_5_desc": "On a hunt, nothing about where you are leaves your device — it only records which stop you reached. Anything more is your family's choice, and you still get a working hunt either way."
+      "feature_4_title": "地図をフォローする",
+      "feature_4_desc": "複数ステップの宝探しでは、次の停留所と距離を示す矢印付きのライブマップが提供されます。スマホは到着時に自動で、ただ歩いて探すだけです。",
+      "feature_5_title": "位置情報はスマホに残ります",
+      "feature_5_desc": "狩りでは、自分がどこにいるかは端末からは一切残らず、どの地点に到達したかだけが記録されます。それ以上は家族の選択であり、どちらにせよ有効な狩りは可能です。"
     },
     "teacher": {
       "cta": "「アクティビティを作成」",
@@ -312,10 +312,10 @@
       "feature_2_desc": "各生徒の進捗状況をリアルタイムで確認できます。どの段階にあるか、何を習得したか、そして誰にサポートが必要かなどがわかります。",
       "feature_3_title": "「内蔵評価」",
       "feature_3_desc": "「追加の採点時間なしで、能力評価、ポートフォリオ審査、及びカリキュラムの整合性」",
-      "feature_4_title": "Build a Route, Not Just a Pin",
-      "feature_4_desc": "Drop stops on the map or import a GPX from Gaia GPS, AllTrails, or CalTopo. Give each stop a clue, an arrival radius, and a photo or note prompt — then export the finished hunt as GPX. Build one on your phone in the field, or in the web builder.",
-      "feature_5_title": "Decide What Families Are Asked",
-      "feature_5_desc": "Every hunt has a capability ceiling you choose — on-device navigation only, up to geo-tagged evidence — each step a separate, plain-language consent shown to families before the activity starts."
+      "feature_4_title": "ただのピンではなく、ルートを作りましょう",
+      "feature_4_desc": "地図上にストップをドロップするか、Gaia GPS、AllTrails、またはCalTopoからGPXをインポートできます。各ストップにヒント、到達半径、写真やメモのプロンプトを与え、完成した狩りをGPXとしてエクスポートします。フィールド内やウェブビルダーでスマホで作りましょう。",
+      "feature_5_title": "どの家族に依頼するか決める",
+      "feature_5_desc": "すべての狩猟には、あなたが選ぶ能力上限があります――デバイス内ナビゲーションのみ、ジオタグ付きの証拠まで――各ステップには、活動開始前に家族に個別の平易な同意が示されます。"
     },
     "parent": {
       "cta": "「彼らの進捗を表示」",
@@ -330,10 +330,10 @@
       "feature_2_desc": "「彼らは何を探検し、何を記録し、彼らの能力はどのように成長したか」",
       "feature_3_title": "「最新情報を得る」",
       "feature_3_desc": "授業を中断することなく、アクティビティが完了したり、マイルストーンに到達したりした際に、最新情報を受け取ることができます。",
-      "feature_4_title": "You Choose What's Shared",
-      "feature_4_desc": "Every location setting is opt-in and off by default, described in plain words, with how long it's kept shown before you decide. Turn everything off and your child still gets a fully working map hunt — navigation happens on their device.",
-      "feature_5_title": "Kept Only as Long as It's Useful",
-      "feature_5_desc": "An exact spot on a submitted photo blurs to about a city block after 30 days. A live position on a field trip is deleted a week after it ends. A recorded path is gone in 30 days — or the moment you ask."
+      "feature_4_title": "共有するものは自分で選べます",
+      "feature_4_desc": "すべての位置設定はデフォルトでオプトイン・オフに設定されており、どれくらいの期間保持されているかもわかりやすく説明されています。すべてオフにしても、お子さまは完全に動作する地図探しができます — ナビゲーションはデバイス上で行われます。",
+      "feature_5_title": "役に立つ間だけ保管してください",
+      "feature_5_desc": "提出された写真の正確な場所が、30日後に約1街区までぼやけてしまいます。遠足のライブポジションは、終了後1週間で削除されます。記録された経路は30日以内に消えます——あるいは、あなたが尋ねた瞬間に。"
     },
     "team_1_role": "「創始者＆PM」",
     "team_1_initial": "「P」",
@@ -476,10 +476,10 @@
       "latitude": "緯度",
       "longitude": "経度",
       "add": "「追加」",
-      "youngest_grade": "Youngest grade",
-      "oldest_grade": "Oldest grade",
-      "mixed_age_toggle": "This activity has students across multiple grades",
-      "mixed_age_hint": "Peri will write a simpler and a more advanced wording for each question -- same depth of thinking either way. A span of 3 grades or fewer uses one wording automatically."
+      "youngest_grade": "最年少学年",
+      "oldest_grade": "最古グレード",
+      "mixed_age_toggle": "この活動には複数の学年にわたる生徒が参加しています",
+      "mixed_age_hint": "ペリは各問題に対してよりシンプルで高度な表現を書いてくれます――どちらの場合でも考え方の深さは同じです。3学年以下のスパンフでは、自動的に1つの表現が使われます。"
     },
     "difficulty_level": "難易度レベル",
     "remember": "「記憶」",
@@ -653,9 +653,9 @@
     "wikilocationinfo": {
       "latitude": "緯度",
       "longitude": "経度",
-      "architect_or_artist": "Architect/Artist:",
-      "construction_date": "Constructed:",
-      "historical_significance": "Historical Significance:"
+      "architect_or_artist": "建築家/アーティスト:",
+      "construction_date": "構築済み:",
+      "historical_significance": "歴史的意義:"
     },
     "teaching_tip": "「教え方のヒント」",
     "index": {
@@ -1043,13 +1043,13 @@
       "project_activities": "活動",
       "activity": "活動",
       "back": "戻る",
-      "planning": "Planning",
-      "completed": "Completed",
-      "archived": "Archived",
-      "not_found": "Project not found.",
-      "live_tracking": "Live Tracking",
-      "completion_report": "Completion Report",
-      "no_activities": "No activities linked to this project yet."
+      "planning": "計画",
+      "completed": "完了",
+      "archived": "アーカイブ済み",
+      "not_found": "プロジェクトが見つかりません。",
+      "live_tracking": "ライブトラッキング",
+      "completion_report": "完了報告書",
+      "no_activities": "このプロジェクトに関連する活動はまだありません。"
     },
     "active": "アクティブ",
     "project_description": "プロジェクトの説明",
@@ -1143,9 +1143,9 @@
       "that_link_has_expired_please_request_a_n": "リンクは期限切れです。新しいものをリクエストしてください。",
       "that_link_is_invalid_please_try_again": "「そのリンクは無効です。再度お試しください。」",
       "or": "「または」",
-      "twofactor_authentication": "Two-factor authentication",
-      "enter_the_6digit_code_from_your_authenti": "Enter the 6-digit code from your authenticator app, or one of your backup codes.",
-      "back_to_login": "← Back to login"
+      "twofactor_authentication": "二要素認証",
+      "enter_the_6digit_code_from_your_authenti": "認証アプリから6桁のコード、またはバックアップコードのいずれかを入力してください。",
+      "back_to_login": "← ログインに戻る"
     },
     "nav_homeschool": "「ホームスクール」",
     "cookie_consent_title": "クッキー通知",
@@ -1162,10 +1162,10 @@
       "feature_3_title": "「ポートフォリオレポート」",
       "feature_3_desc": "「州の提出用や個人の記録用にPDFポートフォリオ報告書とアクティビティログCSVを生成します。手動でスプレッドシートを作成する必要はありません。」",
       "features_title": "「ホームスクールの家族に必要な全て」",
-      "feature_4_title": "Turn a Trail Into a Hunt",
-      "feature_4_desc": "Walk your route and drop each stop where you stand, right from your phone — or import a GPX track from a hiking app. Your learners follow a map with live distance to the next stop, resolved on the device.",
-      "feature_5_title": "You Hold the Consent",
-      "feature_5_desc": "You are both the guardian and the teacher, so you approve any location sharing yourself, per activity — no separate parent-consent round trip, and everything defaults to the private, on-device option."
+      "feature_4_title": "道を狩りに変えよう",
+      "feature_4_desc": "スマホからルートを歩き、立ち止まる場所をその場に置くか、ハイキングアプリからGPXのトラックをインポートできます。学習者は、デバイス上で判定された次の停留所までのリアルタイム距離を示す地図に従ってください。",
+      "feature_5_title": "あなたは同意を保有しています",
+      "feature_5_desc": "あなたは保護者であり教師でもあるので、場所共有については活動ごとにご自身で承認します—別途保護者の同意は不要で、すべてはデフォルトでプライベートなデバイス上オプションとなります。"
     },
     "hs_feat_ai_title": "人工知能による照会",
     "hs_how_title": "「動作原理」",
@@ -1191,14 +1191,14 @@
       "aria_label_upload_file_pdf_csv_or_excel": "アップロードするファイル（PDF、CSV、もしくはExcel）",
       "aria_label_criteria_set_name": "「基準設定名」",
       "country": "Country",
-      "aria_label_country": "Country these standards belong to",
-      "united_states": "United States",
+      "aria_label_country": "これらの基準が属する国",
+      "united_states": "米国",
       "canada": "Canada",
-      "province": "Province",
+      "province": "州",
       "state": "State",
-      "aria_label_state": "State/province these standards belong to",
+      "aria_label_state": "これらの基準が属する州/県",
       "select_a_state": "Select…",
-      "state_hint": "Tags this set to one state/province, so it's only suggested to teachers there."
+      "state_hint": "このセットは1つの州/県にタグ付けされているので、その州の教師だけに推奨されています。"
     },
     "components_student_aristotelianprompt": {
       "loading_prompt": "「読み込み中…」",
@@ -1340,8 +1340,8 @@
       "aria_label_childs_password": "子供のパスワード",
       "aria_label_childs_grade_level_012": "子供の学年（0-12）",
       "no_children_added_yet_add_your_first_chi": "子供を追加していません。はじめに子供を追加してください。",
-      "remove_child": "Remove child",
-      "removing": "Removing…",
+      "remove_child": "子を削除する",
+      "removing": "除去中...",
       "remove": "Remove"
     },
     "pages_homeschool_homeschoolcoveragepage": {
@@ -1404,7 +1404,7 @@
       "privacy_amp_data": "「プライバシー＆データ」",
       "your_privacy_settings_are_managed_by_you": "「共同体や組織の管理者に連絡して、プライバシー設定を変更してください。」",
       "youre_using_default_privacy_settings_rev": "「デフォルトのプライバシー設定を使用しています。下で確認し、保存してください。」",
-      "two_factor_authentication": "Two-Factor Authentication"
+      "two_factor_authentication": "二要素認証"
     },
     "request_sent": "送信しました！",
     "link_another": "子供をリンク",
@@ -1538,13 +1538,13 @@
       "aria_label_back_to_login": "戻る",
       "helps_us_apply_the_right_privacy_framewo": "「生徒のプライバシーを守るために、適切なフレームワーク（FERPA、COPPA、GDPRなど）を適用するのに役立ちます。」",
       "this_determines_whether_coppa_applies_": "「この設定は、COPPA があなたのアカウントに適用されるかどうかを決定します。」",
-      "country_code": "2-letter country code",
-      "country_code_placeholder": "e.g. DE, FR, GB",
-      "state_province": "State / Province",
-      "select_state": "— Select state —",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "password_placeholder": "At least 8 characters",
-      "confirm_password_placeholder": "Re-enter your password"
+      "country_code": "2文字の国コード",
+      "country_code_placeholder": "例:DE、FR、G",
+      "state_province": "州/州",
+      "select_state": "— 州を選択 —",
+      "province_placeholder": "例:オンタリオ、サンパウロ、バイエルン",
+      "password_placeholder": "少なくとも8文字",
+      "confirm_password_placeholder": "パスワードを再入力する"
     },
     "cta_btn": "無料で始める",
     "components_student_extendedwritingpanel": {
@@ -1589,29 +1589,29 @@
       "parental_or_guardian_consent_is_in_place": "「法令で必要な場合に、保護者または後見人の同意が得られています」",
       "student_view_preview": "目次表示",
       "privacy_settings_confirmed": "「プライバシー設定を確認しました」",
-      "location": "📍 Location",
-      "assessments": "Assessments",
-      "applied": "applied",
-      "attach_rubric": "Attach Rubric",
-      "filter_rubrics": "Filter rubrics…",
-      "ai_suggests": "AI suggests:",
+      "location": "📍 所在地",
+      "assessments": "評価",
+      "applied": "適用済み",
+      "attach_rubric": "ルーブリックを添付",
+      "filter_rubrics": "フィルタールーブリック...",
+      "ai_suggests": "AIは以下を提案しています:",
       "accept": "Accept",
-      "ai_interaction_intro": "Choose how students get prompted during this activity's Inquiry phase.",
-      "ai_interaction_label": "Student AI Interaction",
-      "ai_interaction_chat_note": "Students can freely ask Peri follow-up questions during the activity, powered by AI — good for open-ended exploration. Peri still never gives the answer outright, it only asks the next guiding question. Requires an internet connection.",
-      "ai_interaction_curated_label": "Curated Question Bank Only",
-      "ai_interaction_footnote": "Note: the curated question bank also helps structure Peri's prompts even in AI Chat mode — this setting only controls whether free-form AI conversation is available on top of that.",
-      "background_context": "📖 Background & Context",
-      "add_a_location_to_see_background": "Add a location above to see background information about it here.",
-      "enable_live_gps_tracking_during_this_act": "📍 Enable live GPS tracking during this activity",
-      "students_locations_are_shared_with_you_i": "Students\\' locations are shared with you in real time on the session monitor. Parental consent is requested automatically for students under 13.",
-      "i_consent_to_gps_location_capture_for_my": "I consent to GPS location capture for my child during this activity",
-      "min_10_characters": "Minimum 10 characters",
-      "assessments_intro": "Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.",
-      "state_curriculum_standards": "State / Curriculum Standards",
-      "share_publish_note": "This activity also needs to be Published (from the Activities list) before it appears in the Shared Library.",
-      "ai_interaction_curated_note": "Students only get prompts from a fixed, pre-written question bank stored on the device — no live AI call, no \\\"Ask Peri\\\" chat. Works fully offline and gives every student identical wording, which can matter for consistency, or if you'd simply rather AI not be part of this activity.",
-      "ai_interaction_privacy_note": "Privacy: in AI Chat mode, a student's message is sent to a third-party AI provider (Anthropic's Claude) to generate Peri's reply. This is automatically unavailable for students under 13 regardless of this setting — they always get the curated question bank."
+      "ai_interaction_intro": "このアクティビティの「探究」フェーズで生徒にどのように促されるかを選びましょう。",
+      "ai_interaction_label": "学生AIとの相互作用",
+      "ai_interaction_chat_note": "生徒はアクティビティ中に自由にペリにフォローアップ質問を投げかけることができ、AIによる自由な探求に適しています。ペリは依然として答えを直接出すことはなく、次のガイド質問だけを投げかけます。インターネット接続が必要です。",
+      "ai_interaction_curated_label": "厳選された問題バンクのみ",
+      "ai_interaction_footnote": "注:厳選された質問バンクは、AI チャットモードでも Peri のプロンプト構成を助けます — この設定は、その上に自由形式の AI 会話が利用できるかどうかのみを制御します。",
+      "background_context": "📖 背景と背景",
+      "add_a_location_to_see_background": "上に場所を追加して、その背景情報はこちらでご覧いただけます。",
+      "enable_live_gps_tracking_during_this_act": "📍 このアクティビティ中にライブGPS追跡を有効にする",
+      "students_locations_are_shared_with_you_i": "生徒の位置情報は、セッションモニター上でリアルタイムで共有されます。13歳未満の生徒には、保護者の同意が自動的に求められます。",
+      "i_consent_to_gps_location_capture_for_my": "この活動中に子どものGPS位置情報取得に同意します",
+      "min_10_characters": "最低10文字",
+      "assessments_intro": "最大3つまで応募しましょう:州/カリキュラムの基準、認知分類、そして自分専用のルーブリックです。",
+      "state_curriculum_standards": "州/カリキュラム基準",
+      "share_publish_note": "このアクティビティは、共有ライブラリに表示される前に、アクティビティリストから公開されている必要があります。",
+      "ai_interaction_curated_note": "生徒はデバイスに保存された固定された事前用意された問題バンクからのみプロンプトを受け取ります――ライブのAIコールや「Ask Peri」チャットはありません。完全オフラインで動作し、すべての生徒に同じ文言を提供できるため、一貫性のためにも、あるいは単にAIをこの活動に関わらせたくない場合にも役立ちます。",
+      "ai_interaction_privacy_note": "プライバシー:AIチャットモードでは、生徒のメッセージが第三者のAIプロバイダー(AnthropicのClaude)に送信され、Periの返信が生成されます。この設定に関わらず13歳未満の生徒には自動的に利用できません。常に厳選された問題バンクが配布されます。"
     },
     "components_teacher_enhancedactivitybuilder": {
       "location_name": "地名",
@@ -1658,7 +1658,7 @@
       "enter_student_emails_one_per_line_or_com": "各生徒のメールアドレスを入力してください（改行区切り、またはカンマ区切り）。各生徒は、メールで個々の招待リンクを受け取ります。",
       "upload_a_csv_or_spreadsheet_with_one_stu": "「1列目に1行あたりの生徒メールアドレスを入力してください。名前、ヘッダ、余分なカラムは無視されます。」",
       "placeholder_studentemailcom": "student@email.com",
-      "already_know_the_students_email_enter_it": "Already know the student's email? Enter it here. If they already have an account, they're added to this classroom right away and notified in-app — no email is sent. If there's no account yet, an invite email goes out instead."
+      "already_know_the_students_email_enter_it": "すでに生徒のメールアドレスを知っていますか?ここに入力してください。すでにアカウントを持っている場合は、すぐにこのクラスに追加され、アプリ内で通知されます—メールは送信されません。まだアカウントがない場合は、代わりに招待メールが送信されます。"
     },
     "components_teacher_ollamalessonsuggestions": {
       "subject": "件名",
@@ -1683,17 +1683,17 @@
       "aria_label_special_focus_or_differentiation": "「特定の焦点や差異」",
       "special_focus_optional": "「特定の対象（任意）」",
       "add_an_activity_title_above_for_better_s": "「活動タイトルを追加して、よりよい提案を得ます」",
-      "grade": "grade",
+      "grade": "グレード",
       "at": "at",
-      "generating": "Generating…",
+      "generating": "生成中...",
       "ask_peri": "✨ Ask Peri",
-      "added": "✓ Added to activity",
-      "add_to_activity": "+ Add to activity",
+      "added": "✓ アクティビティに追加",
+      "add_to_activity": "+ アクティビティに追加",
       "tip": "Tip:",
-      "peri_intro": "Peri will suggest activities for",
-      "need_subject_grade": "Add a subject and grade level above to get suggestions from Peri.",
-      "click_a_card_tip": "Click a card to add it to your activity. Nothing is added until you click.",
-      "drafting_from_standards": "Drafting an activity for the standards you selected…"
+      "peri_intro": "ペリが以下のアクティビティを提案します",
+      "need_subject_grade": "上に教科と学年を追加して、ペリから提案を受けてください。",
+      "click_a_card_tip": "カードをクリックするとアクティビティに追加されます。クリックするまでは何も追加されません。",
+      "drafting_from_standards": "選択した標準のためのアクティビティを作成中..."
     },
     "components_upgradecta": {
       "contact_us": "連絡する",
@@ -1724,27 +1724,27 @@
       "from_a_white_paper_to_a_working_platform": "「白論文から実用プラットフォームへ：パリペタリックウェア 2007–2026」",
       "the_insight_aristotle_was_right": "「アリストテレスは正しかった」",
       "the_problem_that_remained_unsolved": "未解決の問題",
-      "the_2007_document_named_one_obstacle_it_": "The 2007 document named one obstacle it couldn't solve:",
-      "the_2026_answer_ai_did_what_spreadsheets": "The 2026 Answer: AI Did What Spreadsheets Couldn't",
+      "the_2007_document_named_one_obstacle_it_": "2007年の文書は、解決できなかった障害を一つ挙げた。",
+      "the_2026_answer_ai_did_what_spreadsheets": "2026年の答え:AIはスプレッドシートではできなかったことを成し遂げた",
       "the_assessment_problem_turned_out_to_hav": "「学生が実際に観察したことを把握することと、それを証明できるかどうか」という点が第一の部分で、「彼らの思考が深まったか、それとも単に見たものを記述しただけか」という点が第二の部分でした。",
       "choose_your_own_adventure": "冒険の選択",
       "why_this_took_until_2026": "「なぜ、それが2026年までかかったのですか」",
       "the_white_paper_is_still_online": "「白書はまだオンラインです。」",
-      "you_can_read_the_original_2007_document_": "You can read the original 2007 document, written while the iPhone was still a rumour, at the link below. The vocabulary is dated. The argument isn\\'t.",
+      "you_can_read_the_original_2007_document_": "iPhoneがまだ噂だった頃に書かれた2007年のオリジナル文書は、以下のリンクから読むことができます。語彙は時代遅れです。議論自体はそうではありません。",
       "read_the_original_2007_paper": "「元の2007年論文を読む」",
-      "the_paper_was_written_at_a_moment_when_3": "The paper was written at a moment when 3G hadn't fully rolled out, the iPhone was months away from launch, and \"app\" wasn't yet a common word. Its predictions — that cell phones would become 1-for-1 classroom devices, that mobile networks would reach remote regions, that GPS would become cheap enough to put in every student's pocket — all came true. The products the paper called for did not.",
-      "if_students_follow_their_curiosity_throu": "If students follow their curiosity through real places, learning about arches, barrels, and celestial navigation because they're standing near a cathedral or a harbour, how do you assess what they've learned in a way that satisfies curriculum requirements? How do you produce the spreadsheet of numbers the principal wants while also honouring the complexity of what the student actually understood?",
-      "the_document_left_that_question_open_the": "The document left that question open. The school system didn't solve it either. For nearly two decades, \"outdoor learning\" remained either a vague aspiration or a logistical nightmare — teachers with clipboards, activities that produced no artifact, experiences that disappeared the moment students came back inside.",
-      "the_first_part_was_solved_by_smartphones": "The first part was solved by smartphones. Photo, audio, GPS coordinates, timestamps — a student at a creek bank can capture more evidence in ten minutes than a field trip clipboard could hold in a day. What remained was the second part: structured inquiry that didn't just document experience but deepened it.",
-      "thats_where_peri_comes_in_peri_is_peripa": "That's where Peri comes in. Peri is Peripateticware's AI guide — named, like the software, after the Aristotelian method. Peri doesn't answer questions. It asks them. It follows the five-phase inquiry sequence — Engage, Observe, Analyse, Explain, Apply — that Aristotle used in the Lyceum and that cognitive science has since validated as a path to genuine understanding, not just retention. Peri takes a student's observation and asks the next right question. When the student gets it right, Peri tests the implication. When the student is vague, Peri asks for evidence.",
-      "the_result_is_an_artifact_a_field_journa": "The result is an artifact: a field journal entry with captures, extended analysis, and a record of the inquiry itself. Teachers can see not just what a student concluded but how they got there. Rubrics aligned to Bloom's taxonomy and standards frameworks — CCSS, NGSS, TEKS, or your own — make the assessment legible to any curriculum coordinator. The spreadsheet and the real learning finally occupy the same document.",
-      "the_2007_paper_described_a_choose_your_o": "The 2007 paper described a \"choose your own adventure\" model of learning — one where students follow tangents, pursue what interests them, and encounter core curriculum concepts through the side doors of genuine curiosity rather than the front door of instruction. The paper acknowledged this was \"somewhat chaotic\" and that it would require new kinds of instructional design, new assessment tools, and teachers willing to trade some control for authentic engagement.",
-      "peripateticware_doesnt_fully_solve_the_c": "Peripateticware doesn\\'t fully solve the chaos — that tension is real and probably permanent. What it does is give teachers enough structure to stay sane (designed activities, learning targets, completion phases, teacher approval workflows) while giving students enough freedom to actually go somewhere (GPS-triggered content, student-proposed activities, self-directed field notes, peer projects).",
+      "the_paper_was_written_at_a_moment_when_3": "この論文は、3Gが完全に普及しておらず、iPhoneの発売まで数か月もあった時期に書かれ、「アプリ」という言葉がまだ一般的ではなかった時期でした。その予測――携帯電話が教室で一対一のデバイスになる、モバイルネットワークが遠隔地に届く、GPSがすべての学生のポケットに入れられるほど安価になるといったもの――はすべて現実となりました。しかし、論文が求めていた製品はそうではありませんでした。",
+      "if_students_follow_their_curiosity_throu": "もし生徒が好奇心を追いかけて実際の場所へ行き、大聖堂や港の近くに立っているだけでアーチや樽、天体の航法について学んだら、カリキュラムの要件を満たす形で学んだことをどう評価すればいいのでしょうか?校長が求める数字のスプレッドシートを作りつつ、生徒が実際に理解していたことの複雑さを尊重するにはどうすればいいのでしょうか?",
+      "the_document_left_that_question_open_the": "その文書はその問いを未解決のままにした。学校制度もまた、それを解決しなかった。ほぼ20年間、「屋外学習」は漠然とした願望か、物流上の悪夢のままだった――クリップボードを持つ教師、成果物を生まない活動、生徒が家に戻った瞬間に消えてしまう経験。",
+      "the_first_part_was_solved_by_smartphones": "最初の部分はスマートフォンで解決されました。写真、音声、GPS座標、タイムスタンプ――クリークの銀行にいる学生が、10分でフィールドトリップのクリップボードが1日分に収める以上の証拠を記録できます。残ったのは第二の部分:経験を記録するだけでなく、それを深める構造化された探究でした。",
+      "thats_where_peri_comes_in_peri_is_peripa": "そこで登場するのがペリです。PeriはPeripateticwareのAIガイドで、ソフトウェア同様、アリストテレスの手法にちなんで名付けられています。Periは質問に答えるのではありません。質問を投げかけます。それはアリストテレスがリセウムで使った5段階の問いかけのシーケンス――関わる、観察する、分析する、説明する、応用する――に従い、認知科学がそれを単なる記憶保持ではなく真の理解への道として裏付けています。Periは生徒の観察を受け取り、次に正しい質問を投げかけます。生徒が正解したら、ペリはその含意を検証します。生徒が曖昧に答えたら、ペリは証拠を求めます。",
+      "the_result_is_an_artifact_a_field_journa": "その結果生まれたのはアーティファクトです。フィールドジャーナルの記録に記録、詳細な分析、そして調査そのものの記録が残っています。教師は、生徒が何を結論づけたかだけでなく、どのようにしてそこに至ったのかも見ることができます。ブルームの分類法や標準フレームワーク(CCSS、NGSS、TEKS、あるいはあなた自身のもの)に合ったルーブリックを使えば、評価はどのカリキュラムコーディネーターにも読みやすくなります。スプレッドシートと実際の学びがついに同じ文書に収まることになります。",
+      "the_2007_paper_described_a_choose_your_o": "2007年の論文では、「自分で冒険を選ぶ」学習モデルが描かれています。これは、学生が脱線を追い、興味のあるものを追い求め、指導の正面からではなく、本物の好奇心からカリキュラムの核心概念に出会うというものです。論文はこれが「やや混沌」であり、新しいタイプの指導設計、新しい評価ツール、そして本物の関与と引き換えにある程度のコントロールを受け入れる教師が必要になると認めました。",
+      "peripateticware_doesnt_fully_solve_the_c": "Peripateticwareは混沌を完全に解決するわけではありません——その緊張は現実であり、おそらく永続的です。それは教師が正気を保つための十分な構造(設計された活動、学習目標、修了段階、教師の承認ワークフロー)を与えつつ、生徒に実際にどこかへ行く自由を与えています(GPSトリガーのコンテンツ、学生提案の活動、自主的なフィールドノート、ピアプロジェクト)。",
       "the_reverse_scavenger_hunt_where_student": "「リバース・スカベンジャーハント」――生徒が見つけたものを基にアクティビティを提案するこの取り組み――は、このプラットフォームにおいて、2007年のビジョンに最も近いものです。ある生徒が奇妙な岩の造形を見つけ、それをアクティビティとして提案します。教師がそれを承認すると、他の生徒たちがそれを見に行きます。そして、カリキュラム文書では予想もしていなかったような疑問が湧き起こります。学びが動き出すのです。",
-      "the_short_answer_is_that_most_of_the_ena": "The short answer is that most of the enabling technology wasn\\'t ready in 2007. GPS in every pocket came first (2010–2015). Then high-quality mobile cameras. Then cloud APIs cheap enough for schools. Then local AI models (Ollama, llama.cpp) that can run on a teacher\\'s home server without a $10,000/month inference bill. The 2007 paper was right about the destination; it couldn\\'t have known how long the road would be.",
-      "the_longer_answer_is_that_educational_te": "The longer answer is that educational technology spent those years solving the wrong problem. EdTech iterated on the classroom — better LMS, better video, better quiz tools. It made the existing model more efficient. Peripateticware doesn\\'t try to make the classroom more efficient. It tries to replace the classroom, at least occasionally, with the world.",
-      "thats_a_harder_sell_schools_are_riskaver": "That\\'s a harder sell. Schools are risk-averse. Outdoor learning has a liability optic. \"The world is your classroom\" sounds like a marketing line until you\\'ve watched a ten-year-old explain sediment transport to a crow-shaped AI guide while standing in a creek bed, and then read the field journal entry they wrote that afternoon, and understood that they understood.",
-      "title_from_a_white_paper_to_a_working_platform": "From a White Paper to a Working Platform: 2007–2026"
+      "the_short_answer_is_that_most_of_the_ena": "簡単に言えば、多くの支援技術が2007年には準備できていなかったのです。最初にGPSがあらゆるポケットに普及しました(2010–2015年)。次に高品質なモバイルカメラ。次に学校向けに安価なクラウドAPI。そして教師の自宅サーバー上で月額1万ドルの推論請求なしで動作できるローカルAIモデル(Ollama, llama.cpp)。2007年の論文は目的地について的確でした。道のりがどれほど長いかは知ることができなかったのです。",
+      "the_longer_answer_is_that_educational_te": "より長い答えとしては、教育技術はその間ずっと間違った問題を解決し続けてきたのです。EdTechは教室を改良しました――より良いLMS、より良いビデオ、より良いクイズツール。既存のモデルをより効率的にしました。Peripateticwareは教室をより効率的にしようとはしていません。少なくとも時には、教室を世界に置き換えようとしています。",
+      "thats_a_harder_sell_schools_are_riskaver": "それはもっと説得が難しいです。学校はリスク回避的です。屋外での学習にはリスクの観点があります。「世界はあなたの教室だ」という言葉は、10歳の子どもが小川の底に立ってカラスの形をしたAIガイドに堆積物の運搬について説明するのを見て、その日の午後に書いたフィールドジャーナルの記事を読んで、自分が理解していると理解するまでは、マーケティングの決まり文句のように聞こえます。",
+      "title_from_a_white_paper_to_a_working_platform": "ホワイトペーパーから実行プラットフォームへ:2007–2026"
     },
     "components_activitydetailpage": {
       "loading": "「読み込み中…」"
@@ -1798,9 +1798,9 @@
           "prompt": "「この木の葉が変色した原因は何だと思う？」"
         },
         "4": {
-          "badge": "Multi-Stop",
-          "title": "Scavenger Hunt — 2 of 5 stops",
-          "prompt": "Head north-east, 40 m to the Stone Bridge. The arrow points the way — your location never leaves your phone."
+          "badge": "マルチストップ",
+          "title": "スカベンジャーハント — 5回中2回",
+          "prompt": "北東へ進み、40メートルでストーンブリッジに着きます。矢印が道を示してくれます——あなたの位置情報はスマホから決して離れません。"
         }
       },
       "teacher": {
@@ -1820,18 +1820,18 @@
           "prompt": "「あなたの件名と位置に基づいて、Bloomの活動アイデアが4つあります…」"
         },
         "4": {
-          "badge": "Route Builder",
-          "title": "Multi-Step Hunt — 6 stops",
-          "prompt": "Import a GPX or drop pins. Set a clue and arrival radius per stop, choose what families consent to, then export the finished hunt."
+          "badge": "ルートビルダー",
+          "title": "マルチステップハント — 6ストップ",
+          "prompt": "GPXをインポートするか、ドロップピンを用意します。ストップごとの手がかりと到達半径を設定し、家族が同意する内容を選び、完成した狩りをエクスポートします。"
         },
         "dashboard": {
-          "title": "Teacher Dashboard",
-          "subtitle": "This week",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "教師ダッシュボード",
+          "subtitle": "今週",
+          "badge": "概要",
+          "location": "最近の活動",
           "stat": {
             "1": {
-              "label": "Students"
+              "label": "学生"
             },
             "2": {
               "label": "Classes"
@@ -1842,11 +1842,11 @@
           }
         },
         "proposal": {
-          "title": "Review a Proposal",
-          "badge": "Proposal",
-          "location": "Proposals Queue",
-          "subtitle": "From Jordan M. · Submitted today",
-          "prompt": "\"Find and photograph 5 native plants along the creek trail.\" — a challenge Jordan designed and submitted for your approval."
+          "title": "提案書をレビューする",
+          "badge": "提案",
+          "location": "提案キュー",
+          "subtitle": "ジョーダン・Mより ·本日提出",
+          "prompt": "「クリーク・トレイル沿いの在来植物5種を見つけて撮影してください。」――ジョーダンが設計し、皆さんの承認のために提出したチャレンジです。"
         }
       },
       "parent": {
@@ -2008,42 +2008,42 @@
           "prompt": "「TX州報告書の必要なフィールドを含むPDFポートフォリオが準備できました。」"
         },
         "4": {
-          "badge": "● On the trail",
-          "title": "Greenbelt Trail Hunt",
-          "subtitle": "5 stops · Emma & Lucas",
+          "badge": "● トレイル上で",
+          "title": "グリーンベルト・トレイル・ハント",
+          "subtitle": "5駅 ·エマ&ルーカス",
           "task": {
             "1": {
-              "text": "The Old Oak — reached ✓"
+              "text": "The Old Oak — 到達日 ✓"
             },
             "2": {
-              "text": "Stone Bridge — reached ✓"
+              "text": "ストーンブリッジ — 到達 ✓"
             },
             "3": {
-              "text": "The Overlook — 120 m ahead"
+              "text": "オーバールック — 120メートル先"
             },
             "4": {
-              "text": "Navigation on-device — no tracking"
+              "text": "デバイス上でのナビゲーション — 追跡なし"
             }
           }
         },
         "children": {
-          "title": "Emma — Grade 4",
-          "badge": "68% Progress",
+          "title": "エマ — 4年生",
+          "badge": "68%の進捗",
           "stat": {
             "1": {
-              "label": "Sessions"
+              "label": "セッション"
             },
             "2": {
-              "label": "Completed"
+              "label": "完了"
             }
           },
-          "subtitle": "Children · This term",
-          "location": "Barton Creek Greenbelt"
+          "subtitle": "子どもたち ·この学期",
+          "location": "バートン・クリーク・グリーンベルト"
         },
         "dashboard": {
-          "title": "Dashboard",
-          "badge": "Overview",
-          "location": "Recent Activities",
+          "title": "ダッシュボード",
+          "badge": "概要",
+          "location": "最近の活動",
           "stat": {
             "1": {
               "label": "Active"
@@ -2052,13 +2052,13 @@
               "label": "Pending"
             }
           },
-          "subtitle": "This week · Emma & Lucas",
+          "subtitle": "今週 ·エマ&ルーカス",
           "task": {
             "1": {
-              "text": "River Ecosystem Study — published"
+              "text": "河川生態系調査 — 公開済み"
             },
             "2": {
-              "text": "Capitol Field Trip — draft"
+              "text": "議会議事堂遠足 — ドラフト"
             }
           }
         }
@@ -2127,10 +2127,10 @@
       "save_your_note_first_to_attach_photos_au": "「写真、音声、動画の録画を添付するには、最初にメモを保存してください。」"
     },
     "pendingReflectionQueue": {
-      "awaiting_approval": "Awaiting approval",
-      "teacher_commented": "Teacher commented",
+      "awaiting_approval": "承認待ち",
+      "teacher_commented": "先生がコメントした",
       "ready_to_reflect": "準備OK",
-      "section_title": "Pending Reflections",
+      "section_title": "未決の振り返り",
       "teacher_label": "Teacher",
       "reflection_in_progress": "「反射中」"
     },
@@ -2200,11 +2200,11 @@
       "ready_to_create_your_first_outdoor_activ": "準備ができました。初の野外活動を始めますか？ペリは、あなたの位置とテーマに合わせてアリストテレス的な質問を提案します。",
       "create_first_activity": "「初めてのアクティビティを作成」",
       "login_label": "Login",
-      "password_label": "Password",
+      "password_label": "パスワード",
       "copied": "Copied ✓",
       "copy_all": "Copy all",
-      "childrens_logins": "Your children\\'s logins",
-      "save_these_now": "Save or print these now — for your child\\'s privacy we can\\'t show the password again. You can reset it any time from the Children page."
+      "childrens_logins": "お子様のログイン情報",
+      "save_these_now": "今すぐ保存または印刷してください。お子様のプライバシーのため、パスワードは再度表示できません。子どものページからいつでもリセットできます。"
     },
     "pages_licensingpage": {
       "licensing": "ライセンス",
@@ -2252,7 +2252,7 @@
       "send": "送信",
       "subtitle": "「子どもの先生からのメッセージ。返信して繋がりを維持しましょう。」",
       "empty": "まだメッセージはありません。教師から連絡が来ると、ここに表示されます。",
-      "announcements_title": "Classroom Announcements"
+      "announcements_title": "教室のお知らせ"
     },
     "notifications": "通知",
     "pages_parentnotificationspage": {
@@ -2263,7 +2263,7 @@
       "link_a_child": "子をリンク",
       "teacher_note": "教師のメモ",
       "no_children_linked_yet": "子供はまだリンクされていません",
-      "link_your_childs_account_to_start_tracki": "Link your child\\'s account to start tracking their learning progress.",
+      "link_your_childs_account_to_start_tracki": "お子さまのアカウントを連携して、学習進捗の追跡を開始しましょう。",
       "no_progress_data_yet_for_this_child": "子供の進捗データがまだありません。"
     },
     "progress_reports": "進行状況レポート",
@@ -2301,10 +2301,10 @@
       "admin_actions": "管理者のアクション",
       "all_actions_are_recorded_in_the_audit_lo": "「全てのアクションはオーディットログに記録されます。」",
       "license": "License",
-      "change_tier_to": "Change tier to…",
+      "change_tier_to": "ティアを...に切り替えてください。",
       "placeholder_days": "days",
-      "sets_license_valid_until_directly_overri": "sets license_valid_until directly, overriding any extend-by-days math",
-      "eg_move_to_a_paid_tier_once_theyve_signe": "e.g. move to a paid tier once they've signed a contract, or grant/end 'beta' by hand."
+      "sets_license_valid_until_directly_overri": "license_valid_until直接設定し、日数単位の計算を上書きします",
+      "eg_move_to_a_paid_tier_once_theyve_signe": "例えば、契約を結んだら有料ティアに移行したり、手作業で『ベータ』を許可・終了したりするなどです。"
     },
     "pages_platform_platformorgspage": {
       "organisations": "組織",
@@ -2319,7 +2319,7 @@
       "suspended": "中止",
       "no_organisations_found": "「見つかりませんでした」",
       "expired": "Expired",
-      "all_tiers": "All tiers",
+      "all_tiers": "すべてのティア",
       "expires": "Expires"
     },
     "pages_platform_platformoverviewpage": {
@@ -2372,18 +2372,18 @@
       "write_your_reflection": "反省を書いてください",
       "what_did_you_observe_what_did_you_learn_": "「どんなことを見たのですか？何を学んだのですか？それが前の知識とどう関連するかを教えてください」",
       "great_work_your_teacher_will_review_your": "「ごくろうさま。先生があなたの証拠と反省をレビューします。」",
-      "location_sharing": "Location Sharing",
-      "architectartist": "Architect/Artist:",
-      "constructed": "Constructed:",
-      "yes_submit": "Yes, submit",
+      "location_sharing": "ロケーション共有",
+      "architectartist": "建築家/アーティスト:",
+      "constructed": "構築済み:",
+      "yes_submit": "はい、提出してください",
       "cancel": "Cancel",
-      "your_teacher_wants_to_see_your_location_": "Your teacher wants to see your location during this activity so they can track fieldwork progress. Your location is only shared while the session is active.",
-      "historical_significance": "Historical Significance:",
-      "learning_opportunities": "Learning Opportunities",
-      "nearby_points_of_interest": "Nearby Points of Interest",
-      "no_background_info_was_saved_for_this_lo": "No background info was saved for this location.",
-      "submit_confirm": "Submit this activity for review? You won’t be able to add more evidence after this.",
-      "notable_features": "Notable Features"
+      "your_teacher_wants_to_see_your_location_": "担当の先生は、この活動中にあなたの場所を確認したいので、フィールドワークの進捗を追跡したいと考えています。あなたの場所は、セッションが活動中のみ共有されます。",
+      "historical_significance": "歴史的意義:",
+      "learning_opportunities": "学習機会",
+      "nearby_points_of_interest": "近隣の見どころ",
+      "no_background_info_was_saved_for_this_lo": "この場所については背景情報は保存されていません。",
+      "submit_confirm": "この活動を審査のために提出すべきですか?この後は、これ以上証拠を追加することはできません。",
+      "notable_features": "注目すべき特徴"
     },
     "pages_teacher_activitylistpage": {
       "loading_activities": "「アクティビティを読み込んでいます…」",
@@ -2391,8 +2391,8 @@
       "title_preview_as_student": "「生徒としてプレビュー」",
       "make_sure_the_backend_is_running_and_you": "後端が動作しており、ログインしていることを確認してください。",
       "title_fieldwork_map": "フィールドワーク地図 - 生徒から送信されたGPS位置",
-      "tracking_settings": "Tracking Settings",
-      "title_publish_makes_this_activity_visible_to_s": "Publish — makes this activity visible to students and eligible for the Shared Library"
+      "tracking_settings": "トラッキング設定",
+      "title_publish_makes_this_activity_visible_to_s": "公開 — このアクティビティを学生に表示し、共有ライブラリの対象となるようにします"
     },
     "professorFieldworkPage": {
       "back": "戻る",
@@ -2430,10 +2430,10 @@
       "no_students_enrolled_yet_use_the_invite_": "「まだ学生が登録されていません。下の招待パネルを使用して追加してください。」",
       "title_remove_from_classroom": "「教室から削除」",
       "larger_classrooms_are_a_paid_feature_upg": "「大型のクラスルームは有料機能です。より多くの生徒を登録するにはアップグレードしてください。」",
-      "grade_level_placeholder": "0 = Kindergarten",
-      "grade_level_k_hint": "0 = Kindergarten",
-      "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
-      "grade_level_nudge_short": "No grade set -- students get generic Peri wording, not tailored to their age."
+      "grade_level_placeholder": "0 = 幼稚園",
+      "grade_level_k_hint": "0 = 幼稚園",
+      "grade_level_nudge": "空白のままにすると、ペリはこのクラスの年齢に合わせて質問の表現を調整できません――生徒たちは一般的なバージョンを受け取るだけです。",
+      "grade_level_nudge_short": "成績表はなく、生徒は年齢に合わせてカスタマイズされたものではなく、一般的なペリ語で受け取ることができます。"
     },
     "pages_teacher_teacherclassroomspage": {
       "loading_classrooms": "「クラスルームを読み込んでいます…」",
@@ -2443,8 +2443,8 @@
       "create": "作成",
       "archived": "「アーカイブ」",
       "you_dont_have_any_classrooms_yet": "まだクラスルームがありません。",
-      "placeholder_grade_optional": "Grade (0 = K, optional)",
-      "grade_nudge": "Setting a grade lets Peri tailor question wording to this class's age. Leave it blank only for a mixed or ungraded class."
+      "placeholder_grade_optional": "グレード(0 = K、任意)",
+      "grade_nudge": "成績を設定することで、ペリはこのクラスの年齢に合わせて問題の表現を調整できます。混合クラスや未採点クラスのみ空白にしてください。"
     },
     "live_sessions": "ライブセッション",
     "started": "始まった",
@@ -2456,9 +2456,9 @@
       "placeholder_comment_on_the_field_observations_eviden": "「フィールドの観察、証拠品質、または反省で焦点を当てるべき内容についてコメントしてください」",
       "your_feedback": "「ご意見」",
       "saved": "✓ Saved",
-      "placeholder_feedback_for_the_student": "Feedback for the student...",
-      "evidence_detail_isnt_available_for_this_": "Evidence detail isn't available for this submission yet.",
-      "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
+      "placeholder_feedback_for_the_student": "生徒へのフィードバック...",
+      "evidence_detail_isnt_available_for_this_": "この提出物の証拠詳細はまだ公開されていません。",
+      "mapped_standards_did_this_submission_mee": "マッピングされた基準 — この提出物はそれらを満たせましたか?"
     },
     "activity_builder_stub": "「アクティビティビルダーステブ」",
     "activity_preview_stub": "活動プレビュースタブ",
@@ -2474,7 +2474,7 @@
     "field_journal_title": "「フィールドジャーナル：残り続ける学び」",
     "s_choose_peripateticware": "「sを選択」",
     "your_data_is_yours_we_collect_minimal_in": "「あなたのデータは、あなたのものです。我々は最小限の情報を収集し、決して売りません。Peripateticwareは暗号化接続、匿名集計、透明なデータ実践を使用します。あなたはどのデータが共有されるか、誰と、どれくらいの期間で、それを制御できます。」",
-    "team_title": "Built by an educator, for educators",
+    "team_title": "教育者によって、教育者のために作られた",
     "loading_portfolio": "「ポートフォリオを読み込んでいます…」",
     "what_did_you_observe": "「どんなことを見かけましたか?」",
     "describe_what_you_observed_noticed_or_wo": "観察したこと、気づいたこと、または不思議に思ったことを記述してください",
@@ -2556,7 +2556,7 @@
     "using_basic_fallback_information": "「基本的なフォールバック情報を使用」",
     "educational_opportunities": "教育の機会",
     "view_on_google_maps": "地図を表示する",
-    "use_this_location_information_to_create_": "Use this location information to create place-based learning activities that connect student inquiry to real-world contexts.",
+    "use_this_location_information_to_create_": "この位置情報を使って、生徒の探究を現実世界の文脈と結びつける場所ベースの学習活動を作成します。",
     "refresh_information": "リフレッシュ情報",
     "observing_native_plants_in_field_session": "リバーサイド州立公園での野外実習で、在来植物を観察する",
     "great_observation_notes_today_your_detai": "「今日の観察ノート、素晴らしいですね！葉の形態について詳しく記しているところからは、まさに\\n 植物学的な思考がうかがえます。」 — サントス先生",
@@ -2963,12 +2963,12 @@
           "3": "「パリ・AI」",
           "4": "証拠収集",
           "5": "「ポートフォリオビュー」",
-          "6": "Multi-step map hunts"
+          "6": "多段階のマップハント"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "または年間99.99ドル — 30%節約 ·30日間無料トライアル",
+        "cta": "無料トライアルを開始"
       },
       "school": {
         "name": "学校",
@@ -2995,12 +2995,12 @@
           "2": "「ポートフォリオPDFエクスポート」",
           "3": "「州の準拠報告」",
           "4": "標準マッピング",
-          "5": "Trail hunts with GPX import & export"
+          "5": "GPXインポート&エクスポートによるトレイルハント"
         },
         "price": "$11.99",
         "price_unit": "/mo",
-        "price_note": "or $99.99/year — save 30% · 30-day free trial",
-        "cta": "Start free trial"
+        "price_note": "または年間99.99ドル — 30%節約 ·30日間無料トライアル",
+        "cta": "無料トライアルを開始"
       },
       "contact_for_pricing": "お問い合わせください",
       "contact_team": "「チームに連絡」",
@@ -3025,8 +3025,8 @@
       "no_active_jurisdictions_found_run_the_se": "「有効な管轄区域が見つかりません。デフォルトを追加するには、シードミグレーションを実行してください。」",
       "loading_rule_details": "「ルールの詳細を読み込んでいます…」",
       "add_update_jurisdiction": "追加/更新 管轄権",
-      "quick_setup_by_location": "Quick Setup by Location",
-      "quick_setup_desc": "For common jurisdictions, tell us where your organization is instead of hand-authoring JSON below — the system resolves known laws (federal, state, or previously-discovered) and applies them to your organization automatically."
+      "quick_setup_by_location": "場所ごとのクイックセットアップ",
+      "quick_setup_desc": "一般的な管轄区域については、下記のJSONを手作業で作成する代わりに、貴組織の所在を教えてください。システムは既知の法律(連邦法、州法、または以前に発見された法)を解決し、自動的に組織に適用します。"
     },
     "audit_logs_enabled": "「オーディットログ有効」",
     "cookiepolicypage": {
@@ -3122,26 +3122,26 @@
       "summary_title": "「プライバシーに対するデザイン」",
       "summary_subtitle": "学校向けに開発され、保護者から信頼されている",
       "summary_desc": "「パリペタティックウェアは、COPPA、GDPR、FERPA、CCPA、PIPEDA、LGPD、およびPDPAに準拠しています。生徒のデータは決して売却されず、広告に使用されず、同意なしには共有されません。」",
-      "summary_cta": "See how it works",
-      "engine_core_title": "How the Privacy Engine works",
-      "engine_core_desc": "Every piece of student evidence is checked against the compliance rules active for that student's jurisdiction before it's ever stored.",
+      "summary_cta": "どう機能するか確認してみてください",
+      "engine_core_title": "プライバシーエンジンの動作方法",
+      "engine_core_desc": "すべての学生の証拠は、保管される前にその学生の管轄区域で有効なコンプライアンス規則に照らしてチェックされます。",
       "jurisdiction_aware_title": "Jurisdiction Aware",
-      "jurisdiction_aware_desc": "Automatically detects which privacy laws apply based on where a student is located, and applies the right rules for that region.",
-      "auto_updates_title": "Auto Updates",
-      "auto_updates_desc": "Compliance rules are updated centrally as regulations change, so every classroom stays current without any manual work.",
+      "jurisdiction_aware_desc": "学生がどこにいるかに応じて、どのプライバシー法が適用されるかを自動的に検出し、その地域に適したルールを適用します。",
+      "auto_updates_title": "自動更新",
+      "auto_updates_desc": "規制の変更に合わせてコンプライアンスルールは中央で更新されるため、すべての教室が手作業なしで最新の状態を保っています。",
       "versioned_rules_title": "「バージョン付きルール」",
-      "versioned_rules_desc": "Every rule change is versioned and auditable, so you can always see exactly what policy applied to any piece of data and when.",
-      "extensible_title": "Extensible",
-      "extensible_desc": "New jurisdictions and frameworks can be added without changing how the app works — the engine adapts, not the code.",
+      "versioned_rules_desc": "すべてのルール変更はバージョン管理され監査可能なので、どのポリシーがいつ適用されたかを常に正確に確認できます。",
+      "extensible_title": "拡張性",
+      "extensible_desc": "新しい管轄区域やフレームワークを追加してもアプリの動作を変える必要はありません——適応するのはエンジンであって、コード自体ではありません。",
       "encrypted_by_default_title": "「デフォルトで暗号化」",
-      "encrypted_by_default_desc": "Student data is encrypted at rest and in transit, with no configuration required to turn it on.",
+      "encrypted_by_default_desc": "学生データは、保存時および転送中も暗号化されており、オンにするための設定は不要です。",
       "on_device_first_title": "オンデバイスファースト",
-      "on_device_first_desc": "Where possible, sensitive processing happens on the student's own device before anything is sent to our servers.",
+      "on_device_first_desc": "可能な限り、機密処理は学生自身のデバイス上で行われ、その後サーバーに送信されます。",
       "consent_framework_title": "Consent Framework",
-      "consent_framework_desc": "Parents and guardians control what's collected and can review or revoke consent at any time.",
-      "cta_section_title": "Built to earn your trust, not just your compliance checkbox",
-      "cta_section_subtitle": "See exactly how student data is handled, every step of the way",
-      "cta_section_desc": "Read the full technical documentation or reach out with any question about how Peripateticware protects student privacy.",
+      "consent_framework_desc": "親や保護者は、収集される内容を管理し、いつでも同意を見直したり撤回したりできます。",
+      "cta_section_title": "コンプライアンスチェックボックスだけでなく、あなたの信頼を得るために作られています",
+      "cta_section_subtitle": "学生データがどのように取り扱われているかを、そのすべての段階で正確に確認しましょう",
+      "cta_section_desc": "Peripateticwareがどのように学生のプライバシーを守っているかについて、技術文書全文をお読みいただくか、ご質問があればご連絡ください。",
       "loading_status": "「コンプライアンスステータスを読み込んでいます…」",
       "coppa_family_title": "「13歳未満の子供の家族向け」",
       "do_not_sell_link": "「個人情報を売却または共有しないでください」"
@@ -3185,16 +3185,16 @@
       "select_your_state": "「— 都道府県を選択してください —」",
       "student_data_is_never_sold_or_shared_wit": "「広告主に学生データを売ったり共有したりすることはありません。Admin > プライバシー設定で、いつでも全てのデータをエクスポートまたは削除できます。」",
       "placeholder_2letter_country_code_eg_de_fr_gb": "DE、FR、GBなどの2文字国別コード",
-      "state_province": "State / Province",
-      "province_placeholder": "e.g. Ontario, São Paulo, Bavaria",
-      "region_optional": "Region (optional)",
-      "region_placeholder": "A specific district or local law, if you know of one",
-      "frameworks_likely_to_apply": "Frameworks likely to apply (confirmed once you apply your settings):",
-      "auto_discovered_pending_review": "Auto-discovered — pending legal review, applied conservatively in the meantime.",
-      "no_specific_frameworks_found": "No specific framework was found for your location — general child-safety-conscious defaults apply.",
-      "something_not_right": "Something not right? Let us know",
-      "review_reason_placeholder": "What looks wrong? We'll route this to the right person to review.",
-      "review_submitted": "Thanks — sent for review."
+      "state_province": "州/州",
+      "province_placeholder": "例:オンタリオ、サンパウロ、バイエルン",
+      "region_optional": "地域(任意)",
+      "region_placeholder": "特定の地区や地域の法律をご存知なら教えてください",
+      "frameworks_likely_to_apply": "適用されそうなフレームワーク(設定を適用すれば確認):",
+      "auto_discovered_pending_review": "自動発見済み — 法的審査待ち、その間は保守的に適用。",
+      "no_specific_frameworks_found": "あなたの地域に特化した枠組みは見つかりませんでした — 子どもの安全を重視した一般的な基準が適用されます。",
+      "something_not_right": "何かおかしい?教えてください",
+      "review_reason_placeholder": "何がおかしそうですか?この件は適切な担当者に回して確認してもらいます。",
+      "review_submitted": "ありがとうございます — レビューのために送られました。"
     },
     "pages_admin_adminaiconfigpage": {
       "choose_provider_per_task_changes_take_ef": "「タスクごとにプロバイダを選択します。変更は即時有効になります — 再起動は必要ありません。」",
@@ -3242,13 +3242,13 @@
       "title_generate_a_new_uuid": "生成する",
       "placeholder_what_changed_in_this_version": "このバージョンで何が変わったのですか？",
       "select": "— Select —",
-      "other_enter_2letter_code_below": "Other (enter 2-letter code below)",
-      "applied_to_your_organization_admins_can_": "Applied to your organization (admins can remove any of these below in \"Active Jurisdictions\", or override with a custom rule via the form further down):",
-      "no_jurisdiction_found_for_that_location_": "No jurisdiction found for that location yet — the system will note this for future discovery.",
-      "pending_review": "pending review",
-      "placeholder_eg_de_fr_gb": "e.g. DE, FR, GB",
-      "placeholder_eg_ontario_bavaria": "e.g. Ontario, Bavaria",
-      "placeholder_district_or_local_law": "District or local law"
+      "other_enter_2letter_code_below": "その他(下記に2文字コードを入力してください)",
+      "applied_to_your_organization_admins_can_": "組織に適用されます(管理者は「アクティブな管轄区域」でこれらのいずれかを削除するか、下部フォームからカスタムルールを適用して上書きできます):",
+      "no_jurisdiction_found_for_that_location_": "その場所についてはまだ管轄区域が見つかっていませんが、システムは将来の発見のためにこれを記録します。",
+      "pending_review": "審査待ち",
+      "placeholder_eg_de_fr_gb": "例:DE、FR、G",
+      "placeholder_eg_ontario_bavaria": "例:オンタリオ、バイエルン",
+      "placeholder_district_or_local_law": "地区法または地方法"
     },
     "pages_org_admin_orgaiconfigpage": {
       "bring_your_own_key_upgrade_required": "「BYOK — アップグレードが必要」",
@@ -3276,7 +3276,7 @@
       "title_remove": "削除"
     },
     "cta_privacy_note": "「FERPAとCOPPAに準拠しています。生徒のデータは決して売却または共有されません。」",
-    "team_1_bio": "Paul spent a decade as a teacher, four years working for edtechs, and has been experimenting with how to break learning out of books and classrooms for two decades. Peripateticware takes advantage of LLM advancements and leverages mobile technologies to allow students to learn from the world with guidance from their teachers wherever they choose to roam.",
+    "team_1_bio": "ポールは教師として10年、エドテックで4年間勤務し、20年間にわたり本や教室から学びを解き放つ方法を模索してきました。PeripateticwareはLLMの進歩を活用し、モバイル技術を活用することで、生徒がどこへ行っても教師の指導を受けながら世界から学べるようにしています。",
     "pages_adminauditlogpage": {
       "export_csv": "「CSVをエクスポート」",
       "all": "すべて",
@@ -3334,420 +3334,420 @@
       "refund_amp_cancellation_policy": "refund &amp; cancellation policy",
       "refund_policy": "refund policy",
       "plan": "Plan",
-      "current_plan": "Current plan",
+      "current_plan": "現在の計画",
       "save_30": "save 30%"
     },
     "pages_refundpolicypage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
     "calendar": {
-      "prev_month": "Previous month",
-      "next_month": "Next month",
+      "prev_month": "前月",
+      "next_month": "来月",
       "today": "Today",
-      "no_events_this_day": "Nothing scheduled for this day."
+      "no_events_this_day": "この日は予定は何もない。"
     },
-    "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_preferences": "クッキーの設定",
+    "cookie_status_on": "現在:分析クッキーが有効になっています。",
+    "cookie_status_off": "現在:分析クッキーは拒否されました。",
     "components_errorboundary": {
-      "something_went_wrong": "Something went wrong",
-      "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",
-      "try_again": "Try again",
-      "reload_page": "Reload page"
+      "something_went_wrong": "何かがおかしくなった",
+      "an_unexpected_error_occurred_and_this_pa": "予期しないエラーが発生し、このページを表示できませんでした。もう一度試行するか、アプリを再読み込むことができます。",
+      "try_again": "もう一度試してみて",
+      "reload_page": "リロードページ"
     },
     "components_teacher_projectcompletionreport": {
-      "status_completed": "Completed",
-      "status_in_progress": "In progress",
-      "status_not_started": "Not started",
-      "col_activity": "Activity",
-      "col_completed": "Completed",
-      "col_participants": "Participants",
-      "col_evidence": "Evidence",
+      "status_completed": "完了",
+      "status_in_progress": "進行中",
+      "status_not_started": "まだ始まっていません",
+      "col_activity": "活動",
+      "col_completed": "完了",
+      "col_participants": "参加者",
+      "col_evidence": "証拠",
       "col_student": "Student",
-      "col_last_activity": "Last Activity",
-      "empty": "No activities linked to this project yet.",
-      "title_by_activity": "Completion by Activity",
-      "title_by_participant": "Completion by Participant",
-      "no_participants": "No one has started this project yet."
+      "col_last_activity": "最後の活動",
+      "empty": "このプロジェクトに関連する活動はまだありません。",
+      "title_by_activity": "活動別完了",
+      "title_by_participant": "参加者による完了",
+      "no_participants": "まだ誰もこのプロジェクトを始めていません。"
     },
     "components_teacher_projectlivetracker": {
       "title_live_map": "Live Map",
-      "show_all": "Show everyone",
-      "active_now": "Active Now",
+      "show_all": "みんなに見せて",
+      "active_now": "現在稼働中",
       "live": "LIVE",
-      "empty": "No one is currently active in this project.",
-      "empty_hint": "This updates automatically once a student starts a field session.",
-      "not_configured": "No activities in this project have location tracking enabled.",
-      "not_configured_hint": "Turn it on per-activity in the activity’s Location tab."
+      "empty": "現在、このプロジェクトに積極的に関わっている人はいません。",
+      "empty_hint": "これは、生徒がフィールドセッションを開始すると自動的に更新されます。",
+      "not_configured": "このプロジェクト内のアクティビティには位置情報追跡が有効になっています。",
+      "not_configured_hint": "アクティビティのロケーションタブでアクティビティごとオンにします。"
     },
-    "generate_with_ai": "Generate with AI",
-    "activity_title": "Activity title",
-    "grade_level": "Grade level",
-    "taxonomy_type": "Taxonomy type",
-    "taxonomy_level": "Taxonomy level",
-    "generating": "Generating…",
-    "generate_criteria": "Generate Criteria",
+    "generate_with_ai": "AIで生成",
+    "activity_title": "活動タイトル",
+    "grade_level": "学年",
+    "taxonomy_type": "分類タイプ",
+    "taxonomy_level": "分類レベル",
+    "generating": "生成中...",
+    "generate_criteria": "条件を生成",
     "components_teacher_rubricbuilder": {
-      "blooms_revised": "Bloom's Revised",
-      "dok_webbs": "DOK (Webb's)",
+      "blooms_revised": "ブルームズ・リビジョンド",
+      "dok_webbs": "DOK(ウェッブズ)",
       "solo": "SOLO",
-      "marzanos": "Marzano's",
-      "placeholder_eg_analyze_dok3_relational_analysis": "e.g. analyze, dok3, relational, analysis"
+      "marzanos": "マルツァーノ",
+      "placeholder_eg_analyze_dok3_relational_analysis": "例:分析、DOK3、リレーショナル、分析"
     },
-    "view_on_wikidata": "View on Wikidata",
+    "view_on_wikidata": "ウィキデータで見る",
     "pages_student_studentmessagespage": {
-      "title": "Messages",
-      "messages_title": "Messages",
+      "title": "メッセージ",
+      "messages_title": "メッセージ",
       "loading": "Loading…",
-      "placeholder_write_a_reply": "Write a reply…",
-      "back_to_messages": "Back to messages",
+      "placeholder_write_a_reply": "返信を書いてください...",
+      "back_to_messages": "メッセージに戻る",
       "you": "You",
-      "subtitle": "See announcements from your teachers and reply to messages sent to you.",
-      "announcements_title": "Classroom Announcements",
-      "no_announcements_yet": "No announcements yet.",
-      "no_messages_yet": "No messages from teachers yet."
+      "subtitle": "先生からのお知らせを確認したり、送られたメッセージに返信したりできます。",
+      "announcements_title": "教室のお知らせ",
+      "no_announcements_yet": "まだ発表はありません。",
+      "no_messages_yet": "先生からのメッセージはまだありません。"
     },
-    "announcements": "Announcements",
+    "announcements": "お知らせ",
     "projectCompletionReportPage": {
-      "back": "← Back to Project",
-      "title": "Completion Report",
-      "no_project_selected": "No project selected."
+      "back": "← プロジェクトに戻る",
+      "title": "完了報告書",
+      "no_project_selected": "選択されていないプロジェクト。"
     },
     "projectLiveTrackingPage": {
-      "back": "← Back to Project",
-      "title": "Live Tracking",
-      "no_project_selected": "No project selected."
+      "back": "← プロジェクトに戻る",
+      "title": "ライブトラッキング",
+      "no_project_selected": "選択されていないプロジェクト。"
     },
     "projectnewpage": {
-      "new_project": "New Project",
-      "subtitle": "Set up a new learning project for your students."
+      "new_project": "新プロジェクト",
+      "subtitle": "生徒のために新しい学習プロジェクトを立ち上げましょう。"
     },
     "pages_teacher_teachercalendarpage": {
-      "title": "Calendar",
+      "title": "カレンダー",
       "date": "Date",
       "type": "Type",
-      "placeholder_eg_river_study_field_trip": "e.g. River study field trip",
-      "subtitle": "Planned and completed activities for your class, plus any events you add.",
-      "description_optional": "Description (optional)"
+      "placeholder_eg_river_study_field_trip": "例:川の調査遠足",
+      "subtitle": "クラスのために計画・完了したアクティビティ、そして追加したイベント。",
+      "description_optional": "説明(任意)"
     },
     "pages_teacher_teachermessagespage": {
-      "title": "Messages",
-      "classroom": "Classroom",
+      "title": "メッセージ",
+      "classroom": "教室",
       "message": "Message",
       "loading": "Loading…",
       "send_to": "Send to",
-      "a_specific_student": "A specific student",
+      "a_specific_student": "特定の学生",
       "student": "Student",
-      "choose_a_student": "Choose a student…",
+      "choose_a_student": "生徒を選んで...",
       "subject": "Subject",
-      "placeholder_write_a_reply": "Write a reply…",
-      "placeholder_eg_field_trip_friday": "e.g. Field trip Friday",
-      "placeholder_eg_field_trip_reminder": "e.g. Field trip reminder",
-      "subtitle": "Post announcements to a whole class, or message students and parents directly.",
-      "no_announcements_yet_for_this_classroom": "No announcements yet for this classroom.",
-      "a_specific_students_parent": "A specific student's parent",
-      "all_parents_bulk_message": "👨‍👩‍👧 All parents (bulk message)",
-      "all_students_bulk_message": "🧑‍🎓 All students (bulk message)",
-      "students": "Students (choose one or more)",
-      "no_students_in_this_classroom": "No students in this classroom yet.",
-      "no_linked_parent_found_for_this_student_": "No linked parent found for this student yet.",
-      "no_linked_parent_found_for_some_students_": "No linked parent found yet for one or more of the selected students.",
-      "no_messages_yet_use_new_message_to_reach": "No messages yet. Use \"New Message\" to reach a student, a parent, or the whole class."
+      "placeholder_write_a_reply": "返信を書いてください...",
+      "placeholder_eg_field_trip_friday": "例:フィールドトリップ・フライデー",
+      "placeholder_eg_field_trip_reminder": "例:遠足リマインダー",
+      "subtitle": "クラス全体にお知らせを出すか、生徒や保護者に直接メッセージを送ることもできます。",
+      "no_announcements_yet_for_this_classroom": "この教室についてはまだ発表はありません。",
+      "a_specific_students_parent": "特定の生徒の親",
+      "all_parents_bulk_message": "👨 👩 👧 親全員(まとめメッセージ)",
+      "all_students_bulk_message": "🧑 🎓 全学生(まとめメッセージ)",
+      "students": "学生(1つまたは複数を選択)",
+      "no_students_in_this_classroom": "この教室にはまだ生徒はいない。",
+      "no_linked_parent_found_for_this_student_": "この生徒の親のリンクは、まだ見つかっていません。",
+      "no_linked_parent_found_for_some_students_": "選ばれた生徒のうち一人以上について、まだリンクされた保護者は見つかっていない。",
+      "no_messages_yet_use_new_message_to_reach": "まだメッセージはありません。「新しいメッセージ」を使って生徒、保護者、またはクラス全体に連絡してください。"
     },
     "pages_teacher_trackingsettings": {
-      "tier_trip": "Trip (fast)",
-      "tier_long_running": "Long-running (slow)",
-      "title": "Tracking Settings",
-      "empty": "No activities yet.",
-      "select_all": "Select all",
-      "enable_selected": "Enable tracking",
-      "disable_selected": "Disable tracking",
-      "col_activity": "Activity",
+      "tier_trip": "トリップ(速い)",
+      "tier_long_running": "長期(遅い)",
+      "title": "トラッキング設定",
+      "empty": "まだ何のアクティビティもない。",
+      "select_all": "すべて選択",
+      "enable_selected": "追跡を有効にする",
+      "disable_selected": "トラッキングを無効にする",
+      "col_activity": "活動",
       "col_project": "Project",
-      "col_tracking": "Tracking",
+      "col_tracking": "追跡",
       "on": "On",
       "off": "Off",
-      "back": "← Back to Activities",
-      "subtitle": "GPS live-tracking status across every activity in your account.",
-      "col_tier": "Poll cadence if live"
+      "back": "← アクティビティに戻る",
+      "subtitle": "アカウント内のすべてのアクティビティに対するGPSリアルタイム追跡状況。",
+      "col_tier": "ライブ時の投票時のケイデンス"
     },
     "app": {
       "loading": "Loading…"
     },
     "components_imagecaptionmodal": {
       "cancel": "Cancel",
-      "placeholder_describe_the_image": "Describe the image",
-      "placeholder_a_trail_marker_on_the_ridge": "A trail marker on the ridge",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
-      "for_screen_readers": "(for screen readers)",
-      "optional_shown_under_the_image": "(optional -- shown under the image)",
-      "optional_eg_photo_credit": "(optional -- e.g. photo credit)"
+      "placeholder_describe_the_image": "画像を説明してください",
+      "placeholder_a_trail_marker_on_the_ridge": "尾根のトレイルマーカー",
+      "placeholder_photo_jane_doe": "写真:ジェーン・ドウ",
+      "for_screen_readers": "(スクリーンリーダー用)",
+      "optional_shown_under_the_image": "(オプション ― 画像の下に示されています)",
+      "optional_eg_photo_credit": "(任意 ― 例:写真クレジット)"
     },
     "blog": "Blog",
     "components_seo": {
-      "title_origin_story": "Origin Story"
+      "title_origin_story": "起源の物語"
     },
     "components_trialexpirybanner": {
-      "see_plans": "See plans",
+      "see_plans": "計画を見る",
       "aria_label_dismiss": "Dismiss"
     },
     "components_account_mfasettings": {
-      "twofactor_authentication_adds_a_second_s": "Two-factor authentication adds a second step at login using an authenticator app (Google Authenticator, Authy, 1Password, etc.). Especially recommended for Teacher and Admin accounts, given their access to student data.",
-      "1_scan_this_qr_code_with_your_authentica": "1. Scan this QR code with your authenticator app (or enter the key manually).",
+      "twofactor_authentication_adds_a_second_s": "二要素認証は認証アプリ(Google Authenticator、Authy、1Passwordなど)を使ったログイン時に第二段階を追加します。特に教師や管理者のアカウントには推奨されており、学生データへのアクセスが可能だからです。",
+      "1_scan_this_qr_code_with_your_authentica": "1. 認証アプリでこのQRコードをスキャンするか、キーを手動で入力してください。",
       "done": "Done",
-      "twofactor_authentication_is_enabled": "✓ Two-factor authentication is enabled",
-      "2_enter_the_6digit_code_it_shows": "2. Enter the 6-digit code it shows:",
-      "save_these_backup_codes_now_they_wont_be": "Save these backup codes now — they won't be shown again.",
-      "each_code_works_once_if_you_ever_lose_ac": "Each code works once, if you ever lose access to your authenticator app.",
-      "confirm_your_password_to_disable": "Confirm your password to disable:",
-      "enter_a_current_6digit_code_to_invalidat": "Enter a current 6-digit code to invalidate your old backup codes and generate new ones."
+      "twofactor_authentication_is_enabled": "✓ 二要素認証が有効になっています",
+      "2_enter_the_6digit_code_it_shows": "2. 表示されている6桁のコードを入力します:",
+      "save_these_backup_codes_now_they_wont_be": "これらのバックアップコードを今すぐ保存してください — 今後表示されることはありません。",
+      "each_code_works_once_if_you_ever_lose_ac": "認証アプリへのアクセスを失った場合、各コードは一度だけ有効です。",
+      "confirm_your_password_to_disable": "無効にするにはパスワードを確認してください:",
+      "enter_a_current_6digit_code_to_invalidat": "現在の6桁コードを入力して、古いバックアップコードを無効にし、新しいものを生成してください。"
     },
     "components_applied_standards": {
-      "loading": "Checking standards…",
+      "loading": "チェック基準...",
       "approve": "Approve",
       "dismiss": "Dismiss",
       "remove": "Remove",
       "restore": "Restore",
-      "add_standard": "+ Add a standard",
-      "search_placeholder": "Search standards…",
+      "add_standard": "+ 標準を追加する",
+      "search_placeholder": "検索基準...",
       "search": "Search",
       "cancel": "Cancel",
-      "no_results": "No matches.",
+      "no_results": "マッチはない。",
       "added": "Added",
       "add": "Add",
-      "save_first": "Save this activity to see standards applied automatically from its content — you can also add your own once it exists.",
-      "none_yet": "No standards matched this activity's content yet — you can add one manually below."
+      "save_first": "このアクティビティを保存すると、そのコンテンツから自動的に標準が適用されるのを確認できます — 存在したら自分で標準を追加することもできます。",
+      "none_yet": "まだこの活動の内容に一致する基準はありません — 手動で追加できます。"
     },
     "components_standards_explorer": {
-      "title": "Explore Standards",
-      "placeholder": "e.g. \"fraction equivalence\" or \"advocate for learning goals\"…",
-      "searching": "Searching…",
+      "title": "標準を探る",
+      "placeholder": "例えば「分数の等価性」や「学習目標の擁護者」など...",
+      "searching": "探している...",
       "search": "Search",
       "clear": "Clear",
-      "search_failed": "Search failed. Try again in a moment.",
-      "subtitle": "Search across every standard, rubric, and requirement — results include structurally related standards (ancestors, cross-references, prerequisites), not just the closest text match.",
-      "include_related": "Include related standards (ancestors, cross-references, prerequisites)",
-      "no_results": "No matching standards found.",
-      "generate_activity": "✨ Generate activity from these standards"
+      "search_failed": "検索に失敗しました。少々お試しください。",
+      "subtitle": "すべての標準、ルーブリック、要件を横断して検索します — 結果には、最も近いテキストマッチだけでなく、構造的に関連する基準(祖先、クロスリファレンス、前提条件)が含まれます。",
+      "include_related": "関連する標準(祖先、クロスリファレンス、前提条件)を含める",
+      "no_results": "一致する基準は見つかりませんでした。",
+      "generate_activity": "✨ これらの基準から活動を生み出す"
     },
     "components_teacher_activitywizard": {
       "error_prefix": "Error",
       "step_basics": "Basics",
-      "step_experience": "Experience",
-      "step_assessment": "Assessment",
-      "step_outcomes": "Outcomes",
+      "step_experience": "経験",
+      "step_assessment": "評価",
+      "step_outcomes": "成果",
       "step_review": "Review",
-      "basics_title": "The basics",
-      "about_place": "About this place",
-      "coordinates": "Coordinates",
-      "optional": "Optional",
-      "kind_group": "Activity kind",
-      "wayfaring": "Wayfaring",
-      "investigative": "Investigative",
-      "setting_title": "Setting and timing",
-      "tracking_title": "Live tracking",
+      "basics_title": "基本",
+      "about_place": "この場所について",
+      "coordinates": "座標",
+      "optional": "任意",
+      "kind_group": "活動の種類",
+      "wayfaring": "航海",
+      "investigative": "調査",
+      "setting_title": "設定とタイミング",
+      "tracking_title": "ライブトラッキング",
       "on": "On",
       "off": "Off",
-      "prompts_title": "Student prompts",
-      "ai_chat": "Ask Peri (AI chat)",
-      "recommended": "Recommended",
-      "attached": "1 attached",
-      "none": "None",
+      "prompts_title": "学生向けプロンプト",
+      "ai_chat": "Ask Peri(AIチャット)",
+      "recommended": "おすすめ",
+      "attached": "1 添付",
+      "none": "なし",
       "edit": "Edit",
-      "review_title": "Review and create",
-      "not_set": "Not set yet",
-      "grade_subject": "Grade and subject",
+      "review_title": "レビューと作成",
+      "not_set": "まだセットしていません",
+      "grade_subject": "学年と科目",
       "none_yet": "None yet",
-      "quick_preview": "Quick Preview",
-      "this_place": "This place",
-      "close_dialog": "Close dialog",
+      "quick_preview": "クイックプレビュー",
+      "this_place": "この場所",
+      "close_dialog": "ダイアログを閉じる",
       "close": "Close",
-      "last_step": "Last step",
-      "library": "Outcome library",
-      "saved": "saved",
-      "library_unavailable": "Your outcome library could not be loaded. You can still write outcomes below.",
+      "last_step": "最後のステップ",
+      "library": "アウトカムライブラリ",
+      "saved": "保存済み",
+      "library_unavailable": "結果ライブラリが読み込まれませんでした。結果は以下に書くことができます。",
       "loading": "Loading…",
       "added": "Added",
       "add": "Add",
-      "written": "written",
-      "outcome_placeholder": "Students will be able to… e.g. classify three plant species by leaf shape",
-      "thinking_level": "Thinking level",
-      "evidence": "Evidence",
-      "in_library": "In my library",
-      "save_to_library": "Save to my library",
+      "written": "書かれた",
+      "outcome_placeholder": "学生は...例えば、葉の形で3種の植物を分類する",
+      "thinking_level": "思考レベル",
+      "evidence": "証拠",
+      "in_library": "私の図書館で",
+      "save_to_library": "ライブラリに保存",
       "remove": "Remove",
-      "write_new": "Write a new outcome",
-      "cov_outcomes": "Outcomes",
-      "cov_levels": "Thinking levels",
-      "cov_standards": "Standards matched",
-      "start_location": "A location",
-      "start_type": "An activity type",
-      "start_assessment": "An assessment",
-      "start_outcomes": "Learning outcomes",
-      "lets_begin": "Let's begin",
-      "start_group": "Start from",
-      "standards_error": "Could not load standard suggestions. You can add standards after saving.",
+      "write_new": "新しい結果を書く",
+      "cov_outcomes": "成果",
+      "cov_levels": "思考レベル",
+      "cov_standards": "基準は一致しています",
+      "start_location": "場所",
+      "start_type": "アクティビティタイプ",
+      "start_assessment": "評価",
+      "start_outcomes": "学習成果",
+      "lets_begin": "始めましょう",
+      "start_group": "スタート地点から",
+      "standards_error": "標準の提案を読み込めませんでした。保存後に標準を追加できます。",
       "state": "State",
-      "any_state": "Any state",
-      "search_standards_placeholder": "e.g. \"fraction equivalence\" or a standard code…",
+      "any_state": "どの州でも",
+      "search_standards_placeholder": "例えば「分数等価性」や標準コードなど...",
       "search": "Search",
-      "no_results": "No matches.",
-      "search_results": "Search results",
-      "suggested_standards": "Suggested standards",
-      "suggested": "Suggested",
-      "progress": "Progress",
-      "change_start": "Change start point",
+      "no_results": "マッチはない。",
+      "search_results": "検索結果",
+      "suggested_standards": "推奨基準",
+      "suggested": "提案",
+      "progress": "進展",
+      "change_start": "スタート地点を変更する",
       "back": "Back",
       "next": "Next",
-      "basics_lede": "Title, grade, subject and the place. Peri uses these to suggest activities and standards.",
-      "place_ready": "Background, features and nearby places are ready.",
-      "peri_suggestions": "✨ Peri AI suggestions",
-      "peri_offline_questions": "🔌 Offline Peri questions",
-      "experience_title": "How will students experience it?",
-      "experience_lede": "Choose the kind of activity, whether you can see students on the map, and how they get prompted.",
-      "kind_title": "Wayfaring or investigative",
-      "wayfaring_note": "Students move through a route and respond at stops along the way.",
-      "investigative_note": "Students gather evidence in one area to answer a question or test an idea.",
-      "assessment_title": "How will you assess it?",
-      "assessment_lede": "Apply up to three: state standards, a cognitive taxonomy, and your own rubric. Peri suggests standards from your grade, state, subject and outcomes.",
-      "review_lede": "Check the summary. Select Edit on any row to go back to that step; your answers are kept.",
-      "outcome_added": "Outcome added from your library.",
-      "outcome_saved": "Outcome saved to your library for reuse.",
-      "outcomes_title": "What should students be able to do?",
-      "outcomes_lede": "Write each outcome as something observable, or reuse one from your library. Outcomes feed standards matching and the rubric.",
-      "library_empty": "No saved outcomes match yet. Write one below and choose \"Save to my library\".",
-      "this_activity_outcomes": "This activity's outcomes",
-      "start_location_note": "I know where students will be. Peri suggests what to do there.",
-      "start_type_note": "Wayfaring walk or investigation. I will choose the place next.",
-      "start_assessment_note": "Start from a standard, taxonomy level or rubric, then build backwards.",
-      "start_outcomes_note": "I know what students should be able to do. Peri suggests matching standards.",
-      "start_title": "What do you want to start from?",
-      "start_lede": "Pick the part of the activity you already have in mind. Peri will ask for the rest, in the order that makes sense from there. You can change anything later.",
-      "state_not_set": "Not set by your administrator",
-      "search_standards": "Search for a standard",
-      "standards_loading": "Peri is matching standards…",
-      "standards_add_outcomes": "Add outcomes to sharpen these matches.",
-      "standards_none": "No matches yet. Add outcomes or change the grade and subject.",
-      "standards_hint": "Peri pre-selects the strongest matches. Uncheck any that do not fit. Selected standards are applied when you create the activity.",
-      "start_pane": "Choose where to start"
+      "basics_lede": "タイトル、成績、科目、場所。ペリはこれらを使って活動や基準を提案します。",
+      "place_ready": "背景、特徴、近隣の場所は準備が整っています。",
+      "peri_suggestions": "✨ Peri AI の提案",
+      "peri_offline_questions": "🔌 オフラインのペリに関する質問",
+      "experience_title": "学生たちはそれをどのように体験するのでしょうか?",
+      "experience_lede": "活動の種類、地図上で生徒が見えるかどうか、どのようにプロンプトを受けられるかを決めましょう。",
+      "kind_title": "旅路か調査か",
+      "wayfaring_note": "生徒たちはルートを進み、途中の停留所で応答します。",
+      "investigative_note": "生徒はある分野で証拠を集め、質問に答えたりアイデアを検証したりします。",
+      "assessment_title": "どのように評価しますか?",
+      "assessment_lede": "最大3つまで適用しましょう:州の基準、認知的分類法、そして自分だけのルーブリック。ペリは成績、州、教科、成果から基準を提案します。",
+      "review_lede": "概要を確認してください。任意の行で「編集」を選択してそのステップに戻ります。回答は保持されます。",
+      "outcome_added": "あなたのライブラリから結果が追加されました。",
+      "outcome_saved": "結果は再利用のためにライブラリに保存されます。",
+      "outcomes_title": "学生は何ができるべきでしょうか?",
+      "outcomes_lede": "各結果を観察可能なものとして記述するか、ライブラリから再利用してください。結果は基準マッチングとルーブリックを反映します。",
+      "library_empty": "まだ一致する保存された結果はありません。以下に一つ書き込み、「ライブラリに保存」を選択してください。",
+      "this_activity_outcomes": "この活動の成果",
+      "start_location_note": "生徒たちがどこにいるかはわかっている。ペリがそこで何をすべきか提案する。",
+      "start_type_note": "道中を歩くか、調査か。次に場所を決める。",
+      "start_assessment_note": "標準的な分類レベルやルーブリックから始めて、そこから逆算して進めましょう。",
+      "start_outcomes_note": "生徒が何をすべきかは分かっています。ペリは基準を合わせることを提案しています。",
+      "start_title": "何から始めたいですか?",
+      "start_lede": "すでに考えている活動の部分を選びましょう。ペリが残りの部分を、そこから理解できる順番で尋ねます。後で何でも変更できます。",
+      "state_not_set": "管理者によって設定されていない",
+      "search_standards": "標準を探す",
+      "standards_loading": "ペリは基準に合っている...",
+      "standards_add_outcomes": "結果を追加して、これらの試合をより鋭くしましょう。",
+      "standards_none": "まだ一致していません。結果を追加するか、成績と科目を変更してください。",
+      "standards_hint": "Peri は最も強いマッチをあらかじめ選択します。合わないものはチェックを外します。選択した基準はアクティビティ作成時に適用されます。",
+      "start_pane": "どこから始めるか選べる"
     },
     "components_teacher_activitymanagerwizardtest": {
-      "peri_suggestions": "peri suggestions",
-      "activities_list": "activities list"
+      "peri_suggestions": "PERIの提案",
+      "activities_list": "活動一覧"
     },
     "components_teacher_wizard_activitywizardtest": {
-      "title_pond_study": "Pond study",
+      "title_pond_study": "池の研究",
       "title_pond": "Pond"
     },
-    "two_factor_authentication": "Two-Factor Authentication",
+    "two_factor_authentication": "二要素認証",
     "pages_bloglistpage": {
       "blog": "Blog",
       "loading": "Loading…",
       "title_blog": "Blog",
-      "updates_and_field_notes_from_the_team_bu": "Updates and field notes from the team building Peripateticware.",
-      "no_posts_yet_check_back_soon": "No posts yet — check back soon."
+      "updates_and_field_notes_from_the_team_bu": "Peripateticware開発チームによる最新情報やフィールドノート。",
+      "no_posts_yet_check_back_soon": "まだ投稿はありません — また近いうちにチェックしてください。"
     },
     "pages_blogpostpage": {
       "loading": "Loading…",
-      "post_not_found": "Post not found",
-      "title_post_not_found": "Post Not Found",
-      "this_post_may_have_been_unpublished_or_m": "This post may have been unpublished or moved."
+      "post_not_found": "投稿が見つかりません",
+      "title_post_not_found": "投稿が見つかりません",
+      "this_post_may_have_been_unpublished_or_m": "この投稿は未公開か移動された可能性があります。"
     },
-    "parent_requests": "Parent Requests",
-    "requested_on": "Requested",
+    "parent_requests": "保護者からのリクエスト",
+    "requested_on": "リクエスト済み",
     "deny": "Deny",
     "pages_admin_adminblogeditorpage": {
       "loading": "Loading…",
       "restore": "Restore",
       "discard": "Discard",
       "title": "Title",
-      "commaseparated": "(comma-separated)",
+      "commaseparated": "(カンマ区切り)",
       "content": "Content",
-      "placeholder_post_title": "Post title",
-      "placeholder_one_or_two_sentence_summary": "One or two sentence summary…",
-      "title_remove_cover_image": "Remove cover image",
-      "placeholder_sunrise_over_the_ridge_trail": "Sunrise over the ridge trail",
-      "placeholder_photo_jane_doe": "Photo: Jane Doe",
-      "placeholder_product_homeschool_standards": "product, homeschool, standards",
-      "title_replace_this_image": "Replace this image",
-      "title_remove_this_image": "Remove this image",
-      "placeholder_write_in_markdown": "Write in Markdown…",
-      "optional_shown_on_the_blog_list_and_in_l": "(optional — shown on the blog list and in link previews; auto-generated from content if left blank)",
-      "optional_upload_a_file_or_paste_a_url_if": "(optional — upload a file, or paste a URL if it's already hosted somewhere)",
-      "optional_shown_under_the_cover_image": "(optional — shown under the cover image)",
-      "optional_eg_photo_credit": "(optional — e.g. photo credit)",
-      "nothing_to_preview_yet": "Nothing to preview yet.",
-      "title_edit_captionattribution": "Edit caption/attribution"
+      "placeholder_post_title": "投稿タイトル",
+      "placeholder_one_or_two_sentence_summary": "一、二文の要約...",
+      "title_remove_cover_image": "カバー画像を削除する",
+      "placeholder_sunrise_over_the_ridge_trail": "尾根トレイル越しの日の出",
+      "placeholder_photo_jane_doe": "写真:ジェーン・ドウ",
+      "placeholder_product_homeschool_standards": "製品、ホームスクール、標準",
+      "title_replace_this_image": "この画像を置き換える",
+      "title_remove_this_image": "この画像を削除してください",
+      "placeholder_write_in_markdown": "Markdown に入力してください...",
+      "optional_shown_on_the_blog_list_and_in_l": "(オプション — ブログリストおよびリンクプレビューに表示される。空白のままにするとコンテンツから自動生成)",
+      "optional_upload_a_file_or_paste_a_url_if": "(任意 — ファイルをアップロードするか、すでにどこかにホストされている場合はURLを貼り付ける)",
+      "optional_shown_under_the_cover_image": "(オプション — 表紙画像の下に示されています)",
+      "optional_eg_photo_credit": "(任意 — 例:写真クレジット)",
+      "nothing_to_preview_yet": "まだプレビューできるものはない。",
+      "title_edit_captionattribution": "編集:キャプション/出典"
     },
     "pages_admin_adminblogpage": {
       "blog": "Blog",
       "loading": "Loading…",
-      "placeholder_search_by_title_or_slug": "Search by title or slug…",
-      "write_and_publish_posts_published_posts_": "Write and publish posts. Published posts appear at /blog and are linked from the site header."
+      "placeholder_search_by_title_or_slug": "タイトルまたはスラッグで検索...",
+      "write_and_publish_posts_published_posts_": "投稿を書き、公開します。公開された投稿は /blog に掲載され、サイトのヘッダーからリンクされます。"
     },
     "pages_admin_adminpageblockeditorpage": {
       "loading": "Loading…",
       "format": "Format",
-      "plain_text": "Plain text",
+      "plain_text": "プレーンテキスト",
       "markdown": "Markdown",
       "content": "Content",
       "status": "Status",
       "history": "History",
-      "must_match_the_key_hardcoded_in_the_page": "(must match the key hardcoded in the page's JSX)",
-      "published_live_on_the_site": "Published (live on the site)",
-      "draft_hidden_page_shows_its_builtin_defa": "Draft (hidden — page shows its built-in default)",
-      "no_saved_versions_yet": "No saved versions yet.",
-      "groups_blocks_in_the_list_eg_landing": "(groups blocks in the list, e.g. \"landing\")",
+      "must_match_the_key_hardcoded_in_the_page": "(ページの JSX にハードコードされたキーと一致しなければならない)",
+      "published_live_on_the_site": "公開済み(サイト上でライブ配信)",
+      "draft_hidden_page_shows_its_builtin_defa": "下書き(非表示 — ページがデフォルト設定を表示)",
+      "no_saved_versions_yet": "まだ保存されたバージョンはありません。",
+      "groups_blocks_in_the_list_eg_landing": "(リスト内のブロックをグループ化します。例:「着陸」など)",
       "placeholder_landing": "landing",
       "placeholder_landingherohomeschoolheadline": "landing.hero.homeschool.headline"
     },
     "pages_admin_adminpagespage": {
       "pages": "Pages",
       "loading": "Loading…",
-      "placeholder_search_by_block_key_or_content": "Search by block key or content…",
-      "edit_copy_directly_on_live_pages_without": "Edit copy directly on live pages without a code deploy. Only fields a developer has wired up appear here."
+      "placeholder_search_by_block_key_or_content": "ブロックキーまたはコンテンツで検索...",
+      "edit_copy_directly_on_live_pages_without": "コードデプロイなしで、ライブページ上で直接コピーを編集できます。ここには開発者が配線したフィールドのみが表示されます。"
     },
-    "generate_with_ai_help": "Describe the activity below and the AI will draft rubric criteria with 4-level descriptors. Generated criteria are appended below — nothing you've already entered will be removed.",
-    "activity_description": "Activity description",
-    "learning_objectives_one_per_line": "Learning objectives (one per line)",
-    "ai_generated_overview": "🤖 AI-generated overview — verify details",
-    "looking_up_more_about_this_place": "Looking up more about this place…",
-    "learn_about_this_place": "Learn about this place",
-    "nearby_points_of_interest": "🗺️ Nearby Points of Interest",
+    "generate_with_ai_help": "以下のアクティビティを説明すると、AIが4段階の記述子を含むルーブリック基準を作成します。生成された基準は下記に追加されます—すでに入力したものは削除されません。",
+    "activity_description": "活動の概要",
+    "learning_objectives_one_per_line": "学習目標(1行あたり1つ)",
+    "ai_generated_overview": "🤖 AI生成の概要 — 詳細を検証",
+    "looking_up_more_about_this_place": "この場所についてもっと調べてみると...",
+    "learn_about_this_place": "この場所について学びましょう",
+    "nearby_points_of_interest": "🗺️ 近隣の見どころ",
     "pages_homeschool_homeschoolcalendarpage": {
-      "add_a_child_to_see_their_calendar": "Add a child from \"Children\" to see their calendar."
+      "add_a_child_to_see_their_calendar": "「子ども」から子どもを追加してカレンダーを見ることができます。"
     },
     "pages_student_studentcalendarpage": {
-      "subtitle": "Your planned and completed activities, and anything your teacher has scheduled."
+      "subtitle": "計画して完了した活動、そして先生が予定したこと。"
     },
     "components_blogpostview": {
-      "nothing_to_preview_yet": "Nothing to preview yet."
+      "nothing_to_preview_yet": "まだプレビューできるものはない。"
     },
-    "try_demo_account": "Or try a demo account — no signup required →",
-    "early_access_title": "We're just getting started",
-    "early_access_desc": "Peripateticware is in early access — we\\'re working with our first families to shape what comes next. Be one of them, and help decide where this goes.",
-    "early_access_cta": "Create your free account",
-    "parent_requests_description": "A parent or guardian can ask to follow your progress. Approving lets them see your activities and reports — you can revoke access from their profile at any time. Denying declines the request.",
-    "no_pending_parent_requests": "No pending parent requests right now.",
+    "try_demo_account": "またはデモアカウントを試してみるのもいい — サインアップは不要→",
+    "early_access_title": "まだ始まったばかりだ",
+    "early_access_desc": "Peripateticwareはアーリーアクセス段階にあり、私たちはファーストファミリーと協力して今後の展開を形作っています。その一員になって、今後の進路を決める手助けをしてください。",
+    "early_access_cta": "無料アカウントを作成する",
+    "parent_requests_description": "保護者や保護者は、あなたの進捗をフォローするよう求めることができます。承認すると、その人たちはあなたの活動やレポートを見ることができます — プロフィールへのアクセスをいつでも取り消すことができます。拒否するとリクエストは拒否されます。",
+    "no_pending_parent_requests": "現時点で保護者の申請は保留されていません。",
     "pricing_nav_label": "Pricing",
     "refundpolicypage": {
-      "back_to_home": "← Back to Home",
-      "title": "Refund &amp; Cancellation Policy",
-      "last_updated": "Last updated: September 2026",
-      "1_title": "1. Free Trial",
-      "1_body": "Every new account includes a 30-day free trial with full access to all features. No payment method is required to start or use the trial. You will never be charged unless you actively choose to subscribe.",
-      "2_title": "2. Subscriptions & Billing",
-      "2_body": "When you subscribe, payment is taken at that time for the plan you select (monthly or annual). Subscriptions renew automatically at the end of each billing period until cancelled. Our payments and billing are handled by Paddle.com, our Merchant of Record.",
-      "3_title": "3. 14-Day Money-Back Guarantee",
-      "3_body": "If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.",
-      "4_title": "4. Renewal Charges",
-      "4_body": "Renewal payments (after your first billing period) are generally non-refundable. To avoid a renewal charge, cancel before your renewal date — you will keep access until the end of the period you have already paid for.",
-      "5_title": "5. How to Cancel",
-      "5_body": "Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.",
-      "6_title": "6. Exceptional Circumstances",
-      "6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
+      "back_to_home": "← ホームに戻る",
+      "title": "返金およびキャンセルポリシー",
+      "last_updated": "最終更新日:2026年9月",
+      "1_title": "1. 無料トライアル",
+      "1_body": "すべての新しいアカウントには、すべての機能に完全アクセスできる30日間の無料トライアルが含まれています。トライアルを開始または利用するのに支払い方法は不要です。積極的に加入しない限り、料金は一切かかりません。",
+      "2_title": "2. サブスクリプションと請求",
+      "2_body": "ご購読いただくと、選択したプラン(月額または年次)の支払いがその時点で行われます。サブスクリプションは、キャンセルされるまで各請求期間終了時に自動的に更新されます。当社の支払いおよび請求は、当店のMerchant of Recordである Paddle.com が担当しています。",
+      "3_title": "3. 14日間返金保証",
+      "3_body": "有料サブスクリプションに満足できない場合は、初回支払いから14日以内にメールで全額返金を申請できます hello@peripateticware.com。返金は元の支払い方法に、通常5〜10営業日以内に行われます。",
+      "4_title": "4. 更新手数料",
+      "4_body": "最初の請求期間以降の更新支払いは、通常返金不可です。更新料金を避けるために、更新日前にキャンセルしてください。すでに支払った期間が終了するまでアクセス権を保持できます。",
+      "5_title": "5. キャンセル方法",
+      "5_body": "アカウント内の設定→プランから、またはPaddle領収書のメール内のリンク、または hello@peripateticware.com への連絡を通じていつでもキャンセルできます。キャンセルは今後の更新を停止します。現在の期間の部分返金は発生しません。",
+      "6_title": "6. 例外的状況",
+      "6_body": "これらの期間外での返金請求はケースバイケースで審査します—例えば重複請求、長期間のサービス停止、請求ミスなどです。お問い合わせいただければ、対応いたします。",
       "7_title": "7. Contact",
-      "7_body": "Questions about billing, cancellations, or refunds?"
+      "7_body": "請求、キャンセル、返金についての質問はありますか?"
     }
   }
 }

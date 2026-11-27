@@ -80944,6 +80944,346 @@
       &quot;derived_from&quot;: {
         &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v13&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: MICROSOFT-Azure-Cognitive-v3 [Profile: Application UI Strings | Temp: 0.0]&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v17&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v16&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-audiorecorder.s-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-audiorecorder.s-v17&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;s&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-audiorecorder.s-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-audiorecorder.s&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-audiorecorder.s-v16&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-m-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-m-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;m&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-m-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-m&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-m-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-min-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-min-v16&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;min&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-min-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-min&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-min-v15&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanager.applied-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanager.applied-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;aplicado&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanager.applied-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitymanager.applied&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanager.applied-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.grade-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.grade-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Grado&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.grade-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_ollamalessonsuggestions.grade&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.grade-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.at-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.at-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;en&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_ollamalessonsuggestions.at-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_ollamalessonsuggestions.at&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_ollamalessonsuggestions.at-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.none-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.none-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Ninguno&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.none-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitywizard.none&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.none-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.saved-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.saved-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;guardado&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.saved-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitywizard.saved&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.saved-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.written-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.written-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;escrito&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitywizard.written-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitywizard.written&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitywizard.written-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanagerwizardtest.peri_suggestions-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanagerwizardtest.peri_suggestions-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Sugerencias de Peri&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanagerwizardtest.peri_suggestions-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitymanagerwizardtest.peri_suggestions&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanagerwizardtest.peri_suggestions-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanagerwizardtest.activities_list-2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.327763+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Application_UI_Strings_|_Temp__0.0&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanagerwizardtest.activities_list-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Lista de actividades&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_activitymanagerwizardtest.activities_list-2026-11-27T20:12:50.327763+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_activitymanagerwizardtest.activities_list&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_activitymanagerwizardtest.activities_list-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Technical/Legal_Documentation_|_Temp__0.1&quot;,
+      &quot;@type&quot;: &quot;prov:Agent&quot;,
+      &quot;prov:label&quot;: &quot;Translation Engine Profile: MICROSOFT-Azure-Cognitive-v3 [Profile: Technical/Legal Documentation | Temp: 0.1]&quot;
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_adminprivacyconfigpage.pending_review-2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Technical/Legal_Documentation_|_Temp__0.1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_adminprivacyconfigpage.pending_review-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Revisión pendiente&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_adminprivacyconfigpage.pending_review-2026-11-27T20:12:50.532439+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_adminprivacyconfigpage.pending_review&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_adminprivacyconfigpage.pending_review-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Technical/Legal_Documentation_|_Temp__0.1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Si no estás satisfecho con una suscripción de pago, puedes solicitar un reembolso completo dentro de los 14 días siguientes a tu primer pago enviando un correo electrónico a hello@peripateticware.com. Los reembolsos se emiten al método de pago original, normalmente en un plazo de 5–10 días laborables.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-27T20:12:50.532439+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.3_body&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v14&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-27T20:12:50.532439+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT-Azure-Cognitive-v3_Profile__Technical/Legal_Documentation_|_Temp__0.1&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v15&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Cancela en cualquier momento desde Configuración → Plan en tu cuenta, o utilizando el enlace en cualquier correo electrónico de recibo de Paddle, o contactando con hello@peripateticware.com. La cancelación detiene futuras renovaciones; no activa un reembolso parcial para el periodo actual.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-27T20:12:50.532439+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v14&quot;
+      }
     }
   ]
 }</meta>
@@ -80953,7 +81293,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 16</note>
+        <note>Status: new_translation | Version: 17</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -82283,7 +82623,7 @@
       <trans-unit id="audiorecorder.s" approved="no">
         <source>s</source>
         <target>s</target>
-        <note>Status: new_translation | Version: 16</note>
+        <note>Status: new_translation | Version: 17</note>
       </trans-unit>
       <trans-unit id="audiorecorder.recording_saved" approved="no">
         <source>Recording saved (</source>
@@ -82738,7 +83078,7 @@
       <trans-unit id="m" approved="no">
         <source>m</source>
         <target>m</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: new_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="materials" approved="no">
         <source>Materials:</source>
@@ -83273,7 +83613,7 @@
       <trans-unit id="min" approved="no">
         <source>min</source>
         <target>min</target>
-        <note>Status: new_translation | Version: 15</note>
+        <note>Status: new_translation | Version: 16</note>
       </trans-unit>
       <trans-unit id="row" approved="no">
         <source>Row</source>
@@ -90602,8 +90942,8 @@ Los usuarios pueden hacer clic en el mapa para seleccionar una ubicación.</targ
       </trans-unit>
       <trans-unit id="components_teacher_activitymanager.applied" approved="no">
         <source>applied</source>
-        <target>applied</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>aplicado</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanager.assessments_intro" approved="no">
         <source>Apply up to three: state/curriculum standards, a cognitive taxonomy, and your own rubric.</source>
@@ -91009,13 +91349,13 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.grade" approved="no">
         <source>grade</source>
-        <target>grade</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>Grado</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.at" approved="no">
         <source>at</source>
-        <target>at</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>en</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.need_subject_grade" approved="no">
         <source>Add a subject and grade level above to get suggestions from Peri.</source>
@@ -91314,8 +91654,8 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="pages_adminprivacyconfigpage.pending_review" approved="no">
         <source>pending review</source>
-        <target>pending review</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>Revisión pendiente</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="pages_adminprivacyconfigpage.placeholder_eg_de_fr_gb" approved="no">
         <source>e.g. DE, FR, GB</source>
@@ -95611,8 +95951,8 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.none" approved="no">
         <source>None</source>
-        <target>None</target>
-        <note>Status: needs_manual_translation | Version: 14</note>
+        <target>Ninguno</target>
+        <note>Status: pending_review | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.edit" approved="no">
         <source>Edit</source>
@@ -95696,8 +96036,8 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.saved" approved="no">
         <source>saved</source>
-        <target>saved</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>guardado</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.library_unavailable" approved="no">
         <source>Your outcome library could not be loaded. You can still write outcomes below.</source>
@@ -95731,8 +96071,8 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.written" approved="no">
         <source>written</source>
-        <target>written</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>escrito</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitywizard.outcome_placeholder" approved="no">
         <source>Students will be able to… e.g. classify three plant species by leaf shape</source>
@@ -95946,13 +96286,13 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanagerwizardtest.peri_suggestions" approved="no">
         <source>peri suggestions</source>
-        <target>peri suggestions</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>Sugerencias de Peri</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanagerwizardtest.activities_list" approved="no">
         <source>activities list</source>
-        <target>activities list</target>
-        <note>Status: new_translation | Version: 14</note>
+        <target>Lista de actividades</target>
+        <note>Status: new_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="components_teacher_wizard_activitywizardtest.title_pond_study" approved="no">
         <source>Pond study</source>
@@ -96057,7 +96397,7 @@ james@email.com</target>
       <trans-unit id="refundpolicypage.3_body" approved="no">
         <source>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</source>
         <target>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</target>
-        <note>Status: needs_manual_translation | Version: 14</note>
+        <note>Status: needs_manual_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.4_title" approved="no">
         <source>4. Renewal Charges</source>
@@ -96077,7 +96417,7 @@ james@email.com</target>
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 14</note>
+        <note>Status: needs_manual_translation | Version: 15</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>
