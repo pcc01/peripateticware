@@ -96,16 +96,21 @@ env:
 # Android 7.0/API 24 (oldest, least-accelerated device) than newer ones.
 # Hypothesis, not confirmed — needs a real run on that device to verify.
 #
-# Also seen failing on BOTH iOS 18 and iOS 26 (iPhone 16/17 simulators) even
-# at the 35s bumped above — confirmed via a real CI run on both legs, so
-# that bump wasn't the whole story on iOS either. Bumping again (35s -> 45s)
-# to match the equally-generous number e2e/geofence.test.js landed on for
-# the same assertion on Android. Still not confirmed as a real fix on
-# iOS specifically: unlike this suite's usual "visible but not found" gap, a
-# real CI screenshot showed no toast on screen at all, which could mean
-# iOS Simulator's own location-mocking path behaves differently from the
-# Android-emulator-console one this latency theory was built around, not
-# just "same cause, slower". Needs a real iOS run to tell which is true.
+# Also seen failing on BOTH iOS 18 and iOS 26 (iPhone 16/17 simulators) at
+# 35s, so bumped to 45s to match e2e/geofence.test.js's Android-side
+# number — CONFIRMED NOT TO FIX IT: a real CI run at 45s still failed
+# identically on both iOS legs ("Assertion is false: id: geofence-toast is
+# visible"). This isn't a pure timing problem on iOS, so stop bumping this
+# number further without new evidence. Unlike this suite's usual "visible
+# but not found" gap, a real CI screenshot showed no toast on screen at
+# all, consistent with iOS Simulator's location-mocking path (setLocation
+# here goes through Maestro's own iOS driver, not an Android-emulator-
+# console command) not actually delivering an update to
+# expo-location's watchPositionAsync at all, not just slower than Android.
+# mobile-e2e-maestro.yml's "Run Maestro tests" step now captures the
+# simulator's own console log (artifacts/ios_device.log) specifically to
+# check this next: did CoreLocation/expo-location ever see the mocked
+# position change, or does nothing happen on the device side at all.
 - setLocation:
     latitude: 37.95
     longitude: -122.35

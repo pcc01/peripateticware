@@ -637,7 +637,30 @@ jobs:
         # on an otherwise-fine UI. Verbose mode dumps the view hierarchy on
         # every failed match, which is the only way to tell those apart
         # from the log instead of guessing.
-        run: detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose
+        #
+        # Every iOS Detox test fails the same way: Detox's own
+        # ws-client:APP_STATUS reports the app perpetually "busy" ("N work
+        # items pending on the dispatch queue", "Run loop ... is awake")
+        # from right after launch onward, even though the view hierarchy at
+        # that exact moment proves the screen already rendered correctly —
+        # and device.disableSynchronization() (tried in e2e/helpers.js)
+        # didn't stop it either, so whatever's scheduling that work isn't
+        # gated by Detox's own sync toggle. Detox's own log never names the
+        # actual work items (unlike some of its other "busy resource"
+        # categories, which do print specifics) — this is Detox's own
+        # generic fallback when it can't identify a more specific cause.
+        # The app's own console output (NSLog/os_log from Expo/RN/native
+        # modules — e.g. a backgrounded expo-updates retry loop, or
+        # Reanimated's runtime, both real candidates no one has been able
+        # to rule in or out yet) was never actually captured anywhere in
+        # this workflow, unlike Android's `adb logcat` capture below —
+        # mirroring that gap closed here. mkdir -p so the background
+        # redirect has somewhere to write even if Detox hasn't made
+        # artifacts/ yet.
+        run: |
+          mkdir -p artifacts
+          nohup xcrun simctl spawn "$SIMULATOR_UDID" log stream --level debug --style compact > artifacts/ios_device.log 2>&1 &
+          detox test -c ${{ matrix.detox-config }} --headless --record-videos failing --take-screenshots failing --loglevel verbose
         env:
           TEST_STUDENT_EMAIL: ${{ secrets.TEST_STUDENT_EMAIL }}
           TEST_STUDENT_PASSWORD: ${{ secrets.TEST_STUDENT_PASSWORD }}

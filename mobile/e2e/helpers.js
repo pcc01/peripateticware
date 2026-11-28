@@ -55,12 +55,26 @@ async function waitForFirstVisible(ids, timeout) {
 // idling resources) and Maestro (a different, non-Detox sync mechanism)
 // are both unaffected, which is why this is scoped to iOS only here.
 // device.disableSynchronization() is Detox's own documented escape hatch
-// for exactly this class of problem: it skips the "wait for the app to go
-// idle" step before each action/expectation, so the polling loops below
-// can actually attempt their queries instead of blocking forever before
-// the first one ever runs. Re-enabled once loginAsStudent() reaches
-// discover-screen, a point every other platform/tool already proves is a
-// safe, reliably-idle screen.
+// for exactly this class of problem — it skips the "wait for the app to go
+// idle" step before each action/expectation — and was the obvious thing to
+// try. CONFIRMED NOT TO WORK: a real CI run with this in place still hit
+// the identical 30s login-screen timeout, at the identical place (stack
+// trace showed withSyncDisabledOnIOS had already run, i.e.
+// disableSynchronization() really was called first). So whatever's
+// actually blocking isn't gated by this toggle — matches another comment
+// on the same upstream issue: "--debug-synchronization has nothing to say,
+// Detox seems to block internally before reaching the app code" even with
+// sync disabled. Left in place anyway (harmless no-op on the actual
+// blocker, and still correct/necessary IF that blocker is ever fixed
+// upstream) rather than ripped out. The real next step is the device log
+// now captured by mobile-e2e.yml's "Run Detox tests" step
+// (artifacts/ios_device.log, mirroring Android's logcat capture) — this
+// repo never had iOS console/NSLog output from a CI run before, so the
+// next failure should show what's actually still running on the main
+// queue (candidates nobody's ruled in or out yet: react-native-reanimated,
+// present in this app though not imported near onboarding/login;
+// expo-updates' background update-check retrying forever with no update
+// server reachable in CI; something else entirely).
 // Reentrancy guard: completeOnboardingIfPresent() wraps itself with this (so
 // auth.test.js/starter.test.js, which call it directly rather than through
 // loginAsStudent(), still get the fix), and loginAsStudent() ALSO wraps its

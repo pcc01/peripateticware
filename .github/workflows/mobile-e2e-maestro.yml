@@ -612,6 +612,15 @@ jobs:
         working-directory: mobile
         run: |
           mkdir -p artifacts
+          # Device-side console output (NSLog/os_log from Expo/RN/native
+          # modules) was never captured anywhere in this job, unlike the
+          # Android job's `adb logcat` capture — mirrored here specifically
+          # to help diagnose 10-geofence's iOS-only failure (even at a
+          # bumped 45s timeout): this should show whether expo-location's
+          # watchPositionAsync ever actually receives a location update
+          # after Maestro's setLocation command, rather than only seeing
+          # Maestro's own "assertion failed" from the outside.
+          nohup xcrun simctl spawn "$SIMULATOR_UDID" log stream --level debug --style compact > artifacts/ios_device.log 2>&1 &
           xcrun simctl install "$SIMULATOR_UDID" ios/build/Build/Products/Release-iphonesimulator/Peripateticware.app
           set +e
           # No LOCATION_PERMISSION env var — a real run proved `-e`
