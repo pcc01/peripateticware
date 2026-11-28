@@ -121,6 +121,14 @@ describe('Settings Screen', () => {
     await expect(
       element(by.text('✓').withAncestor(by.label('Español language')))
     ).toBeVisible();
+    // Close the picker before this test ends — left open, it covered the
+    // Settings screen's own "Sign out" button for the next test (9.4),
+    // which failed to tap it ("view.getGlobalVisibleRect() covers at least
+    // 75 percent" — a real CI run showed capture of a stray "Sign out"
+    // match at x=422,y=39, nowhere near its usual position, consistent
+    // with the picker modal still covering the real button). Same cleanup
+    // 9.3 already does for the same reason.
+    await element(by.id('language-picker-close')).tap();
   });
 
   it('9.4 — Sign Out clears the session and returns to the login screen', async () => {

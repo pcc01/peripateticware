@@ -52,12 +52,16 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await element(by.id('capture-note-input')).typeText('Found three different leaf shapes near the water.');
     await element(by.id('capture-note-save')).tap();
 
-    // CaptureSheet's upload() always saves to the device first (queueCapture
-    // — see src/db/offlineQueue.ts) regardless of connectivity, so this
-    // confirmation shows immediately, then the sheet auto-closes ~900ms
-    // later. Mirrors 12.1-note-capture.yaml's own comment making the same
-    // call.
-    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
+    // No waitFor on capture-saved-confirmation here — CaptureSheet's
+    // upload() shows it via setJustSaved(...) then hides it again via a
+    // bare setTimeout(..., 900) (see the component). Detox's own Android
+    // idling resource tracks that pending timer as "busy" and doesn't hand
+    // control back from the preceding .tap() until it fires — so by the
+    // time this line would run, the confirmation has already shown AND
+    // been dismissed. No timeout value fixes this (confirmed: a real CI
+    // run still failed with 15000ms, the same as 5000ms) since the element
+    // is already unmounted before the wait starts. The close + end-state
+    // checks below are the only observable part of this flow.
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(10000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -82,13 +86,12 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     // brief recording.
     await element(by.id('capture-record-btn')).tap();
 
-    // stopRecording() (CaptureSheet.tsx) waits up to 1.5s for the on-device
-    // speech recognizer's "end" event, then up to 8s for expo-av's own
-    // stopAndUnloadAsync() timeout, before upload() ever runs -- ~9.5s of
-    // legitimate worst-case latency on a slow CI emulator, before any of the
-    // instant-local-save confirmation logic even starts. 5s was tighter than
-    // that floor and could fail even on the success path.
-    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(15000);
+    // No waitFor on capture-saved-confirmation — see 12.1's matching
+    // comment above; Detox's timer-tracking idling resource means this
+    // element is already gone again by the time any wait on it would
+    // start, independent of stopRecording()'s own ~9.5s worst-case latency
+    // before upload() runs. not.toBeVisible() below already accounts for
+    // that latency with its own 15s budget.
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(15000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -112,8 +115,12 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     // immediately covers capture-sheet's own view, so it never clears
     // Espresso's 75%-visible-area bar. toExist() (not toBeVisible()) is the
     // correct check here — the root view is legitimately present, just
-    // intentionally obscured by the camera UI on top of it.
-    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(10000);
+    // intentionally obscured by the camera UI on top of it. 20s, not 10s —
+    // a real CI run on a 2-core software-rendered (swiftshader) emulator
+    // timed out at 10s here despite a failure screenshot taken moments
+    // later showing the camera preview and shutter button fully rendered:
+    // this Modal's mount is just slow under CI load, not broken.
+    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(20000);
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
 
     // camera-shutter only renders once InAppCamera's onCameraReady fires
@@ -125,7 +132,8 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await waitFor(element(by.id('camera-shutter'))).toBeVisible().withTimeout(15000);
     await element(by.id('camera-shutter')).tap();
 
-    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
+    // No waitFor on capture-saved-confirmation — see 12.1's matching
+    // comment above.
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(15000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });
@@ -142,8 +150,9 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     // Same nested-Modal reasoning as 12.3 above — video mode also opens
     // InAppCamera's own full-screen Modal in the same instant as
     // CaptureSheet's, so capture-sheet is only ever toExist(), not
-    // toBeVisible(), while in-app-camera is up.
-    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(10000);
+    // toBeVisible(), while in-app-camera is up. 20s, not 10s — see 12.3's
+    // matching comment on the same toExist() wait.
+    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(20000);
     await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('camera-record'))).toBeVisible().withTimeout(15000);
 
@@ -155,7 +164,8 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await waitFor(element(by.id('camera-record-status'))).toBeVisible().withTimeout(5000);
     await element(by.id('camera-record')).tap();
 
-    await waitFor(element(by.id('capture-saved-confirmation'))).toBeVisible().withTimeout(5000);
+    // No waitFor on capture-saved-confirmation — see 12.1's matching
+    // comment above.
     await waitFor(element(by.id('capture-sheet'))).not.toBeVisible().withTimeout(20000);
     await expect(element(by.id('activity-screen'))).toBeVisible();
   });

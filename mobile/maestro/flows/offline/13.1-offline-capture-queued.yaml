@@ -80,9 +80,16 @@ appId: com.peripateticware.app
     id: "capture-note-save"
 # Same confirmation as the always-online 12.1 flow — proves the local save
 # (queueCapture()) succeeded with zero network involved, which is the whole
-# point here; there's no separate offline-branch UI left to assert.
-- assertVisible:
-    id: "capture-saved-confirmation"
+# point here; there's no separate offline-branch UI left to assert. Plain
+# assertVisible's implicit wait is Maestro's default command timeout
+# (~7s), which a real CI run (offline, so no network round-trip latency to
+# blame) still missed — same ~9.5s worst-case floor as
+# e2e/capture.test.js's 12.2 confirmation-timeout fix. extendedWaitUntil
+# (15s) instead.
+- extendedWaitUntil:
+    visible:
+      id: "capture-saved-confirmation"
+    timeout: 15000
 - extendedWaitUntil:
     notVisible:
       id: "capture-sheet"

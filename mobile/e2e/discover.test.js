@@ -27,8 +27,15 @@ describe('Discover Screen', () => {
     // the dedicated activity-location testID instead avoids that brittleness
     // and the (unrelated) emoji-regex astral-character gotcha this session
     // already hit elsewhere in the web E2E suite.
-    await expect(element(by.id('activity-location'))).toBeVisible();
-    await expect(element(by.id('activity-location'))).toHaveText('📍 Local creek or drainage channel');
+    //
+    // by.id() alone isn't enough: every card on this list shares the same
+    // activity-location testID (a real CI run found 3 matches — one per
+    // card), so plain element(by.id(...)) is ambiguous. .and(by.text(...))
+    // narrows to the one card that's both, instead of toHaveText() on an
+    // already-ambiguous match.
+    await expect(
+      element(by.id('activity-location').and(by.text('📍 Local creek or drainage channel')))
+    ).toBeVisible();
   });
 
   it('3.1 — pull to refresh reloads the activity list', async () => {

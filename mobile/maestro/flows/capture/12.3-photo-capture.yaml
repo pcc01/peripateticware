@@ -60,8 +60,12 @@ appId: com.peripateticware.app
 
 - tapOn:
     id: "capture-btn-photo"
-- assertVisible:
-    id: "capture-sheet"
+# No assertVisible on capture-sheet here — InAppCamera renders its own
+# nested <Modal> on top of CaptureSheet's for photo/video modes, which
+# covers capture-sheet immediately (confirmed via a real CI failure:
+# "Assertion is false: id: capture-sheet is visible"). in-app-camera below
+# is the real signal that the capture flow actually opened; same fix
+# class as e2e/capture.test.js's toBeVisible() -> toExist() for 12.3/12.4.
 - assertVisible:
     id: "in-app-camera"
 # camera-shutter only renders once InAppCamera's onCameraReady fires (see

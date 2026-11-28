@@ -89,21 +89,25 @@ jobs:
         include:
           - api-level: 35
             android-version: '15 VanillaIceCream'
-            target: google_apis
+            # google_apis_playstore, not google_apis: the latter is a stub
+            # with no real FusedLocationProviderClient, which the geofence
+            # flow's location fusion depends on (see mobile-e2e.yml's
+            # matching comment for the Detox side of this same fix).
+            target: google_apis_playstore
             arch: x86_64
             profile: pixel_6
             avd-name: Pixel_6_API_35
 
           - api-level: 33
             android-version: '13 Tiramisu'
-            target: google_apis
+            target: google_apis_playstore
             arch: x86_64
             profile: pixel_6
             avd-name: Pixel_6_API_33
 
           - api-level: 30
             android-version: '11 R'
-            target: google_apis
+            target: google_apis_playstore
             arch: x86_64
             profile: pixel_4
             avd-name: Pixel_6_API_30
@@ -459,19 +463,24 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install Postgres + Redis (Homebrew)
-        # postgresql@16 is keg-only (brew doesn't symlink its pg_config onto
-        # PATH), so `brew install postgresql@16 pgvector redis` in one shot
-        # left pgvector's build with no pg_config to link against -- it
-        # either failed silently or linked against an unrelated postgres
-        # already on this runner image's PATH. Root cause of "ERROR:
-        # extension "vector" is not available" below, which the old
-        # `|| true` on the CREATE EXTENSION step was masking entirely.
-        # Putting postgresql@16's bin on PATH before installing pgvector
-        # makes its build pick up the right pg_config.
+        # Putting postgresql@16's bin first on PATH before `brew install
+        # pgvector` did NOT fix "ERROR: extension "vector" is not
+        # available" (confirmed by a real CI run still failing identically
+        # after that change) -- the pgvector formula hardcodes its own
+        # postgresql build dependency (currently postgresql@17/@18) in its
+        # Homebrew formula, completely independent of whatever's on PATH
+        # or installed alongside it. Its extension gets built into that
+        # pinned version's extension dir, never postgresql@16's, no matter
+        # what PATH says. Building pgvector from source directly against
+        # postgresql@16's own pg_config (not the Homebrew package) is the
+        # standard workaround for this well-known mismatch.
         run: |
           brew install postgresql@16 redis
-          export PATH="$(brew --prefix postgresql@16)/bin:$PATH"
-          brew install pgvector
+          PG_CONFIG="$(brew --prefix postgresql@16)/bin/pg_config"
+          git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git /tmp/pgvector
+          cd /tmp/pgvector
+          make PG_CONFIG="$PG_CONFIG"
+          make install PG_CONFIG="$PG_CONFIG"
 
       - name: Start Postgres + Redis, create test_db
         run: |
