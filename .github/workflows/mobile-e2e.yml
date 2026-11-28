@@ -474,7 +474,23 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install Postgres + Redis (Homebrew)
-        run: brew install postgresql@16 pgvector redis
+        # Same fix as mobile-e2e-maestro.yml's matching step: `brew install
+        # pgvector` hardcodes its own postgresql build dependency (currently
+        # postgresql@17/@18) independent of whatever else is installed, so
+        # its extension never lands in postgresql@16's extension dir — a
+        # real CI run on THIS workflow (not yet carrying this fix) confirmed
+        # the exact same "ERROR: extension "vector" is not available" this
+        # was meant to prevent, and the missing vector columns it silently
+        # skips then cascaded into Discover/activity-matching queries
+        # hanging for the rest of the run. Building pgvector from source
+        # against postgresql@16's own pg_config is the standard workaround.
+        run: |
+          brew install postgresql@16 redis
+          PG_CONFIG="$(brew --prefix postgresql@16)/bin/pg_config"
+          git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git /tmp/pgvector
+          cd /tmp/pgvector
+          make PG_CONFIG="$PG_CONFIG"
+          make install PG_CONFIG="$PG_CONFIG"
 
       - name: Start Postgres + Redis, create test_db
         run: |

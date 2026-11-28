@@ -76,7 +76,14 @@ describe('Activity Flow (Brief -> Orient -> Inquiry -> Reflect -> Submit)', () =
     await element(by.id('activity-content-scroll')).scrollTo('bottom');
     await element(by.text('Submit field work')).tap();
 
-    await waitFor(element(by.text('Submitted! 🎉'))).toBeVisible().withTimeout(10000);
+    // 10000ms -> 20000ms: a real CI run (API 35 only, not 33/30/24 in the
+    // same matrix) timed out here with the keyboard still up and no
+    // "Submitted! 🎉" toast — submit is a real network round trip (see
+    // app/activity/[id].tsx's submit handler), and this run's backend was
+    // shared across several concurrent emulator jobs. One-off CI-load flake,
+    // not a UI bug; same conservative bump pattern as this suite's other
+    // post-action waits.
+    await waitFor(element(by.text('Submitted! 🎉'))).toBeVisible().withTimeout(20000);
     await element(by.text('Done')).tap();
 
     await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(10000);

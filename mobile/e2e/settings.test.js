@@ -132,6 +132,15 @@ describe('Settings Screen', () => {
   });
 
   it('9.4 — Sign Out clears the session and returns to the login screen', async () => {
+    // settings.tsx wraps everything in one ScrollView (see testID
+    // settings-screen), and this session's new LANGUAGE section (9.3/9.3b
+    // above) pushed Sign Out further down it — a real CI run found
+    // by.text('Sign out').tap() hitting a degenerate off-viewport rect
+    // (x=422, y=39 — nowhere near the actual button) instead of either
+    // failing cleanly or finding the real one, on API 30/33/35 alike.
+    // Scroll it into view first rather than assume the initial viewport
+    // still reaches it.
+    await element(by.id('settings-screen')).swipe('up', 'fast', 0.9);
     await element(by.text('Sign out')).tap();
     // Alert.alert('Sign out', 'Are you sure?', [Cancel, Sign out]) — a native
     // OS confirm dialog, not a custom in-app component. First use of a
@@ -139,18 +148,6 @@ describe('Settings Screen', () => {
     // assumes the destructive "Sign out" action is the 2nd Alert button in
     // render/tree order on both platforms. Flagging this for Paul to verify
     // on-device (Android AlertDialog vs iOS UIAlertController can differ).
-    //
-    // Session 18's full-matrix run found this failing specifically on
-    // API 30/24 ("Element not found: Text matching regex: Sign out"),
-    // passing on API 35/33. One concrete, fixable thing found on review:
-    // this wait was only 5000ms — conspicuously shorter than every other
-    // timeout in this suite (10-20s) — while every other one already
-    // assumed native dialogs could take longer to render/animate on
-    // slower devices. Bumped to 15000ms. This alone may not be the full
-    // story if the real cause is button-order/render-tree differences
-    // across Android versions rather than pure timing (the comment above
-    // already flags that as unverified) — still needs a real run on those
-    // devices to confirm.
     await waitFor(element(by.text('Sign out')).atIndex(1)).toBeVisible().withTimeout(15000);
     await element(by.text('Sign out')).atIndex(1).tap();
 

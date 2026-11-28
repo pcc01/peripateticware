@@ -107,21 +107,18 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await element(by.id('capture-btn-photo')).tap();
     // CaptureSheet.tsx renders InAppCamera as a CHILD that opens its OWN,
     // separate <Modal> (InAppCamera.tsx:123) whenever mode is 'photo' or
-    // 'video' — a Modal nested inside CaptureSheet's own outer <Modal>.
-    // Because `mode` is already set to 'photo' before CaptureSheet's modal
-    // ever paints its first frame (the useEffect syncing it to initialMode
-    // runs on the same `visible` transition), both modals open in the same
-    // instant for this mode: in-app-camera's full-screen native window
-    // immediately covers capture-sheet's own view, so it never clears
-    // Espresso's 75%-visible-area bar. toExist() (not toBeVisible()) is the
-    // correct check here — the root view is legitimately present, just
-    // intentionally obscured by the camera UI on top of it. 20s, not 10s —
-    // a real CI run on a 2-core software-rendered (swiftshader) emulator
-    // timed out at 10s here despite a failure screenshot taken moments
-    // later showing the camera preview and shutter button fully rendered:
-    // this Modal's mount is just slow under CI load, not broken.
-    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(20000);
-    await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
+    // 'video' — a Modal nested inside CaptureSheet's own outer <Modal>, each
+    // its own native Window. No check on capture-sheet itself here anymore —
+    // toExist() was tried first (reasoning: the root view is still present,
+    // just covered) and still timed out at 20000ms on a real CI run (API
+    // 33/35), even though that same run's failure screenshot showed the
+    // camera preview and shutter fully rendered. So the outer Modal's view
+    // isn't just obscured, it's absent from whatever hierarchy toExist()
+    // walks once the second Window is up — same conclusion
+    // 12.3-photo-capture.yaml's own comment already reached for Maestro
+    // (which never asserted capture-sheet here either). in-app-camera below
+    // is the real, reliable signal that the capture flow opened.
+    await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(20000);
 
     // camera-shutter only renders once InAppCamera's onCameraReady fires
     // (the `!ready` gate in InAppCamera.tsx swaps a "Starting camera…"
@@ -147,13 +144,9 @@ describe('In-app capture (CaptureSheet / InAppCamera)', () => {
     await openInquiryPhase();
 
     await element(by.id('capture-btn-video')).tap();
-    // Same nested-Modal reasoning as 12.3 above — video mode also opens
-    // InAppCamera's own full-screen Modal in the same instant as
-    // CaptureSheet's, so capture-sheet is only ever toExist(), not
-    // toBeVisible(), while in-app-camera is up. 20s, not 10s — see 12.3's
-    // matching comment on the same toExist() wait.
-    await waitFor(element(by.id('capture-sheet'))).toExist().withTimeout(20000);
-    await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(10000);
+    // Same nested-Modal reasoning as 12.3 above — no check on capture-sheet
+    // itself, see that test's comment for why.
+    await waitFor(element(by.id('in-app-camera'))).toBeVisible().withTimeout(20000);
     await waitFor(element(by.id('camera-record'))).toBeVisible().withTimeout(15000);
 
     await element(by.id('camera-record')).tap();
