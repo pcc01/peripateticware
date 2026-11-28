@@ -1383,8 +1383,8 @@
   "cookie_consent_title": "Avviso cookie",
   "cookie_notice": "Questo sito utilizza i cookie solo per l'autenticazione dell'accesso - non ci sono cookie di tracciamento o pubblicità.",
   "cookie_preferences": "Preferenze sui cookie",
-  "cookie_status_off": "Attualmente: cookie di analisi rifiutati.",
-  "cookie_status_on": "Attualmente: cookie di analisi attivati.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "learn_more": "Impara di più",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",

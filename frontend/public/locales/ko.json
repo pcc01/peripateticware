@@ -1329,7 +1329,7 @@
     "download_my_data": "내 데이터 다운로드",
     "delete_my_data": " trashcan_delete_my_data",
     "confirm_delete_rubric": "rubric_delete_confirmation",
-    "rubrics": " Rub릭스 ",
+    "rubrics": " Rub릭스",
     "import_rubric": "PDF/CSV 가져오기",
     "no_rubrics": "rubric_not_found",
     "criteria": "조건",
@@ -2067,11 +2067,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "수질환경실험 ✔"
-            },
             "1": {
               "text": "에코시스템 관측 ✓"
+            },
+            "2": {
+              "text": "수질환경실험 ✔"
             },
             "3": {
               "text": "주식회사 방문 — 대기중"
@@ -2095,7 +2095,7 @@
             }
           },
           "subtitle": "미스 스ми스로부터 · 오늘",
-          "prompt": "\"에마가 네이티브 식물을 발견하여 훌륭한 초기적인 성과를 보였습니다. 필드 스케치 포트폴리오 승인되었습니다.\""
+          "prompt": "에마가 네이티브 식물을 발견하여 훌륭한 초기적인 성과를 보였습니다. 필드 스케치 포트폴리오 승인되었습니다."
         }
       },
       "homeschool": {
@@ -2488,7 +2488,7 @@
     "emma_is_excelling": "🎉 Emma가 잘 하고 있습니다!",
     "she_advanced_in_3_competencies_this_week": "이번 주 3개의 능력에서 진급했습니다.",
     "field_observation_riverside_park": "필드 관찰 \\xB7 Riverside Park",
-    "i_noticed_how_different_plants_adapt_to_": "\"이번에는 어떤 식물들이 어두운 곳에서도 잘 생존하는지 보여드리겠습니다.\"",
+    "i_noticed_how_different_plants_adapt_to_": "이번에는 어떤 식물들이 어두운 곳에서도 잘 생존하는지 보여드리겠습니다.",
     "talk_tonight_prompts": "오늘의 토크 프롬프트",
     "view_evidence_and_reflections_here": "증거와 반성을 확인하세요.",
     "messages_with_teachers": "선생님과의 메시지",

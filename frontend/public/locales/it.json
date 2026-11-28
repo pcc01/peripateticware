@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "login_title": "Benvenuto di ritorno",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "Crea attività",
       "basic_information": "Informazioni di base",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "Acquifero laboratorio ✓"
-            },
             "1": {
               "text": "Osservazione dell'ecosistema ✓"
+            },
+            "2": {
+              "text": "Acquifero laboratorio ✓"
             },
             "3": {
               "text": "Visita al Campidoglio - in sospeso"
@@ -2645,7 +2645,7 @@
     "your_child_controls_access": "Il tuo bambino controlla l'accesso",
     "they_approve_what_parents_see_they_decid": "Approvano ciò che vedono i genitori. Decidono chi viene invitato. Rispettano i limiti.",
     "works_across_5_continents_we_handle_the_": "Lavoriamo su 5 continenti. Ci occupiamo della complessità legale. Tu gestisci l'apprendimento.",
-    "interface_and_weekly_digests_translated_": "\"Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.\"\n\n(Note: I've preserved the template variables as requested, but since there are none in this case, the translation is a direct word-for-word conversion.)",
+    "interface_and_weekly_digests_translated_": "Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.",
     "connect_to_your_childs_class": "Connetti alla classe del tuo bambino",
     "get_the_family_portal_see_their_learning": "Ottieni il portale della famiglia. Scopri il loro apprendimento. Approfondisci la tua connessione.",
     "regular_engagement_in_field_learning_act": "La partecipazione regolare alle attività di apprendimento sul campo rafforza il pensiero critico e le abilità osservative.",
@@ -3347,8 +3347,8 @@
       "no_events_this_day": "Nothing scheduled for this day."
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

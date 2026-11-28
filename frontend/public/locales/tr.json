@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "login_title": "Hoş Geldiniz",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "Oluştur",
       "basic_information": "Temel Bilgiler",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "Su döngüsü laboratuvarı ✓"
-            },
             "1": {
               "text": "Ekosistem gözlem ✓"
+            },
+            "2": {
+              "text": "Su döngüsü laboratuvarı ✓"
             },
             "3": {
               "text": "İstanbul gezisi - beklemede"
@@ -3149,7 +3149,7 @@
     "capture_photosvideo": "Foto/Video Çek",
     "take_photos_record_videos_and_capture_au": "Fotoğrafçılık yapın, videolar kaydedin ve ses kaydı alınarak gözlemlerinizi ve bulgünüzü belgeler.",
     "eg_butterfly_photos": "Kelebek fotoğrafları",
-    "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.\n\n(Preserved template variables: {count}, %s, $t(...))",
+    "capture_evidence_take_photos_record_vide": "Fotoğraf çekin. Video kaydet. Gördüğünü çiz. Soruları yanıtla. Çözmek için Peri'ye sor.",
     "what_does_photosynthesis_do": "Fotosentez ne yapar?",
     "this_comprehensive_project_guides_studen": "Bu kapsamlı proje öğrencilere bir semestr boyunca yerel ekosistemleri keşfetmeye yönelik bir araştırma yolculuğu sunar. Öğrenciler alan gözlemleri yapacaklar, verileri toplayacaklar ve elden gelen deneyimler aracılığıyla ekolojik ilkeleri anlayacaklar.",
     "standardsaligned_auditready": "Standartlara Uygun, Denetim Hazır",
@@ -3347,8 +3347,8 @@
       "no_events_this_day": "Nothing scheduled for this day."
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

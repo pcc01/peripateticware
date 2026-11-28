@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "demo_teacher": "Teacher: teacher@example.com",
@@ -116,7 +117,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "description": "Description"
     },
@@ -639,8 +639,8 @@
       "mapped_standards_did_this_submission_mee": "Mapped Standards — Did This Submission Meet Them?"
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

@@ -1602,8 +1602,8 @@
   "cookie_consent_title": "Notificación de cookies",
   "cookie_notice": "Este sitio utiliza cookies solo para la autenticación de inicio de sesión — ninguna cookie de seguimiento o publicitaria.",
   "cookie_preferences": "Preferencias de cookies",
-  "cookie_status_off": "Actualmente: cookies de análisis rechazadas.",
-  "cookie_status_on": "Actualmente: cookies de análisis activadas.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "learn_more": "Aprender más",
   "cookiepolicypage": {
     "back_to_home": "← Volver al Inicio",

@@ -1810,8 +1810,8 @@
   "cookie_consent_title": "Cookies Hinweis",
   "cookie_notice": "Diese Website verwendet Cookies nur zur Anmeldung - keine Tracking- oder Werbe-Cookies.",
   "cookie_preferences": "Cookie-Einstellungen",
-  "cookie_status_off": "Aktuell: Analyse-Cookies abgelehnt.",
-  "cookie_status_on": "Aktuell: Analyse-Cookies aktiviert.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",
     "last_updated_may_2026": "August 2026",

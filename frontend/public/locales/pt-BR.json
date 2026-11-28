@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "login_title": "Bem-vindo(a) de volta",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "Criar Atividade",
       "basic_information": "Informações Básicas",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "Água ciclo de laboratório ✓"
-            },
             "1": {
               "text": "Observação do ecossistema ✓"
+            },
+            "2": {
+              "text": "Água ciclo de laboratório ✓"
             },
             "3": {
               "text": "Visita ao Capitolio - pendente"
@@ -2754,7 +2754,7 @@
     "your_class_in_the_field": "Sua turma no campo",
     "every_activity_automatically_tagged_agai": "Todas as atividades são automaticamente etiquetadas de acordo com os padrões. Sua estrutura ou a nossa.",
     "use_ours_or_build_your_own_grade_by_rubr": "Use o nosso ou crie o seu próprio. Avalie por critérios. Preencha relatórios automaticamente.",
-    "evidence_organized_by_standard_growth_ch": "\"Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.\"\n\n(Preserving template variables exactly as they appear in the input string.)",
+    "evidence_organized_by_standard_growth_ch": "Amostras organizadas por padrão. Gráficos de crescimento por competência. Compartilhar com o administrador.",
     "parents_kids_connected": "Pais & Crianças Conectados",
     "weekly_digests_go_to_families_parents_me": "Os resumos semanais são enviados para famílias. Os pais lhe enviam mensagens diretamente. Sem trabalho adicional. Isso acontece automaticamente.",
     "we_send_parents_what_happened_in_your_cl": "Enviamos aos pais o que aconteceu na sua turma: fotos, habilidades desenvolvidas, marcos alcançados. \\n Você não precisa fazer nada.",
@@ -3347,8 +3347,8 @@
       "no_events_this_day": "Nothing scheduled for this day."
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

@@ -334,6 +334,54 @@ function main() {
     }
   }
 
+  // Also check the merged root {locale}.json files (ar.json, de.json, ...)
+  // directly — these are translate_sync.py's real output and the actual
+  // source scripts/sync_locales.py copies from into the per-namespace files
+  // checked above. A 2026-11 incident found 8 locales' root files sitting on
+  // stale leaked-LLM-commentary/quote-wrap values from before
+  // clean_llm_chatter() was fixed to catch that pattern: because
+  // translate_sync.py only re-translates keys that are missing or changed,
+  // those already-present (bad) values were never reprocessed, and every
+  // later run of sync_locales.py just re-copied them into the per-namespace
+  // files — silently undoing any manual cleanup of the derived files alone,
+  // since this root file is what actually persists and compounds across
+  // runs. Checking it here catches that class at its real source instead of
+  // only in its downstream copy.
+  for (const file of fs.readdirSync(LOCALES_DIR)) {
+    if (!file.endsWith(".json")) continue;
+    const locale = file.replace(/\.json$/, "");
+    if (SKIP_LOCALE_DIRS.has(locale)) continue;
+
+    const full = path.join(LOCALES_DIR, file);
+    let rootJson;
+    try {
+      rootJson = JSON.parse(fs.readFileSync(full, "utf8"));
+    } catch (e) {
+      logError(`${file}: invalid JSON — ${e.message}`);
+      errorCount++;
+      continue;
+    }
+
+    const flat = flattenKeys(rootJson.landing && typeof rootJson.landing === "object" ? rootJson.landing : rootJson);
+    for (const [key, val] of Object.entries(flat)) {
+      if (typeof val !== "string" || isSkippedKey(key)) continue;
+      const label = `${file} :: ${key}`;
+
+      if (LITERAL_ARTIFACT_RE.test(val.trim()) || JSON_FRAGMENT_RE.test(val)) {
+        logError(`${label}: literal pipeline artifact — value is "${val}"`);
+        errorCount++;
+      }
+      if (hasMojibake(val)) {
+        logError(`${label}: likely mojibake (double-encoded UTF-8) — "${val.slice(0, 60)}"`);
+        errorCount++;
+      }
+      if (META_LEAK_RE.test(val)) {
+        logError(`${label}: leaked translator/LLM meta-commentary — "${val.slice(0, 80)}"`);
+        errorCount++;
+      }
+    }
+  }
+
   console.log("");
   console.log(`validate_locales: ${errorCount} error(s), ${warnCount} warning(s).`);
   process.exit(errorCount === 0 ? 0 : 1);

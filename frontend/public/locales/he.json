@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com או שם משתמש",
       "login_title": "elcome",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "יצר פעילות",
       "basic_information": "מידע בסיסי",
@@ -1113,7 +1113,7 @@
     "total_students": "סטודנטים בסך הכל",
     "active_activities": "פעילויות פעילות",
     "your_activities": "\"הפעילויות שלך ({count})\")",
-    "submitted": "\"שולח:\"\n\n(No changes to template variables)",
+    "submitted": "שולח:",
     "your_classes": "\"הסדרים שלך ({count})",
     "view_profile": "смотר פרופיל",
     "teacher_settings": "מיקום המורה",
@@ -1213,7 +1213,7 @@
     "rubric_title_placeholder": "דְּמוּיִים - ציון תצפית",
     "description": "תיאור",
     "criterion_name": "Criterion name…",
-    "level_label": "\"תאור\"\n\n(Translated literally as \"Label\")",
+    "level_label": "תאור",
     "add_criterion": "הוסף קריטריון",
     "save_rubric": "שמור תבנית",
     "back_to_editor": "חזרה לעורך",
@@ -1534,7 +1534,7 @@
       "singapore": "סינגפור",
       "other": "אחר",
       "yes_some_are_under_13": "כן — חלקם מתחת ל-13",
-      "no_all_13": "\"לא — כל 13+\"\n\n(Preserved template variables exactly as given.)",
+      "no_all_13": "לא — כל 13+",
       "aria_label_back_to_login": "חזרה להתחברות",
       "helps_us_apply_the_right_privacy_framewo": "מאפשר לנו ליישם את התשתיות הפרטיות הנכונות (FERPA, COPPA, GDPR וכו') עבור תלמידיכם.",
       "this_determines_whether_coppa_applies_": "זוהי ההחלטה האם חוק COPPA חל על חשבונך.",
@@ -1560,7 +1560,7 @@
       "share_with": "שתף עם",
       "language": "שפה",
       "state_standard": "סטטוס סטנדרטי",
-      "discipline": "\"תעוד\"\n\n(Translated literally as \"discipline\")",
+      "discipline": "תעוד",
       "capture_buttons_are_disabled_in_preview_": "כפתורי הקapture מושבתים במצב תצוגה מקדימה.",
       "language_arts": "שפות אמנות",
       "social_studies": "חברה וחקר",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "מים"
-            },
             "1": {
               "text": "צפייה באקוסיסטם ✓"
+            },
+            "2": {
+              "text": "מים"
             },
             "3": {
               "text": "בקשה לביקור - ממתינה"
@@ -2574,11 +2574,11 @@
     "field_observation_riverside_park": "שדה תצפית \\u2022 פארק ריברסייד",
     "i_noticed_how_different_plants_adapt_to_": "הבחנתי כיצד צמחים שונים מתאימים לאור שמש...",
     "talk_tonight_prompts": "💬 דו׳שׁ לילה מובילים",
-    "view_evidence_and_reflections_here": "\"ראה ראיות ורגשות כאן.\"\n\n(Preserving template variables exactly as they appear in the original string.)",
+    "view_evidence_and_reflections_here": "ראה ראיות ורגשות כאן.",
     "messages_with_teachers": "הודעות עם מורים",
-    "manage_your_preferences_here": "\"הסדר את העדפותיך כאן.\"\n\n(Preserving template variables exactly as they appear in the original string.)",
+    "manage_your_preferences_here": "הסדר את העדפותיך כאן.",
     "manage_all_system_users_and_permissions": "ניהול כל המשתמשים והרשאות של המערכת.",
-    "manage_activities_standards_and_resource": "\"נהל פעילויות, סטנדרטים ומשאבים.\"\n\n(Preserved template variables exactly as they appear in the input string.)",
+    "manage_activities_standards_and_resource": "נהל פעילויות, סטנדרטים ומשאבים.",
     "view_usage_statistics_and_trends": "הצג סטטיסטיקות וטרנדים של שימוש.",
     "loading_dashboard": "טוען טבלת בקשות...",
     "avg_session_attendance": "משך סשן ממוצע",
@@ -2687,7 +2687,7 @@
     "analyze_your_data_and_think_about_what_i": "\"בדוק את נתוניך ודע מה הם אומרים ומכוון הם\".",
     "get_started_with_activities": "התחל עם פעילויות",
     "describe_what_you_found_or_observed": "תיאור מה שמצאת או תצפת...",
-    "png_jpg_mp4_mp3_or_txt_max_50mb_each": "\"PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)\"\n\n(Preserving template variables exactly and providing only the translated value string text.)",
+    "png_jpg_mp4_mp3_or_txt_max_50mb_each": "PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)",
     "additional_context_or_reflection": "הסבר נוסף או תפיסה...",
     "no_active_projects_yet_check_available_a": "עדיין אין פרויקטים פעילים. בדוק פעילויות זמינות!",
     "available_activities": "\"פעילויות זמינות ({count})\")",
@@ -2845,8 +2845,8 @@
     "gps_what_we_collect": "מהי חילוץ מיקום",
     "gps_only_during": "קואורדינטות GPS משared רק במהלך_session של עבודה פעילה",
     "gps_teacher_only": "נראה רק למורה של הקבוצה — לא לסטודנטים אחרים או הציבור",
-    "gps_stored": "\"צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)\"\n\n(Preserved template variables: {count}, %s, $t(...))",
-    "gps_expires": "\"הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)\"\n\n(Preserving template variables exactly as they are.)",
+    "gps_stored": "צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)",
+    "gps_expires": "הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)",
     "activity_updates": "עדכונים על פעילות ילדיך",
     "reports_subtitle": "סיכומים שבועיים וחודשיים עבור ילדיך",
     "standardsImportPage": {
@@ -3118,7 +3118,7 @@
       "last_updated": "עודכן אחרון",
       "supported_frameworks_title": "תשתפים תשתיות",
       "cta_explore_docs": "חקור מסמכי פרטיות",
-      "tagline": "\"המידע שלך נשאר שלך.\"\n\n(Preserved template variables exactly as given.)",
+      "tagline": "המידע שלך נשאר שלך.",
       "summary_title": "פרטיות על ידי עיצוב",
       "summary_subtitle": "בנויים עבור בתי ספר, מובטחים על ידי הורים",
       "summary_desc": "פריפטטיקוור מתאים לCOPPA, GDPR, FERPA, CCPA, PIPEDA, LGPD ו-PDPA. נתוני תלמידים jamais sold, never used for advertising, ו-never shared without consent.",
@@ -3167,7 +3167,7 @@
     "privacy_status": "סטטוס פרטיות",
     "configure_privacy": "הגדרות פרטיות",
     "view_audit_log": "הצג יומן אודיט",
-    "collect_photos": "\"תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)\"\n\n(Preserved template variables exactly as they appear in the input string.)",
+    "collect_photos": "תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)",
     "components_privacysetupwizard": {
       "where_are_you_teaching": "איפה אתה מלמד?",
       "state": "מדינה",

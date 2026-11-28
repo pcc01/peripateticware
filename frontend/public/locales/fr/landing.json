@@ -1426,8 +1426,8 @@
   "cookie_consent_title": "Avis sur les cookies",
   "cookie_notice": "Ce site utilise des cookies uniquement pour l'authentification de connexion - pas de cookies de suivi ou publicitaires.",
   "cookie_preferences": "Préférences relatives aux cookies",
-  "cookie_status_off": "Actuellement : cookies d'analyse refusés.",
-  "cookie_status_on": "Actuellement : cookies d'analyse activés.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "learn_more": "Apprendre plus",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",

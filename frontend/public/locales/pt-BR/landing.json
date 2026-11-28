@@ -1820,8 +1820,8 @@
   "cookie_consent_title": "Aviso de cookie",
   "cookie_notice": "Este site utiliza cookies apenas para autenticação de login - sem cookies de rastreamento ou publicidade.",
   "cookie_preferences": "Preferências de cookies",
-  "cookie_status_off": "Atualmente: cookies de análise recusados.",
-  "cookie_status_on": "Atualmente: cookies de análise ativados.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "learn_more": "Aprender mais",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",

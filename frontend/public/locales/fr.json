@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "login_title": "Bienvenue",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "Créer une activité",
       "basic_information": "Informations de base",
@@ -347,7 +347,7 @@
     "uploading_audio": "Chargement de l'audio...",
     "audio_recorded": "Enregistrement audio (",
     "audiocapture": {
-      "s": "\"f)\"\n\n(Preserving the template variable \"{count}\" exactly as requested.)"
+      "s": "f)"
     },
     "audio_recording": "Enregistrement audio",
     "max": "Max",
@@ -368,7 +368,7 @@
     "fieldnoteeditor": {
       "title": "Titre",
       "location": "Lieu",
-      "s": "\"f)\"\n\n(Preserving the template variable \"{count}\" exactly as requested.)",
+      "s": "f)",
       "add_audio": "Ajouter l'audio",
       "all_statuses": "Tous les statuts",
       "captures": "Captures",
@@ -591,7 +591,7 @@
     "how_effective_were_the_authors_guiding_p": "Combien les indications de l'auteur ont-elles été efficaces ? Qu'est-ce qui a rendu leur projet fort ?",
     "this_feedback_helps_the_studentauthor_gr": "Ce feedback aide l'auteur étudiant à se développer en tant que conceleur de projet.",
     "select_a_response_from_the_published_tab": "Sélectionnez une réponse dans l'onglet publié pour la noter.",
-    "allows": "\"Permet :\"\n\n(No alterations to template variables)",
+    "allows": "Permet :",
     "total": "Total",
     "approve_publish": "Approuver et publier",
     "feedback_to_the_studentauthor_optional": "Retours au(l')étudiant-auteur (facultatif)...",
@@ -1425,7 +1425,7 @@
       "parental_consent_status": "Consent parental",
       "checking": "Vérification en cours",
       "consent_granted": "Consentiement accordé ✓",
-      "what_youll_see_after_linking": "\"Ce que vous verrez après le lien :\"\n\n(Preserving template variables exactly as they appear in the input string.)",
+      "what_youll_see_after_linking": "Ce que vous verrez après le lien :",
       "consent_pending_review": "En attente de consentement — Voir",
       "overall_progress_amp_competency_scores": "Progress global et scores de compétence",
       "active_and_completed_activities": "Activités actives et terminées",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "Eau cycle lab ✓"
-            },
             "1": {
               "text": "Observation de l'écosystème ✓"
+            },
+            "2": {
+              "text": "Eau cycle lab ✓"
             },
             "3": {
               "text": "Visite de la capitale - en attente"
@@ -3320,7 +3320,7 @@
       "supported_frameworks": "Cadre pris en charge",
       "click_any_framework_to_see_the_specific_": "Cliquez sur n'importe quel cadre pour voir les règles spécifiques que Peripateticware applique.",
       "what_institutions_can_configure": "Quelles institutions peuvent configurer",
-      "within_the_bounds_of_the_applicable_law_": "\"Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :\"\n\n(Note: I've preserved the template variable exactly as it appears in the input string.)",
+      "within_the_bounds_of_the_applicable_law_": "Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :",
       "questions_about_compliance_for_your_dist": "Des questions sur la conformité pour votre district ?",
       "our_team_can_walk_you_through_how_the_en": "Notre équipe peut vous guider sur la façon dont le moteur est cartographié aux exigences de votre juridiction.",
       "contact_us": "Nous contacter"
@@ -3347,8 +3347,8 @@
       "no_events_this_day": "Nothing scheduled for this day."
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

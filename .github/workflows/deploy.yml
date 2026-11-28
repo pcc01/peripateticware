@@ -59,6 +59,22 @@ jobs:
           MS_TRANSLATOR_KEY: ${{ secrets.MS_TRANSLATOR_KEY }}
           MS_TRANSLATOR_REGION: ${{ secrets.MS_TRANSLATOR_REGION || 'global' }}
 
+      # This is the actual gate against the recurring leaked-LLM-commentary
+      # corruption that kept reappearing in the per-namespace locale files:
+      # the i18n-validate.yml workflow runs this same check, but this bot's
+      # own commit below is pushed with "[skip ci]", which suppresses EVERY
+      # workflow trigger on that commit — i18n-validate.yml included. So the
+      # one thing that could have caught this never actually ran on the
+      # commits that needed it. Running it here, inside the same job, before
+      # the commit/push step, closes that gap: a bad translation now fails
+      # this job and nothing gets committed, instead of landing on main and
+      # being silently re-propagated by every later run (clean_llm_chatter
+      # in translate_sync.py already strips this pattern from genuinely new
+      # LLM output — see its own comments — but this catches anything that
+      # slips past it, from any provider or future script change).
+      - name: Validate locale files before committing
+        run: cd frontend && npm run i18n:validate
+
       - name: Commit updated translations and XLIFF provenance files
         run: |
           git config user.name "github-actions[bot]"

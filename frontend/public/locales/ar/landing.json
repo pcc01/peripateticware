@@ -4386,7 +4386,7 @@
   "pages_teacher_teacherclassroompage.class_full_upgrade_to_add_more": "الصفوف ممتلئة — الترقية لإضافة المزيد",
   "pages_teacher_teacherclassroompage.no_students_enrolled_yet_use_the_invite_": "لا يوجد طلاب مسجلين حتى الآن. استخدم لوحة الدعوة أدناه لإضافتهم.",
   "pages_teacher_teacherclassroompage.title_remove_from_classroom": "إزالة من الفصل",
-  "pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg": "\"الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.\"\n\n*(Preserving template variables exactly)*",
+  "pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg": "الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.",
   "pages_teacher_teacherclassroompage.grade_level_placeholder": "0 = روضة الأطفال",
   "pages_teacher_teacherclassroompage.grade_level_k_hint": "0 = روضة الأطفال",
   "pages_teacher_teacherclassroompage.grade_level_nudge": "إذا تركت بيري فارغة، لا يستطيع بيري تخصيص صياغة الأسئلة لتناسب عمر هذا الصف — الطلاب يحصلون على النسخة العامة.",

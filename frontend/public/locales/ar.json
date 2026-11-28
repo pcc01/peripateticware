@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com أو اسم المستخدم",
       "login_title": "مرحبا بعودتك",
@@ -170,7 +171,7 @@
       "platform_admin": "⚙ Platform Admin",
       "sign_out": "تسجيل الخروج",
       "no_organizations_found": "لم يتم العثور على أي منظمات",
-      "spend_by_tier_this_month": "\"مصروفات حسب المستوى (هذا الشهر)\"\n\n(Preserved template variables: {count}, %s, $t(...))",
+      "spend_by_tier_this_month": "مصروفات حسب المستوى (هذا الشهر)",
       "no_spend_recorded_yet": "لم يتم تسجيل أي مصاريف حتى الآن.",
       "top_tasks_this_month": "أهم المهام (هذا الشهر)",
       "no_historical_data_yet": "لا يوجد بيانات تاريخية بعد.",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "إضافة نشاط",
       "basic_information": "معلومات أساسية",
@@ -218,7 +218,7 @@
       "blooms_level": "بلاومز مستوى",
       "assessment_type": "نوع التقييم",
       "learning_objectives": "أهداف التعلم",
-      "estimated_duration_minutes": "\"مدة المقدرة (دقائق)\"\n\n(Please note that the template variables are preserved as instructed.)",
+      "estimated_duration_minutes": "مدة المقدرة (دقائق)",
       "locationbased_learning": "📍 التعلم القائم على الموقع",
       "selected_ai_suggestions": "الترشيحات الاصطناعية المختارة",
       "learning_objectives_assessment": "أهداف التعلم وتقييمه",
@@ -255,7 +255,7 @@
     "success": "نجاح",
     "warning": "تحذير",
     "error": "خطأ",
-    "ghost": "\"غُوْس\"\n\n(Preserved template variables exactly without syntax alterations)",
+    "ghost": "غُوْس",
     "small": "صغير",
     "medium": "متوسط",
     "large": "كبير",
@@ -268,9 +268,9 @@
     "welcome": "مرحبا",
     "circle": "دائرة",
     "rectangle": "Rectangle",
-    "polygon": "\"مُثَنى\"\n\n(Translation of \"Polygon\" to Arabic)",
+    "polygon": "مُثَنى",
     "navigation": "تنقل",
-    "reflection_notebook": "\"ملاحظات التلك\"\n\n(No alterations to template variables)",
+    "reflection_notebook": "ملاحظات التلك",
     "entry_title": "إدخال",
     "session": "جلسة:",
     "select": "-- اختر --",
@@ -289,7 +289,7 @@
       "mockup_title": "تنوع بيولوجي شاطئي",
       "coach_prompt": "ما هو ما يجعل القصب ينمو هنا؟",
       "feature_1_title": "«سجل دليل»",
-      "feature_1_desc": "\"الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.\"\n\n(Translation: \"Photos, sounds, sketches, and field notes — everything in one place, synchronized to your portfolio.\")",
+      "feature_1_desc": "الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.",
       "feature_2_title": "مُرشَد مِن پری",
       "feature_2_desc": "تسأله القروية الأسئلة Rights لتساعدك على التفكير عميقًا – مشعلاً الأفكار دون أن تبيّن الإجابات.",
       "feature_3_title": "اتتبع نموكم",
@@ -543,7 +543,7 @@
       "back": "أعكس",
       "location": "موقع",
       "curriculum": "ملف السيرة الذاتية",
-      "activity_title": "\"عنوان النشاط *\"\n\n(Preserved template variable \"*\")",
+      "activity_title": "عنوان النشاط *",
       "description": "وصف",
       "grade_level": "سنة دراسية",
       "grade": "درجات",
@@ -634,7 +634,7 @@
       "grade": "درجات"
     },
     "select_subject": "اختر الموضوع",
-    "duration_weeks": "\"مدة (أسبوع)\"\n\n(Preserving template variables exactly as they are.)",
+    "duration_weeks": "مدة (أسبوع)",
     "start_date": "تاريخ البدء",
     "end_date_optional": "تاريخ الانتهاء (اختياري)",
     "projectcard": {
@@ -763,7 +763,7 @@
     "save_settings": "حفظ الإعدادات",
     "comingsoonpage": {
       "go_back": "← رجوع",
-      "this_page_is_coming_soon": "\"هذه الصفحة قادمة قريبًا.\"\n\n(Preserved template variables exactly with no syntax alterations.)"
+      "this_page_is_coming_soon": "هذه الصفحة قادمة قريبًا."
     },
     "page_not_found": "404",
     "go_back": "الرجوع",
@@ -970,7 +970,7 @@
         },
         "2": {
           "phase": "شاهد",
-          "desc": "\"يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا.\"\n\n(Translation: \"The child records what he sees or hears or measures. Peri asks for details if the answer is vague.\")"
+          "desc": "يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا."
         },
         "3": {
           "phase": "تحليل",
@@ -1065,7 +1065,7 @@
     "pick_common_core_or_your_framework_aimap": "اختر نواة مشتركة أو إطارك. AI-تسوق إلى التصنيفات.",
     "photo_stream": "نهر الصور",
     "smart_nudges": "تلميحات ذكية",
-    "maps_to_common_core": "\"تسوق إلى كور\"\n\n(Preserving template variables exactly as they are.)",
+    "maps_to_common_core": "تسوق إلى كور",
     "aigenerated_tags": "تسميات منقاة بواسطة الذكاء الاصطناعي",
     "builtin_rubrics": "المرتكزات المدمجة",
     "reports_ready": "تقرير جاهز",
@@ -1141,7 +1141,7 @@
       "your_session_expired_please_sign_in_agai": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
       "email_confirmed_you_can_now_sign_in": "تم تأكيد بريدك الإلكتروني! الآن يمكنك تسجيل الدخول.",
       "that_link_has_expired_please_request_a_n": "انتهت صلاحية هذا الرابط. يرجى طلب واحد جديد.",
-      "that_link_is_invalid_please_try_again": "\"هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.\"\n\n(Translation: \"That link is invalid. Please try again.\")",
+      "that_link_is_invalid_please_try_again": "هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.",
       "or": "أَوْ",
       "twofactor_authentication": "المصادقة الثنائية",
       "enter_the_6digit_code_from_your_authenti": "أدخل رمز المكون من 6 أرقام من تطبيق المصادقة الخاص بك، أو أحد رموز النسخ الاحتياطي.",
@@ -1233,7 +1233,7 @@
     "pages_admin_adminclassespage": {
       "loading": "جاري التحميل...",
       "new_class": "جديد",
-      "class_name": "\"اسم الكلاس *\"\n\n(Preserved template variable: \"*\")",
+      "class_name": "اسم الكلاس *",
       "grade_level": "سنة دراسية",
       "subject": "موضوع",
       "cancel": "إلغاء",
@@ -1498,7 +1498,7 @@
       "review_studentcreated_reverse_scavenger_": "مراجعة أنشطة صيد الخزائن العكسية التي أنشأها الطلاب. becomes أنشطة حية بعد موافقة المقترحات.",
       "no_proposals_waiting_for_review": "لا يوجد مقترحات في انتظار المراجعة.",
       "students_note_to_you": "ملاحظة الطالب لك",
-      "feedback_for_student_required_if_rejecti": "\"تعليقات حول الطالب (مطلوبة إذا رفض)\"\n\n(Preserving template variables exactly as they appear in the input string.)"
+      "feedback_for_student_required_if_rejecti": "تعليقات حول الطالب (مطلوبة إذا رفض)"
     },
     "pages_teacher_teacherstandardspage": {
       "learning_standards": "أدلة التعلم",
@@ -1512,7 +1512,7 @@
       "you_can_change_this_later_in_your_organi": "يمكنك تغيير هذا لاحقًا في إعدادات منظمةك.",
       "country": "بلد",
       "setting_type": "نوع الإعدادات",
-      "my_students_include_children_under_13_en": "\"أطفال أقل من 13 سنة (ينشئ حماية COPPA)\"\n\n(Preserved template variables exactly as given.)",
+      "my_students_include_children_under_13_en": "أطفال أقل من 13 سنة (ينشئ حماية COPPA)",
       "do_any_of_your_students_have_children_u": "هل أي من طلابك/أطفالك يحتفل بعيد ميلاد بعد اليوم ناقص 13 سنة؟",
       "creating_account": "إنشاء حساب...",
       "create_account": "إنشاء حساب",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "مبادرة دورة الماء"
-            },
             "1": {
               "text": "مراقبة النظام الإيكولوجي ✓"
+            },
+            "2": {
+              "text": "مبادرة دورة الماء"
             },
             "3": {
               "text": "زور Capitols — معلّق"
@@ -2197,7 +2197,7 @@
       "this_helps_peripateticware_show_the_righ": "هذا يساعد Peripateticware على إظهار متطلبات وتوقعات التقرير الصحيحة. يمكنك تغييره في أي وقت في الإعدادات.",
       "select_your_state_optional": "— اختر ولايةك (اختياري) —",
       "35_us_states_require_homeschool_parents_": "35 ولاية أمريكية توجب على الآباء الذين يدرسون أطفالهم في المنزل أن يحتفظوا بسجلات التعلم. يولّد \"Peripateticware\" التقارير تلقائيًا من سجلات نشاطك.",
-      "ready_to_create_your_first_outdoor_activ": "\"هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.\"\n\n(Translation: \"Are you ready to create your first outdoor activity? Peri will suggest Socrates-style questions tailored to your location and subject.\")",
+      "ready_to_create_your_first_outdoor_activ": "هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.",
       "create_first_activity": "أضف نشاطًا أوليًا →",
       "login_label": "Login",
       "password_label": "كلمة المرور",
@@ -2234,7 +2234,7 @@
       "pending": "بإنتظار",
       "link_a_child_from_the_dashboard_to_see_t": "رابط طفل من لوحة القيادة لرؤية تقويمهم.",
       "no_activities_found_for_this_child": "لم يتم العثور على أي أنشطة لهذا الطفل.",
-      "activities_assigned_by_teachers_will_app": "\"الأنشطة الموكلة من قبل المعلمين ستظهر هنا.\"\n\n(Note: The template variables are preserved as they are.)",
+      "activities_assigned_by_teachers_will_app": "الأنشطة الموكلة من قبل المعلمين ستظهر هنا.",
       "loading": "Loading…",
       "refresh": "Refresh"
     },
@@ -2264,7 +2264,7 @@
       "teacher_note": "ملاحظة المدرس",
       "no_children_linked_yet": "لا يوجد أطفال مرتبطون حتى الآن",
       "link_your_childs_account_to_start_tracki": "اربط حساب طفلك لبدء تتبع تقدمه في التعلم.",
-      "no_progress_data_yet_for_this_child": "\"لا يوجد بيانات تقدم حتى الآن لهذا الطفل.\"\n\n(Preserving template variables exactly as they appear in the original string)"
+      "no_progress_data_yet_for_this_child": "لا يوجد بيانات تقدم حتى الآن لهذا الطفل."
     },
     "progress_reports": "تقرير التقدم",
     "pages_parentreportspage": {
@@ -2299,7 +2299,7 @@
       "tokens": "توكينز",
       "cost": "تكلفة",
       "admin_actions": "أفعال الإداريين",
-      "all_actions_are_recorded_in_the_audit_lo": "\"جميع الأفعال مسجلة في سجل التدقيق.\"\n\n(Preserved template variables exactly as they appear.)",
+      "all_actions_are_recorded_in_the_audit_lo": "جميع الأفعال مسجلة في سجل التدقيق.",
       "license": "License",
       "change_tier_to": "غير المستوى إلى...",
       "placeholder_days": "days",
@@ -2404,7 +2404,7 @@
     },
     "pages_teacher_sharedlibrarypage": {
       "placeholder_search_title_description_location": "بحث عنوان، وصف، موقع...",
-      "clear": "\"أزح\"\n\n(Translated literally as \"clear\")",
+      "clear": "أزح",
       "subject": "موضوع",
       "placeholder_eg_science": "مثلا العلوم",
       "grade_level": "سنة دراسية",
@@ -2429,7 +2429,7 @@
       "class_full_upgrade_to_add_more": "الصفوف ممتلئة — الترقية لإضافة المزيد",
       "no_students_enrolled_yet_use_the_invite_": "لا يوجد طلاب مسجلين حتى الآن. استخدم لوحة الدعوة أدناه لإضافتهم.",
       "title_remove_from_classroom": "إزالة من الفصل",
-      "larger_classrooms_are_a_paid_feature_upg": "\"الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.\"\n\n*(Preserving template variables exactly)*",
+      "larger_classrooms_are_a_paid_feature_upg": "الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.",
       "grade_level_placeholder": "0 = روضة الأطفال",
       "grade_level_k_hint": "0 = روضة الأطفال",
       "grade_level_nudge": "إذا تركت بيري فارغة، لا يستطيع بيري تخصيص صياغة الأسئلة لتناسب عمر هذا الصف — الطلاب يحصلون على النسخة العامة.",
@@ -2486,7 +2486,7 @@
     "no_progress_data_available": "لا توجد بيانات تقدم",
     "share_this_project_with_your_classmates": "شارك هذا المشروع مع زملائك؟",
     "your_teacher_will_review_it_first": "سيقوم مدرسك بمراجعته أولًا.",
-    "what_are_you_investigating_optional": "\"ما الذي تفحصه؟ (اختياري)\"\n\n(Preserving template variables as they appear in the input string.)",
+    "what_are_you_investigating_optional": "ما الذي تفحصه؟ (اختياري)",
     "no_projects_yet_create_one_to_start_coll": "لا يوجد مشاريع حتى الآن. إنشاء واحد لبدء جمع الملاحظات الحقول!",
     "you_have_2_active_projects_archive_one_t": "لديك 2 مشروع نشيط — أرشِ واحد لإنشاء جديد.",
     "adapting_from_teacher_activity": "تكييف من نشاط المعلم",
@@ -2543,7 +2543,7 @@
     "aipowered_lesson_suggestions": "🤖 التوصيات الدراسية مدعومة بالذكاء الاصطناعي",
     "ollama_is_analyzing_your_location_and_ac": "يعد Ollama في تحليل موقعك وفعاليتك لتقديم تنويعات دراسية ذات صلة",
     "generating_suggestions": "جاري توليد التوصيات...",
-    "showing_fallback_suggestions_instead": "\"يعرض اقتراحات بديلة.\"\n\n(Preserving template variables exactly as they appear.)",
+    "showing_fallback_suggestions_instead": "يعرض اقتراحات بديلة.",
     "regenerate_suggestions": "🔄 إعادة توليد التوصيات",
     "click_on_suggestions_to_add_them_to_your": "اضغط على التلميحات لإضافتها إلى أنشطةك. هذه الأفكار مستندة إلى الذكاء الاصطناعي – تعديلها لتلائم أهدافك التعليمية.",
     "add_activities_to_organize_them_in_this_": "أضف أنشطة لإدارتها في هذا المشروع",
@@ -2570,7 +2570,7 @@
     "28_students_in_this_class": "28 طالبًا في هذه الفئة.",
     "create_edit_and_assign_activities": "إنشاء، تعديل، وتخصيص أنشطة.",
     "emma_is_excelling": "🎉 إميلي تتفوق!",
-    "she_advanced_in_3_competencies_this_week": "\"تقدم في 3 مهارات هذا الأسبوع.\"\n\n(Preserved template variable {count} exactly as it is.)",
+    "she_advanced_in_3_competencies_this_week": "تقدم في 3 مهارات هذا الأسبوع.",
     "field_observation_riverside_park": "ملاحظة الحقل ∘ منتزه النهر",
     "i_noticed_how_different_plants_adapt_to_": "أعجبتني كيف تتكيف مختلف النباتات مع الظل...",
     "talk_tonight_prompts": "💬 تكلّم الليلة: التذكيرات",
@@ -2754,7 +2754,7 @@
     "your_class_in_the_field": "كتابتك في الميدان",
     "every_activity_automatically_tagged_agai": "تسجل كل النشاط تلقائيًا ضد المعايير. إطارك أو إطارنا.",
     "use_ours_or_build_your_own_grade_by_rubr": "استخدموا ما لدينا أو ابنيها بأنفسكم. تصنيف حسب المراقبه. تمكين التقديم التلقائي للأقارير.",
-    "evidence_organized_by_standard_growth_ch": "\"البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.\"\n\n(Translation:\n\"Evidence organized according to standards. Growth charts by competencies. Share with the admin.\")",
+    "evidence_organized_by_standard_growth_ch": "البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.",
     "parents_kids_connected": "أبناء و أطفال متصلون",
     "weekly_digests_go_to_families_parents_me": "الرسائل الأسبوعية تذهب إلى العائلات. آباء الرسالة مباشرة. لا عمل إضافي. يحدث تلقائيًا.",
     "we_send_parents_what_happened_in_your_cl": "أرسلنا إلى آبائكم ما حدث في صفك: الصور، المهارات المكتسبة، المعالم المحققة. لا حاجة لك إلى رفع إصبع.",
@@ -2846,7 +2846,7 @@
     "gps_only_during": "تنسيق GPS يشار فقط أثناء جلسة العمل الحقلية النشطة",
     "gps_teacher_only": "مخفي عن الجميع باستثناء معلم الصف",
     "gps_stored": "\"تخزين صور الموقع لكل إرسال (غير تتبع مستمرة)\"\n\n* Preserved template variables exactly.\n* Provided only the translated value string text in fluent, natural Arabic.\n* Followed critical rules without appending explanation copy or repeating input key text framework.",
-    "gps_expires": "\"تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)\"\n\n(Preserving template variables exactly as they appear in the input string.)",
+    "gps_expires": "تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)",
     "activity_updates": "تحديثات حول أنشطة أطفالك",
     "reports_subtitle": "ملخصات أسبوعية ومآخذ شهرية عن أطفالك",
     "standardsImportPage": {
@@ -2984,7 +2984,7 @@
         "feature": {
           "1": "توزيع على مستوى المنطقة",
           "2": "التكاملات المخصصة",
-          "3": "\"تجربة على مستوى\"\n(Preserved template variables exactly)",
+          "3": "تجربة على مستوى",
           "4": "دعم أولوية + SLA"
         }
       },
@@ -3012,7 +3012,7 @@
       "badge": "Privacy & Compliance"
     },
     "eg_understand_photosynthesis_process": "فمثلا، فهم عملية التمثيل الضوئي",
-    "manage_district_and_school_configuration": "\"إدارة تكوينات المنطقة والمدرسة.\"\n\n(Translated literally as \"Manage area and school configurations\", but using more natural Arabic phrasing.)",
+    "manage_district_and_school_configuration": "إدارة تكوينات المنطقة والمدرسة.",
     "adminauditlogpage": {
       "audit_log": "سجل المراجعة"
     },
@@ -3167,7 +3167,7 @@
     "privacy_status": "حالة الخصوصية",
     "configure_privacy": "تكوين الخصوصية",
     "view_audit_log": "شاهد سجل المراجعة",
-    "collect_photos": "\"الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)\"\n\n(Preserving template variables exactly as they appear in the input string.)",
+    "collect_photos": "الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)",
     "components_privacysetupwizard": {
       "where_are_you_teaching": "أين تدرّس؟",
       "state": "حالة",
@@ -3209,7 +3209,7 @@
       "ollama_base_url": "أورل URL Ollama الأساسي",
       "provider_per_task": "موفر لكل مهمة",
       "ollama_local_instant_zero_cost_haiku_ins": "\"أولمّا = محلي، tứcٍ، تكلفة صفر. هايكو tứcٍ = سحابي، tứcٍ، ~ $0.001/نداء. هايكو دفعة = سحابي، الليل، 50% أرخص — تقييم التقديم فقط.\"\n\nTranslation notes:\n- \"Ollama\" and \"Haiku\" are kept as they are, as they seem to be product/service names.\n- \"local\", \"instant\", \"zero cost\", \"cloud\", \"overnight\", \"cheaper\" are translated using standard Arabic terms for these concepts.\n- The symbols \"$\" and \"/\" are preserved as they are.",
-      "recent_queue_items_last_100": "\"العناصر الأخيرة في قائمة (آخر 100)\"\n\n(Preserving template variables exactly as they are.)",
+      "recent_queue_items_last_100": "العناصر الأخيرة في قائمة (آخر 100)",
       "ollama_instance_url": "رابط مثيل Ollama",
       "must_be_reachable_from_the_peripateticwa": "يجب أن يكون قابلاً للوصول من خادم Peripateticware الخلفي.",
       "task_routing": "توجيه المهام",

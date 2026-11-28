@@ -1387,8 +1387,8 @@
   "cookie_consent_title": "Çerez uyarısı",
   "cookie_notice": "Bu siten sadece giriş kimlik doğrulamasını için çerezler kullanır - izleme veya reklam amaçlı çerez yoktur.",
   "cookie_preferences": "Çerez tercihleri",
-  "cookie_status_off": "Şu anda: analiz çerezleri reddedildi.",
-  "cookie_status_on": "Şu anda: analiz çerezleri etkin.",
+  "cookie_status_off": "Currently: analytics cookies declined.",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
   "learn_more": "Öğren",
   "cookiepolicypage": {
     "cookie_policy": "Cookie Policy",

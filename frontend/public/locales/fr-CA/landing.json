@@ -1048,5 +1048,7 @@
   "refundpolicypage.6_title": "6. Exceptional Circumstances",
   "refundpolicypage.6_body": "We review refund requests outside these windows on a case-by-case basis — for example duplicate charges, prolonged service outages, or billing errors. Contact us and we will make it right.",
   "refundpolicypage.7_title": "7. Contact",
-  "refundpolicypage.7_body": "Questions about billing, cancellations, or refunds?"
+  "refundpolicypage.7_body": "Questions about billing, cancellations, or refunds?",
+  "cookie_status_on": "Currently: analytics cookies enabled.",
+  "cookie_status_off": "Currently: analytics cookies declined."
 }

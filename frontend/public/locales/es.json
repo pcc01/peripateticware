@@ -1,5 +1,6 @@
 {
   "landing": {
+    "500": "500",
     "auth": {
       "email_placeholder": "you@example.com or username",
       "login_title": "Bienvenido de vuelta",
@@ -205,7 +206,6 @@
     "pages_termspage": {
       "helloperipateticwarecom": "hello@peripateticware.com"
     },
-    "500": "500",
     "activitybuilderupdated": {
       "create_activity": "Crear actividad",
       "basic_information": "Información básica",
@@ -1498,7 +1498,7 @@
       "review_studentcreated_reverse_scavenger_": "Revisar las cacerías inversas de estudiantes creados. Las propuestas aprobadas se convierten en actividades en vivo.",
       "no_proposals_waiting_for_review": "Sin propuestas pendientes de revisión.",
       "students_note_to_you": "Alumno's nota para ti",
-      "feedback_for_student_required_if_rejecti": "\"Comentarios del estudiante (obligatorio si se rechaza)\"\n\n(Preserved template variables: {count}, %s, $t(...))"
+      "feedback_for_student_required_if_rejecti": "Comentarios del estudiante (obligatorio si se rechaza)"
     },
     "pages_teacher_teacherstandardspage": {
       "learning_standards": "Estándares de aprendizaje",
@@ -1895,11 +1895,11 @@
             }
           },
           "task": {
-            "2": {
-              "text": "Agua ciclo laboratorio ✓"
-            },
             "1": {
               "text": "Ecosistema observación ✓"
+            },
+            "2": {
+              "text": "Agua ciclo laboratorio ✓"
             },
             "3": {
               "text": "Visita a la capital — pendiente"
@@ -2429,7 +2429,7 @@
       "class_full_upgrade_to_add_more": "Clase completa — actualiza para agregar más",
       "no_students_enrolled_yet_use_the_invite_": "Aún no hay estudiantes inscritos. Utiliza el panel de invitación a continuación para añadirles.",
       "title_remove_from_classroom": "Eliminar de la clase",
-      "larger_classrooms_are_a_paid_feature_upg": "\"Las clases más grandes son una función de pago. Actualiza para inscribir a más estudiantes.\"\n\n(Note: The template variables were preserved exactly as in the input string.)",
+      "larger_classrooms_are_a_paid_feature_upg": "Las clases más grandes son una función de pago. Actualiza para inscribir a más estudiantes.",
       "grade_level_placeholder": "0 = Kindergarten",
       "grade_level_k_hint": "0 = Kindergarten",
       "grade_level_nudge": "Left blank, Peri can't tailor question wording to this class's age -- students get the generic version.",
@@ -2754,7 +2754,7 @@
     "your_class_in_the_field": "Tu clase en el campo",
     "every_activity_automatically_tagged_agai": "Cada actividad se etiqueta automáticamente según los estándares. Su marco o el nuestro.",
     "use_ours_or_build_your_own_grade_by_rubr": "Usa el nuestro o crea el tuyo propio. Califica por rúbrica. Autopuebla informes.",
-    "evidence_organized_by_standard_growth_ch": "\"Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.\"\n\n(Please note that the template variables have been preserved exactly as they appear in the input string.)",
+    "evidence_organized_by_standard_growth_ch": "Evidencias organizadas por estándar. Gráficos de crecimiento por competencia. Compartir con administrador.",
     "parents_kids_connected": "Padres e Hijos Conectados",
     "weekly_digests_go_to_families_parents_me": "Los resúmenes semanales se envían a las familias. Los padres te envían mensajes directamente. Sin trabajo adicional. Sucede automáticamente.",
     "we_send_parents_what_happened_in_your_cl": "Enviamos a los padres lo que sucedió en tu clase: fotos, habilidades desarrolladas y hitos logrados. No necesitas hacer nada.",
@@ -3347,8 +3347,8 @@
       "no_events_this_day": "Nothing scheduled for this day."
     },
     "cookie_preferences": "Cookie preferences",
-    "cookie_status_on": "Currently: analytics cookies enabled. ",
-    "cookie_status_off": "Currently: analytics cookies declined. ",
+    "cookie_status_on": "Currently: analytics cookies enabled.",
+    "cookie_status_off": "Currently: analytics cookies declined.",
     "components_errorboundary": {
       "something_went_wrong": "Something went wrong",
       "an_unexpected_error_occurred_and_this_pa": "An unexpected error occurred and this page couldn't be displayed. You can try again, or reload the app.",

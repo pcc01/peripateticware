@@ -801,12 +801,13 @@ class UniversalOrchestrator:
         # alterations)' — so text no longer ends with a quote character until
         # this runs first. Found via looks_like_garbage()/clean_llm_chatter()
         # both missing this shape in production (see META_COMMENTARY_RE).
-        # \n{1,2} (not just \n\n) -- validate_locales.cjs's 2026-11 cleanup
-        # found a surviving leak from this exact regex requiring exactly two
-        # newlines (frontend/public/locales/ar/landing.json ::
-        # pricing_tier.district.feature.3 had only one: '"..."\n(Preserved
-        # template variables exactly)').
-        text = re.sub(r'\n{1,2}\([\s\S]*\)\s*$', '', text).strip()
+        # \n+ (not \n{1,2}) -- a 2026-11 incident's root-cause pass found two
+        # more surviving leaks from the narrower version: a zh value with
+        # three newlines before the parenthetical, and an ar value wrapping
+        # it in markdown emphasis asterisks, '*(Preserving template
+        # variables exactly)*', which also needs \*{0,2} on both sides since
+        # the closing paren is no longer the last character either.
+        text = re.sub(r'\n+\*{0,2}\([\s\S]*\)\*{0,2}\s*$', '', text).strip()
         if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
             text = text[1:-1].strip()
         chatter_prefixes = [
