@@ -230443,6 +230443,216 @@
       &quot;prov:wasRevisionOf&quot;: {
         &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v21&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v24&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:28:52.094985+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:28:52.094985+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v23&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v23&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:28:52.094985+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;student@email.com&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:28:52.094985+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:28:52.094985+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_invitestudentspanel.placeholder_studentemailcom&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;إذا لم تكن راضيا عن الاشتراك المدفوع، يمكنك طلب استرداد كامل خلال 14 يوما من أول دفعة لك عبر البريد الإلكتروني hello@peripateticware.com. يتم إصدار الاستردادات إلى طريقة الدفع الأصلية، عادة خلال 5–10 أيام عمل.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:28:52.401079+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:28:52.401079+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.3_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:28:52.401079+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;ألغ أي وقت من الإعدادات → الخطة في حسابك، أو باستخدام الرابط في أي بريد إلكتروني لإيصال Paddle، أو بالاتصال hello@peripateticware.com. الإلغاء يوقف التجديدات المستقبلية؛ لا يسبب استردادا جزئيا للفترة الحالية.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:28:52.401079+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:28:52.401079+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:28:52.832249+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:28:52.832249+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:28:52.832249+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;landing.hero.homeschool.headline&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:28:52.832249+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:28:52.832249+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v22&quot;
+      }
     }
   ]
 }</meta>
@@ -230452,7 +230662,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 23</note>
+        <note>Status: new_translation | Version: 24</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -240384,7 +240594,7 @@
       <trans-unit id="components_teacher_invitestudentspanel.placeholder_studentemailcom" approved="no">
         <source>student@email.com</source>
         <target>student@email.com</target>
-        <note>Status: needs_manual_translation | Version: 22</note>
+        <note>Status: needs_manual_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.subject" approved="no">
         <source>Subject</source>
@@ -245560,7 +245770,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="refundpolicypage.3_body" approved="no">
         <source>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</source>
         <target>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</target>
-        <note>Status: needs_manual_translation | Version: 22</note>
+        <note>Status: needs_manual_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.4_title" approved="no">
         <source>4. Renewal Charges</source>
@@ -245580,7 +245790,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 22</note>
+        <note>Status: needs_manual_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>
@@ -245825,7 +246035,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline" approved="no">
         <source>landing.hero.homeschool.headline</source>
         <target>landing.hero.homeschool.headline</target>
-        <note>Status: needs_manual_translation | Version: 22</note>
+        <note>Status: needs_manual_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpagespage.pages" approved="no">
         <source>Pages</source>
