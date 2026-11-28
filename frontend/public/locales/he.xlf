@@ -235684,6 +235684,216 @@
       &quot;prov:wasRevisionOf&quot;: {
         &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v20&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;student@email.com&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_invitestudentspanel.placeholder_studentemailcom&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:03.845355+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Markdown&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.markdown-2026-11-28T02:07:03.845355+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.markdown&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.markdown-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:04.121820+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:04.121820+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:04.121820+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;בטל בכל זמן מתוך הגדרות → תוכנית בחשבונך, או באמצעות הקישור בכל מייל קבלה של Paddle, או על ידי יצירת קשר עם hello@peripateticware.com. ביטול עוצר חידושים עתידיים; הוא לא מפעיל החזר חלקי לתקופה הנוכחית.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:04.121820+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:04.121820+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:07:04.535806+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:04.535806+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:04.535806+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;landing.hero.homeschool.headline&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:07:04.535806+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:07:04.535806+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v21&quot;
+      }
     }
   ]
 }</meta>
@@ -235693,7 +235903,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -238982,9 +239192,7 @@
       </trans-unit>
       <trans-unit id="view_evidence_and_reflections_here" approved="no">
         <source>View evidence and reflections here.</source>
-        <target>&quot;ראה ראיות ורגשות כאן.&quot;
-
-(Preserving template variables exactly as they appear in the original string.)</target>
+        <target>ראה ראיות ורגשות כאן.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="messages_with_teachers" approved="no">
@@ -239004,9 +239212,7 @@
       </trans-unit>
       <trans-unit id="manage_your_preferences_here" approved="no">
         <source>Manage your preferences here.</source>
-        <target>&quot;הסדר את העדפותיך כאן.&quot;
-
-(Preserving template variables exactly as they appear in the original string.)</target>
+        <target>הסדר את העדפותיך כאן.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="admin" approved="no">
@@ -239041,9 +239247,7 @@
       </trans-unit>
       <trans-unit id="manage_activities_standards_and_resource" approved="no">
         <source>Manage activities, standards, and resources.</source>
-        <target>&quot;נהל פעילויות, סטנדרטים ומשאבים.&quot;
-
-(Preserved template variables exactly as they appear in the input string.)</target>
+        <target>נהל פעילויות, סטנדרטים ומשאבים.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="system_analytics" approved="no">
@@ -240758,9 +240962,7 @@
       </trans-unit>
       <trans-unit id="privacy.tagline" approved="no">
         <source>Your data stays yours.</source>
-        <target>&quot;המידע שלך נשאר שלך.&quot;
-
-(Preserved template variables exactly as given.)</target>
+        <target>המידע שלך נשאר שלך.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="privacy.summary_title" approved="no">
@@ -241275,9 +241477,7 @@
       </trans-unit>
       <trans-unit id="png_jpg_mp4_mp3_or_txt_max_50mb_each" approved="no">
         <source>PNG, JPG, MP4, MP3, or TXT (Max 50MB each)</source>
-        <target>&quot;PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)&quot;
-
-(Preserving template variables exactly and providing only the translated value string text.)</target>
+        <target>PNG, JPG, MP4, MP3 או TXT (מרבי 50MB כל אחד)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="additional_context_or_reflection" approved="no">
@@ -242457,9 +242657,7 @@
       </trans-unit>
       <trans-unit id="submitted" approved="no">
         <source>Submitted:</source>
-        <target>&quot;שולח:&quot;
-
-(No changes to template variables)</target>
+        <target>שולח:</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="your_classes" approved="no">
@@ -243214,9 +243412,7 @@
       </trans-unit>
       <trans-unit id="level_label" approved="no">
         <source>Label</source>
-        <target>&quot;תאור&quot;
-
-(Translated literally as &quot;Label&quot;)</target>
+        <target>תאור</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="level_description" approved="no">
@@ -244161,9 +244357,7 @@
       </trans-unit>
       <trans-unit id="collect_photos" approved="no">
         <source>Photos and audio recordings (stored securely on our server)</source>
-        <target>&quot;תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)&quot;
-
-(Preserved template variables exactly as they appear in the input string.)</target>
+        <target>תמונות ואודיו הקלטות (מאוחסנות בצורה בטוחה על שרתינו)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="collect_learning" approved="no">
@@ -244863,9 +245057,7 @@
       </trans-unit>
       <trans-unit id="components_auth_signupscreen.no_all_13" approved="no">
         <source>No — all 13+</source>
-        <target>&quot;לא — כל 13+&quot;
-
-(Preserved template variables exactly as given.)</target>
+        <target>לא — כל 13+</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_auth_signupscreen.aria_label_back_to_login" approved="no">
@@ -245195,9 +245387,7 @@
       </trans-unit>
       <trans-unit id="components_teacher_activitymanager.discipline" approved="no">
         <source>Discipline</source>
-        <target>&quot;תעוד&quot;
-
-(Translated literally as &quot;discipline&quot;)</target>
+        <target>תעוד</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_teacher_activitymanager.this_activity_involves_student_location_" approved="no">
@@ -245645,7 +245835,7 @@
       <trans-unit id="components_teacher_invitestudentspanel.placeholder_studentemailcom" approved="no">
         <source>student@email.com</source>
         <target>student@email.com</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.subject" approved="no">
         <source>Subject</source>
@@ -248229,16 +248419,12 @@
       </trans-unit>
       <trans-unit id="gps_stored" approved="no">
         <source>Location snapshots stored per submission (not continuous tracking)</source>
-        <target>&quot;צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)&quot;
-
-(Preserved template variables: {count}, %s, $t(...))</target>
+        <target>צילומי מיקום מאוחסנים לפי הגשה (לא מסלול רציף)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="gps_expires" approved="no">
         <source>Consent expires automatically when the activity ends (max 30 days)</source>
-        <target>&quot;הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)&quot;
-
-(Preserving template variables exactly as they are.)</target>
+        <target>הסכמה תפוג אוטומטית עם סיום הפעילות (מקסימום 30 ימים)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_parentmessagespage.messages" approved="no">
@@ -250834,7 +251020,7 @@
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>
@@ -251039,7 +251225,7 @@
       <trans-unit id="pages_admin_adminpageblockeditorpage.markdown" approved="no">
         <source>Markdown</source>
         <target>Markdown</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpageblockeditorpage.content" approved="no">
         <source>Content</source>
@@ -251079,7 +251265,7 @@
       <trans-unit id="pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline" approved="no">
         <source>landing.hero.homeschool.headline</source>
         <target>landing.hero.homeschool.headline</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpagespage.pages" approved="no">
         <source>Pages</source>

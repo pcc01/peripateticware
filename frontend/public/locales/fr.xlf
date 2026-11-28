@@ -83955,6 +83955,258 @@
       &quot;prov:wasRevisionOf&quot;: {
         &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v20&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-audiorecorder.s-2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-audiorecorder.s-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;s&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-audiorecorder.s-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-audiorecorder.s-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-audiorecorder.s&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-audiorecorder.s-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-audiorecorder.s-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-m-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;m&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-m&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-m-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-m-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.036716+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-min-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;min&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:01.036716+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-min&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-min-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-min-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Si vous n’êtes pas satisfait d’un abonnement payant, vous pouvez demander un remboursement complet dans les 14 jours suivant votre premier paiement en envoyant un e-mail hello@peripateticware.com. Les remboursements sont effectués au mode de paiement initial, généralement dans un délai de 5 à 10 jours ouvrables.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:07:01.508923+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:07:01.508923+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.3_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:01.508923+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Annulez à tout moment depuis les paramètres → plan de votre compte, ou en utilisant le lien dans un e-mail de reçu Paddle, ou en contactant hello@peripateticware.com. L’annulation empêche les renouvellements futurs ; elle ne déclenche pas de remboursement partiel pour la période en cours.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:01.508923+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:01.508923+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      }
     }
   ]
 }</meta>
@@ -83964,7 +84216,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -85278,9 +85530,7 @@
       </trans-unit>
       <trans-unit id="audiocapture.s" approved="no">
         <source>s)</source>
-        <target>&quot;f)&quot;
-
-(Preserving the template variable &quot;{count}&quot; exactly as requested.)</target>
+        <target>f)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="audio_recording" approved="no">
@@ -85296,7 +85546,7 @@
       <trans-unit id="audiorecorder.s" approved="no">
         <source>s</source>
         <target>s</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="audiorecorder.recording_saved" approved="no">
         <source>Recording saved (</source>
@@ -85360,9 +85610,7 @@
       </trans-unit>
       <trans-unit id="fieldnoteeditor.s" approved="no">
         <source>s)</source>
-        <target>&quot;f)&quot;
-
-(Preserving the template variable &quot;{count}&quot; exactly as requested.)</target>
+        <target>f)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="fieldnoteeditor.add_audio" approved="no">
@@ -85753,7 +86001,7 @@
       <trans-unit id="m" approved="no">
         <source>m</source>
         <target>m</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="materials" approved="no">
         <source>Materials:</source>
@@ -86288,7 +86536,7 @@
       <trans-unit id="min" approved="no">
         <source>min</source>
         <target>min</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="row" approved="no">
         <source>Row</source>
@@ -86678,9 +86926,7 @@ La rétroaction est un cadeau — vos commentaires seront envoyés à la fois à
       </trans-unit>
       <trans-unit id="allows" approved="no">
         <source>Allows:</source>
-        <target>&quot;Permet :&quot;
-
-(No alterations to template variables)</target>
+        <target>Permet :</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="total" approved="no">
@@ -92512,9 +92758,7 @@ Ces idées sont générées par l'IA - personnalisez-les pour qu'elles correspon
       </trans-unit>
       <trans-unit id="pages_parentdashboard.what_youll_see_after_linking" approved="no">
         <source>What you'll see after linking:</source>
-        <target>&quot;Ce que vous verrez après le lien :&quot;
-
-(Preserving template variables exactly as they appear in the input string.)</target>
+        <target>Ce que vous verrez après le lien :</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_parentdashboard.parental_consent_status" approved="no">
@@ -97011,9 +97255,7 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="pages_privacyenginepage.within_the_bounds_of_the_applicable_law_" approved="no">
         <source>Within the bounds of the applicable law, institution admins have control over:</source>
-        <target>&quot;Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :&quot;
-
-(Note: I've preserved the template variable exactly as it appears in the input string.)</target>
+        <target>Dans les limites de la loi applicable, les administrateurs d'institution ont le contrôle sur :</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_privacyenginepage.questions_about_compliance_for_your_dist" approved="no">
@@ -97633,12 +97875,12 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="cookie_status_on" approved="no">
         <source>Currently: analytics cookies enabled. </source>
-        <target>Currently: analytics cookies enabled. </target>
+        <target>Currently: analytics cookies enabled.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="cookie_status_off" approved="no">
         <source>Currently: analytics cookies declined. </source>
-        <target>Currently: analytics cookies declined. </target>
+        <target>Currently: analytics cookies declined.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_errorboundary.something_went_wrong" approved="no">
@@ -99074,7 +99316,7 @@ james@email.com</target>
       <trans-unit id="refundpolicypage.3_body" approved="no">
         <source>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</source>
         <target>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.4_title" approved="no">
         <source>4. Renewal Charges</source>
@@ -99094,7 +99336,7 @@ james@email.com</target>
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>

@@ -81371,6 +81371,174 @@
       &quot;prov:wasRevisionOf&quot;: {
         &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v20&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-m-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;m&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-m-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-m&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-m-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-m-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:09.326663+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-min-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;min&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-min-2026-11-28T02:07:09.326663+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-min&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-min-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-min-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:09.820902+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:07:09.820902+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:07:09.820902+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;Annulla in qualsiasi momento dalle Impostazioni → Piano nel tuo account, o utilizzando il link in qualsiasi email di ricevuta Paddle, o contattando hello@peripateticware.com. La cancellazione blocca i futuri rinnovi; non attiva un rimborso parziale per il periodo corrente.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:09.820902+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:07:09.820902+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      }
     }
   ]
 }</meta>
@@ -81380,7 +81548,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -83165,7 +83333,7 @@
       <trans-unit id="m" approved="no">
         <source>m</source>
         <target>m</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="materials" approved="no">
         <source>Materials:</source>
@@ -83701,7 +83869,7 @@ durata_minuti, istruzioni</target>
       <trans-unit id="min" approved="no">
         <source>min</source>
         <target>min</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="row" approved="no">
         <source>Row</source>
@@ -85917,9 +86085,7 @@ Queste sono idee generate dall'AI - personalizzale per adattarle ai tuoi obietti
       </trans-unit>
       <trans-unit id="interface_and_weekly_digests_translated_" approved="no">
         <source>Interface and weekly digests translated. Auto-translated messaging. No language barriers.</source>
-        <target>&quot;Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.&quot;
-
-(Note: I've preserved the template variables as requested, but since there are none in this case, the translation is a direct word-for-word conversion.)</target>
+        <target>Impostazioni e digest settimanali tradotti. Messaggi auto-tradotti. Nessun ostacolo linguistico.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="connect_to_your_childs_class" approved="no">
@@ -95042,12 +95208,12 @@ james@email.com</target>
       </trans-unit>
       <trans-unit id="cookie_status_on" approved="no">
         <source>Currently: analytics cookies enabled. </source>
-        <target>Currently: analytics cookies enabled. </target>
+        <target>Currently: analytics cookies enabled.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="cookie_status_off" approved="no">
         <source>Currently: analytics cookies declined. </source>
-        <target>Currently: analytics cookies declined. </target>
+        <target>Currently: analytics cookies declined.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_errorboundary.something_went_wrong" approved="no">
@@ -96503,7 +96669,7 @@ james@email.com</target>
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>

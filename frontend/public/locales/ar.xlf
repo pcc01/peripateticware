@@ -230233,6 +230233,216 @@
       &quot;prov:wasRevisionOf&quot;: {
         &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v20&quot;
       }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-500-v23&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;500&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:06:46.307863+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-500-2026-11-28T02:06:46.307863+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-500&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-500-v22&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:06:46.307863+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;student@email.com&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:06:46.307863+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-components_teacher_invitestudentspanel.placeholder_studentemailcom-2026-11-28T02:06:46.307863+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-components_teacher_invitestudentspanel.placeholder_studentemailcom&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-components_teacher_invitestudentspanel.placeholder_studentemailcom-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;إذا لم تكن راضيا عن الاشتراك المدفوع، يمكنك طلب استرداد كامل خلال 14 يوما من أول دفعة لك عبر البريد الإلكتروني hello@peripateticware.com. يتم إصدار الاستردادات إلى طريقة الدفع الأصلية، عادة خلال 5–10 أيام عمل.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:06:46.982635+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.3_body-2026-11-28T02:06:46.982635+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.3_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.3_body-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:06:46.982635+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;ألغ أي وقت من الإعدادات → الخطة في حسابك، أو باستخدام الرابط في أي بريد إلكتروني لإيصال Paddle، أو بالاتصال hello@peripateticware.com. الإلغاء يوقف التجديدات المستقبلية؛ لا يسبب استردادا جزئيا للفترة الحالية.&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:06:46.982635+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-refundpolicypage.5_body-2026-11-28T02:06:46.982635+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-refundpolicypage.5_body&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-refundpolicypage.5_body-v21&quot;
+      }
+    },
+    {
+      &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:06:47.716788+00:00&quot;,
+      &quot;@type&quot;: &quot;prov:Activity&quot;,
+      &quot;provx:activityType&quot;: &quot;Translation&quot;,
+      &quot;prov:startTime&quot;: &quot;2026-11-28T02:06:47.716788+00:00&quot;,
+      &quot;prov:endTime&quot;: &quot;2026-11-28T02:06:47.716788+00:00&quot;,
+      &quot;actor&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;prov:wasAssociatedWith&quot;: [
+        {
+          &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+        },
+        {
+          &quot;@id&quot;: &quot;agent:person:runner&quot;,
+          &quot;provx:role&quot;: &quot;operator&quot;
+        }
+      ]
+    },
+    {
+      &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v22&quot;,
+      &quot;@type&quot;: &quot;prov:Entity&quot;,
+      &quot;prov:value&quot;: &quot;landing.hero.homeschool.headline&quot;,
+      &quot;generated_by&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:06:47.716788+00:00&quot;
+      },
+      &quot;prov:wasGeneratedBy&quot;: {
+        &quot;@id&quot;: &quot;activity:translation-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-2026-11-28T02:06:47.716788+00:00&quot;
+      },
+      &quot;used_source&quot;: {
+        &quot;@id&quot;: &quot;entity:source-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline&quot;
+      },
+      &quot;prov:wasAttributedTo&quot;: {
+        &quot;@id&quot;: &quot;agent:MICROSOFT:Azure-Cognitive-v3&quot;
+      },
+      &quot;derived_from&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v21&quot;
+      },
+      &quot;prov:wasRevisionOf&quot;: {
+        &quot;@id&quot;: &quot;entity:target-pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline-v21&quot;
+      }
     }
   ]
 }</meta>
@@ -230242,7 +230452,7 @@
       <trans-unit id="500" approved="no">
         <source>500</source>
         <target>500</target>
-        <note>Status: new_translation | Version: 22</note>
+        <note>Status: new_translation | Version: 23</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.create_activity" approved="no">
         <source>Create Activity</source>
@@ -230281,9 +230491,7 @@
       </trans-unit>
       <trans-unit id="activitybuilderupdated.estimated_duration_minutes" approved="no">
         <source>Estimated Duration (minutes)</source>
-        <target>&quot;مدة المقدرة (دقائق)&quot;
-
-(Please note that the template variables are preserved as instructed.)</target>
+        <target>مدة المقدرة (دقائق)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="activitybuilderupdated.materials_needed" approved="no">
@@ -230678,9 +230886,7 @@
       </trans-unit>
       <trans-unit id="ghost" approved="no">
         <source>Ghost</source>
-        <target>&quot;غُوْس&quot;
-
-(Preserved template variables exactly without syntax alterations)</target>
+        <target>غُوْس</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="small" approved="no">
@@ -230735,9 +230941,7 @@
       </trans-unit>
       <trans-unit id="polygon" approved="no">
         <source>Polygon</source>
-        <target>&quot;مُثَنى&quot;
-
-(Translation of &quot;Polygon&quot; to Arabic)</target>
+        <target>مُثَنى</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="navigation" approved="no">
@@ -230747,9 +230951,7 @@
       </trans-unit>
       <trans-unit id="reflection_notebook" approved="no">
         <source>Reflection Notebook</source>
-        <target>&quot;ملاحظات التلك&quot;
-
-(No alterations to template variables)</target>
+        <target>ملاحظات التلك</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="entry_title" approved="no">
@@ -231204,9 +231406,7 @@
       </trans-unit>
       <trans-unit id="student.feature_1_desc" approved="no">
         <source>Photo, audio, sketches, and field notes — everything in one place, synced to your portfolio.</source>
-        <target>&quot;الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.&quot;
-
-(Translation: &quot;Photos, sounds, sketches, and field notes — everything in one place, synchronized to your portfolio.&quot;)</target>
+        <target>الصور، الصوت، الرسومات، ومنهج الحقول — كل شيء في مكان واحد، مزود إلى منتهكك بورفوليوك.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="student.feature_2_title" approved="no">
@@ -231901,9 +232101,7 @@
       </trans-unit>
       <trans-unit id="what_are_you_investigating_optional" approved="no">
         <source>What are you investigating? (optional)</source>
-        <target>&quot;ما الذي تفحصه؟ (اختياري)&quot;
-
-(Preserving template variables as they appear in the input string.)</target>
+        <target>ما الذي تفحصه؟ (اختياري)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="create" approved="no">
@@ -232653,9 +232851,7 @@
       </trans-unit>
       <trans-unit id="enhancedactivitybuilder.activity_title" approved="no">
         <source>Activity Title *</source>
-        <target>&quot;عنوان النشاط *&quot;
-
-(Preserved template variable &quot;*&quot;)</target>
+        <target>عنوان النشاط *</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="enhancedactivitybuilder.description" approved="no">
@@ -233115,9 +233311,7 @@
       </trans-unit>
       <trans-unit id="showing_fallback_suggestions_instead" approved="no">
         <source>Showing fallback suggestions instead.</source>
-        <target>&quot;يعرض اقتراحات بديلة.&quot;
-
-(Preserving template variables exactly as they appear.)</target>
+        <target>يعرض اقتراحات بديلة.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="regenerate_suggestions" approved="no">
@@ -233232,9 +233426,7 @@
       </trans-unit>
       <trans-unit id="duration_weeks" approved="no">
         <source>Duration (weeks)</source>
-        <target>&quot;مدة (أسبوع)&quot;
-
-(Preserving template variables exactly as they are.)</target>
+        <target>مدة (أسبوع)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="start_date" approved="no">
@@ -233509,9 +233701,7 @@
       </trans-unit>
       <trans-unit id="she_advanced_in_3_competencies_this_week" approved="no">
         <source>She advanced in 3 competencies this week.</source>
-        <target>&quot;تقدم في 3 مهارات هذا الأسبوع.&quot;
-
-(Preserved template variable {count} exactly as it is.)</target>
+        <target>تقدم في 3 مهارات هذا الأسبوع.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="latest_evidence" approved="no">
@@ -233596,9 +233786,7 @@
       </trans-unit>
       <trans-unit id="manage_district_and_school_configuration" approved="no">
         <source>Manage district and school configurations.</source>
-        <target>&quot;إدارة تكوينات المنطقة والمدرسة.&quot;
-
-(Translated literally as &quot;Manage area and school configurations&quot;, but using more natural Arabic phrasing.)</target>
+        <target>إدارة تكوينات المنطقة والمدرسة.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="content_management" approved="no">
@@ -234058,9 +234246,7 @@
       </trans-unit>
       <trans-unit id="comingsoonpage.this_page_is_coming_soon" approved="no">
         <source>This page is coming soon.</source>
-        <target>&quot;هذه الصفحة قادمة قريبًا.&quot;
-
-(Preserved template variables exactly with no syntax alterations.)</target>
+        <target>هذه الصفحة قادمة قريبًا.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="comingsoonpage.go_back" approved="no">
@@ -236105,9 +236291,7 @@
       </trans-unit>
       <trans-unit id="meet_peri.step.2.desc" approved="no">
         <source>Your child records what they see, hear, or measure. Peri prompts for specifics if the answer is vague.</source>
-        <target>&quot;يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا.&quot;
-
-(Translation: &quot;The child records what he sees or hears or measures. Peri asks for details if the answer is vague.&quot;)</target>
+        <target>يرسخ الطفل ما يراه أو يسمع أو يقاس. يطلب بيري التفاصيل إذا كان الجواب غامضًا.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="meet_peri.step.3.phase" approved="no">
@@ -236707,9 +236891,7 @@
       </trans-unit>
       <trans-unit id="maps_to_common_core" approved="no">
         <source>Maps to Common Core</source>
-        <target>&quot;تسوق إلى كور&quot;
-
-(Preserving template variables exactly as they are.)</target>
+        <target>تسوق إلى كور</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="every_activity_automatically_tagged_agai" approved="no">
@@ -236744,10 +236926,7 @@
       </trans-unit>
       <trans-unit id="evidence_organized_by_standard_growth_ch" approved="no">
         <source>Evidence organized by standard. Growth charts by competency. Share with admin.</source>
-        <target>&quot;البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.&quot;
-
-(Translation:
-&quot;Evidence organized according to standards. Growth charts by competencies. Share with the admin.&quot;)</target>
+        <target>البراهين منظمه حسب المعايير. مخططات النمو حسب المهارات. مشاركة مع المدير.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="parents_kids_connected" approved="no">
@@ -237277,9 +237456,7 @@
       </trans-unit>
       <trans-unit id="components_auth_loginscreen.that_link_is_invalid_please_try_again" approved="no">
         <source>That link is invalid. Please try again.</source>
-        <target>&quot;هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.&quot;
-
-(Translation: &quot;That link is invalid. Please try again.&quot;)</target>
+        <target>هذا الرابط غير صالح. يرجى المحاولة مرة أخرى.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_auth_loginscreen.or" approved="no">
@@ -237914,9 +238091,7 @@
       </trans-unit>
       <trans-unit id="pages_admin_adminclassespage.class_name" approved="no">
         <source>Class name *</source>
-        <target>&quot;اسم الكلاس *&quot;
-
-(Preserved template variable: &quot;*&quot;)</target>
+        <target>اسم الكلاس *</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminclassespage.grade_level" approved="no">
@@ -238731,9 +238906,7 @@
       </trans-unit>
       <trans-unit id="collect_photos" approved="no">
         <source>Photos and audio recordings (stored securely on our server)</source>
-        <target>&quot;الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)&quot;
-
-(Preserving template variables exactly as they appear in the input string.)</target>
+        <target>الصور والأشرطة الصوتية (مخزنة بشكل آمن على خادمنا)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="collect_learning" approved="no">
@@ -239193,9 +239366,7 @@
       </trans-unit>
       <trans-unit id="pages_teacher_teacherproposalreviewpage.feedback_for_student_required_if_rejecti" approved="no">
         <source>Feedback for student (required if rejecting)</source>
-        <target>&quot;تعليقات حول الطالب (مطلوبة إذا رفض)&quot;
-
-(Preserving template variables exactly as they appear in the input string.)</target>
+        <target>تعليقات حول الطالب (مطلوبة إذا رفض)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_teacher_teacherproposalreviewpage.loading" approved="no">
@@ -239320,9 +239491,7 @@
       </trans-unit>
       <trans-unit id="components_auth_signupscreen.my_students_include_children_under_13_en" approved="no">
         <source>My students include children under 13 (enables COPPA protections)</source>
-        <target>&quot;أطفال أقل من 13 سنة (ينشئ حماية COPPA)&quot;
-
-(Preserved template variables exactly as given.)</target>
+        <target>أطفال أقل من 13 سنة (ينشئ حماية COPPA)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="components_auth_signupscreen.do_any_of_your_students_have_children_u" approved="no">
@@ -240215,7 +240384,7 @@
       <trans-unit id="components_teacher_invitestudentspanel.placeholder_studentemailcom" approved="no">
         <source>student@email.com</source>
         <target>student@email.com</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="components_teacher_ollamalessonsuggestions.subject" approved="no">
         <source>Subject</source>
@@ -240459,9 +240628,7 @@ Translation notes:
       </trans-unit>
       <trans-unit id="pages_admin_adminaiconfigpage.recent_queue_items_last_100" approved="no">
         <source>Recent Queue Items (last 100)</source>
-        <target>&quot;العناصر الأخيرة في قائمة (آخر 100)&quot;
-
-(Preserving template variables exactly as they are.)</target>
+        <target>العناصر الأخيرة في قائمة (آخر 100)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminaiconfigpage.ollama_instance_url" approved="no">
@@ -241806,8 +241973,7 @@ Translation notes:
       </trans-unit>
       <trans-unit id="pricing_tier.district.feature.3" approved="no">
         <source>Dedicated onboarding</source>
-        <target>&quot;تجربة على مستوى&quot;
-(Preserved template variables exactly)</target>
+        <target>تجربة على مستوى</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pricing_tier.district.feature.4" approved="no">
@@ -242317,9 +242483,7 @@ Translation notes:
       </trans-unit>
       <trans-unit id="pages_admin_platformadminpage.spend_by_tier_this_month" approved="no">
         <source>Spend by tier (this month)</source>
-        <target>&quot;مصروفات حسب المستوى (هذا الشهر)&quot;
-
-(Preserved template variables: {count}, %s, $t(...))</target>
+        <target>مصروفات حسب المستوى (هذا الشهر)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_admin_platformadminpage.no_spend_recorded_yet" approved="no">
@@ -242589,9 +242753,7 @@ Translation notes:
       </trans-unit>
       <trans-unit id="pages_homeschool_homeschoolwelcomepage.ready_to_create_your_first_outdoor_activ" approved="no">
         <source>Ready to create your first outdoor activity? Peri will suggest Aristotelian inquiry questions tailored to your location and subject.</source>
-        <target>&quot;هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.&quot;
-
-(Translation: &quot;Are you ready to create your first outdoor activity? Peri will suggest Socrates-style questions tailored to your location and subject.&quot;)</target>
+        <target>هل أنت مستعد لإنشاء نشاطك الأول في الهواء الطلق؟ سيقترح بيري أسئلة من نوع سقراط ملائمة لموقعك و موضوعك.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_homeschool_homeschoolwelcomepage.create_first_activity" approved="no">
@@ -242783,9 +242945,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="pages_parentcalendarpage.activities_assigned_by_teachers_will_app" approved="no">
         <source>Activities assigned by teachers will appear here.</source>
-        <target>&quot;الأنشطة الموكلة من قبل المعلمين ستظهر هنا.&quot;
-
-(Note: The template variables are preserved as they are.)</target>
+        <target>الأنشطة الموكلة من قبل المعلمين ستظهر هنا.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_parentcalendarpage.loading" approved="no">
@@ -242824,9 +242984,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="gps_expires" approved="no">
         <source>Consent expires automatically when the activity ends (max 30 days)</source>
-        <target>&quot;تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)&quot;
-
-(Preserving template variables exactly as they appear in the input string.)</target>
+        <target>تنتهي الإذن تلقائيًا عند نهاية النشاط (أقصى 30 يومًا)</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_parentmessagespage.messages" approved="no">
@@ -242941,9 +243099,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="pages_parentprogresspage.no_progress_data_yet_for_this_child" approved="no">
         <source>No progress data yet for this child.</source>
-        <target>&quot;لا يوجد بيانات تقدم حتى الآن لهذا الطفل.&quot;
-
-(Preserving template variables exactly as they appear in the original string)</target>
+        <target>لا يوجد بيانات تقدم حتى الآن لهذا الطفل.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="progress_reports" approved="no">
@@ -243133,9 +243289,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="pages_platform_platformorgdetailpage.all_actions_are_recorded_in_the_audit_lo" approved="no">
         <source>All actions are recorded in the audit log.</source>
-        <target>&quot;جميع الأفعال مسجلة في سجل التدقيق.&quot;
-
-(Preserved template variables exactly as they appear.)</target>
+        <target>جميع الأفعال مسجلة في سجل التدقيق.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_platform_platformorgdetailpage.license" approved="no">
@@ -243655,9 +243809,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="pages_teacher_sharedlibrarypage.clear" approved="no">
         <source>Clear</source>
-        <target>&quot;أزح&quot;
-
-(Translated literally as &quot;clear&quot;)</target>
+        <target>أزح</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_teacher_sharedlibrarypage.subject" approved="no">
@@ -243752,9 +243904,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       </trans-unit>
       <trans-unit id="pages_teacher_teacherclassroompage.larger_classrooms_are_a_paid_feature_upg" approved="no">
         <source>Larger classrooms are a paid feature. Upgrade to enroll more students.</source>
-        <target>&quot;الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.&quot;
-
-*(Preserving template variables exactly)*</target>
+        <target>الاحتفاظ بجلوسات كبيرة هو ميزة مدفوعة. الترقية للتسجيل برفقة المزيد من الطلاب.</target>
         <note>Status: pending_review | Version: 1</note>
       </trans-unit>
       <trans-unit id="pages_teacher_teacherclassroompage.enrolled_students" approved="no">
@@ -245410,7 +245560,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="refundpolicypage.3_body" approved="no">
         <source>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</source>
         <target>If you are not satisfied with a paid subscription, you may request a full refund within 14 days of your first payment by emailing hello@peripateticware.com. Refunds are issued to the original payment method, typically within 5–10 business days.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.4_title" approved="no">
         <source>4. Renewal Charges</source>
@@ -245430,7 +245580,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="refundpolicypage.5_body" approved="no">
         <source>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</source>
         <target>Cancel any time from Settings → Plan in your account, or by using the link in any Paddle receipt email, or by contacting hello@peripateticware.com. Cancellation stops future renewals; it does not trigger a partial refund for the current period.</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="refundpolicypage.6_title" approved="no">
         <source>6. Exceptional Circumstances</source>
@@ -245675,7 +245825,7 @@ Note: The number &quot;5+&quot; is preserved as is.</target>
       <trans-unit id="pages_admin_adminpageblockeditorpage.placeholder_landingherohomeschoolheadline" approved="no">
         <source>landing.hero.homeschool.headline</source>
         <target>landing.hero.homeschool.headline</target>
-        <note>Status: needs_manual_translation | Version: 21</note>
+        <note>Status: needs_manual_translation | Version: 22</note>
       </trans-unit>
       <trans-unit id="pages_admin_adminpagespage.pages" approved="no">
         <source>Pages</source>
