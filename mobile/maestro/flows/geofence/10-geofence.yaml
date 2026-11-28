@@ -96,19 +96,21 @@ env:
 # Android 7.0/API 24 (oldest, least-accelerated device) than newer ones.
 # Hypothesis, not confirmed — needs a real run on that device to verify.
 #
-# Also seen failing on iOS 18 (iPhone 16 simulator) — unlike this suite's
-# usual "visible but not found" gap, a real CI screenshot at this exact
-# failure point showed no toast on screen at all, not one the tree just
-# hadn't caught up to. Consistent with the same
-# Location.watchPositionAsync-latency theory above, just on a different
-# platform's location-mocking path. Bumped the timeout further (20s -> 35s)
-# as a low-risk attempt — not confirmed to be the whole story either;
-# needs a real iOS run to verify.
+# Also seen failing on BOTH iOS 18 and iOS 26 (iPhone 16/17 simulators) even
+# at the 35s bumped above — confirmed via a real CI run on both legs, so
+# that bump wasn't the whole story on iOS either. Bumping again (35s -> 45s)
+# to match the equally-generous number e2e/geofence.test.js landed on for
+# the same assertion on Android. Still not confirmed as a real fix on
+# iOS specifically: unlike this suite's usual "visible but not found" gap, a
+# real CI screenshot showed no toast on screen at all, which could mean
+# iOS Simulator's own location-mocking path behaves differently from the
+# Android-emulator-console one this latency theory was built around, not
+# just "same cause, slower". Needs a real iOS run to tell which is true.
 - setLocation:
     latitude: 37.95
     longitude: -122.35
 - extendedWaitUntil:
     visible:
       id: "geofence-toast"
-    timeout: 35000
+    timeout: 45000
 - assertVisible: "Done capturing — reflect"

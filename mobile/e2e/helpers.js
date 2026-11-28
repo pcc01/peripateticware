@@ -36,6 +36,62 @@ async function waitForFirstVisible(ids, timeout) {
   throw new Error(`None of [${ids.join(', ')}] became visible within ${timeout}ms`);
 }
 
+// iOS-only, New-Architecture-only hang: a real CI run's own Detox log showed
+// `ws-client:APP_STATUS The app is busy ... 2 work items pending on the
+// dispatch queue` repeating continuously from right after app launch all
+// the way to this function's own 180s deadline, even though the SAME
+// moment's view-hierarchy dump proved the onboarding splash screen had
+// already fully rendered ("Get started", "PERIPATETICWARE" text all
+// present). Every single iOS Detox test failed this same way, always at
+// this function's own wait, regardless of which screen/feature the test
+// was actually about — consistent with Detox's native sync layer never
+// reaching "idle" on this platform+architecture combination, so it never
+// even attempts the underlying by.id() query, independent of whether that
+// query would itself succeed. This matches a known, open, unresolved
+// upstream Detox/React-Native-New-Architecture issue (app.json has
+// newArchEnabled: true) — wix/Detox#4506 reports the identical "freezes at
+// startup... only with the new architecture enabled" symptom on iOS, no
+// fix landed as of writing. Android (old architecture's bridge-based
+// idling resources) and Maestro (a different, non-Detox sync mechanism)
+// are both unaffected, which is why this is scoped to iOS only here.
+// device.disableSynchronization() is Detox's own documented escape hatch
+// for exactly this class of problem: it skips the "wait for the app to go
+// idle" step before each action/expectation, so the polling loops below
+// can actually attempt their queries instead of blocking forever before
+// the first one ever runs. Re-enabled once loginAsStudent() reaches
+// discover-screen, a point every other platform/tool already proves is a
+// safe, reliably-idle screen.
+// Reentrancy guard: completeOnboardingIfPresent() wraps itself with this (so
+// auth.test.js/starter.test.js, which call it directly rather than through
+// loginAsStudent(), still get the fix), and loginAsStudent() ALSO wraps its
+// own, larger span that calls completeOnboardingIfPresent() internally. Only
+// the outermost call actually toggles synchronization — a naive nested
+// disable/enable would have the inner call's `finally` re-enable sync (and
+// start waiting for idle) before the outer span's remaining steps run.
+let syncDisableDepth = 0;
+
+async function withSyncDisabledOnIOS(fn) {
+  const isIOS = device.getPlatform() === 'ios';
+  if (!isIOS) return fn();
+  if (syncDisableDepth === 0) await device.disableSynchronization();
+  syncDisableDepth++;
+  try {
+    return await fn();
+  } finally {
+    syncDisableDepth--;
+    if (syncDisableDepth === 0) {
+      // device.enableSynchronization()'s own docs warn this resolves only
+      // once the app goes idle, and could hang "forever" if called
+      // somewhere that never settles. Best-effort here: if the app
+      // genuinely never idles on this architecture, this fails the current
+      // test via jest's own testTimeout rather than silently leaving sync
+      // off for every test after it, which would be a worse,
+      // harder-to-diagnose failure mode.
+      await device.enableSynchronization();
+    }
+  }
+}
+
 /**
  * On a fresh install (`launchApp({ delete: true })`), AuthGuard
  * (app/_layout.tsx) now lands an unauthenticated device on the onboarding
@@ -47,6 +103,14 @@ async function waitForFirstVisible(ids, timeout) {
  * second call within the same test.
  */
 async function completeOnboardingIfPresent() {
+  // See withSyncDisabledOnIOS's own comment above: this whole function is
+  // where the iOS New-Architecture "busy forever" hang was actually
+  // observed in CI. No-op on Android. Reentrant-safe against
+  // loginAsStudent() also wrapping its own, larger span that calls this.
+  await withSyncDisabledOnIOS(() => completeOnboardingIfPresentImpl());
+}
+
+async function completeOnboardingIfPresentImpl() {
   // 180s, not a quick probe: cold app launch on GitHub-hosted CI runners
   // has been measured up to ~100s to first paint under real CI load
   // (Font.loadAsync's ~5s escape-hatch timeout plus RootLayout/AuthGuard's
@@ -104,12 +168,17 @@ async function loginAsStudent() {
       '(see mobile/.env.test.example and backend/startup.py::seed_test_accounts).'
     );
   }
-  await completeOnboardingIfPresent();
-  await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(30000);
-  await element(by.id('email-input')).typeText(STUDENT_EMAIL);
-  await element(by.id('password-input')).typeText(STUDENT_PASSWORD);
-  await element(by.text('Sign in')).tap();
-  await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(30000);
+  // See withSyncDisabledOnIOS's own comment: this whole span, from right
+  // after launch through the post-login redirect, is where a real iOS CI
+  // run got stuck "busy" forever on this architecture. No-op on Android.
+  await withSyncDisabledOnIOS(async () => {
+    await completeOnboardingIfPresent();
+    await waitFor(element(by.id('login-screen'))).toBeVisible().withTimeout(30000);
+    await element(by.id('email-input')).typeText(STUDENT_EMAIL);
+    await element(by.id('password-input')).typeText(STUDENT_PASSWORD);
+    await element(by.text('Sign in')).tap();
+    await waitFor(element(by.id('discover-screen'))).toBeVisible().withTimeout(30000);
+  });
 }
 
 module.exports = { loginAsStudent, completeOnboardingIfPresent, STUDENT_EMAIL, STUDENT_PASSWORD };

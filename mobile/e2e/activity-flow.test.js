@@ -40,10 +40,13 @@ describe('Activity Flow (Brief -> Orient -> Inquiry -> Reflect -> Submit)', () =
     // state once; if the Inquiry phase's heavier render (capture row,
     // follow-up card, PeriSpeech/CrowAvatar SVG, useSpeech init) hasn't
     // finished painting yet on a slow device, it fails immediately instead
-    // of retrying. Hypothesis, not confirmed — needs a real run on that
-    // device to verify this is actually the fix and not just a plausible
-    // explanation.
-    await waitFor(element(by.text('Observe & Capture'))).toBeVisible().withTimeout(20000);
+    // of retrying.
+    // 20000ms -> 35000ms: maestro/flows/activity/4-6-activity-flow.yaml's
+    // own identical assertion hit this exact API-24-only failure first and
+    // already bumped its matching wait 20s -> 35s, confirmed holding across
+    // its own later runs — this just mirrors that already-proven number
+    // onto the Detox copy of the same assertion, which never got the fix.
+    await waitFor(element(by.text('Observe & Capture'))).toBeVisible().withTimeout(35000);
   });
 
   it('4.6/4.7/4.8 — opens Ask Peri, sends a message, and dismisses the sheet', async () => {
